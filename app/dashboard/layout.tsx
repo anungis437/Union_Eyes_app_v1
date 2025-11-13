@@ -87,12 +87,19 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const user = await currentUser();
   const userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
   
+  // TODO: Implement role fetching from tenantUsers table
+  // For DEV: Default to "admin" to see all navigation items
+  // For PROD: Query db/schema/user-management-schema.ts tenantUsers table
+  // to get actual role based on userId and tenantId
+  const userRole: "member" | "steward" | "officer" | "admin" = "admin";
+  
   // Log profile details for debugging
   console.log('Dashboard profile:', {
     userId: profile.userId,
     membership: profile.membership,
     createdAt: profile.createdAt,
-    usageCredits: profile.usageCredits
+    usageCredits: profile.usageCredits,
+    userRole: userRole
   });
 
   return (
@@ -114,6 +121,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         userEmail={userEmail} 
         whopMonthlyPlanId={process.env.WHOP_PLAN_ID_MONTHLY || ''}
         whopYearlyPlanId={process.env.WHOP_PLAN_ID_YEARLY || ''}
+        userRole={userRole}
       />
       
       {/* Main content area */}
