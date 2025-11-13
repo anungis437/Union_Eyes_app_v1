@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
 import { 
@@ -39,6 +39,36 @@ type CasePriority = "low" | "medium" | "high" | "urgent";
 type SortField = "submittedDate" | "priority" | "status" | "title";
 type SortOrder = "asc" | "desc";
 
+// Database claim type from API
+interface DbClaim {
+  claimId: string;
+  claimNumber: string;
+  tenantId: string;
+  memberId: string;
+  isAnonymous: boolean;
+  claimType: string;
+  status: string;
+  priority: string;
+  incidentDate: Date;
+  location: string;
+  description: string;
+  desiredOutcome: string;
+  witnessesPresent: boolean;
+  witnessDetails: string | null;
+  previouslyReported: boolean;
+  previousReportDetails: string | null;
+  assignedTo: string | null;
+  assignedAt: Date | null;
+  resolutionNotes: string | null;
+  resolutionDate: Date | null;
+  attachments: string[];
+  voiceTranscriptions: string[];
+  metadata: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActivityAt: Date;
+}
+
 interface Case {
   id: string;
   title: string;
@@ -55,6 +85,76 @@ interface Case {
   notes: string[];
   daysOpen: number;
 }
+
+// Map database claim types to UI-friendly labels
+const claimTypeLabels: Record<string, string> = {
+  "grievance_discipline": "Discipline",
+  "grievance_pay": "Wage & Hour",
+  "grievance_schedule": "Scheduling",
+  "grievance_benefits": "Benefits",
+  "grievance_leave": "Leave",
+  "discrimination_race": "Discrimination",
+  "discrimination_gender": "Discrimination",
+  "discrimination_age": "Discrimination",
+  "discrimination_disability": "Discrimination",
+  "harassment_sexual": "Harassment",
+  "harassment_workplace": "Harassment",
+  "workplace_safety": "Safety",
+  "contract_violation": "Contract Violation",
+};
+
+// Map database status to UI status
+const mapDbStatusToUi = (dbStatus: string): CaseStatus => {
+  const statusMap: Record<string, CaseStatus> = {
+    "submitted": "pending",
+    "under_review": "in-review",
+    "assigned": "in-review",
+    "investigation": "in-review",
+    "pending_documentation": "in-review",
+    "resolved": "resolved",
+    "rejected": "rejected",
+    "closed": "resolved",
+  };
+  return statusMap[dbStatus] || "pending";
+};
+
+// Map database priority to UI priority
+const mapDbPriorityToUi = (dbPriority: string): CasePriority => {
+  const priorityMap: Record<string, CasePriority> = {
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "critical": "urgent",
+  };
+  return priorityMap[dbPriority] || "medium";
+};
+
+// Calculate days open
+const calculateDaysOpen = (createdAt: Date): number => {
+  const created = new Date(createdAt);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - created.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+// Convert database claim to UI case
+const mapDbClaimToCase = (claim: DbClaim): Case => ({
+  id: claim.claimNumber,
+  title: claimTypeLabels[claim.claimType] || claim.claimType,
+  description: claim.description,
+  status: mapDbStatusToUi(claim.status),
+  priority: mapDbPriorityToUi(claim.priority),
+  category: claimTypeLabels[claim.claimType] || claim.claimType,
+  submittedDate: new Date(claim.createdAt).toISOString().split('T')[0],
+  lastUpdate: new Date(claim.lastActivityAt).toISOString().split('T')[0],
+  memberName: claim.isAnonymous ? "Anonymous Member" : "Member", // TODO: Fetch actual member name
+  memberEmail: claim.isAnonymous ? "" : "member@union.com", // TODO: Fetch actual member email
+  memberPhone: claim.isAnonymous ? "" : "", // TODO: Fetch actual member phone
+  assignedTo: claim.assignedTo || null,
+  notes: claim.resolutionNotes ? [claim.resolutionNotes] : [],
+  daysOpen: calculateDaysOpen(claim.createdAt),
+});
 
 const mockCases: Case[] = [
   {
@@ -242,7 +342,9 @@ const priorityConfig: Record<CasePriority, { label: string; color: string; icon:
 
 export default function WorkbenchPage() {
   const { user } = useUser();
-  const [cases, setCases] = useState<Case[]>(mockCases);
+  const [cases, setCases] = useState<Case[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<CaseStatus | "all">("all");
   const [selectedPriority, setSelectedPriority] = useState<CasePriority | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -250,6 +352,33 @@ export default function WorkbenchPage() {
   const [sortField, setSortField] = useState<SortField>("submittedDate");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [newNote, setNewNote] = useState<Record<string, string>>({});
+
+  // Fetch assigned claims from database
+  useEffect(() => {
+    const fetchAssignedClaims = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/workbench/assigned');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch assigned claims: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const mappedCases = data.claims.map(mapDbClaimToCase);
+        setCases(mappedCases);
+      } catch (err) {
+        console.error('Error fetching assigned claims:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load assigned claims');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAssignedClaims();
+  }, []);
 
   // Filter and sort cases
   const filteredAndSortedCases = cases
@@ -341,6 +470,54 @@ export default function WorkbenchPage() {
           </p>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-center items-center py-20"
+          >
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading assigned cases...</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
+          >
+            <div className="flex items-center gap-3">
+              <XCircle className="text-red-600" size={24} />
+              <div>
+                <h3 className="font-semibold text-red-900">Error Loading Cases</h3>
+                <p className="text-red-700">{error}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && cases.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
+          >
+            <Clipboard size={64} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Cases Assigned</h3>
+            <p className="text-gray-600 mb-6">You don&apos;t have any cases assigned to you yet.</p>
+            <p className="text-sm text-gray-500">Cases will appear here when they are assigned to you by administrators or when you take ownership of pending cases.</p>
+          </motion.div>
+        )}
+
+        {/* Content - only show when not loading and no error and has cases */}
+        {!isLoading && !error && cases.length > 0 && (
+          <>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <motion.div
@@ -830,6 +1007,8 @@ export default function WorkbenchPage() {
             </CardContent>
           </Card>
         </motion.div>
+        </>
+        )}
       </motion.div>
     </div>
   );
