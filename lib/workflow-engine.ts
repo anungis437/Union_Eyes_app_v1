@@ -7,6 +7,7 @@
 import { db } from "../db/db";
 import { claims, claimUpdates } from "../db/schema/claims-schema";
 import { eq } from "drizzle-orm";
+import { sendClaimStatusNotification } from "./claim-notifications";
 
 // Define valid status transitions
 export const STATUS_TRANSITIONS = {
@@ -184,6 +185,12 @@ export async function updateClaimStatus(
         newStatus,
         transitionAllowed: true,
       },
+    });
+
+    // Send email notification (async, don't block on email sending)
+    sendClaimStatusNotification(claimId, currentStatus, newStatus, notes).catch((error) => {
+      console.error('Failed to send email notification:', error);
+      // Don't fail the status update if email fails
     });
 
     return { success: true, claim: updatedClaim };
