@@ -15,12 +15,25 @@ async function seedTestClaims() {
   // Get memberId from command line argument or use default
   const memberId = process.argv[2] || "user_test_member_id";
   
+  // Optional: Get steward user ID to assign some claims for workbench testing
+  const stewardId = process.argv[3];
+  
   if (memberId === "user_test_member_id") {
     console.warn("⚠️  WARNING: Using default test member ID.");
     console.warn("   To use your real Clerk user ID, run:");
     console.warn("   npx tsx scripts/seed-test-claims.ts YOUR_USER_ID\n");
+    if (stewardId) {
+      console.warn("   Note: Steward ID provided but member ID is default. Claims won't be properly created.\n");
+    }
   } else {
-    console.log(`✅ Using member ID: ${memberId}\n`);
+    console.log(`✅ Using member ID: ${memberId}`);
+    if (stewardId) {
+      console.log(`✅ Using steward ID: ${stewardId}`);
+      console.log(`   Some claims will be assigned to this steward for workbench testing.\n`);
+    } else {
+      console.log(`   Tip: Add a steward ID as second argument to test the workbench:`);
+      console.log(`   npx tsx scripts/seed-test-claims.ts ${memberId} YOUR_STEWARD_ID\n`);
+    }
   }
   
   const testClaims = [
@@ -105,6 +118,9 @@ async function seedTestClaims() {
   let successCount = 0;
   let failCount = 0;
 
+  // Import assignClaim for steward assignment
+  const { assignClaim } = await import("../db/queries/claims-queries");
+  
   for (let i = 0; i < testClaims.length; i++) {
     const claim = testClaims[i];
     try {
@@ -113,6 +129,17 @@ async function seedTestClaims() {
       console.log(`   Type: ${claim.claimType}`);
       console.log(`   Status: ${claim.status}`);
       console.log(`   Priority: ${claim.priority}`);
+      
+      // Assign claims 2 and 4 to steward if stewardId provided (for workbench testing)
+      if (stewardId && (i === 1 || i === 3)) {
+        try {
+          await assignClaim(created.claimId, stewardId, stewardId);
+          console.log(`   🎯 Assigned to steward (for workbench testing)`);
+        } catch (error) {
+          console.log(`   ⚠️  Failed to assign to steward: ${error}`);
+        }
+      }
+      
       console.log("");
       successCount++;
     } catch (error) {
