@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { 
@@ -20,6 +20,35 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
+// Database claim type from API
+interface DbClaim {
+  claimId: string;
+  claimNumber: string;
+  tenantId: string;
+  memberId: string;
+  isAnonymous: boolean;
+  claimType: string;
+  status: string;
+  priority: string;
+  incidentDate: Date;
+  location: string;
+  description: string;
+  desiredOutcome: string;
+  witnessesPresent: boolean;
+  witnessDetails: string | null;
+  previouslyReported: boolean;
+  previousReportDetails: string | null;
+  assignedTo: string | null;
+  resolutionNotes: string | null;
+  resolutionDate: Date | null;
+  attachments: string[];
+  voiceTranscriptions: string[];
+  metadata: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActivityAt: Date;
+}
+
 type CaseStatus = "pending" | "in-review" | "approved" | "rejected" | "resolved";
 type CasePriority = "low" | "medium" | "high" | "urgent";
 
@@ -36,43 +65,62 @@ interface Case {
   notes?: string;
 }
 
-// Mock data - TODO: Replace with actual data from database
-const mockCases: Case[] = [
-  {
-    id: "CASE-001",
-    title: "Overtime Pay Dispute",
-    description: "Requesting review of unpaid overtime hours for March 2025",
-    status: "in-review",
-    priority: "high",
-    category: "Wage & Hour",
-    submittedDate: "2025-11-10",
-    lastUpdate: "2025-11-12",
-    assignedTo: "Sarah Johnson (Steward)",
-    notes: "Steward reviewing timesheets"
-  },
-  {
-    id: "CASE-002",
-    title: "Workplace Safety Concern",
-    description: "Equipment malfunction in section B needs immediate attention",
-    status: "pending",
-    priority: "urgent",
-    category: "Safety",
-    submittedDate: "2025-11-13",
-    lastUpdate: "2025-11-13",
-  },
-  {
-    id: "CASE-003",
-    title: "Schedule Change Request",
-    description: "Requesting shift modification due to family circumstances",
-    status: "approved",
-    priority: "medium",
-    category: "Scheduling",
-    submittedDate: "2025-11-05",
-    lastUpdate: "2025-11-08",
-    assignedTo: "Mike Chen (Steward)",
-    notes: "Approved for next month"
-  },
-];
+// Map database claim types to UI-friendly labels
+const claimTypeLabels: Record<string, string> = {
+  "grievance_discipline": "Discipline",
+  "grievance_pay": "Wage & Hour",
+  "grievance_schedule": "Scheduling",
+  "grievance_benefits": "Benefits",
+  "grievance_leave": "Leave",
+  "discrimination_race": "Discrimination",
+  "discrimination_gender": "Discrimination",
+  "discrimination_age": "Discrimination",
+  "discrimination_disability": "Discrimination",
+  "harassment_sexual": "Harassment",
+  "harassment_workplace": "Harassment",
+  "workplace_safety": "Safety",
+  "contract_violation": "Contract Violation",
+};
+
+// Map database status to UI status
+const mapDbStatusToUi = (dbStatus: string): CaseStatus => {
+  const statusMap: Record<string, CaseStatus> = {
+    "submitted": "pending",
+    "under_review": "in-review",
+    "assigned": "in-review",
+    "investigation": "in-review",
+    "pending_documentation": "in-review",
+    "resolved": "resolved",
+    "rejected": "rejected",
+    "closed": "resolved",
+  };
+  return statusMap[dbStatus] || "pending";
+};
+
+// Map database priority to UI priority
+const mapDbPriorityToUi = (dbPriority: string): CasePriority => {
+  const priorityMap: Record<string, CasePriority> = {
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "critical": "urgent",
+  };
+  return priorityMap[dbPriority] || "medium";
+};
+
+// Convert database claim to UI case
+const mapDbClaimToCase = (claim: DbClaim): Case => ({
+  id: claim.claimNumber,
+  title: claimTypeLabels[claim.claimType] || claim.claimType,
+  description: claim.description,
+  status: mapDbStatusToUi(claim.status),
+  priority: mapDbPriorityToUi(claim.priority),
+  category: claimTypeLabels[claim.claimType] || claim.claimType,
+  submittedDate: new Date(claim.createdAt).toISOString().split('T')[0],
+  lastUpdate: new Date(claim.lastActivityAt).toISOString().split('T')[0],
+  assignedTo: claim.assignedTo || undefined,
+  notes: claim.resolutionNotes || undefined,
+});
 
 const statusConfig = {
   pending: { 
@@ -115,10 +163,39 @@ const priorityConfig = {
 };
 
 export default function ClaimsPage() {
-  const [cases] = useState<Case[]>(mockCases);
+  const [cases, setCases] = useState<Case[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<"all" | CaseStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
+
+  // Fetch claims from database
+  useEffect(() => {
+    const fetchClaims = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/claims');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch claims: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const mappedCases = data.claims.map(mapDbClaimToCase);
+        setCases(mappedCases);
+      } catch (err) {
+        console.error('Error fetching claims:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load claims');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClaims();
+  }, []);
 
   const filteredCases = cases.filter(c => {
     const matchesFilter = selectedFilter === "all" || c.status === selectedFilter;
@@ -164,6 +241,60 @@ export default function ClaimsPage() {
             </Link>
           </div>
         </motion.div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-center items-center py-20"
+          >
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading your cases...</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
+          >
+            <div className="flex items-center gap-3">
+              <XCircle className="text-red-600" size={24} />
+              <div>
+                <h3 className="font-semibold text-red-900">Error Loading Claims</h3>
+                <p className="text-red-700">{error}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && cases.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
+          >
+            <FileText size={64} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Cases Yet</h3>
+            <p className="text-gray-600 mb-6">Submit your first case to get started</p>
+            <Link href="/dashboard/claims/new">
+              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 inline-flex items-center gap-2">
+                <Plus size={20} />
+                Create New Case
+              </button>
+            </Link>
+          </motion.div>
+        )}
+
+        {/* Content - only show when not loading and no error */}
+        {!isLoading && !error && cases.length > 0 && (
+          <>
 
         {/* Stats Bar */}
         <motion.div
@@ -385,6 +516,8 @@ export default function ClaimsPage() {
               </CardContent>
             </Card>
           </motion.div>
+        )}
+        </>
         )}
       </div>
     </div>

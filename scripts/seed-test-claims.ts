@@ -12,9 +12,16 @@ async function seedTestClaims() {
 
   const tenantId = "default-tenant-id";
   
-  // Replace with your actual Clerk user ID
-  // You can find this in Clerk dashboard or by inspecting auth() response
-  const memberId = "user_test_member_id"; // TODO: Update with real user ID
+  // Get memberId from command line argument or use default
+  const memberId = process.argv[2] || "user_test_member_id";
+  
+  if (memberId === "user_test_member_id") {
+    console.warn("⚠️  WARNING: Using default test member ID.");
+    console.warn("   To use your real Clerk user ID, run:");
+    console.warn("   npx tsx scripts/seed-test-claims.ts YOUR_USER_ID\n");
+  } else {
+    console.log(`✅ Using member ID: ${memberId}\n`);
+  }
   
   const testClaims = [
     {
