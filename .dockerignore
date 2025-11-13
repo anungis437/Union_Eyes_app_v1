@@ -1,0 +1,91 @@
+# Git and version control
+.git
+.github
+.gitignore
+.gitattributes
+
+# Dependencies - exclude ALL node_modules (we'll install fresh in container)
+node_modules
+**/node_modules
+.pnpm-store
+.pnpm-cache
+
+# Build outputs
+.next
+out
+build
+dist
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage
+.nyc_output
+test
+tests
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Local env files - keep only for build args
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Documentation
+*.md
+!README.md
+docs
+archive
+prompts
+
+# IDE
+.vscode
+.idea
+.claude
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.pem
+
+# Database and scripts
+database
+scripts/*.ps1
+scripts/*.sh
+migrations
+*.sql
+
+# Docker compose files (not needed in build)
+docker-compose*.yml
+
+# Config files not needed in container
+.eslintrc*
+.prettierrc*
+*.config.js
+*.config.ts
+!next.config.mjs
+!postcss.config.mjs
+!tailwind.config.ts
+!drizzle.config.ts
+
+# Credential files
+AZURE_CREDENTIALS.md
+.env.staging
+.env.production
+SESSION_SUMMARY.md
+DEPLOYMENT_STATUS.md

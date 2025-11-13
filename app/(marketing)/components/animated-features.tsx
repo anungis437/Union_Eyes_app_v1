@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Code, Database, Lock } from "lucide-react";
+import { Check, Scale, Users, MessageSquare, BarChart3, Shield, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Animation variants
@@ -34,9 +34,9 @@ export default function AnimatedFeatures() {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">Built for Labor Unions</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Everything you need to build and scale your projects
+          Comprehensive tools to support your members and strengthen your union
         </p>
       </motion.div>
 
@@ -51,14 +51,14 @@ export default function AnimatedFeatures() {
           <Card>
             <CardHeader>
               <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                <Code className="h-6 w-6 text-primary" />
+                <Scale className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>Modern Stack</CardTitle>
-              <CardDescription>Built with Next.js, Tailwind CSS, and ShadCN UI</CardDescription>
+              <CardTitle>Grievance Management</CardTitle>
+              <CardDescription>AI-powered grievance tracking and resolution with legal precedent analysis</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {["Server components", "Type safety", "Fast rendering"].map((feature) => (
+                {["Smart categorization", "Timeline tracking", "Document management"].map((feature) => (
                   <li key={feature} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
                     <span>{feature}</span>
@@ -73,14 +73,14 @@ export default function AnimatedFeatures() {
           <Card>
             <CardHeader>
               <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                <Database className="h-6 w-6 text-primary" />
+                <Users className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>Robust Backend</CardTitle>
-              <CardDescription>Supabase and Drizzle integration for seamless data management</CardDescription>
+              <CardTitle>Member Portal</CardTitle>
+              <CardDescription>Self-service portal for members to manage claims and access resources</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {["SQL queries", "Data validation", "Real-time updates"].map((feature) => (
+                {["Claims submission", "Document upload", "Status tracking"].map((feature) => (
                   <li key={feature} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
                     <span>{feature}</span>
@@ -95,14 +95,80 @@ export default function AnimatedFeatures() {
           <Card>
             <CardHeader>
               <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                <Lock className="h-6 w-6 text-primary" />
+                <Brain className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>Secure Authentication</CardTitle>
-              <CardDescription>Clerk authentication with flexible options</CardDescription>
+              <CardTitle>AI Workbench</CardTitle>
+              <CardDescription>Intelligent assistance for research, analysis, and decision-making</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {["Social logins", "Role-based access", "OAuth integration"].map((feature) => (
+                {["Legal research", "Contract analysis", "Strategic insights"].map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
+                <MessageSquare className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Communication Hub</CardTitle>
+              <CardDescription>Centralized communication tools for member engagement and updates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {["Notifications", "Announcements", "Voting system"].map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
+                <BarChart3 className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Analytics & Reporting</CardTitle>
+              <CardDescription>Data-driven insights to optimize union operations and member support</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {["Case analytics", "Trend analysis", "Performance metrics"].map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <div className="bg-primary/10 p-3 rounded-lg w-fit mb-4">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Secure & Compliant</CardTitle>
+              <CardDescription>Enterprise-grade security with role-based access control</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {["Data encryption", "Audit logs", "GDPR compliant"].map((feature) => (
                   <li key={feature} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
                     <span>{feature}</span>
