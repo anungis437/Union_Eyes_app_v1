@@ -2,7 +2,9 @@
  * Seed Test Claims
  * 
  * Creates test claims in database for Phase 1 development testing.
- * Run with: npx tsx scripts/seed-test-claims.ts
+ * Run with: npx tsx scripts/seed-test-claims.ts [memberId] [stewardId]
+ * 
+ * Note: Environment variables are loaded from .env file automatically by tsx
  */
 
 import { createClaim } from "../db/queries/claims-queries";
