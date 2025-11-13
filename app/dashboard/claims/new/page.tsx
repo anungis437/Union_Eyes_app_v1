@@ -125,16 +125,82 @@ export default function NewClaimPage() {
 
     setIsSubmitting(true);
 
-    // TODO: Submit to backend
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Map form category to claim type enum
+      const categoryToClaimType: Record<string, string> = {
+        "Wage & Hour": "grievance_pay",
+        "Safety": "workplace_safety",
+        "Scheduling": "grievance_schedule",
+        "Discrimination": "discrimination_other",
+        "Harassment": "harassment_verbal",
+        "Benefits": "contract_dispute",
+        "Grievance": "grievance_discipline",
+        "Working Conditions": "workplace_safety",
+        "Other": "other"
+      };
 
-    setIsSubmitting(false);
-    setShowSuccess(true);
+      const claimData = {
+        claimType: categoryToClaimType[formData.category] || "other",
+        incidentDate: formData.date,
+        location: formData.location || "Not specified",
+        description: formData.description,
+        desiredOutcome: `Resolution requested for: ${formData.title}`,
+        priority: formData.priority,
+        witnessesPresent: !!formData.witnesses,
+        witnessDetails: formData.witnesses || null,
+        previouslyReported: false,
+        isAnonymous: true,
+      };
 
-    // Redirect after success
-    setTimeout(() => {
-      router.push("/dashboard/claims");
-    }, 2000);
+      // Create claim
+      const response = await fetch("/api/claims", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(claimData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create claim");
+      }
+
+      const result = await response.json();
+      const claimId = result.claim.claimId;
+
+      // Upload files if any
+      if (formData.documents.length > 0) {
+        const uploadPromises = formData.documents.map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("claimId", claimId);
+
+          const uploadResponse = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            console.error(`Failed to upload ${file.name}`);
+          }
+        });
+
+        await Promise.all(uploadPromises);
+      }
+
+      setIsSubmitting(false);
+      setShowSuccess(true);
+
+      // Redirect after success
+      setTimeout(() => {
+        router.push("/dashboard/claims");
+      }, 2000);
+    } catch (error) {
+      console.error("Error submitting claim:", error);
+      setIsSubmitting(false);
+      alert(error instanceof Error ? error.message : "Failed to submit claim");
+    }
   };
 
   if (showSuccess) {
