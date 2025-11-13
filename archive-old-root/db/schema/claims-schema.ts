@@ -1,0 +1,112 @@
+import { pgTable, uuid, varchar, text, timestamp, integer, boolean, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+// Enums for claims
+export const claimStatusEnum = pgEnum("claim_status", [
+  "submitted",
+  "under_review",
+  "assigned",
+  "investigation",
+  "pending_documentation",
+  "resolved",
+  "rejected",
+  "closed"
+]);
+
+export const claimPriorityEnum = pgEnum("claim_priority", [
+  "low",
+  "medium",
+  "high",
+  "critical"
+]);
+
+export const claimTypeEnum = pgEnum("claim_type", [
+  "grievance_discipline",
+  "grievance_schedule",
+  "grievance_pay",
+  "workplace_safety",
+  "discrimination_age",
+  "discrimination_gender",
+  "discrimination_race",
+  "discrimination_disability",
+  "harassment_verbal",
+  "harassment_physical",
+  "harassment_sexual",
+  "contract_dispute",
+  "retaliation",
+  "other"
+]);
+
+// Claims table
+export const claims = pgTable("claims", {
+  claimId: uuid("claim_id").primaryKey().defaultRandom(),
+  claimNumber: varchar("claim_number", { length: 50 }).notNull().unique(),
+  tenantId: uuid("tenant_id").notNull(),
+  memberId: uuid("member_id").notNull(),
+  isAnonymous: boolean("is_anonymous").default(true),
+  
+  // Claim details
+  claimType: claimTypeEnum("claim_type").notNull(),
+  status: claimStatusEnum("status").notNull().default("submitted"),
+  priority: claimPriorityEnum("priority").notNull().default("medium"),
+  
+  // Incident information
+  incidentDate: timestamp("incident_date", { withTimezone: true }).notNull(),
+  location: text("location").notNull(),
+  description: text("description").notNull(),
+  desiredOutcome: text("desired_outcome").notNull(),
+  
+  // Witness and reporting information
+  witnessesPresent: boolean("witnesses_present").default(false),
+  witnessDetails: text("witness_details"),
+  previouslyReported: boolean("previously_reported").default(false),
+  previousReportDetails: text("previous_report_details"),
+  
+  // Assignment and tracking
+  assignedTo: uuid("assigned_to"),
+  assignedAt: timestamp("assigned_at", { withTimezone: true }),
+  
+  // AI analysis
+  aiScore: integer("ai_score"),
+  aiAnalysis: jsonb("ai_analysis"),
+  meritConfidence: integer("merit_confidence"),
+  precedentMatch: integer("precedent_match"),
+  complexityScore: integer("complexity_score"),
+  
+  // Progress tracking
+  progress: integer("progress").default(0),
+  
+  // Attachments and evidence
+  attachments: jsonb("attachments").default(sql`'[]'::jsonb`),
+  
+  // Voice transcriptions
+  voiceTranscriptions: jsonb("voice_transcriptions").default(sql`'[]'::jsonb`),
+  
+  // Metadata
+  metadata: jsonb("metadata").default(sql`'{}'::jsonb`),
+  
+  // Timestamps
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).defaultNow(),
+});
+
+// Claim updates/notes table
+export const claimUpdates = pgTable("claim_updates", {
+  updateId: uuid("update_id").primaryKey().defaultRandom(),
+  claimId: uuid("claim_id").notNull().references(() => claims.claimId, { onDelete: "cascade" }),
+  updateType: varchar("update_type", { length: 50 }).notNull(),
+  message: text("message").notNull(),
+  createdBy: uuid("created_by").notNull(),
+  isInternal: boolean("is_internal").default(false),
+  metadata: jsonb("metadata").default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// Type exports
+export type Claim = typeof claims.$inferSelect;
+export type NewClaim = typeof claims.$inferInsert;
+export type ClaimUpdate = typeof claimUpdates.$inferSelect;
+export type NewClaimUpdate = typeof claimUpdates.$inferInsert;
