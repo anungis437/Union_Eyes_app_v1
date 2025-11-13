@@ -14,10 +14,10 @@ export default function AnimatedHero() {
       transition={{ duration: 0.6 }}
     >
       <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-        Your Ultimate <span className="text-primary">Template App</span>
+        Empower Your Union with <span className="text-primary">UnionEyes</span>
       </h1>
       <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-        Build faster, scale smarter, and focus on what matters most
+        AI-powered grievance management, claims processing, and member engagement tools built specifically for labor unions
       </p>
       <div className="flex justify-center gap-4 pt-6">
         <Button asChild size="lg" className="font-medium">

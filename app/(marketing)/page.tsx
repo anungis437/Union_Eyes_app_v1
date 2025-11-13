@@ -15,33 +15,33 @@ import AnimatedCTA from "./components/animated-cta";
 // Reviews data
 const reviews = [
   {
-    name: "Michael K.",
-    title: "Software Engineer",
-    content: "This template saved me so much time. I was able to launch my MVP in just a few days instead of weeks. The code is clean and well-structured!",
+    name: "Maria S.",
+    title: "Union Steward, UFCW Local 175",
+    content: "UnionEyes has transformed how we handle grievances. The AI-powered analysis helps us build stronger cases, and our members love the self-service portal.",
     rating: 5
   },
   {
-    name: "Sarah J.",
-    title: "Startup Founder",
-    content: "As a non-technical founder, this template was exactly what I needed. I've finally found a way to bring my ideas to life without hiring a full dev team.",
+    name: "James T.",
+    title: "Business Representative",
+    content: "The grievance tracking system is incredible. We can now see trends across all cases and respond more strategically. Response times have improved by 40%.",
     rating: 5
   },
   {
-    name: "David L.",
-    title: "Full-stack Developer",
-    content: "The integration with Supabase and Clerk is seamless. Authentication, database, payments - everything just works out of the box. Truly impressive!",
+    name: "Patricia L.",
+    title: "Union President",
+    content: "Finally, a platform built specifically for unions! The analytics help us make data-driven decisions, and the member engagement features have strengthened our community.",
     rating: 5
   },
   {
-    name: "Emily R.",
-    title: "Product Manager",
-    content: "We used this template as the foundation for our SaaS and it's been fantastic. The code quality and architecture decisions are exactly what we needed.",
+    name: "Robert M.",
+    title: "Legal Coordinator",
+    content: "The AI Workbench's contract analysis and legal research capabilities are game-changing. It's like having a research assistant available 24/7.",
     rating: 5
   },
   {
-    name: "Ryan T.",
-    title: "Indie Hacker",
-    content: "This template helped me launch my side project while keeping my day job. The documentation is clear and everything is well thought out.",
+    name: "Angela K.",
+    title: "Communications Director",
+    content: "The communication hub has made it so much easier to keep our members informed. The voting system for union decisions is secure and accessible.",
     rating: 5
   }
 ];
@@ -84,9 +84,9 @@ export default function HomePage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <h3 className="text-lg font-semibold mb-4">Template App</h3>
+              <h3 className="text-lg font-semibold mb-4">UnionEyes</h3>
               <p className="text-muted-foreground max-w-md">
-                Build beautiful, functional web applications faster than ever with our comprehensive template solution.
+                Empowering labor unions with AI-driven tools for grievance management, member engagement, and operational excellence.
               </p>
               <div className="flex space-x-4 mt-6">
                 <Button variant="ghost" size="icon" asChild>
@@ -105,21 +105,21 @@ export default function HomePage() {
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold mb-4">Product</h3>
+              <h3 className="text-lg font-semibold mb-4">Platform</h3>
               <ul className="space-y-3">
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Changelog</Link></li>
+                <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+                <li><Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link></li>
+                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Support</Link></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <h3 className="text-lg font-semibold mb-4">Resources</h3>
               <ul className="space-y-3">
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">About</Link></li>
+                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
+                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Case Studies</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Careers</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
               </ul>
             </div>
@@ -127,7 +127,7 @@ export default function HomePage() {
           
           <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} Template App. All rights reserved.
+              © {new Date().getFullYear()} UnionEyes. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <Link href="#" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Privacy Policy</Link>

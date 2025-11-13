@@ -106,8 +106,8 @@ export default function Header() {
                   <path d="M4 12h16" />
                 </svg>
               </div>
-              <div className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Template App
+              <div className="text-lg font-bold bg-gradient-to-r from-blue-900 to-blue-600 bg-clip-text text-transparent">
+                UnionEyes
               </div>
             </motion.div>
 

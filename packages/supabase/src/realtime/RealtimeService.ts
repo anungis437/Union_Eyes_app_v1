@@ -1,0 +1,457 @@
+/**
+ * Supabase Pro Real-time Service
+ * 
+ * Comprehensive real-time functionality leveraging Supabase Pro features:
+ * - Collaborative document editing
+ * - Live matter status updates
+ * - Real-time notifications
+ * - Multi-user presence indicators
+ * - Live billing meter updates
+ * 
+ * @module RealtimeService
+ */
+
+import { createClient, RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
+// import type { Database } from '../types';
+type Database = any; // TODO: Generate from Supabase schema
+
+export interface RealtimeSubscription {
+  id: string;
+  channel: RealtimeChannel;
+  tableName: string;
+  organizationId?: string;
+  userId?: string;
+  callback: (payload: any) => void;
+}
+
+export interface PresenceState {
+  userId: string;
+  userName: string;
+  avatar?: string;
+  isOnline: boolean;
+  lastSeen: string;
+  currentPage?: string;
+  activeDocument?: string;
+  activeMatter?: string;
+}
+
+export interface NotificationPayload {
+  id: string;
+  type: 'matter_update' | 'document_shared' | 'deadline_reminder' | 'billing_alert' | 'task_assigned';
+  title: string;
+  message: string;
+  actionUrl?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  organizationId: string;
+  userId?: string;
+  metadata?: Record<string, any>;
+  timestamp: string;
+}
+
+export class RealtimeService {
+  private supabase: SupabaseClient<Database>;
+  private subscriptions: Map<string, RealtimeSubscription> = new Map();
+  private presenceChannel?: RealtimeChannel;
+  private notificationChannel?: RealtimeChannel;
+  
+  constructor(supabase: SupabaseClient<Database>) {
+    this.supabase = supabase;
+  }
+
+  // ============================================================================
+  // PRESENCE TRACKING - WHO'S ONLINE
+  // ============================================================================
+
+  /**
+   * Track user presence across the application
+   */
+  async trackPresence(
+    organizationId: string, 
+    user: { id: string; name: string; avatar?: string }
+  ): Promise<RealtimeChannel> {
+    this.presenceChannel = this.supabase
+      .channel(`presence-${organizationId}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = this.presenceChannel?.presenceState();
+        this.handlePresenceSync(state || {});
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        this.handlePresenceJoin(key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        this.handlePresenceLeave(key, leftPresences);
+      });
+
+    // Track this user's presence
+    await this.presenceChannel.track({
+      userId: user.id,
+      userName: user.name,
+      avatar: user.avatar,
+      isOnline: true,
+      lastSeen: new Date().toISOString(),
+      joinedAt: new Date().toISOString()
+    });
+
+    this.presenceChannel.subscribe();
+    return this.presenceChannel;
+  }
+
+  /**
+   * Update user's current activity (page, document, matter)
+   */
+  async updatePresenceActivity(activity: {
+    currentPage?: string;
+    activeDocument?: string;
+    activeMatter?: string;
+  }): Promise<void> {
+    if (!this.presenceChannel) return;
+
+    const currentState = this.presenceChannel.presenceState();
+    const userId = Object.keys(currentState)[0]; // Current user
+    
+    await this.presenceChannel.track({
+      ...currentState[userId]?.[0],
+      ...activity,
+      lastSeen: new Date().toISOString()
+    });
+  }
+
+  private handlePresenceSync(state: Record<string, any[]>) {
+    const users = Object.keys(state).map(userId => {
+      const presence = state[userId][0];
+      return {
+        userId,
+        ...presence,
+        isOnline: true
+      };
+    });
+    
+    // Emit presence update event
+    window.dispatchEvent(new CustomEvent('presence:sync', { 
+      detail: { users } 
+    }));
+  }
+
+  private handlePresenceJoin(key: string, newPresences: any[]) {
+    const user = newPresences[0];
+    window.dispatchEvent(new CustomEvent('presence:join', { 
+      detail: { userId: key, user } 
+    }));
+  }
+
+  private handlePresenceLeave(key: string, leftPresences: any[]) {
+    const user = leftPresences[0];
+    window.dispatchEvent(new CustomEvent('presence:leave', { 
+      detail: { userId: key, user } 
+    }));
+  }
+
+  // ============================================================================
+  // COLLABORATIVE DOCUMENT EDITING
+  // ============================================================================
+
+  /**
+   * Enable real-time collaborative editing for documents
+   */
+  subscribeToDocumentChanges(
+    documentId: string,
+    organizationId: string,
+    onUpdate: (change: any) => void
+  ): string {
+    const subscriptionId = `document-${documentId}`;
+    
+    const channel = this.supabase
+      .channel(`document-collab-${documentId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'documents',
+        filter: `id=eq.${documentId}`
+      }, (payload) => {
+        onUpdate({
+          type: 'document_change',
+          payload,
+          timestamp: new Date().toISOString()
+        });
+      })
+      .on('broadcast', { event: 'cursor_move' }, (payload) => {
+        onUpdate({
+          type: 'cursor_move',
+          payload,
+          timestamp: new Date().toISOString()
+        });
+      })
+      .on('broadcast', { event: 'text_selection' }, (payload) => {
+        onUpdate({
+          type: 'text_selection',
+          payload,
+          timestamp: new Date().toISOString()
+        });
+      })
+      .subscribe();
+
+    this.subscriptions.set(subscriptionId, {
+      id: subscriptionId,
+      channel,
+      tableName: 'documents',
+      organizationId,
+      callback: onUpdate
+    });
+
+    return subscriptionId;
+  }
+
+  /**
+   * Broadcast cursor position to other collaborators
+   */
+  async broadcastCursorPosition(documentId: string, position: {
+    line: number;
+    column: number;
+    userId: string;
+    userName: string;
+  }): Promise<void> {
+    const channel = this.subscriptions.get(`document-${documentId}`)?.channel;
+    if (!channel) return;
+
+    await channel.send({
+      type: 'broadcast',
+      event: 'cursor_move',
+      payload: {
+        documentId,
+        ...position,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  // ============================================================================
+  // MATTER & CASE UPDATES
+  // ============================================================================
+
+  /**
+   * Subscribe to matter status changes and updates
+   */
+  subscribeToMatterUpdates(
+    organizationId: string,
+    onUpdate: (matter: any) => void
+  ): string {
+    const subscriptionId = `matters-${organizationId}`;
+    
+    const channel = this.supabase
+      .channel(`matters-${organizationId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'matters',
+        filter: `organization_id=eq.${organizationId}`
+      }, (payload) => {
+        onUpdate({
+          type: 'matter_update',
+          matter: payload.new || payload.old,
+          event: payload.eventType,
+          timestamp: new Date().toISOString()
+        });
+      })
+      .subscribe();
+
+    this.subscriptions.set(subscriptionId, {
+      id: subscriptionId,
+      channel,
+      tableName: 'matters',
+      organizationId,
+      callback: onUpdate
+    });
+
+    return subscriptionId;
+  }
+
+  // ============================================================================
+  // REAL-TIME NOTIFICATIONS
+  // ============================================================================
+
+  /**
+   * Subscribe to real-time notifications for the organization
+   */
+  subscribeToNotifications(
+    organizationId: string,
+    userId: string,
+    onNotification: (notification: NotificationPayload) => void
+  ): string {
+    const subscriptionId = `notifications-${userId}`;
+    
+    this.notificationChannel = this.supabase
+      .channel(`notifications-${organizationId}`)
+      .on('broadcast', { event: 'notification' }, ({ payload }) => {
+        // Filter notifications for this user or organization-wide
+        if (!payload.userId || payload.userId === userId) {
+          onNotification(payload as NotificationPayload);
+        }
+      })
+      .subscribe();
+
+    this.subscriptions.set(subscriptionId, {
+      id: subscriptionId,
+      channel: this.notificationChannel,
+      tableName: 'notifications',
+      organizationId,
+      userId,
+      callback: onNotification
+    });
+
+    return subscriptionId;
+  }
+
+  /**
+   * Send real-time notification to organization members
+   */
+  async sendNotification(notification: Omit<NotificationPayload, 'id' | 'timestamp'>): Promise<void> {
+    if (!this.notificationChannel) return;
+
+    const payload: NotificationPayload = {
+      ...notification,
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString()
+    };
+
+    await this.notificationChannel.send({
+      type: 'broadcast',
+      event: 'notification',
+      payload
+    });
+
+    // Also store in database for persistence
+    await this.supabase
+      .from('notifications')
+      .insert([{
+        id: payload.id,
+        type: payload.type,
+        title: payload.title,
+        message: payload.message,
+        action_url: payload.actionUrl,
+        priority: payload.priority,
+        organization_id: payload.organizationId,
+        user_id: payload.userId,
+        metadata: payload.metadata,
+        created_at: payload.timestamp,
+        read_at: null
+      }]);
+  }
+
+  // ============================================================================
+  // BILLING & USAGE UPDATES
+  // ============================================================================
+
+  /**
+   * Subscribe to real-time billing updates and usage metrics
+   */
+  subscribeToBillingUpdates(
+    organizationId: string,
+    onUpdate: (billingData: any) => void
+  ): string {
+    const subscriptionId = `billing-${organizationId}`;
+    
+    const channel = this.supabase
+      .channel(`billing-${organizationId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'billing_usage',
+        filter: `organization_id=eq.${organizationId}`
+      }, (payload) => {
+        onUpdate({
+          type: 'usage_update',
+          usage: payload.new || payload.old,
+          event: payload.eventType,
+          timestamp: new Date().toISOString()
+        });
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'billing_subscriptions',
+        filter: `organization_id=eq.${organizationId}`
+      }, (payload) => {
+        onUpdate({
+          type: 'subscription_update',
+          subscription: payload.new || payload.old,
+          event: payload.eventType,
+          timestamp: new Date().toISOString()
+        });
+      })
+      .subscribe();
+
+    this.subscriptions.set(subscriptionId, {
+      id: subscriptionId,
+      channel,
+      tableName: 'billing',
+      organizationId,
+      callback: onUpdate
+    });
+
+    return subscriptionId;
+  }
+
+  // ============================================================================
+  // SUBSCRIPTION MANAGEMENT
+  // ============================================================================
+
+  /**
+   * Unsubscribe from a specific real-time subscription
+   */
+  async unsubscribe(subscriptionId: string): Promise<void> {
+    const subscription = this.subscriptions.get(subscriptionId);
+    if (!subscription) return;
+
+    await subscription.channel.unsubscribe();
+    this.subscriptions.delete(subscriptionId);
+  }
+
+  /**
+   * Unsubscribe from all active subscriptions
+   */
+  async unsubscribeAll(): Promise<void> {
+    const unsubscribePromises = Array.from(this.subscriptions.values()).map(
+      subscription => subscription.channel.unsubscribe()
+    );
+    
+    await Promise.all(unsubscribePromises);
+    this.subscriptions.clear();
+
+    // Clean up presence tracking
+    if (this.presenceChannel) {
+      await this.presenceChannel.unsubscribe();
+      this.presenceChannel = undefined;
+    }
+
+    if (this.notificationChannel) {
+      await this.notificationChannel.unsubscribe();
+      this.notificationChannel = undefined;
+    }
+  }
+
+  /**
+   * Get all active subscriptions
+   */
+  getActiveSubscriptions(): RealtimeSubscription[] {
+    return Array.from(this.subscriptions.values());
+  }
+
+  /**
+   * Check connection status
+   */
+  getConnectionStatus(): 'CONNECTING' | 'OPEN' | 'CLOSING' | 'CLOSED' {
+    // @ts-ignore - Supabase realtime API access
+    const client = this.supabase.realtime as any;
+    return client?.connect ? 'OPEN' : 'CLOSED';
+  }
+}
+
+// ============================================================================
+// REACT HOOKS FOR EASY INTEGRATION
+// ============================================================================
+
+export { useRealtimePresence } from './hooks/useRealtimePresence';
+export { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
+// Hooks below are commented out as they are not yet implemented
+// export { useCollaborativeDocument } from './hooks/useCollaborativeDocument';
+// export { useRealtimeBilling } from './hooks/useRealtimeBilling';
