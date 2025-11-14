@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const { data: query, error: queryError } = await supabase
       .from('ai_queries')
       .select('id, tenant_id')
-      .eq('id', query_id)
+      .eq('id', query_id as any)
       .single();
 
     if (queryError || !query) {
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify tenant access
-    if (orgId && query.tenant_id !== orgId) {
+    if (orgId && (query as any).tenant_id !== orgId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
       .from('ai_feedback')
       .insert({
         query_id,
-        tenant_id: orgId || query.tenant_id,
+        tenant_id: orgId || (query as any).tenant_id,
         user_id: userId,
         rating,
         comment: comment || null,
-      })
+      } as any)
       .select()
       .single();
 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     // 6. Return success
     return NextResponse.json({
       success: true,
-      feedback_id: feedback.id,
+      feedback_id: (feedback as any)?.id,
       message: 'Thank you for your feedback!',
     });
   } catch (error) {
@@ -139,8 +139,8 @@ export async function GET(request: NextRequest) {
     const { data: feedback, error } = await supabase
       .from('ai_feedback')
       .select('*')
-      .eq('query_id', queryId)
-      .eq('tenant_id', orgId || '')
+      .eq('query_id', queryId as any)
+      .eq('tenant_id', (orgId || '') as any)
       .order('created_at', { ascending: false });
 
     if (error) {

@@ -11,7 +11,7 @@ export type SelectClaim = typeof claims.$inferSelect;
 /**
  * Create a new claim
  */
-export const createClaim = async (data: Omit<InsertClaim, 'claimId' | 'claimNumber' | 'createdAt' | 'updatedAt' | 'lastActivityAt'>) => {
+export const createClaim = async (data: Omit<InsertClaim, 'claimId' | 'claimNumber' | 'createdAt' | 'updatedAt'>) => {
   try {
     // Generate claim number (format: CASE-YYYYMMDD-XXXX)
     const date = new Date();
@@ -124,7 +124,6 @@ export const updateClaimStatus = async (
       .update(claims)
       .set({
         status: newStatus,
-        lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(claims.claimId, claimId))
@@ -134,7 +133,7 @@ export const updateClaimStatus = async (
     await db.insert(claimUpdates).values({
       claimId,
       updateType: 'status_change',
-      content: notes || `Status changed to ${newStatus}`,
+      message: notes || `Status changed to ${newStatus}`,
       createdBy: updatedBy,
     });
     
@@ -159,7 +158,6 @@ export const assignClaim = async (
       .set({
         assignedTo,
         assignedAt: new Date(),
-        lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(claims.claimId, claimId))
@@ -169,7 +167,7 @@ export const assignClaim = async (
     await db.insert(claimUpdates).values({
       claimId,
       updateType: 'assignment',
-      content: `Claim assigned to user ${assignedTo}`,
+      message: `Claim assigned to user ${assignedTo}`,
       createdBy: assignedBy,
     });
     
@@ -284,7 +282,7 @@ export const getRecentClaimUpdates = async (claimId: string) => {
  */
 export const addClaimUpdate = async (
   claimId: string,
-  content: string,
+  message: string,
   createdBy: string,
   updateType: string = 'note'
 ) => {
@@ -294,7 +292,7 @@ export const addClaimUpdate = async (
       .values({
         claimId,
         updateType,
-        content,
+        message,
         createdBy,
       })
       .returning();
@@ -303,7 +301,6 @@ export const addClaimUpdate = async (
     await db
       .update(claims)
       .set({
-        lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(claims.claimId, claimId));

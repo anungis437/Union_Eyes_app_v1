@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import { 
   Clipboard, 
   Clock, 
@@ -66,7 +67,7 @@ interface DbClaim {
   metadata: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
-  lastActivityAt: Date;
+  closedAt: Date | null;
 }
 
 interface Case {
@@ -147,7 +148,7 @@ const mapDbClaimToCase = (claim: DbClaim): Case => ({
   priority: mapDbPriorityToUi(claim.priority),
   category: claimTypeLabels[claim.claimType] || claim.claimType,
   submittedDate: new Date(claim.createdAt).toISOString().split('T')[0],
-  lastUpdate: new Date(claim.lastActivityAt).toISOString().split('T')[0],
+  lastUpdate: new Date(claim.updatedAt).toISOString().split('T')[0],
   memberName: claim.isAnonymous ? "Anonymous Member" : "Member", // TODO: Fetch actual member name
   memberEmail: claim.isAnonymous ? "" : "member@union.com", // TODO: Fetch actual member email
   memberPhone: claim.isAnonymous ? "" : "", // TODO: Fetch actual member phone
@@ -950,10 +951,10 @@ export default function WorkbenchPage() {
                                     Assign to Me
                                   </button>
                                 )}
-                                <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <Link href={`/dashboard/claims/${caseItem.id}`} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                   <Eye className="w-5 h-5" />
                                   View Full Details
-                                </button>
+                                </Link>
                                 <button className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                                   <Phone className="w-5 h-5" />
                                   Contact Member

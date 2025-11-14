@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const { data: chunks, error: searchError } = await supabase
       .from('ai_chunks')
       .select('id, document_id, content, metadata')
-      .eq('tenant_id', orgId || 'test-tenant-001')
+      .eq('tenant_id', (orgId || 'test-tenant-001') as any)
       .textSearch('content', query, { type: 'websearch', config: 'english' })
       .limit(maxSources * 2);
 

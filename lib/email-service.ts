@@ -6,8 +6,14 @@
 
 import { Resend } from 'resend';
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialize Resend client to avoid errors during build
+let resend: Resend | null = null;
+function getResendClient() {
+  if (!resend && process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 // Email configuration
 const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@unionclaims.com';
@@ -38,7 +44,8 @@ export async function sendEmail({
 }: SendEmailOptions): Promise<{ success: boolean; error?: string; messageId?: string }> {
   try {
     // Check if email service is configured
-    if (!process.env.RESEND_API_KEY) {
+    const client = getResendClient();
+    if (!client) {
       console.warn('RESEND_API_KEY not configured. Email will not be sent.');
       return {
         success: false,
@@ -47,7 +54,7 @@ export async function sendEmail({
     }
 
     // Send email
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await client.emails.send({
       from: FROM_EMAIL,
       to: to.map(recipient => `${recipient.name} <${recipient.email}>`),
       subject,

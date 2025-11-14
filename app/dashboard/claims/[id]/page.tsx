@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, MapPin, User, FileText, Clock, CheckCircle, AlertC
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/file-upload';
 import { Button } from '@/components/ui/button';
+import { StatusUpdate } from '@/components/status-update';
 import Link from 'next/link';
 
 interface Claim {
@@ -69,6 +70,7 @@ export default function ClaimDetailPage() {
   const [claim, setClaim] = useState<Claim | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchClaim = async () => {
@@ -82,6 +84,17 @@ export default function ClaimDetailPage() {
         
         const data = await response.json();
         setClaim(data.claim);
+        
+        // Fetch workflow history
+        try {
+          const historyResponse = await fetch(`/api/claims/${claimId}/workflow/history`);
+          if (historyResponse.ok) {
+            const historyData = await historyResponse.json();
+            setWorkflowHistory(historyData.history || []);
+          }
+        } catch (histErr) {
+          console.error('Error fetching workflow history:', histErr);
+        }
       } catch (err) {
         console.error('Error fetching claim:', err);
         setError(err instanceof Error ? err.message : 'Failed to load claim');
@@ -112,6 +125,25 @@ export default function ClaimDetailPage() {
         ...claim,
         attachments: (claim.attachments || []).filter((a: any) => a.url !== url),
       });
+    }
+  };
+
+  const handleStatusUpdated = async () => {
+    // Refetch claim and history after status update
+    try {
+      const response = await fetch(`/api/claims/${claimId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setClaim(data.claim);
+      }
+      
+      const historyResponse = await fetch(`/api/claims/${claimId}/workflow/history`);
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        setWorkflowHistory(historyData.history || []);
+      }
+    } catch (err) {
+      console.error('Error refreshing claim:', err);
     }
   };
 
@@ -158,7 +190,7 @@ export default function ClaimDetailPage() {
           <Link href="/dashboard/claims">
             <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors">
               <ArrowLeft size={20} />
-              Back to My Claims
+              Back to Assigned Claims
             </button>
           </Link>
           
@@ -196,12 +228,12 @@ export default function ClaimDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Description</label>
+                    <label className="text-sm font-medium text-gray-500">Incident Description</label>
                     <p className="text-gray-900 mt-1">{claim.description}</p>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Desired Outcome</label>
+                    <label className="text-sm font-medium text-gray-500">Member&apos;s Desired Outcome</label>
                     <p className="text-gray-900 mt-1">{claim.desiredOutcome}</p>
                   </div>
 
@@ -240,11 +272,82 @@ export default function ClaimDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Incident Information */}
+            {/* Status Update */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
+            >
+              <StatusUpdate
+                claimId={claim.claimId}
+                currentStatus={claim.status}
+                onStatusUpdated={handleStatusUpdated}
+              />
+            </motion.div>
+
+            {/* Workflow History */}
+            {workflowHistory.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Status History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {workflowHistory.map((update: any, index: number) => (
+                        <div key={update.id || index} className="border-l-2 border-gray-200 pl-4 pb-4 last:pb-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-900">
+                              {statusLabels[update.newStatus]?.label || update.newStatus}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(update.changedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {update.previousStatus && (
+                            <p className="text-xs text-gray-500 mb-1">
+                              From: {statusLabels[update.previousStatus]?.label || update.previousStatus}
+                            </p>
+                          )}
+                          {update.notes && (
+                            <p className="text-sm text-gray-600 mt-1">{update.notes}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Assignment Information */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <Card className="bg-green-50 border-green-200">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+                    <CheckCircle size={18} />
+                    Assigned to You
+                  </h3>
+                  <p className="text-sm text-green-800">
+                    You are the assigned Labor Relations Officer for this claim. Update the status and add notes as the case progresses.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Incident Information */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
             >
               <Card>
                 <CardHeader>
@@ -270,7 +373,7 @@ export default function ClaimDetailPage() {
                   <div className="flex items-start gap-3">
                     <Clock size={18} className="text-gray-400 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Submitted</p>
+                      <p className="text-sm font-medium text-gray-500">Submitted by Member</p>
                       <p className="text-gray-900">{new Date(claim.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
@@ -290,22 +393,22 @@ export default function ClaimDetailPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.5 }}
             >
               <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
                     <CheckCircle size={18} />
-                    What&apos;s Next?
+                    Case Status
                   </h3>
                   <p className="text-sm text-blue-800">
-                    {claim.status === 'submitted' && 'Your claim has been submitted and is awaiting review by a union steward.'}
-                    {claim.status === 'under_review' && 'A union steward is reviewing your claim and will contact you soon.'}
-                    {claim.status === 'investigation' && 'Your claim is being investigated. You may be contacted for additional information.'}
-                    {claim.status === 'pending_documentation' && 'Additional documentation is needed. Please upload any requested files above.'}
-                    {claim.status === 'resolved' && 'Your claim has been resolved. Check your email for details.'}
+                    {claim.status === 'submitted' && 'This claim has been submitted and is awaiting initial review.'}
+                    {claim.status === 'under_review' && 'This claim is currently under review. Contact the member if additional information is needed.'}
+                    {claim.status === 'investigation' && 'This claim is under investigation. The member may be contacted for additional information.'}
+                    {claim.status === 'pending_documentation' && 'Additional documentation is needed from the member.'}
+                    {claim.status === 'resolved' && 'This claim has been resolved.'}
                     {!['submitted', 'under_review', 'investigation', 'pending_documentation', 'resolved'].includes(claim.status) && 
-                      'You will be notified of any updates to your claim.'}
+                      'This claim is assigned to you for handling.'}
                   </p>
                 </CardContent>
               </Card>

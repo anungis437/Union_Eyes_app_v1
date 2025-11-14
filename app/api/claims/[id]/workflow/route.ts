@@ -20,13 +20,13 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
 
     // Get claim
     const [claim] = await db
       .select()
       .from(claims)
-      .where(eq(claims.claimId, claimId))
+      .where(eq(claims.claimNumber, claimNumber))
       .limit(1);
 
     if (!claim) {

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/db";
 import { cbaClause, clauseComparisons } from "@/db/schema";
 import { inArray } from "drizzle-orm";
+import { getTenantIdForUser } from "@/lib/tenant-utils";
 
 /**
  * POST /api/cba/clauses/compare
@@ -62,13 +63,16 @@ export async function POST(request: NextRequest) {
     const differences: string[] = [];
     const recommendations: string[] = [];
 
+    // Get tenant ID for the authenticated user
+    const tenantId = await getTenantIdForUser(userId);
+
     // Basic text comparison (simplified)
     const contentAnalysis = analyzeClauseContent(clauses, analysisType);
     
     const comparison = {
       comparisonName: `${analysisType} comparison - ${new Date().toISOString()}`,
       clauseType: clauses[0].clauseType, // Use first clause's type
-      tenantId: "00000000-0000-0000-0000-000000000000", // TODO: Get from user context
+      tenantId,
       clauseIds,
       analysisResults: {
         similarities: contentAnalysis.similarities.map(s => ({ description: s, clauseIds })),

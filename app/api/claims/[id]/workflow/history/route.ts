@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/db";
-import { claimUpdatesTable, claimsTable, membersTable } from "@/db/schema";
+import { db } from "@/db/db";
+import { claimUpdates, claims, profilesTable } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 
 export async function GET(
@@ -14,18 +14,18 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
 
     // Get claim with member info
     const claim = await db
       .select({
-        id: claimsTable.id,
-        tenantId: claimsTable.tenantId,
-        memberId: claimsTable.memberId,
-        assignedTo: claimsTable.assignedTo,
+        id: claims.claimId,
+        tenantId: claims.tenantId,
+        memberId: claims.memberId,
+        assignedTo: claims.assignedTo,
       })
-      .from(claimsTable)
-      .where(eq(claimsTable.id, claimId))
+      .from(claims)
+      .where(eq(claims.claimNumber, claimNumber))
       .limit(1);
 
     if (claim.length === 0) {
@@ -36,23 +36,23 @@ export async function GET(
 
     // Get member info to check ownership
     const member = await db
-      .select({ clerkUserId: membersTable.clerkUserId })
-      .from(membersTable)
-      .where(eq(membersTable.id, claimData.memberId))
+      .select({ userId: profilesTable.userId })
+      .from(profilesTable)
+      .where(eq(profilesTable.userId, claimData.memberId))
       .limit(1);
 
-    const isOwner = member.length > 0 && member[0].clerkUserId === userId;
+    const isOwner = member.length > 0 && member[0].userId === userId;
 
     // Check if user is assigned steward
     let isSteward = false;
     if (claimData.assignedTo) {
       const steward = await db
-        .select({ clerkUserId: membersTable.clerkUserId })
-        .from(membersTable)
-        .where(eq(membersTable.id, claimData.assignedTo))
+        .select({ userId: profilesTable.userId })
+        .from(profilesTable)
+        .where(eq(profilesTable.userId, claimData.assignedTo))
         .limit(1);
 
-      isSteward = steward.length > 0 && steward[0].clerkUserId === userId;
+      isSteward = steward.length > 0 && steward[0].userId === userId;
     }
 
     // User must be owner or assigned steward
@@ -60,34 +60,30 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Get workflow history with user names
+    // Get workflow history with user emails
     const historyRecords = await db
       .select({
-        id: claimUpdatesTable.id,
-        previousStatus: claimUpdatesTable.previousStatus,
-        newStatus: claimUpdatesTable.newStatus,
-        notes: claimUpdatesTable.notes,
-        changedBy: claimUpdatesTable.changedBy,
-        createdAt: claimUpdatesTable.createdAt,
-        changedByName: membersTable.fullName,
-        changedByEmail: membersTable.email,
+        id: claimUpdates.updateId,
+        updateType: claimUpdates.updateType,
+        message: claimUpdates.message,
+        createdBy: claimUpdates.createdBy,
+        createdAt: claimUpdates.createdAt,
+        createdByEmail: profilesTable.email,
       })
-      .from(claimUpdatesTable)
+      .from(claimUpdates)
       .leftJoin(
-        membersTable,
-        eq(claimUpdatesTable.changedBy, membersTable.id)
+        profilesTable,
+        eq(claimUpdates.createdBy, profilesTable.userId)
       )
-      .where(eq(claimUpdatesTable.claimId, claimId))
-      .orderBy(desc(claimUpdatesTable.createdAt));
+      .where(eq(claimUpdates.claimId, claimData.id))
+      .orderBy(desc(claimUpdates.createdAt));
 
     const history = historyRecords.map((record) => ({
       id: record.id,
-      previousStatus: record.previousStatus,
-      newStatus: record.newStatus,
-      notes: record.notes,
-      changedBy: record.changedBy,
-      changedByName: record.changedByName || "Unknown User",
-      changedByEmail: record.changedByEmail,
+      updateType: record.updateType,
+      message: record.message,
+      createdBy: record.createdBy,
+      createdByEmail: record.createdByEmail || "Unknown",
       createdAt: record.createdAt,
     }));
 

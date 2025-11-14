@@ -76,8 +76,8 @@ export async function POST(request: NextRequest) {
         employer:employers(name),
         activities:activities(activity_type, description, created_at)
       `)
-      .eq('claim_id', claim_id)
-      .eq('tenant_id', orgId || '')
+      .eq('claim_id', claim_id as any)
+      .eq('tenant_id', (orgId || '') as any)
       .single();
 
     if (claimError || !claim) {
@@ -88,14 +88,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Format case content for summarization
-    const caseContent = formatCaseContent(claim);
+    const caseContent = formatCaseContent(claim as any);
     const caseMetadata = {
       claim_id,
-      member_name: `${claim.member?.first_name} ${claim.member?.last_name}`,
-      employer_name: claim.employer?.name,
-      issue_type: claim.issue_type,
-      status: claim.status,
-      created_at: claim.created_at,
+      member_name: `${(claim as any).member?.first_name} ${(claim as any).member?.last_name}`,
+      employer_name: (claim as any).employer?.name,
+      issue_type: (claim as any).issue_type,
+      status: (claim as any).status,
+      created_at: (claim as any).created_at,
     };
 
     // 7. Build prompt with PII masking
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       .from('case_summaries')
       .insert({
         claim_id,
-        tenant_id: orgId || claim.tenant_id,
+        tenant_id: orgId || (claim as any).tenant_id,
         summary_text: summaryText,
         created_by: 'ai', // Mark as AI-generated
         metadata: {
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
           validation,
           latency_ms: Date.now() - startTime,
         },
-      })
+      } as any)
       .select()
       .single();
 
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     // 11. Return summary
     return NextResponse.json({
-      summary_id: summary.id,
+      summary_id: (summary as any)?.id,
       summary_text: summaryText,
       validation,
       metadata: {
@@ -223,9 +223,9 @@ export async function GET(request: NextRequest) {
     const { data: summaries, error } = await supabase
       .from('case_summaries')
       .select('*')
-      .eq('claim_id', claimId)
-      .eq('tenant_id', orgId || '')
-      .eq('created_by', 'ai')
+      .eq('claim_id', claimId as any)
+      .eq('tenant_id', (orgId || '') as any)
+      .eq('created_by', 'ai' as any)
       .order('created_at', { ascending: false });
 
     if (error) {

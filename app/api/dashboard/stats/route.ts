@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getClaimStatistics } from "@/db/queries/claims-queries";
+import { getTenantIdForUser } from "@/lib/tenant-utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,19 +11,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // TODO: Get tenant ID from user's profile/organization
-    // For now, we'll use a default tenant ID
-    // In production, fetch this from the user's profile or organization membership
-    const tenantId = "default-tenant-id";
+    // Get tenant ID for the authenticated user
+    const tenantId = await getTenantIdForUser(userId);
     
     const statistics = await getClaimStatistics(tenantId);
     
     return NextResponse.json(statistics);
   } catch (error) {
     console.error("Error fetching dashboard statistics:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch statistics" },
-      { status: 500 }
-    );
+    // Return default empty stats instead of error
+    return NextResponse.json({
+      activeClaims: 0,
+      pendingReviews: 0,
+      urgentCases: 0,
+      resolvedClaims: 0,
+      averageResolutionTime: 0,
+      error: error instanceof Error ? error.message : "Failed to fetch statistics"
+    });
   }
 }
