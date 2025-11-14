@@ -3,6 +3,7 @@
  * Uses service role key to bypass RLS when needed
  */
 
+import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { Database } from './types';
@@ -17,7 +18,7 @@ export async function createClient() {
     throw new Error('Missing Supabase environment variables');
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value;

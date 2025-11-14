@@ -1,9 +1,10 @@
 /**
- * Root page - redirects to dashboard if authenticated, otherwise shows marketing page
+ * Root page - redirects to dashboard if authenticated
+ * Note: This is a minimal redirect page. The actual marketing page is at app/(marketing)/page.tsx
+ * which Next.js serves at the root path when there's a (marketing) route group
  */
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import MarketingPage from "./(marketing)/page";
 
 export default async function RootPage() {
   const { userId } = auth();
@@ -13,6 +14,6 @@ export default async function RootPage() {
     redirect("/dashboard");
   }
   
-  // Otherwise, show marketing page
-  return <MarketingPage />;
+  // Otherwise redirect to marketing page
+  redirect("/marketing");
 }

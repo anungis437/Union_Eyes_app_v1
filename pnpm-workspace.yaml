@@ -1,2 +1,7 @@
 packages:
-  - 'packages/*'
+  - packages/*
+
+ignoredBuiltDependencies:
+  - '@clerk/shared'
+  - esbuild
+  - unrs-resolver

@@ -2,10 +2,12 @@
  * Claim Notification Service
  * 
  * Handles sending email notifications for claim status changes
+ * @server-only
  */
 
+import 'server-only';
 import { sendEmail, EmailRecipient } from './email-service';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { render } from '@react-email/render';
 import { ClaimStatusNotificationEmail } from './email-templates';
 import { db } from '../db/db';
 import { claims } from '../db/schema/claims-schema';
@@ -147,7 +149,7 @@ async function sendClaimNotificationEmail(
     }
 
     // Generate email HTML (deadline tracking not yet implemented)
-    const emailHtml = renderToStaticMarkup(
+    const emailHtml = await render(
       React.createElement(ClaimStatusNotificationEmail, {
         claimId: data.claimId,
         claimTitle: data.claimTitle,

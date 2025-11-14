@@ -53,7 +53,7 @@ export function isValidTransition(
   newStatus: ClaimStatus
 ): boolean {
   const allowedTransitions = STATUS_TRANSITIONS[currentStatus];
-  return allowedTransitions.includes(newStatus as any);
+  return (allowedTransitions as readonly ClaimStatus[]).includes(newStatus);
 }
 
 /**
@@ -111,7 +111,7 @@ export function getDaysUntilDeadline(
  * Update claim status with validation and audit trail
  */
 export async function updateClaimStatus(
-  claimId: string,
+  claimNumber: string,
   newStatus: ClaimStatus,
   userId: string,
   notes?: string
@@ -121,7 +121,7 @@ export async function updateClaimStatus(
     const [claim] = await db
       .select()
       .from(claims)
-      .where(eq(claims.claimId, claimId))
+      .where(eq(claims.claimNumber, claimNumber))
       .limit(1);
 
     if (!claim) {
@@ -142,13 +142,9 @@ export async function updateClaimStatus(
     const updateData: any = {
       status: newStatus,
       updatedAt: new Date(),
-      lastActivityAt: new Date(),
     };
 
-    // Set resolution/closed timestamps
-    if (newStatus === "resolved" && !claim.resolvedAt) {
-      updateData.resolvedAt = new Date();
-    }
+    // Set closed timestamp
     if (newStatus === "closed" && !claim.closedAt) {
       updateData.closedAt = new Date();
     }
@@ -170,12 +166,12 @@ export async function updateClaimStatus(
     const [updatedClaim] = await db
       .update(claims)
       .set(updateData)
-      .where(eq(claims.claimId, claimId))
+      .where(eq(claims.claimId, claim.claimId))
       .returning();
 
     // Create audit trail entry
     await db.insert(claimUpdates).values({
-      claimId,
+      claimId: claim.claimId,
       updateType: "status_change",
       message: notes || `Status changed from '${currentStatus}' to '${newStatus}'`,
       createdBy: userId,
@@ -188,7 +184,7 @@ export async function updateClaimStatus(
     });
 
     // Send email notification (async, don't block on email sending)
-    sendClaimStatusNotification(claimId, currentStatus, newStatus, notes).catch((error) => {
+    sendClaimStatusNotification(claim.claimId, currentStatus, newStatus, notes).catch((error) => {
       console.error('Failed to send email notification:', error);
       // Don't fail the status update if email fails
     });
@@ -230,7 +226,6 @@ export async function assignClaim(
         assignedAt: new Date(),
         status: "assigned",
         updatedAt: new Date(),
-        lastActivityAt: new Date(),
         progress: 30,
       })
       .where(eq(claims.claimId, claimId));
@@ -270,7 +265,10 @@ export async function getOverdueClaims(): Promise<any[]> {
       if (claim.status === "closed") return false;
       
       // Use last activity date or created date
-      const statusDate = claim.lastActivityAt || claim.createdAt;
+      const statusDate = claim.updatedAt || claim.createdAt;
+      
+      // Skip if no date available
+      if (!statusDate) return false;
       
       return isClaimOverdue(
         claim.status as ClaimStatus,
@@ -296,7 +294,11 @@ export async function getClaimsApproachingDeadline(): Promise<any[]> {
     const approachingDeadline = allClaims.filter((claim) => {
       if (claim.status === "closed") return false;
       
-      const statusDate = claim.lastActivityAt || claim.createdAt;
+      const statusDate = claim.updatedAt || claim.createdAt;
+      
+      // Skip if no date available
+      if (!statusDate) return false;
+      
       const daysRemaining = getDaysUntilDeadline(
         claim.status as ClaimStatus,
         claim.priority as ClaimPriority,
@@ -317,15 +319,26 @@ export async function getClaimsApproachingDeadline(): Promise<any[]> {
  * Add internal note to claim
  */
 export async function addClaimNote(
-  claimId: string,
+  claimNumber: string,
   message: string,
   userId: string,
   isInternal: boolean = true
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Get claim to get UUID
+    const [claim] = await db
+      .select()
+      .from(claims)
+      .where(eq(claims.claimNumber, claimNumber))
+      .limit(1);
+
+    if (!claim) {
+      return { success: false, error: "Claim not found" };
+    }
+
     // Create note entry
     await db.insert(claimUpdates).values({
-      claimId,
+      claimId: claim.claimId,
       updateType: "note",
       message,
       createdBy: userId,
@@ -337,10 +350,9 @@ export async function addClaimNote(
     await db
       .update(claims)
       .set({
-        lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(claims.claimId, claimId));
+      .where(eq(claims.claimId, claim.claimId));
 
     return { success: true };
   } catch (error) {
@@ -358,7 +370,7 @@ export async function addClaimNote(
 export function getClaimWorkflowStatus(claim: any) {
   const status = claim.status as ClaimStatus;
   const priority = claim.priority as ClaimPriority;
-  const statusDate = claim.lastActivityAt || claim.createdAt;
+  const statusDate = claim.updatedAt || claim.createdAt;
 
   const deadline = calculateDeadline(status, priority, statusDate);
   const daysRemaining = getDaysUntilDeadline(status, priority, statusDate);

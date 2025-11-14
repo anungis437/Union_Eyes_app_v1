@@ -19,23 +19,23 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
 
-    // Fetch claim
+    // Fetch claim by claim number
     const [claim] = await db
       .select()
       .from(claims)
-      .where(eq(claims.claimId, claimId));
+      .where(eq(claims.claimNumber, claimNumber));
 
     if (!claim) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
 
-    // Fetch claim updates
+    // Fetch claim updates using the claim's UUID
     const updates = await db
       .select()
       .from(claimUpdates)
-      .where(eq(claimUpdates.claimId, claimId))
+      .where(eq(claimUpdates.claimId, claim.claimId))
       .orderBy(desc(claimUpdates.createdAt));
 
     return NextResponse.json({
@@ -66,14 +66,14 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
     const body = await request.json();
 
     // Check if claim exists
     const [existingClaim] = await db
       .select()
       .from(claims)
-      .where(eq(claims.claimId, claimId));
+      .where(eq(claims.claimNumber, claimNumber));
 
     if (!existingClaim) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
@@ -86,7 +86,7 @@ export async function PATCH(
         ...body,
         updatedAt: new Date(),
       })
-      .where(eq(claims.claimId, claimId))
+      .where(eq(claims.claimId, existingClaim.claimId))
       .returning();
 
     return NextResponse.json({
@@ -117,13 +117,13 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
 
     // Check if claim exists
     const [existingClaim] = await db
       .select()
       .from(claims)
-      .where(eq(claims.claimId, claimId));
+      .where(eq(claims.claimNumber, claimNumber));
 
     if (!existingClaim) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
@@ -137,7 +137,7 @@ export async function DELETE(
         closedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(claims.claimId, claimId));
+      .where(eq(claims.claimId, existingClaim.claimId));
 
     return NextResponse.json({
       message: "Claim deleted successfully",
