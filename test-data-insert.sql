@@ -1,5 +1,8 @@
 -- Test data for AI search functionality
 -- Run with: psql "DATABASE_URL" -f test-data-insert.sql
+-- 
+-- NOTE: This file contains PostgreSQL-specific syntax (::jsonb, LIMIT, etc.)
+-- MSSQL linter errors can be ignored - this is PostgreSQL only
 
 -- Insert test legal documents
 INSERT INTO ai_documents (tenant_id, source_type, title, content, metadata) VALUES
