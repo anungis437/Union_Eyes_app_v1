@@ -122,7 +122,7 @@
     
     <div class="info">
         <strong>⚠️ Authentication Required:</strong> You must be logged into the Union Eyes application for these requests to work. 
-        Open <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a> in another tab first, then return here.
+        Open <a href="http://localhost:3000/login" target="_blank" rel="noopener noreferrer">http://localhost:3000/login</a> in another tab first, then return here.
     </div>
 
     <!-- Feedback POST -->
@@ -131,12 +131,12 @@
         <div class="endpoint">Submit feedback for an AI query</div>
         
         <div class="form-group">
-            <label>Query ID:</label>
+            <label for="feedback-query-id">Query ID:</label>
             <input type="text" id="feedback-query-id" value="7ba567db-5c19-4f61-b492-385ca10d8ba0" />
         </div>
         
         <div class="form-group">
-            <label>Rating:</label>
+            <label for="feedback-rating">Rating:</label>
             <select id="feedback-rating">
                 <option value="good">Good</option>
                 <option value="bad">Bad</option>
@@ -144,7 +144,7 @@
         </div>
         
         <div class="form-group">
-            <label>Comment (optional):</label>
+            <label for="feedback-comment">Comment (optional):</label>
             <input type="text" id="feedback-comment" value="Testing from HTML interface" />
         </div>
         
@@ -160,7 +160,7 @@
         <div class="endpoint">Retrieve feedback for a query</div>
         
         <div class="form-group">
-            <label>Query ID:</label>
+            <label for="get-feedback-query-id">Query ID:</label>
             <input type="text" id="get-feedback-query-id" value="7ba567db-5c19-4f61-b492-385ca10d8ba0" />
         </div>
         
@@ -180,12 +180,12 @@
         </div>
         
         <div class="form-group">
-            <label>Search Query:</label>
+            <label for="search-query">Search Query:</label>
             <input type="text" id="search-query" value="What are employee rights regarding union activities?" />
         </div>
         
         <div class="form-group">
-            <label>Max Results:</label>
+            <label for="search-max-results">Max Results:</label>
             <input type="number" id="search-max-results" value="5" min="1" max="20" />
         </div>
         
