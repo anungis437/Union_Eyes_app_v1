@@ -1,26 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/db";
 import { cbaClause, clauseComparisons } from "@/db/schema";
-import { inArray } from "drizzle-orm";
-import { getTenantIdForUser } from "@/lib/tenant-utils";
+import { inArray, eq, and } from "drizzle-orm";
+import { withTenantAuth } from "@/lib/tenant-middleware";
 
 /**
  * POST /api/cba/clauses/compare
  * Compare clauses across multiple CBAs
+ * Protected by tenant middleware - only compares clauses within the current tenant
  * 
  * Body: {
  *   clauseIds: string[],
  *   analysisType: 'wages' | 'benefits' | 'working_conditions' | 'general'
  * }
  */
-export async function POST(request: NextRequest) {
+export const POST = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { tenantId, userId } = context;
 
     const body = await request.json();
     const { clauseIds, analysisType = "general" } = body;
@@ -32,24 +28,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch all clauses
+    // Fetch all clauses - ensure they belong to the current tenant
     const clauses = await db
       .select()
       .from(cbaClause)
-      .where(inArray(cbaClause.id, clauseIds));
+      .where(
+        and(
+          inArray(cbaClause.id, clauseIds),
+          eq(cbaClause.tenantId, tenantId)
+        )
+      );
 
     if (clauses.length !== clauseIds.length) {
       return NextResponse.json(
-        { error: "Some clauses not found" },
+        { error: "Some clauses not found or don't belong to your organization" },
         { status: 404 }
       );
     }
 
-    // Check if comparison already exists
+    // Check if comparison already exists for this tenant
     const existingComparison = await db
       .select()
       .from(clauseComparisons)
-      .where(inArray(clauseComparisons.id, clauseIds))
+      .where(
+        and(
+          inArray(clauseComparisons.id, clauseIds),
+          eq(clauseComparisons.tenantId, tenantId)
+        )
+      )
       .limit(1);
 
     if (existingComparison.length > 0) {
@@ -62,9 +68,6 @@ export async function POST(request: NextRequest) {
     const similarities: string[] = [];
     const differences: string[] = [];
     const recommendations: string[] = [];
-
-    // Get tenant ID for the authenticated user
-    const tenantId = await getTenantIdForUser(userId);
 
     // Basic text comparison (simplified)
     const contentAnalysis = analyzeClauseContent(clauses, analysisType);
@@ -99,7 +102,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Analyze clause content and extract insights
@@ -160,16 +163,13 @@ function analyzeClauseContent(clauses: any[], analysisType: string) {
 }
 
 /**
- * GET /api/cba/clauses/compare/[id]
- * Retrieve a previously saved comparison
+ * GET /api/cba/clauses/compare
+ * Retrieve previously saved comparisons for the current tenant
+ * Protected by tenant middleware
  */
-export async function GET(request: NextRequest) {
+export const GET = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { tenantId } = context;
 
     const { searchParams } = new URL(request.url);
     const clauseIds = searchParams.get("clauseIds")?.split(",") || [];
@@ -181,11 +181,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Find comparisons involving these clauses
+    // Find comparisons involving these clauses, filtered by tenant
     const comparisons = await db
       .select()
       .from(clauseComparisons)
-      .where(inArray(clauseComparisons.id, clauseIds))
+      .where(
+        and(
+          inArray(clauseComparisons.id, clauseIds),
+          eq(clauseComparisons.tenantId, tenantId)
+        )
+      )
       .limit(10);
 
     return NextResponse.json({ comparisons });
@@ -196,4 +201,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

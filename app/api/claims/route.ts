@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/db";
 import { claims } from "@/db/schema/claims-schema";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
-import { getTenantIdForUser } from "@/lib/tenant-utils";
+import { withTenantAuth } from "@/lib/tenant-middleware";
 
 /**
  * GET /api/claims
  * Fetch all claims with optional filtering
+ * Protected by tenant middleware - only returns claims for the user's current tenant
  */
-export async function GET(request: NextRequest) {
+export const GET = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { tenantId, userId } = context;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
@@ -25,8 +21,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "100");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    // Build query conditions
-    const conditions = [];
+    // Build query conditions - always filter by tenant
+    const conditions = [eq(claims.tenantId, tenantId)];
     
     if (status && status !== "all") {
       conditions.push(eq(claims.status, status as any));
@@ -49,20 +45,20 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(claims.memberId, memberId));
     }
 
-    // Execute query
+    // Execute query - tenant filter is always applied via conditions
     const result = await db
       .select()
       .from(claims)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .where(and(...conditions))
       .orderBy(desc(claims.createdAt))
       .limit(limit)
       .offset(offset);
 
-    // Count total for pagination
+    // Count total for pagination - tenant filter is always applied
     const totalResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(claims)
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
+      .where(and(...conditions));
 
     const total = totalResult[0]?.count || 0;
 
@@ -93,19 +89,16 @@ export async function GET(request: NextRequest) {
       error: error instanceof Error ? error.message : "Failed to fetch claims"
     });
   }
-}
+});
 
 /**
  * POST /api/claims
  * Create a new claim
+ * Protected by tenant middleware - claim will be created in the user's current tenant
  */
-export async function POST(request: NextRequest) {
+export const POST = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { tenantId, userId } = context;
 
     const body = await request.json();
     
@@ -119,9 +112,6 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-
-    // Get tenant ID for the authenticated user
-    const tenantId = await getTenantIdForUser(userId);
 
     // Generate claim number
     const year = new Date().getFullYear();
@@ -167,4 +157,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

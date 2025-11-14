@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { getClaimStatistics } from "@/db/queries/claims-queries";
-import { getTenantIdForUser } from "@/lib/tenant-utils";
+import { withTenantAuth } from "@/lib/tenant-middleware";
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/dashboard/stats
+ * Fetch dashboard statistics for the current tenant
+ * Protected by tenant middleware
+ */
+export const GET = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    // Get tenant ID for the authenticated user
-    const tenantId = await getTenantIdForUser(userId);
+    const { tenantId } = context;
     
     const statistics = await getClaimStatistics(tenantId);
     
@@ -29,4 +26,4 @@ export async function GET(request: NextRequest) {
       error: error instanceof Error ? error.message : "Failed to fetch statistics"
     });
   }
-}
+});
