@@ -24,6 +24,7 @@ import {
   Upload,
   RefreshCw,
   Info,
+  Sparkles,
 } from "lucide-react";
 
 type AdminSection =
@@ -33,7 +34,8 @@ type AdminSection =
   | "system"
   | "security"
   | "reports"
-  | "database";
+  | "database"
+  | "ai-testing";
 
 interface LocalSection {
   id: string;
@@ -202,6 +204,12 @@ export default function AdminPage() {
       label: "Database",
       icon: <Database className="w-5 h-5" />,
       color: "bg-pink-100 text-pink-700",
+    },
+    {
+      id: "ai-testing",
+      label: "AI Testing",
+      icon: <Sparkles className="w-5 h-5" />,
+      color: "bg-purple-100 text-purple-700",
     },
   ];
 
@@ -727,6 +735,256 @@ export default function AdminPage() {
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* AI Testing Section */}
+        {activeSection === "ai-testing" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <Card className="p-6 bg-white/80 backdrop-blur-sm border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">AI Endpoints Testing</h2>
+                  <p className="text-sm text-gray-600">Test AI features with your authentication</p>
+                </div>
+              </div>
+
+              {/* Test Feedback POST */}
+              <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">1. Submit Feedback</h3>
+                <p className="text-sm text-gray-600 mb-4">POST /api/ai/feedback</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Query ID</label>
+                    <input
+                      type="text"
+                      id="feedback-query-id"
+                      defaultValue="7ba567db-5c19-4f61-b492-385ca10d8ba0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                    <select
+                      id="feedback-rating"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="good">Good</option>
+                      <option value="bad">Bad</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Comment (optional)</label>
+                    <input
+                      type="text"
+                      id="feedback-comment"
+                      defaultValue="Testing from admin panel"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={async () => {
+                      const queryId = (document.getElementById('feedback-query-id') as HTMLInputElement).value;
+                      const rating = (document.getElementById('feedback-rating') as HTMLSelectElement).value;
+                      const comment = (document.getElementById('feedback-comment') as HTMLInputElement).value;
+                      const responseDiv = document.getElementById('feedback-response');
+                      
+                      if (responseDiv) {
+                        responseDiv.style.display = 'block';
+                        responseDiv.className = 'mt-4 p-4 bg-gray-100 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                        responseDiv.textContent = 'Submitting...';
+                      }
+                      
+                      try {
+                        const response = await fetch('/api/ai/feedback', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ query_id: queryId, rating, comment: comment || undefined })
+                        });
+                        const data = await response.json();
+                        
+                        if (responseDiv) {
+                          if (response.ok) {
+                            responseDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                            responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                          } else {
+                            responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                            responseDiv.textContent = `❌ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                          }
+                        }
+                      } catch (error) {
+                        if (responseDiv) {
+                          responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                          responseDiv.textContent = `❌ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                  >
+                    Submit Feedback
+                  </button>
+                  
+                  <div id="feedback-response" className="hidden mt-4 p-4 bg-gray-100 rounded-lg font-mono text-xs overflow-auto max-h-64"></div>
+                </div>
+              </div>
+
+              {/* Test Feedback GET */}
+              <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">2. Get Feedback</h3>
+                <p className="text-sm text-gray-600 mb-4">GET /api/ai/feedback?query_id=...</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Query ID</label>
+                    <input
+                      type="text"
+                      id="get-feedback-query-id"
+                      defaultValue="7ba567db-5c19-4f61-b492-385ca10d8ba0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={async () => {
+                      const queryId = (document.getElementById('get-feedback-query-id') as HTMLInputElement).value;
+                      const responseDiv = document.getElementById('get-feedback-response');
+                      
+                      if (responseDiv) {
+                        responseDiv.style.display = 'block';
+                        responseDiv.className = 'mt-4 p-4 bg-gray-100 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                        responseDiv.textContent = 'Loading...';
+                      }
+                      
+                      try {
+                        const response = await fetch(`/api/ai/feedback?query_id=${queryId}`, {
+                          method: 'GET',
+                          credentials: 'include'
+                        });
+                        const data = await response.json();
+                        
+                        if (responseDiv) {
+                          if (response.ok) {
+                            responseDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                            responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                          } else {
+                            responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                            responseDiv.textContent = `❌ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                          }
+                        }
+                      } catch (error) {
+                        if (responseDiv) {
+                          responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                          responseDiv.textContent = `❌ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                  >
+                    Get Feedback
+                  </button>
+                  
+                  <div id="get-feedback-response" className="hidden mt-4 p-4 bg-gray-100 rounded-lg font-mono text-xs overflow-auto max-h-64"></div>
+                </div>
+              </div>
+
+              {/* Test Search */}
+              <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">3. Search Documents</h3>
+                <p className="text-sm text-gray-600 mb-4">POST /api/ai/search (uses OpenAI)</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Query</label>
+                    <input
+                      type="text"
+                      id="search-query"
+                      defaultValue="What are employee rights regarding union activities?"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Max Results</label>
+                    <input
+                      type="number"
+                      id="search-max-results"
+                      defaultValue="5"
+                      min="1"
+                      max="20"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={async () => {
+                      const query = (document.getElementById('search-query') as HTMLInputElement).value;
+                      const maxResults = parseInt((document.getElementById('search-max-results') as HTMLInputElement).value);
+                      const responseDiv = document.getElementById('search-response');
+                      
+                      if (responseDiv) {
+                        responseDiv.style.display = 'block';
+                        responseDiv.className = 'mt-4 p-4 bg-gray-100 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                        responseDiv.textContent = 'Searching... (This may take a few seconds with OpenAI)';
+                      }
+                      
+                      try {
+                        const response = await fetch('/api/ai/search', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ query, max_results: maxResults })
+                        });
+                        const data = await response.json();
+                        
+                        if (responseDiv) {
+                          if (response.ok) {
+                            responseDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                            responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                          } else {
+                            responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                            responseDiv.textContent = `❌ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                          }
+                        }
+                      } catch (error) {
+                        if (responseDiv) {
+                          responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
+                          responseDiv.textContent = `❌ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                  >
+                    Search Documents
+                  </button>
+                  
+                  <div id="search-response" className="hidden mt-4 p-4 bg-gray-100 rounded-lg font-mono text-xs overflow-auto max-h-64"></div>
+                </div>
+              </div>
+
+              {/* Test Data Info */}
+              <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">📊 Test Data Reference</h3>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <p><strong>Query ID:</strong> <code className="bg-white px-2 py-1 rounded">7ba567db-5c19-4f61-b492-385ca10d8ba0</code></p>
+                  <p><strong>Tenant ID:</strong> <code className="bg-white px-2 py-1 rounded">test-tenant-001</code></p>
+                  <p><strong>Documents:</strong> 3 legal documents (NLRA, Unfair Labor Practice, CBA)</p>
+                  <p><strong>Chunks:</strong> 5 searchable text chunks</p>
+                  <p><strong>Existing Feedback:</strong> 2 records with rating=&apos;good&apos;</p>
                 </div>
               </div>
             </Card>

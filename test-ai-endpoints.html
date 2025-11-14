@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Endpoints Testing Interface</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a1a1a;
+            border-bottom: 3px solid #0070f3;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .endpoint {
+            background: #f9f9f9;
+            border-left: 4px solid #0070f3;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        .form-group {
+            margin: 12px 0;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 100px;
+            font-family: monospace;
+        }
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        button:hover {
+            background: #0051cc;
+        }
+        button.secondary {
+            background: #666;
+        }
+        button.secondary:hover {
+            background: #444;
+        }
+        .response {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .response.success {
+            background: #e6f7e6;
+            border-left: 4px solid #28a745;
+        }
+        .response.error {
+            background: #ffe6e6;
+            border-left: 4px solid #dc3545;
+        }
+        .info {
+            background: #e6f3ff;
+            border-left: 4px solid #0070f3;
+            padding: 12px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI Endpoints Testing Interface</h1>
+    
+    <div class="info">
+        <strong>⚠️ Authentication Required:</strong> You must be logged into the Union Eyes application for these requests to work. 
+        Open <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a> in another tab first, then return here.
+    </div>
+
+    <!-- Feedback POST -->
+    <div class="container">
+        <h2>1. POST /api/ai/feedback</h2>
+        <div class="endpoint">Submit feedback for an AI query</div>
+        
+        <div class="form-group">
+            <label>Query ID:</label>
+            <input type="text" id="feedback-query-id" value="7ba567db-5c19-4f61-b492-385ca10d8ba0" />
+        </div>
+        
+        <div class="form-group">
+            <label>Rating:</label>
+            <select id="feedback-rating">
+                <option value="good">Good</option>
+                <option value="bad">Bad</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Comment (optional):</label>
+            <input type="text" id="feedback-comment" value="Testing from HTML interface" />
+        </div>
+        
+        <button onclick="submitFeedback()">Submit Feedback</button>
+        <button class="secondary" onclick="clearResponse('feedback-response')">Clear</button>
+        
+        <div id="feedback-response" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Feedback GET -->
+    <div class="container">
+        <h2>2. GET /api/ai/feedback</h2>
+        <div class="endpoint">Retrieve feedback for a query</div>
+        
+        <div class="form-group">
+            <label>Query ID:</label>
+            <input type="text" id="get-feedback-query-id" value="7ba567db-5c19-4f61-b492-385ca10d8ba0" />
+        </div>
+        
+        <button onclick="getFeedback()">Get Feedback</button>
+        <button class="secondary" onclick="clearResponse('get-feedback-response')">Clear</button>
+        
+        <div id="get-feedback-response" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Search POST -->
+    <div class="container">
+        <h2>3. POST /api/ai/search</h2>
+        <div class="endpoint">Search legal documents with AI enhancement</div>
+        
+        <div class="warning">
+            <strong>Note:</strong> This endpoint uses OpenAI API. Make sure <code>OPENAI_API_KEY</code> is set in .env.local
+        </div>
+        
+        <div class="form-group">
+            <label>Search Query:</label>
+            <input type="text" id="search-query" value="What are employee rights regarding union activities?" />
+        </div>
+        
+        <div class="form-group">
+            <label>Max Results:</label>
+            <input type="number" id="search-max-results" value="5" min="1" max="20" />
+        </div>
+        
+        <button onclick="searchDocuments()">Search Documents</button>
+        <button class="secondary" onclick="clearResponse('search-response')">Clear</button>
+        
+        <div id="search-response" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Test Data Info -->
+    <div class="container">
+        <h2>📊 Test Data Reference</h2>
+        <div class="info">
+            <strong>Available Test Data:</strong>
+            <ul>
+                <li><strong>Query ID:</strong> <code>7ba567db-5c19-4f61-b492-385ca10d8ba0</code></li>
+                <li><strong>Tenant ID:</strong> <code>test-tenant-001</code></li>
+                <li><strong>Documents:</strong> 3 legal documents (NLRA, Unfair Labor Practice, CBA)</li>
+                <li><strong>Chunks:</strong> 5 searchable text chunks</li>
+                <li><strong>Existing Feedback:</strong> 2 records with rating='good'</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function submitFeedback() {
+            const queryId = document.getElementById('feedback-query-id').value;
+            const rating = document.getElementById('feedback-rating').value;
+            const comment = document.getElementById('feedback-comment').value;
+            
+            const responseDiv = document.getElementById('feedback-response');
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response';
+            responseDiv.textContent = 'Submitting...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/ai/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        query_id: queryId,
+                        rating: rating,
+                        comment: comment || undefined
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n` + JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ ERROR (${response.status})\n\n` + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ NETWORK ERROR\n\n${error.message}`;
+            }
+        }
+        
+        async function getFeedback() {
+            const queryId = document.getElementById('get-feedback-query-id').value;
+            
+            const responseDiv = document.getElementById('get-feedback-response');
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response';
+            responseDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch(`http://localhost:3000/api/ai/feedback?query_id=${queryId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n` + JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ ERROR (${response.status})\n\n` + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ NETWORK ERROR\n\n${error.message}`;
+            }
+        }
+        
+        async function searchDocuments() {
+            const query = document.getElementById('search-query').value;
+            const maxResults = document.getElementById('search-max-results').value;
+            
+            const responseDiv = document.getElementById('search-response');
+            responseDiv.style.display = 'block';
+            responseDiv.className = 'response';
+            responseDiv.textContent = 'Searching... (This may take a few seconds with OpenAI)';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/ai/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        query: query,
+                        max_results: parseInt(maxResults)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n` + JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ ERROR (${response.status})\n\n` + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ NETWORK ERROR\n\n${error.message}`;
+            }
+        }
+        
+        function clearResponse(id) {
+            const responseDiv = document.getElementById(id);
+            responseDiv.style.display = 'none';
+            responseDiv.textContent = '';
+            responseDiv.className = 'response';
+        }
+    </script>
+</body>
+</html>

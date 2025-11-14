@@ -39,7 +39,7 @@ curl -X POST http://localhost:5173/api/ai/feedback \
   -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
   -d '{
     "query_id": "7ba567db-5c19-4f61-b492-385ca10d8ba0",
-    "rating": 5,
+    "rating": "good",
     "comment": "Very helpful response"
   }'
 ```
@@ -53,11 +53,11 @@ curl -X POST http://localhost:5173/api/ai/feedback \
 ```
 
 **Test Cases**:
-- ✅ Valid query_id with rating 1-5
+- ✅ Valid query_id with rating 'good' or 'bad'
 - ✅ Rating without comment
 - ✅ Rating with comment
 - ❌ Invalid query_id (should return 404)
-- ❌ Rating out of range 1-5 (should return 400)
+- ❌ Rating not 'good' or 'bad' (should return 400)
 - ❌ No authentication (should return 401)
 
 ---
@@ -80,7 +80,7 @@ curl -X GET "http://localhost:5173/api/ai/feedback?query_id=7ba567db-5c19-4f61-b
       "query_id": "7ba567db-...",
       "tenant_id": "org_123",
       "user_id": "user_456",
-      "rating": 5,
+      "rating": "good",
       "comment": "Very helpful",
       "created_at": "2024-01-15T10:30:00Z"
     }
