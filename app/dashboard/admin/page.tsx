@@ -501,10 +501,10 @@ export default function AdminPage() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
-                            <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                            <button className="p-1 text-blue-600 hover:bg-blue-50 rounded" aria-label="Edit user">
                               <Edit className="w-4 h-4" />
                             </button>
-                            <button className="p-1 text-red-600 hover:bg-red-50 rounded">
+                            <button className="p-1 text-red-600 hover:bg-red-50 rounded" aria-label="Delete user">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -577,10 +577,10 @@ export default function AdminPage() {
                         <p className="text-xs text-gray-600">{local.region}</p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded" aria-label="Edit local">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-600 hover:bg-gray-50 rounded">
+                        <button className="p-2 text-gray-600 hover:bg-gray-50 rounded" aria-label="Local settings">
                           <Settings className="w-4 h-4" />
                         </button>
                       </div>
@@ -662,7 +662,7 @@ export default function AdminPage() {
                           Temporarily disable public access
                         </p>
                       </div>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200" aria-label="Toggle maintenance mode">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1" />
                       </button>
                     </div>
@@ -676,7 +676,7 @@ export default function AdminPage() {
                           Send system email notifications
                         </p>
                       </div>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600" aria-label="Toggle email notifications">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6" />
                       </button>
                     </div>
@@ -690,7 +690,7 @@ export default function AdminPage() {
                           Daily automated database backups
                         </p>
                       </div>
-                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                      <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600" aria-label="Toggle automatic backups">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6" />
                       </button>
                     </div>
@@ -766,7 +766,7 @@ export default function AdminPage() {
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Query ID</label>
+                    <label htmlFor="feedback-query-id" className="block text-sm font-medium text-gray-700 mb-2">Query ID</label>
                     <input
                       type="text"
                       id="feedback-query-id"
@@ -776,7 +776,7 @@ export default function AdminPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                    <label htmlFor="feedback-rating" className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
                     <select
                       id="feedback-rating"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -787,7 +787,7 @@ export default function AdminPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Comment (optional)</label>
+                    <label htmlFor="feedback-comment" className="block text-sm font-medium text-gray-700 mb-2">Comment (optional)</label>
                     <input
                       type="text"
                       id="feedback-comment"
@@ -850,7 +850,7 @@ export default function AdminPage() {
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Query ID</label>
+                    <label htmlFor="get-feedback-query-id" className="block text-sm font-medium text-gray-700 mb-2">Query ID</label>
                     <input
                       type="text"
                       id="get-feedback-query-id"
@@ -909,7 +909,7 @@ export default function AdminPage() {
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Query</label>
+                    <label htmlFor="search-query" className="block text-sm font-medium text-gray-700 mb-2">Search Query</label>
                     <input
                       type="text"
                       id="search-query"
@@ -919,7 +919,7 @@ export default function AdminPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Max Results</label>
+                    <label htmlFor="search-max-results" className="block text-sm font-medium text-gray-700 mb-2">Max Results</label>
                     <input
                       type="number"
                       id="search-max-results"
