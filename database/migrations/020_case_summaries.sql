@@ -25,11 +25,12 @@ CREATE TABLE IF NOT EXISTS case_summaries (
     
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     
-    -- Foreign key to claims table
-    CONSTRAINT fk_case_summaries_claim FOREIGN KEY (claim_id) 
-        REFERENCES claims(claim_id) ON DELETE CASCADE
+    -- Note: Foreign key to claims table omitted until claims table exists
+    -- TODO: Add constraint after claims table migration:
+    -- CONSTRAINT fk_case_summaries_claim FOREIGN KEY (claim_id) 
+    --     REFERENCES claims(claim_id) ON DELETE CASCADE
 );
 
 -- ====================
