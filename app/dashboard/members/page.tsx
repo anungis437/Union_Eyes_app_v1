@@ -7,6 +7,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useOrganizationMembers } from "@/packages/multi-tenant";
 import { 
   Users, 
   Search, 
@@ -26,7 +28,9 @@ import {
   Download,
   MoreVertical,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -52,210 +56,6 @@ interface Member {
   membershipNumber: string;
 }
 
-const mockMembers: Member[] = [
-  {
-    id: "M001",
-    name: "Sarah Johnson",
-    email: "s.johnson@unionmember.com",
-    phone: "(555) 123-4567",
-    role: "steward",
-    status: "active",
-    department: "Manufacturing",
-    position: "Senior Machine Operator",
-    hireDate: "2018-03-15",
-    seniority: 7,
-    location: "Plant A - Floor 2",
-    activeCases: 3,
-    joinDate: "2018-03-15",
-    membershipNumber: "UN-2018-001"
-  },
-  {
-    id: "M002",
-    name: "Mike Chen",
-    email: "m.chen@unionmember.com",
-    phone: "(555) 234-5678",
-    role: "steward",
-    status: "active",
-    department: "Logistics",
-    position: "Warehouse Supervisor",
-    hireDate: "2017-06-20",
-    seniority: 8,
-    location: "Warehouse B",
-    activeCases: 2,
-    joinDate: "2017-06-20",
-    membershipNumber: "UN-2017-042"
-  },
-  {
-    id: "M003",
-    name: "Robert Martinez",
-    email: "r.martinez@unionmember.com",
-    phone: "(555) 234-5678",
-    role: "member",
-    status: "active",
-    department: "Manufacturing",
-    position: "Assembly Line Worker",
-    hireDate: "2020-01-10",
-    seniority: 5,
-    location: "Plant A - Floor 1",
-    steward: "Sarah Johnson",
-    activeCases: 1,
-    joinDate: "2020-01-10",
-    membershipNumber: "UN-2020-015"
-  },
-  {
-    id: "M004",
-    name: "Jennifer Lee",
-    email: "j.lee@unionmember.com",
-    phone: "(555) 345-6789",
-    role: "member",
-    status: "active",
-    department: "Logistics",
-    position: "Forklift Operator",
-    hireDate: "2019-08-05",
-    seniority: 6,
-    location: "Warehouse A",
-    steward: "Mike Chen",
-    activeCases: 1,
-    joinDate: "2019-08-05",
-    membershipNumber: "UN-2019-089"
-  },
-  {
-    id: "M005",
-    name: "David Chen",
-    email: "d.chen@unionmember.com",
-    phone: "(555) 456-7890",
-    role: "member",
-    status: "active",
-    department: "Maintenance",
-    position: "Electrical Technician",
-    hireDate: "2016-11-30",
-    seniority: 9,
-    location: "Plant B",
-    steward: "Sarah Johnson",
-    activeCases: 1,
-    joinDate: "2016-11-30",
-    membershipNumber: "UN-2016-112"
-  },
-  {
-    id: "M006",
-    name: "Maria Rodriguez",
-    email: "m.rodriguez@unionmember.com",
-    phone: "(555) 567-8901",
-    role: "member",
-    status: "active",
-    department: "Manufacturing",
-    position: "Quality Inspector",
-    hireDate: "2021-02-14",
-    seniority: 4,
-    location: "Plant A - Floor 3",
-    steward: "Sarah Johnson",
-    activeCases: 1,
-    joinDate: "2021-02-14",
-    membershipNumber: "UN-2021-023"
-  },
-  {
-    id: "M007",
-    name: "James Wilson",
-    email: "j.wilson@unionmember.com",
-    phone: "(555) 678-9012",
-    role: "member",
-    status: "active",
-    department: "Customer Service",
-    position: "Customer Support Specialist",
-    hireDate: "2022-05-01",
-    seniority: 3,
-    location: "Main Office",
-    steward: "Mike Chen",
-    activeCases: 1,
-    joinDate: "2022-05-01",
-    membershipNumber: "UN-2022-045"
-  },
-  {
-    id: "M008",
-    name: "Lisa Thompson",
-    email: "l.thompson@unionmember.com",
-    phone: "(555) 789-0123",
-    role: "member",
-    status: "active",
-    department: "Administration",
-    position: "Administrative Assistant",
-    hireDate: "2019-09-15",
-    seniority: 6,
-    location: "Main Office",
-    steward: "Mike Chen",
-    activeCases: 1,
-    joinDate: "2019-09-15",
-    membershipNumber: "UN-2019-103"
-  },
-  {
-    id: "M009",
-    name: "Kevin Brown",
-    email: "k.brown@unionmember.com",
-    phone: "(555) 890-1234",
-    role: "member",
-    status: "active",
-    department: "Manufacturing",
-    position: "CNC Machine Operator",
-    hireDate: "2020-07-20",
-    seniority: 5,
-    location: "Plant B - Floor 1",
-    steward: "Sarah Johnson",
-    activeCases: 1,
-    joinDate: "2020-07-20",
-    membershipNumber: "UN-2020-078"
-  },
-  {
-    id: "M010",
-    name: "Amanda Taylor",
-    email: "a.taylor@unionmember.com",
-    phone: "(555) 901-2345",
-    role: "member",
-    status: "active",
-    department: "IT",
-    position: "IT Support Technician",
-    hireDate: "2021-10-05",
-    seniority: 4,
-    location: "Main Office",
-    steward: "Mike Chen",
-    activeCases: 1,
-    joinDate: "2021-10-05",
-    membershipNumber: "UN-2021-134"
-  },
-  {
-    id: "M011",
-    name: "Thomas Anderson",
-    email: "t.anderson@unionmember.com",
-    phone: "(555) 012-3456",
-    role: "member",
-    status: "on-leave",
-    department: "Manufacturing",
-    position: "Assembly Line Worker",
-    hireDate: "2018-12-01",
-    seniority: 7,
-    location: "Plant A - Floor 1",
-    steward: "Sarah Johnson",
-    activeCases: 0,
-    joinDate: "2018-12-01",
-    membershipNumber: "UN-2018-156"
-  },
-  {
-    id: "M012",
-    name: "Emily Davis",
-    email: "e.davis@unionmember.com",
-    phone: "(555) 123-4567",
-    role: "officer",
-    status: "active",
-    department: "Administration",
-    position: "Union President",
-    hireDate: "2015-01-15",
-    seniority: 10,
-    location: "Union Office",
-    activeCases: 0,
-    joinDate: "2015-01-15",
-    membershipNumber: "UN-2015-008"
-  }
-];
-
 const roleConfig: Record<MemberRole, { label: string; color: string; icon: JSX.Element }> = {
   member: { label: "Member", color: "text-blue-700 bg-blue-100 border-blue-200", icon: <Users className="w-3 h-3" /> },
   steward: { label: "Steward", color: "text-purple-700 bg-purple-100 border-purple-200", icon: <Shield className="w-3 h-3" /> },
@@ -271,12 +71,51 @@ const statusConfig: Record<MemberStatus, { label: string; color: string; dotColo
 
 export default function MembersPage() {
   const { user } = useUser();
-  const [members] = useState<Member[]>(mockMembers);
+  const supabase = createClientComponentClient();
+  
+  // TODO: Get organization ID from Clerk user metadata or context
+  // For now, using a placeholder - needs integration with auth system
+  const organizationId = (user?.publicMetadata as any)?.organizationId || "default-org";
+  
+  // Real-time members hook
+  const {
+    members: orgMembers,
+    isLoading,
+    error,
+    memberCount,
+    activeMemberCount,
+    isOwnerOrAdmin,
+  } = useOrganizationMembers({
+    supabase,
+    organizationId,
+    enableRealtime: true,
+    refreshInterval: 30000, // Refresh every 30 seconds
+  });
+
+  // Local UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<Department | "all">("all");
   const [selectedRole, setSelectedRole] = useState<MemberRole | "all">("all");
   const [selectedStatus, setSelectedStatus] = useState<MemberStatus | "all">("all");
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
+
+  // Map OrganizationMember to Member format for UI
+  const members: Member[] = orgMembers.map(om => ({
+    id: om.id,
+    name: om.user?.full_name || om.user?.email || "Unknown",
+    email: om.user?.email || "",
+    phone: "", // TODO: Add phone to OrganizationMember metadata
+    role: om.role as MemberRole,
+    status: om.status === "active" ? "active" : om.status === "suspended" ? "inactive" : "active",
+    department: (om.department || "Unknown") as Department,
+    position: om.title || "Member",
+    hireDate: om.joined_at || om.created_at,
+    seniority: 0, // TODO: Calculate from hire date
+    location: "", // TODO: Add to metadata
+    activeCases: 0, // TODO: Query from cases table
+    joinDate: om.joined_at || om.created_at,
+    membershipNumber: om.id.slice(0, 12), // TODO: Add proper membership number
+  }));
 
   // Filter members
   const filteredMembers = members.filter(member => {
@@ -293,14 +132,47 @@ export default function MembersPage() {
     return matchesSearch && matchesDepartment && matchesRole && matchesStatus;
   });
 
-  // Calculate stats
-  const totalMembers = members.length;
-  const activeMembers = members.filter(m => m.status === "active").length;
+  // Calculate stats using hook-provided values and filtered data
+  const totalMembers = memberCount;
+  const activeMembers = activeMemberCount;
   const stewardsCount = members.filter(m => m.role === "steward").length;
-  const avgSeniority = Math.round(members.reduce((sum, m) => sum + m.seniority, 0) / members.length);
+  const avgSeniority = members.length > 0 
+    ? Math.round(members.reduce((sum, m) => sum + m.seniority, 0) / members.length)
+    : 0;
 
   // Get unique departments
   const departments = Array.from(new Set(members.map(m => m.department))).sort();
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-lg text-gray-600">Loading members...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Members</h2>
+          <p className="text-gray-600 mb-4">{error.message}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-4 sm:p-6 lg:p-8">
@@ -429,11 +301,12 @@ export default function MembersPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Department Filter */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label htmlFor="department-filter" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Filter className="w-4 h-4 mr-2" />
                     Department
                   </label>
                   <select
+                    id="department-filter"
                     value={selectedDepartment}
                     onChange={(e) => setSelectedDepartment(e.target.value as Department | "all")}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -447,11 +320,12 @@ export default function MembersPage() {
 
                 {/* Role Filter */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label htmlFor="role-filter" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Shield className="w-4 h-4 mr-2" />
                     Role
                   </label>
                   <select
+                    id="role-filter"
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value as MemberRole | "all")}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -466,11 +340,12 @@ export default function MembersPage() {
 
                 {/* Status Filter */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label htmlFor="status-filter" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <Clock className="w-4 h-4 mr-2" />
                     Status
                   </label>
                   <select
+                    id="status-filter"
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value as MemberStatus | "all")}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
