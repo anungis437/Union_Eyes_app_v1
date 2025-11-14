@@ -8,3 +8,4 @@ export * from "./user-management-schema";
 export * from "./tenant-management-schema";
 export * from "./audit-security-schema";
 export * from "./cba-intelligence-schema";
+export * from "./organization-members-schema";

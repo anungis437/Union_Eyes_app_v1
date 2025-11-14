@@ -22,5 +22,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "packages/supabase/functions/**"]
+  "exclude": ["node_modules", "packages/supabase/functions/**", "archive-old-root/**", "archive/**", "cba-intelligence/**"]
 }

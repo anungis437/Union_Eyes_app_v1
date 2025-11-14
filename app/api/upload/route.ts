@@ -134,7 +134,6 @@ export async function POST(request: NextRequest) {
       .update(claims)
       .set({
         attachments: updatedAttachments,
-        lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(claims.claimId, claimId));
@@ -268,7 +267,6 @@ export async function DELETE(request: NextRequest) {
       .update(claims)
       .set({
         attachments: updatedAttachments,
-        lastActivityAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(claims.claimId, claimId));

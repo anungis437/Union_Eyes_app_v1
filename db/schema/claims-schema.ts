@@ -88,9 +88,7 @@ export const claims = pgTable("claims", {
   // Timestamps
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
   closedAt: timestamp("closed_at", { withTimezone: true }),
-  lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).defaultNow(),
 });
 
 // Claim updates/notes table

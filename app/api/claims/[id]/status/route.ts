@@ -17,7 +17,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
     const body = await request.json();
     const { status: newStatus, notes } = body;
 
@@ -29,7 +29,7 @@ export async function PATCH(
     }
 
     // Update status with workflow validation
-    const result = await updateClaimStatus(claimId, newStatus, userId, notes);
+    const result = await updateClaimStatus(claimNumber, newStatus, userId, notes);
 
     if (!result.success) {
       return NextResponse.json(
@@ -67,7 +67,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const claimId = params.id;
+    const claimNumber = params.id;
     const body = await request.json();
     const { message, isInternal = true } = body;
 
@@ -78,7 +78,7 @@ export async function POST(
       );
     }
 
-    const result = await addClaimNote(claimId, message, userId, isInternal);
+    const result = await addClaimNote(claimNumber, message, userId, isInternal);
 
     if (!result.success) {
       return NextResponse.json(

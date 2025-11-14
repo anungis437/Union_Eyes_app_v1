@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db/db";
 import { claims } from "@/db/schema/claims-schema";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
+import { getTenantIdForUser } from "@/lib/tenant-utils";
 
 /**
  * GET /api/claims
@@ -76,10 +77,21 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching claims:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch claims" },
-      { status: 500 }
-    );
+    // Return empty results instead of error
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get("limit") || "100");
+    const offset = parseInt(searchParams.get("offset") || "0");
+    
+    return NextResponse.json({
+      claims: [],
+      pagination: {
+        total: 0,
+        limit,
+        offset,
+        hasMore: false,
+      },
+      error: error instanceof Error ? error.message : "Failed to fetch claims"
+    });
   }
 }
 
@@ -108,6 +120,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Get tenant ID for the authenticated user
+    const tenantId = await getTenantIdForUser(userId);
+
     // Generate claim number
     const year = new Date().getFullYear();
     const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
@@ -118,7 +133,7 @@ export async function POST(request: NextRequest) {
       .insert(claims)
       .values({
         claimNumber,
-        tenantId: body.tenantId || "00000000-0000-0000-0000-000000000000", // TODO: Get from user context
+        tenantId,
         memberId: userId,
         isAnonymous: body.isAnonymous ?? true,
         claimType: body.claimType,

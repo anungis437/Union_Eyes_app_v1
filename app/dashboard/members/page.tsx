@@ -5,10 +5,9 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useOrganizationMembers } from "@/packages/multi-tenant";
 import { 
   Users, 
   Search, 
@@ -37,6 +36,8 @@ import { Card, CardContent } from "@/components/ui/card";
 type MemberRole = "member" | "steward" | "officer" | "admin";
 type MemberStatus = "active" | "inactive" | "on-leave";
 type Department = "Manufacturing" | "Logistics" | "Administration" | "Maintenance" | "Customer Service" | "IT";
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 interface Member {
   id: string;
@@ -71,26 +72,13 @@ const statusConfig: Record<MemberStatus, { label: string; color: string; dotColo
 
 export default function MembersPage() {
   const { user } = useUser();
-  const supabase = createClientComponentClient();
   
-  // Get organization ID from Clerk user metadata
-  // Falls back to user ID for personal workspace
-  const organizationId = (user?.publicMetadata as { organizationId?: string })?.organizationId || user?.id || "default-org";
-  
-  // Real-time members hook
-  const {
-    members: orgMembers,
-    isLoading,
-    error,
-    memberCount,
-    activeMemberCount,
-    isOwnerOrAdmin,
-  } = useOrganizationMembers({
-    supabase,
-    organizationId,
-    enableRealtime: true,
-    refreshInterval: 30000, // Refresh every 30 seconds
-  });
+  // Fetch members from API
+  const { data, error, isLoading } = useSWR(
+    '/api/organization/members',
+    fetcher,
+    { refreshInterval: 30000 } // Refresh every 30 seconds
+  );
 
   // Local UI state
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,46 +87,27 @@ export default function MembersPage() {
   const [selectedStatus, setSelectedStatus] = useState<MemberStatus | "all">("all");
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
 
-  // Calculate seniority in years from hire date
-  const calculateSeniority = (hireDate: string): number => {
-    const hire = new Date(hireDate);
-    const now = new Date();
-    const years = (now.getTime() - hire.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    return Math.max(0, Math.floor(years));
-  };
+  // Extract members from API response
+  const members: Member[] = data?.success ? data.data.members.map((m: any) => ({
+    id: m.id,
+    name: m.name,
+    email: m.email,
+    phone: m.phone || "",
+    role: m.role as MemberRole,
+    status: m.status as MemberStatus,
+    department: (m.department || "Administration") as Department,
+    position: m.position || "Union Member",
+    hireDate: m.hireDate || m.createdAt,
+    seniority: m.seniority || 0,
+    location: m.metadata?.location || "",
+    activeCases: m.metadata?.activeCases || 0,
+    joinDate: m.unionJoinDate || m.createdAt,
+    membershipNumber: m.membershipNumber || "",
+    steward: m.metadata?.steward,
+  })) : [];
 
-  // Generate membership number from user ID (first 4 chars) and join date
-  const generateMembershipNumber = (userId: string, joinDate: string): string => {
-    const prefix = userId.slice(0, 4).toUpperCase();
-    const date = new Date(joinDate);
-    const year = date.getFullYear().toString().slice(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${prefix}-${year}${month}${day}`;
-  };
-
-  // Map OrganizationMember to Member format for UI
-  const members: Member[] = orgMembers.map(om => {
-    const joinDate = om.joined_at || om.created_at;
-    const metadata = om.metadata || {};
-    
-    return {
-      id: om.id,
-      name: om.user?.full_name || om.user?.email?.split('@')[0] || "Unknown User",
-      email: om.user?.email || "",
-      phone: metadata.phone || metadata.phoneNumber || "",
-      role: om.role as MemberRole,
-      status: om.status === "active" ? "active" : om.status === "suspended" ? "inactive" : "active",
-      department: (om.department || "Administration") as Department,
-      position: om.title || "Union Member",
-      hireDate: joinDate,
-      seniority: calculateSeniority(joinDate),
-      location: metadata.location || metadata.city || "",
-      activeCases: metadata.activeCases || 0, // TODO: Query from cases table in future
-      joinDate,
-      membershipNumber: generateMembershipNumber(om.user_id, joinDate),
-    };
-  });
+  const memberCount = data?.data?.stats?.total || 0;
+  const activeMemberCount = data?.data?.stats?.active || 0;
 
   // Filter members
   const filteredMembers = members.filter(member => {
