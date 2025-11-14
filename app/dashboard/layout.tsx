@@ -12,6 +12,8 @@ import { revalidatePath } from "next/cache";
 import CancellationPopup from "@/components/cancellation-popup";
 import WelcomeMessagePopup from "@/components/welcome-message-popup";
 import PaymentSuccessPopup from "@/components/payment-success-popup";
+import { TenantProvider } from "@/lib/tenant-context";
+import TenantSelector from "@/components/tenant-selector";
 
 /**
  * Check if a free user with an expired billing cycle needs their credits downgraded
@@ -103,31 +105,41 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   });
 
   return (
-    <div className="flex h-screen bg-gray-50 relative overflow-hidden">
-      {/* Show welcome message popup - component handles visibility logic */}
-      <WelcomeMessagePopup profile={profile} />
-      
-      {/* Show payment success popup - component handles visibility logic */}
-      <PaymentSuccessPopup profile={profile} />
-      
-      {/* Show cancellation popup directly if status is canceled */}
-      {profile.status === "canceled" && (
-        <CancellationPopup profile={profile} />
-      )}
-      
-      {/* Sidebar component with profile data and user email */}
-      <Sidebar 
-        profile={profile} 
-        userEmail={userEmail} 
-        whopMonthlyPlanId={process.env.WHOP_PLAN_ID_MONTHLY || ''}
-        whopYearlyPlanId={process.env.WHOP_PLAN_ID_YEARLY || ''}
-        userRole={userRole}
-      />
-      
-      {/* Main content area */}
-      <div className="flex-1 overflow-auto relative">
-        {children}
+    <TenantProvider>
+      <div className="flex h-screen bg-gray-50 relative overflow-hidden">
+        {/* Show welcome message popup - component handles visibility logic */}
+        <WelcomeMessagePopup profile={profile} />
+        
+        {/* Show payment success popup - component handles visibility logic */}
+        <PaymentSuccessPopup profile={profile} />
+        
+        {/* Show cancellation popup directly if status is canceled */}
+        {profile.status === "canceled" && (
+          <CancellationPopup profile={profile} />
+        )}
+        
+        {/* Sidebar component with profile data and user email */}
+        <Sidebar 
+          profile={profile} 
+          userEmail={userEmail} 
+          whopMonthlyPlanId={process.env.WHOP_PLAN_ID_MONTHLY || ''}
+          whopYearlyPlanId={process.env.WHOP_PLAN_ID_YEARLY || ''}
+          userRole={userRole}
+        />
+        
+        {/* Main content area with tenant selector */}
+        <div className="flex-1 overflow-auto relative">
+          {/* Tenant selector in header - sticky at top */}
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-3 flex justify-end items-center">
+            <TenantSelector />
+          </div>
+          
+          {/* Page content */}
+          <div className="p-6">
+            {children}
+          </div>
+        </div>
       </div>
-    </div>
+    </TenantProvider>
   );
 } 
