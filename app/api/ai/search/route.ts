@@ -66,15 +66,14 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // 5. Search for similar chunks using keyword search (temporary until pgvector enabled)
-    // TODO: Replace with vector search once pgvector extension is enabled
-    const { data: chunks, error: searchError } = await supabase.rpc(
-      'search_ai_chunks_text',
-      {
-        p_tenant_id: orgId || '',
-        p_search_query: query,
-        p_max_results: maxSources * 2, // Get more than needed for filtering
-      }
-    );
+    // TODO: Replace with vector search once pgvector enabled
+    // Note: For now, this returns empty results - it's a placeholder until pgvector is enabled
+    const { data: chunks, error: searchError } = await supabase
+      .from('ai_chunks')
+      .select('id, document_id, content, metadata')
+      .eq('tenant_id', orgId || 'test-tenant-001')
+      .textSearch('content', query, { type: 'websearch', config: 'english' })
+      .limit(maxSources * 2);
 
     if (searchError) {
       console.error('Search error:', searchError);
@@ -160,8 +159,7 @@ export async function POST(request: NextRequest) {
     // 10. Calculate confidence (lower for keyword search vs vector search)
     const confidence = 'medium' as const; // Conservative confidence for keyword search
 
-    // 11. Get OpenAI API key and build prompt
-    const openaiApiKey = process.env.OPENAI_API_KEY;
+    // 11. Build prompt using OpenAI
     if (!openaiApiKey) {
       // Return keyword results without AI enhancement
       const latency = Date.now() - startTime;

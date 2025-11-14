@@ -79,6 +79,7 @@
   "devDependencies": {
     "@remotion/cli": "^4.0.327",
     "@remotion/player": "^4.0.327",
+    "@supabase/supabase-js": "^2.81.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^18",
