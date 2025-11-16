@@ -181,12 +181,19 @@ export const assignClaim = async (
 /**
  * Get claims assigned to a specific user (for stewards/officers)
  */
-export const getClaimsAssignedToUser = async (userId: string) => {
+export const getClaimsAssignedToUser = async (userId: string, tenantId?: string) => {
   try {
+    const conditions = [eq(claims.assignedTo, userId)];
+    
+    // Filter by tenant if provided (for multi-tenant isolation)
+    if (tenantId) {
+      conditions.push(eq(claims.tenantId, tenantId));
+    }
+    
     const assignedClaims = await db
       .select()
       .from(claims)
-      .where(eq(claims.assignedTo, userId))
+      .where(and(...conditions))
       .orderBy(desc(claims.priority), desc(claims.createdAt));
     
     return assignedClaims;

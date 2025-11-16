@@ -6,14 +6,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { getClaimsAssignedToUser } from "@/db/queries/claims-queries";
 import { getUserByEmail } from "@/db/queries/users-queries";
+import { withTenantAuth } from "@/lib/tenant-middleware";
 
-export async function GET(request: NextRequest) {
+export const GET = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    // Verify authentication
-    const { userId: clerkUserId } = await auth();
+    const { tenantId, userId: clerkUserId } = context;
     
     if (!clerkUserId) {
       return NextResponse.json(
@@ -23,6 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get Clerk user to access email
+    const { currentUser } = await import("@clerk/nextjs/server");
     const clerkUser = await currentUser();
     if (!clerkUser?.emailAddresses?.[0]?.emailAddress) {
       return NextResponse.json(
@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Fetch claims assigned to this user using database UUID
-    const assignedClaims = await getClaimsAssignedToUser(dbUser.userId);
+    // Fetch claims assigned to this user for the current tenant
+    const assignedClaims = await getClaimsAssignedToUser(dbUser.userId, tenantId);
 
     return NextResponse.json({
       claims: assignedClaims || [],
@@ -63,4 +63,4 @@ export async function GET(request: NextRequest) {
       error: error instanceof Error ? error.message : "Failed to fetch assigned claims"
     });
   }
-}
+});

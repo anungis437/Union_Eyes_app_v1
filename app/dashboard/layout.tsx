@@ -13,7 +13,7 @@ import CancellationPopup from "@/components/cancellation-popup";
 import WelcomeMessagePopup from "@/components/welcome-message-popup";
 import PaymentSuccessPopup from "@/components/payment-success-popup";
 import { TenantProvider } from "@/lib/tenant-context";
-import TenantSelector from "@/components/tenant-selector";
+import { TenantSelector } from "@/components/tenant-selector";
 
 /**
  * Check if a free user with an expired billing cycle needs their credits downgraded
@@ -130,12 +130,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         {/* Main content area with tenant selector */}
         <div className="flex-1 overflow-auto relative">
           {/* Tenant selector in header - sticky at top */}
-          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-3 flex justify-end items-center">
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 flex justify-end items-center min-h-[60px]">
             <TenantSelector />
           </div>
           
           {/* Page content */}
-          <div className="p-6">
+          <div className="p-6 mt-2">
             {children}
           </div>
         </div>

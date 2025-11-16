@@ -47,9 +47,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Phase 2: Verify user has access to this tenant
-    // For now, allow access to any tenant (single-tenant mode)
-    // Future: Check tenant_users table for permission
+    // Verify user has access to this tenant
+    const userAccess = await db
+      .select()
+      .from(tenantUsers)
+      .where(
+        and(
+          eq(tenantUsers.userId, userId),
+          eq(tenantUsers.tenantId, tenantId)
+        )
+      )
+      .limit(1);
+
+    if (userAccess.length === 0) {
+      return NextResponse.json(
+        { error: "You do not have access to this tenant" },
+        { status: 403 }
+      );
+    }
 
     // Store selected tenant in cookie for session persistence
     const cookieStore = await cookies();

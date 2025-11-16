@@ -8,8 +8,9 @@ export const memberStatusEnum = pgEnum("member_status", ["active", "inactive", "
 // Organization Members table
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: text("organization_id").notNull(), // Clerk organization ID
+  organizationId: text("organization_id").notNull(), // Legacy Clerk organization ID (deprecated)
   userId: text("user_id").notNull(), // Clerk user ID
+  tenantId: uuid("tenant_id").notNull(), // FK to tenant_management.tenants
   
   // Basic Info
   name: text("name").notNull(),
@@ -35,6 +36,9 @@ export const organizationMembers = pgTable("organization_members", {
   
   // Metadata
   metadata: text("metadata"), // JSON string for additional flexible data
+  
+  // Search
+  searchVector: text("search_vector"), // Full-text search vector (tsvector in DB)
   
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),

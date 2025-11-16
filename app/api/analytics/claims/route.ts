@@ -1,53 +1,77 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
-import { eq, desc, and, count, sql, gte } from 'drizzle-orm';
-
 /**
+ * Claims Analytics API
+ * 
  * GET /api/analytics/claims
- * Get detailed claims analytics
+ * Returns comprehensive claims metrics, trends, and breakdowns with period comparison
  */
-export async function GET(request: NextRequest) {
-  try {
-    const { userId } = await auth();
 
-    if (!userId) {
+import { NextRequest, NextResponse } from 'next/server';
+import { withTenantAuth } from '@/lib/tenant-middleware';
+import { sql } from '@/lib/db';
+
+async function handler(req: NextRequest) {
+  try {
+    const tenantId = req.headers.get('x-tenant-id');
+    
+    if (!tenantId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Tenant ID required' },
+        { status: 400 }
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const timeRange = searchParams.get('timeRange') || '30'; // days
-    const groupBy = searchParams.get('groupBy') || 'day'; // day, week, month
-    const claimType = searchParams.get('claimType'); // Optional filter
-
-    // Calculate date range
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(timeRange));
-
-    // Build where conditions
-    const whereConditions = [
-      gte(claims.createdAt, startDate)
-    ];
-
-    if (claimType) {
-      whereConditions.push(eq(claims.claimType, claimType as any));
+    const url = new URL(req.url);
+    const daysBack = parseInt(url.searchParams.get('days') || '30');
+    const includeDetails = url.searchParams.get('details') === 'true';
+    
+    // Parse optional filters
+    const filters: any = {};
+    if (url.searchParams.get('status')) {
+      filters.status = url.searchParams.get('status')!.split(',');
+    }
+    if (url.searchParams.get('claimType')) {
+      filters.claimType = url.searchParams.get('claimType')!.split(',');
+    }
+    if (url.searchParams.get('priority')) {
+      filters.priority = url.searchParams.get('priority')!.split(',');
+    }
+    if (url.searchParams.get('assignedTo')) {
+      filters.assignedTo = url.searchParams.get('assignedTo')!;
     }
 
-    // Get claims by type over time
-    let dateGrouping;
-    switch (groupBy) {
-      case 'week':
-        dateGrouping = sql`DATE_TRUNC('week', created_at)`;
-        break;
-      case 'month':
-        dateGrouping = sql`DATE_TRUNC('month', created_at)`;
-        break;
-      default: // day
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - daysBack);
+
+    // Get claims analytics
+    const analytics = await getClaimsAnalytics(tenantId, { startDate, endDate });
+
+    // Optionally include detailed claims list
+    let details = null;
+    if (includeDetails) {
+      details = await getClaimsByDateRange(tenantId, { startDate, endDate }, filters);
+    }
+
+    return NextResponse.json({
+      analytics,
+      details,
+      dateRange: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        daysBack,
+      },
+      filters: Object.keys(filters).length > 0 ? filters : null,
+    });
+  } catch (error) {
+    console.error('Claims analytics error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch claims analytics' },
+      { status: 500 }
+    );
+  }
+}
+
+export const GET = withTenantAuth(handler);
         dateGrouping = sql`DATE(created_at)`;
     }
 

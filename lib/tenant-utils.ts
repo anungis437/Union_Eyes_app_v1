@@ -9,7 +9,8 @@
 import { db } from "@/db/db";
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { tenantUsers } from "@/db/schema/user-management-schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { cookies } from "next/headers";
 
 /**
  * Default tenant ID used in Phase 1 for single-tenant operation.
@@ -35,8 +36,40 @@ export const DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001";
  */
 export async function getTenantIdForUser(clerkUserId: string): Promise<string> {
   try {
-    // Phase 1: Use default tenant for all users
-    // In future phases, this will query the tenant_users table
+    // Check if user has selected a specific tenant via cookie
+    const cookieStore = await cookies();
+    const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
+    
+    if (selectedTenantId) {
+      // Verify user has access to the selected tenant
+      const userTenant = await db
+        .select({ tenantId: tenantUsers.tenantId })
+        .from(tenantUsers)
+        .where(
+          and(
+            eq(tenantUsers.userId, clerkUserId),
+            eq(tenantUsers.tenantId, selectedTenantId)
+          )
+        )
+        .limit(1);
+      
+      if (userTenant.length > 0) {
+        return selectedTenantId;
+      }
+    }
+    
+    // Fall back to user's first available tenant
+    const userTenants = await db
+      .select({ tenantId: tenantUsers.tenantId })
+      .from(tenantUsers)
+      .where(eq(tenantUsers.userId, clerkUserId))
+      .limit(1);
+    
+    if (userTenants.length > 0) {
+      return userTenants[0].tenantId;
+    }
+    
+    // Final fallback to default tenant
     const tenantId = DEFAULT_TENANT_ID;
     
     // Validate that tenant exists

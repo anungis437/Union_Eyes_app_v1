@@ -50,25 +50,8 @@ export function withTenantAuth<T = any>(
         );
       }
 
-      // Get tenant ID (from cookie or default)
-      let tenantId: string;
-      
-      const cookieStore = await cookies();
-      const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
-
-      if (selectedTenantId) {
-        // Validate selected tenant
-        const isValid = await validateTenantExists(selectedTenantId);
-        if (!isValid) {
-          // Invalid tenant in cookie, fall back to user's default tenant
-          tenantId = await getTenantIdForUser(userId);
-        } else {
-          tenantId = selectedTenantId;
-        }
-      } else {
-        // No tenant selected, use user's default
-        tenantId = await getTenantIdForUser(userId);
-      }
+      // Get tenant ID - getTenantIdForUser handles cookie checking and access verification
+      const tenantId = await getTenantIdForUser(userId);
 
       // Create tenant context
       const context: TenantContext = {
