@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { DeadlineWidget } from "@/components/deadlines";
+import { useRouter } from "next/navigation";
 
 type UserRole = "member" | "steward" | "officer" | "admin";
 
@@ -31,6 +33,26 @@ interface DashboardStats {
   pendingReviews: number;
   resolvedCases: number;
   highPriorityClaims: number;
+}
+
+interface DeadlineSummary {
+  activeDeadlines: number;
+  overdueCount: number;
+  dueSoonCount: number;
+  criticalCount: number;
+  avgDaysOverdue: number;
+  onTimePercentage: number;
+}
+
+interface CriticalDeadline {
+  id: string;
+  deadlineName: string;
+  claimNumber?: string;
+  currentDeadline: string;
+  isOverdue: boolean;
+  daysUntilDue?: number;
+  daysOverdue: number;
+  priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
 interface QuickLink {
@@ -155,6 +177,7 @@ const stats: StatCard[] = [
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const router = useRouter();
   const userRole = getUserRole();
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     activeClaims: 0,
@@ -162,7 +185,17 @@ export default function DashboardPage() {
     resolvedCases: 0,
     highPriorityClaims: 0,
   });
+  const [deadlineSummary, setDeadlineSummary] = useState<DeadlineSummary>({
+    activeDeadlines: 0,
+    overdueCount: 0,
+    dueSoonCount: 0,
+    criticalCount: 0,
+    avgDaysOverdue: 0,
+    onTimePercentage: 0,
+  });
+  const [criticalDeadlines, setCriticalDeadlines] = useState<CriticalDeadline[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingDeadlines, setIsLoadingDeadlines] = useState(true);
   
   // Fetch real dashboard statistics
   useEffect(() => {
@@ -182,6 +215,35 @@ export default function DashboardPage() {
     };
     
     fetchStats();
+  }, []);
+
+  // Fetch deadline data
+  useEffect(() => {
+    const fetchDeadlines = async () => {
+      try {
+        setIsLoadingDeadlines(true);
+        
+        // Fetch summary
+        const summaryResponse = await fetch('/api/deadlines/dashboard');
+        if (summaryResponse.ok) {
+          const summaryData = await summaryResponse.json();
+          setDeadlineSummary(summaryData);
+        }
+
+        // Fetch critical deadlines
+        const upcomingResponse = await fetch('/api/deadlines/upcoming');
+        if (upcomingResponse.ok) {
+          const upcomingData = await upcomingResponse.json();
+          setCriticalDeadlines(upcomingData.deadlines || []);
+        }
+      } catch (error) {
+        console.error('Error fetching deadline data:', error);
+      } finally {
+        setIsLoadingDeadlines(false);
+      }
+    };
+
+    fetchDeadlines();
   }, []);
   
   // Update stats with real data
@@ -297,13 +359,28 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
+      {/* Deadline Widget */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="mb-8"
+      >
+        <DeadlineWidget
+          summary={deadlineSummary}
+          criticalDeadlines={criticalDeadlines}
+          loading={isLoadingDeadlines}
+          onViewAll={() => router.push('/deadlines')}
+        />
+      </motion.div>
+
       {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Card className="border-white/50 bg-white/80 backdrop-blur-sm shadow-lg">
             <CardHeader>

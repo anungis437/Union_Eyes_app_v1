@@ -174,16 +174,30 @@ export default function MembersPage() {
         className="max-w-7xl mx-auto"
       >
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Users className="w-10 h-10 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">
-              Member Directory
-            </h1>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Users className="w-10 h-10 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-900">
+                Member Directory
+              </h1>
+            </div>
+            <p className="text-lg text-gray-600">
+              Union member contact information and directory
+            </p>
           </div>
-          <p className="text-lg text-gray-600">
-            Union member contact information and directory
-          </p>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <button
+              onClick={() => window.location.href = '/dashboard/members/new'}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+            >
+              <UserPlus className="w-5 h-5" />
+              Add Member
+            </button>
+          </motion.div>
         </div>
 
         {/* Stats Cards */}

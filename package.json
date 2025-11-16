@@ -14,10 +14,12 @@
     "render": "remotion render src/remotion/index.tsx ShowcaseVideo out/video.mp4"
   },
   "dependencies": {
+    "@azure/msal-node": "^3.8.2",
     "@clerk/backend": "^1.9.0",
     "@clerk/nextjs": "^5.3.7",
     "@clerk/themes": "^2.1.25",
     "@hookform/resolvers": "^3.9.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -60,6 +62,7 @@
     "drizzle-orm": "^0.33.0",
     "embla-carousel-react": "^8.2.0",
     "framer-motion": "^11.3.30",
+    "googleapis": "^166.0.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.436.0",
     "microsoft-cognitiveservices-speech-sdk": "^1.47.0",
@@ -75,6 +78,7 @@
     "react-resizable-panels": "^2.1.1",
     "recharts": "^2.12.7",
     "resend": "^6.4.2",
+    "rrule": "^2.8.1",
     "server-only": "^0.0.1",
     "sonner": "^1.5.0",
     "stripe": "^16.9.0",
