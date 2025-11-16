@@ -39,8 +39,8 @@ export function TenantSelector() {
     }
   };
 
-  // Don't show selector if only one tenant or still loading
-  if (isLoading || !currentTenant || tenants.length <= 1) {
+  // Don't show selector if still loading or no tenant data
+  if (isLoading || !currentTenant || tenants.length === 0) {
     return null;
   }
 

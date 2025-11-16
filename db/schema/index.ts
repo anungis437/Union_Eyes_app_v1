@@ -9,3 +9,5 @@ export * from "./tenant-management-schema";
 export * from "./audit-security-schema";
 export * from "./cba-intelligence-schema";
 export * from "./organization-members-schema";
+export * from "./notifications-schema";
+export * from "./calendar-schema";

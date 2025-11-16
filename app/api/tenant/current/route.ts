@@ -10,7 +10,7 @@ import { getTenantInfo, getTenantIdForUser } from "@/lib/tenant-utils";
 import { db } from "@/db/db";
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { tenantUsers } from "@/db/schema/user-management-schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -23,23 +23,34 @@ export async function GET() {
       );
     }
 
-    // Get current tenant information
-    const tenant = await getTenantInfo(userId);
+  // Get current tenant information
+  const tenant = await getTenantInfo(userId);
 
-    // Get list of all tenants the user has access to
-    // Phase 2: This will query tenant_users to find all accessible tenants
-    // For now, return just the current tenant
-    const availableTenants = [
-      {
-        tenantId: tenant.tenantId,
-        name: tenant.tenantName,
-        slug: tenant.tenantSlug,
-        subscriptionTier: tenant.subscriptionTier,
-        features: tenant.features || [],
-      },
-    ];
+  // Get list of all tenants the user has access to by querying tenant_users
+  const userTenants = await db
+    .select({
+      tenantId: tenants.tenantId,
+      name: tenants.tenantName,
+      slug: tenants.tenantSlug,
+      subscriptionTier: tenants.subscriptionTier,
+      features: tenants.features,
+    })
+    .from(tenantUsers)
+    .innerJoin(tenants, eq(tenantUsers.tenantId, tenants.tenantId))
+    .where(
+      and(
+        eq(tenantUsers.userId, userId),
+        eq(tenants.status, "active")
+      )
+    );
 
-    return NextResponse.json({
+  const availableTenants = userTenants.map((t) => ({
+    tenantId: t.tenantId,
+    name: t.name,
+    slug: t.slug,
+    subscriptionTier: t.subscriptionTier || "free",
+    features: t.features || [],
+  }));    return NextResponse.json({
       tenant: {
         tenantId: tenant.tenantId,
         name: tenant.tenantName,

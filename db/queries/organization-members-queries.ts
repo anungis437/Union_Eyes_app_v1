@@ -8,15 +8,15 @@ import { organizationMembers, SelectOrganizationMember, InsertOrganizationMember
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
 
 /**
- * Get all active members for an organization
+ * Get all active members for a tenant
  */
-export async function getOrganizationMembers(organizationId: string): Promise<SelectOrganizationMember[]> {
+export async function getOrganizationMembers(tenantId: string): Promise<SelectOrganizationMember[]> {
   return await db
     .select()
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.tenantId, tenantId),
         isNull(organizationMembers.deletedAt)
       )
     )
@@ -24,14 +24,15 @@ export async function getOrganizationMembers(organizationId: string): Promise<Se
 }
 
 /**
- * Get member by ID
+ * Get member by ID and tenant
  */
-export async function getMemberById(id: string): Promise<SelectOrganizationMember | undefined> {
+export async function getMemberById(tenantId: string, id: string): Promise<SelectOrganizationMember | undefined> {
   const result = await db
     .select()
     .from(organizationMembers)
     .where(
       and(
+        eq(organizationMembers.tenantId, tenantId),
         eq(organizationMembers.id, id),
         isNull(organizationMembers.deletedAt)
       )
@@ -45,7 +46,7 @@ export async function getMemberById(id: string): Promise<SelectOrganizationMembe
  * Get member by user ID
  */
 export async function getMemberByUserId(
-  organizationId: string,
+  tenantId: string,
   userId: string
 ): Promise<SelectOrganizationMember | undefined> {
   const result = await db
@@ -53,7 +54,7 @@ export async function getMemberByUserId(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.tenantId, tenantId),
         eq(organizationMembers.userId, userId),
         isNull(organizationMembers.deletedAt)
       )
@@ -116,15 +117,15 @@ export async function deleteMember(id: string): Promise<boolean> {
 }
 
 /**
- * Get member count for an organization
+ * Get member count for a tenant
  */
-export async function getMemberCount(organizationId: string): Promise<number> {
+export async function getMemberCount(tenantId: string): Promise<number> {
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.tenantId, tenantId),
         isNull(organizationMembers.deletedAt)
       )
     );
@@ -133,15 +134,15 @@ export async function getMemberCount(organizationId: string): Promise<number> {
 }
 
 /**
- * Get active member count for an organization
+ * Get active member count for a tenant
  */
-export async function getActiveMemberCount(organizationId: string): Promise<number> {
+export async function getActiveMemberCount(tenantId: string): Promise<number> {
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.tenantId, tenantId),
         eq(organizationMembers.status, "active"),
         isNull(organizationMembers.deletedAt)
       )
@@ -154,7 +155,7 @@ export async function getActiveMemberCount(organizationId: string): Promise<numb
  * Get members by role
  */
 export async function getMembersByRole(
-  organizationId: string,
+  tenantId: string,
   role: "member" | "steward" | "officer" | "admin"
 ): Promise<SelectOrganizationMember[]> {
   return await db
@@ -162,7 +163,7 @@ export async function getMembersByRole(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.tenantId, tenantId),
         eq(organizationMembers.role, role),
         isNull(organizationMembers.deletedAt)
       )
@@ -174,7 +175,7 @@ export async function getMembersByRole(
  * Get members by status
  */
 export async function getMembersByStatus(
-  organizationId: string,
+  tenantId: string,
   status: "active" | "inactive" | "on-leave"
 ): Promise<SelectOrganizationMember[]> {
   return await db
@@ -182,10 +183,61 @@ export async function getMembersByStatus(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.organizationId, organizationId),
+        eq(organizationMembers.tenantId, tenantId),
         eq(organizationMembers.status, status),
         isNull(organizationMembers.deletedAt)
       )
     )
     .orderBy(desc(organizationMembers.createdAt));
+}
+
+/**
+ * Search members using full-text search
+ */
+export async function searchMembers(
+  tenantId: string,
+  searchQuery: string,
+  filters?: {
+    role?: "member" | "steward" | "officer" | "admin";
+    status?: "active" | "inactive" | "on-leave";
+    department?: string;
+  }
+): Promise<SelectOrganizationMember[]> {
+  const conditions = [
+    eq(organizationMembers.tenantId, tenantId),
+    isNull(organizationMembers.deletedAt),
+  ];
+
+  // Add full-text search if query provided
+  if (searchQuery && searchQuery.trim()) {
+    // Convert search query to tsquery format (handle multiple words)
+    const tsQuery = searchQuery.trim().split(/\s+/).join(' & ');
+    conditions.push(sql`${organizationMembers.searchVector} @@ to_tsquery('english', ${tsQuery})`);
+  }
+
+  // Add filters
+  if (filters?.role) {
+    conditions.push(eq(organizationMembers.role, filters.role));
+  }
+  if (filters?.status) {
+    conditions.push(eq(organizationMembers.status, filters.status));
+  }
+  if (filters?.department) {
+    conditions.push(eq(organizationMembers.department, filters.department));
+  }
+
+  const query = db
+    .select()
+    .from(organizationMembers)
+    .where(and(...conditions));
+
+  // Order by relevance if search query provided
+  if (searchQuery && searchQuery.trim()) {
+    const tsQuery = searchQuery.trim().split(/\s+/).join(' & ');
+    return await query.orderBy(
+      sql`ts_rank(${organizationMembers.searchVector}, to_tsquery('english', ${tsQuery})) DESC`
+    );
+  }
+
+  return await query.orderBy(desc(organizationMembers.createdAt));
 }
