@@ -66,7 +66,7 @@ export const getProfileByUserId = async (userId: string) => {
 };
 
 export const getAllProfiles = async (): Promise<SelectProfile[]> => {
-  return db.query.profiles.findMany();
+  return db.select().from(profilesTable);
 };
 
 export const updateProfile = async (userId: string, data: Partial<InsertProfile>) => {

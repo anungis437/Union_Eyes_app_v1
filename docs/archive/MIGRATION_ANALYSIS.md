@@ -142,39 +142,39 @@ src/components/
 
 ### Shared Packages (`packages/`)
 
-#### 1. **@courtlens/auth** - Authentication utilities
+#### 1. **@unioneyes/auth** - Authentication utilities
 - Unified auth system
 - SSO support
 - Session management
 - RBAC implementation
 - Audit logging
 
-#### 2. **@courtlens/multi-tenant** - Multi-tenancy support
+#### 2. **@unioneyes/multi-tenant** - Multi-tenancy support
 - Tenant isolation
 - Data segregation
 - Configuration management
 
-#### 3. **@court-lens/supabase** - Database client
+#### 3. **@unioneyes/supabase** - Database client
 - Supabase client wrapper
 - Type-safe queries
 - Connection pooling
 
-#### 4. **@court-lens/ui** - Shared UI components
+#### 4. **@unioneyes/ui** - Shared UI components
 - Reusable React components
 - Design system
 - Tailwind utilities
 
-#### 5. **@court-lens/workflow** - Workflow engine
+#### 5. **@unioneyes/workflow** - Workflow engine
 - Process definitions
 - State machines
 - Task orchestration
 
-#### 6. **@court-lens/types** - Shared TypeScript types
+#### 6. **@unioneyes/types** - Shared TypeScript types
 - Common interfaces
 - Domain models
 - API contracts
 
-#### 7. **@court-lens/shared** - Utility functions
+#### 7. **@unioneyes/shared** - Utility functions
 - Common helpers
 - Validators
 - Formatters
@@ -481,16 +481,16 @@ backend/
 
 ## 🚨 Critical Considerations
 
-### 1. **CourtLens Separation** ⚠️ **NEW ISSUE IDENTIFIED**
-- union-claims-standalone uses `@courtlens` and `@court-lens` scoped packages (7 packages)
+### 1. **unioneyes Separation** ⚠️ **NEW ISSUE IDENTIFIED**
+- union-claims-standalone uses `@unioneyes` and `@unioneyes` scoped packages (7 packages)
 - **Good News**: All Azure resources already UnionEyes branded! ✅
   - Container Registry: `acrunionclaimsdev4x25.azurecr.io` ✅
   - PostgreSQL: `psql-union-claims-dev-4x25.postgres.database.azure.com` ✅
   - AKS Cluster: Union Claims Dev ✅
-- **Action Required**: Rebrand packages from `@courtlens/*` to `@unioneyes/*`
+- **Action Required**: Rebrand packages from `@unioneyes/*` to `@unioneyes/*`
 - **Timeline**: 1-2 days (automated find/replace + testing)
 - **Impact**: Low - Only package names and imports need updating
-- **See**: `COURTLENS_SEPARATION_PLAN.md` for detailed strategy
+- **See**: `unioneyes_SEPARATION_PLAN.md` for detailed strategy
 
 ### 2. **Authentication Migration**
 - UnionEyes already has Clerk configured ✅
@@ -536,7 +536,7 @@ backend/
 - union-claims-standalone: pnpm workspace with 7 packages
 - UnionEyes: Needs pnpm workspace setup
 - **Action**: Create `pnpm-workspace.yaml` and migrate packages
-- **Rebrand**: Convert `@courtlens/*` → `@unioneyes/*`
+- **Rebrand**: Convert `@unioneyes/*` → `@unioneyes/*`
 - **Timeline**: Package migration can happen in Day 1-2 of migration
 
 ---

@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: results.rows,
-      rowCount: results.rows.length,
+      data: results,
+      rowCount: results.length,
       executionTime,
       query: query, // Return for transparency (remove in production)
     });

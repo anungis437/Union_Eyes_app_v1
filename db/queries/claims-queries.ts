@@ -3,6 +3,7 @@
 import { db } from "@/db/db";
 import { eq, and, desc, sql, count } from "drizzle-orm";
 import { claims, claimUpdates } from "../schema/claims-schema";
+import { organizations } from "../schema-organizations";
 
 // Type for inserting a new claim
 export type InsertClaim = typeof claims.$inferInsert;
@@ -70,10 +71,24 @@ export const getClaimsByMember = async (memberId: string) => {
 };
 
 /**
- * Get all claims for a tenant (organization)
+ * Get all claims for an organization
+ * @param organizationSlug - Organization slug (TEXT) from organization_members.organization_id
  */
-export const getClaimsByTenant = async (tenantId: string, limit?: number) => {
+export const getClaimsByOrganization = async (organizationSlug: string, limit?: number) => {
   try {
+    // Convert organization slug to UUID (tenantId)
+    const [org] = await db
+      .select({ id: organizations.id })
+      .from(organizations)
+      .where(eq(organizations.slug, organizationSlug))
+      .limit(1);
+    
+    if (!org) {
+      throw new Error(`Organization with slug ${organizationSlug} not found`);
+    }
+    
+    const tenantId = org.id;
+    
     let query = db
       .select()
       .from(claims)
@@ -84,10 +99,10 @@ export const getClaimsByTenant = async (tenantId: string, limit?: number) => {
       query = query.limit(limit) as any;
     }
     
-    const tenantClaims = await query;
-    return tenantClaims;
+    const organizationClaims = await query;
+    return organizationClaims;
   } catch (error) {
-    console.error("Error fetching claims by tenant:", error);
+    console.error("Error fetching claims by organization:", error);
     throw new Error("Failed to fetch claims");
   }
 };
@@ -180,14 +195,24 @@ export const assignClaim = async (
 
 /**
  * Get claims assigned to a specific user (for stewards/officers)
+ * @param organizationSlug - Optional organization slug (TEXT) from organization_members.organization_id
  */
-export const getClaimsAssignedToUser = async (userId: string, tenantId?: string) => {
+export const getClaimsAssignedToUser = async (userId: string, organizationSlug?: string) => {
   try {
     const conditions = [eq(claims.assignedTo, userId)];
     
-    // Filter by tenant if provided (for multi-tenant isolation)
-    if (tenantId) {
-      conditions.push(eq(claims.tenantId, tenantId));
+    // Filter by organization if provided (for multi-tenant isolation)
+    if (organizationSlug) {
+      // Convert organization slug to UUID (tenantId)
+      const [org] = await db
+        .select({ id: organizations.id })
+        .from(organizations)
+        .where(eq(organizations.slug, organizationSlug))
+        .limit(1);
+      
+      if (org) {
+        conditions.push(eq(claims.tenantId, org.id));
+      }
     }
     
     const assignedClaims = await db
@@ -206,8 +231,21 @@ export const getClaimsAssignedToUser = async (userId: string, tenantId?: string)
 /**
  * Get claim statistics for dashboard
  */
-export const getClaimStatistics = async (tenantId: string) => {
+export const getClaimStatistics = async (organizationSlug: string) => {
   try {
+    // Convert organization slug to UUID (tenantId)
+    const [org] = await db
+      .select({ id: organizations.id })
+      .from(organizations)
+      .where(eq(organizations.slug, organizationSlug))
+      .limit(1);
+    
+    if (!org) {
+      throw new Error(`Organization with slug ${organizationSlug} not found`);
+    }
+    
+    const tenantId = org.id;
+    
     // Total active claims (not resolved or closed)
     const [activeClaims] = await db
       .select({ count: count() })

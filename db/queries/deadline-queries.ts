@@ -9,7 +9,7 @@
  * - Business day calculations
  */
 
-import { db } from '@/db';
+import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 
 // ============================================================================
@@ -18,7 +18,7 @@ import { sql } from 'drizzle-orm';
 
 export interface DeadlineRule {
   id: string;
-  tenantId: string;
+  organizationId: string;
   ruleName: string;
   ruleCode: string;
   description?: string;
@@ -42,7 +42,7 @@ export interface DeadlineRule {
 export interface ClaimDeadline {
   id: string;
   claimId: string;
-  tenantId: string;
+  organizationId: string;
   deadlineRuleId?: string;
   deadlineName: string;
   deadlineType: string;
@@ -72,7 +72,7 @@ export interface ClaimDeadline {
 export interface DeadlineExtension {
   id: string;
   deadlineId: string;
-  tenantId: string;
+  organizationId: string;
   requestedBy: string;
   requestedAt: Date;
   requestedDays: number;
@@ -90,7 +90,7 @@ export interface DeadlineExtension {
 export interface DeadlineAlert {
   id: string;
   deadlineId: string;
-  tenantId: string;
+  organizationId: string;
   alertType: string;
   alertSeverity: string;
   alertTrigger: string;
@@ -113,7 +113,7 @@ export interface DeadlineAlert {
 
 export interface Holiday {
   id: string;
-  tenantId?: string;
+  organizationId?: string;
   holidayDate: Date;
   holidayName: string;
   holidayType: string;
@@ -127,55 +127,55 @@ export interface Holiday {
 // ============================================================================
 
 /**
- * Get all active deadline rules for tenant
+ * Get all active deadline rules for organization
  */
-export async function getDeadlineRules(tenantId: string): Promise<DeadlineRule[]> {
+export async function getDeadlineRules(organizationId: string): Promise<DeadlineRule[]> {
   const result = await db.execute(sql`
     SELECT * FROM deadline_rules
-    WHERE tenant_id = ${tenantId} AND is_active = TRUE
+    WHERE organization_id = ${organizationId} AND is_active = TRUE
     ORDER BY rule_name
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Get deadline rule by code
  */
 export async function getDeadlineRuleByCode(
-  tenantId: string,
+  organizationId: string,
   ruleCode: string
 ): Promise<DeadlineRule | null> {
   const result = await db.execute(sql`
     SELECT * FROM deadline_rules
-    WHERE tenant_id = ${tenantId} AND rule_code = ${ruleCode} AND is_active = TRUE
+    WHERE organization_id = ${organizationId} AND rule_code = ${ruleCode} AND is_active = TRUE
   `);
-  return result.rows[0] as any || null;
+  return result[0] as any || null;
 }
 
 /**
  * Get applicable deadline rules for a claim
  */
 export async function getApplicableDeadlineRules(
-  tenantId: string,
+  organizationId: string,
   claimType: string,
   priorityLevel?: string
 ): Promise<DeadlineRule[]> {
   const result = await db.execute(sql`
     SELECT * FROM deadline_rules
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND is_active = TRUE
       AND (claim_type IS NULL OR claim_type = ${claimType})
       AND (priority_level IS NULL OR priority_level = ${priorityLevel || null})
     ORDER BY step_number NULLS LAST, days_from_event
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Create custom deadline rule
  */
 export async function createDeadlineRule(
-  tenantId: string,
+  organizationId: string,
   ruleName: string,
   ruleCode: string,
   daysFromEvent: number,
@@ -196,12 +196,12 @@ export async function createDeadlineRule(
 ): Promise<DeadlineRule> {
   const result = await db.execute(sql`
     INSERT INTO deadline_rules (
-      tenant_id, rule_name, rule_code, description, claim_type, priority_level,
+      organization_id, rule_name, rule_code, description, claim_type, priority_level,
       step_number, days_from_event, event_type, business_days_only,
       allows_extension, max_extension_days, requires_approval,
       escalate_to_role, escalation_delay_days, created_by
     ) VALUES (
-      ${tenantId}, ${ruleName}, ${ruleCode}, ${options.description || null},
+      ${organizationId}, ${ruleName}, ${ruleCode}, ${options.description || null},
       ${options.claimType || null}, ${options.priorityLevel || null},
       ${options.stepNumber || null}, ${daysFromEvent}, ${eventType},
       ${options.businessDaysOnly || false}, ${options.allowsExtension !== false},
@@ -211,7 +211,7 @@ export async function createDeadlineRule(
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 // ============================================================================
@@ -227,7 +227,7 @@ export async function getClaimDeadlines(claimId: string): Promise<ClaimDeadline[
     WHERE claim_id = ${claimId}
     ORDER BY current_deadline
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -239,16 +239,16 @@ export async function getPendingClaimDeadlines(claimId: string): Promise<ClaimDe
     WHERE claim_id = ${claimId} AND status = 'pending'
     ORDER BY current_deadline
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
- * Get critical deadlines for tenant (overdue + due within 3 days)
+ * Get critical deadlines for organization (overdue + due within 3 days)
  */
-export async function getCriticalDeadlines(tenantId: string): Promise<any[]> {
+export async function getCriticalDeadlines(organizationId: string): Promise<any[]> {
   const result = await db.execute(sql`
     SELECT * FROM v_critical_deadlines
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
     ORDER BY 
       CASE 
         WHEN is_overdue THEN 1
@@ -257,7 +257,7 @@ export async function getCriticalDeadlines(tenantId: string): Promise<any[]> {
       END,
       current_deadline
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -265,7 +265,7 @@ export async function getCriticalDeadlines(tenantId: string): Promise<any[]> {
  */
 export async function getMemberDeadlines(
   memberId: string,
-  tenantId: string,
+  organizationId: string,
   options: {
     status?: 'pending' | 'completed' | 'missed';
     daysAhead?: number;
@@ -276,7 +276,7 @@ export async function getMemberDeadlines(
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
     WHERE c.assigned_to = ${memberId}
-      AND cd.tenant_id = ${tenantId}
+      AND cd.organization_id = ${organizationId}
   `;
   
   if (options.status) {
@@ -290,21 +290,21 @@ export async function getMemberDeadlines(
   query = sql`${query} ORDER BY cd.current_deadline`;
   
   const result = await db.execute(query);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
- * Get overdue deadlines for tenant
+ * Get overdue deadlines for organization
  */
-export async function getOverdueDeadlines(tenantId: string): Promise<ClaimDeadline[]> {
+export async function getOverdueDeadlines(organizationId: string): Promise<ClaimDeadline[]> {
   const result = await db.execute(sql`
     SELECT * FROM claim_deadlines
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND status = 'pending'
       AND is_overdue = TRUE
     ORDER BY days_overdue DESC, priority DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -312,7 +312,7 @@ export async function getOverdueDeadlines(tenantId: string): Promise<ClaimDeadli
  */
 export async function createClaimDeadline(
   claimId: string,
-  tenantId: string,
+  organizationId: string,
   deadlineName: string,
   deadlineType: string,
   eventDate: Date,
@@ -326,21 +326,21 @@ export async function createClaimDeadline(
 ): Promise<ClaimDeadline> {
   // Calculate deadline based on business days or calendar days
   const deadlineDate = options.businessDaysOnly
-    ? await addBusinessDays(eventDate, daysFromEvent, tenantId)
+    ? await addBusinessDays(eventDate, daysFromEvent, organizationId)
     : new Date(eventDate.getTime() + daysFromEvent * 24 * 60 * 60 * 1000);
   
   const result = await db.execute(sql`
     INSERT INTO claim_deadlines (
-      claim_id, tenant_id, deadline_rule_id, deadline_name, deadline_type,
+      claim_id, organization_id, deadline_rule_id, deadline_name, deadline_type,
       event_date, original_deadline, current_deadline, priority, created_by
     ) VALUES (
-      ${claimId}, ${tenantId}, ${options.deadlineRuleId || null},
+      ${claimId}, ${organizationId}, ${options.deadlineRuleId || null},
       ${deadlineName}, ${deadlineType}, ${eventDate}, ${deadlineDate},
       ${deadlineDate}, ${options.priority || 'medium'}, ${createdBy}
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 /**
@@ -348,14 +348,14 @@ export async function createClaimDeadline(
  */
 export async function autoCreateClaimDeadlines(
   claimId: string,
-  tenantId: string,
+  organizationId: string,
   claimType: string,
   priorityLevel: string,
   eventDate: Date,
   createdBy: string
 ): Promise<ClaimDeadline[]> {
   // Get applicable rules
-  const rules = await getApplicableDeadlineRules(tenantId, claimType, priorityLevel);
+  const rules = await getApplicableDeadlineRules(organizationId, claimType, priorityLevel);
   
   const deadlines: ClaimDeadline[] = [];
   
@@ -363,7 +363,7 @@ export async function autoCreateClaimDeadlines(
     if (rule.eventType === 'claim_created') {
       const deadline = await createClaimDeadline(
         claimId,
-        tenantId,
+        organizationId,
         rule.ruleName,
         'filing',
         eventDate,
@@ -389,8 +389,8 @@ export async function completeDeadline(
   deadlineId: string,
   completedBy: string,
   notes?: string
-): Promise<void> {
-  await db.execute(sql`
+): Promise<any> {
+  const result = await db.execute(sql`
     UPDATE claim_deadlines
     SET status = 'completed',
         completed_at = NOW(),
@@ -399,7 +399,9 @@ export async function completeDeadline(
         updated_at = NOW(),
         updated_by = ${completedBy}
     WHERE id = ${deadlineId}
+    RETURNING *
   `);
+  return result[0];
 }
 
 /**
@@ -409,7 +411,7 @@ export async function markOverdueDeadlines(): Promise<number> {
   const result = await db.execute(sql`
     SELECT mark_overdue_deadlines() as count
   `);
-  return result.rows[0]?.count || 0;
+  return (result[0]?.count as number) || 0;
 }
 
 // ============================================================================
@@ -421,7 +423,7 @@ export async function markOverdueDeadlines(): Promise<number> {
  */
 export async function requestDeadlineExtension(
   deadlineId: string,
-  tenantId: string,
+  organizationId: string,
   requestedBy: string,
   requestedDays: number,
   reason: string,
@@ -429,15 +431,15 @@ export async function requestDeadlineExtension(
 ): Promise<DeadlineExtension> {
   const result = await db.execute(sql`
     INSERT INTO deadline_extensions (
-      deadline_id, tenant_id, requested_by, requested_days,
+      deadline_id, organization_id, requested_by, requested_days,
       request_reason, requires_approval
     ) VALUES (
-      ${deadlineId}, ${tenantId}, ${requestedBy}, ${requestedDays},
+      ${deadlineId}, ${organizationId}, ${requestedBy}, ${requestedDays},
       ${reason}, ${requiresApproval}
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 /**
@@ -451,13 +453,13 @@ export async function approveDeadlineExtension(
 ): Promise<void> {
   // Get extension and deadline details
   const extensionResult = await db.execute(sql`
-    SELECT de.*, cd.current_deadline, cd.tenant_id
+    SELECT de.*, cd.current_deadline, cd.organization_id
     FROM deadline_extensions de
     JOIN claim_deadlines cd ON de.deadline_id = cd.id
     WHERE de.id = ${extensionId}
   `);
   
-  const extension = extensionResult.rows[0] as any;
+  const extension = extensionResult[0] as any;
   if (!extension) throw new Error('Extension not found');
   
   const granted = daysGranted || extension.requested_days;
@@ -515,19 +517,19 @@ export async function denyDeadlineExtension(
  * Get pending extension requests for approval
  */
 export async function getPendingExtensionRequests(
-  tenantId: string
+  organizationId: string
 ): Promise<DeadlineExtension[]> {
   const result = await db.execute(sql`
     SELECT de.*, cd.deadline_name, cd.current_deadline, c.claim_number
     FROM deadline_extensions de
     JOIN claim_deadlines cd ON de.deadline_id = cd.id
     JOIN claims c ON cd.claim_id = c.id
-    WHERE de.tenant_id = ${tenantId}
+    WHERE de.organization_id = ${organizationId}
       AND de.status = 'pending'
       AND de.requires_approval = TRUE
     ORDER BY de.requested_at
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 // ============================================================================
@@ -539,7 +541,7 @@ export async function getPendingExtensionRequests(
  */
 export async function createDeadlineAlert(
   deadlineId: string,
-  tenantId: string,
+  organizationId: string,
   recipientId: string,
   alertType: string,
   alertTrigger: string,
@@ -554,10 +556,10 @@ export async function createDeadlineAlert(
 ): Promise<DeadlineAlert> {
   const result = await db.execute(sql`
     INSERT INTO deadline_alerts (
-      deadline_id, tenant_id, recipient_id, alert_type, alert_severity,
+      deadline_id, organization_id, recipient_id, alert_type, alert_severity,
       alert_trigger, recipient_role, delivery_method, subject, message, action_url
     ) VALUES (
-      ${deadlineId}, ${tenantId}, ${recipientId}, ${alertType},
+      ${deadlineId}, ${organizationId}, ${recipientId}, ${alertType},
       ${options.alertSeverity || 'info'}, ${alertTrigger},
       ${options.recipientRole || null}, ${deliveryMethod},
       ${options.subject || null}, ${options.message || null},
@@ -565,7 +567,7 @@ export async function createDeadlineAlert(
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 /**
@@ -617,7 +619,7 @@ export async function recordAlertAction(
  */
 export async function getUnreadAlerts(
   memberId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<DeadlineAlert[]> {
   const result = await db.execute(sql`
     SELECT da.*, cd.deadline_name, cd.current_deadline, c.claim_number
@@ -625,19 +627,19 @@ export async function getUnreadAlerts(
     JOIN claim_deadlines cd ON da.deadline_id = cd.id
     JOIN claims c ON cd.claim_id = c.id
     WHERE da.recipient_id = ${memberId}
-      AND da.tenant_id = ${tenantId}
+      AND da.organization_id = ${organizationId}
       AND da.viewed_at IS NULL
       AND da.delivery_method = 'in_app'
     ORDER BY da.sent_at DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Generate alerts for upcoming deadlines (run by scheduled job)
  */
 export async function generateUpcomingDeadlineAlerts(
-  tenantId: string
+  organizationId: string
 ): Promise<number> {
   let alertCount = 0;
   
@@ -646,7 +648,7 @@ export async function generateUpcomingDeadlineAlerts(
     SELECT cd.id, cd.deadline_name, cd.current_deadline, c.assigned_to, c.claim_number
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
-    WHERE cd.tenant_id = ${tenantId}
+    WHERE cd.organization_id = ${organizationId}
       AND cd.status = 'pending'
       AND cd.days_until_due = 3
       AND NOT EXISTS (
@@ -655,11 +657,11 @@ export async function generateUpcomingDeadlineAlerts(
       )
   `);
   
-  for (const deadline of threeDayResult.rows) {
+  for (const deadline of threeDayResult as any[]) {
     if (deadline.assigned_to) {
       await createDeadlineAlert(
         deadline.id,
-        tenantId,
+        organizationId,
         deadline.assigned_to,
         'upcoming',
         '3_days_before',
@@ -680,7 +682,7 @@ export async function generateUpcomingDeadlineAlerts(
     SELECT cd.id, cd.deadline_name, cd.current_deadline, c.assigned_to, c.claim_number
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
-    WHERE cd.tenant_id = ${tenantId}
+    WHERE cd.organization_id = ${organizationId}
       AND cd.status = 'pending'
       AND cd.days_until_due = 1
       AND NOT EXISTS (
@@ -689,11 +691,11 @@ export async function generateUpcomingDeadlineAlerts(
       )
   `);
   
-  for (const deadline of oneDayResult.rows) {
+  for (const deadline of oneDayResult as any[]) {
     if (deadline.assigned_to) {
       await createDeadlineAlert(
         deadline.id,
-        tenantId,
+        organizationId,
         deadline.assigned_to,
         'upcoming',
         '1_day_before',
@@ -714,7 +716,7 @@ export async function generateUpcomingDeadlineAlerts(
     SELECT cd.id, cd.deadline_name, cd.current_deadline, c.assigned_to, c.claim_number
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
-    WHERE cd.tenant_id = ${tenantId}
+    WHERE cd.organization_id = ${organizationId}
       AND cd.status = 'pending'
       AND cd.days_until_due = 0
       AND NOT EXISTS (
@@ -723,11 +725,11 @@ export async function generateUpcomingDeadlineAlerts(
       )
   `);
   
-  for (const deadline of todayResult.rows) {
+  for (const deadline of todayResult as any[]) {
     if (deadline.assigned_to) {
       await createDeadlineAlert(
         deadline.id,
-        tenantId,
+        organizationId,
         deadline.assigned_to,
         'due_today',
         'day_of',
@@ -756,12 +758,12 @@ export async function generateUpcomingDeadlineAlerts(
 export async function calculateBusinessDays(
   startDate: Date,
   endDate: Date,
-  tenantId?: string
+  organizationId?: string
 ): Promise<number> {
   const result = await db.execute(sql`
-    SELECT calculate_business_days(${startDate}, ${endDate}, ${tenantId || null}) as days
+    SELECT calculate_business_days(${startDate}, ${endDate}, ${organizationId || null}) as days
   `);
-  return result.rows[0]?.days || 0;
+  return (result[0]?.days as number) || 0;
 }
 
 /**
@@ -770,12 +772,12 @@ export async function calculateBusinessDays(
 export async function addBusinessDays(
   startDate: Date,
   daysToAdd: number,
-  tenantId?: string
+  organizationId?: string
 ): Promise<Date> {
   const result = await db.execute(sql`
-    SELECT add_business_days(${startDate}, ${daysToAdd}, ${tenantId || null}) as result_date
+    SELECT add_business_days(${startDate}, ${daysToAdd}, ${organizationId || null}) as result_date
   `);
-  return result.rows[0]?.result_date;
+  return result[0]?.result_date as Date;
 }
 
 /**
@@ -784,7 +786,7 @@ export async function addBusinessDays(
 export async function getHolidays(
   startDate: Date,
   endDate: Date,
-  tenantId?: string
+  organizationId?: string
 ): Promise<Holiday[]> {
   let query = sql`
     SELECT * FROM holiday_calendar
@@ -793,16 +795,16 @@ export async function getHolidays(
       AND is_observed = TRUE
   `;
   
-  if (tenantId) {
-    query = sql`${query} AND (tenant_id IS NULL OR tenant_id = ${tenantId})`;
+  if (organizationId) {
+    query = sql`${query} AND (organization_id IS NULL OR organization_id = ${organizationId})`;
   } else {
-    query = sql`${query} AND tenant_id IS NULL`;
+    query = sql`${query} AND organization_id IS NULL`;
   }
   
   query = sql`${query} ORDER BY holiday_date`;
   
   const result = await db.execute(query);
-  return result.rows as any[];
+  return result as any[];
 }
 
 // ============================================================================
@@ -810,16 +812,16 @@ export async function getHolidays(
 // ============================================================================
 
 /**
- * Get deadline compliance metrics for tenant
+ * Get deadline compliance metrics for organization
  */
 export async function getDeadlineComplianceMetrics(
-  tenantId: string,
+  organizationId: string,
   startDate?: Date,
   endDate?: Date
 ): Promise<any[]> {
   let query = sql`
     SELECT * FROM v_deadline_compliance_metrics
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
   `;
   
   if (startDate) {
@@ -832,7 +834,7 @@ export async function getDeadlineComplianceMetrics(
   query = sql`${query} ORDER BY month DESC`;
   
   const result = await db.execute(query);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -840,13 +842,13 @@ export async function getDeadlineComplianceMetrics(
  */
 export async function getMemberDeadlineSummary(
   memberId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<any> {
   const result = await db.execute(sql`
     SELECT * FROM v_member_deadline_summary
-    WHERE member_id = ${memberId} AND tenant_id = ${tenantId}
+    WHERE member_id = ${memberId} AND organization_id = ${organizationId}
   `);
-  return result.rows[0] || {
+  return result[0] || {
     total_deadlines: 0,
     overdue_count: 0,
     due_soon_count: 0,
@@ -858,7 +860,7 @@ export async function getMemberDeadlineSummary(
 /**
  * Get deadline summary for all claims (dashboard widget)
  */
-export async function getDeadlineDashboardSummary(tenantId: string): Promise<any> {
+export async function getDeadlineDashboardSummary(organizationId: string): Promise<any> {
   const result = await db.execute(sql`
     SELECT 
       COUNT(*) FILTER (WHERE status = 'pending') as active_deadlines,
@@ -869,10 +871,10 @@ export async function getDeadlineDashboardSummary(tenantId: string): Promise<any
       COUNT(*) FILTER (WHERE status = 'completed' AND completed_at <= current_deadline) as on_time_completed,
       COUNT(*) FILTER (WHERE status IN ('completed', 'missed')) as total_completed
     FROM claim_deadlines
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
   `);
   
-  const row = result.rows[0] as any;
+  const row = result[0] as any;
   return {
     activeDeadlines: parseInt(row.active_deadlines) || 0,
     overdueCount: parseInt(row.overdue_count) || 0,
@@ -884,3 +886,4 @@ export async function getDeadlineDashboardSummary(tenantId: string): Promise<any
       : 100,
   };
 }
+

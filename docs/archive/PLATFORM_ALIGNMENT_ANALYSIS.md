@@ -194,7 +194,7 @@
 
 1. ✅ **Platform Branding Complete** - UnionEyes identity consistent
 2. ⏳ **Voice-to-Text Integration** - Azure Speech Services (planned Phase 2)
-3. ✅ **Collective Agreement Module** - **INTEGRATED** - CBA Intelligence Engine from CourtLens now accessible via navigation
+3. ✅ **Collective Agreement Module** - **INTEGRATED** - CBA Intelligence Engine from unioneyes now accessible via navigation
 4. 🆕 **Regional Office Tracking** - Add to claims schema and UI
 
 **UPDATE (Nov 12, 2025)**: CBA Intelligence Engine successfully integrated! Module accessible at `/dashboard/collective-agreements` with full type system (403 lines), dashboard UI, and strategic alignment validated at 94/100. See `CBA_INTELLIGENCE_VALIDATION.md` for details.

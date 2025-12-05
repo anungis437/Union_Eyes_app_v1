@@ -7,15 +7,52 @@
  * Created: November 15, 2025
  */
 
-import { Queue, Worker, QueueEvents, Job } from 'bullmq';
-import IORedis from 'ioredis';
+// Avoid importing bullmq types at module level to prevent bundling
+// Types are documented in JSDoc only
 
-// Redis connection configuration
-const connection = new IORedis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  maxRetriesPerRequest: null,
-});
+// Don't lazy-load at module level - only on first function call
+let _initialized = false;
+let QueueImpl: any, WorkerImpl: any, QueueEventsImpl: any, JobImpl: any;
+let IORedisImpl: any;
+
+const ensureInitialized = () => {
+  // Only initialize once, and only in valid Node.js environments
+  if (_initialized || typeof window !== 'undefined') {
+    return;
+  }
+  
+  _initialized = true;
+  
+  try {
+    // Use require with string variable to prevent bundler from recognizing bullmq import
+    // eslint-disable-next-line global-require
+    const bullmq = require('bull' + 'mq');
+    QueueImpl = bullmq.Queue;
+    WorkerImpl = bullmq.Worker;
+    QueueEventsImpl = bullmq.QueueEvents;
+    JobImpl = bullmq.Job;
+    // eslint-disable-next-line global-require
+    IORedisImpl = require('io' + 'redis');
+  } catch (e: any) {
+    // Silently fail if bullmq not available or if we're in a build/bundling context
+    // This handles "self is not defined" and other bundler-related errors
+    // The require() calls above may fail during Next.js build phase or in restricted environments
+  }
+};
+
+// Redis connection configuration (lazy loaded)
+let connection: any;
+
+const getConnection = () => {
+  if (!connection && IORedisImpl) {
+    connection = new IORedisImpl({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+      maxRetriesPerRequest: null,
+    });
+  }
+  return connection;
+};
 
 // Job type definitions
 export interface EmailJobData {
@@ -65,21 +102,100 @@ export type JobData =
   | CleanupJobData;
 
 // ============================================
-// Queue Definitions
+// Queue Definitions (Lazy-loaded)
 // ============================================
 
-export const emailQueue = new Queue<EmailJobData>('email', { connection });
-export const smsQueue = new Queue<SmsJobData>('sms', { connection });
-export const notificationQueue = new Queue<NotificationJobData>('notifications', { connection });
-export const reportQueue = new Queue<ReportJobData>('reports', { connection });
-export const cleanupQueue = new Queue<CleanupJobData>('cleanup', { connection });
+let emailQueue: any = null;
+let smsQueue: any = null;
+let notificationQueue: any = null;
+let reportQueue: any = null;
+let cleanupQueue: any = null;
 
-// Queue events for monitoring
-export const emailQueueEvents = new QueueEvents('email', { connection });
-export const smsQueueEvents = new QueueEvents('sms', { connection });
-export const notificationQueueEvents = new QueueEvents('notifications', { connection });
-export const reportQueueEvents = new QueueEvents('reports', { connection });
-export const cleanupQueueEvents = new QueueEvents('cleanup', { connection });
+let emailQueueEvents: any = null;
+let smsQueueEvents: any = null;
+let notificationQueueEvents: any = null;
+let reportQueueEvents: any = null;
+let cleanupQueueEvents: any = null;
+
+export const getEmailQueue = () => {
+  ensureInitialized();
+  if (!emailQueue && QueueImpl) {
+    emailQueue = new QueueImpl('email', { connection: getConnection() });
+  }
+  return emailQueue;
+};
+
+export const getSmsQueue = () => {
+  ensureInitialized();
+  if (!smsQueue && QueueImpl) {
+    smsQueue = new QueueImpl('sms', { connection: getConnection() });
+  }
+  return smsQueue;
+};
+
+export const getNotificationQueue = () => {
+  ensureInitialized();
+  if (!notificationQueue && QueueImpl) {
+    notificationQueue = new QueueImpl('notifications', { connection: getConnection() });
+  }
+  return notificationQueue;
+};
+
+export const getReportQueue = () => {
+  ensureInitialized();
+  if (!reportQueue && QueueImpl) {
+    reportQueue = new QueueImpl('reports', { connection: getConnection() });
+  }
+  return reportQueue;
+};
+
+export const getCleanupQueue = () => {
+  ensureInitialized();
+  if (!cleanupQueue && QueueImpl) {
+    cleanupQueue = new QueueImpl('cleanup', { connection: getConnection() });
+  }
+  return cleanupQueue;
+};
+
+export const getEmailQueueEvents = () => {
+  ensureInitialized();
+  if (!emailQueueEvents && QueueEventsImpl) {
+    emailQueueEvents = new QueueEventsImpl('email', { connection: getConnection() });
+  }
+  return emailQueueEvents;
+};
+
+export const getSmsQueueEvents = () => {
+  ensureInitialized();
+  if (!smsQueueEvents && QueueEventsImpl) {
+    smsQueueEvents = new QueueEventsImpl('sms', { connection: getConnection() });
+  }
+  return smsQueueEvents;
+};
+
+export const getNotificationQueueEvents = () => {
+  ensureInitialized();
+  if (!notificationQueueEvents && QueueEventsImpl) {
+    notificationQueueEvents = new QueueEventsImpl('notifications', { connection: getConnection() });
+  }
+  return notificationQueueEvents;
+};
+
+export const getReportQueueEvents = () => {
+  ensureInitialized();
+  if (!reportQueueEvents && QueueEventsImpl) {
+    reportQueueEvents = new QueueEventsImpl('reports', { connection: getConnection() });
+  }
+  return reportQueueEvents;
+};
+
+export const getCleanupQueueEvents = () => {
+  ensureInitialized();
+  if (!cleanupQueueEvents && QueueEventsImpl) {
+    cleanupQueueEvents = new QueueEventsImpl('cleanup', { connection: getConnection() });
+  }
+  return cleanupQueueEvents;
+};
 
 // ============================================
 // Job Helpers
@@ -96,7 +212,10 @@ export async function addEmailJob(
     attempts?: number;
   }
 ) {
-  return await emailQueue.add(
+  ensureInitialized();
+  const queue = getEmailQueue();
+  if (!queue) throw new Error('Email queue not available');
+  return await queue.add(
     'send-email',
     { type: 'email', ...data },
     {
@@ -128,7 +247,9 @@ export async function addSmsJob(
     attempts?: number;
   }
 ) {
-  return await smsQueue.add(
+  const queue = getSmsQueue();
+  if (!queue) throw new Error('SMS queue not available');
+  return await queue.add(
     'send-sms',
     { type: 'sms', ...data },
     {
@@ -153,7 +274,9 @@ export async function addNotificationJob(
     priority?: number;
   }
 ) {
-  return await notificationQueue.add(
+  const queue = getNotificationQueue();
+  if (!queue) throw new Error('Notification queue not available');
+  return await queue.add(
     'send-notification',
     { type: 'notification', ...data },
     {
@@ -177,13 +300,14 @@ export async function addReportJob(
     priority?: number;
   }
 ) {
-  return await reportQueue.add(
+  const queue = getReportQueue();
+  if (!queue) throw new Error('Report queue not available');
+  return await queue.add(
     'generate-report',
     { type: 'report', ...data },
     {
       priority: options?.priority || 5,
       attempts: 2,
-      timeout: 300000, // 5 minutes
       backoff: {
         type: 'fixed',
         delay: 10000,
@@ -201,7 +325,9 @@ export async function addCleanupJob(
     delay?: number;
   }
 ) {
-  return await cleanupQueue.add(
+  const queue = getCleanupQueue();
+  if (!queue) throw new Error('Cleanup queue not available');
+  return await queue.add(
     'cleanup',
     { type: 'cleanup', ...data },
     {
@@ -219,11 +345,13 @@ export async function scheduleEmailDigest(
   frequency: 'daily' | 'weekly',
   hour: number = 8
 ) {
+  const queue = getEmailQueue();
+  if (!queue) throw new Error('Email queue not available');
   const pattern = frequency === 'daily' 
     ? `0 ${hour} * * *`  // Daily at specified hour
     : `0 ${hour} * * 1`; // Weekly on Monday at specified hour
 
-  return await emailQueue.add(
+  return await queue.add(
     'email-digest',
     {
       type: 'email',
@@ -244,8 +372,11 @@ export async function scheduleEmailDigest(
  * Schedule cleanup jobs
  */
 export async function scheduleCleanupJobs() {
+  const queue = getCleanupQueue();
+  if (!queue) throw new Error('Cleanup queue not available');
+  
   // Daily cleanup at 2 AM
-  await cleanupQueue.add(
+  await queue.add(
     'cleanup-logs',
     {
       type: 'cleanup',
@@ -260,7 +391,7 @@ export async function scheduleCleanupJobs() {
   );
 
   // Weekly cleanup on Sunday at 3 AM
-  await cleanupQueue.add(
+  await queue.add(
     'cleanup-exports',
     {
       type: 'cleanup',
@@ -294,12 +425,12 @@ export interface QueueStats {
  */
 export async function getAllQueueStats(): Promise<QueueStats[]> {
   const queues = [
-    emailQueue,
-    smsQueue,
-    notificationQueue,
-    reportQueue,
-    cleanupQueue,
-  ];
+    getEmailQueue(),
+    getSmsQueue(),
+    getNotificationQueue(),
+    getReportQueue(),
+    getCleanupQueue(),
+  ].filter(q => q !== null) as any[];
 
   const stats = await Promise.all(
     queues.map(async (queue) => {
@@ -325,28 +456,29 @@ export async function getAllQueueStats(): Promise<QueueStats[]> {
  * Get failed jobs for a queue
  */
 export async function getFailedJobs(queueName: string, limit: number = 10) {
-  let queue: Queue;
+  let queue: any | null;
   
   switch (queueName) {
     case 'email':
-      queue = emailQueue;
+      queue = getEmailQueue();
       break;
     case 'sms':
-      queue = smsQueue;
+      queue = getSmsQueue();
       break;
     case 'notifications':
-      queue = notificationQueue;
+      queue = getNotificationQueue();
       break;
     case 'reports':
-      queue = reportQueue;
+      queue = getReportQueue();
       break;
     case 'cleanup':
-      queue = cleanupQueue;
+      queue = getCleanupQueue();
       break;
     default:
       throw new Error(`Unknown queue: ${queueName}`);
   }
 
+  if (!queue) throw new Error(`Queue ${queueName} not available`);
   return await queue.getFailed(0, limit);
 }
 
@@ -355,7 +487,7 @@ export async function getFailedJobs(queueName: string, limit: number = 10) {
  */
 export async function retryJob(queueName: string, jobId: string) {
   const jobs = await getFailedJobs(queueName, 100);
-  const job = jobs.find((j) => j.id === jobId);
+  const job = jobs.find((j: any) => j.id === jobId);
   
   if (!job) {
     throw new Error(`Job ${jobId} not found in ${queueName} queue`);
@@ -371,28 +503,29 @@ export async function cleanCompletedJobs(
   queueName: string,
   olderThanMs: number = 24 * 60 * 60 * 1000 // 24 hours
 ) {
-  let queue: Queue;
+  let queue: any | null;
   
   switch (queueName) {
     case 'email':
-      queue = emailQueue;
+      queue = getEmailQueue();
       break;
     case 'sms':
-      queue = smsQueue;
+      queue = getSmsQueue();
       break;
     case 'notifications':
-      queue = notificationQueue;
+      queue = getNotificationQueue();
       break;
     case 'reports':
-      queue = reportQueue;
+      queue = getReportQueue();
       break;
     case 'cleanup':
-      queue = cleanupQueue;
+      queue = getCleanupQueue();
       break;
     default:
       throw new Error(`Unknown queue: ${queueName}`);
   }
 
+  if (!queue) throw new Error(`Queue ${queueName} not available`);
   await queue.clean(olderThanMs, 100, 'completed');
   await queue.clean(olderThanMs * 7, 100, 'failed'); // Keep failed longer
 }
@@ -401,19 +534,29 @@ export async function cleanCompletedJobs(
  * Pause queue
  */
 export async function pauseQueue(queueName: string) {
-  const queues: Record<string, Queue> = {
-    email: emailQueue,
-    sms: smsQueue,
-    notifications: notificationQueue,
-    reports: reportQueue,
-    cleanup: cleanupQueue,
-  };
-
-  const queue = queues[queueName];
-  if (!queue) {
-    throw new Error(`Unknown queue: ${queueName}`);
+  let queue: any | null;
+  
+  switch (queueName) {
+    case 'email':
+      queue = getEmailQueue();
+      break;
+    case 'sms':
+      queue = getSmsQueue();
+      break;
+    case 'notifications':
+      queue = getNotificationQueue();
+      break;
+    case 'reports':
+      queue = getReportQueue();
+      break;
+    case 'cleanup':
+      queue = getCleanupQueue();
+      break;
+    default:
+      throw new Error(`Unknown queue: ${queueName}`);
   }
 
+  if (!queue) throw new Error(`Queue ${queueName} not available`);
   await queue.pause();
 }
 
@@ -421,19 +564,29 @@ export async function pauseQueue(queueName: string) {
  * Resume queue
  */
 export async function resumeQueue(queueName: string) {
-  const queues: Record<string, Queue> = {
-    email: emailQueue,
-    sms: smsQueue,
-    notifications: notificationQueue,
-    reports: reportQueue,
-    cleanup: cleanupQueue,
-  };
-
-  const queue = queues[queueName];
-  if (!queue) {
-    throw new Error(`Unknown queue: ${queueName}`);
+  let queue: any | null;
+  
+  switch (queueName) {
+    case 'email':
+      queue = getEmailQueue();
+      break;
+    case 'sms':
+      queue = getSmsQueue();
+      break;
+    case 'notifications':
+      queue = getNotificationQueue();
+      break;
+    case 'reports':
+      queue = getReportQueue();
+      break;
+    case 'cleanup':
+      queue = getCleanupQueue();
+      break;
+    default:
+      throw new Error(`Unknown queue: ${queueName}`);
   }
 
+  if (!queue) throw new Error(`Queue ${queueName} not available`);
   await queue.resume();
 }
 
@@ -444,19 +597,20 @@ export async function resumeQueue(queueName: string) {
 export async function closeQueues() {
   console.log('Closing job queues...');
   
+  const conn = getConnection();
   await Promise.all([
-    emailQueue.close(),
-    smsQueue.close(),
-    notificationQueue.close(),
-    reportQueue.close(),
-    cleanupQueue.close(),
-    emailQueueEvents.close(),
-    smsQueueEvents.close(),
-    notificationQueueEvents.close(),
-    reportQueueEvents.close(),
-    cleanupQueueEvents.close(),
-    connection.quit(),
-  ]);
+    getEmailQueue()?.close(),
+    getSmsQueue()?.close(),
+    getNotificationQueue()?.close(),
+    getReportQueue()?.close(),
+    getCleanupQueue()?.close(),
+    getEmailQueueEvents()?.close(),
+    getSmsQueueEvents()?.close(),
+    getNotificationQueueEvents()?.close(),
+    getReportQueueEvents()?.close(),
+    getCleanupQueueEvents()?.close(),
+    conn?.quit(),
+  ].filter(Boolean));
 
   console.log('All queues closed');
 }

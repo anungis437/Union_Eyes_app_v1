@@ -6,9 +6,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getAllQueueStats, getFailedJobs } from '@/lib/job-queue';
+
+// This route uses dynamic features and must not be statically generated
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Import job-queue functions only at runtime, not at module load time
+  // This prevents bundling bullmq during build phase
+  const { getAllQueueStats, getFailedJobs } = await import('@/lib/job-queue');
   try {
     const { userId } = await auth();
 
@@ -31,7 +36,7 @@ export async function GET(request: NextRequest) {
       
       return NextResponse.json({
         queue,
-        failed: failedJobs.map((job) => ({
+        failed: failedJobs.map((job: any) => ({
           id: job.id,
           name: job.name,
           data: job.data,

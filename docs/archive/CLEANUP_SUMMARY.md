@@ -134,7 +134,7 @@ Clean up the union-claims-standalone repository by removing legacy code, old mic
   ✅ CLERK_IMPLEMENTATION_VERIFIED.md
   ✅ PACKAGE_MIGRATION_COMPLETE.md
   ✅ MIGRATION_ANALYSIS.md
-  ✅ COURTLENS_SEPARATION_PLAN.md
+  ✅ unioneyes_SEPARATION_PLAN.md
 ```
 
 ---

@@ -54,6 +54,45 @@ import {
 import { FilterBuilder } from './FilterBuilder';
 import { ChartSelector } from './ChartSelector';
 import { ReportPreview } from './ReportPreview';
+import { DataSourceExplorer } from '@/components/analytics/DataSourceExplorer';
+import { FormulaBuilder } from '@/components/analytics/FormulaBuilder';
+import { ChartConfigPanel, ChartType, ChartConfig } from '@/components/analytics/ChartConfigPanel';
+import {
+  ScatterChart,
+  BubbleChart,
+  TreemapChart,
+  FunnelChart,
+  GaugeChart,
+  WaterfallChart,
+  SankeyChart,
+  BoxPlotChart,
+  CandlestickChart,
+  SunburstChart,
+  DataTable,
+  ChartExporter,
+} from '@/components/analytics/charts';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  AreaChart,
+  Area,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Cell,
+  ResponsiveContainer,
+} from 'recharts';
 
 // ============================================================================
 // Types
@@ -238,6 +277,17 @@ export function ReportBuilder({
   const [showPreview, setShowPreview] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // New state for enhanced features
+  const [showFormulaBuilder, setShowFormulaBuilder] = useState(false);
+  const [showDataSourceExplorer, setShowDataSourceExplorer] = useState(true);
+  const [chartConfig, setChartConfig] = useState<ChartConfig>({
+    type: 'bar' as ChartType,
+    legend: { show: true, position: 'bottom' },
+    tooltip: { enabled: true },
+  });
+  const [previewData, setPreviewData] = useState<any[] | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   // Load data source when selected
   useEffect(() => {
@@ -346,11 +396,96 @@ export function ReportBuilder({
         await onExecute(config);
       }
       setShowPreview(true);
+      
+      // Also update live preview
+      await fetchPreviewData();
     } catch (err: any) {
       setError(err.message || 'Failed to execute report');
     } finally {
       setIsExecuting(false);
     }
+  };
+
+  // Live preview with debounce
+  const fetchPreviewData = async () => {
+    if (!config.dataSourceId || config.fields.length === 0) {
+      setPreviewData(null);
+      return;
+    }
+
+    setPreviewLoading(true);
+    try {
+      const response = await fetch('/api/reports/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...config, limit: 10 }), // Preview with 10 rows
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPreviewData(data.results);
+      } else {
+        console.error('Preview failed:', await response.text());
+        setPreviewData(null);
+      }
+    } catch (error) {
+      console.error('Preview error:', error);
+      setPreviewData(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  // Debounced preview update
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (showPreview && config.dataSourceId && config.fields.length > 0) {
+        fetchPreviewData();
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [config.dataSourceId, config.fields, config.filters, config.groupBy, config.sortBy, showPreview]);
+
+  // Handle formula field creation
+  const handleFormulaFieldCreate = (formulaField: { alias?: string; formula: string }) => {
+    const newField: SelectedField = {
+      fieldId: `formula_${Date.now()}`,
+      fieldName: formulaField.alias || 'Formula Field',
+      alias: formulaField.alias,
+    };
+
+    setConfig({
+      ...config,
+      fields: [...config.fields, newField],
+    });
+    setShowFormulaBuilder(false);
+  };
+
+  // Handle field selection from explorer
+  const handleFieldSelectFromExplorer = (field: any) => {
+    handleAddField({
+      id: field.fieldId || field.id,
+      name: field.fieldName || field.name,
+      type: field.type,
+      aggregatable: field.aggregatable || false,
+      filterable: field.filterable || false,
+      sortable: field.sortable || false,
+    });
+  };
+
+  // Handle chart config change
+  const handleChartConfigChange = (newChartConfig: ChartConfig) => {
+    setChartConfig(newChartConfig);
+    setConfig({
+      ...config,
+      visualizationType: newChartConfig.type as any,
+      chartConfig: {
+        xAxis: newChartConfig.xAxis?.field,
+        yAxis: newChartConfig.yAxis?.fields,
+        colors: newChartConfig.colors,
+      },
+    });
   };
 
   const handleSave = async () => {
@@ -384,8 +519,314 @@ export function ReportBuilder({
 
   const getFieldName = (fieldId: string): string => {
     if (!selectedDataSource) return fieldId;
-    const field = selectedDataSource.fields.find(f => f.id === fieldId);
+    const field = selectedDataSource.fields.find((f) => f.id === fieldId);
     return field?.name || fieldId;
+  };
+
+  // Render chart based on config
+  const renderChart = () => {
+    if (!previewData || previewData.length === 0) return null;
+
+    const colors = chartConfig.colors || ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    const chartData = previewData.slice(0, 50); // Limit for preview
+
+    switch (chartConfig.type) {
+      case 'table':
+        return (
+          <DataTable
+            data={chartData}
+            columns={config.fields.map(f => ({
+              key: f.alias || f.fieldId,
+              label: f.alias || f.fieldName,
+              sortable: true,
+              filterable: true,
+            }))}
+            title={chartConfig.title}
+            pageSize={10}
+            searchable
+            exportable
+          />
+        );
+
+      case 'bar':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey={chartConfig.xAxis?.field || config.fields[0]?.fieldId} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {chartConfig.yAxis?.fields?.map((fieldId, idx) => (
+                <Bar key={fieldId} dataKey={fieldId} fill={colors[idx % colors.length]} />
+              )) || <Bar dataKey={config.fields[1]?.fieldId} fill={colors[0]} />}
+            </BarChart>
+          </ResponsiveContainer>
+        );
+
+      case 'line':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey={chartConfig.xAxis?.field || config.fields[0]?.fieldId} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {chartConfig.yAxis?.fields?.map((fieldId, idx) => (
+                <Line key={fieldId} type="monotone" dataKey={fieldId} stroke={colors[idx % colors.length]} />
+              )) || <Line type="monotone" dataKey={config.fields[1]?.fieldId} stroke={colors[0]} />}
+            </LineChart>
+          </ResponsiveContainer>
+        );
+
+      case 'pie':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey={chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId}
+                nameKey={chartConfig.xAxis?.field || config.fields[0]?.fieldId}
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                label
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+
+      case 'area':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey={chartConfig.xAxis?.field || config.fields[0]?.fieldId} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {chartConfig.yAxis?.fields?.map((fieldId, idx) => (
+                <Area key={fieldId} type="monotone" dataKey={fieldId} fill={colors[idx % colors.length]} stroke={colors[idx % colors.length]} />
+              )) || <Area type="monotone" dataKey={config.fields[1]?.fieldId} fill={colors[0]} stroke={colors[0]} />}
+            </AreaChart>
+          </ResponsiveContainer>
+        );
+
+      case 'radar':
+        return (
+          <ResponsiveContainer width="100%" height={400}>
+            <RadarChart data={chartData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey={chartConfig.xAxis?.field || config.fields[0]?.fieldId} />
+              <PolarRadiusAxis />
+              {chartConfig.yAxis?.fields?.map((fieldId, idx) => (
+                <Radar key={fieldId} name={fieldId} dataKey={fieldId} stroke={colors[idx % colors.length]} fill={colors[idx % colors.length]} fillOpacity={0.6} />
+              )) || <Radar dataKey={config.fields[1]?.fieldId} stroke={colors[0]} fill={colors[0]} fillOpacity={0.6} />}
+              <Tooltip />
+              <Legend />
+            </RadarChart>
+          </ResponsiveContainer>
+        );
+
+      case 'scatter':
+        const xField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const yField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
+        const scatterData = chartData.map((d: any) => ({
+          x: Number(d[xField]) || 0,
+          y: Number(d[yField]) || 0,
+          name: String(d[xField] || ''),
+        }));
+        return (
+          <ScatterChart
+            data={scatterData}
+            xAxisLabel={chartConfig.xAxis?.label}
+            yAxisLabel={chartConfig.yAxis?.label}
+            title={chartConfig.title}
+            colors={colors}
+            showLegend={chartConfig.legend?.show}
+            height={400}
+          />
+        );
+
+      case 'bubble':
+        const bubbleXField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const bubbleYField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
+        const bubbleZField = config.fields[2]?.fieldId;
+        const bubbleData = chartData.map((d: any) => ({
+          x: Number(d[bubbleXField]) || 0,
+          y: Number(d[bubbleYField]) || 0,
+          z: bubbleZField ? Number(d[bubbleZField]) || 1 : 1,
+          name: String(d[bubbleXField] || ''),
+        }));
+        return (
+          <BubbleChart
+            data={bubbleData}
+            xAxisLabel={chartConfig.xAxis?.label}
+            yAxisLabel={chartConfig.yAxis?.label}
+            title={chartConfig.title}
+            colors={colors}
+            showLegend={chartConfig.legend?.show}
+            height={400}
+          />
+        );
+
+      case 'treemap':
+        const treemapNameField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const treemapValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
+        const treemapData = chartData.map((d: any) => ({
+          name: String(d[treemapNameField] || 'Item'),
+          size: Number(d[treemapValueField]) || 0,
+        }));
+        return (
+          <TreemapChart
+            data={treemapData}
+            title={chartConfig.title}
+            colors={colors}
+            height={400}
+          />
+        );
+
+      case 'funnel':
+        const funnelStageField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const funnelValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
+        const funnelData = chartData.map((d: any) => ({
+          stage: String(d[funnelStageField] || 'Stage'),
+          value: Number(d[funnelValueField]) || 0,
+        }));
+        return (
+          <FunnelChart
+            data={funnelData}
+            title={chartConfig.title}
+            showValues
+            showPercentages
+            height={400}
+          />
+        );
+
+      case 'gauge':
+        const gaugeValueField = chartConfig.yAxis?.fields?.[0] || config.fields[0]?.fieldId;
+        const gaugeValue = Number(chartData[0]?.[gaugeValueField]) || 0;
+        return (
+          <GaugeChart
+            value={gaugeValue}
+            min={chartConfig.yAxis?.min || 0}
+            max={chartConfig.yAxis?.max || 100}
+            title={chartConfig.title || 'Gauge'}
+            height={400}
+          />
+        );
+
+      case 'waterfall':
+        const waterfallNameField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const waterfallValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
+        const waterfallData = chartData.map((d: any) => ({
+          name: String(d[waterfallNameField] || 'Item'),
+          value: Number(d[waterfallValueField]) || 0,
+        }));
+        return (
+          <WaterfallChart
+            data={waterfallData}
+            title={chartConfig.title}
+            showGrid
+            height={400}
+          />
+        );
+
+      case 'sankey':
+        // Sankey requires nodes and links - basic implementation with mock data
+        const sankeyNodes = chartData.slice(0, 10).map((d: any, i: number) => ({
+          name: String(d[config.fields[0]?.fieldId] || `Node ${i}`),
+        }));
+        return (
+          <SankeyChart
+            data={{ nodes: sankeyNodes, links: [] }}
+            title={chartConfig.title}
+            height={400}
+          />
+        );
+
+      case 'boxplot':
+        // BoxPlot requires statistical data - use mock data for now
+        const boxPlotCategoryField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const boxPlotData = chartData
+          .reduce((acc: any[], d: any) => {
+            const category = String(d[boxPlotCategoryField] || 'Category');
+            if (!acc.find(item => item.category === category)) {
+              acc.push({
+                category,
+                min: 0,
+                q1: 25,
+                median: 50,
+                q3: 75,
+                max: 100,
+              });
+            }
+            return acc;
+          }, []);
+        return (
+          <BoxPlotChart
+            data={boxPlotData}
+            title={chartConfig.title}
+            showGrid
+            height={400}
+          />
+        );
+
+      case 'candlestick':
+        // Candlestick requires OHLC data
+        const candlestickData = chartData.map((d: any) => ({
+          date: String(d[config.fields[0]?.fieldId] || new Date()),
+          open: Number(d.open) || 0,
+          high: Number(d.high) || 0,
+          low: Number(d.low) || 0,
+          close: Number(d.close) || 0,
+          volume: Number(d.volume) || 0,
+        }));
+        return (
+          <CandlestickChart
+            data={candlestickData}
+            title={chartConfig.title}
+            showGrid
+            showVolume
+            height={400}
+          />
+        );
+
+      case 'sunburst':
+        // Sunburst requires hierarchical data
+        const sunburstNameField = chartConfig.xAxis?.field || config.fields[0]?.fieldId;
+        const sunburstValueField = chartConfig.yAxis?.fields?.[0] || config.fields[1]?.fieldId;
+        const sunburstData = {
+          name: chartConfig.title || 'Root',
+          children: chartData.map((d: any) => ({
+            name: String(d[sunburstNameField] || 'Item'),
+            value: Number(d[sunburstValueField]) || 1,
+          })),
+        };
+        return (
+          <SunburstChart
+            data={sunburstData}
+            title={chartConfig.title}
+            colors={colors}
+            height={400}
+          />
+        );
+
+      default:
+        return (
+          <div className="text-center py-8 text-gray-500">
+            <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-30" />
+            <p>Chart type &quot;{chartConfig.type}&quot; not yet implemented</p>
+          </div>
+        );
+    }
   };
 
   // ============================================================================
@@ -443,9 +884,34 @@ export function ReportBuilder({
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Configuration Panel */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Sidebar - Data Source Explorer */}
+        {showDataSourceExplorer && (
+          <div className="lg:col-span-1">
+            <DataSourceExplorer
+              dataSources={dataSources.map(ds => ({
+                ...ds,
+                icon: 'FileText',
+                fields: ds.fields.map(f => ({
+                  fieldId: f.id,
+                  fieldName: f.name,
+                  type: f.type,
+                  description: '',
+                  aggregatable: f.aggregatable,
+                  filterable: f.filterable,
+                  sortable: f.sortable,
+                })),
+                joinableWith: [],
+              }))}
+              selectedSource={config.dataSourceId}
+              onSourceSelect={handleDataSourceChange}
+              onFieldSelect={handleFieldSelectFromExplorer}
+            />
+          </div>
+        )}
+
+        {/* Main Configuration Panel */}
+        <div className={`${showDataSourceExplorer ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
           {/* Basic Info */}
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Report Details</h3>
@@ -468,26 +934,16 @@ export function ReportBuilder({
                   onChange={(e) => setConfig({ ...config, description: e.target.value })}
                 />
               </div>
-              <div>
-                <Label htmlFor="data-source">Data Source</Label>
-                <Select value={config.dataSourceId} onValueChange={handleDataSourceChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select data source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DATA_SOURCES.map(source => (
-                      <SelectItem key={source.id} value={source.id}>
-                        <div className="flex items-center gap-2">
-                          <TableIcon className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">{source.name}</div>
-                            <div className="text-xs text-gray-500">{source.description}</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center justify-between">
+                <Label>Data Source Explorer</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDataSourceExplorer(!showDataSourceExplorer)}
+                >
+                  {showDataSourceExplorer ? <Eye className="w-4 h-4" /> : <Eye className="w-4 h-4 opacity-50" />}
+                  {showDataSourceExplorer ? 'Hide' : 'Show'}
+                </Button>
               </div>
             </div>
           </Card>
@@ -500,27 +956,49 @@ export function ReportBuilder({
                   <Columns className="w-5 h-5 text-blue-600" />
                   <h3 className="text-lg font-semibold">Selected Fields</h3>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={() => setShowFieldDialog(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Field
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowFormulaBuilder(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Formula
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowFieldDialog(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Field
+                  </Button>
+                </div>
               </div>
 
               {config.fields.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
                   <Columns className="w-12 h-12 mx-auto mb-2 opacity-30" />
                   <p>No fields selected</p>
-                  <p className="text-sm">Click "Add Field" to get started</p>
+                  <p className="text-sm">Click &quot;Add Field&quot; or drag fields from the explorer</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div 
+                  className="space-y-2 min-h-[100px] border-2 border-dashed border-gray-200 rounded-lg p-2"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    try {
+                      const fieldData = JSON.parse(e.dataTransfer.getData('application/json'));
+                      handleFieldSelectFromExplorer(fieldData);
+                    } catch (error) {
+                      console.error('Invalid drag data:', error);
+                    }
+                  }}
+                >
                   {config.fields.map((field, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{field.fieldName}</span>
@@ -671,18 +1149,22 @@ export function ReportBuilder({
           )}
         </div>
 
-        {/* Visualization Panel */}
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Visualization</h3>
-            <ChartSelector
-              value={config.visualizationType}
-              onChange={(type) => setConfig({ ...config, visualizationType: type })}
-              fields={config.fields}
-              onChartConfigChange={(chartConfig) => setConfig({ ...config, chartConfig })}
+        {/* Right Sidebar - Visualization & Preview */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Chart Configuration */}
+          {config.fields.length > 0 && (
+            <ChartConfigPanel
+              config={chartConfig}
+              onChange={handleChartConfigChange}
+              availableFields={selectedDataSource?.fields.map(f => ({
+                id: f.id,
+                name: f.name,
+                type: f.type,
+              })) || []}
             />
-          </Card>
+          )}
 
+          {/* Options */}
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Options</h3>
             <div className="space-y-4">
@@ -797,7 +1279,7 @@ export function ReportBuilder({
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-600">
-              Report "<span className="font-medium">{config.name}</span>" will be saved with {config.fields.length} field(s) and {config.filters.length} filter(s).
+              Report &quot;<span className="font-medium">{config.name}</span>&quot; will be saved with {config.fields.length} field(s) and {config.filters.length} filter(s).
             </p>
           </div>
           <DialogFooter>
@@ -811,6 +1293,20 @@ export function ReportBuilder({
         </DialogContent>
       </Dialog>
 
+      {/* Formula Builder Dialog */}
+      {showFormulaBuilder && selectedDataSource && (
+        <FormulaBuilder
+          open={showFormulaBuilder}
+          onClose={() => setShowFormulaBuilder(false)}
+          onSave={handleFormulaFieldCreate}
+          availableFields={selectedDataSource.fields.map(f => ({
+            id: f.id,
+            name: f.name,
+            type: f.type,
+          }))}
+        />
+      )}
+
       {/* Preview Dialog */}
       {showPreview && (
         <ReportPreview
@@ -818,6 +1314,49 @@ export function ReportBuilder({
           onClose={() => setShowPreview(false)}
           config={config}
         />
+      )}
+
+      {/* Live Preview Panel */}
+      {config.fields.length > 0 && previewData && (
+        <Card className="p-6 mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Live Preview
+              {previewLoading && <span className="text-sm text-gray-500">(Loading...)</span>}
+            </h3>
+            <div className="flex gap-2">
+              <ChartExporter
+                chartRef={{ current: null }}
+                defaultFilename={config.name || 'chart'}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPreview(!showPreview)}
+              >
+                Full Preview
+              </Button>
+            </div>
+          </div>
+
+          {previewLoading ? (
+            <div className="text-center py-8 text-gray-500">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p>Loading preview...</p>
+            </div>
+          ) : previewData && previewData.length > 0 ? (
+            <div className="overflow-x-auto">
+              {renderChart()}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-30" />
+              <p>No preview data available</p>
+              <p className="text-sm">Run the report to see results</p>
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );

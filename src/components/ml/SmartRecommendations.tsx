@@ -38,7 +38,7 @@ interface SmartRecommendationsProps {
 }
 
 const priorityConfig = {
-  high: { color: 'destructive', icon: AlertTriangle },
+  high: { color: 'destructive' as const, icon: AlertTriangle },
   medium: { color: 'default' as const, icon: TrendingUp },
   low: { color: 'secondary' as const, icon: CheckCircle },
 };

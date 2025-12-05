@@ -1,0 +1,133 @@
+/**
+ * Message Notifications API
+ * Manage message notifications and unread counts
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { db } from '@/db/db';
+import { messageNotifications, messages, messageThreads } from '@/db/schema/messages-schema';
+import { eq, and, desc, sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const unreadOnly = searchParams.get('unread') === 'true';
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
+
+    // Build query
+    const baseCondition = eq(messageNotifications.userId, userId);
+    const conditions = unreadOnly 
+      ? and(baseCondition, eq(messageNotifications.isRead, false))
+      : baseCondition;
+
+    // Fetch notifications with message and thread details
+    const notifications = await db
+      .select({
+        id: messageNotifications.id,
+        messageId: messageNotifications.messageId,
+        threadId: messageNotifications.threadId,
+        isRead: messageNotifications.isRead,
+        readAt: messageNotifications.readAt,
+        notifiedAt: messageNotifications.notifiedAt,
+        messageContent: messages.content,
+        messageSenderId: messages.senderId,
+        messageSenderRole: messages.senderRole,
+        messageCreatedAt: messages.createdAt,
+        threadSubject: messageThreads.subject,
+        threadStatus: messageThreads.status,
+      })
+      .from(messageNotifications)
+      .leftJoin(messages, eq(messageNotifications.messageId, messages.id))
+      .leftJoin(messageThreads, eq(messageNotifications.threadId, messageThreads.id))
+      .where(conditions)
+      .orderBy(desc(messageNotifications.notifiedAt))
+      .limit(limit)
+      .offset(offset);
+
+    // Get unread count
+    const [unreadResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(messageNotifications)
+      .where(
+        and(
+          eq(messageNotifications.userId, userId),
+          eq(messageNotifications.isRead, false)
+        )
+      );
+
+    return NextResponse.json({
+      notifications,
+      unreadCount: Number(unreadResult.count),
+      pagination: {
+        limit,
+        offset,
+        total: notifications.length,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to fetch notifications', error as Error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { notificationIds, markAllAsRead } = await request.json();
+
+    if (markAllAsRead) {
+      // Mark all notifications as read
+      await db
+        .update(messageNotifications)
+        .set({ isRead: true, readAt: new Date() })
+        .where(
+          and(
+            eq(messageNotifications.userId, userId),
+            eq(messageNotifications.isRead, false)
+          )
+        );
+
+      logger.info('All notifications marked as read', { userId });
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (!notificationIds || !Array.isArray(notificationIds)) {
+      return NextResponse.json({ error: 'Notification IDs required' }, { status: 400 });
+    }
+
+    // Mark specific notifications as read
+    await db
+      .update(messageNotifications)
+      .set({ isRead: true, readAt: new Date() })
+      .where(
+        and(
+          eq(messageNotifications.userId, userId),
+          sql`${messageNotifications.id} = ANY(${notificationIds})`
+        )
+      );
+
+    logger.info('Notifications marked as read', {
+      userId,
+      count: notificationIds.length,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error('Failed to update notifications', error as Error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

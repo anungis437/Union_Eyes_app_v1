@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { sql } from '@/lib/db';
+import { db } from '@/lib/db';
 
 async function handler(req: NextRequest) {
   try {
@@ -71,105 +72,15 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const GET = withTenantAuth(handler);
-        dateGrouping = sql`DATE(created_at)`;
-    }
-
-    const claimsOverTime = await db
-      .select({
-        period: dateGrouping,
-        claimType: claims.claimType,
-        count: count(),
-      })
-      .from(claims)
-      .where(and(...whereConditions))
-      .groupBy(dateGrouping, claims.claimType)
-      .orderBy(dateGrouping);
-
-    // Get status transitions (claims that changed status)
-    const statusTransitions = await db
-      .select({
-        fromStatus: sql<string>`LAG(status) OVER (PARTITION BY claim_id ORDER BY updated_at)`,
-        toStatus: claims.status,
-        count: count(),
-      })
-      .from(claims)
-      .where(and(...whereConditions))
-      .groupBy(sql`LAG(status) OVER (PARTITION BY claim_id ORDER BY updated_at)`, claims.status);
-
-    // Get priority distribution by type
-    const priorityByType = await db
-      .select({
-        claimType: claims.claimType,
-        priority: claims.priority,
-        count: count(),
-      })
-      .from(claims)
-      .where(and(...whereConditions))
-      .groupBy(claims.claimType, claims.priority);
-
-    // Get AI score statistics
-    const [aiScoreStats] = await db
-      .select({
-        avgMeritScore: sql<number>`AVG(ai_score)`,
-        avgConfidence: sql<number>`AVG(merit_confidence)`,
-        avgPrecedentMatch: sql<number>`AVG(precedent_match)`,
-        avgComplexity: sql<number>`AVG(complexity_score)`,
-      })
-      .from(claims)
-      .where(and(...whereConditions));
-
-    // Get top claim types
-    const topClaimTypes = await db
-      .select({
-        claimType: claims.claimType,
-        count: count(),
-        avgAiScore: sql<number>`AVG(ai_score)`,
-        resolved: sql<number>`COUNT(CASE WHEN status = 'resolved' THEN 1 END)`,
-        rejected: sql<number>`COUNT(CASE WHEN status = 'rejected' THEN 1 END)`,
-      })
-      .from(claims)
-      .where(and(...whereConditions))
-      .groupBy(claims.claimType)
-      .orderBy(desc(count()))
-      .limit(10);
-
-    return NextResponse.json({
-      timeRange: parseInt(timeRange),
-      groupBy,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      filters: {
-        claimType: claimType || null,
-      },
-      trends: {
-        claimsOverTime,
-        statusTransitions: statusTransitions.filter(s => s.fromStatus !== null),
-      },
-      distribution: {
-        priorityByType,
-      },
-      aiAnalytics: {
-        avgMeritScore: aiScoreStats.avgMeritScore 
-          ? Math.round(aiScoreStats.avgMeritScore * 10) / 10 
-          : null,
-        avgConfidence: aiScoreStats.avgConfidence 
-          ? Math.round(aiScoreStats.avgConfidence * 10) / 10 
-          : null,
-        avgPrecedentMatch: aiScoreStats.avgPrecedentMatch 
-          ? Math.round(aiScoreStats.avgPrecedentMatch * 10) / 10 
-          : null,
-        avgComplexity: aiScoreStats.avgComplexity 
-          ? Math.round(aiScoreStats.avgComplexity * 10) / 10 
-          : null,
-      },
-      topClaimTypes,
-    });
-  } catch (error) {
-    console.error('Error fetching claims analytics:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+// Helper function to get claims by date range
+async function getClaimsByDateRange(
+  tenantId: string,
+  dateRange: { startDate: Date; endDate: Date },
+  filters: any
+) {
+  // Placeholder implementation - returns empty array
+  // TODO: Implement database query with filters
+  return [];
 }
+
+export const GET = withTenantAuth(handler);

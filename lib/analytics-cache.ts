@@ -117,7 +117,8 @@ class AnalyticsCacheService {
     if (endpoint) {
       // Invalidate specific endpoint
       const prefix = `${tenantId}:${endpoint}:`;
-      for (const key of this.cache.keys()) {
+      const keys = Array.from(this.cache.keys());
+      for (const key of keys) {
         if (key.startsWith(prefix)) {
           this.cache.delete(key);
         }
@@ -125,7 +126,8 @@ class AnalyticsCacheService {
     } else {
       // Invalidate all tenant data
       const prefix = `${tenantId}:`;
-      for (const key of this.cache.keys()) {
+      const keys = Array.from(this.cache.keys());
+      for (const key of keys) {
         if (key.startsWith(prefix)) {
           this.cache.delete(key);
         }
@@ -138,7 +140,8 @@ class AnalyticsCacheService {
    */
   private cleanup(): void {
     const now = Date.now();
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (const [key, entry] of entries) {
       if (now - entry.timestamp >= entry.ttl) {
         this.cache.delete(key);
       }

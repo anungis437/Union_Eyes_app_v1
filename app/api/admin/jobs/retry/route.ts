@@ -6,9 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { retryJob } from '@/lib/job-queue';
 
 export async function POST(request: NextRequest) {
+  // Import job-queue functions only at runtime, not at module load time
+  // This prevents bundling bullmq during build phase
+  const { retryJob } = await import('@/lib/job-queue');
   try {
     const { userId } = await auth();
 
