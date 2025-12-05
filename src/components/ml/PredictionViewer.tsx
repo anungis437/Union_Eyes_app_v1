@@ -252,7 +252,7 @@ export function PredictionViewer({ claimId, className = '' }: PredictionViewerPr
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Click "Generate Prediction" to see AI analysis</p>
+              <p>Click &quot;Generate Prediction&quot; to see AI analysis</p>
             </div>
           )}
         </CardContent>
@@ -362,7 +362,7 @@ export function PredictionViewer({ claimId, className = '' }: PredictionViewerPr
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Click "Generate Forecast" to see timeline prediction</p>
+              <p>Click &quot;Generate Forecast&quot; to see timeline prediction</p>
             </div>
           )}
         </CardContent>

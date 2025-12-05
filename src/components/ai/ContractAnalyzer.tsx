@@ -10,13 +10,13 @@ import {
   Scale,
   XCircle
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Button } from '@unioneyes/ui/components/button';
-import { Textarea } from '@unioneyes/ui/components/textarea';
-import { Badge } from '@unioneyes/ui/components/badge';
-import { Alert, AlertDescription } from '@unioneyes/ui/components/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@unioneyes/ui/components/tabs';
-import { Progress } from '@unioneyes/ui/components/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
 interface Clause {
   type: string;
@@ -333,7 +333,7 @@ Generated: ${new Date().toLocaleString()}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground italic">
-                          "{clause.content}"
+                          &quot;{clause.content}&quot;
                         </p>
                         <p className="text-sm">{clause.explanation}</p>
                       </div>

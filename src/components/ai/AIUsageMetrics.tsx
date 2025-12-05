@@ -9,17 +9,17 @@ import {
   Clock,
   AlertTriangle,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@unioneyes/ui/components/tabs';
-import { Badge } from '@unioneyes/ui/components/badge';
-import { Progress } from '@unioneyes/ui/components/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@unioneyes/ui/components/select';
+} from '@/components/ui/select';
 
 interface UsageData {
   feature: string;

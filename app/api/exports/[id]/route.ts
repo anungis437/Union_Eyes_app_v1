@@ -10,21 +10,20 @@ import { getExportJob } from '@/db/queries/analytics-queries';
 
 async function getHandler(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { tenantId: string; userId: string },
+  params?: { id: string }
 ) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    
-    if (!tenantId) {
+    if (!params?.id) {
       return NextResponse.json(
-        { error: 'Tenant ID required' },
+        { error: 'Export ID required' },
         { status: 400 }
       );
     }
 
     const job = await getExportJob(params.id);
 
-    if (!job || job.tenant_id !== tenantId) {
+    if (!job || job.tenant_id !== context.tenantId) {
       return NextResponse.json(
         { error: 'Export job not found' },
         { status: 404 }

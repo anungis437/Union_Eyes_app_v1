@@ -29,7 +29,7 @@ export interface WebhookHandlerResult {
  * ```typescript
  * // Next.js API Route (pages/api/webhooks/stripe.ts)
  * import { createClient } from '@supabase/supabase-js';
- * import { StripeWebhookHandler } from '@courtlens/multi-tenant';
+ * import { StripeWebhookHandler } from '@unioneyes/multi-tenant';
  *
  * export const config = { api: { bodyParser: false } }; // Required for Stripe webhooks
  *

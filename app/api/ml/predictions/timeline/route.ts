@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Verify claim exists and belongs to tenant
     const claim = await db.query.claims.findFirst({
-      where: eq(claims.id, claimId)
+      where: eq(claims.claimId, claimId)
     });
     
     if (!claim || claim.tenantId !== tenantId) {

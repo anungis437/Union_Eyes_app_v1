@@ -164,7 +164,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
       
       checkProfileUpdate();
     }
-  }, [searchParams, userId, retryCount]);
+  }, [searchParams, userId, retryCount, refreshProfileData]);
   
   // Handle closing the popup
   const handleClose = () => {
@@ -239,6 +239,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
           {/* Close button */}
           <button
             onClick={handleClose}
+            aria-label="Close payment success dialog"
             className="absolute top-3 right-3 z-50 rounded-full w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <X size={16} />

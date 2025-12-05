@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Bot, User, Lightbulb, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Button } from '@unioneyes/ui/components/button';
-import { Input } from '@unioneyes/ui/components/input';
-import { ScrollArea } from '@unioneyes/ui/components/scroll-area';
-import { Badge } from '@unioneyes/ui/components/badge';
-import { Alert, AlertDescription } from '@unioneyes/ui/components/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Message {
   id: string;

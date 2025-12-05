@@ -55,10 +55,10 @@ function getMsalClient() {
 /**
  * Generate authorization URL
  */
-export function getAuthorizationUrl(userId: string): string {
+export async function getAuthorizationUrl(userId: string): Promise<string> {
   const msalClient = getMsalClient();
   
-  return msalClient.getAuthCodeUrl({
+  return await msalClient.getAuthCodeUrl({
     scopes: SCOPES,
     redirectUri: MICROSOFT_REDIRECT_URI,
     state: userId,
@@ -79,9 +79,9 @@ export async function exchangeCodeForTokens(code: string) {
 
   return {
     accessToken: response.accessToken,
-    refreshToken: response.refreshToken || '',
+    refreshToken: '', // MSAL manages refresh tokens internally
     expiresAt: response.expiresOn || new Date(Date.now() + 3600000),
-    accountId: response.account?.homeAccountId || '',
+    providerAccountId: response.account?.homeAccountId || '',
   };
 }
 
@@ -102,9 +102,9 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
 
     const msalClient = getMsalClient();
     
-    const response = await msalClient.acquireTokenByRefreshToken({
-      refreshToken: connection.refreshToken!,
+    const response = await msalClient.acquireTokenSilent({
       scopes: SCOPES,
+      account: { homeAccountId: connection.providerAccountId! } as any,
     });
 
     // Update connection with new tokens
@@ -112,7 +112,6 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
       .update(externalCalendarConnections)
       .set({
         accessToken: response.accessToken,
-        refreshToken: response.refreshToken || connection.refreshToken,
         tokenExpiresAt: response.expiresOn || new Date(Date.now() + 3600000),
         updatedAt: new Date(),
       })
@@ -127,7 +126,7 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
       .update(externalCalendarConnections)
       .set({
         syncStatus: 'failed',
-        lastSyncError: error instanceof Error ? error.message : 'Token refresh failed',
+        syncError: error instanceof Error ? error.message : 'Token refresh failed',
         updatedAt: new Date(),
       })
       .where(eq(externalCalendarConnections.id, connectionId));
@@ -152,7 +151,7 @@ async function getAuthenticatedClient(connectionId: string) {
 
   // Check if token needs refresh
   const now = new Date();
-  const expiresAt = new Date(connection.tokenExpiresAt);
+  const expiresAt = connection.tokenExpiresAt ? new Date(connection.tokenExpiresAt) : new Date(0);
   
   let accessToken = connection.accessToken;
   
@@ -406,6 +405,7 @@ function mapMicrosoftEventToLocal(msEvent: any, calendarId: string, tenantId: st
     organizerId: msEvent.organizer?.emailAddress?.address || 'unknown',
     meetingUrl: msEvent.onlineMeeting?.joinUrl || null,
     externalEventId: msEvent.id,
+    createdBy: msEvent.organizer?.emailAddress?.address || 'microsoft-calendar-sync',
     metadata: {
       source: 'microsoft',
       webLink: msEvent.webLink,

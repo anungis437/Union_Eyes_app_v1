@@ -8,6 +8,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { SelectProfile } from "@/db/schema/profiles-schema";
+import { useLocale } from "next-intl";
 
 interface DashboardNavbarProps {
   profile: SelectProfile | null;
@@ -17,6 +18,7 @@ interface DashboardNavbarProps {
 export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const locale = useLocale();
   const [notificationCount] = useState(3); // TODO: Replace with actual notification count
   
   // TODO: Implement proper admin role checking
@@ -24,19 +26,19 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
 
   // Navigation items based on user role
   const navigationItems = [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Claims", href: "/dashboard/claims", icon: FileText },
-    { label: "Voting", href: "/dashboard/voting", icon: Vote },
-    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { label: "Dashboard", href: `/${locale}/dashboard`, icon: LayoutDashboard },
+    { label: "Claims", href: `/${locale}/dashboard/claims`, icon: FileText },
+    { label: "Voting", href: `/${locale}/dashboard/voting`, icon: Vote },
+    { label: "Analytics", href: `/${locale}/dashboard/analytics`, icon: BarChart3 },
     ...(isAdmin ? [
-      { label: "Members", href: "/dashboard/members", icon: Users },
-      { label: "Settings", href: "/dashboard/settings", icon: Settings },
+      { label: "Members", href: `/${locale}/dashboard/members`, icon: Users },
+      { label: "Settings", href: `/${locale}/dashboard/settings`, icon: Settings },
     ] : []),
   ];
 
   const isActive = (href: string) => {
-    if (href === "/dashboard") {
-      return pathname === "/dashboard";
+    if (href === `/${locale}/dashboard`) {
+      return pathname === `/${locale}/dashboard`;
     }
     return pathname.startsWith(href);
   };
@@ -60,7 +62,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
           </button>
 
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-2">
+          <Link href={`/${locale}/dashboard`} className="flex items-center space-x-2">
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               UnionEyes
             </span>
@@ -107,7 +109,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
 
           {/* Settings (Desktop) */}
           <Button variant="ghost" size="icon" className="hidden md:flex" asChild>
-            <Link href="/dashboard/settings">
+            <Link href={`/${locale}/dashboard/settings`}>
               <Settings className="h-5 w-5" />
             </Link>
           </Button>
@@ -151,7 +153,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
             
             {/* Mobile Settings Link */}
             <Link
-              href="/dashboard/settings"
+              href={`/${locale}/dashboard/settings`}
               className="flex items-center space-x-3 px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >

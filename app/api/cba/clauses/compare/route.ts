@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/db";
-import { cbaClause, clauseComparisons } from "@/db/schema";
+import { cbaClause, clauseComparisons, collectiveAgreements } from "@/db/schema";
 import { inArray, eq, and } from "drizzle-orm";
 import { withTenantAuth } from "@/lib/tenant-middleware";
 
@@ -32,10 +32,11 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
     const clauses = await db
       .select()
       .from(cbaClause)
+      .innerJoin(collectiveAgreements, eq(cbaClause.cbaId, collectiveAgreements.id))
       .where(
         and(
           inArray(cbaClause.id, clauseIds),
-          eq(cbaClause.tenantId, tenantId)
+          eq(collectiveAgreements.tenantId, tenantId)
         )
       );
 
@@ -45,6 +46,9 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
         { status: 404 }
       );
     }
+
+    // Extract just the cbaClause objects
+    const clauseObjects = clauses.map(result => result.cba_clauses);
 
     // Check if comparison already exists for this tenant
     const existingComparison = await db
@@ -70,11 +74,11 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
     const recommendations: string[] = [];
 
     // Basic text comparison (simplified)
-    const contentAnalysis = analyzeClauseContent(clauses, analysisType);
+    const contentAnalysis = analyzeClauseContent(clauseObjects, analysisType);
     
     const comparison = {
       comparisonName: `${analysisType} comparison - ${new Date().toISOString()}`,
-      clauseType: clauses[0].clauseType, // Use first clause's type
+      clauseType: clauseObjects[0].clauseType, // Use first clause's type
       tenantId,
       clauseIds,
       analysisResults: {

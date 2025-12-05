@@ -1,0 +1,309 @@
+/**
+ * Deadline Calculation Query Functions
+ * Phase 5D: Jurisdiction Framework
+ */
+
+import { db } from '../db';
+import { sql } from 'drizzle-orm';
+import type { CAJurisdiction } from '../types';
+
+export interface CalculateDeadlineParams {
+  organizationId: string;
+  ruleCategory: string;
+  startDate?: Date;
+  includeDetails?: boolean;
+}
+
+export interface DeadlineCalculationResult {
+  deadlineDate: Date;
+  deadlineDays: number;
+  deadlineType: 'calendar' | 'business';
+  ruleName: string;
+  canExtend: boolean;
+  maxExtensions: number;
+  businessDaysCalculated?: number;
+  holidaysExcluded?: number;
+  weekendsExcluded?: number;
+}
+
+export interface StatutoryHoliday {
+  id: string;
+  jurisdiction: CAJurisdiction;
+  holidayName: string;
+  holidayDate: Date;
+  year: number;
+  isFederal: boolean;
+  isProvincial: boolean;
+  isMoveable: boolean;
+  affectsDeadlines: boolean;
+}
+
+/**
+ * Calculate deadline based on jurisdiction rules
+ */
+export async function calculateJurisdictionDeadline(
+  params: CalculateDeadlineParams
+): Promise<DeadlineCalculationResult> {
+  const { organizationId, ruleCategory, startDate = new Date() } = params;
+
+  // Use the database function
+  const result = await db.execute(sql`
+    SELECT * FROM calculate_jurisdiction_deadline(
+      ${organizationId},
+      ${ruleCategory},
+      ${startDate.toISOString()}::DATE
+    )
+  `);
+  
+  const rows = result as unknown as Array<any>;
+  if (rows.length === 0) {
+    throw new Error(
+      `Unable to calculate deadline for category: ${ruleCategory}`
+    );
+  }
+
+  const row = rows[0];
+  return {
+    deadlineDate: new Date(row.deadline_date),
+    deadlineDays: row.deadline_days,
+    deadlineType: row.deadline_type,
+    ruleName: row.rule_name,
+    canExtend: row.can_extend,
+    maxExtensions: row.max_extensions
+  };
+}
+
+/**
+ * Calculate business days between two dates
+ */
+export async function calculateBusinessDays(
+  jurisdiction: CAJurisdiction,
+  startDate: Date,
+  endDate: Date
+): Promise<number> {
+  const result = await db
+    .selectFrom(
+      db.fn<number>('calculate_business_days', [
+        jurisdiction,
+        startDate,
+        endDate
+      ]).as('business_days')
+    )
+    .select('business_days')
+    .executeTakeFirst();
+
+  return result?.business_days || 0;
+}
+
+/**
+ * Add business days to a date
+ */
+export async function addBusinessDays(
+  jurisdiction: CAJurisdiction,
+  startDate: Date,
+  daysToAdd: number
+): Promise<Date> {
+  const result = await db
+    .selectFrom(
+      db.fn<Date>('add_business_days', [
+        jurisdiction,
+        startDate,
+        daysToAdd
+      ]).as('result_date')
+    )
+    .select('result_date')
+    .executeTakeFirst();
+
+  return result?.result_date || startDate;
+}
+
+/**
+ * Get statutory holidays for a jurisdiction
+ */
+export async function getStatutoryHolidays(
+  jurisdiction: CAJurisdiction,
+  year?: number,
+  startDate?: Date,
+  endDate?: Date
+): Promise<StatutoryHoliday[]> {
+  let query = db
+    .selectFrom('statutory_holidays')
+    .selectAll()
+    .where('jurisdiction', '=', jurisdiction)
+    .where('affects_deadlines', '=', true)
+    .orderBy('holiday_date', 'asc');
+
+  if (year) {
+    query = query.where('year', '=', year);
+  }
+
+  if (startDate) {
+    query = query.where('holiday_date', '>=', startDate);
+  }
+
+  if (endDate) {
+    query = query.where('holiday_date', '<=', endDate);
+  }
+
+  return await query.execute();
+}
+
+/**
+ * Check if a date is a statutory holiday
+ */
+export async function isStatutoryHoliday(
+  jurisdiction: CAJurisdiction,
+  date: Date
+): Promise<boolean> {
+  const result = await db
+    .selectFrom('statutory_holidays')
+    .select(db.fn.count<number>('id').as('count'))
+    .where('jurisdiction', '=', jurisdiction)
+    .where('holiday_date', '=', date)
+    .where('affects_deadlines', '=', true)
+    .executeTakeFirst();
+
+  return (result?.count || 0) > 0;
+}
+
+/**
+ * Get next business day
+ */
+export async function getNextBusinessDay(
+  jurisdiction: CAJurisdiction,
+  fromDate: Date
+): Promise<Date> {
+  return await addBusinessDays(jurisdiction, fromDate, 1);
+}
+
+/**
+ * Calculate deadline with detailed breakdown
+ */
+export async function calculateDeadlineDetailed(
+  organizationId: string,
+  ruleCategory: string,
+  startDate: Date = new Date()
+): Promise<DeadlineCalculationResult & { 
+  breakdown: { 
+    date: Date; 
+    isBusinessDay: boolean; 
+    isHoliday: boolean;
+    holidayName?: string;
+  }[] 
+}> {
+  // Get basic deadline calculation
+  const deadline = await calculateJurisdictionDeadline({
+    organizationId,
+    ruleCategory,
+    startDate
+  });
+
+  // Get organization jurisdiction
+  const org = await db
+    .selectFrom('organizations')
+    .select('jurisdiction')
+    .where('id', '=', organizationId)
+    .executeTakeFirst();
+
+  if (!org) {
+    throw new Error(`Organization not found: ${organizationId}`);
+  }
+
+  // Get holidays between start and deadline
+  const holidays = await getStatutoryHolidays(
+    org.jurisdiction,
+    undefined,
+    startDate,
+    deadline.deadlineDate
+  );
+
+  const holidayMap = new Map(
+    holidays.map(h => [h.holidayDate.toISOString().split('T')[0], h.holidayName])
+  );
+
+  // Build day-by-day breakdown
+  const breakdown: { 
+    date: Date; 
+    isBusinessDay: boolean; 
+    isHoliday: boolean;
+    holidayName?: string;
+  }[] = [];
+
+  let currentDate = new Date(startDate);
+  while (currentDate <= deadline.deadlineDate) {
+    const dayOfWeek = currentDate.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const dateKey = currentDate.toISOString().split('T')[0];
+    const holidayName = holidayMap.get(dateKey);
+    const isHoliday = !!holidayName;
+
+    breakdown.push({
+      date: new Date(currentDate),
+      isBusinessDay: !isWeekend && !isHoliday,
+      isHoliday,
+      holidayName
+    });
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  const businessDaysCalculated = breakdown.filter(d => d.isBusinessDay).length;
+  const holidaysExcluded = breakdown.filter(d => d.isHoliday).length;
+  const weekendsExcluded = breakdown.filter(d => {
+    const day = d.date.getDay();
+    return (day === 0 || day === 6) && !d.isHoliday;
+  }).length;
+
+  return {
+    ...deadline,
+    breakdown,
+    businessDaysCalculated,
+    holidaysExcluded,
+    weekendsExcluded
+  };
+}
+
+/**
+ * Validate if deadline has passed
+ */
+export async function isDeadlinePassed(
+  organizationId: string,
+  ruleCategory: string,
+  startDate: Date
+): Promise<{
+  isPassed: boolean;
+  deadline: Date;
+  daysRemaining: number;
+  businessDaysRemaining: number;
+}> {
+  const deadline = await calculateJurisdictionDeadline({
+    organizationId,
+    ruleCategory,
+    startDate
+  });
+
+  const now = new Date();
+  const isPassed = now > deadline.deadlineDate;
+  
+  const daysRemaining = Math.ceil(
+    (deadline.deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Get organization jurisdiction
+  const org = await db
+    .selectFrom('organizations')
+    .select('jurisdiction')
+    .where('id', '=', organizationId)
+    .executeTakeFirst();
+
+  const businessDaysRemaining = org
+    ? await calculateBusinessDays(org.jurisdiction, now, deadline.deadlineDate)
+    : daysRemaining;
+
+  return {
+    isPassed,
+    deadline: deadline.deadlineDate,
+    daysRemaining: Math.max(0, daysRemaining),
+    businessDaysRemaining: Math.max(0, businessDaysRemaining)
+  };
+}

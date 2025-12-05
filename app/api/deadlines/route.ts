@@ -11,7 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-auth-middleware';
+import { withTenantAuth } from '@/lib/tenant-middleware';
 import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
 import {
   getClaimDeadlines,

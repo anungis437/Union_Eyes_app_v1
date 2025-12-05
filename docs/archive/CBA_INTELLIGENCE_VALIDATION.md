@@ -8,7 +8,7 @@
 
 ## 🎯 Executive Summary
 
-The **CBA Intelligence Engine** from CourtLens has been successfully integrated into the UnionEyes platform structure. This module directly addresses the **#1 critical gap** identified in the Platform Alignment Analysis - the missing Collective Bargaining Agreement management and corporate knowledge preservation system.
+The **CBA Intelligence Engine** from unioneyes has been successfully integrated into the UnionEyes platform structure. This module directly addresses the **#1 critical gap** identified in the Platform Alignment Analysis - the missing Collective Bargaining Agreement management and corporate knowledge preservation system.
 
 **Validation Result**: ✅ **PASSES ALL REQUIREMENTS**
 
@@ -18,19 +18,19 @@ The **CBA Intelligence Engine** from CourtLens has been successfully integrated 
 
 ### Location & Structure
 - **Path**: `d:\APPS\union-claims-standalone\UnionEyes\cba-intelligence\`
-- **Package Name**: `@courtlens/cba-intelligence`
+- **Package Name**: `@unioneyes/cba-intelligence`
 - **Version**: 0.1.0
 - **Status**: Built and compiled (`.next` folder present)
 - **Port**: 3005 (configured in package.json)
 
 ### Technical Stack
 - **Framework**: Next.js 14.0.0
-- **UI Library**: React 18.2.0 with @court-lens/ui workspace package
+- **UI Library**: React 18.2.0 with @unioneyes/ui workspace package
 - **Data Management**: @tanstack/react-query, @tanstack/react-table
 - **Visualization**: Recharts for analytics dashboards
 - **Animation**: Framer Motion for smooth transitions
 - **Form Handling**: React Hook Form + Zod validation
-- **Database**: @court-lens/supabase workspace integration
+- **Database**: @unioneyes/supabase workspace integration
 
 ---
 
@@ -307,7 +307,7 @@ export interface WageProgression {
 2. **Build System**: Next.js 14 configured, builds successfully
 3. **Port Allocation**: Port 3005 assigned (no conflicts)
 4. **UI Framework**: Matches main platform (React, Tailwind, Lucide)
-5. **Workspace Integration**: References @court-lens/ui and @court-lens/supabase packages
+5. **Workspace Integration**: References @unioneyes/ui and @unioneyes/supabase packages
 
 ### ⚠️ What Needs Integration (Pending Tasks)
 

@@ -19,7 +19,7 @@ import { calendarEvents, eventAttendees, eventReminders } from '@/db/schema/cale
 import { eq, and, lte, gte, isNull } from 'drizzle-orm';
 import { subMinutes, subHours, subDays, addMinutes } from 'date-fns';
 // @ts-ignore - Area 9's job queue system
-import { addNotificationJob } from '@/backend/services/job-queue/notification-worker';
+import { addNotificationJob } from '@/lib/job-queue';
 
 // ============================================================================
 // TYPES
@@ -102,6 +102,7 @@ export async function scheduleEventReminders(
             .insert(eventReminders)
             .values({
               eventId,
+              tenantId: event.tenantId,
               userId: attendee.userId || attendee.email,
               reminderMinutes: minutes,
               reminderType: channel,
@@ -133,7 +134,7 @@ async function scheduleReminderJob(
   event: any,
   attendee: any,
   minutes: number,
-  channel: string,
+  channel: 'email' | 'sms' | 'push' | 'in-app',
   scheduledFor: Date
 ) {
   try {
@@ -152,7 +153,7 @@ async function scheduleReminderJob(
         eventLocation: event.location,
         meetingUrl: event.meetingUrl,
       },
-      channels: [channel],
+      channels: [channel] as ('email' | 'sms' | 'push' | 'in-app')[],
       scheduledFor,
     };
 
@@ -188,7 +189,6 @@ export async function cancelEventReminders(eventId: string): Promise<number> {
       .update(eventReminders)
       .set({
         status: 'cancelled',
-        updatedAt: new Date(),
       })
       .where(
         and(
@@ -235,7 +235,6 @@ export async function rescheduleEventReminders(
       .update(calendarEvents)
       .set({
         startTime: newStartTime,
-        updatedAt: new Date(),
       })
       .where(eq(calendarEvents.id, eventId));
 
@@ -305,7 +304,6 @@ export async function markReminderSent(
       .set({
         sentAt: new Date(),
         status: success ? 'sent' : 'failed',
-        updatedAt: new Date(),
       })
       .where(eq(eventReminders.id, reminderId));
   } catch (error) {
@@ -363,7 +361,7 @@ export async function retryFailedReminders(options?: {
       .where(
         and(
           eq(eventReminders.status, 'failed'),
-          lte(eventReminders.updatedAt, olderThan)
+          lte(eventReminders.createdAt, olderThan)
         )
       )
       .limit(100);
@@ -399,7 +397,6 @@ export async function retryFailedReminders(options?: {
         .set({
           status: 'pending',
           scheduledFor: new Date(), // Send immediately
-          updatedAt: new Date(),
         })
         .where(eq(eventReminders.id, reminder.id));
 
@@ -408,7 +405,7 @@ export async function retryFailedReminders(options?: {
         event,
         attendee,
         reminder.reminderMinutes,
-        reminder.reminderType,
+        reminder.reminderType as 'email' | 'sms' | 'push' | 'in-app',
         new Date()
       );
 

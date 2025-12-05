@@ -37,7 +37,7 @@ export const GET = withTenantAuth(async (request: NextRequest, context) => {
         or(
           like(claims.claimNumber, `%${search}%`),
           like(claims.description, `%${search}%`)
-        )
+        ) as any
       );
     }
     

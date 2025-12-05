@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Calculator, TrendingUp, Info, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Button } from '@unioneyes/ui/components/button';
-import { Input } from '@unioneyes/ui/components/input';
-import { Label } from '@unioneyes/ui/components/label';
-import { Slider } from '@unioneyes/ui/components/slider';
-import { Badge } from '@unioneyes/ui/components/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@unioneyes/ui/components/select';
-import { Alert, AlertDescription } from '@unioneyes/ui/components/alert';
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface SettlementEstimate {
   min: number;

@@ -1,16 +1,8 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { profilesTable } from "./schema/profiles-schema";
-import { pendingProfilesTable } from "./schema/pending-profiles-schema";
-import { claims, claimUpdates } from "./schema/claims-schema";
+import * as schema from "./schema";
 
-// Define the schema properly
-const schema = { 
-  profiles: profilesTable,
-  pendingProfiles: pendingProfilesTable,
-  claims,
-  claimUpdates
-};
+// Schema is now imported from the unified index
 
 // Add connection options with improved timeout and retry settings for Vercel environment
 const connectionOptions = {
