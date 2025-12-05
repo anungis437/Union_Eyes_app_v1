@@ -1,0 +1,39 @@
+name: Scheduled Reports Cron
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  execute-scheduled-reports:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Execute scheduled reports
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST ${{ secrets.APP_URL }}/api/cron/scheduled-reports \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "Error: Cron execution failed with status $http_code"
+            exit 1
+          fi
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Scheduled reports cron job failed!"
+          echo "Check the logs and verify:"
+          echo "1. APP_URL secret is set correctly"
+          echo "2. CRON_SECRET matches the deployed application"
+          echo "3. The application is running and accessible"
