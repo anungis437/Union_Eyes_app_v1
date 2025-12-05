@@ -5,95 +5,52 @@
  * Returns metadata for building reports dynamically
  * 
  * Created: November 16, 2025
- * Part of: Area 8 - Analytics Platform
+ * Updated: December 5, 2025 (Phase 2 enhancements)
+ * Part of: Phase 2 - Enhanced Analytics & Reports
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withTenantAuth } from '@/lib/tenant-middleware';
+import { getAllDataSources } from '@/lib/report-executor';
 
-export async function GET(req: NextRequest) {
+async function getHandler(req: NextRequest) {
   try {
-    const { userId, orgId } = await auth();
-
-    if (!userId || !orgId) {
+    const tenantId = req.headers.get('x-tenant-id');
+    const userId = req.headers.get('x-user-id');
+    
+    if (!tenantId || !userId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Tenant ID and User ID required' },
+        { status: 400 }
       );
     }
 
-    // Define available data sources with field metadata
-    const dataSources = [
-      {
-        id: 'claims',
-        name: 'Claims',
-        description: 'Union member claims and grievances',
-        icon: 'FileText',
-        fields: [
-          { fieldId: 'id', fieldName: 'Claim ID', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'title', fieldName: 'Title', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'type', fieldName: 'Type', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'status', fieldName: 'Status', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'priority', fieldName: 'Priority', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'claim_amount', fieldName: 'Claim Amount', type: 'number', aggregatable: true, filterable: true, sortable: true },
-          { fieldId: 'created_at', fieldName: 'Created Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'resolved_at', fieldName: 'Resolved Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'assigned_steward_id', fieldName: 'Assigned Steward', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'resolution', fieldName: 'Resolution', type: 'string', aggregatable: false, filterable: true, sortable: false },
-        ],
-      },
-      {
-        id: 'members',
-        name: 'Members',
-        description: 'Union membership records',
-        icon: 'Users',
-        fields: [
-          { fieldId: 'id', fieldName: 'Member ID', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'name', fieldName: 'Full Name', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'email', fieldName: 'Email', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'status', fieldName: 'Status', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'union_number', fieldName: 'Union Number', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'created_at', fieldName: 'Join Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'phone', fieldName: 'Phone', type: 'string', aggregatable: false, filterable: true, sortable: false },
-          { fieldId: 'department', fieldName: 'Department', type: 'string', aggregatable: false, filterable: true, sortable: true },
-        ],
-      },
-      {
-        id: 'deadlines',
-        name: 'Deadlines',
-        description: 'Critical deadlines and tasks',
-        icon: 'Clock',
-        fields: [
-          { fieldId: 'id', fieldName: 'Deadline ID', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'title', fieldName: 'Title', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'type', fieldName: 'Type', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'status', fieldName: 'Status', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'due_date', fieldName: 'Due Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'completed_at', fieldName: 'Completed Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'claim_id', fieldName: 'Related Claim', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'priority', fieldName: 'Priority', type: 'string', aggregatable: false, filterable: true, sortable: true },
-        ],
-      },
-      {
-        id: 'grievances',
-        name: 'Grievances',
-        description: 'Formal grievance records',
-        icon: 'AlertTriangle',
-        fields: [
-          { fieldId: 'id', fieldName: 'Grievance ID', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'title', fieldName: 'Title', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'type', fieldName: 'Type', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'severity', fieldName: 'Severity', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'status', fieldName: 'Status', type: 'string', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'filed_date', fieldName: 'Filed Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'resolution_date', fieldName: 'Resolution Date', type: 'date', aggregatable: false, filterable: true, sortable: true },
-          { fieldId: 'member_id', fieldName: 'Filed By Member', type: 'string', aggregatable: false, filterable: true, sortable: true },
-        ],
-      },
-    ];
+    // Get data sources from report executor registry
+    const dataSources = getAllDataSources();
+
+    // Transform to API format
+    const formattedDataSources = dataSources.map(ds => ({
+      id: ds.id,
+      name: ds.name,
+      table: ds.table,
+      description: `Data source for ${ds.name.toLowerCase()}`,
+      icon: getIconForDataSource(ds.id),
+      joinable: ds.joinable || [],
+      fields: ds.fields.map(field => ({
+        fieldId: field.id,
+        fieldName: field.name,
+        column: field.column,
+        type: field.type,
+        aggregatable: field.aggregatable,
+        filterable: field.filterable,
+        sortable: field.sortable,
+        nullable: field.nullable,
+      })),
+    }));
 
     return NextResponse.json({
-      dataSources,
+      dataSources: formattedDataSources,
+      count: formattedDataSources.length,
     });
   } catch (error: any) {
     console.error('Error fetching data sources:', error);
@@ -103,3 +60,19 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+/**
+ * Get icon name for data source
+ */
+function getIconForDataSource(dataSourceId: string): string {
+  const iconMap: Record<string, string> = {
+    claims: 'FileText',
+    organization_members: 'Users',
+    claim_deadlines: 'Clock',
+    dues_assignments: 'DollarSign',
+  };
+
+  return iconMap[dataSourceId] || 'Table';
+}
+
+export const GET = withTenantAuth(getHandler);

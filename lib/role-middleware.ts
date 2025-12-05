@@ -1,17 +1,19 @@
 /**
  * Role-Based Authorization Middleware
  * 
- * Extends tenant middleware with role-based access control.
- * Validates user roles and permissions within tenant context.
+ * Extends organization middleware with role-based access control.
+ * Validates user roles and permissions within organization context.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { withTenantAuth, TenantContext } from "@/lib/tenant-middleware";
+import { withOrganizationAuth } from "@/lib/organization-middleware";
 import { getMemberByUserId } from "@/db/queries/organization-members-queries";
 
-export type MemberRole = "member" | "steward" | "officer" | "admin";
+export type MemberRole = "member" | "steward" | "officer" | "admin" | "super_admin";
 
-export interface RoleContext extends TenantContext {
+export interface RoleContext {
+  organizationId: string;
+  userId: string;
   role: MemberRole;
   memberId: string;
 }
@@ -20,6 +22,7 @@ export interface RoleContext extends TenantContext {
  * Role hierarchy levels (higher = more permissions)
  */
 const ROLE_HIERARCHY: Record<MemberRole, number> = {
+  super_admin: 5,
   admin: 4,
   officer: 3,
   steward: 2,
@@ -45,7 +48,7 @@ export function hasRolePermission(
  * 
  * // Require at least steward role
  * export const POST = withRoleAuth("steward", async (request, context) => {
- *   const { tenantId, userId, role, memberId } = context;
+ *   const { organizationId, userId, role, memberId } = context;
  *   // Your role-protected logic here
  * });
  * ```
@@ -58,14 +61,30 @@ export function withRoleAuth<T = any>(
     params?: T
   ) => Promise<NextResponse> | NextResponse
 ) {
-  return withTenantAuth<T>(async (request, tenantContext, params) => {
+  return withOrganizationAuth<T>(async (request, orgContext, params) => {
     try {
-      const { tenantId, userId } = tenantContext;
+      const { organizationId, userId } = orgContext;
 
       // Get user's member record to check role
-      const member = await getMemberByUserId(tenantId, userId);
+      const member = await getMemberByUserId(organizationId, userId);
 
+      // Check for super admin access (admin or super_admin in default org)
       if (!member) {
+        const DEFAULT_ORG_ID = "00000000-0000-0000-0000-000000000001";
+        const superAdminMember = await getMemberByUserId(DEFAULT_ORG_ID, userId);
+        const superAdminRole = superAdminMember?.role as MemberRole | undefined;
+        
+        if (superAdminMember && (superAdminRole === 'admin' || superAdminRole === 'super_admin')) {
+          // Grant admin access to super admins
+          const roleContext: RoleContext = {
+            organizationId,
+            userId,
+            role: superAdminRole,
+            memberId: superAdminMember.id,
+          };
+          return await handler(request, roleContext, params);
+        }
+        
         return NextResponse.json(
           { 
             success: false, 
@@ -88,7 +107,8 @@ export function withRoleAuth<T = any>(
 
       // Create role context
       const roleContext: RoleContext = {
-        ...tenantContext,
+        organizationId,
+        userId,
         role: member.role as MemberRole,
         memberId: member.id,
       };
@@ -116,14 +136,30 @@ export function withAnyRole<T = any>(
     params?: T
   ) => Promise<NextResponse> | NextResponse
 ) {
-  return withTenantAuth<T>(async (request, tenantContext, params) => {
+  return withOrganizationAuth<T>(async (request, orgContext, params) => {
     try {
-      const { tenantId, userId } = tenantContext;
+      const { organizationId, userId } = orgContext;
 
       // Get user's member record to check role
-      const member = await getMemberByUserId(tenantId, userId);
+      const member = await getMemberByUserId(organizationId, userId);
 
+      // Check for super admin access (admin or super_admin in default org)
       if (!member) {
+        const DEFAULT_ORG_ID = "00000000-0000-0000-0000-000000000001";
+        const superAdminMember = await getMemberByUserId(DEFAULT_ORG_ID, userId);
+        const superAdminRole = superAdminMember?.role as MemberRole | undefined;
+        
+        if (superAdminMember && (superAdminRole === 'admin' || superAdminRole === 'super_admin')) {
+          // Grant admin access to super admins
+          const roleContext: RoleContext = {
+            organizationId,
+            userId,
+            role: superAdminRole,
+            memberId: superAdminMember.id,
+          };
+          return await handler(request, roleContext, params);
+        }
+        
         return NextResponse.json(
           { 
             success: false, 
@@ -151,7 +187,8 @@ export function withAnyRole<T = any>(
 
       // Create role context
       const roleContext: RoleContext = {
-        ...tenantContext,
+        organizationId,
+        userId,
         role: userRole,
         memberId: member.id,
       };

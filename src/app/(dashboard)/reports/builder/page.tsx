@@ -12,7 +12,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ReportBuilder } from '@/components/analytics/ReportBuilder';
+import { ReportBuilder } from '@/src/components/analytics/ReportBuilder';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -27,7 +27,7 @@ interface ReportConfig {
   sortBy: any[];
   visualizationType: string;
   chartConfig?: any;
-  limit: number;
+  limit?: number;
 }
 
 export default function ReportBuilderPage() {

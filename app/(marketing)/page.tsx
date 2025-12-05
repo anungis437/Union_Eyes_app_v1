@@ -12,6 +12,8 @@ import AnimatedFeatures from "./components/animated-features";
 import AnimatedReviews from "./components/animated-reviews";
 import AnimatedCTA from "./components/animated-cta";
 
+export const dynamic = 'force-dynamic';
+
 // Reviews data
 const reviews = [
   {

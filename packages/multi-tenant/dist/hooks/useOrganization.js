@@ -160,7 +160,17 @@ export function useOrganization(options) {
         catch {
             // Ignore storage errors
         }
-    }, []);
+        // Set cookie with organization slug for API access
+        const org = organizations.find(o => o.id === id);
+        if (org) {
+            try {
+                document.cookie = `active-organization=${org.slug}; path=/; max-age=${60 * 60 * 24 * 30}`; // 30 days
+            }
+            catch {
+                // Ignore cookie errors
+            }
+        }
+    }, [organizations]);
     // Refresh
     const refresh = useCallback(async () => {
         await loadOrganizations();
@@ -169,6 +179,24 @@ export function useOrganization(options) {
     useEffect(() => {
         loadOrganizations();
     }, [loadOrganizations]);
+    // Set cookie when current organization changes
+    useEffect(() => {
+        console.log('[useOrganization] Setting cookie - currentOrganization:', currentOrganization);
+        if (currentOrganization) {
+            try {
+                const cookieValue = `active-organization=${currentOrganization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`;
+                console.log('[useOrganization] Setting cookie:', cookieValue);
+                document.cookie = cookieValue; // 30 days
+                console.log('[useOrganization] Cookie set successfully');
+            }
+            catch (error) {
+                console.error('[useOrganization] Error setting cookie:', error);
+            }
+        }
+        else {
+            console.log('[useOrganization] No current organization, skipping cookie');
+        }
+    }, [currentOrganization]);
     // Load specific organization if ID provided
     useEffect(() => {
         if (organizationId) {

@@ -387,7 +387,8 @@ export class TenantIsolationService {
     async cleanup() {
         try {
             // Close database connections
-            for (const [key, connection] of this.connectionPool) {
+            const connections = Array.from(this.connectionPool.entries());
+            for (const [key, connection] of connections) {
                 // Close connection based on type
                 if (connection && typeof connection.close === 'function') {
                     await connection.close();

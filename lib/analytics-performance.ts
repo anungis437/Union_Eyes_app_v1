@@ -87,7 +87,7 @@ class AnalyticsPerformanceMonitor {
    * Get all endpoint reports
    */
   getAllReports(): PerformanceReport[] {
-    const endpoints = [...new Set(this.metrics.map(m => m.endpoint))];
+    const endpoints = Array.from(new Set(this.metrics.map(m => m.endpoint)));
     return endpoints
       .map(endpoint => this.getEndpointReport(endpoint))
       .filter((report): report is PerformanceReport => report !== null)

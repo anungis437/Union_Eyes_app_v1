@@ -297,37 +297,74 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
       return field?.fieldName || yField;
     });
 
-    const commonProps = {
-      data: chartData,
-      dataKeys,
-      xAxisKey: 'name',
-      colors: config.chartConfig.colors || ['#3b82f6', '#60a5fa', '#93c5fd'],
-      title: config.name,
-    };
+    const colors = config.chartConfig.colors || ['#3b82f6', '#60a5fa', '#93c5fd'];
 
     switch (config.visualizationType) {
       case 'bar':
-        return <BarChartComponent {...commonProps} />;
+        return (
+          <BarChartComponent
+            title={config.name}
+            data={chartData}
+            bars={dataKeys.map((key, index) => ({
+              dataKey: key,
+              name: key,
+              fill: colors[index % colors.length]
+            }))}
+            height={400}
+          />
+        );
       
       case 'line':
-        return <TrendLineChart {...commonProps} />;
+        return (
+          <TrendLineChart
+            title={config.name}
+            data={chartData}
+            lines={dataKeys.map((key, index) => ({
+              dataKey: key,
+              name: key,
+              stroke: colors[index % colors.length]
+            }))}
+            height={400}
+          />
+        );
       
       case 'pie':
         return (
           <PieChartComponent
-            data={chartData}
-            dataKey={dataKeys[0]}
-            nameKey="name"
-            colors={config.chartConfig.colors || ['#3b82f6', '#60a5fa', '#93c5fd']}
             title={config.name}
+            data={chartData}
+            height={400}
           />
         );
       
       case 'area':
-        return <AreaChartComponent {...commonProps} />;
+        return (
+          <AreaChartComponent
+            title={config.name}
+            data={chartData}
+            areas={dataKeys.map((key, index) => ({
+              dataKey: key,
+              name: key,
+              fill: colors[index % colors.length],
+              stroke: colors[index % colors.length]
+            }))}
+            height={400}
+          />
+        );
       
       case 'composed':
-        return <ComposedChartComponent {...commonProps} />;
+        return (
+          <ComposedChartComponent
+            title={config.name}
+            data={chartData}
+            lines={dataKeys.map((key, index) => ({
+              dataKey: key,
+              name: key,
+              stroke: colors[index % colors.length]
+            }))}
+            height={400}
+          />
+        );
       
       default:
         return <div>Unsupported chart type</div>;

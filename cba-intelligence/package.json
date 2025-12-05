@@ -1,5 +1,5 @@
 {
-  "name": "@courtlens/cba-intelligence",
+  "name": "@unioneyes/cba-intelligence",
   "version": "0.1.0",
   "private": true,
   "description": "Collective Bargaining Agreement Intelligence Engine",
@@ -14,8 +14,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@court-lens/ui": "workspace:*",
-    "@court-lens/supabase": "workspace:*",
+    "@unioneyes/ui": "workspace:*",
+    "@unioneyes/supabase": "workspace:*",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

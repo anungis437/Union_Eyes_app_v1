@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
 import { withRoleAuth } from '@/lib/role-middleware';
 import { getMemberById } from '@/db/queries/organization-members-queries';
 
 export const dynamic = 'force-dynamic';
-
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
 
 /**
  * GET /api/members/[id]
@@ -18,11 +11,12 @@ interface RouteContext {
  */
 export const GET = withRoleAuth('member', async (
   request: NextRequest,
-  context
+  context,
+  params?: { id: string }
 ) => {
   try {
-    const { tenantId } = context;
-    const memberId = context.params?.id as string;
+    const { organizationId } = context;
+    const memberId = params?.id as string;
 
     if (!memberId) {
       return NextResponse.json(
@@ -32,7 +26,7 @@ export const GET = withRoleAuth('member', async (
     }
 
     // Get member from organization_members table
-    const member = await getMemberById(tenantId, memberId);
+    const member = await getMemberById(organizationId, memberId);
 
     if (!member) {
       return NextResponse.json(
@@ -41,10 +35,10 @@ export const GET = withRoleAuth('member', async (
       );
     }
 
-    // Verify member belongs to current tenant
-    if (member.tenantId !== tenantId) {
+    // Verify member belongs to current organization
+    if (member.tenantId !== organizationId) {
       return NextResponse.json(
-        { success: false, error: 'Access denied - member belongs to different tenant' },
+        { success: false, error: 'Access denied - member belongs to different organization' },
         { status: 403 }
       );
     }
@@ -68,11 +62,12 @@ export const GET = withRoleAuth('member', async (
  */
 export const PATCH = withRoleAuth('steward', async (
   request: NextRequest,
-  context
+  context,
+  params?: { id: string }
 ) => {
   try {
-    const { tenantId } = context;
-    const memberId = context.params?.id as string;
+    const { organizationId } = context;
+    const memberId = params?.id as string;
 
     if (!memberId) {
       return NextResponse.json(
@@ -81,8 +76,8 @@ export const PATCH = withRoleAuth('steward', async (
       );
     }
 
-    // Get existing member to verify tenant
-    const existingMember = await getMemberById(tenantId, memberId);
+    // Get existing member to verify organization
+    const existingMember = await getMemberById(organizationId, memberId);
 
     if (!existingMember) {
       return NextResponse.json(
@@ -91,10 +86,10 @@ export const PATCH = withRoleAuth('steward', async (
       );
     }
 
-    // Verify member belongs to current tenant
-    if (existingMember.tenantId !== tenantId) {
+    // Verify member belongs to current organization
+    if (existingMember.tenantId !== organizationId) {
       return NextResponse.json(
-        { success: false, error: 'Access denied - member belongs to different tenant' },
+        { success: false, error: 'Access denied - member belongs to different organization' },
         { status: 403 }
       );
     }

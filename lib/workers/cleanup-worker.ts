@@ -4,11 +4,24 @@
  * Handles periodic cleanup of old data, logs, and temporary files
  */
 
-import { Worker, Job } from 'bullmq';
-import IORedis from 'ioredis';
+// Only import bullmq in runtime, not during build
+let Worker: any, Job: any, IORedis: any;
+
+if (typeof window === 'undefined' && !process.env.__NEXT_BUILDING) {
+  try {
+    const bullmq = require('bullmq');
+    Worker = bullmq.Worker;
+    Job = bullmq.Job;
+    IORedis = require('ioredis');
+  } catch (e) {
+    // Fail silently during build
+  }
+}
+
 import { CleanupJobData } from '../job-queue';
-import { db } from '@/db';
-import { activityLogs, notificationHistory } from '@/db/schema';
+import { db } from '../../db/db';
+import { auditLogs } from '../../db/schema/audit-security-schema';
+import { notificationHistory } from '../../db/schema/notifications-schema';
 import { lt } from 'drizzle-orm';
 import fs from 'fs/promises';
 import path from 'path';
@@ -23,21 +36,21 @@ const REPORTS_DIR = process.env.REPORTS_DIR || './reports';
 const TEMP_DIR = process.env.TEMP_DIR || './temp';
 
 /**
- * Clean up old activity logs
+ * Clean up old audit logs
  */
 async function cleanupLogs(olderThanDays: number) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
-  console.log(`Cleaning up activity logs older than ${cutoffDate.toISOString()}`);
+  console.log(`Cleaning up audit logs older than ${cutoffDate.toISOString()}`);
 
   const result = await db
-    .delete(activityLogs)
-    .where(lt(activityLogs.createdAt, cutoffDate));
+    .delete(auditLogs)
+    .where(lt(auditLogs.createdAt, cutoffDate));
 
-  console.log(`Deleted old activity logs`);
+  console.log(`Deleted old audit logs`);
 
-  return { deleted: result.rowsAffected || 0 };
+  return { deleted: result.length };
 }
 
 /**
@@ -55,7 +68,7 @@ async function cleanupNotificationHistory(olderThanDays: number) {
 
   console.log(`Deleted old notification history`);
 
-  return { deleted: result.rowsAffected || 0 };
+  return { deleted: result.length };
 }
 
 /**
@@ -140,7 +153,7 @@ async function cleanupExports(olderThanDays: number) {
 /**
  * Process cleanup job
  */
-async function processCleanupJob(job: Job<CleanupJobData>) {
+async function processCleanupJob(job: any) {
   const { target, olderThanDays } = job.data;
 
   console.log(`Processing cleanup job ${job.id}: ${target} (${olderThanDays} days)`);
@@ -184,7 +197,7 @@ async function processCleanupJob(job: Job<CleanupJobData>) {
 // Create worker
 export const cleanupWorker = new Worker(
   'cleanup',
-  async (job: Job<CleanupJobData>) => {
+  async (job: any) => {
     return await processCleanupJob(job);
   },
   {
@@ -194,15 +207,15 @@ export const cleanupWorker = new Worker(
 );
 
 // Event handlers
-cleanupWorker.on('completed', (job) => {
+cleanupWorker.on('completed', (job: any) => {
   console.log(`Cleanup job ${job.id} completed`);
 });
 
-cleanupWorker.on('failed', (job, err) => {
+cleanupWorker.on('failed', (job: any, err: any) => {
   console.error(`Cleanup job ${job?.id} failed:`, err.message);
 });
 
-cleanupWorker.on('error', (err) => {
+cleanupWorker.on('error', (err: any) => {
   console.error('Cleanup worker error:', err);
 });
 

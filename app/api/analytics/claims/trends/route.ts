@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
+import { sql, db } from '@/lib/db';
 
 interface TrendDataPoint {
   date: string;
@@ -56,7 +56,7 @@ async function handler(req: NextRequest) {
     }
 
     // Get historical trends
-    const trends = await sql`
+    const trends = await db.execute(sql`
       WITH date_series AS (
         SELECT generate_series(
           ${startDate}::date,
@@ -79,7 +79,7 @@ async function handler(req: NextRequest) {
         TO_CHAR(c2.resolved_at, ${dateFormat}) = TO_CHAR(ds.report_date, ${dateFormat})
       GROUP BY ds.report_date
       ORDER BY ds.report_date
-    `;
+    `) as any[];
 
     const trendData: TrendDataPoint[] = trends.map(row => ({
       date: row.date,

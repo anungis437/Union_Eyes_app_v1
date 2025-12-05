@@ -31,7 +31,7 @@
 
 **Current Problem:**
 ```typescript
-type MemberRole = "member" | "steward" | "officer" | "admin";
+type MemberRole = "member" | "steward" | "officer" | "admin" | "super_admin";
 ```
 
 **Real Union Requirements:**

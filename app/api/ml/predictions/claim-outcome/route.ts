@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Get claim data either from ID or request body
     if (body.claimId) {
       const claim = await db.query.claims.findFirst({
-        where: eq(claims.id, body.claimId)
+        where: eq(claims.claimId, body.claimId)
       });
       
       if (!claim || claim.tenantId !== tenantId) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       }
       
       claimData = {
-        type: claim.type,
+        type: claim.claimType,
         description: claim.description,
         claimAmount: claim.claimAmount
       };

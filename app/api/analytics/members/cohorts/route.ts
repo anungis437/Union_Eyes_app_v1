@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
+import { sql, db } from '@/lib/db';
 
 interface CohortData {
   cohortMonth: string;
@@ -32,7 +32,7 @@ async function handler(req: NextRequest) {
     const monthsBack = parseInt(url.searchParams.get('months') || '12');
 
     // Calculate cohort metrics
-    const cohorts = await sql`
+    const cohorts = await db.execute(sql`
       WITH cohort_members AS (
         SELECT 
           id,
@@ -65,7 +65,7 @@ async function handler(req: NextRequest) {
       FROM member_activity
       GROUP BY cohort_month
       ORDER BY cohort_month DESC
-    `;
+    `) as any[];
 
     const cohortData: CohortData[] = cohorts.map(row => ({
       cohortMonth: row.cohort_month,
