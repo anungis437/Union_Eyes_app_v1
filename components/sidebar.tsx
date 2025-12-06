@@ -22,7 +22,10 @@ import {
   GitCompare,
   Target,
   Building2,
-  Network
+  Network,
+  Briefcase,
+  Flag,
+  DollarSign
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -62,6 +65,7 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
         { href: `/${locale}/dashboard`, icon: <Home size={16} />, label: t('navigation.dashboard'), roles: ["member", "steward", "officer", "admin"] },
         { href: `/${locale}/dashboard/claims`, icon: <FileText size={16} />, label: t('claims.myCases'), roles: ["member", "steward", "officer", "admin"] },
         { href: `/${locale}/dashboard/claims/new`, icon: <Mic size={16} />, label: t('claims.submitNew'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/pension`, icon: <Briefcase size={16} />, label: 'My Pension & Benefits', roles: ["member", "steward", "officer", "admin"] },
       ]
     },
     {
@@ -90,7 +94,11 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
       items: [
         { href: `/${locale}/dashboard/grievances`, icon: <Scale size={16} />, label: t('grievance.title'), roles: ["officer", "admin"] },
         { href: `/${locale}/dashboard/targets`, icon: <Target size={16} />, label: 'Performance Targets', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/organizing`, icon: <Flag size={16} />, label: 'Organizing Campaigns', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/strike-fund`, icon: <DollarSign size={16} />, label: 'Strike Fund', roles: ["officer", "admin"] },
         { href: `/${locale}/dashboard/notifications`, icon: <Bell size={16} />, label: t('sidebar.alerts'), roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/pension/admin`, icon: <Briefcase size={16} />, label: 'Pension Administration', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/pension/trustee`, icon: <Shield size={16} />, label: 'Trustee Portal', roles: ["officer", "admin"] },
       ]
     },
     {
