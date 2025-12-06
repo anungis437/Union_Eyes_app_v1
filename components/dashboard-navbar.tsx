@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare } from "lucide-react";
+import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare, Scale, Library, FileBarChart, Shield, GitCompare, Target } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,8 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
   
   // TODO: Implement proper admin role checking
   const isAdmin = false;
+  const isOfficer = false; // TODO: Implement officer role checking
+  const isSteward = false; // TODO: Implement steward role checking
 
   // Navigation items based on user role
   const navigationItems = [
@@ -30,8 +32,19 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
     { label: "Claims", href: `/${locale}/dashboard/claims`, icon: FileText },
     { label: "Voting", href: `/${locale}/dashboard/voting`, icon: Vote },
     { label: "Analytics", href: `/${locale}/dashboard/analytics`, icon: BarChart3 },
+    ...((isSteward || isOfficer || isAdmin) ? [
+      { label: "Workbench", href: `/${locale}/dashboard/workbench`, icon: FileBarChart },
+      { label: "Clauses", href: `/${locale}/dashboard/clause-library`, icon: Library },
+      { label: "Precedents", href: `/${locale}/dashboard/precedents`, icon: Scale },
+    ] : []),
+    ...((isOfficer || isAdmin) ? [
+      { label: "Cross-Union", href: `/${locale}/dashboard/cross-union-analytics`, icon: GitCompare },
+      { label: "Targets", href: `/${locale}/dashboard/targets`, icon: Target },
+      { label: "Grievances", href: `/${locale}/dashboard/grievances`, icon: Scale },
+    ] : []),
     ...(isAdmin ? [
       { label: "Members", href: `/${locale}/dashboard/members`, icon: Users },
+      { label: "Admin", href: `/${locale}/dashboard/admin`, icon: Shield },
       { label: "Settings", href: `/${locale}/dashboard/settings`, icon: Settings },
     ] : []),
   ];
