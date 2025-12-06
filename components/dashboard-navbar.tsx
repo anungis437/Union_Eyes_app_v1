@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare, Scale, Library, FileBarChart, Shield, GitCompare, Target } from "lucide-react";
+import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare, Scale, Library, FileBarChart, Shield, GitCompare, Target, Flag, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +60,19 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
       { label: "Precedents", href: `/${locale}/dashboard/precedents`, icon: Scale },
       { label: "Clauses", href: `/${locale}/dashboard/clause-library`, icon: Library },
       { label: "Affiliates", href: `/${locale}/dashboard/admin/organizations`, icon: Users },
+    ] : []),
+    
+    // Pension & Benefits (all users see their own data)
+    { label: "Pension", href: `/${locale}/dashboard/pension`, icon: Users },
+    
+    // Organizing campaigns (officers and admin only)
+    ...(isOfficer || isAdmin ? [
+      { label: "Organizing", href: `/${locale}/dashboard/organizing`, icon: Flag },
+    ] : []),
+    
+    // Strike fund management (officers and admin only)
+    ...(isOfficer || isAdmin ? [
+      { label: "Strike Fund", href: `/${locale}/dashboard/strike-fund`, icon: DollarSign },
     ] : []),
     
     // Admin only
