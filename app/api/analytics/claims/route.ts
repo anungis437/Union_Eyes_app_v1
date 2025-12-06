@@ -44,18 +44,22 @@ async function handler(req: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    // Get claims analytics
-    const analytics = await getClaimsAnalytics(tenantId, { startDate, endDate });
+    // Get basic claims count for the period
+    const result = await db.execute(sql`
+      SELECT COUNT(*) as total_claims
+      FROM claims
+      WHERE tenant_id = ${tenantId}
+        AND created_at >= ${startDate}
+        AND created_at <= ${endDate}
+    `);
 
-    // Optionally include detailed claims list
-    let details = null;
-    if (includeDetails) {
-      details = await getClaimsByDateRange(tenantId, { startDate, endDate }, filters);
-    }
+    const analytics = {
+      totalClaims: Number(result.rows[0]?.total_claims || 0),
+      period: { startDate, endDate }
+    };
 
     return NextResponse.json({
       analytics,
-      details,
       dateRange: {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
