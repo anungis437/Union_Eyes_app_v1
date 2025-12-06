@@ -20,7 +20,9 @@ import {
   Scale,
   Library,
   GitCompare,
-  Target
+  Target,
+  Building2,
+  Network
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,7 +37,7 @@ interface SidebarProps {
   userEmail?: string;
   whopMonthlyPlanId: string;
   whopYearlyPlanId: string;
-  userRole?: "member" | "steward" | "officer" | "admin"; // Role-based navigation
+  userRole?: "member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff"; // Role-based navigation
 }
 
 export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYearlyPlanId, userRole = "member" }: SidebarProps) {
@@ -92,11 +94,23 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
       ]
     },
     {
+      title: 'Cross-Organizational Operations',
+      roles: ["congress_staff", "federation_staff", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedent Database', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: 'Shared Clause Library', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/admin/organizations`, icon: <Building2 size={16} />, label: 'Affiliate Management', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/compliance`, icon: <FileBarChart size={16} />, label: 'Compliance Reports', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/sector-analytics`, icon: <BarChart3 size={16} />, label: 'Sector Analytics', roles: ["congress_staff", "admin"] },
+      ]
+    },
+    {
       title: t('sidebar.system'),
       roles: ["admin"],
       items: [
         { href: `/${locale}/dashboard/admin`, icon: <Shield size={16} />, label: t('navigation.adminPanel'), roles: ["admin"] },
-        { href: `/${locale}/dashboard/settings`, icon: <Settings size={16} />, label: t('sidebar.preferences'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/settings`, icon: <Settings size={16} />, label: t('sidebar.preferences'), roles: ["member", "steward", "officer", "admin", "congress_staff", "federation_staff"] },
       ]
     }
   ];
