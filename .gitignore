@@ -39,3 +39,16 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Temporary build/debug files
+build-*.txt
+fix-*.ps1
+*-output.txt
+azure-credentials-output.txt
+
+# IDE and editor files
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo

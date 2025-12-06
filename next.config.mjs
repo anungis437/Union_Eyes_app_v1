@@ -50,8 +50,7 @@ const nextConfig = {
   },
   
   // Output optimization
-  // Temporarily disable standalone mode to avoid Windows symlink permission errors
-  // Re-enable this for production builds in CI/CD with proper permissions
+  // Disable standalone mode - causes issues with pnpm workspaces
   // output: 'standalone',
   
   // Image optimization
