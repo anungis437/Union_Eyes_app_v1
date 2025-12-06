@@ -23,29 +23,48 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
   
   // TODO: Implement proper admin role checking
   const isAdmin = false;
+  const isCongressStaff = false; // TODO: Implement congress staff role checking
+  const isFederationStaff = false; // TODO: Implement federation staff role checking
   const isOfficer = false; // TODO: Implement officer role checking
   const isSteward = false; // TODO: Implement steward role checking
+  const isCrossOrgStaff = isCongressStaff || isFederationStaff;
 
   // Navigation items based on user role
   const navigationItems = [
     { label: "Dashboard", href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { label: "Claims", href: `/${locale}/dashboard/claims`, icon: FileText },
-    { label: "Voting", href: `/${locale}/dashboard/voting`, icon: Vote },
-    { label: "Analytics", href: `/${locale}/dashboard/analytics`, icon: BarChart3 },
-    ...((isSteward || isOfficer || isAdmin) ? [
-      { label: "Workbench", href: `/${locale}/dashboard/workbench`, icon: FileBarChart },
-      { label: "Clauses", href: `/${locale}/dashboard/clause-library`, icon: Library },
-      { label: "Precedents", href: `/${locale}/dashboard/precedents`, icon: Scale },
+    
+    // Core features for all users
+    ...(!isCrossOrgStaff ? [
+      { label: "Claims", href: `/${locale}/dashboard/claims`, icon: FileText },
+      { label: "Voting", href: `/${locale}/dashboard/voting`, icon: Vote },
     ] : []),
-    ...((isOfficer || isAdmin) ? [
-      { label: "Cross-Union", href: `/${locale}/dashboard/cross-union-analytics`, icon: GitCompare },
+    
+    // Analytics (everyone)
+    { label: "Analytics", href: `/${locale}/dashboard/analytics`, icon: BarChart3 },
+    
+    // Representative tools (steward+)
+    ...((isSteward || isOfficer || isAdmin) && !isCrossOrgStaff ? [
+      { label: "Workbench", href: `/${locale}/dashboard/workbench`, icon: FileBarChart },
+      { label: "Members", href: `/${locale}/dashboard/members`, icon: Users },
+    ] : []),
+    
+    // Leadership tools (officer+)
+    ...((isOfficer || isAdmin) && !isCrossOrgStaff ? [
       { label: "Targets", href: `/${locale}/dashboard/targets`, icon: Target },
       { label: "Grievances", href: `/${locale}/dashboard/grievances`, icon: Scale },
     ] : []),
+    
+    // Cross-organizational tools (congress/federation staff)
+    ...(isCrossOrgStaff || isAdmin ? [
+      { label: "Cross-Union", href: `/${locale}/dashboard/cross-union-analytics`, icon: GitCompare },
+      { label: "Precedents", href: `/${locale}/dashboard/precedents`, icon: Scale },
+      { label: "Clauses", href: `/${locale}/dashboard/clause-library`, icon: Library },
+      { label: "Affiliates", href: `/${locale}/dashboard/admin/organizations`, icon: Users },
+    ] : []),
+    
+    // Admin only
     ...(isAdmin ? [
-      { label: "Members", href: `/${locale}/dashboard/members`, icon: Users },
       { label: "Admin", href: `/${locale}/dashboard/admin`, icon: Shield },
-      { label: "Settings", href: `/${locale}/dashboard/settings`, icon: Settings },
     ] : []),
   ];
 
