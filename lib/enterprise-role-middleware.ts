@@ -23,7 +23,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth, type TenantContext } from './tenant-middleware';
+import { withOrganizationAuth } from './organization-middleware';
 import {
   getMemberRoles,
   getMemberHighestRoleLevel,
@@ -43,7 +43,9 @@ import {
 /**
  * Enhanced context with multi-role support and permissions
  */
-export interface EnhancedRoleContext extends TenantContext {
+export interface EnhancedRoleContext {
+  organizationId: string;
+  userId: string;
   memberId: string;
   roles: MemberRoleWithDetails[]; // All active roles
   highestRoleLevel: number; // Highest role level (for quick checks)
@@ -93,15 +95,16 @@ export function withEnhancedRoleAuth<T = any>(
     isSensitive?: boolean; // Flag as sensitive action
   } = {}
 ) {
-  return withTenantAuth(async (request: NextRequest, context: TenantContext) => {
+  return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
     const startTime = Date.now();
+    const { organizationId, userId } = orgContext;
     
     try {
       // Get member from context (requires tenant middleware to populate this)
-      const memberId = (context as any).memberId;
+      const memberId = (orgContext as any).memberId;
       if (!memberId) {
         await logAuditDenial(
-          context,
+          orgContext,
           options.auditAction || 'access_resource',
           'member',
           'No member ID in context',
@@ -115,14 +118,14 @@ export function withEnhancedRoleAuth<T = any>(
       }
       
       // Load member's roles and permissions
-      const roles = await getMemberRoles(memberId, context.tenantId);
-      const highestRoleLevel = await getMemberHighestRoleLevel(memberId, context.tenantId);
-      const permissions = await getMemberEffectivePermissions(memberId, context.tenantId);
+      const roles = await getMemberRoles(memberId, organizationId);
+      const highestRoleLevel = await getMemberHighestRoleLevel(memberId, organizationId);
+      const permissions = await getMemberEffectivePermissions(memberId, organizationId);
       
       // Check minimum role level
       if (highestRoleLevel < minRoleLevel) {
         await logAuditDenial(
-          { ...context, memberId },
+          { organizationId, userId, memberId },
           options.auditAction || 'access_resource',
           'permission',
           `Insufficient role level: ${highestRoleLevel} < ${minRoleLevel}`,
@@ -146,7 +149,7 @@ export function withEnhancedRoleAuth<T = any>(
         
         if (!scopeCheck.allowed) {
           await logAuditDenial(
-            { ...context, memberId },
+            { organizationId, userId, memberId },
             options.auditAction || 'access_resource',
             'scope',
             scopeCheck.reason || 'Scope mismatch',
@@ -162,7 +165,8 @@ export function withEnhancedRoleAuth<T = any>(
       
       // Build enhanced context
       const enhancedContext: EnhancedRoleContext = {
-        ...context,
+        organizationId,
+        userId,
         memberId,
         roles,
         highestRoleLevel,
@@ -181,7 +185,7 @@ export function withEnhancedRoleAuth<T = any>(
         actorRole: roles[0]?.roleName,
         action: options.auditAction || 'access_resource',
         resourceType: 'api_endpoint',
-        tenantId: context.tenantId,
+        organizationId: organizationId,
         granted: true,
         grantMethod: 'role',
         executionTimeMs: Date.now() - startTime,
@@ -219,14 +223,15 @@ export function withPermission<T = any>(
     allowExceptions?: boolean; // Allow permission exceptions (default: true)
   } = {}
 ) {
-  return withTenantAuth(async (request: NextRequest, context: TenantContext) => {
+  return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
     const startTime = Date.now();
+    const { organizationId, userId } = orgContext;
     
     try {
-      const memberId = (context as any).memberId;
+      const memberId = (orgContext as any).memberId;
       if (!memberId) {
         await logAuditDenial(
-          context,
+          { organizationId, userId, memberId: '' },
           options.auditAction || requiredPermission,
           options.resourceType || 'resource',
           'No member ID in context',
@@ -240,14 +245,14 @@ export function withPermission<T = any>(
       }
       
       // Load member data
-      const roles = await getMemberRoles(memberId, context.tenantId);
-      const highestRoleLevel = await getMemberHighestRoleLevel(memberId, context.tenantId);
-      const permissions = await getMemberEffectivePermissions(memberId, context.tenantId);
+      const roles = await getMemberRoles(memberId, organizationId);
+      const highestRoleLevel = await getMemberHighestRoleLevel(memberId, organizationId);
+      const permissions = await getMemberEffectivePermissions(memberId, organizationId);
       
       // Check permission
       const permissionCheck = await checkMemberPermission(
         memberId,
-        context.tenantId,
+        organizationId,
         requiredPermission,
         permissions,
         options.resourceType,
@@ -257,7 +262,7 @@ export function withPermission<T = any>(
       
       if (!permissionCheck.allowed) {
         await logAuditDenial(
-          { ...context, memberId },
+          { organizationId, userId, memberId },
           options.auditAction || requiredPermission,
           options.resourceType || 'resource',
           permissionCheck.denialReason || 'Permission denied',
@@ -272,7 +277,8 @@ export function withPermission<T = any>(
       
       // Build enhanced context
       const enhancedContext: EnhancedRoleContext = {
-        ...context,
+        organizationId,
+        userId,
         memberId,
         roles,
         highestRoleLevel,
@@ -292,7 +298,7 @@ export function withPermission<T = any>(
         action: options.auditAction || requiredPermission,
         resourceType: options.resourceType || 'resource',
         resourceId: options.resourceId,
-        tenantId: context.tenantId,
+        organizationId: organizationId,
         requiredPermission,
         granted: true,
         grantMethod: permissionCheck.grantMethod,
@@ -331,14 +337,15 @@ export function withScopedRoleAuth<T = any>(
     isSensitive?: boolean;
   } = {}
 ) {
-  return withTenantAuth(async (request: NextRequest, context: TenantContext) => {
+  return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
     const startTime = Date.now();
+    const { organizationId, userId } = orgContext;
     
     try {
-      const memberId = (context as any).memberId;
+      const memberId = (orgContext as any).memberId;
       if (!memberId) {
         await logAuditDenial(
-          context,
+          { organizationId, userId, memberId: '' },
           options.auditAction || `scoped_${roleCode}`,
           'role',
           'No member ID',
@@ -349,9 +356,9 @@ export function withScopedRoleAuth<T = any>(
       }
       
       // Load member roles
-      const roles = await getMemberRoles(memberId, context.tenantId);
-      const highestRoleLevel = await getMemberHighestRoleLevel(memberId, context.tenantId);
-      const permissions = await getMemberEffectivePermissions(memberId, context.tenantId);
+      const roles = await getMemberRoles(memberId, organizationId);
+      const highestRoleLevel = await getMemberHighestRoleLevel(memberId, organizationId);
+      const permissions = await getMemberEffectivePermissions(memberId, organizationId);
       
       // Find matching role with scope
       const matchingRoles = roles.filter(r => {
@@ -367,7 +374,7 @@ export function withScopedRoleAuth<T = any>(
       
       if (matchingRoles.length === 0) {
         await logAuditDenial(
-          { ...context, memberId },
+          { organizationId, userId, memberId },
           options.auditAction || `scoped_${roleCode}`,
           'role',
           `No matching role: ${roleCode} with scope ${scopeType}`,
@@ -382,7 +389,8 @@ export function withScopedRoleAuth<T = any>(
       
       // Build context
       const enhancedContext: EnhancedRoleContext = {
-        ...context,
+        organizationId,
+        userId,
         memberId,
         roles,
         highestRoleLevel,
@@ -401,7 +409,7 @@ export function withScopedRoleAuth<T = any>(
         actorRole: matchingRoles[0].roleName,
         action: options.auditAction || `scoped_${roleCode}`,
         resourceType: 'scoped_resource',
-        tenantId: context.tenantId,
+        organizationId: organizationId,
         granted: true,
         grantMethod: 'role',
         executionTimeMs: Date.now() - startTime,
@@ -523,7 +531,7 @@ async function logAuditDenial(
     actorId: context.memberId || context.userId || 'unknown',
     action,
     resourceType,
-    tenantId: context.tenantId,
+    organizationId: context.organizationId,
     granted: false,
     denialReason: reason,
     executionTimeMs,
@@ -548,7 +556,7 @@ export async function requirePermission(
       actorId: context.memberId,
       action: permission,
       resourceType: 'runtime_check',
-      tenantId: context.tenantId,
+      organizationId: context.organizationId,
       granted: false,
       denialReason: `Runtime permission check failed: ${permission}`,
     });
@@ -570,7 +578,7 @@ export async function requireRoleLevel(
       actorId: context.memberId,
       action: 'role_level_check',
       resourceType: 'runtime_check',
-      tenantId: context.tenantId,
+      organizationId: context.organizationId,
       granted: false,
       denialReason: `Insufficient role level: ${context.highestRoleLevel} < ${minLevel}`,
     });

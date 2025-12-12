@@ -10,11 +10,11 @@ import {
   BarChart3,
   Loader2
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Badge } from '@unioneyes/ui/components/badge';
-import { Progress } from '@unioneyes/ui/components/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@unioneyes/ui/components/tabs';
-import { Button } from '@unioneyes/ui/components/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
 interface ClaimOutcomePrediction {
   outcome: 'favorable' | 'unfavorable' | 'settlement' | 'withdrawal';

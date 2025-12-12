@@ -13,8 +13,15 @@ COPY packages/*/package.json ./packages/
 # Install dependencies (will install for all workspaces)
 RUN pnpm install --frozen-lockfile
 
-# Copy workspace source code (after install)
+# Copy workspace package source code
 COPY packages ./packages
+
+# Reinstall to ensure workspace package node_modules are populated
+# (previous install only had package.json, now we have full source)
+RUN pnpm install --frozen-lockfile
+
+# Build workspace packages
+RUN pnpm --filter @unioneyes/ai build
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -23,11 +30,11 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy dependencies from deps stage
+# Copy dependencies and built packages from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 
-# Copy application code
+# Copy application source code
 COPY . .
 
 # Set build-time environment variables
@@ -40,7 +47,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV WHOP_WEBHOOK_KEY=${WHOP_WEBHOOK_KEY}
 
-# Build the application
+# Build the application (workspace packages already built in deps stage)
 RUN pnpm build
 
 # Stage 3: Runner
@@ -50,14 +57,25 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Install pnpm and curl for health checks
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk add --no-cache curl
+
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
-# Note: public directory is optional - only copy if exists
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy necessary files from builder
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder --chown=nextjs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./next.config.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/packages ./packages
+
+# Copy public folder if it exists (optional)
+RUN mkdir -p /app/public
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -69,4 +87,8 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Health check - verify the app is responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+CMD ["pnpm", "start"]

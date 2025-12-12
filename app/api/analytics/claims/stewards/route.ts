@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
+import { sql, db } from '@/lib/db';
 
 interface StewardPerformance {
   id: string;
@@ -38,7 +38,7 @@ async function handler(req: NextRequest) {
     startDate.setDate(startDate.getDate() - daysBack);
 
     // Get steward performance metrics
-    const stewards = await sql`
+    const stewards = await db.execute(sql`
       SELECT 
         om.id,
         CONCAT(om.first_name, ' ', om.last_name) AS name,
@@ -54,7 +54,7 @@ async function handler(req: NextRequest) {
       GROUP BY om.id, om.first_name, om.last_name
       HAVING COUNT(c.id) > 0
       ORDER BY COUNT(c.id) DESC
-    `;
+    `) as any[];
 
     // Calculate performance scores (0-100)
     // Formula: Weighted average of normalized metrics

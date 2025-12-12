@@ -1,8 +1,8 @@
-# CourtLens to UnionEyes Separation Plan
+# unioneyes to UnionEyes Separation Plan
 
 ## 🎯 Executive Summary
 
-**Issue**: The union-claims-standalone codebase contains `@courtlens` and `@court-lens` scoped packages that need to be separated and rebranded to `@unioneyes` as we migrate to the new UnionEyes platform.
+**Issue**: The union-claims-standalone codebase contains `@unioneyes` and `@unioneyes` scoped packages that need to be separated and rebranded to `@unioneyes` as we migrate to the new UnionEyes platform.
 
 **Good News**: All Azure resources are **already UnionEyes-branded** and can be used as-is! The only separation needed is at the package/code level.
 
@@ -12,17 +12,17 @@
 
 ## 📦 Package Rebranding Inventory
 
-### Current CourtLens Packages (7 total)
+### Current unioneyes Packages (7 total)
 
 | Current Name | New Name | Purpose | Dependencies |
 |--------------|----------|---------|--------------|
-| `@courtlens/auth` | `@unioneyes/auth` | Authentication utilities, SSO, RBAC | `@court-lens/supabase` |
-| `@courtlens/multi-tenant` | `@unioneyes/multi-tenant` | Multi-tenancy support | `@courtlens/types` |
-| `@courtlens/types` | `@unioneyes/types` | Shared TypeScript types | None |
-| `@court-lens/workflow` | `@unioneyes/workflow` | Workflow engine | `@court-lens/supabase` |
-| `@court-lens/ui` | `@unioneyes/ui` | Shared UI components | React, Tailwind |
-| `@court-lens/supabase` | `@unioneyes/supabase` | Database client wrapper | `@supabase/supabase-js` |
-| `@court-lens/shared` | `@unioneyes/shared` | Utility functions | None |
+| `@unioneyes/auth` | `@unioneyes/auth` | Authentication utilities, SSO, RBAC | `@unioneyes/supabase` |
+| `@unioneyes/multi-tenant` | `@unioneyes/multi-tenant` | Multi-tenancy support | `@unioneyes/types` |
+| `@unioneyes/types` | `@unioneyes/types` | Shared TypeScript types | None |
+| `@unioneyes/workflow` | `@unioneyes/workflow` | Workflow engine | `@unioneyes/supabase` |
+| `@unioneyes/ui` | `@unioneyes/ui` | Shared UI components | React, Tailwind |
+| `@unioneyes/supabase` | `@unioneyes/supabase` | Database client wrapper | `@supabase/supabase-js` |
+| `@unioneyes/shared` | `@unioneyes/shared` | Utility functions | None |
 
 ### Package Usage Analysis
 
@@ -30,11 +30,11 @@
 ```json
 // d:\APPS\union-claims-standalone\package.json
 "dependencies": {
-  "@court-lens/supabase": "workspace:*",
-  "@court-lens/ui": "workspace:*",
-  "@court-lens/workflow": "workspace:*",
-  "@courtlens/auth": "workspace:*",
-  "@courtlens/multi-tenant": "workspace:*"
+  "@unioneyes/supabase": "workspace:*",
+  "@unioneyes/ui": "workspace:*",
+  "@unioneyes/workflow": "workspace:*",
+  "@unioneyes/auth": "workspace:*",
+  "@unioneyes/multi-tenant": "workspace:*"
 }
 ```
 
@@ -42,14 +42,14 @@
 ```json
 // services/legal-data-service/package.json
 "dependencies": {
-  "@court-lens/legal-data": "workspace:*"
+  "@unioneyes/legal-data": "workspace:*"
 }
 ```
 
 **Inter-package Dependencies:**
-- `@courtlens/auth` depends on `@court-lens/supabase`
-- `@courtlens/multi-tenant` depends on `@courtlens/types`
-- `@court-lens/workflow` depends on `@court-lens/supabase`
+- `@unioneyes/auth` depends on `@unioneyes/supabase`
+- `@unioneyes/multi-tenant` depends on `@unioneyes/types`
+- `@unioneyes/workflow` depends on `@unioneyes/supabase`
 
 ---
 
@@ -113,7 +113,7 @@
 5. Update `pnpm-workspace.yaml` to reference new packages
 
 **Advantages:**
-- Clean break from CourtLens
+- Clean break from unioneyes
 - All code under UnionEyes branding
 - No dependency on old packages
 - Clear ownership
@@ -188,9 +188,9 @@ Copy-Item -Path "D:\APPS\union-claims-standalone\packages\auth\*" `
 ```json
 // Before (old)
 {
-  "name": "@courtlens/auth",
+  "name": "@unioneyes/auth",
   "dependencies": {
-    "@court-lens/supabase": "workspace:*"
+    "@unioneyes/supabase": "workspace:*"
   }
 }
 
@@ -206,8 +206,8 @@ Copy-Item -Path "D:\APPS\union-claims-standalone\packages\auth\*" `
 3. **Update imports in source files:**
 ```typescript
 // Before
-import { createClient } from '@court-lens/supabase';
-import type { User } from '@courtlens/types';
+import { createClient } from '@unioneyes/supabase';
+import type { User } from '@unioneyes/types';
 
 // After
 import { createClient } from '@unioneyes/supabase';
@@ -220,8 +220,8 @@ import type { User } from '@unioneyes/types';
 Get-ChildItem -Path ".\packages\auth\" -Recurse -Include *.ts,*.tsx | 
   ForEach-Object {
     $content = Get-Content $_.FullName -Raw
-    $content = $content -replace '@courtlens/', '@unioneyes/'
-    $content = $content -replace '@court-lens/', '@unioneyes/'
+    $content = $content -replace '@unioneyes/', '@unioneyes/'
+    $content = $content -replace '@unioneyes/', '@unioneyes/'
     Set-Content $_.FullName -Value $content
   }
 ```
@@ -246,8 +246,8 @@ Get-ChildItem -Path ".\packages\auth\" -Recurse -Include *.ts,*.tsx |
 2. **Update all imports in Next.js app:**
 ```typescript
 // Before
-import { useAuth } from '@courtlens/auth';
-import { Button } from '@court-lens/ui';
+import { useAuth } from '@unioneyes/auth';
+import { Button } from '@unioneyes/ui';
 
 // After
 import { useAuth } from '@unioneyes/auth';
@@ -260,8 +260,8 @@ import { Button } from '@unioneyes/ui';
 Get-ChildItem -Path ".\app\" -Recurse -Include *.ts,*.tsx | 
   ForEach-Object {
     $content = Get-Content $_.FullName -Raw
-    $content = $content -replace '@courtlens/', '@unioneyes/'
-    $content = $content -replace '@court-lens/', '@unioneyes/'
+    $content = $content -replace '@unioneyes/', '@unioneyes/'
+    $content = $content -replace '@unioneyes/', '@unioneyes/'
     Set-Content $_.FullName -Value $content
   }
 ```
@@ -312,12 +312,12 @@ pnpm dev
 
 ### Search Patterns
 ```regex
-@courtlens/
-@court-lens/
-courtlens
-court-lens
-CourtLens
-Court Lens
+@unioneyes/
+@unioneyes/
+unioneyes
+unioneyes
+unioneyes
+UnionEyes
 ```
 
 ### Replace With
@@ -385,7 +385,7 @@ No changes required - database schema is independent of package names.
 ### Pre-Migration
 - [ ] Backup union-claims-standalone repository
 - [ ] Document current package versions
-- [ ] List all files importing CourtLens packages
+- [ ] List all files importing unioneyes packages
 - [ ] Verify Azure resource access
 
 ### During Migration
@@ -400,7 +400,7 @@ No changes required - database schema is independent of package names.
 
 ### Post-Migration
 - [ ] `pnpm install` succeeds
-- [ ] No `@courtlens` or `@court-lens` references remain
+- [ ] No `@unioneyes` or `@unioneyes` references remain
 - [ ] TypeScript compilation succeeds
 - [ ] All packages build successfully
 - [ ] Application runs without errors
@@ -523,7 +523,7 @@ pnpm install
 
 ## 🎉 Conclusion
 
-**The CourtLens to UnionEyes separation is straightforward:**
+**The unioneyes to UnionEyes separation is straightforward:**
 
 1. ✅ Azure resources are already UnionEyes branded - use as-is
 2. ✅ Only package names need updating (find/replace)

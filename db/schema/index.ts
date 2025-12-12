@@ -5,9 +5,50 @@ export * from "./cba-clauses-schema";
 export * from "./claims-schema";
 export * from "./voting-schema";
 export * from "./user-management-schema";
+export * from "./user-uuid-mapping-schema";
 export * from "./tenant-management-schema";
 export * from "./audit-security-schema";
 export * from "./cba-intelligence-schema";
-export * from "./organization-members-schema";
+// export * from "./organization-members-schema"; // Commented out - using Phase 5A version from schema-organizations instead
 export * from "./notifications-schema";
 export * from "./calendar-schema";
+export * from "./deadlines-schema";
+export * from "./reports-schema";
+
+// Phase 5A: CLC Organizations
+export * from "../schema-organizations";
+
+// Phase 5B: Inter-Union Features
+export * from "./shared-clause-library-schema";
+export * from "./arbitration-precedents-schema";
+export * from "./sharing-permissions-schema";
+
+// CLC Per-Capita Remittances
+export * from "./clc-per-capita-schema";
+
+// Phase 1.5: Messages System
+export * from "./messages-schema";
+
+// Phase 5: Member Communications - SMS Integration
+export * from "./sms-communications-schema";
+
+// Phase 5: Member Communications - Surveys & Polls
+export * from "./survey-polling-schema";
+
+// Phase 5: Member Communications - Newsletter System
+export * from "./newsletter-schema";
+
+// Phase 5: Member Communications - Push Notifications
+export * from "./push-notifications";
+
+// Phase 5: Member Communications - Analytics & Engagement
+export * from "./communication-analytics-schema";
+
+// Phase 6: Advanced Grievance Management
+export * from "./grievance-workflow-schema";
+
+// Education & Training System
+export * from "./education-training-schema";
+
+// Document Management System
+export * from "./documents-schema";

@@ -9,7 +9,7 @@
  * - Audit logging
  */
 
-import { db } from '@/db';
+import { db } from '@/db/db';
 import { eq, and, or, gte, lte, isNull, inArray, sql } from 'drizzle-orm';
 
 // ============================================================================
@@ -38,7 +38,7 @@ export interface RoleDefinition {
 export interface MemberRole {
   id: string;
   memberId: string;
-  tenantId: string;
+  organizationId: string;
   roleCode: string;
   scopeType: string;
   scopeValue?: string;
@@ -84,7 +84,7 @@ export interface MemberRoleWithDetails extends MemberRole {
 export interface PermissionException {
   id: string;
   memberId: string;
-  tenantId: string;
+  organizationId: string;
   permission: string;
   resourceType: string;
   resourceId?: string;
@@ -118,8 +118,8 @@ export interface AuditLogEntry {
   resourceType: string;
   resourceId?: string;
   resourceDescription?: string;
-  tenantId: string;
-  tenantName?: string;
+  organizationId: string;
+  organizationName?: string;
   requiredPermission?: string;
   granted: boolean;
   grantMethod?: string;
@@ -154,7 +154,7 @@ export async function getAllRoleDefinitions(): Promise<RoleDefinition[]> {
     WHERE is_active = TRUE 
     ORDER BY role_level DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -165,7 +165,7 @@ export async function getRoleDefinitionByCode(roleCode: string): Promise<RoleDef
     SELECT * FROM role_definitions 
     WHERE role_code = ${roleCode} AND is_active = TRUE
   `);
-  return result.rows[0] as any || null;
+  return result[0] as any || null;
 }
 
 /**
@@ -177,7 +177,7 @@ export async function getRoleDefinitionsByLevel(minLevel: number): Promise<RoleD
     WHERE role_level >= ${minLevel} AND is_active = TRUE
     ORDER BY role_level DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -212,7 +212,7 @@ export async function createRoleDefinition(
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 // ============================================================================
@@ -220,19 +220,19 @@ export async function createRoleDefinition(
 // ============================================================================
 
 /**
- * Get all active roles for a member in a tenant
+ * Get all active roles for a member in an organization
  */
 export async function getMemberRoles(
   memberId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<MemberRoleWithDetails[]> {
   const result = await db.execute(sql`
     SELECT * FROM v_active_member_roles
     WHERE member_id = ${memberId} 
-      AND tenant_id = ${tenantId}
+      AND organization_id = ${organizationId}
     ORDER BY role_level DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -240,18 +240,18 @@ export async function getMemberRoles(
  */
 export async function getMemberHighestRoleLevel(
   memberId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<number> {
   const result = await db.execute(sql`
     SELECT COALESCE(MAX(rd.role_level), 0) as max_level
     FROM member_roles mr
     JOIN role_definitions rd ON mr.role_code = rd.role_code
     WHERE mr.member_id = ${memberId} 
-      AND mr.tenant_id = ${tenantId}
+      AND mr.organization_id = ${organizationId}
       AND mr.status = 'active'
       AND (mr.end_date IS NULL OR mr.end_date >= CURRENT_DATE)
   `);
-  return result.rows[0]?.max_level || 0;
+  return (result[0]?.max_level as number) || 0;
 }
 
 /**
@@ -259,18 +259,18 @@ export async function getMemberHighestRoleLevel(
  */
 export async function getMemberEffectivePermissions(
   memberId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<string[]> {
   const result = await db.execute(sql`
     SELECT DISTINCT jsonb_array_elements_text(rd.permissions) as permission
     FROM member_roles mr
     JOIN role_definitions rd ON mr.role_code = rd.role_code
     WHERE mr.member_id = ${memberId} 
-      AND mr.tenant_id = ${tenantId}
+      AND mr.organization_id = ${organizationId}
       AND mr.status = 'active'
       AND (mr.end_date IS NULL OR mr.end_date >= CURRENT_DATE)
   `);
-  return result.rows.map((row: any) => row.permission);
+  return result.map((row: any) => row.permission);
 }
 
 /**
@@ -278,7 +278,7 @@ export async function getMemberEffectivePermissions(
  */
 export async function memberHasRole(
   memberId: string,
-  tenantId: string,
+  organizationId: string,
   roleCode: string,
   scopeType?: string,
   scopeValue?: string
@@ -287,7 +287,7 @@ export async function memberHasRole(
     SELECT EXISTS(
       SELECT 1 FROM member_roles
       WHERE member_id = ${memberId}
-        AND tenant_id = ${tenantId}
+        AND organization_id = ${organizationId}
         AND role_code = ${roleCode}
         AND status = 'active'
         AND (end_date IS NULL OR end_date >= CURRENT_DATE)
@@ -303,7 +303,7 @@ export async function memberHasRole(
   query = sql`${query}) as has_role`;
   
   const result = await db.execute(query);
-  return result.rows[0]?.has_role || false;
+  return (result[0]?.has_role as boolean) || false;
 }
 
 /**
@@ -311,7 +311,7 @@ export async function memberHasRole(
  */
 export async function memberHasRoleLevel(
   memberId: string,
-  tenantId: string,
+  organizationId: string,
   minLevel: number,
   scopeType?: string,
   scopeValue?: string
@@ -321,7 +321,7 @@ export async function memberHasRoleLevel(
       SELECT 1 FROM member_roles mr
       JOIN role_definitions rd ON mr.role_code = rd.role_code
       WHERE mr.member_id = ${memberId}
-        AND mr.tenant_id = ${tenantId}
+        AND mr.organization_id = ${organizationId}
         AND rd.role_level >= ${minLevel}
         AND mr.status = 'active'
         AND (mr.end_date IS NULL OR mr.end_date >= CURRENT_DATE)
@@ -337,7 +337,7 @@ export async function memberHasRoleLevel(
   query = sql`${query}) as has_level`;
   
   const result = await db.execute(query);
-  return result.rows[0]?.has_level || false;
+  return (result[0]?.has_level as boolean) || false;
 }
 
 /**
@@ -345,7 +345,7 @@ export async function memberHasRoleLevel(
  */
 export async function assignMemberRole(
   memberId: string,
-  tenantId: string,
+  organizationId: string,
   roleCode: string,
   createdBy: string,
   options: {
@@ -371,13 +371,13 @@ export async function assignMemberRole(
   
   const result = await db.execute(sql`
     INSERT INTO member_roles (
-      member_id, tenant_id, role_code, scope_type, scope_value,
+      member_id, organization_id, role_code, scope_type, scope_value,
       start_date, end_date, term_years, assignment_type,
       election_date, elected_by, vote_count, total_votes,
       is_acting_role, acting_for_member_id, acting_reason,
       requires_approval, status, created_by
     ) VALUES (
-      ${memberId}, ${tenantId}, ${roleCode}, ${scopeType}, ${options.scopeValue || null},
+      ${memberId}, ${organizationId}, ${roleCode}, ${scopeType}, ${options.scopeValue || null},
       ${startDate}, ${options.endDate || null}, ${options.termYears || null}, ${assignmentType},
       ${options.electionDate || null}, ${options.electedBy || null}, 
       ${options.voteCount || null}, ${options.totalVotes || null},
@@ -387,7 +387,7 @@ export async function assignMemberRole(
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 /**
@@ -403,41 +403,40 @@ export async function updateMemberRole(
     suspendedBy?: string;
   }
 ): Promise<MemberRole> {
-  const setClauses = [];
-  const values = [];
+  // Build UPDATE query dynamically using sql template
+  let query = sql`UPDATE member_roles SET `;
+  const setClauses: any[] = [];
   
   if (updates.endDate !== undefined) {
-    setClauses.push(`end_date = $${values.length + 1}`);
-    values.push(updates.endDate);
+    setClauses.push(sql`end_date = ${updates.endDate}`);
   }
   if (updates.status) {
-    setClauses.push(`status = $${values.length + 1}`);
-    values.push(updates.status);
+    setClauses.push(sql`status = ${updates.status}`);
   }
   if (updates.suspensionReason) {
-    setClauses.push(`suspension_reason = $${values.length + 1}`);
-    values.push(updates.suspensionReason);
-    setClauses.push(`suspended_at = NOW()`);
+    setClauses.push(sql`suspension_reason = ${updates.suspensionReason}`);
+    setClauses.push(sql`suspended_at = NOW()`);
   }
   if (updates.suspendedBy) {
-    setClauses.push(`suspended_by = $${values.length + 1}`);
-    values.push(updates.suspendedBy);
+    setClauses.push(sql`suspended_by = ${updates.suspendedBy}`);
   }
   
-  setClauses.push(`updated_by = $${values.length + 1}`);
-  values.push(updatedBy);
-  setClauses.push(`updated_at = NOW()`);
+  setClauses.push(sql`updated_by = ${updatedBy}`);
+  setClauses.push(sql`updated_at = NOW()`);
   
-  values.push(roleId);
+  // Join clauses with commas
+  for (let i = 0; i < setClauses.length; i++) {
+    query = sql`${query}${setClauses[i]}`;
+    if (i < setClauses.length - 1) {
+      query = sql`${query}, `;
+    }
+  }
   
-  const result = await db.execute(sql.raw(`
-    UPDATE member_roles 
-    SET ${setClauses.join(', ')}
-    WHERE id = $${values.length}
-    RETURNING *
-  `, values));
+  query = sql`${query} WHERE id = ${roleId} RETURNING *`;
   
-  return result.rows[0] as any;
+  const result = await db.execute(query);
+  
+  return result[0] as any;
 }
 
 /**
@@ -465,34 +464,34 @@ export async function revokeMemberRole(
  * Get roles expiring within specified days
  */
 export async function getExpiringRoles(
-  tenantId: string,
+  organizationId: string,
   daysAhead: number = 90
 ): Promise<MemberRoleWithDetails[]> {
   const result = await db.execute(sql`
     SELECT * FROM v_active_member_roles
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND end_date IS NOT NULL
       AND end_date <= CURRENT_DATE + ${daysAhead}
       AND end_date >= CURRENT_DATE
     ORDER BY end_date
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Get upcoming elections
  */
 export async function getUpcomingElections(
-  tenantId: string,
+  organizationId: string,
   daysAhead: number = 180
 ): Promise<any[]> {
   const result = await db.execute(sql`
     SELECT * FROM v_upcoming_elections
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND next_election_date <= CURRENT_DATE + ${daysAhead}
     ORDER BY next_election_date
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -507,7 +506,7 @@ export async function expireOldTerms(): Promise<number> {
       AND end_date < CURRENT_DATE
     RETURNING id
   `);
-  return result.rows.length;
+  return result.length;
 }
 
 // ============================================================================
@@ -519,19 +518,19 @@ export async function expireOldTerms(): Promise<number> {
  */
 export async function getMemberPermissionExceptions(
   memberId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<PermissionException[]> {
   const result = await db.execute(sql`
     SELECT * FROM permission_exceptions
     WHERE member_id = ${memberId}
-      AND tenant_id = ${tenantId}
+      AND organization_id = ${organizationId}
       AND is_active = TRUE
       AND revoked_at IS NULL
       AND (expires_at IS NULL OR expires_at > NOW())
       AND (usage_limit IS NULL OR usage_count < usage_limit)
     ORDER BY effective_date DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -539,7 +538,7 @@ export async function getMemberPermissionExceptions(
  */
 export async function memberHasPermissionException(
   memberId: string,
-  tenantId: string,
+  organizationId: string,
   permission: string,
   resourceType?: string,
   resourceId?: string
@@ -548,7 +547,7 @@ export async function memberHasPermissionException(
     SELECT EXISTS(
       SELECT 1 FROM permission_exceptions
       WHERE member_id = ${memberId}
-        AND tenant_id = ${tenantId}
+        AND organization_id = ${organizationId}
         AND permission = ${permission}
         AND is_active = TRUE
         AND revoked_at IS NULL
@@ -566,7 +565,7 @@ export async function memberHasPermissionException(
   query = sql`${query}) as has_exception`;
   
   const result = await db.execute(query);
-  return result.rows[0]?.has_exception || false;
+  return (result[0]?.has_exception as boolean) || false;
 }
 
 /**
@@ -574,7 +573,7 @@ export async function memberHasPermissionException(
  */
 export async function grantPermissionException(
   memberId: string,
-  tenantId: string,
+  organizationId: string,
   permission: string,
   resourceType: string,
   reason: string,
@@ -589,16 +588,16 @@ export async function grantPermissionException(
 ): Promise<PermissionException> {
   const result = await db.execute(sql`
     INSERT INTO permission_exceptions (
-      member_id, tenant_id, permission, resource_type, resource_id,
+      member_id, organization_id, permission, resource_type, resource_id,
       reason, approved_by, approval_notes, effective_date, expires_at, usage_limit
     ) VALUES (
-      ${memberId}, ${tenantId}, ${permission}, ${resourceType}, ${options.resourceId || null},
+      ${memberId}, ${organizationId}, ${permission}, ${resourceType}, ${options.resourceId || null},
       ${reason}, ${approvedBy}, ${options.approvalNotes || null},
       ${options.effectiveDate || new Date()}, ${options.expiresAt || null}, ${options.usageLimit || null}
     )
     RETURNING *
   `);
-  return result.rows[0] as any;
+  return result[0] as any;
 }
 
 /**
@@ -647,8 +646,8 @@ export async function logPermissionCheck(entry: {
   action: string;
   resourceType: string;
   resourceId?: string;
-  tenantId: string;
-  tenantName?: string;
+  organizationId: string;
+  organizationName?: string;
   requiredPermission?: string;
   granted: boolean;
   grantMethod?: string;
@@ -674,16 +673,16 @@ export async function logPermissionCheck(entry: {
   // Get previous hash for blockchain linking
   const prevResult = await db.execute(sql`
     SELECT record_hash FROM rbac_audit_log 
-    WHERE tenant_id = ${entry.tenantId}
+    WHERE organization_id = ${entry.organizationId}
     ORDER BY timestamp DESC LIMIT 1
   `);
-  const previousHash = prevResult.rows[0]?.record_hash || null;
+  const previousHash = prevResult[0]?.record_hash || null;
   
   // Insert audit log (fire and forget - don't block request)
   db.execute(sql`
     INSERT INTO rbac_audit_log (
       actor_id, actor_name, actor_role, action, action_category,
-      resource_type, resource_id, tenant_id, tenant_name,
+      resource_type, resource_id, organization_id, organization_name,
       required_permission, granted, grant_method, denial_reason,
       ip_address, user_agent, session_id, request_id,
       record_hash, previous_hash, execution_time_ms, is_sensitive
@@ -691,7 +690,7 @@ export async function logPermissionCheck(entry: {
       ${entry.actorId}, ${entry.actorName || null}, ${entry.actorRole || null},
       ${entry.action}, ${entry.action.split('_')[0] || null},
       ${entry.resourceType}, ${entry.resourceId || null},
-      ${entry.tenantId}, ${entry.tenantName || null},
+      ${entry.organizationId}, ${entry.organizationName || null},
       ${entry.requiredPermission || null}, ${entry.granted}, 
       ${entry.grantMethod || null}, ${entry.denialReason || null},
       ${entry.ipAddress || null}, ${entry.userAgent || null},
@@ -710,7 +709,7 @@ export async function logPermissionCheck(entry: {
  */
 export async function getMemberAuditLogs(
   actorId: string,
-  tenantId: string,
+  organizationId: string,
   options: {
     limit?: number;
     offset?: number;
@@ -725,7 +724,7 @@ export async function getMemberAuditLogs(
   
   let query = sql`
     SELECT * FROM rbac_audit_log
-    WHERE actor_id = ${actorId} AND tenant_id = ${tenantId}
+    WHERE actor_id = ${actorId} AND organization_id = ${organizationId}
   `;
   
   if (options.startDate) {
@@ -744,7 +743,7 @@ export async function getMemberAuditLogs(
   query = sql`${query} ORDER BY timestamp DESC LIMIT ${limit} OFFSET ${offset}`;
   
   const result = await db.execute(query);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
@@ -753,58 +752,58 @@ export async function getMemberAuditLogs(
 export async function getResourceAuditLogs(
   resourceType: string,
   resourceId: string,
-  tenantId: string,
+  organizationId: string,
   limit: number = 50
 ): Promise<AuditLogEntry[]> {
   const result = await db.execute(sql`
     SELECT * FROM rbac_audit_log
     WHERE resource_type = ${resourceType}
       AND resource_id = ${resourceId}
-      AND tenant_id = ${tenantId}
+      AND organization_id = ${organizationId}
     ORDER BY timestamp DESC
     LIMIT ${limit}
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Get denied access attempts (security monitoring)
  */
 export async function getDeniedAccessAttempts(
-  tenantId: string,
+  organizationId: string,
   hours: number = 24
 ): Promise<AuditLogEntry[]> {
   const result = await db.execute(sql`
     SELECT * FROM rbac_audit_log
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND granted = FALSE
       AND timestamp >= NOW() - INTERVAL '${hours} hours'
     ORDER BY timestamp DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Get sensitive actions requiring review
  */
 export async function getSensitiveActionsForReview(
-  tenantId: string
+  organizationId: string
 ): Promise<AuditLogEntry[]> {
   const result = await db.execute(sql`
     SELECT * FROM rbac_audit_log
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND requires_review = TRUE
       AND reviewed_at IS NULL
     ORDER BY timestamp DESC
   `);
-  return result.rows as any[];
+  return result as any[];
 }
 
 /**
  * Verify audit log integrity (blockchain-style)
  */
 export async function verifyAuditLogIntegrity(
-  tenantId: string,
+  organizationId: string,
   startDate?: Date,
   endDate?: Date
 ): Promise<{ valid: boolean; totalRecords: number; invalidRecords: number }> {
@@ -814,7 +813,7 @@ export async function verifyAuditLogIntegrity(
         id, timestamp, record_hash, previous_hash,
         LAG(record_hash) OVER (ORDER BY timestamp) as expected_previous_hash
       FROM rbac_audit_log
-      WHERE tenant_id = ${tenantId}
+      WHERE organization_id = ${organizationId}
   `;
   
   if (startDate) {
@@ -833,7 +832,7 @@ export async function verifyAuditLogIntegrity(
   `;
   
   const result = await db.execute(query);
-  const row = result.rows[0] as any;
+  const row = result[0] as any;
   
   return {
     valid: row.invalid_records === 0,
@@ -841,3 +840,4 @@ export async function verifyAuditLogIntegrity(
     invalidRecords: parseInt(row.invalid_records),
   };
 }
+

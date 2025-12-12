@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, inet, pgSchema, check } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { sql, relations } from "drizzle-orm";
 import { tenants } from "./tenant-management-schema";
 
 // Create user_management schema
@@ -49,6 +49,7 @@ export const tenantUsers = userManagementSchema.table("tenant_users", {
   role: varchar("role", { length: 50 }).notNull().default("member"),
   permissions: jsonb("permissions").default(sql`'[]'::jsonb`),
   isActive: boolean("is_active").default(true),
+  isPrimary: boolean("is_primary").default(false), // Indicates if this is the user's primary tenant
   invitedBy: uuid("invited_by").references(() => users.userId),
   invitedAt: timestamp("invited_at", { withTimezone: true }),
   joinedAt: timestamp("joined_at", { withTimezone: true }),
@@ -89,6 +90,14 @@ export const oauthProviders = userManagementSchema.table("oauth_providers", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
+
+// Define relations
+export const tenantUsersRelations = relations(tenantUsers, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [tenantUsers.tenantId],
+    references: [tenants.tenantId],
+  }),
+}));
 
 // Export types
 export type User = typeof users.$inferSelect;

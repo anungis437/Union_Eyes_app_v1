@@ -17,72 +17,118 @@ import {
   Mic,
   FileBarChart,
   Bell,
-  Scale
+  Scale,
+  Library,
+  GitCompare,
+  Target,
+  Building2,
+  Network,
+  Briefcase,
+  Flag,
+  DollarSign,
+  GraduationCap,
+  MessageSquare
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { SelectProfile } from "@/db/schema/profiles-schema";
+import { useTranslations, useLocale } from "next-intl";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   profile: SelectProfile | null;
   userEmail?: string;
   whopMonthlyPlanId: string;
   whopYearlyPlanId: string;
-  userRole?: "member" | "steward" | "officer" | "admin"; // Role-based navigation
+  userRole?: "member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff"; // Role-based navigation
 }
 
 export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYearlyPlanId, userRole = "member" }: SidebarProps) {
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations();
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Prevent hydration issues by only rendering UserButton on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   const isActive = (path: string) => pathname === path;
 
   // Navigation organized by sections with human-friendly labels
-  const navigationSections = [
+  const getNavigationSections = () => [
     {
-      title: "Your Union",
+      title: t('sidebar.yourUnion'),
       roles: ["member", "steward", "officer", "admin"],
       items: [
-        { href: "/dashboard", icon: <Home size={16} />, label: "Home", roles: ["member", "steward", "officer", "admin"] },
-        { href: "/dashboard/claims", icon: <FileText size={16} />, label: "My Cases", roles: ["member", "steward", "officer", "admin"] },
-        { href: "/dashboard/claims/new", icon: <Mic size={16} />, label: "New Case", roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard`, icon: <Home size={16} />, label: t('navigation.dashboard'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/claims`, icon: <FileText size={16} />, label: t('claims.myCases'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/claims/new`, icon: <Mic size={16} />, label: t('claims.submitNew'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/pension`, icon: <Briefcase size={16} />, label: 'My Pension & Benefits', roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/dues`, icon: <DollarSign size={16} />, label: 'Dues & Payments', roles: ["member", "steward", "officer", "admin"] },
       ]
     },
     {
-      title: "Participation",
+      title: t('sidebar.participation'),
       roles: ["member", "steward", "officer", "admin"],
       items: [
-        { href: "/dashboard/voting", icon: <Vote size={16} />, label: "Vote", roles: ["member", "steward", "officer", "admin"] },
-        { href: "/dashboard/agreements", icon: <BookOpen size={16} />, label: "Our Agreements", roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/education`, icon: <GraduationCap size={16} />, label: 'Education & Training', roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/voting`, icon: <Vote size={16} />, label: t('navigation.vote'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/agreements`, icon: <BookOpen size={16} />, label: t('sidebar.ourAgreements'), roles: ["member", "steward", "officer", "admin"] },
       ]
     },
     {
-      title: "Representative Tools",
+      title: t('sidebar.representativeTools'),
       roles: ["steward", "officer", "admin"],
       items: [
-        { href: "/dashboard/workbench", icon: <FileBarChart size={16} />, label: "Case Queue", roles: ["steward", "officer", "admin"] },
-        { href: "/dashboard/members", icon: <Users size={16} />, label: "Member Directory", roles: ["steward", "officer", "admin"] },
-        { href: "/dashboard/analytics", icon: <BarChart3 size={16} />, label: "Insights", roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/workbench`, icon: <FileBarChart size={16} />, label: t('claims.caseQueue'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/members`, icon: <Users size={16} />, label: t('members.directory'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: t('sidebar.clauseLibrary'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/analytics`, icon: <BarChart3 size={16} />, label: t('sidebar.insights'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedents', roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["officer", "admin"] },
       ]
     },
     {
-      title: "Leadership",
+      title: t('sidebar.leadership'),
       roles: ["officer", "admin"],
       items: [
-        { href: "/dashboard/grievances", icon: <Scale size={16} />, label: "Grievance Process", roles: ["officer", "admin"] },
-        { href: "/dashboard/notifications", icon: <Bell size={16} />, label: "Alerts", roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/communications`, icon: <MessageSquare size={16} />, label: 'Communications', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/grievances`, icon: <Scale size={16} />, label: t('grievance.title'), roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/targets`, icon: <Target size={16} />, label: 'Performance Targets', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/organizing`, icon: <Flag size={16} />, label: 'Organizing Campaigns', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/strike-fund`, icon: <DollarSign size={16} />, label: 'Strike Fund', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/notifications`, icon: <Bell size={16} />, label: t('sidebar.alerts'), roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/pension/admin`, icon: <Briefcase size={16} />, label: 'Pension Administration', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/pension/trustee`, icon: <Shield size={16} />, label: 'Trustee Portal', roles: ["officer", "admin"] },
       ]
     },
     {
-      title: "System",
+      title: 'Cross-Organizational Operations',
+      roles: ["congress_staff", "federation_staff", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedent Database', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: 'Shared Clause Library', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/admin/organizations`, icon: <Building2 size={16} />, label: 'Affiliate Management', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/compliance`, icon: <FileBarChart size={16} />, label: 'Compliance Reports', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/sector-analytics`, icon: <BarChart3 size={16} />, label: 'Sector Analytics', roles: ["congress_staff", "admin"] },
+      ]
+    },
+    {
+      title: t('sidebar.system'),
       roles: ["admin"],
       items: [
-        { href: "/dashboard/admin", icon: <Shield size={16} />, label: "Admin Panel", roles: ["admin"] },
-        { href: "/dashboard/settings", icon: <Settings size={16} />, label: "Preferences", roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/admin`, icon: <Shield size={16} />, label: t('navigation.adminPanel'), roles: ["admin"] },
+        { href: `/${locale}/dashboard/settings`, icon: <Settings size={16} />, label: t('sidebar.preferences'), roles: ["member", "steward", "officer", "admin", "congress_staff", "federation_staff"] },
       ]
     }
   ];
+  
+  const navigationSections = getNavigationSections();
 
   // Filter sections and items based on user role
   const getVisibleSections = () => {
@@ -120,7 +166,7 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
 
         {/* Logo */}
         <div className="px-3 mb-8 relative z-10">
-          <Link href="/dashboard">
+          <Link href={`/${locale}/dashboard`}>
             <motion.div 
               className="flex items-center justify-center md:justify-start gap-2"
               whileHover={{ scale: 1.02 }}
@@ -201,22 +247,26 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
               whileTap={{ scale: 0.98 }}
             >
               <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/80 flex items-center justify-center bg-white/80 shadow-sm">
-                <UserButton 
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: "w-8 h-8",
-                      userButtonTrigger: "w-8 h-8 rounded-full"
-                    }
-                  }} 
-                />
+                {isMounted ? (
+                  <UserButton 
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: "w-8 h-8",
+                        userButtonTrigger: "w-8 h-8 rounded-full"
+                      }
+                    }} 
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+                )}
               </div>
               <div className="hidden md:block ml-3 flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {userEmail?.split('@')[0] || "Member"}
+                  {userEmail?.split('@')[0] || t('common.member')}
                 </p>
                 <p className="text-xs text-gray-500">
-                  View Profile
+                  {t('sidebar.viewProfile')}
                 </p>
               </div>
             </motion.div>

@@ -18,20 +18,20 @@ import {
   KPICard,
   AreaChartComponent,
   CHART_COLORS
-} from '@/components/analytics/ChartComponents';
+} from '@/src/components/analytics/ChartComponents';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowUpIcon, 
   ArrowDownIcon, 
   RefreshCwIcon,
-  Download Icon,
+  DownloadIcon,
   TrendingUpIcon,
   UsersIcon,
   FileTextIcon,
   DollarSignIcon,
   ClockIcon,
-  CheckCircleIcon,
+  CheckCircleIcon
 } from 'lucide-react';
 
 interface ExecutiveSummary {

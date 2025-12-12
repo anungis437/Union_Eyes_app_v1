@@ -138,7 +138,7 @@ export const calendarEvents = pgTable('calendar_events', {
   isRecurring: boolean('is_recurring').default(false),
   recurrenceRule: text('recurrence_rule'), // RRULE string
   recurrenceExceptions: jsonb('recurrence_exceptions').$type<string[]>(), // Dates to exclude
-  parentEventId: uuid('parent_event_id').references(() => calendarEvents.id), // For recurring event instances
+  parentEventId: uuid('parent_event_id'), // For recurring event instances - self-reference
   
   // Classification
   eventType: eventTypeEnum('event_type').default('meeting'),

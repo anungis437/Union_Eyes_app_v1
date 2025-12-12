@@ -11,16 +11,15 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
   TrendLineChart, 
   BarChartComponent, 
   PieChartComponent, 
   KPICard,
   AreaChartComponent,
-  ScatterPlotComponent,
   CHART_COLORS
-} from '@/components/analytics/ChartComponents';
+} from '@/src/components/analytics/ChartComponents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -108,11 +107,7 @@ export default function ClaimsAnalyticsDashboard() {
   const [dateRange, setDateRange] = useState('30'); // days
   const [viewMode, setViewMode] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-  useEffect(() => {
-    fetchClaimsAnalytics();
-  }, [dateRange, viewMode]);
-
-  const fetchClaimsAnalytics = async () => {
+  const fetchClaimsAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -149,7 +144,11 @@ export default function ClaimsAnalyticsDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange, viewMode]);
+
+  useEffect(() => {
+    fetchClaimsAnalytics();
+  }, [fetchClaimsAnalytics]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -258,7 +257,6 @@ export default function ClaimsAnalyticsDashboard() {
           change={analytics.periodComparison.claimsGrowth}
           changeLabel={`${analytics.periodComparison.claimsGrowth > 0 ? '+' : ''}${analytics.periodComparison.claimsGrowth}% vs previous period`}
           icon={<FileTextIcon className="w-5 h-5" />}
-          iconColor="text-blue-600 bg-blue-100"
         />
 
         <KPICard
@@ -267,8 +265,6 @@ export default function ClaimsAnalyticsDashboard() {
           change={analytics.periodComparison.resolutionTimeChange}
           changeLabel={`${analytics.periodComparison.resolutionTimeChange > 0 ? '+' : ''}${analytics.periodComparison.resolutionTimeChange}% vs previous period`}
           icon={<ClockIcon className="w-5 h-5" />}
-          iconColor="text-orange-600 bg-orange-100"
-          invertChange={true}
         />
 
         <KPICard
@@ -277,7 +273,6 @@ export default function ClaimsAnalyticsDashboard() {
           change={analytics.periodComparison.winRateChange}
           changeLabel={`${analytics.periodComparison.winRateChange > 0 ? '+' : ''}${analytics.periodComparison.winRateChange}% vs previous period`}
           icon={<CheckCircleIcon className="w-5 h-5" />}
-          iconColor="text-green-600 bg-green-100"
         />
 
         <KPICard
@@ -286,7 +281,6 @@ export default function ClaimsAnalyticsDashboard() {
           change={0}
           changeLabel={`${analytics.resolvedClaims} resolved this period`}
           icon={<AlertTriangleIcon className="w-5 h-5" />}
-          iconColor="text-yellow-600 bg-yellow-100"
         />
       </div>
 
@@ -302,110 +296,75 @@ export default function ClaimsAnalyticsDashboard() {
         {/* Trends Tab */}
         <TabsContent value="trends" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Claims Volume Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AreaChartComponent
-                  data={trends.map(t => ({
-                    name: t.date,
-                    value: t.newClaims,
-                    forecast: t.forecast,
-                  }))}
-                  xKey="name"
-                  yKeys={['value', 'forecast']}
-                  colors={[CHART_COLORS.blue, CHART_COLORS.purple]}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
+            <AreaChartComponent
+              title="Claims Volume Trend"
+              data={trends.map(t => ({
+                name: t.date,
+                value: t.newClaims,
+                ...(t.forecast !== undefined && { forecast: t.forecast }),
+              }))}
+              areas={[
+                { dataKey: 'value', name: 'Actual Claims', fill: CHART_COLORS.primary[0], stroke: CHART_COLORS.primary[0] },
+                { dataKey: 'forecast', name: 'Forecast', fill: CHART_COLORS.purple[0], stroke: CHART_COLORS.purple[0] },
+              ]}
+              height={300}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Resolution Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TrendLineChart
-                  data={trends.map(t => ({
-                    name: t.date,
-                    value: t.resolvedClaims,
-                  }))}
-                  xKey="name"
-                  yKey="value"
-                  color={CHART_COLORS.green}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
+            <TrendLineChart
+              title="Resolution Trend"
+              data={trends.map(t => ({
+                name: t.date,
+                value: t.resolvedClaims,
+              }))}
+              lines={[
+                { dataKey: 'value', stroke: CHART_COLORS.success[0], name: 'Resolved' }
+              ]}
+              height={300}
+            />
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Average Resolution Time Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TrendLineChart
-                data={trends.map(t => ({
-                  name: t.date,
-                  value: t.avgResolutionDays,
-                }))}
-                xKey="name"
-                yKey="value"
-                color={CHART_COLORS.orange}
-                height={250}
-              />
-            </CardContent>
-          </Card>
+          <TrendLineChart
+            title="Average Resolution Time Trend"
+            data={trends.map(t => ({
+              name: t.date,
+              value: t.avgResolutionDays,
+            }))}
+            lines={[
+              { dataKey: 'value', stroke: CHART_COLORS.warning[0], name: 'Avg Days' }
+            ]}
+            height={250}
+          />
         </TabsContent>
 
         {/* Breakdown Tab */}
         <TabsContent value="breakdown" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>By Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PieChartComponent
-                  data={Object.entries(analytics.claimsByStatus).map(([key, value]) => ({
-                    name: key.replace('_', ' ').toUpperCase(),
-                    value,
-                  }))}
-                  height={250}
-                />
-              </CardContent>
-            </Card>
+            <PieChartComponent
+              title="By Status"
+              data={Object.entries(analytics.claimsByStatus).map(([key, value]) => ({
+                name: key.replace('_', ' ').toUpperCase(),
+                value,
+              }))}
+              height={250}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>By Type</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PieChartComponent
-                  data={Object.entries(analytics.claimsByType).map(([key, value]) => ({
-                    name: key.replace('_', ' ').toUpperCase(),
-                    value,
-                  }))}
-                  height={250}
-                />
-              </CardContent>
-            </Card>
+            <PieChartComponent
+              title="By Type"
+              data={Object.entries(analytics.claimsByType).map(([key, value]) => ({
+                name: key.replace('_', ' ').toUpperCase(),
+                value,
+              }))}
+              height={250}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>By Priority</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PieChartComponent
-                  data={Object.entries(analytics.claimsByPriority).map(([key, value]) => ({
-                    name: key.toUpperCase(),
-                    value,
-                  }))}
-                  height={250}
-                />
-              </CardContent>
-            </Card>
+            <PieChartComponent
+              title="By Priority"
+              data={Object.entries(analytics.claimsByPriority).map(([key, value]) => ({
+                name: key.toUpperCase(),
+                value,
+              }))}
+              height={250}
+            />
           </div>
 
           <Card>
@@ -437,62 +396,45 @@ export default function ClaimsAnalyticsDashboard() {
 
         {/* Performance Tab */}
         <TabsContent value="performance" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Steward Performance Comparison</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BarChartComponent
-                data={stewardPerformance.map(s => ({
-                  name: s.name,
-                  caseload: s.caseload,
-                  resolved: s.resolvedCount,
-                  winRate: s.winRate,
-                }))}
-                xKey="name"
-                yKeys={['caseload', 'resolved']}
-                colors={[CHART_COLORS.blue, CHART_COLORS.green]}
-                height={300}
-              />
-            </CardContent>
-          </Card>
+          <BarChartComponent
+            title="Steward Performance Comparison"
+            data={stewardPerformance.map(s => ({
+              name: s.name,
+              caseload: s.caseload,
+              resolved: s.resolvedCount,
+              winRate: s.winRate,
+            }))}
+            bars={[
+              { dataKey: 'caseload', fill: CHART_COLORS.primary[0], name: 'Caseload' },
+              { dataKey: 'resolved', fill: CHART_COLORS.success[0], name: 'Resolved' }
+            ]}
+            height={300}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resolution Efficiency</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BarChartComponent
-                  data={stewardPerformance.map(s => ({
-                    name: s.name,
-                    days: s.avgResolutionDays,
-                  }))}
-                  xKey="name"
-                  yKeys={['days']}
-                  colors={[CHART_COLORS.orange]}
-                  height={250}
-                />
-              </CardContent>
-            </Card>
+            <BarChartComponent
+              title="Resolution Efficiency"
+              data={stewardPerformance.map(s => ({
+                name: s.name,
+                days: s.avgResolutionDays,
+              }))}
+              bars={[
+                { dataKey: 'days', fill: CHART_COLORS.warning[0], name: 'Avg Days' }
+              ]}
+              height={250}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Win Rate by Steward</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BarChartComponent
-                  data={stewardPerformance.map(s => ({
-                    name: s.name,
-                    rate: s.winRate,
-                  }))}
-                  xKey="name"
-                  yKeys={['rate']}
-                  colors={[CHART_COLORS.green]}
-                  height={250}
-                />
-              </CardContent>
-            </Card>
+            <BarChartComponent
+              title="Win Rate by Steward"
+              data={stewardPerformance.map(s => ({
+                name: s.name,
+                rate: s.winRate,
+              }))}
+              bars={[
+                { dataKey: 'rate', fill: CHART_COLORS.success[0], name: 'Win Rate %' }
+              ]}
+              height={250}
+            />
           </div>
 
           <Card>

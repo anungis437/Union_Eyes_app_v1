@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
+import { sql, db } from '@/lib/db';
 
 interface EngagementTrend {
   month: string;
@@ -32,7 +32,7 @@ async function handler(req: NextRequest) {
     const monthsBack = parseInt(url.searchParams.get('months') || '12');
 
     // Get monthly engagement trends
-    const trends = await sql`
+    const trends = await db.execute(sql`
       WITH monthly_members AS (
         SELECT 
           TO_CHAR(month_series, 'YYYY-MM') AS month,
@@ -94,7 +94,7 @@ async function handler(req: NextRequest) {
       LEFT JOIN active_members am ON am.month = mm.month
       LEFT JOIN churned_estimate ce ON ce.month = mm.month
       ORDER BY mm.month_series
-    `;
+    `) as any[];
 
     const engagementTrends: EngagementTrend[] = trends.map(row => ({
       month: row.month,

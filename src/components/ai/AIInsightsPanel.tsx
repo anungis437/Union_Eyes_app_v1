@@ -8,10 +8,10 @@ import {
   ThumbsUp,
   ThumbsDown
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Button } from '@unioneyes/ui/components/button';
-import { Badge } from '@unioneyes/ui/components/badge';
-import { ScrollArea } from '@unioneyes/ui/components/scroll-area';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Insight {
   id: string;

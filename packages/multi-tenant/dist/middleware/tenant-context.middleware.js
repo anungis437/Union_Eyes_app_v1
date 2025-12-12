@@ -273,7 +273,8 @@ export class TenantMiddleware {
     clearCache(tenantId) {
         if (tenantId) {
             // Clear specific tenant cache
-            for (const [key] of this.contextCache) {
+            const keys = Array.from(this.contextCache.keys());
+            for (const key of keys) {
                 if (key.startsWith(`${tenantId}:`)) {
                     this.contextCache.delete(key);
                 }
@@ -287,7 +288,8 @@ export class TenantMiddleware {
     // Cache cleanup for expired entries
     cleanupExpiredCache() {
         const now = Date.now();
-        for (const [key, cached] of this.contextCache) {
+        const entries = Array.from(this.contextCache.entries());
+        for (const [key, cached] of entries) {
             if (cached.expires <= now) {
                 this.contextCache.delete(key);
             }

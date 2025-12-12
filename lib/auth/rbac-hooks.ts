@@ -38,6 +38,12 @@ export function useUserRole() {
             case "admin":
               setRole(UserRole.ADMIN);
               break;
+            case "congress_staff":
+              setRole(UserRole.CONGRESS_STAFF);
+              break;
+            case "federation_staff":
+              setRole(UserRole.FEDERATION_STAFF);
+              break;
             case "union_rep":
               setRole(UserRole.UNION_REP);
               break;
@@ -146,5 +152,37 @@ export function useIsUnionRepOrHigher(): boolean {
  */
 export function useIsStaffRepOrHigher(): boolean {
   const { role } = useUserRole();
-  return role === UserRole.ADMIN || role === UserRole.UNION_REP || role === UserRole.STAFF_REP;
+  return role === UserRole.ADMIN || role === UserRole.CONGRESS_STAFF || role === UserRole.FEDERATION_STAFF || role === UserRole.UNION_REP || role === UserRole.STAFF_REP;
+}
+
+/**
+ * Hook to check if user is congress staff
+ */
+export function useIsCongressStaff(): boolean {
+  const { role } = useUserRole();
+  return role === UserRole.CONGRESS_STAFF;
+}
+
+/**
+ * Hook to check if user is federation staff
+ */
+export function useIsFederationStaff(): boolean {
+  const { role } = useUserRole();
+  return role === UserRole.FEDERATION_STAFF;
+}
+
+/**
+ * Hook to check if user is congress or federation staff
+ */
+export function useIsCrossOrgStaff(): boolean {
+  const { role } = useUserRole();
+  return role === UserRole.CONGRESS_STAFF || role === UserRole.FEDERATION_STAFF;
+}
+
+/**
+ * Hook to check if user has cross-organizational analytics access
+ */
+export function useHasCrossOrgAccess(): boolean {
+  const { role } = useUserRole();
+  return role === UserRole.ADMIN || role === UserRole.CONGRESS_STAFF || role === UserRole.FEDERATION_STAFF;
 }

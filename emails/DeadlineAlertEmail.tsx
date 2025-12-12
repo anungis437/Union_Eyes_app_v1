@@ -81,7 +81,7 @@ export default function DeadlineAlertEmail({
             <Heading as="h2" style={h2}>
               {itemTitle}
             </Heading>
-            <Text style={itemId}>ID: {itemId}</Text>
+            <Text style={itemIdStyle}>ID: {itemId}</Text>
             <Text style={deadlineText}>
               <strong>Deadline:</strong> {new Date(deadline).toLocaleDateString()} at{' '}
               {new Date(deadline).toLocaleTimeString()}
@@ -165,7 +165,7 @@ const itemLabel = {
   margin: '0 0 5px',
 };
 
-const itemId = {
+const itemIdStyle = {
   color: '#9ca3af',
   fontSize: '14px',
   margin: '5px 0',

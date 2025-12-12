@@ -7,40 +7,40 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import { db } from '@/db';
 import { sql } from '@/lib/db';
 
 async function getHandler(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: TenantContext,
+  params?: { id: string }
 ) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    
-    if (!tenantId) {
+    if (!params?.id) {
       return NextResponse.json(
-        { error: 'Tenant ID required' },
+        { error: 'Report ID required' },
         { status: 400 }
       );
     }
 
-    const report = await sql`
+    const reportResult = await db.execute(sql`
       SELECT 
         r.*,
         om.first_name || ' ' || om.last_name AS created_by_name
       FROM reports r
       LEFT JOIN organization_members om ON om.id = r.created_by AND om.tenant_id = r.tenant_id
-      WHERE r.id = ${params.id} AND r.tenant_id = ${tenantId}
-    `;
+      WHERE r.id = ${params.id} AND r.tenant_id = ${context.tenantId}
+    `);
 
-    if (!report || report.length === 0) {
+    if (!reportResult || reportResult.length === 0) {
       return NextResponse.json(
         { error: 'Report not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ report: report[0] });
+    return NextResponse.json({ report: reportResult[0] });
   } catch (error) {
     console.error('Get report error:', error);
     return NextResponse.json(
@@ -52,15 +52,13 @@ async function getHandler(
 
 async function putHandler(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: TenantContext,
+  params?: { id: string }
 ) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
-    
-    if (!tenantId || !userId) {
+    if (!params?.id) {
       return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
+        { error: 'Report ID required' },
         { status: 400 }
       );
     }
@@ -68,12 +66,12 @@ async function putHandler(
     const body = await req.json();
 
     // Verify ownership or admin
-    const existing = await sql`
+    const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${tenantId}
-    `;
+      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+    `);
 
-    if (!existing || existing.length === 0) {
+    if (!existingResult || existingResult.length === 0) {
       return NextResponse.json(
         { error: 'Report not found' },
         { status: 404 }
@@ -81,7 +79,7 @@ async function putHandler(
     }
 
     // Update report
-    const updated = await sql`
+    const updatedResult = await db.execute(sql`
       UPDATE reports
       SET name = ${body.name || sql`name`},
           description = ${body.description !== undefined ? body.description : sql`description`},
@@ -89,11 +87,11 @@ async function putHandler(
           config = ${body.config ? JSON.stringify(body.config) : sql`config`},
           is_public = ${body.isPublic !== undefined ? body.isPublic : sql`is_public`},
           updated_at = NOW()
-      WHERE id = ${params.id} AND tenant_id = ${tenantId}
+      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
       RETURNING *
-    `;
+    `);
 
-    return NextResponse.json({ report: updated[0] });
+    return NextResponse.json({ report: updatedResult[0] });
   } catch (error) {
     console.error('Update report error:', error);
     return NextResponse.json(
@@ -105,26 +103,24 @@ async function putHandler(
 
 async function deleteHandler(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: TenantContext,
+  params?: { id: string }
 ) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
-    
-    if (!tenantId || !userId) {
+    if (!params?.id) {
       return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
+        { error: 'Report ID required' },
         { status: 400 }
       );
     }
 
     // Verify ownership or admin
-    const existing = await sql`
+    const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${tenantId}
-    `;
+      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+    `);
 
-    if (!existing || existing.length === 0) {
+    if (!existingResult || existingResult.length === 0) {
       return NextResponse.json(
         { error: 'Report not found' },
         { status: 404 }
@@ -132,10 +128,10 @@ async function deleteHandler(
     }
 
     // Delete report
-    await sql`
+    await db.execute(sql`
       DELETE FROM reports
-      WHERE id = ${params.id} AND tenant_id = ${tenantId}
-    `;
+      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+    `);
 
     return NextResponse.json({ success: true });
   } catch (error) {

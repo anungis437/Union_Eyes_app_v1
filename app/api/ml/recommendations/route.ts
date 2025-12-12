@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { claims, users, deadlines } from '@/db/schema';
-import { eq, and, isNull, lte, gte, sql, desc } from 'drizzle-orm';
+import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
 
 /**
  * GET /api/ml/recommendations?type=steward|deadline|strategy|priority
@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
     // Sort by priority and confidence
     recommendations.sort((a, b) => {
       const priorityWeight = { high: 3, medium: 2, low: 1 };
-      const aScore = priorityWeight[a.priority] * a.confidence;
-      const bScore = priorityWeight[b.priority] * b.confidence;
+      const aScore = priorityWeight[(a.priority as 'high' | 'medium' | 'low')] * a.confidence;
+      const bScore = priorityWeight[(b.priority as 'high' | 'medium' | 'low')] * b.confidence;
       return bScore - aScore;
     });
 
@@ -100,7 +100,7 @@ async function generateStewardRecommendations(
       where: and(
         eq(claims.tenantId, tenantId),
         isNull(claims.assignedTo),
-        eq(claims.status, 'open')
+        ne(claims.status, 'closed')
       )
     });
 
@@ -115,7 +115,7 @@ async function generateStewardRecommendations(
         .where(
           and(
             eq(claims.tenantId, tenantId),
-            eq(claims.status, 'open')
+            ne(claims.status, 'closed')
           )
         )
         .groupBy(claims.assignedTo);
@@ -146,18 +146,18 @@ async function generateStewardRecommendations(
     const overloadedStewards = await db
       .select({
         stewardId: claims.assignedTo,
-        stewardName: users.name,
+        stewardName: users.displayName,
         count: sql<number>`count(*)::int`,
       })
       .from(claims)
-      .innerJoin(users, eq(claims.assignedTo, users.id))
+      .innerJoin(users, eq(claims.assignedTo, users.userId))
       .where(
         and(
           eq(claims.tenantId, tenantId),
-          eq(claims.status, 'open')
+          ne(claims.status, 'closed')
         )
       )
-      .groupBy(claims.assignedTo, users.name)
+      .groupBy(claims.assignedTo, users.displayName)
       .having(sql`count(*) > ${overloadedThreshold}`);
 
     if (overloadedStewards.length > 0) {
@@ -204,10 +204,7 @@ async function generateDeadlineRecommendations(
         lte(deadlines.dueDate, threeDaysFromNow),
         gte(deadlines.dueDate, now),
         isNull(deadlines.completedAt)
-      ),
-      with: {
-        claim: true
-      }
+      )
     });
 
     if (upcomingDeadlines.length > 0) {
@@ -225,7 +222,7 @@ async function generateDeadlineRecommendations(
           deadlines: upcomingDeadlines.slice(0, 5).map(d => ({
             id: d.id,
             claimId: d.claimId,
-            type: d.type,
+            type: d.deadlineType,
             dueDate: d.dueDate
           }))
         }
@@ -238,10 +235,7 @@ async function generateDeadlineRecommendations(
         eq(deadlines.tenantId, tenantId),
         lte(deadlines.dueDate, now),
         isNull(deadlines.completedAt)
-      ),
-      with: {
-        claim: true
-      }
+      )
     });
 
     if (overdueDeadlines.length > 0) {
@@ -281,13 +275,13 @@ async function generateStrategyRecommendations(
     // Analyze claim patterns
     const claimsByType = await db
       .select({
-        type: claims.type,
+        type: claims.claimType,
         count: sql<number>`count(*)::int`,
         wonCount: sql<number>`count(*) filter (where status = 'won')::int`,
       })
       .from(claims)
       .where(eq(claims.tenantId, tenantId))
-      .groupBy(claims.type);
+      .groupBy(claims.claimType);
 
     // Find claim types with low win rates
     const lowWinRateTypes = claimsByType.filter(t => {
@@ -339,7 +333,7 @@ async function generatePriorityRecommendations(
     const oldOpenClaims = await db.query.claims.findMany({
       where: and(
         eq(claims.tenantId, tenantId),
-        eq(claims.status, 'open'),
+        ne(claims.status, 'closed'),
         lte(claims.createdAt, thirtyDaysAgo)
       ),
       orderBy: [claims.createdAt],
@@ -359,8 +353,8 @@ async function generatePriorityRecommendations(
         },
         metadata: {
           oldestClaim: {
-            id: oldOpenClaims[0].id,
-            age: Math.floor((Date.now() - new Date(oldOpenClaims[0].createdAt).getTime()) / (1000 * 60 * 60 * 24))
+            id: oldOpenClaims[0].claimId,
+            age: Math.floor((Date.now() - new Date(oldOpenClaims[0].createdAt || new Date()).getTime()) / (1000 * 60 * 60 * 24))
           }
         }
       });

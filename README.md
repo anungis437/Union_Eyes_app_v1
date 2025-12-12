@@ -3,8 +3,11 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Status](https://img.shields.io/badge/status-85%25%20Production%20Ready-green)
 
-A modern, production-ready union claims management platform built with Next.js 14, featuring AI-powered assistance, email notifications, file management, and comprehensive workflow automation.
+A modern, enterprise-grade union management platform built with Next.js 14, featuring claims management, CBA intelligence, member management, pension administration, organizing tools, strike fund management, and AI-powered assistance.
+
+**Current Status**: 85% production-ready | See [Platform Readiness Assessment](PLATFORM_READINESS_ASSESSMENT.md) for details
 
 ---
 
@@ -22,6 +25,8 @@ UnionEyes is an enterprise-grade claims management system designed specifically 
 - **📎 File Management** - Vercel Blob Storage for evidence and documents
 - **🔐 Authentication** - Clerk for secure user management
 - **🎨 Modern UI** - ShadCN components with Tailwind CSS
+- **💼 Financial System** - Strike fund management, payment processing, subscriptions
+- **🤝 Cross-Org Collaboration** - Shared clause library, precedent database, org discovery
 
 ---
 
@@ -45,6 +50,7 @@ UnionEyes is an enterprise-grade claims management system designed specifically 
 - Node.js 18+ or Bun
 - pnpm (recommended) or npm
 - PostgreSQL database (Supabase)
+- **Redis 7.x** (for BullMQ job queues) - **Use Docker**: `docker run -d -p 6379:6379 --name redis redis:7-alpine`
 - Clerk account for authentication
 - Vercel Blob Storage account
 - Resend account for email
@@ -207,24 +213,24 @@ UnionEyes/
 
 ## 📊 Development Status
 
-**Current Phase**: Phase 1 Foundation Complete
+**Current Phase**: Phase 5B Complete - Cross-Organization Collaboration System
 
-✅ **Completed:**
-1. Dashboard Integration
-2. Claims Management
-3. AI Workbench Integration
-4. File Upload Infrastructure
-5. Workflow Engine
-6. Email Notifications System
-7. Namespace Migration (@unioneyes)
-8. AI Infrastructure & Documentation
+✅ **Completed Phases:**
+1. **Phase 1**: Foundation - Dashboard, Claims, AI Workbench, File Upload, Workflow, Email
+2. **Phase 2**: Advanced Features - Members, Analytics, Reporting
+3. **Phase 3**: Validation & Testing - Security, RLS, Data Integrity
+4. **Phase 4**: Financial System - Strike Fund, Financial Tracking, Payment Processing
+5. **Phase 5A**: Payment Integration - Stripe/Whop, Subscription Management
+6. **Phase 5B**: Cross-Org Collaboration - Clause Library, Precedent Database, Org Discovery
 
-🚧 **In Progress:**
-- Members Page Integration
-- CSV Import Feature
-- Comprehensive Testing
+🎉 **Latest: Phase 5B Complete (Nov 20, 2025)**
+- ✅ 9 database tables with RLS policies
+- ✅ 16 API endpoints for collaboration
+- ✅ 14 frontend components
+- ✅ 8,915+ lines of production code
+- ✅ Zero TypeScript errors - Production ready
 
-See [PHASE_1_NEXT_STEPS.md](./PHASE_1_NEXT_STEPS.md) for next steps.
+See [PHASE_5B_COMPLETE.md](./PHASE_5B_COMPLETE.md) for Phase 5B details.
 
 ---
 
