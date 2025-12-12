@@ -452,3 +452,5 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
     </div>
   );
 }
+
+export default CourseCatalog;

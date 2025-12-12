@@ -99,8 +99,8 @@ export async function GET(
         sourceOrganization: {
           columns: {
             id: true,
-            organizationName: true,
-            organizationLevel: true,
+            name: true,
+            organizationType: true,
           },
         },
       },

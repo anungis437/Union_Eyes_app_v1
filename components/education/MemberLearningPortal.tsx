@@ -427,3 +427,5 @@ export function MemberLearningPortal({ organizationId, memberId }: MemberLearnin
     </div>
   );
 }
+
+export default MemberLearningPortal;

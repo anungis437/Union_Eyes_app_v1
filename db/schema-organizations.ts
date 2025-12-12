@@ -3,7 +3,7 @@
 // Phase 5A: CLC Multi-Tenancy Support
 // =====================================================
 
-import { pgTable, uuid, text, timestamp, integer, jsonb, boolean, date, pgEnum, index, uniqueIndex, check } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, jsonb, boolean, date, pgEnum, index, uniqueIndex, check, type AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // =====================================================
@@ -66,7 +66,7 @@ export const organizationStatusEnum = pgEnum('organization_status', [
 // ORGANIZATIONS TABLE
 // =====================================================
 
-export const organizations: any = pgTable(
+export const organizations = pgTable(
   'organizations',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -79,7 +79,7 @@ export const organizations: any = pgTable(
 
     // Hierarchy
     organizationType: organizationTypeEnum('organization_type').notNull(),
-    parentId: uuid('parent_id').references(() => organizations.id, { onDelete: 'restrict' }),
+    parentId: uuid('parent_id').references((): AnyPgColumn => organizations.id, { onDelete: 'restrict' }),
     hierarchyPath: text('hierarchy_path').array().notNull(),
     hierarchyLevel: integer('hierarchy_level').notNull().default(0),
 

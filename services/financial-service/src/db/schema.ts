@@ -50,6 +50,12 @@ export const arrearsStatusEnum = pgEnum('arrears_status', [
   'written_off'
 ]);
 
+export const paymentMethodTypeEnum = pgEnum('payment_method_type', [
+  'card',
+  'bank_account',
+  'ach'
+]);
+
 // Dues Rules Table
 export const duesRules = pgTable('dues_rules', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -137,7 +143,9 @@ export const duesTransactions = pgTable('dues_transactions', {
   // Amount fields
   amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
   lateFeeAmount: numeric('late_fee_amount', { precision: 10, scale: 2 }).default('0.00'),
+  processingFee: numeric('processing_fee', { precision: 10, scale: 2 }).default('0.00'),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }),
+  balance: numeric('balance', { precision: 10, scale: 2 }).default('0.00'),
   
   periodStart: date('period_start').notNull(),
   periodEnd: date('period_end').notNull(),
@@ -165,6 +173,121 @@ export const duesTransactions = pgTable('dues_transactions', {
   statusIdx: index('dues_transactions_status_idx').on(table.status),
   dueDateIdx: index('dues_transactions_due_date_idx').on(table.dueDate),
   periodIdx: index('dues_transactions_period_idx').on(table.periodStart, table.periodEnd),
+}));
+
+// PAC Contributions Table
+export const pacContributions = pgTable('pac_contributions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  memberId: uuid('member_id').notNull(),
+  
+  // Contribution details
+  amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
+  contributionDate: date('contribution_date').notNull().defaultNow(),
+  electionCycle: text('election_cycle').notNull(), // e.g., "2024 General"
+  committeeName: text('committee_name').notNull(), // PAC name
+  
+  // FEC compliance fields
+  fecCompliant: boolean('fec_compliant').default(true),
+  contributorEmployer: text('contributor_employer'),
+  contributorOccupation: text('contributor_occupation'),
+  contributorAddress: text('contributor_address'),
+  contributorCity: text('contributor_city'),
+  contributorState: text('contributor_state'),
+  contributorZip: text('contributor_zip'),
+  
+  // Opt-in tracking
+  optInDate: date('opt_in_date'),
+  optOutDate: date('opt_out_date'),
+  isRecurring: boolean('is_recurring').default(false),
+  recurringAmount: numeric('recurring_amount', { precision: 10, scale: 2 }),
+  recurringFrequency: text('recurring_frequency'), // monthly, quarterly, annually
+  
+  // Payment tracking
+  paymentMethod: text('payment_method'),
+  stripePaymentIntentId: text('stripe_payment_intent_id'),
+  paymentReference: text('payment_reference'),
+  status: text('status').notNull().default('completed'), // pending, completed, failed, refunded
+  
+  // Metadata
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tenantIdx: index('pac_contributions_tenant_idx').on(table.tenantId),
+  memberIdx: index('pac_contributions_member_idx').on(table.memberId),
+  cycleIdx: index('pac_contributions_cycle_idx').on(table.electionCycle),
+  dateIdx: index('pac_contributions_date_idx').on(table.contributionDate),
+}));
+
+// PAC Opt-ins Table
+export const pacOptIns = pgTable('pac_opt_ins', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  memberId: uuid('member_id').notNull(),
+  
+  // Opt-in details
+  optInDate: date('opt_in_date').notNull().defaultNow(),
+  optOutDate: date('opt_out_date'),
+  isActive: boolean('is_active').default(true),
+  
+  // Recurring contribution settings
+  recurringAmount: numeric('recurring_amount', { precision: 10, scale: 2 }),
+  recurringFrequency: text('recurring_frequency'), // monthly, quarterly, annually
+  nextContributionDate: date('next_contribution_date'),
+  
+  // Compliance
+  disclosureAccepted: boolean('disclosure_accepted').default(true),
+  disclosureDate: timestamp('disclosure_acceptance_date', { withTimezone: true }),
+  
+  // Metadata
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tenantIdx: index('pac_opt_ins_tenant_idx').on(table.tenantId),
+  memberIdx: uniqueIndex('pac_opt_ins_member_idx').on(table.tenantId, table.memberId),
+  activeIdx: index('pac_opt_ins_active_idx').on(table.tenantId, table.isActive),
+}));
+
+// Per Capita Invoices Table
+export const perCapitaInvoices = pgTable('per_capita_invoices', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  parentUnionId: uuid('parent_union_id'), // Reference to parent union organization
+  
+  // Invoice details
+  invoiceNumber: text('invoice_number').notNull().unique(),
+  periodStart: date('period_start').notNull(),
+  periodEnd: date('period_end').notNull(),
+  
+  // Calculation details
+  memberCount: numeric('member_count', { precision: 10, scale: 0 }).notNull(),
+  perCapitaRate: numeric('per_capita_rate', { precision: 10, scale: 2 }).notNull(),
+  totalAmount: numeric('total_amount', { precision: 12, scale: 2 }).notNull(),
+  
+  // Payment tracking
+  paymentStatus: text('payment_status').notNull().default('sent'), // sent, paid, overdue, disputed
+  dueDate: date('due_date').notNull(),
+  paidDate: date('paid_date'),
+  paymentReference: text('payment_reference'),
+  paymentMethod: text('payment_method'),
+  
+  // Additional details
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  
+  createdBy: uuid('created_by'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tenantIdx: index('per_capita_invoices_tenant_idx').on(table.tenantId),
+  parentUnionIdx: index('per_capita_invoices_parent_union_idx').on(table.parentUnionId),
+  statusIdx: index('per_capita_invoices_status_idx').on(table.paymentStatus),
+  periodIdx: index('per_capita_invoices_period_idx').on(table.periodStart, table.periodEnd),
+  invoiceNumberIdx: uniqueIndex('per_capita_invoices_number_idx').on(table.invoiceNumber),
 }));
 
 // Employer Remittances Table
@@ -294,6 +417,39 @@ export const arrearsCases = pgTable('arrears_cases', {
   memberIdx: index('arrears_member').on(table.memberId),
   statusIdx: index('arrears_status').on(table.tenantId, table.status),
   caseIdx: uniqueIndex('arrears_case_number').on(table.caseNumber),
+}));
+
+// Billing Templates Table
+export const billingTemplates = pgTable('billing_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  
+  // Template details
+  name: text('name').notNull(),
+  description: text('description'),
+  category: text('category').notNull(), // invoice, reminder, statement, notice, letter
+  
+  // Template content
+  templateHtml: text('template_html').notNull(),
+  templateText: text('template_text').notNull(), // Plain text fallback
+  subject: text('subject'), // Email subject line
+  
+  // Variables
+  variables: jsonb('variables').default('[]'), // Array of variable names used in template
+  
+  // Status
+  isDefault: boolean('is_default').default(false),
+  isActive: boolean('is_active').default(true),
+  
+  // Metadata
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tenantIdx: index('billing_templates_tenant_idx').on(table.tenantId),
+  categoryIdx: index('billing_templates_category_idx').on(table.category),
+  defaultIdx: index('billing_templates_default_idx').on(table.tenantId, table.isDefault),
 }));
 
 // ============================================================================
@@ -622,6 +778,60 @@ export const userNotificationPreferences = pgTable('user_notification_preference
   tenantUserIdx: uniqueIndex('user_notification_preferences_tenant_user_idx').on(table.tenantId, table.userId),
 }));
 
+// AutoPay Settings Table
+export const autopaySettings = pgTable('autopay_settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  memberId: uuid('member_id').notNull(),
+  
+  enabled: boolean('enabled').default(false).notNull(),
+  paymentMethodId: text('payment_method_id'), // Stripe payment method ID
+  
+  // Processing details
+  lastChargeDate: date('last_charge_date'),
+  lastChargeAmount: numeric('last_charge_amount', { precision: 10, scale: 2 }),
+  lastChargeStatus: paymentStatusEnum('last_charge_status'),
+  
+  failureCount: numeric('failure_count', { precision: 3, scale: 0 }).default('0'),
+  lastFailureDate: date('last_failure_date'),
+  lastFailureReason: text('last_failure_reason'),
+  
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tenantMemberIdx: uniqueIndex('autopay_settings_tenant_member_idx').on(table.tenantId, table.memberId),
+  enabledIdx: index('autopay_settings_enabled_idx').on(table.enabled),
+}));
+
+// Payment Methods Table
+export const paymentMethods = pgTable('payment_methods', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull(),
+  memberId: uuid('member_id').notNull(),
+  
+  // Stripe details
+  stripePaymentMethodId: text('stripe_payment_method_id').notNull(),
+  stripeCustomerId: text('stripe_customer_id').notNull(),
+  
+  // Payment method details
+  type: paymentMethodTypeEnum('type').notNull(),
+  last4: text('last4'),
+  brand: text('brand'), // For cards: visa, mastercard, etc.
+  expiryMonth: text('expiry_month'),
+  expiryYear: text('expiry_year'),
+  bankName: text('bank_name'), // For bank accounts
+  
+  isDefault: boolean('is_default').default(false),
+  isActive: boolean('is_active').default(true),
+  
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tenantMemberIdx: index('payment_methods_tenant_member_idx').on(table.tenantId, table.memberId),
+  stripePaymentMethodIdx: uniqueIndex('payment_methods_stripe_pm_idx').on(table.stripePaymentMethodId),
+  defaultIdx: index('payment_methods_default_idx').on(table.isDefault),
+}));
+
 // Notification Log Table (for delivery tracking)
 export const notificationLog = pgTable('notification_log', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -657,3 +867,27 @@ export const duesTransactionsRelations = relations(duesTransactions, ({ one }) =
     references: [memberDuesAssignments.id],
   }),
 }));
+
+export const pacContributionsRelations = relations(pacContributions, ({ one }) => ({
+  member: one(members, {
+    fields: [pacContributions.memberId],
+    references: [members.id],
+  }),
+}));
+
+export const pacOptInsRelations = relations(pacOptIns, ({ one }) => ({
+  member: one(members, {
+    fields: [pacOptIns.memberId],
+    references: [members.id],
+  }),
+}));
+
+// Type exports
+export type DuesRule = typeof duesRules.$inferSelect;
+export type NewDuesRule = typeof duesRules.$inferInsert;
+export type MemberDuesAssignment = typeof memberDuesAssignments.$inferSelect;
+export type NewMemberDuesAssignment = typeof memberDuesAssignments.$inferInsert;
+export type DuesTransaction = typeof duesTransactions.$inferSelect;
+export type NewDuesTransaction = typeof duesTransactions.$inferInsert;
+export type Member = typeof members.$inferSelect;
+export type NewMember = typeof members.$inferInsert;

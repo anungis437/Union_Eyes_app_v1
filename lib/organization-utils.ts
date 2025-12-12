@@ -159,7 +159,7 @@ export async function getOrganizationInfo(organizationId: string) {
         id: organizations.id,
         name: organizations.name,
         slug: organizations.slug,
-        type: organizations.type,
+        type: organizations.organizationType,
         parentId: organizations.parentId,
       })
       .from(organizations)

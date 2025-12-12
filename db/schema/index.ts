@@ -29,3 +29,26 @@ export * from "./clc-per-capita-schema";
 // Phase 1.5: Messages System
 export * from "./messages-schema";
 
+// Phase 5: Member Communications - SMS Integration
+export * from "./sms-communications-schema";
+
+// Phase 5: Member Communications - Surveys & Polls
+export * from "./survey-polling-schema";
+
+// Phase 5: Member Communications - Newsletter System
+export * from "./newsletter-schema";
+
+// Phase 5: Member Communications - Push Notifications
+export * from "./push-notifications";
+
+// Phase 5: Member Communications - Analytics & Engagement
+export * from "./communication-analytics-schema";
+
+// Phase 6: Advanced Grievance Management
+export * from "./grievance-workflow-schema";
+
+// Education & Training System
+export * from "./education-training-schema";
+
+// Document Management System
+export * from "./documents-schema";
