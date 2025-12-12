@@ -10,6 +10,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { CalendarSidebar } from '@/components/calendar/CalendarSidebar';
 import { EventDialog } from '@/components/calendar/EventDialog';
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Settings } from 'lucide-react';
 
 export default function CalendarPage() {
+  const t = useTranslations();
   const [calendars, setCalendars] = useState<any[]>([]);
   const [selectedCalendarId, setSelectedCalendarId] = useState<string>('');
   const [events, setEvents] = useState<any[]>([]);
@@ -160,7 +162,7 @@ export default function CalendarPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-muted-foreground">Loading calendars...</div>
+        <div className="text-muted-foreground">{t('calendar.loadingCalendars')}</div>
       </div>
     );
   }
@@ -185,15 +187,15 @@ export default function CalendarPage() {
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
         <div className="border-b p-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Calendar</h1>
+          <h1 className="text-2xl font-bold">{t('calendar.title')}</h1>
           <div className="flex space-x-2">
             <Button onClick={() => handleCreateEvent()}>
               <Plus className="h-4 w-4 mr-2" />
-              New Event
+              {t('calendar.newEvent')}
             </Button>
             <Button variant="outline" onClick={() => setSyncManagerOpen(true)}>
               <Settings className="h-4 w-4 mr-2" />
-              Sync Settings
+              {t('calendar.syncSettings')}
             </Button>
           </div>
         </div>
@@ -210,9 +212,9 @@ export default function CalendarPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
-              <p className="mb-4">No calendar selected</p>
+              <p className="mb-4">{t('calendar.noCalendarSelected')}</p>
               <Button onClick={() => alert('Create calendar coming soon!')}>
-                Create your first calendar
+                {t('calendar.createFirstCalendar')}
               </Button>
             </div>
           </div>

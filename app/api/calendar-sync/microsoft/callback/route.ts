@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Exchange code for tokens
-    const { accessToken, refreshToken, expiresAt, accountId } = await exchangeCodeForTokens(code);
+    const { accessToken, refreshToken, expiresAt, providerAccountId } = await exchangeCodeForTokens(code);
 
     // Store connection
     const [connection] = await db
@@ -52,14 +52,14 @@ export async function GET(request: NextRequest) {
         userId,
         tenantId: 'default', // TODO: Get from user's organization
         provider: 'microsoft',
-        providerAccountId: accountId,
+        providerAccountId,
         accessToken,
         refreshToken,
         tokenExpiresAt: expiresAt,
         syncEnabled: true,
         syncDirection: 'both',
         syncStatus: 'pending',
-        calendarMappings: {},
+        calendarMappings: [],
       })
       .returning();
 

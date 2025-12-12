@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
+import { sql, db } from '@/lib/db';
 
 interface CategoryBreakdown {
   category: string;
@@ -35,7 +35,7 @@ async function handler(req: NextRequest) {
     startDate.setDate(startDate.getDate() - daysBack);
 
     // Get current period categories
-    const currentCategories = await sql`
+    const currentCategories = await db.execute(sql`
       SELECT 
         claim_type AS category,
         COUNT(*) AS count
@@ -44,7 +44,7 @@ async function handler(req: NextRequest) {
         AND created_at BETWEEN ${startDate} AND ${endDate}
       GROUP BY claim_type
       ORDER BY COUNT(*) DESC
-    `;
+    `) as any[];
 
     const totalCurrent = currentCategories.reduce((sum, cat) => sum + parseInt(cat.count), 0);
 
@@ -53,7 +53,7 @@ async function handler(req: NextRequest) {
     prevStartDate.setDate(prevStartDate.getDate() - daysBack);
     const prevEndDate = startDate;
 
-    const previousCategories = await sql`
+    const previousCategories = await db.execute(sql`
       SELECT 
         claim_type AS category,
         COUNT(*) AS count
@@ -61,7 +61,7 @@ async function handler(req: NextRequest) {
       WHERE tenant_id = ${tenantId}
         AND created_at BETWEEN ${prevStartDate} AND ${prevEndDate}
       GROUP BY claim_type
-    `;
+    `) as any[];
 
     const prevCategoryMap = new Map(
       previousCategories.map(cat => [cat.category, parseInt(cat.count)])

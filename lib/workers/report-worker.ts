@@ -4,16 +4,42 @@
  * Generates various reports (PDF, Excel) and stores them for download
  */
 
-import { Worker, Job } from 'bullmq';
-import IORedis from 'ioredis';
+// Only import bullmq in runtime, not during build
+let Worker: any, Job: any, IORedis: any;
+
+if (typeof window === 'undefined' && !process.env.__NEXT_BUILDING) {
+  try {
+    const bullmq = require('bullmq');
+    Worker = bullmq.Worker;
+    Job = bullmq.Job;
+    IORedis = require('ioredis');
+  } catch (e) {
+    // Fail silently during build
+  }
+}
+
 import { ReportJobData } from '../job-queue';
-import { db } from '@/db';
-import { claims, members, grievances } from '@/db/schema';
+import { db } from '../../db/db';
+import { claims } from '../../db/schema/claims-schema';
+import { organizationMembers as members } from '../../db/schema/organization-members-schema';
+// TODO: Create grievance schema - currently commented out
+// import { grievances } from '../../db/schema/grievance-schema';
 import { eq, and, between, gte, lte, desc } from 'drizzle-orm';
-import { generatePDF } from '../pdf-generator';
-import { generateExcel } from '../excel-generator';
+// TODO: Create PDF generator module
+// import { generatePDF } from '../pdf-generator';
+// TODO: Create Excel generator module
+// import { generateExcel } from '../excel-generator';
 import fs from 'fs/promises';
 import path from 'path';
+
+// Stub functions until generators are implemented
+async function generatePDF(options: any): Promise<Buffer> {
+  throw new Error('PDF generation not yet implemented');
+}
+
+async function generateExcel(options: any): Promise<Buffer> {
+  throw new Error('Excel generation not yet implemented');
+}
 
 const connection = new IORedis({
   host: process.env.REDIS_HOST || 'localhost',
@@ -48,25 +74,25 @@ async function generateClaimsReport(
 ) {
   console.log('Generating claims report', parameters);
 
-  // Build query
-  let query = db
-    .select()
-    .from(claims)
-    .where(eq(claims.tenantId, tenantId));
-
-  // Add filters
+  // Build query with combined where conditions
+  const conditions: any[] = [eq(claims.tenantId, tenantId)];
+  
   if (parameters.startDate && parameters.endDate) {
-    query = query.where(
+    conditions.push(
       between(claims.createdAt, new Date(parameters.startDate), new Date(parameters.endDate))
     );
   }
 
   if (parameters.status) {
-    query = query.where(eq(claims.status, parameters.status));
+    conditions.push(eq(claims.status, parameters.status as any));
   }
 
   // Execute query
-  const data = await query.orderBy(desc(claims.createdAt));
+  const data = await db
+    .select()
+    .from(claims)
+    .where(and(...conditions))
+    .orderBy(desc(claims.createdAt));
 
   // Generate report based on format
   if (parameters.format === 'pdf') {
@@ -103,19 +129,19 @@ async function generateMembersReport(
 ) {
   console.log('Generating members report', parameters);
 
-  // Build query
-  let query = db
-    .select()
-    .from(members)
-    .where(eq(members.tenantId, tenantId));
-
-  // Add filters
+  // Build query with combined where conditions
+  const conditions: any[] = [eq(members.tenantId, tenantId)];
+  
   if (parameters.status) {
-    query = query.where(eq(members.status, parameters.status));
+    conditions.push(eq(members.status, parameters.status as any));
   }
 
   // Execute query
-  const data = await query.orderBy(desc(members.createdAt));
+  const data = await db
+    .select()
+    .from(members)
+    .where(and(...conditions))
+    .orderBy(desc(members.createdAt));
 
   // Generate report
   if (parameters.format === 'pdf') {
@@ -141,8 +167,9 @@ async function generateMembersReport(
 
 /**
  * Generate grievances report
+ * TODO: Enable when grievance schema is created
  */
-async function generateGrievancesReport(
+/* async function generateGrievancesReport(
   tenantId: string,
   parameters: {
     startDate?: string;
@@ -194,7 +221,7 @@ async function generateGrievancesReport(
       ],
     });
   }
-}
+} */
 
 /**
  * Generate usage analytics report
@@ -222,11 +249,12 @@ async function generateUsageReport(
       active: 0,
       new: 0,
     },
-    grievances: {
-      total: 0,
-      byType: {},
-      resolved: 0,
-    },
+    // TODO: Enable when grievance schema is created
+    // grievances: {
+    //   total: 0,
+    //   byType: {},
+    //   resolved: 0,
+    // },
   };
 
   // Generate report
@@ -246,7 +274,8 @@ async function generateUsageReport(
         { header: 'Total Claims', key: 'claims.total' },
         { header: 'Total Members', key: 'members.total' },
         { header: 'Active Members', key: 'members.active' },
-        { header: 'Total Grievances', key: 'grievances.total' },
+        // TODO: Enable when grievance schema is created
+        // { header: 'Total Grievances', key: 'grievances.total' },
       ],
     });
   }
@@ -255,7 +284,7 @@ async function generateUsageReport(
 /**
  * Process report generation job
  */
-async function processReportJob(job: Job<ReportJobData>) {
+async function processReportJob(job: any) {
   const { reportType, tenantId, userId, parameters } = job.data;
 
   console.log(`Processing report job ${job.id}: ${reportType}`);
@@ -271,22 +300,23 @@ async function processReportJob(job: Job<ReportJobData>) {
   try {
     switch (reportType) {
       case 'claims':
-        buffer = await generateClaimsReport(tenantId, parameters);
+        buffer = await generateClaimsReport(tenantId, parameters as any);
         filename = `claims-report-${Date.now()}.${parameters.format}`;
         break;
 
       case 'members':
-        buffer = await generateMembersReport(tenantId, parameters);
+        buffer = await generateMembersReport(tenantId, parameters as any);
         filename = `members-report-${Date.now()}.${parameters.format}`;
         break;
 
-      case 'grievances':
-        buffer = await generateGrievancesReport(tenantId, parameters);
-        filename = `grievances-report-${Date.now()}.${parameters.format}`;
-        break;
+      // TODO: Enable grievances reports when schema is created
+      // case 'grievances':
+      //   buffer = await generateGrievancesReport(tenantId, parameters);
+      //   filename = `grievances-report-${Date.now()}.${parameters.format}`;
+      //   break;
 
       case 'usage':
-        buffer = await generateUsageReport(tenantId, parameters);
+        buffer = await generateUsageReport(tenantId, parameters as any);
         filename = `usage-report-${Date.now()}.${parameters.format}`;
         break;
 
@@ -330,7 +360,7 @@ async function processReportJob(job: Job<ReportJobData>) {
 // Create worker
 export const reportWorker = new Worker(
   'reports',
-  async (job: Job<ReportJobData>) => {
+  async (job: any) => {
     return await processReportJob(job);
   },
   {
@@ -340,15 +370,15 @@ export const reportWorker = new Worker(
 );
 
 // Event handlers
-reportWorker.on('completed', (job) => {
+reportWorker.on('completed', (job: any) => {
   console.log(`Report job ${job.id} completed`);
 });
 
-reportWorker.on('failed', (job, err) => {
+reportWorker.on('failed', (job: any, err: any) => {
   console.error(`Report job ${job?.id} failed:`, err.message);
 });
 
-reportWorker.on('error', (err) => {
+reportWorker.on('error', (err: any) => {
   console.error('Report worker error:', err);
 });
 

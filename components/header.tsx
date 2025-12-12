@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import LanguageSwitcher from "./language-switcher";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -122,16 +123,18 @@ export default function Header() {
 
               <SignedIn>
                 <NavButton 
-                  href="/dashboard" 
+                  href="/en-CA/dashboard" 
                   icon={<LayoutDashboard size={18} />} 
                   label="Dashboard"
-                  isActive={isActive("/dashboard")}
+                  isActive={isActive("/en-CA/dashboard") || isActive("/fr-CA/dashboard")}
                 />
               </SignedIn>
             </nav>
 
             {/* Right side actions */}
             <div className="flex items-center space-x-3">
+              <LanguageSwitcher />
+              
               <SignedOut>
                 <Link href="/login?redirect_url=/dashboard">
                   <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
@@ -246,10 +249,10 @@ export default function Header() {
 
                 <SignedIn>
                   <MobileNavLink 
-                    href="/dashboard" 
+                    href="/en-CA/dashboard" 
                     icon={<LayoutDashboard size={18} />} 
                     label="Dashboard" 
-                    isActive={isActive("/dashboard")}
+                    isActive={isActive("/en-CA/dashboard") || isActive("/fr-CA/dashboard")}
                     onClick={toggleMenu}
                   />
                 </SignedIn>

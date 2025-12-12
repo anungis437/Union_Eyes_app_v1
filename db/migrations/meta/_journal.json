@@ -1,5 +1,34 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1763406880019,
+      "tag": "0000_flippant_luke_cage",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763594511882,
+      "tag": "0001_phase5b_inter_union_features",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764959563791,
+      "tag": "0002_true_selene",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764959585710,
+      "tag": "0003_curious_agent_zero",
+      "breakpoints": true
+    }
+  ]
 }

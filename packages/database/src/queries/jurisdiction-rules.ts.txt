@@ -1,0 +1,290 @@
+/**
+ * Jurisdiction Rules Query Functions
+ * Phase 5D: Jurisdiction Framework
+ */
+
+import { db } from '../db';
+import type { 
+  JurisdictionRule, 
+  JurisdictionRuleType,
+  CAJurisdiction,
+  OrganizationType 
+} from '../types';
+
+export interface GetJurisdictionRulesParams {
+  jurisdiction?: CAJurisdiction;
+  ruleType?: JurisdictionRuleType;
+  ruleCategory?: string;
+  organizationId?: string;
+  includeExpired?: boolean;
+}
+
+// Alias for API route compatibility
+export type JurisdictionRuleFilters = GetJurisdictionRulesParams;
+
+export interface JurisdictionRuleWithMetadata extends JurisdictionRule {
+  isApplicable?: boolean;
+  applicabilityReason?: string;
+}
+
+/**
+ * Get jurisdiction rules with filtering
+ */
+export async function getJurisdictionRules(
+  params: GetJurisdictionRulesParams = {}
+): Promise<JurisdictionRule[]> {
+  const { 
+    jurisdiction, 
+    ruleType, 
+    ruleCategory, 
+    includeExpired = false 
+  } = params;
+
+  let query = db
+    .selectFrom('jurisdiction_rules')
+    .selectAll()
+    .orderBy('jurisdiction', 'asc')
+    .orderBy('rule_type', 'asc')
+    .orderBy('rule_category', 'asc')
+    .orderBy('version', 'desc');
+
+  if (jurisdiction) {
+    query = query.where('jurisdiction', '=', jurisdiction);
+  }
+
+  if (ruleType) {
+    query = query.where('rule_type', '=', ruleType);
+  }
+
+  if (ruleCategory) {
+    query = query.where('rule_category', '=', ruleCategory);
+  }
+
+  if (!includeExpired) {
+    query = query.where((eb) =>
+      eb.or([
+        eb('expiry_date', 'is', null),
+        eb('expiry_date', '>', new Date())
+      ])
+    );
+  }
+
+  return await query.execute();
+}
+
+/**
+ * Get jurisdiction rules for a specific organization
+ */
+export async function getOrganizationJurisdictionRules(
+  organizationId: string,
+  ruleType?: JurisdictionRuleType
+): Promise<JurisdictionRuleWithMetadata[]> {
+  const result = await db
+    .selectFrom('jurisdiction_rules as jr')
+    .innerJoin('organizations as o', 'o.jurisdiction', 'jr.jurisdiction')
+    .selectAll('jr')
+    .select([
+      db.fn<boolean>('true').as('isApplicable'),
+      db.raw<string>(`'Matches organization jurisdiction'`).as('applicabilityReason')
+    ])
+    .where('o.id', '=', organizationId)
+    .where((eb) =>
+      eb.or([
+        eb('jr.expiry_date', 'is', null),
+        eb('jr.expiry_date', '>', new Date())
+      ])
+    )
+    .$if(ruleType !== undefined, (qb) => 
+      qb.where('jr.rule_type', '=', ruleType!)
+    )
+    .where((eb) =>
+      eb.or([
+        eb('jr.applies_to_org_types', 'is', null),
+        eb.raw(`'${organizationId}' = ANY(jr.applies_to_org_types)`)
+      ])
+    )
+    .orderBy('jr.rule_category', 'asc')
+    .orderBy('jr.version', 'desc')
+    .execute();
+
+  return result;
+}
+
+/**
+ * Get a specific jurisdiction rule by ID
+ */
+export async function getJurisdictionRuleById(
+  ruleId: string
+): Promise<JurisdictionRule | null> {
+  const result = await db
+    .selectFrom('jurisdiction_rules')
+    .selectAll()
+    .where('id', '=', ruleId)
+    .executeTakeFirst();
+
+  return result || null;
+}
+
+/**
+ * Get rule by category for a jurisdiction
+ */
+export async function getJurisdictionRuleByCategory(
+  jurisdiction: CAJurisdiction,
+  ruleCategory: string
+): Promise<JurisdictionRule | null> {
+  const result = await db
+    .selectFrom('jurisdiction_rules')
+    .selectAll()
+    .where('jurisdiction', '=', jurisdiction)
+    .where('rule_category', '=', ruleCategory)
+    .where((eb) =>
+      eb.or([
+        eb('expiry_date', 'is', null),
+        eb('expiry_date', '>', new Date())
+      ])
+    )
+    .orderBy('version', 'desc')
+    .executeTakeFirst();
+
+  return result || null;
+}
+
+/**
+ * Get all unique rule categories
+ */
+export async function getJurisdictionRuleCategories(
+  jurisdiction?: CAJurisdiction
+): Promise<string[]> {
+  let query = db
+    .selectFrom('jurisdiction_rules')
+    .select('rule_category')
+    .distinct()
+    .orderBy('rule_category', 'asc');
+
+  if (jurisdiction) {
+    query = query.where('jurisdiction', '=', jurisdiction);
+  }
+
+  const results = await query.execute();
+  return results.map(r => r.rule_category);
+}
+
+/**
+ * Compare rules across jurisdictions
+ */
+export async function compareJurisdictionRules(
+  jurisdictions: CAJurisdiction[],
+  ruleCategory: string
+): Promise<JurisdictionRule[]> {
+  const results = await db
+    .selectFrom('jurisdiction_rules')
+    .selectAll()
+    .where('jurisdiction', 'in', jurisdictions)
+    .where('rule_category', '=', ruleCategory)
+    .where((eb) =>
+      eb.or([
+        eb('expiry_date', 'is', null),
+        eb('expiry_date', '>', new Date())
+      ])
+    )
+    .orderBy('jurisdiction', 'asc')
+    .orderBy('version', 'desc')
+    .execute();
+
+  return results;
+}
+
+export interface CreateJurisdictionRuleInput {
+  jurisdiction: CAJurisdiction;
+  ruleType: JurisdictionRuleType;
+  ruleCategory: string;
+  ruleName: string;
+  ruleDescription: string;
+  legalReference?: string;
+  ruleParameters: Record<string, any>;
+  appliesToSectors?: string[];
+  appliesToOrgTypes?: OrganizationType[];
+  effectiveDate?: Date;
+  expiryDate?: Date;
+  notes?: string;
+  createdBy?: string;
+}
+
+/**
+ * Create a new jurisdiction rule
+ */
+export async function createJurisdictionRule(
+  input: CreateJurisdictionRuleInput
+): Promise<JurisdictionRule> {
+  const result = await db
+    .insertInto('jurisdiction_rules')
+    .values({
+      ...input,
+      effectiveDate: input.effectiveDate || new Date(),
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow();
+
+  return result;
+}
+
+/**
+ * Update a jurisdiction rule (creates new version)
+ */
+export async function updateJurisdictionRule(
+  ruleId: string,
+  updates: Partial<CreateJurisdictionRuleInput>
+): Promise<JurisdictionRule> {
+  // Get current rule
+  const currentRule = await getJurisdictionRuleById(ruleId);
+  if (!currentRule) {
+    throw new Error(`Jurisdiction rule not found: ${ruleId}`);
+  }
+
+  // Expire current rule
+  await db
+    .updateTable('jurisdiction_rules')
+    .set({ 
+      expiryDate: new Date(),
+      updatedAt: new Date()
+    })
+    .where('id', '=', ruleId)
+    .execute();
+
+  // Create new version
+  const newVersion = await db
+    .insertInto('jurisdiction_rules')
+    .values({
+      ...currentRule,
+      ...updates,
+      id: undefined, // Generate new ID
+      version: currentRule.version + 1,
+      effectiveDate: new Date(),
+      expiryDate: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow();
+
+  return newVersion;
+}
+
+/**
+ * Delete (expire) a jurisdiction rule
+ */
+export async function deleteJurisdictionRule(
+  ruleId: string
+): Promise<void> {
+  await db
+    .updateTable('jurisdiction_rules')
+    .set({ 
+      expiryDate: new Date(),
+      updatedAt: new Date()
+    })
+    .where('id', '=', ruleId)
+    .execute();
+}

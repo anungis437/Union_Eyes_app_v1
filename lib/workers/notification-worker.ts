@@ -5,12 +5,24 @@
  * based on user preferences
  */
 
-import { Worker, Job } from 'bullmq';
-import IORedis from 'ioredis';
+// Only import bullmq in runtime, not during build
+let Worker: any, Job: any, IORedis: any;
+
+if (typeof window === 'undefined' && !process.env.__NEXT_BUILDING) {
+  try {
+    const bullmq = require('bullmq');
+    Worker = bullmq.Worker;
+    Job = bullmq.Job;
+    IORedis = require('ioredis');
+  } catch (e) {
+    // Fail silently during build
+  }
+}
+
 import { NotificationJobData } from '../job-queue';
 import { addEmailJob } from '../job-queue';
 import { addSmsJob } from '../job-queue';
-import { db } from '@/db';
+import { db } from '@/db/db';
 import { notificationHistory, userNotificationPreferences, inAppNotifications } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 
@@ -77,10 +89,12 @@ async function sendInAppNotification(
   userId: string,
   title: string,
   message: string,
-  data?: Record<string, any>
+  data?: Record<string, any>,
+  tenantId?: string
 ) {
   await db.insert(inAppNotifications).values({
     userId,
+    tenantId: tenantId || 'default',
     title,
     message,
     data,
@@ -95,7 +109,7 @@ async function sendInAppNotification(
 /**
  * Process notification job
  */
-async function processNotification(job: Job<NotificationJobData>) {
+async function processNotification(job: any) {
   const { userId, title, message, data, channels } = job.data;
 
   console.log(`Processing notification job ${job.id} for user ${userId}`);
@@ -112,7 +126,7 @@ async function processNotification(job: Job<NotificationJobData>) {
   await job.updateProgress(20);
 
   // Determine which channels to use
-  const enabledChannels = channels.filter((channel) => {
+  const enabledChannels = channels.filter((channel: any) => {
     switch (channel) {
       case 'email':
         return preferences.emailEnabled && !inQuietHours;
@@ -138,11 +152,11 @@ async function processNotification(job: Job<NotificationJobData>) {
 
   // Send to each enabled channel
   const results = await Promise.allSettled(
-    enabledChannels.map(async (channel) => {
+    enabledChannels.map(async (channel: any) => {
       switch (channel) {
         case 'email':
           // Get user email
-          const userEmail = preferences.email || (await getUserEmail(userId));
+          const userEmail = ('email' in preferences ? preferences.email : null) || (await getUserEmail(userId));
           if (userEmail) {
             await addEmailJob({
               to: userEmail,
@@ -156,7 +170,7 @@ async function processNotification(job: Job<NotificationJobData>) {
 
         case 'sms':
           // Get user phone
-          const userPhone = preferences.phone;
+          const userPhone = 'phone' in preferences ? preferences.phone : null;
           if (userPhone) {
             await addSmsJob({
               to: userPhone,
@@ -172,7 +186,7 @@ async function processNotification(job: Job<NotificationJobData>) {
           return { channel, success: true };
 
         case 'in-app':
-          await sendInAppNotification(userId, title, message, data);
+          await sendInAppNotification(userId, title, message, data, data?.tenantId);
           return { channel, success: true };
 
         default:
@@ -185,11 +199,11 @@ async function processNotification(job: Job<NotificationJobData>) {
 
   // Log to history
   const successfulChannels = results
-    .filter((r) => r.status === 'fulfilled')
-    .map((r) => (r as PromiseFulfilledResult<any>).value.channel);
+    .filter((r: any) => r.status === 'fulfilled')
+    .map((r: any) => (r as PromiseFulfilledResult<any>).value.channel);
 
   const failedChannels = results
-    .filter((r) => r.status === 'rejected')
+    .filter((r: any) => r.status === 'rejected')
     .map((r, i) => ({
       channel: enabledChannels[i],
       error: (r as PromiseRejectedResult).reason,
@@ -203,12 +217,12 @@ async function processNotification(job: Job<NotificationJobData>) {
     template: 'notification',
     status: failedChannels.length === 0 ? 'sent' : 'partial',
     error: failedChannels.length > 0 
-      ? `Failed channels: ${failedChannels.map((f) => f.channel).join(', ')}`
+      ? `Failed channels: ${failedChannels.map((f: any) => f.channel).join(', ')}`
       : undefined,
     sentAt: new Date(),
     metadata: {
       channels: successfulChannels,
-      failedChannels: failedChannels.map((f) => f.channel),
+      failedChannels: failedChannels.map((f: any) => f.channel),
     },
   });
 
@@ -238,7 +252,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
 // Create worker
 export const notificationWorker = new Worker(
   'notifications',
-  async (job: Job<NotificationJobData>) => {
+  async (job: any) => {
     return await processNotification(job);
   },
   {
@@ -248,15 +262,15 @@ export const notificationWorker = new Worker(
 );
 
 // Event handlers
-notificationWorker.on('completed', (job) => {
+notificationWorker.on('completed', (job: any) => {
   console.log(`Notification job ${job.id} completed`);
 });
 
-notificationWorker.on('failed', (job, err) => {
+notificationWorker.on('failed', (job: any, err: any) => {
   console.error(`Notification job ${job?.id} failed:`, err.message);
 });
 
-notificationWorker.on('error', (err) => {
+notificationWorker.on('error', (err: any) => {
   console.error('Notification worker error:', err);
 });
 

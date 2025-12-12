@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         syncEnabled: true,
         syncDirection: 'both',
         syncStatus: 'pending',
-        calendarMappings: {},
+        calendarMappings: [],
       })
       .returning();
 

@@ -12,10 +12,10 @@ import { eq, and, desc } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 // Members can view their own claims, stewards+ can view all claims
-export const GET = withRoleAuth('member', async (request: NextRequest, context) => {
+export const GET = withRoleAuth('member', async (request: NextRequest, context, params?: { id: string }) => {
   try {
-    const { tenantId } = context;
-    const memberId = context.params?.id as string;
+    const { organizationId } = context;
+    const memberId = params?.id as string;
 
     if (!memberId) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context) 
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.tenantId, organizationId),
           eq(claims.memberId, memberId)
         )
       )

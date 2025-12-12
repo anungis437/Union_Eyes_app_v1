@@ -9,7 +9,8 @@
  * Part of: Area 5 - Analytics & Reporting System
  */
 
-import { sql } from '@/lib/db';
+import { sql } from 'drizzle-orm';
+import { db } from '@/db/db';
 
 // ============================================================================
 // Type Definitions
@@ -104,13 +105,13 @@ export interface HeatmapData {
  * Get executive summary with KPIs and period comparison
  */
 export async function getExecutiveSummary(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<ExecutiveSummary> {
   const { startDate, endDate } = dateRange;
   
   // Get current period metrics
-  const currentMetrics = await sql`
+  const currentMetrics = await db.execute(sql`
     SELECT 
       COUNT(DISTINCT c.id) AS total_claims,
       COUNT(DISTINCT c.id) FILTER (WHERE c.status = 'open') AS open_claims,
@@ -121,34 +122,34 @@ export async function getExecutiveSummary(
       SUM(COALESCE((c.metadata->>'claim_value')::numeric, 0)) AS total_claim_value,
       ROUND(100.0 * COUNT(*) FILTER (WHERE c.outcome = 'won') / NULLIF(COUNT(*) FILTER (WHERE c.outcome IS NOT NULL), 0), 1) AS win_rate
     FROM claims c
-    WHERE c.tenant_id = ${tenantId}
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${startDate} AND ${endDate}
-  `;
+  `);
 
   // Get deadline compliance
-  const deadlineMetrics = await sql`
+  const deadlineMetrics = await db.execute(sql`
     SELECT 
       ROUND(100.0 * COUNT(*) FILTER (WHERE cd.status = 'completed' AND cd.completed_at <= cd.current_deadline) / 
             NULLIF(COUNT(*) FILTER (WHERE cd.status IN ('completed', 'overdue')), 0), 1) AS on_time_rate
     FROM claim_deadlines cd
-    WHERE cd.tenant_id = ${tenantId}
+    WHERE cd.organization_id = ${organizationId}
       AND cd.created_at BETWEEN ${startDate} AND ${endDate}
-  `;
+  `);
 
   // Get previous period for comparison (same length as current period)
   const periodLengthDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const prevStartDate = new Date(startDate.getTime() - periodLengthDays * 24 * 60 * 60 * 1000);
   const prevEndDate = startDate;
 
-  const prevMetrics = await sql`
+  const prevMetrics = await db.execute(sql`
     SELECT 
       COUNT(DISTINCT c.id) AS total_claims,
       AVG(EXTRACT(EPOCH FROM (c.resolved_at - c.created_at))/86400.0) FILTER (WHERE c.resolved_at IS NOT NULL) AS avg_resolution_days,
       ROUND(100.0 * COUNT(*) FILTER (WHERE c.outcome = 'won') / NULLIF(COUNT(*) FILTER (WHERE c.outcome IS NOT NULL), 0), 1) AS win_rate
     FROM claims c
-    WHERE c.tenant_id = ${tenantId}
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${prevStartDate} AND ${prevEndDate}
-  `;
+  `);
 
   const current = currentMetrics[0];
   const prev = prevMetrics[0];
@@ -181,19 +182,19 @@ export async function getExecutiveSummary(
  * Get monthly trends from materialized view
  */
 export async function getMonthlyTrends(
-  tenantId: string,
+  organizationId: string,
   monthsBack: number = 12
 ): Promise<TrendData[]> {
-  const trends = await sql`
+  const trends = await db.execute(sql`
     SELECT 
       TO_CHAR(month, 'YYYY-MM') AS period,
       total_claims AS value,
       COALESCE(month_over_month_growth, 0) AS change_percentage
     FROM mv_monthly_trends
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND month >= NOW() - INTERVAL '${monthsBack} months'
     ORDER BY month DESC
-  `;
+  `);
 
   return trends.map((row: any) => ({
     period: row.period,
@@ -211,74 +212,74 @@ export async function getMonthlyTrends(
  * Get comprehensive claims analytics
  */
 export async function getClaimsAnalytics(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<ClaimsAnalytics> {
   const { startDate, endDate } = dateRange;
 
   // Get aggregate metrics
-  const metrics = await sql`
+  const metrics = await db.execute(sql`
     SELECT 
       COUNT(*) AS total_claims,
       AVG(EXTRACT(EPOCH FROM (c.resolved_at - c.created_at))/86400.0) FILTER (WHERE c.resolved_at IS NOT NULL) AS avg_resolution_days,
       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (c.resolved_at - c.created_at))/86400.0) 
         FILTER (WHERE c.resolved_at IS NOT NULL) AS median_resolution_days
     FROM claims c
-    WHERE c.tenant_id = ${tenantId}
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${startDate} AND ${endDate}
-  `;
+  `);
 
   // Get claims by status
-  const statusBreakdown = await sql`
+  const statusBreakdown = await db.execute(sql`
     SELECT c.status, COUNT(*) AS count
     FROM claims c
-    WHERE c.tenant_id = ${tenantId}
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${startDate} AND ${endDate}
     GROUP BY c.status
-  `;
+  `);
 
   // Get claims by type
-  const typeBreakdown = await sql`
+  const typeBreakdown = await db.execute(sql`
     SELECT c.claim_type, COUNT(*) AS count
     FROM claims c
-    WHERE c.tenant_id = ${tenantId}
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${startDate} AND ${endDate}
     GROUP BY c.claim_type
-  `;
+  `);
 
   // Get claims by priority
-  const priorityBreakdown = await sql`
+  const priorityBreakdown = await db.execute(sql`
     SELECT c.priority, COUNT(*) AS count
     FROM claims c
-    WHERE c.tenant_id = ${tenantId}
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${startDate} AND ${endDate}
     GROUP BY c.priority
-  `;
+  `);
 
   // Get resolution trend (daily)
-  const resolutionTrend = await sql`
+  const resolutionTrend = await db.execute(sql`
     SELECT 
       TO_CHAR(report_date, 'YYYY-MM-DD') AS date,
       resolved_claims AS count,
       ROUND(avg_resolution_days::numeric, 1) AS avg_days
     FROM mv_claims_daily_summary
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND report_date BETWEEN ${startDate} AND ${endDate}
     ORDER BY report_date
-  `;
+  `);
 
   // Get top stewards by performance
-  const topStewards = await sql`
+  const topStewards = await db.execute(sql`
     SELECT 
       steward_id AS id,
       first_name || ' ' || last_name AS name,
       total_caseload AS caseload,
       ROUND(performance_score::numeric, 1) AS performance_score
     FROM mv_steward_performance
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
     ORDER BY performance_score DESC NULLS LAST
     LIMIT 10
-  `;
+  `);
 
   return {
     totalClaims: Number(metrics[0]?.total_claims || 0),
@@ -305,7 +306,7 @@ export async function getClaimsAnalytics(
  * Get claims by date range with filters
  */
 export async function getClaimsByDateRange(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange,
   filters?: {
     status?: string[];
@@ -329,9 +330,9 @@ export async function getClaimsByDateRange(
       s.first_name || ' ' || s.last_name AS steward_name,
       EXTRACT(EPOCH FROM (COALESCE(c.resolved_at, NOW()) - c.created_at))/86400.0 AS age_days
     FROM claims c
-    LEFT JOIN organization_members om ON om.id = c.member_id AND om.tenant_id = c.tenant_id
-    LEFT JOIN organization_members s ON s.id = c.assigned_to AND s.tenant_id = c.tenant_id
-    WHERE c.tenant_id = ${tenantId}
+    LEFT JOIN organization_members om ON om.id = c.member_id AND om.organization_id = c.organization_id
+    LEFT JOIN organization_members s ON s.id = c.assigned_to AND s.organization_id = c.organization_id
+    WHERE c.organization_id = ${organizationId}
       AND c.created_at BETWEEN ${startDate} AND ${endDate}
   `;
 
@@ -353,7 +354,7 @@ export async function getClaimsByDateRange(
 
   query = sql`${query} ORDER BY c.created_at DESC`;
 
-  return await query;
+  return await db.execute(query);
 }
 
 // ============================================================================
@@ -364,31 +365,31 @@ export async function getClaimsByDateRange(
  * Get comprehensive member analytics
  */
 export async function getMemberAnalytics(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<MemberAnalytics> {
   const { startDate, endDate } = dateRange;
 
   // Get member counts
-  const memberCounts = await sql`
+  const memberCounts = await db.execute(sql`
     SELECT 
       COUNT(*) AS total_members,
       COUNT(*) FILTER (WHERE status = 'active') AS active_members,
       COUNT(*) FILTER (WHERE created_at >= ${new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}) AS new_members_30_days
     FROM organization_members
-    WHERE tenant_id = ${tenantId}
-  `;
+    WHERE organization_id = ${organizationId}
+  `);
 
   // Get retention rate from cohorts
-  const retention = await sql`
+  const retention = await db.execute(sql`
     SELECT AVG(retention_rate) AS avg_retention_rate
     FROM mv_member_cohorts
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND cohort_month >= NOW() - INTERVAL '12 months'
-  `;
+  `);
 
   // Get engagement distribution
-  const engagementDist = await sql`
+  const engagementDist = await db.execute(sql`
     SELECT 
       CASE 
         WHEN engagement_score >= 75 THEN 'high'
@@ -398,41 +399,41 @@ export async function getMemberAnalytics(
       END AS engagement_level,
       COUNT(*) AS count
     FROM mv_member_engagement
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
     GROUP BY engagement_level
-  `;
+  `);
 
   // Get avg claims per member
-  const avgClaims = await sql`
+  const avgClaims = await db.execute(sql`
     SELECT AVG(total_claims) AS avg_claims
     FROM mv_member_engagement
-    WHERE tenant_id = ${tenantId}
-  `;
+    WHERE organization_id = ${organizationId}
+  `);
 
   // Get top members
-  const topMembers = await sql`
+  const topMembers = await db.execute(sql`
     SELECT 
       member_id AS id,
       first_name || ' ' || last_name AS name,
       total_claims AS claims_count,
       win_rate_percentage AS win_rate
     FROM mv_member_engagement
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
     ORDER BY total_claims DESC
     LIMIT 10
-  `;
+  `);
 
   // Get cohort analysis
-  const cohortAnalysis = await sql`
+  const cohortAnalysis = await db.execute(sql`
     SELECT 
       TO_CHAR(cohort_month, 'YYYY-MM') AS cohort_month,
       cohort_size AS size,
       retention_rate
     FROM mv_member_cohorts
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND cohort_month >= NOW() - INTERVAL '12 months'
     ORDER BY cohort_month DESC
-  `;
+  `);
 
   return {
     totalMembers: Number(memberCounts[0]?.total_members || 0),
@@ -463,13 +464,13 @@ export async function getMemberAnalytics(
  * Get comprehensive deadline analytics
  */
 export async function getDeadlineAnalytics(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<DeadlineAnalytics> {
   const { startDate, endDate } = dateRange;
 
   // Get deadline metrics
-  const metrics = await sql`
+  const metrics = await db.execute(sql`
     SELECT 
       COUNT(*) AS total_deadlines,
       COUNT(*) FILTER (WHERE status = 'overdue') AS overdue_count,
@@ -478,40 +479,40 @@ export async function getDeadlineAnalytics(
       ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'completed' AND completed_at <= current_deadline) / 
             NULLIF(COUNT(*) FILTER (WHERE status IN ('completed', 'overdue')), 0), 1) AS on_time_rate
     FROM claim_deadlines
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND created_at BETWEEN ${startDate} AND ${endDate}
-  `;
+  `);
 
   // Get extension approval rate
-  const extensionMetrics = await sql`
+  const extensionMetrics = await db.execute(sql`
     SELECT 
       ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'approved') / NULLIF(COUNT(*), 0), 1) AS approval_rate
     FROM deadline_extensions de
     JOIN claim_deadlines cd ON cd.id = de.deadline_id
-    WHERE cd.tenant_id = ${tenantId}
+    WHERE cd.organization_id = ${organizationId}
       AND de.created_at BETWEEN ${startDate} AND ${endDate}
-  `;
+  `);
 
   // Get compliance trend
-  const complianceTrend = await sql`
+  const complianceTrend = await db.execute(sql`
     SELECT 
       TO_CHAR(report_date, 'YYYY-MM-DD') AS date,
       on_time_percentage AS on_time_rate,
       overdue_deadlines AS overdue_count
     FROM mv_deadline_compliance_daily
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND report_date BETWEEN ${startDate} AND ${endDate}
     ORDER BY report_date
-  `;
+  `);
 
   // Get deadlines by priority
-  const priorityBreakdown = await sql`
+  const priorityBreakdown = await db.execute(sql`
     SELECT priority, COUNT(*) AS count
     FROM claim_deadlines
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND created_at BETWEEN ${startDate} AND ${endDate}
     GROUP BY priority
-  `;
+  `);
 
   return {
     totalDeadlines: Number(metrics[0]?.total_deadlines || 0),
@@ -537,13 +538,13 @@ export async function getDeadlineAnalytics(
  * Get comprehensive financial analytics
  */
 export async function getFinancialAnalytics(
-  tenantId: string,
+  organizationId: string,
   dateRange: DateRange
 ): Promise<FinancialAnalytics> {
   const { startDate, endDate } = dateRange;
 
   // Get financial metrics
-  const metrics = await sql`
+  const metrics = await db.execute(sql`
     SELECT 
       SUM(COALESCE((metadata->>'claim_value')::numeric, 0)) AS total_claim_value,
       SUM(COALESCE((metadata->>'settlement_amount')::numeric, 0)) AS total_settlements,
@@ -562,35 +563,35 @@ export async function getFinancialAnalytics(
         ELSE 0 
       END AS recovery_rate
     FROM claims
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND created_at BETWEEN ${startDate} AND ${endDate}
-  `;
+  `);
 
   // Get financial trend
-  const financialTrend = await sql`
+  const financialTrend = await db.execute(sql`
     SELECT 
       TO_CHAR(report_date, 'YYYY-MM-DD') AS date,
       total_claim_value AS claim_value,
       total_settlements AS settlements,
       total_legal_costs AS costs
     FROM mv_financial_summary_daily
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND report_date BETWEEN ${startDate} AND ${endDate}
     ORDER BY report_date
-  `;
+  `);
 
   // Get outcome distribution with values
-  const outcomeDistribution = await sql`
+  const outcomeDistribution = await db.execute(sql`
     SELECT 
       outcome,
       COUNT(*) AS count,
       SUM(COALESCE((metadata->>'claim_value')::numeric, 0)) AS value
     FROM claims
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND created_at BETWEEN ${startDate} AND ${endDate}
       AND outcome IS NOT NULL
     GROUP BY outcome
-  `;
+  `);
 
   return {
     totalClaimValue: Number(metrics[0]?.total_claim_value || 0),
@@ -622,17 +623,17 @@ export async function getFinancialAnalytics(
 /**
  * Get weekly activity heatmap data
  */
-export async function getWeeklyActivityHeatmap(tenantId: string): Promise<HeatmapData[]> {
-  const heatmapData = await sql`
+export async function getWeeklyActivityHeatmap(organizationId: string): Promise<HeatmapData[]> {
+  const heatmapData = await db.execute(sql`
     SELECT 
       day_of_week,
       hour_of_day,
       activity_score,
       claim_count
     FROM mv_weekly_activity
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
     ORDER BY day_of_week, hour_of_day
-  `;
+  `);
 
   return heatmapData.map((r: any) => ({
     dayOfWeek: Number(r.day_of_week),
@@ -647,9 +648,10 @@ export async function getWeeklyActivityHeatmap(tenantId: string): Promise<Heatma
 // ============================================================================
 
 /**
- * Get all reports for a tenant
+ * Get all reports for an organization (Legacy version - replaced by enhanced getReports below)
+ * Kept for backwards compatibility if needed
  */
-export async function getReports(tenantId: string, userId?: string): Promise<any[]> {
+export async function getReportsLegacy(organizationId: string, userId?: string): Promise<any[]> {
   let query = sql`
     SELECT 
       r.id,
@@ -667,8 +669,8 @@ export async function getReports(tenantId: string, userId?: string): Promise<any
       r.run_count,
       om.first_name || ' ' || om.last_name AS created_by_name
     FROM reports r
-    LEFT JOIN organization_members om ON om.id = r.created_by AND om.tenant_id = r.tenant_id
-    WHERE r.tenant_id = ${tenantId}
+    LEFT JOIN organization_members om ON om.id = r.created_by AND om.organization_id = r.organization_id
+    WHERE r.organization_id = ${organizationId}
   `;
 
   if (userId) {
@@ -677,14 +679,14 @@ export async function getReports(tenantId: string, userId?: string): Promise<any
 
   query = sql`${query} ORDER BY r.updated_at DESC`;
 
-  return await query;
+  return await db.execute(query);
 }
 
 /**
- * Create a new report
+ * Create a new report (Legacy version - replaced by enhanced createReport below)
  */
-export async function createReport(
-  tenantId: string,
+export async function createReportLegacy(
+  organizationId: string,
   userId: string,
   reportData: {
     name: string;
@@ -697,18 +699,18 @@ export async function createReport(
     templateId?: string;
   }
 ): Promise<any> {
-  const result = await sql`
+  const result = await db.execute(sql`
     INSERT INTO reports (
-      tenant_id, name, description, report_type, category, config, 
+      organization_id, name, description, report_type, category, config, 
       is_public, is_template, template_id, created_by
     ) VALUES (
-      ${tenantId}, ${reportData.name}, ${reportData.description || null},
+      ${organizationId}, ${reportData.name}, ${reportData.description || null},
       ${reportData.reportType}, ${reportData.category || null}, ${JSON.stringify(reportData.config)},
       ${reportData.isPublic || false}, ${reportData.isTemplate || false},
       ${reportData.templateId || null}, ${userId}
     )
     RETURNING *
-  `;
+  `);
 
   return result[0];
 }
@@ -717,12 +719,12 @@ export async function createReport(
  * Update report run statistics
  */
 export async function updateReportRunStats(reportId: string): Promise<void> {
-  await sql`
+  await db.execute(sql`
     UPDATE reports
     SET last_run_at = NOW(),
         run_count = run_count + 1
     WHERE id = ${reportId}
-  `;
+  `);
 }
 
 // ============================================================================
@@ -733,7 +735,7 @@ export async function updateReportRunStats(reportId: string): Promise<void> {
  * Create export job
  */
 export async function createExportJob(
-  tenantId: string,
+  organizationId: string,
   userId: string,
   exportData: {
     reportId?: string;
@@ -741,12 +743,12 @@ export async function createExportJob(
     exportType: string;
   }
 ): Promise<any> {
-  const result = await sql`
-    INSERT INTO export_jobs (tenant_id, report_id, schedule_id, export_type, created_by)
-    VALUES (${tenantId}, ${exportData.reportId || null}, ${exportData.scheduleId || null}, 
+  const result = await db.execute(sql`
+    INSERT INTO export_jobs (organization_id, report_id, schedule_id, export_type, created_by)
+    VALUES (${organizationId}, ${exportData.reportId || null}, ${exportData.scheduleId || null}, 
             ${exportData.exportType}, ${userId})
     RETURNING *
-  `;
+  `);
 
   return result[0];
 }
@@ -763,29 +765,29 @@ export async function updateExportJobStatus(
   const now = new Date();
   
   if (status === 'processing') {
-    await sql`
+    await db.execute(sql`
       UPDATE export_jobs
       SET status = ${status},
           processing_started_at = ${now}
       WHERE id = ${jobId}
-    `;
+    `);
   } else if (status === 'completed') {
-    await sql`
+    await db.execute(sql`
       UPDATE export_jobs
       SET status = ${status},
           file_url = ${fileUrl},
           processing_completed_at = ${now},
           processing_duration_ms = EXTRACT(EPOCH FROM (${now} - processing_started_at)) * 1000
       WHERE id = ${jobId}
-    `;
+    `);
   } else if (status === 'failed') {
-    await sql`
+    await db.execute(sql`
       UPDATE export_jobs
       SET status = ${status},
           error_message = ${errorMessage},
           processing_completed_at = ${now}
       WHERE id = ${jobId}
-    `;
+    `);
   }
 }
 
@@ -793,27 +795,27 @@ export async function updateExportJobStatus(
  * Get export job by ID
  */
 export async function getExportJob(jobId: string): Promise<any> {
-  const result = await sql`
+  const result = await db.execute(sql`
     SELECT * FROM export_jobs WHERE id = ${jobId}
-  `;
+  `);
   return result[0];
 }
 
 /**
  * Get user's export jobs
  */
-export async function getUserExportJobs(tenantId: string, userId: string): Promise<any[]> {
-  return await sql`
+export async function getUserExportJobs(organizationId: string, userId: string): Promise<any[]> {
+  return await db.execute(sql`
     SELECT 
       ej.*,
       r.name AS report_name
     FROM export_jobs ej
     LEFT JOIN reports r ON r.id = ej.report_id
-    WHERE ej.tenant_id = ${tenantId}
+    WHERE ej.organization_id = ${organizationId}
       AND ej.created_by = ${userId}
     ORDER BY ej.created_at DESC
     LIMIT 50
-  `;
+  `);
 }
 
 // ============================================================================
@@ -824,14 +826,14 @@ export async function getUserExportJobs(tenantId: string, userId: string): Promi
  * Refresh all analytics materialized views
  */
 export async function refreshAnalyticsViews(): Promise<any[]> {
-  return await sql`SELECT * FROM refresh_analytics_views()`;
+  return await db.execute(sql`SELECT * FROM refresh_analytics_views()`);
 }
 
 /**
  * Get last refresh time for materialized views
  */
 export async function getViewRefreshStats(): Promise<any[]> {
-  return await sql`
+  return await db.execute(sql`
     SELECT 
       schemaname,
       matviewname,
@@ -840,5 +842,300 @@ export async function getViewRefreshStats(): Promise<any[]> {
     WHERE schemaname = 'public'
       AND matviewname LIKE 'mv_%'
     ORDER BY last_refresh DESC NULLS LAST
-  `;
+  `);
+}
+
+// ============================================================================
+// Reports Management Queries (Phase 2)
+// ============================================================================
+
+/**
+ * Get all reports for an organization
+ */
+export async function getReports(
+  tenantId: string,
+  userId: string,
+  filters?: {
+    category?: string;
+    isTemplate?: boolean;
+    isPublic?: boolean;
+    search?: string;
+  }
+): Promise<any[]> {
+  let conditions: any[] = [sql`r.tenant_id = ${tenantId}`];
+
+  // Add filters
+  if (filters?.category) {
+    conditions.push(sql`r.category = ${filters.category}`);
+  }
+  if (filters?.isTemplate !== undefined) {
+    conditions.push(sql`r.is_template = ${filters.isTemplate}`);
+  }
+  if (filters?.isPublic !== undefined) {
+    conditions.push(sql`r.is_public = ${filters.isPublic}`);
+  }
+  if (filters?.search) {
+    conditions.push(sql`(r.name ILIKE ${'%' + filters.search + '%'} OR r.description ILIKE ${'%' + filters.search + '%'})`);
+  }
+
+  // Include reports created by user or shared with them
+  conditions.push(sql`(r.created_by = ${userId} OR r.is_public = true OR EXISTS (
+    SELECT 1 FROM report_shares rs 
+    WHERE rs.report_id = r.id AND rs.shared_with = ${userId}
+  ))`);
+
+  const whereClause = sql.join(conditions, sql` AND `);
+
+  const reports = await db.execute(sql`
+    SELECT 
+      r.*,
+      COUNT(re.id) as execution_count,
+      MAX(re.executed_at) as last_executed_at
+    FROM reports r
+    LEFT JOIN report_executions re ON re.report_id = r.id
+    WHERE ${whereClause}
+    GROUP BY r.id
+    ORDER BY r.updated_at DESC
+  `);
+
+  return reports as any[];
+}
+
+/**
+ * Get single report by ID
+ */
+export async function getReportById(
+  reportId: string,
+  tenantId: string
+): Promise<any | null> {
+  const reports = await db.execute(sql`
+    SELECT r.*
+    FROM reports r
+    WHERE r.id = ${reportId} AND r.tenant_id = ${tenantId}
+  `);
+
+  return reports[0] || null;
+}
+
+/**
+ * Create new report
+ */
+export async function createReport(
+  tenantId: string,
+  userId: string,
+  data: {
+    name: string;
+    description?: string;
+    reportType: string;
+    category?: string;
+    config: any;
+    isPublic?: boolean;
+    isTemplate?: boolean;
+    templateId?: string;
+  }
+): Promise<any> {
+  const result = await db.execute(sql`
+    INSERT INTO reports (
+      tenant_id, name, description, report_type, category, config,
+      is_public, is_template, template_id, created_by, updated_by
+    ) VALUES (
+      ${tenantId}, ${data.name}, ${data.description || null}, ${data.reportType},
+      ${data.category || null}, ${JSON.stringify(data.config)}, ${data.isPublic || false},
+      ${data.isTemplate || false}, ${data.templateId || null}, ${userId}, ${userId}
+    )
+    RETURNING *
+  `);
+
+  return result[0];
+}
+
+/**
+ * Update existing report
+ */
+export async function updateReport(
+  reportId: string,
+  tenantId: string,
+  userId: string,
+  data: {
+    name?: string;
+    description?: string;
+    config?: any;
+    isPublic?: boolean;
+  }
+): Promise<any> {
+  const updates: string[] = [];
+  const values: any[] = [];
+
+  if (data.name) {
+    updates.push(`name = $${values.length + 1}`);
+    values.push(data.name);
+  }
+  if (data.description !== undefined) {
+    updates.push(`description = $${values.length + 1}`);
+    values.push(data.description);
+  }
+  if (data.config) {
+    updates.push(`config = $${values.length + 1}`);
+    values.push(JSON.stringify(data.config));
+  }
+  if (data.isPublic !== undefined) {
+    updates.push(`is_public = $${values.length + 1}`);
+    values.push(data.isPublic);
+  }
+
+  updates.push(`updated_by = $${values.length + 1}`);
+  values.push(userId);
+  updates.push(`updated_at = NOW()`);
+
+  const result = await db.execute(sql`
+    UPDATE reports
+    SET ${sql.raw(updates.join(', '))}
+    WHERE id = ${reportId} AND tenant_id = ${tenantId}
+    RETURNING *
+  `);
+
+  return result[0];
+}
+
+/**
+ * Delete report
+ */
+export async function deleteReport(
+  reportId: string,
+  tenantId: string
+): Promise<boolean> {
+  await db.execute(sql`
+    DELETE FROM reports
+    WHERE id = ${reportId} AND tenant_id = ${tenantId}
+  `);
+
+  return true;
+}
+
+/**
+ * Log report execution
+ */
+export async function logReportExecution(
+  reportId: string,
+  tenantId: string,
+  userId: string,
+  data: {
+    format: string;
+    parameters?: any;
+    resultCount?: number;
+    executionTimeMs: number;
+    fileUrl?: string;
+    fileSize?: number;
+    status: string;
+    errorMessage?: string;
+  }
+): Promise<any> {
+  const result = await db.execute(sql`
+    INSERT INTO report_executions (
+      report_id, tenant_id, executed_by, format, parameters,
+      result_count, execution_time_ms, file_url, file_size,
+      status, error_message
+    ) VALUES (
+      ${reportId}, ${tenantId}, ${userId}, ${data.format},
+      ${data.parameters ? JSON.stringify(data.parameters) : null},
+      ${data.resultCount?.toString() || null}, ${data.executionTimeMs.toString()},
+      ${data.fileUrl || null}, ${data.fileSize?.toString() || null},
+      ${data.status}, ${data.errorMessage || null}
+    )
+    RETURNING *
+  `);
+
+  // Update report's last_run_at and run_count
+  await db.execute(sql`
+    UPDATE reports
+    SET last_run_at = NOW(), run_count = run_count + 1
+    WHERE id = ${reportId}
+  `);
+
+  return result[0];
+}
+
+/**
+ * Get report execution history
+ */
+export async function getReportExecutions(
+  reportId: string,
+  tenantId: string,
+  limit: number = 50
+): Promise<any[]> {
+  const executions = await db.execute(sql`
+    SELECT re.*, u.email as executed_by_email
+    FROM report_executions re
+    LEFT JOIN users u ON u.id = re.executed_by
+    WHERE re.report_id = ${reportId} AND re.tenant_id = ${tenantId}
+    ORDER BY re.executed_at DESC
+    LIMIT ${limit}
+  `);
+
+  return executions as any[];
+}
+
+/**
+ * Get report templates
+ */
+export async function getReportTemplates(
+  tenantId?: string,
+  category?: string
+): Promise<any[]> {
+  let conditions: any[] = [sql`rt.is_active = true`];
+
+  // Include system templates and tenant-specific templates
+  if (tenantId) {
+    conditions.push(sql`(rt.tenant_id IS NULL OR rt.tenant_id = ${tenantId})`);
+  } else {
+    conditions.push(sql`rt.tenant_id IS NULL`);
+  }
+
+  if (category) {
+    conditions.push(sql`rt.category = ${category}`);
+  }
+
+  const whereClause = sql.join(conditions, sql` AND `);
+
+  const templates = await db.execute(sql`
+    SELECT rt.*
+    FROM report_templates rt
+    WHERE ${whereClause}
+    ORDER BY rt.name ASC
+  `);
+
+  return templates as any[];
+}
+
+/**
+ * Create report from template
+ */
+export async function createReportFromTemplate(
+  templateId: string,
+  tenantId: string,
+  userId: string,
+  name: string
+): Promise<any> {
+  // Get template
+  const template = await db.execute(sql`
+    SELECT * FROM report_templates WHERE id = ${templateId}
+  `);
+
+  if (template.length === 0) {
+    throw new Error('Template not found');
+  }
+
+  const templateData = template[0];
+
+  // Create report from template
+  return await createReport(tenantId, userId, {
+    name,
+    description: typeof templateData.description === 'string' ? templateData.description : undefined,
+    reportType: 'template',
+    category: typeof templateData.category === 'string' ? templateData.category : undefined,
+    config: templateData.config,
+    isPublic: false,
+    isTemplate: false,
+    templateId: templateId,
+  });
 }
