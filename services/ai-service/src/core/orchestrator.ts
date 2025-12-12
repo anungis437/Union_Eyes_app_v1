@@ -29,7 +29,7 @@ export enum AIModel {
  */
 export class AIOrchestrator {
   private openai: OpenAI;
-  private anthropic: Anthropic;
+  private anthropic: any; // Anthropic SDK type resolution issue
   private pinecone: Pinecone;
   private defaultProvider: AIProvider;
   private fallbackProvider: AIProvider;
@@ -281,14 +281,14 @@ export class AIOrchestrator {
         temperature: temperature ?? 0.7,
         maxTokens: config.maxTokensPerRequest,
         openAIApiKey: config.openaiApiKey,
-      });
+      } as any); // Type compatibility with LangChain
     } else {
       return new ChatAnthropic({
         modelName: targetModel,
         temperature: temperature ?? 0.7,
         maxTokens: config.maxTokensPerRequest,
         anthropicApiKey: config.anthropicApiKey,
-      });
+      } as any); // Type compatibility with LangChain
     }
   }
 

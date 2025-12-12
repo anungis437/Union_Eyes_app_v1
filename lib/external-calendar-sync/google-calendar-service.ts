@@ -119,8 +119,7 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
       .update(externalCalendarConnections)
       .set({
         syncStatus: 'failed',
-        lastSyncError: error instanceof Error ? error.message : 'Token refresh failed',
-        updatedAt: new Date(),
+        syncError: error instanceof Error ? error.message : 'Token refresh failed',
       })
       .where(eq(externalCalendarConnections.id, connectionId));
     
@@ -144,7 +143,7 @@ async function getAuthenticatedClient(connectionId: string) {
 
   // Check if token needs refresh
   const now = new Date();
-  const expiresAt = new Date(connection.tokenExpiresAt);
+  const expiresAt = connection.tokenExpiresAt ? new Date(connection.tokenExpiresAt) : new Date(0);
   
   let accessToken = connection.accessToken;
   
@@ -408,6 +407,7 @@ function mapGoogleEventToLocal(googleEvent: any, calendarId: string, tenantId: s
     eventType: 'meeting' as const,
     status: googleEvent.status === 'confirmed' ? 'confirmed' as const : 'scheduled' as const,
     organizerId: googleEvent.creator?.email || 'unknown',
+    createdBy: googleEvent.creator?.email || 'google-calendar-sync',
     meetingUrl: googleEvent.hangoutLink || null,
     externalEventId: googleEvent.id,
     metadata: {

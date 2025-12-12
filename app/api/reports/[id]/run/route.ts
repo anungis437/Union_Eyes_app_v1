@@ -5,61 +5,62 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import { db } from '@/db';
 import { sql } from '@/lib/db';
 import { updateReportRunStats } from '@/db/queries/analytics-queries';
 
 async function postHandler(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: TenantContext,
+  params?: { id: string }
 ) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    
-    if (!tenantId) {
+    if (!params?.id) {
       return NextResponse.json(
-        { error: 'Tenant ID required' },
+        { error: 'Report ID required' },
         { status: 400 }
       );
     }
 
     // Get report config
-    const report = await sql`
+    const reportResult = await db.execute(sql`
       SELECT * FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${tenantId}
-    `;
+      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+    `);
 
-    if (!report || report.length === 0) {
+    if (!reportResult || reportResult.length === 0) {
       return NextResponse.json(
         { error: 'Report not found' },
         { status: 404 }
       );
     }
 
-    const reportConfig = report[0].config;
+    const report = reportResult[0];
+    const reportConfig = report.config as any;
     const body = await req.json();
     const { parameters } = body || {};
 
     // Build dynamic query based on report config
     // This is a simplified version - real implementation would be more robust
-    let query: any;
+    let queryResult: any;
     
     if (reportConfig.query) {
       // Execute custom SQL query (with proper sanitization in production)
-      query = await sql.unsafe(reportConfig.query);
+      queryResult = await db.execute(sql.raw(reportConfig.query));
     } else if (reportConfig.dataSource === 'claims') {
       // Pre-built queries for claims
-      query = await sql`
+      queryResult = await db.execute(sql`
         SELECT * FROM claims
-        WHERE tenant_id = ${tenantId}
+        WHERE tenant_id = ${context.tenantId}
         LIMIT 1000
-      `;
+      `);
     } else if (reportConfig.dataSource === 'members') {
-      query = await sql`
+      queryResult = await db.execute(sql`
         SELECT * FROM organization_members
-        WHERE tenant_id = ${tenantId}
+        WHERE tenant_id = ${context.tenantId}
         LIMIT 1000
-      `;
+      `);
     } else {
       return NextResponse.json(
         { error: 'Invalid report configuration' },
@@ -71,9 +72,9 @@ async function postHandler(
     await updateReportRunStats(params.id);
 
     return NextResponse.json({
-      report: report[0],
-      data: query,
-      rowCount: query.length,
+      report: report,
+      data: queryResult,
+      rowCount: queryResult.length,
       executedAt: new Date().toISOString(),
     });
   } catch (error) {

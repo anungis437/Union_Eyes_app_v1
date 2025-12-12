@@ -19,7 +19,7 @@ import {
   KPICard,
   AreaChartComponent,
   CHART_COLORS
-} from '@/components/analytics/ChartComponents';
+} from '@/src/components/analytics/ChartComponents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -247,7 +247,6 @@ export default function MemberEngagementDashboard() {
           change={analytics.periodComparison.memberGrowth}
           changeLabel={`${analytics.periodComparison.memberGrowth > 0 ? '+' : ''}${analytics.periodComparison.memberGrowth}% vs previous period`}
           icon={<UsersIcon className="w-5 h-5" />}
-          iconColor="text-blue-600 bg-blue-100"
         />
 
         <KPICard
@@ -256,7 +255,6 @@ export default function MemberEngagementDashboard() {
           change={analytics.periodComparison.activeGrowth}
           changeLabel={`${analytics.periodComparison.activeGrowth > 0 ? '+' : ''}${analytics.periodComparison.activeGrowth}% vs previous period`}
           icon={<UserCheckIcon className="w-5 h-5" />}
-          iconColor="text-green-600 bg-green-100"
         />
 
         <KPICard
@@ -265,7 +263,6 @@ export default function MemberEngagementDashboard() {
           change={analytics.periodComparison.retentionChange}
           changeLabel={`${analytics.periodComparison.retentionChange > 0 ? '+' : ''}${analytics.periodComparison.retentionChange}% vs previous period`}
           icon={<PercentIcon className="w-5 h-5" />}
-          iconColor="text-purple-600 bg-purple-100"
         />
 
         <KPICard
@@ -274,7 +271,6 @@ export default function MemberEngagementDashboard() {
           change={0}
           changeLabel={`${analytics.avgClaimsPerMember.toFixed(1)} avg claims per member`}
           icon={<ActivityIcon className="w-5 h-5" />}
-          iconColor="text-orange-600 bg-orange-100"
         />
       </div>
 
@@ -296,6 +292,7 @@ export default function MemberEngagementDashboard() {
               </CardHeader>
               <CardContent>
                 <PieChartComponent
+                  title="Engagement Distribution"
                   data={[
                     { name: 'High Engagement', value: analytics.engagementDistribution.high },
                     { name: 'Medium Engagement', value: analytics.engagementDistribution.medium },
@@ -353,14 +350,16 @@ export default function MemberEngagementDashboard() {
             </CardHeader>
             <CardContent>
               <AreaChartComponent
+                title="Member Growth Trend"
                 data={engagementTrends.map(t => ({
                   name: t.month,
                   active: t.activeMembers,
                   new: t.newMembers,
                 }))}
-                xKey="name"
-                yKeys={['active', 'new']}
-                colors={[CHART_COLORS.blue, CHART_COLORS.green]}
+                areas={[
+                  { dataKey: 'active', name: 'Active', fill: CHART_COLORS.primary[0], stroke: CHART_COLORS.primary[0] },
+                  { dataKey: 'new', name: 'New', fill: CHART_COLORS.success[0], stroke: CHART_COLORS.success[0] }
+                ]}
                 height={300}
               />
             </CardContent>
@@ -378,15 +377,17 @@ export default function MemberEngagementDashboard() {
             </CardHeader>
             <CardContent>
               <BarChartComponent
+                title="Cohort Retention Analysis"
                 data={cohorts.map(c => ({
                   name: c.cohortMonth,
                   size: c.size,
                   active: c.active,
                   retention: c.retentionRate,
                 }))}
-                xKey="name"
-                yKeys={['size', 'active']}
-                colors={[CHART_COLORS.blue, CHART_COLORS.green]}
+                bars={[
+                  { dataKey: 'size', name: 'Total Size', fill: CHART_COLORS.primary[0] },
+                  { dataKey: 'active', name: 'Active', fill: CHART_COLORS.success[0] }
+                ]}
                 height={300}
               />
             </CardContent>
@@ -533,13 +534,14 @@ export default function MemberEngagementDashboard() {
             </CardHeader>
             <CardContent>
               <TrendLineChart
+                title="Engagement Score Trend"
                 data={engagementTrends.map(t => ({
                   name: t.month,
                   value: t.engagementScore,
                 }))}
-                xKey="name"
-                yKey="value"
-                color={CHART_COLORS.purple}
+                lines={[
+                  { dataKey: 'value', stroke: CHART_COLORS.purple[0], name: 'Score' }
+                ]}
                 height={250}
               />
             </CardContent>
@@ -552,14 +554,16 @@ export default function MemberEngagementDashboard() {
               </CardHeader>
               <CardContent>
                 <BarChartComponent
+                  title="New vs Churned Members"
                   data={engagementTrends.map(t => ({
                     name: t.month,
                     new: t.newMembers,
                     churned: t.churnedMembers,
                   }))}
-                  xKey="name"
-                  yKeys={['new', 'churned']}
-                  colors={[CHART_COLORS.green, CHART_COLORS.red]}
+                  bars={[
+                    { dataKey: 'new', name: 'New', fill: CHART_COLORS.success[0] },
+                    { dataKey: 'churned', name: 'Churned', fill: CHART_COLORS.danger[0] }
+                  ]}
                   height={250}
                 />
               </CardContent>
@@ -571,13 +575,14 @@ export default function MemberEngagementDashboard() {
               </CardHeader>
               <CardContent>
                 <AreaChartComponent
+                  title="Active Member Trend"
                   data={engagementTrends.map(t => ({
                     name: t.month,
                     value: t.activeMembers,
                   }))}
-                  xKey="name"
-                  yKeys={['value']}
-                  colors={[CHART_COLORS.blue]}
+                  areas={[
+                    { dataKey: 'value', name: 'Active', fill: CHART_COLORS.primary[0], stroke: CHART_COLORS.primary[0] }
+                  ]}
                   height={250}
                 />
               </CardContent>

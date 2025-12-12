@@ -1,19 +1,22 @@
 /**
- * Root page - redirects to dashboard if authenticated
- * Note: This is a minimal redirect page. The actual marketing page is at app/(marketing)/page.tsx
- * which Next.js serves at the root path when there's a (marketing) route group
+ * Root page - redirects to locale-prefixed routes
+ * Detects user's locale and redirects accordingly
  */
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { defaultLocale } from '@/i18n';
 
 export default async function RootPage() {
-  const { userId } = auth();
+  // Get user's preferred locale from Accept-Language header
+  const headersList = headers();
+  const acceptLanguage = headersList.get('accept-language');
   
-  // If user is authenticated, redirect to dashboard
-  if (userId) {
-    redirect("/dashboard");
+  // Simple locale detection (can be enhanced)
+  let locale = defaultLocale;
+  if (acceptLanguage?.includes('fr')) {
+    locale = 'fr-CA';
   }
   
-  // Otherwise redirect to marketing page
-  redirect("/marketing");
+  // Redirect to locale-prefixed route
+  redirect(`/${locale}`);
 }

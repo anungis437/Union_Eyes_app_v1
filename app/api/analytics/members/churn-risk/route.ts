@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
+import { sql, db } from '@/lib/db';
 
 interface ChurnRiskMember {
   id: string;
@@ -36,7 +36,7 @@ async function handler(req: NextRequest) {
     // - Days since last activity (weight: 50%)
     // - Total claims (weight: 30%)
     // - Claim frequency trend (weight: 20%)
-    const members = await sql`
+    const members = await db.execute(sql`
       WITH member_activity AS (
         SELECT 
           om.id,
@@ -75,7 +75,7 @@ async function handler(req: NextRequest) {
       WHERE days_since_last_activity >= 30  -- Only include members inactive for 30+ days
       ORDER BY churn_risk_score DESC
       LIMIT 100
-    `;
+    `) as any[];
 
     // Categorize risk levels
     const churnRisk: ChurnRiskMember[] = members

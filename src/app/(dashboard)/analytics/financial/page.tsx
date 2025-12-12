@@ -10,8 +10,9 @@ import {
   BarChartComponent, 
   PieChartComponent,
   AreaChartComponent,
-  KPICard 
-} from '@/components/analytics/ChartComponents';
+  KPICard,
+  CHART_COLORS
+} from '@/src/components/analytics/ChartComponents';
 import { 
   Download, 
   RefreshCw, 
@@ -243,11 +244,11 @@ export default function FinancialAnalytics() {
               </CardHeader>
               <CardContent>
                 <AreaChartComponent
-                  data={trends}
-                  xKey="date"
-                  yKeys={[
-                    { key: 'claimValue', name: 'Claim Value', color: '#3b82f6' },
-                    { key: 'settlements', name: 'Settlements', color: '#10b981' }
+                  title="Financial Value Trends"
+                  data={trends.map(t => ({ name: t.date, claimValue: t.claimValue, settlements: t.settlements }))}
+                  areas={[
+                    { dataKey: 'claimValue', name: 'Claim Value', fill: CHART_COLORS.primary[0], stroke: CHART_COLORS.primary[0] },
+                    { dataKey: 'settlements', name: 'Settlements', fill: CHART_COLORS.success[0], stroke: CHART_COLORS.success[0] }
                   ]}
                   height={300}
                 />
@@ -261,11 +262,12 @@ export default function FinancialAnalytics() {
               </CardHeader>
               <CardContent>
                 <TrendLineChart
-                  data={trends}
-                  xKey="date"
-                  yKey="netValue"
+                  title="Net Value Trend"
+                  data={trends.map(t => ({ name: t.date, value: t.netValue }))}
+                  lines={[
+                    { dataKey: 'value', stroke: CHART_COLORS.purple[0], name: 'Net Value' }
+                  ]}
                   height={300}
-                  color="#8b5cf6"
                 />
               </CardContent>
             </Card>
@@ -394,6 +396,7 @@ export default function FinancialAnalytics() {
               </CardHeader>
               <CardContent>
                 <PieChartComponent
+                  title="Financial Outcomes Distribution"
                   data={outcomes.map(o => ({ name: o.outcome, value: o.totalValue }))}
                   height={300}
                 />
@@ -441,12 +444,12 @@ export default function FinancialAnalytics() {
             </CardHeader>
             <CardContent>
               <BarChartComponent
-                data={categories}
-                xKey="category"
-                yKeys={[
-                  { key: 'totalValue', name: 'Total Value', color: '#3b82f6' },
-                  { key: 'settlements', name: 'Settlements', color: '#10b981' },
-                  { key: 'costs', name: 'Costs', color: '#ef4444' }
+                title="Category Performance"
+                data={categories.map(c => ({ name: c.category, totalValue: c.totalValue, settlements: c.settlements, costs: c.costs }))}
+                bars={[
+                  { dataKey: 'totalValue', name: 'Total Value', fill: CHART_COLORS.primary[0] },
+                  { dataKey: 'settlements', name: 'Settlements', fill: CHART_COLORS.success[0] },
+                  { dataKey: 'costs', name: 'Costs', fill: CHART_COLORS.danger[0] }
                 ]}
                 height={300}
               />
@@ -500,6 +503,7 @@ export default function FinancialAnalytics() {
               </CardHeader>
               <CardContent>
                 <PieChartComponent
+                  title="Cost Breakdown"
                   data={costBreakdown.map(c => ({ name: c.category, value: c.amount }))}
                   height={300}
                 />

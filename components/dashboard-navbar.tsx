@@ -3,11 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare } from "lucide-react";
+import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare, Scale, Library, FileBarChart, Shield, GitCompare, Target, Flag, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { SelectProfile } from "@/db/schema/profiles-schema";
+import { useLocale } from "next-intl";
 
 interface DashboardNavbarProps {
   profile: SelectProfile | null;
@@ -17,26 +18,72 @@ interface DashboardNavbarProps {
 export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const locale = useLocale();
   const [notificationCount] = useState(3); // TODO: Replace with actual notification count
   
   // TODO: Implement proper admin role checking
   const isAdmin = false;
+  const isCongressStaff = false; // TODO: Implement congress staff role checking
+  const isFederationStaff = false; // TODO: Implement federation staff role checking
+  const isOfficer = false; // TODO: Implement officer role checking
+  const isSteward = false; // TODO: Implement steward role checking
+  const isCrossOrgStaff = isCongressStaff || isFederationStaff;
 
   // Navigation items based on user role
   const navigationItems = [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Claims", href: "/dashboard/claims", icon: FileText },
-    { label: "Voting", href: "/dashboard/voting", icon: Vote },
-    { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+    { label: "Dashboard", href: `/${locale}/dashboard`, icon: LayoutDashboard },
+    
+    // Core features for all users
+    ...(!isCrossOrgStaff ? [
+      { label: "Claims", href: `/${locale}/dashboard/claims`, icon: FileText },
+      { label: "Voting", href: `/${locale}/dashboard/voting`, icon: Vote },
+    ] : []),
+    
+    // Analytics (everyone)
+    { label: "Analytics", href: `/${locale}/dashboard/analytics`, icon: BarChart3 },
+    
+    // Representative tools (steward+)
+    ...((isSteward || isOfficer || isAdmin) && !isCrossOrgStaff ? [
+      { label: "Workbench", href: `/${locale}/dashboard/workbench`, icon: FileBarChart },
+      { label: "Members", href: `/${locale}/dashboard/members`, icon: Users },
+    ] : []),
+    
+    // Leadership tools (officer+)
+    ...((isOfficer || isAdmin) && !isCrossOrgStaff ? [
+      { label: "Targets", href: `/${locale}/dashboard/targets`, icon: Target },
+      { label: "Grievances", href: `/${locale}/dashboard/grievances`, icon: Scale },
+    ] : []),
+    
+    // Cross-organizational tools (congress/federation staff)
+    ...(isCrossOrgStaff || isAdmin ? [
+      { label: "Cross-Union", href: `/${locale}/dashboard/cross-union-analytics`, icon: GitCompare },
+      { label: "Precedents", href: `/${locale}/dashboard/precedents`, icon: Scale },
+      { label: "Clauses", href: `/${locale}/dashboard/clause-library`, icon: Library },
+      { label: "Affiliates", href: `/${locale}/dashboard/admin/organizations`, icon: Users },
+    ] : []),
+    
+    // Pension & Benefits (all users see their own data)
+    { label: "Pension", href: `/${locale}/dashboard/pension`, icon: Users },
+    
+    // Organizing campaigns (officers and admin only)
+    ...(isOfficer || isAdmin ? [
+      { label: "Organizing", href: `/${locale}/dashboard/organizing`, icon: Flag },
+    ] : []),
+    
+    // Strike fund management (officers and admin only)
+    ...(isOfficer || isAdmin ? [
+      { label: "Strike Fund", href: `/${locale}/dashboard/strike-fund`, icon: DollarSign },
+    ] : []),
+    
+    // Admin only
     ...(isAdmin ? [
-      { label: "Members", href: "/dashboard/members", icon: Users },
-      { label: "Settings", href: "/dashboard/settings", icon: Settings },
+      { label: "Admin", href: `/${locale}/dashboard/admin`, icon: Shield },
     ] : []),
   ];
 
   const isActive = (href: string) => {
-    if (href === "/dashboard") {
-      return pathname === "/dashboard";
+    if (href === `/${locale}/dashboard`) {
+      return pathname === `/${locale}/dashboard`;
     }
     return pathname.startsWith(href);
   };
@@ -60,7 +107,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
           </button>
 
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-2">
+          <Link href={`/${locale}/dashboard`} className="flex items-center space-x-2">
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               UnionEyes
             </span>
@@ -107,7 +154,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
 
           {/* Settings (Desktop) */}
           <Button variant="ghost" size="icon" className="hidden md:flex" asChild>
-            <Link href="/dashboard/settings">
+            <Link href={`/${locale}/dashboard/settings`}>
               <Settings className="h-5 w-5" />
             </Link>
           </Button>
@@ -151,7 +198,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
             
             {/* Mobile Settings Link */}
             <Link
-              href="/dashboard/settings"
+              href={`/${locale}/dashboard/settings`}
               className="flex items-center space-x-3 px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >

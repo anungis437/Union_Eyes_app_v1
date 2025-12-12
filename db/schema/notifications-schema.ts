@@ -135,6 +135,44 @@ export const notificationHistory = pgTable('notification_history', {
 });
 
 // ============================================
+// Scheduled Notifications (for deadlines, reminders, etc.)
+// ============================================
+
+export const notificationScheduleStatusEnum = pgEnum('notification_schedule_status', [
+  'scheduled',
+  'sent',
+  'cancelled',
+  'failed',
+]);
+
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: text('tenant_id').notNull(),
+  userId: text('user_id').notNull(),
+  
+  // Notification content
+  type: text('type').notNull(), // deadline_reminder, deadline_missed, etc.
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  priority: text('priority').default('medium'), // critical, high, medium, low
+  
+  // Related entity
+  relatedEntityType: text('related_entity_type'), // grievance_deadline, claim, etc.
+  relatedEntityId: text('related_entity_id'),
+  
+  // Scheduling
+  scheduledFor: timestamp('scheduled_for'),
+  status: notificationScheduleStatusEnum('status').notNull().default('scheduled'),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  sentAt: timestamp('sent_at'),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;
+
+// ============================================
 // Types
 // ============================================
 

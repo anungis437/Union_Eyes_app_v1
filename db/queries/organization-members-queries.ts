@@ -8,15 +8,15 @@ import { organizationMembers, SelectOrganizationMember, InsertOrganizationMember
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
 
 /**
- * Get all active members for a tenant
+ * Get all active members for an organization
  */
-export async function getOrganizationMembers(tenantId: string): Promise<SelectOrganizationMember[]> {
+export async function getOrganizationMembers(organizationId: string): Promise<SelectOrganizationMember[]> {
   return await db
     .select()
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         isNull(organizationMembers.deletedAt)
       )
     )
@@ -24,15 +24,15 @@ export async function getOrganizationMembers(tenantId: string): Promise<SelectOr
 }
 
 /**
- * Get member by ID and tenant
+ * Get member by ID and organization
  */
-export async function getMemberById(tenantId: string, id: string): Promise<SelectOrganizationMember | undefined> {
+export async function getMemberById(organizationId: string, id: string): Promise<SelectOrganizationMember | undefined> {
   const result = await db
     .select()
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         eq(organizationMembers.id, id),
         isNull(organizationMembers.deletedAt)
       )
@@ -46,7 +46,7 @@ export async function getMemberById(tenantId: string, id: string): Promise<Selec
  * Get member by user ID
  */
 export async function getMemberByUserId(
-  tenantId: string,
+  organizationId: string,
   userId: string
 ): Promise<SelectOrganizationMember | undefined> {
   const result = await db
@@ -54,7 +54,7 @@ export async function getMemberByUserId(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         eq(organizationMembers.userId, userId),
         isNull(organizationMembers.deletedAt)
       )
@@ -117,15 +117,15 @@ export async function deleteMember(id: string): Promise<boolean> {
 }
 
 /**
- * Get member count for a tenant
+ * Get member count for an organization
  */
-export async function getMemberCount(tenantId: string): Promise<number> {
+export async function getMemberCount(organizationId: string): Promise<number> {
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         isNull(organizationMembers.deletedAt)
       )
     );
@@ -134,15 +134,15 @@ export async function getMemberCount(tenantId: string): Promise<number> {
 }
 
 /**
- * Get active member count for a tenant
+ * Get active member count for an organization
  */
-export async function getActiveMemberCount(tenantId: string): Promise<number> {
+export async function getActiveMemberCount(organizationId: string): Promise<number> {
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         eq(organizationMembers.status, "active"),
         isNull(organizationMembers.deletedAt)
       )
@@ -155,7 +155,7 @@ export async function getActiveMemberCount(tenantId: string): Promise<number> {
  * Get members by role
  */
 export async function getMembersByRole(
-  tenantId: string,
+  organizationId: string,
   role: "member" | "steward" | "officer" | "admin"
 ): Promise<SelectOrganizationMember[]> {
   return await db
@@ -163,7 +163,7 @@ export async function getMembersByRole(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         eq(organizationMembers.role, role),
         isNull(organizationMembers.deletedAt)
       )
@@ -175,7 +175,7 @@ export async function getMembersByRole(
  * Get members by status
  */
 export async function getMembersByStatus(
-  tenantId: string,
+  organizationId: string,
   status: "active" | "inactive" | "on-leave"
 ): Promise<SelectOrganizationMember[]> {
   return await db
@@ -183,7 +183,7 @@ export async function getMembersByStatus(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, tenantId),
+        eq(organizationMembers.tenantId, organizationId),
         eq(organizationMembers.status, status),
         isNull(organizationMembers.deletedAt)
       )
@@ -195,7 +195,7 @@ export async function getMembersByStatus(
  * Search members using full-text search
  */
 export async function searchMembers(
-  tenantId: string,
+  organizationId: string,
   searchQuery: string,
   filters?: {
     role?: "member" | "steward" | "officer" | "admin";
@@ -204,7 +204,7 @@ export async function searchMembers(
   }
 ): Promise<SelectOrganizationMember[]> {
   const conditions = [
-    eq(organizationMembers.tenantId, tenantId),
+    eq(organizationMembers.tenantId, organizationId),
     isNull(organizationMembers.deletedAt),
   ];
 

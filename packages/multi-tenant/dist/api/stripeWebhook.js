@@ -15,7 +15,7 @@ import { BillingService } from '../services/billingService';
  * ```typescript
  * // Next.js API Route (pages/api/webhooks/stripe.ts)
  * import { createClient } from '@supabase/supabase-js';
- * import { StripeWebhookHandler } from '@courtlens/multi-tenant';
+ * import { StripeWebhookHandler } from '@unioneyes/multi-tenant';
  *
  * export const config = { api: { bodyParser: false } }; // Required for Stripe webhooks
  *
@@ -43,7 +43,7 @@ import { BillingService } from '../services/billingService';
 export class StripeWebhookHandler {
     constructor(config) {
         this.stripe = new Stripe(config.stripeSecretKey, {
-            apiVersion: '2023-10-16',
+            apiVersion: '2024-06-20',
         });
         this.webhookSecret = config.webhookSecret;
         this.billingService = new BillingService(config.supabase, config.stripeSecretKey);

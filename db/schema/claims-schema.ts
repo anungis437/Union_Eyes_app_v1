@@ -76,6 +76,17 @@ export const claims = pgTable("claims", {
   // Progress tracking
   progress: integer("progress").default(0),
   
+  // Financial information
+  claimAmount: varchar("claim_amount", { length: 20 }), // Stored as string to preserve precision
+  settlementAmount: varchar("settlement_amount", { length: 20 }),
+  legalCosts: varchar("legal_costs", { length: 20 }),
+  courtCosts: varchar("court_costs", { length: 20 }),
+  
+  // Resolution information
+  resolutionOutcome: varchar("resolution_outcome", { length: 100 }),
+  filedDate: timestamp("filed_date", { withTimezone: true }),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  
   // Attachments and evidence
   attachments: jsonb("attachments").default(sql`'[]'::jsonb`),
   

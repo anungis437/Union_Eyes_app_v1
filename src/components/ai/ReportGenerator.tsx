@@ -10,21 +10,21 @@ import {
   FileSpreadsheet,
   FileImage
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@unioneyes/ui/components/card';
-import { Button } from '@unioneyes/ui/components/button';
-import { Textarea } from '@unioneyes/ui/components/textarea';
-import { Input } from '@unioneyes/ui/components/input';
-import { Label } from '@unioneyes/ui/components/label';
-import { Badge } from '@unioneyes/ui/components/badge';
-import { Alert, AlertDescription } from '@unioneyes/ui/components/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@unioneyes/ui/components/select';
-import { Progress } from '@unioneyes/ui/components/progress';
+} from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 
 interface Report {
   id: string;
@@ -330,7 +330,7 @@ export function ReportGenerator({
           <Alert>
             <AlertDescription className="text-xs">
               Report generation may take several minutes depending on the data volume.
-              You'll be able to download the report once it's ready.
+              You&apos;ll be able to download the report once it&apos;s ready.
             </AlertDescription>
           </Alert>
         </CardContent>

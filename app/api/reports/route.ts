@@ -21,9 +21,21 @@ async function getHandler(req: NextRequest) {
       );
     }
 
-    const reports = await getReports(tenantId, userId);
+    // Parse query parameters for filtering
+    const { searchParams } = new URL(req.url);
+    const filters = {
+      category: searchParams.get('category') || undefined,
+      isTemplate: searchParams.get('isTemplate') === 'true' ? true : searchParams.get('isTemplate') === 'false' ? false : undefined,
+      isPublic: searchParams.get('isPublic') === 'true' ? true : searchParams.get('isPublic') === 'false' ? false : undefined,
+      search: searchParams.get('search') || undefined,
+    };
 
-    return NextResponse.json({ reports });
+    const reports = await getReports(tenantId, userId, filters);
+
+    return NextResponse.json({ 
+      reports,
+      count: reports.length,
+    });
   } catch (error) {
     console.error('Get reports error:', error);
     return NextResponse.json(
@@ -48,9 +60,9 @@ async function postHandler(req: NextRequest) {
     const body = await req.json();
     
     // Validate required fields
-    if (!body.name || !body.reportType || !body.config) {
+    if (!body.name || !body.config) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, reportType, config' },
+        { error: 'Missing required fields: name, config' },
         { status: 400 }
       );
     }
@@ -58,15 +70,18 @@ async function postHandler(req: NextRequest) {
     const report = await createReport(tenantId, userId, {
       name: body.name,
       description: body.description,
-      reportType: body.reportType,
-      category: body.category,
+      reportType: body.reportType || 'custom',
+      category: body.category || 'custom',
       config: body.config,
-      isPublic: body.isPublic,
-      isTemplate: body.isTemplate,
+      isPublic: body.isPublic || false,
+      isTemplate: body.isTemplate || false,
       templateId: body.templateId,
     });
 
-    return NextResponse.json({ report }, { status: 201 });
+    return NextResponse.json({ 
+      report,
+      message: 'Report created successfully',
+    }, { status: 201 });
   } catch (error) {
     console.error('Create report error:', error);
     return NextResponse.json(

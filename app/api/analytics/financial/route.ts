@@ -34,7 +34,7 @@ async function handler(req: NextRequest) {
 
     // Get current period financial summary
     const currentPeriod = await db.select({
-      totalClaims: sql<number>`count(distinct ${claims.id})`,
+      totalClaims: sql<number>`count(distinct ${claims.claimId})`,
       totalClaimValue: sql<number>`coalesce(sum(${claims.claimAmount}), 0)`,
       totalSettlements: sql<number>`coalesce(sum(case when ${claims.resolutionOutcome} = 'won' then ${claims.settlementAmount} else 0 end), 0)`,
       totalCosts: sql<number>`coalesce(sum(${claims.legalCosts} + coalesce(${claims.courtCosts}, 0)), 0)`,

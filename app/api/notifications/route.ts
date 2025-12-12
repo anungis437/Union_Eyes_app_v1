@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { inAppNotifications } from '@/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     // Get unread count
     const unreadCount = await db
-      .select({ count: db.$count() })
+      .select({ count: sql<number>`count(*)` })
       .from(inAppNotifications)
       .where(
         and(

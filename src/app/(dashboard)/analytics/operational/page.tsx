@@ -9,8 +9,9 @@ import {
   TrendLineChart, 
   BarChartComponent, 
   AreaChartComponent,
-  KPICard 
-} from '@/components/analytics/ChartComponents';
+  KPICard,
+  CHART_COLORS
+} from '@/src/components/analytics/ChartComponents';
 import { 
   Download, 
   RefreshCw, 
@@ -184,14 +185,12 @@ export default function OperationalAnalytics() {
           value={summary.queueSize.toString()}
           change={queueChange}
           icon={<Activity className="h-4 w-4 text-muted-foreground" />}
-          inverseColors={true}
         />
         <KPICard
           title="Avg Wait Time"
           value={formatDuration(summary.avgWaitTime)}
           change={waitTimeChange}
           icon={<Clock className="h-4 w-4 text-muted-foreground" />}
-          inverseColors={true}
         />
         <KPICard
           title="SLA Compliance"
@@ -219,35 +218,23 @@ export default function OperationalAnalytics() {
         {/* Queue Status Tab */}
         <TabsContent value="queues" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Queue Distribution by Priority</CardTitle>
-                <CardDescription>Current queue breakdown</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BarChartComponent
-                  data={queues}
-                  xKey="priority"
-                  yKeys={[{ key: 'count', name: 'Claims', color: '#3b82f6' }]}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
+            <BarChartComponent
+              title="Queue Distribution by Priority"
+              data={queues.map(q => ({ name: q.priority, count: q.count }))}
+              bars={[
+                { dataKey: 'count', name: 'Claims', fill: CHART_COLORS.primary[0] }
+              ]}
+              height={300}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Queue Aging Analysis</CardTitle>
-                <CardDescription>Average age by priority</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BarChartComponent
-                  data={queues}
-                  xKey="priority"
-                  yKeys={[{ key: 'avgAge', name: 'Avg Age (hours)', color: '#f59e0b' }]}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
+            <BarChartComponent
+              title="Queue Aging Analysis"
+              data={queues.map(q => ({ name: q.priority, avgAge: q.avgAge }))}
+              bars={[
+                { dataKey: 'avgAge', name: 'Avg Age (hours)', fill: CHART_COLORS.warning[0] }
+              ]}
+              height={300}
+            />
           </div>
 
           <Card>
@@ -288,11 +275,11 @@ export default function OperationalAnalytics() {
             </CardHeader>
             <CardContent>
               <BarChartComponent
-                data={workload}
-                xKey="stewardName"
-                yKeys={[
-                  { key: 'activeCases', name: 'Active Cases', color: '#3b82f6' },
-                  { key: 'capacity', name: 'Capacity', color: '#94a3b8' }
+                title="Steward Workload Distribution"
+                data={workload.map(w => ({ name: w.stewardName, activeCases: w.activeCases, capacity: w.capacity }))}
+                bars={[
+                  { dataKey: 'activeCases', name: 'Active Cases', fill: CHART_COLORS.primary[0] },
+                  { dataKey: 'capacity', name: 'Capacity', fill: CHART_COLORS.multi[5] }
                 ]}
                 height={300}
               />
@@ -349,11 +336,12 @@ export default function OperationalAnalytics() {
             </CardHeader>
             <CardContent>
               <TrendLineChart
-                data={slaMetrics}
-                xKey="date"
-                yKey="compliance"
+                title="SLA Compliance Trend"
+                data={slaMetrics.map(m => ({ name: m.date, compliance: m.compliance }))}
+                lines={[
+                  { dataKey: 'compliance', stroke: CHART_COLORS.success[0], name: 'Compliance %' }
+                ]}
                 height={300}
-                color="#10b981"
               />
             </CardContent>
           </Card>
@@ -366,11 +354,11 @@ export default function OperationalAnalytics() {
               </CardHeader>
               <CardContent>
                 <AreaChartComponent
-                  data={slaMetrics}
-                  xKey="date"
-                  yKeys={[
-                    { key: 'onTime', name: 'On Time', color: '#10b981' },
-                    { key: 'overdue', name: 'Overdue', color: '#ef4444' }
+                  title="On-Time vs Overdue"
+                  data={slaMetrics.map(m => ({ name: m.date, onTime: m.onTime, overdue: m.overdue }))}
+                  areas={[
+                    { dataKey: 'onTime', name: 'On Time', fill: CHART_COLORS.success[0], stroke: CHART_COLORS.success[0] },
+                    { dataKey: 'overdue', name: 'Overdue', fill: CHART_COLORS.danger[0], stroke: CHART_COLORS.danger[0] }
                   ]}
                   height={300}
                 />

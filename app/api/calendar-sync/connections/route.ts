@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       syncDirection: conn.syncDirection,
       syncStatus: conn.syncStatus,
       lastSyncAt: conn.lastSyncAt,
-      lastSyncError: conn.lastSyncError,
+      syncError: conn.syncError,
       calendarMappings: conn.calendarMappings,
       createdAt: conn.createdAt,
       updatedAt: conn.updatedAt,

@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NLQueryInterface } from '@/components/ml/NLQueryInterface';
-import { SmartRecommendations } from '@/components/ml/SmartRecommendations';
+import { NLQueryInterface } from '@/src/components/ml/NLQueryInterface';
+import { SmartRecommendations } from '@/src/components/ml/SmartRecommendations';
 import { Sparkles, Lightbulb, TrendingUp } from 'lucide-react';
 
 /**
