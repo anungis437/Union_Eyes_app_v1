@@ -132,7 +132,7 @@ export interface Holiday {
 export async function getDeadlineRules(organizationId: string): Promise<DeadlineRule[]> {
   const result = await db.execute(sql`
     SELECT * FROM deadline_rules
-    WHERE organization_id = ${organizationId} AND is_active = TRUE
+    WHERE tenant_id = ${organizationId} AND is_active = TRUE
     ORDER BY rule_name
   `);
   return result as any[];
@@ -147,7 +147,7 @@ export async function getDeadlineRuleByCode(
 ): Promise<DeadlineRule | null> {
   const result = await db.execute(sql`
     SELECT * FROM deadline_rules
-    WHERE organization_id = ${organizationId} AND rule_code = ${ruleCode} AND is_active = TRUE
+    WHERE tenant_id = ${organizationId} AND rule_code = ${ruleCode} AND is_active = TRUE
   `);
   return result[0] as any || null;
 }
@@ -162,7 +162,7 @@ export async function getApplicableDeadlineRules(
 ): Promise<DeadlineRule[]> {
   const result = await db.execute(sql`
     SELECT * FROM deadline_rules
-    WHERE organization_id = ${organizationId}
+    WHERE tenant_id = ${organizationId}
       AND is_active = TRUE
       AND (claim_type IS NULL OR claim_type = ${claimType})
       AND (priority_level IS NULL OR priority_level = ${priorityLevel || null})
@@ -196,7 +196,7 @@ export async function createDeadlineRule(
 ): Promise<DeadlineRule> {
   const result = await db.execute(sql`
     INSERT INTO deadline_rules (
-      organization_id, rule_name, rule_code, description, claim_type, priority_level,
+      tenant_id, rule_name, rule_code, description, claim_type, priority_level,
       step_number, days_from_event, event_type, business_days_only,
       allows_extension, max_extension_days, requires_approval,
       escalate_to_role, escalation_delay_days, created_by
@@ -225,7 +225,7 @@ export async function getClaimDeadlines(claimId: string): Promise<ClaimDeadline[
   const result = await db.execute(sql`
     SELECT * FROM claim_deadlines
     WHERE claim_id = ${claimId}
-    ORDER BY current_deadline
+    ORDER BY due_date
   `);
   return result as any[];
 }
@@ -237,7 +237,7 @@ export async function getPendingClaimDeadlines(claimId: string): Promise<ClaimDe
   const result = await db.execute(sql`
     SELECT * FROM claim_deadlines
     WHERE claim_id = ${claimId} AND status = 'pending'
-    ORDER BY current_deadline
+    ORDER BY due_date
   `);
   return result as any[];
 }
@@ -248,14 +248,14 @@ export async function getPendingClaimDeadlines(claimId: string): Promise<ClaimDe
 export async function getCriticalDeadlines(organizationId: string): Promise<any[]> {
   const result = await db.execute(sql`
     SELECT * FROM v_critical_deadlines
-    WHERE organization_id = ${organizationId}
+    WHERE tenant_id = ${organizationId}
     ORDER BY 
       CASE 
         WHEN is_overdue THEN 1
         WHEN days_until_due = 0 THEN 2
         ELSE 3
       END,
-      current_deadline
+      due_date
   `);
   return result as any[];
 }
@@ -276,7 +276,7 @@ export async function getMemberDeadlines(
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
     WHERE c.assigned_to = ${memberId}
-      AND cd.organization_id = ${organizationId}
+      AND cd.tenant_id = ${organizationId}
   `;
   
   if (options.status) {
@@ -284,10 +284,10 @@ export async function getMemberDeadlines(
   }
   
   if (options.daysAhead) {
-    query = sql`${query} AND cd.current_deadline <= CURRENT_DATE + ${options.daysAhead}`;
+    query = sql`${query} AND cd.due_date <= CURRENT_DATE + ${options.daysAhead}`;
   }
   
-  query = sql`${query} ORDER BY cd.current_deadline`;
+  query = sql`${query} ORDER BY cd.due_date`;
   
   const result = await db.execute(query);
   return result as any[];
@@ -299,7 +299,7 @@ export async function getMemberDeadlines(
 export async function getOverdueDeadlines(organizationId: string): Promise<ClaimDeadline[]> {
   const result = await db.execute(sql`
     SELECT * FROM claim_deadlines
-    WHERE organization_id = ${organizationId}
+    WHERE tenant_id = ${organizationId}
       AND status = 'pending'
       AND is_overdue = TRUE
     ORDER BY days_overdue DESC, priority DESC
@@ -331,8 +331,8 @@ export async function createClaimDeadline(
   
   const result = await db.execute(sql`
     INSERT INTO claim_deadlines (
-      claim_id, organization_id, deadline_rule_id, deadline_name, deadline_type,
-      event_date, original_deadline, current_deadline, priority, created_by
+      claim_id, tenant_id, deadline_rule_id, deadline_name, deadline_type,
+      event_date, original_deadline, due_date, priority, created_by
     ) VALUES (
       ${claimId}, ${organizationId}, ${options.deadlineRuleId || null},
       ${deadlineName}, ${deadlineType}, ${eventDate}, ${deadlineDate},
@@ -431,7 +431,7 @@ export async function requestDeadlineExtension(
 ): Promise<DeadlineExtension> {
   const result = await db.execute(sql`
     INSERT INTO deadline_extensions (
-      deadline_id, organization_id, requested_by, requested_days,
+      deadline_id, tenant_id, requested_by, requested_days,
       request_reason, requires_approval
     ) VALUES (
       ${deadlineId}, ${organizationId}, ${requestedBy}, ${requestedDays},
@@ -453,7 +453,7 @@ export async function approveDeadlineExtension(
 ): Promise<void> {
   // Get extension and deadline details
   const extensionResult = await db.execute(sql`
-    SELECT de.*, cd.current_deadline, cd.organization_id
+    SELECT de.*, cd.due_date, cd.tenant_id
     FROM deadline_extensions de
     JOIN claim_deadlines cd ON de.deadline_id = cd.id
     WHERE de.id = ${extensionId}
@@ -465,7 +465,7 @@ export async function approveDeadlineExtension(
   const granted = daysGranted || extension.requested_days;
   
   // Calculate new deadline
-  const currentDeadline = new Date(extension.current_deadline);
+  const currentDeadline = new Date(extension.due_date);
   const newDeadline = new Date(currentDeadline.getTime() + granted * 24 * 60 * 60 * 1000);
   
   // Update extension
@@ -483,7 +483,7 @@ export async function approveDeadlineExtension(
   // Update claim deadline
   await db.execute(sql`
     UPDATE claim_deadlines
-    SET current_deadline = ${newDeadline},
+    SET due_date = ${newDeadline},
         status = 'extended',
         extension_count = extension_count + 1,
         total_extension_days = total_extension_days + ${granted},
@@ -520,11 +520,11 @@ export async function getPendingExtensionRequests(
   organizationId: string
 ): Promise<DeadlineExtension[]> {
   const result = await db.execute(sql`
-    SELECT de.*, cd.deadline_name, cd.current_deadline, c.claim_number
+    SELECT de.*, cd.deadline_name, cd.due_date, c.claim_number
     FROM deadline_extensions de
     JOIN claim_deadlines cd ON de.deadline_id = cd.id
     JOIN claims c ON cd.claim_id = c.id
-    WHERE de.organization_id = ${organizationId}
+    WHERE de.tenant_id = ${organizationId}
       AND de.status = 'pending'
       AND de.requires_approval = TRUE
     ORDER BY de.requested_at
@@ -556,7 +556,7 @@ export async function createDeadlineAlert(
 ): Promise<DeadlineAlert> {
   const result = await db.execute(sql`
     INSERT INTO deadline_alerts (
-      deadline_id, organization_id, recipient_id, alert_type, alert_severity,
+      deadline_id, tenant_id, recipient_id, alert_type, alert_severity,
       alert_trigger, recipient_role, delivery_method, subject, message, action_url
     ) VALUES (
       ${deadlineId}, ${organizationId}, ${recipientId}, ${alertType},
@@ -622,12 +622,12 @@ export async function getUnreadAlerts(
   organizationId: string
 ): Promise<DeadlineAlert[]> {
   const result = await db.execute(sql`
-    SELECT da.*, cd.deadline_name, cd.current_deadline, c.claim_number
+    SELECT da.*, cd.deadline_name, cd.due_date, c.claim_number
     FROM deadline_alerts da
     JOIN claim_deadlines cd ON da.deadline_id = cd.id
     JOIN claims c ON cd.claim_id = c.id
     WHERE da.recipient_id = ${memberId}
-      AND da.organization_id = ${organizationId}
+      AND da.tenant_id = ${organizationId}
       AND da.viewed_at IS NULL
       AND da.delivery_method = 'in_app'
     ORDER BY da.sent_at DESC
@@ -645,10 +645,10 @@ export async function generateUpcomingDeadlineAlerts(
   
   // Get deadlines due in 3 days (first alert)
   const threeDayResult = await db.execute(sql`
-    SELECT cd.id, cd.deadline_name, cd.current_deadline, c.assigned_to, c.claim_number
+    SELECT cd.id, cd.deadline_name, cd.due_date, c.assigned_to, c.claim_number
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
-    WHERE cd.organization_id = ${organizationId}
+    WHERE cd.tenant_id = ${organizationId}
       AND cd.status = 'pending'
       AND cd.days_until_due = 3
       AND NOT EXISTS (
@@ -669,7 +669,7 @@ export async function generateUpcomingDeadlineAlerts(
         {
           alertSeverity: 'info',
           subject: `Deadline approaching: ${deadline.deadline_name}`,
-          message: `Claim ${deadline.claim_number} deadline is due in 3 days (${deadline.current_deadline})`,
+          message: `Claim ${deadline.claim_number} deadline is due in 3 days (${deadline.due_date})`,
           actionUrl: `/claims/${deadline.claim_number}`,
         }
       );
@@ -679,10 +679,10 @@ export async function generateUpcomingDeadlineAlerts(
   
   // Get deadlines due tomorrow (second alert)
   const oneDayResult = await db.execute(sql`
-    SELECT cd.id, cd.deadline_name, cd.current_deadline, c.assigned_to, c.claim_number
+    SELECT cd.id, cd.deadline_name, cd.due_date, c.assigned_to, c.claim_number
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
-    WHERE cd.organization_id = ${organizationId}
+    WHERE cd.tenant_id = ${organizationId}
       AND cd.status = 'pending'
       AND cd.days_until_due = 1
       AND NOT EXISTS (
@@ -703,7 +703,7 @@ export async function generateUpcomingDeadlineAlerts(
         {
           alertSeverity: 'warning',
           subject: `Urgent: ${deadline.deadline_name} due tomorrow`,
-          message: `Claim ${deadline.claim_number} deadline is due tomorrow (${deadline.current_deadline})`,
+          message: `Claim ${deadline.claim_number} deadline is due tomorrow (${deadline.due_date})`,
           actionUrl: `/claims/${deadline.claim_number}`,
         }
       );
@@ -713,10 +713,10 @@ export async function generateUpcomingDeadlineAlerts(
   
   // Get deadlines due today (critical alert)
   const todayResult = await db.execute(sql`
-    SELECT cd.id, cd.deadline_name, cd.current_deadline, c.assigned_to, c.claim_number
+    SELECT cd.id, cd.deadline_name, cd.due_date, c.assigned_to, c.claim_number
     FROM claim_deadlines cd
     JOIN claims c ON cd.claim_id = c.id
-    WHERE cd.organization_id = ${organizationId}
+    WHERE cd.tenant_id = ${organizationId}
       AND cd.status = 'pending'
       AND cd.days_until_due = 0
       AND NOT EXISTS (
@@ -737,7 +737,7 @@ export async function generateUpcomingDeadlineAlerts(
         {
           alertSeverity: 'error',
           subject: `URGENT: ${deadline.deadline_name} due TODAY`,
-          message: `Claim ${deadline.claim_number} deadline is due today (${deadline.current_deadline})`,
+          message: `Claim ${deadline.claim_number} deadline is due today (${deadline.due_date})`,
           actionUrl: `/claims/${deadline.claim_number}`,
         }
       );
@@ -796,9 +796,9 @@ export async function getHolidays(
   `;
   
   if (organizationId) {
-    query = sql`${query} AND (organization_id IS NULL OR organization_id = ${organizationId})`;
+    query = sql`${query} AND (tenant_id IS NULL OR tenant_id = ${organizationId})`;
   } else {
-    query = sql`${query} AND organization_id IS NULL`;
+    query = sql`${query} AND tenant_id IS NULL`;
   }
   
   query = sql`${query} ORDER BY holiday_date`;
@@ -821,7 +821,7 @@ export async function getDeadlineComplianceMetrics(
 ): Promise<any[]> {
   let query = sql`
     SELECT * FROM v_deadline_compliance_metrics
-    WHERE organization_id = ${organizationId}
+    WHERE tenant_id = ${organizationId}
   `;
   
   if (startDate) {
@@ -846,7 +846,7 @@ export async function getMemberDeadlineSummary(
 ): Promise<any> {
   const result = await db.execute(sql`
     SELECT * FROM v_member_deadline_summary
-    WHERE member_id = ${memberId} AND organization_id = ${organizationId}
+    WHERE member_id = ${memberId} AND tenant_id = ${organizationId}
   `);
   return result[0] || {
     total_deadlines: 0,
@@ -868,10 +868,10 @@ export async function getDeadlineDashboardSummary(organizationId: string): Promi
       COUNT(*) FILTER (WHERE days_until_due <= 3 AND days_until_due >= 0) as due_soon_count,
       COUNT(*) FILTER (WHERE priority = 'critical' AND status = 'pending') as critical_count,
       ROUND(AVG(days_overdue) FILTER (WHERE is_overdue = TRUE), 1) as avg_days_overdue,
-      COUNT(*) FILTER (WHERE status = 'completed' AND completed_at <= current_deadline) as on_time_completed,
+      COUNT(*) FILTER (WHERE status = 'completed' AND completed_at <= due_date) as on_time_completed,
       COUNT(*) FILTER (WHERE status IN ('completed', 'missed')) as total_completed
     FROM claim_deadlines
-    WHERE organization_id = ${organizationId}
+    WHERE tenant_id = ${organizationId}
   `);
   
   const row = result[0] as any;

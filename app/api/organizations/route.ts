@@ -199,23 +199,42 @@ export async function POST(request: NextRequest) {
     const validated = await validateBody(request, bodySchemas.createOrganization);
     if (validated instanceof NextResponse) return validated;
 
+    // Build hierarchy path
+    let hierarchyPath: string[] = [];
+    let hierarchyLevel = 0;
+    if (validated.parentId) {
+      const { organizations } = await import('@/db/schema-organizations');
+      const [parentOrg] = await db
+        .select({ hierarchyPath: organizations.hierarchyPath })
+        .from(organizations)
+        .where(eq(organizations.id, validated.parentId))
+        .limit(1);
+      if (parentOrg) {
+        hierarchyPath = [...parentOrg.hierarchyPath, validated.slug];
+        hierarchyLevel = hierarchyPath.length - 1;
+      } else {
+        hierarchyPath = [validated.slug];
+      }
+    } else {
+      hierarchyPath = [validated.slug];
+    }
+
     // Create the organization with validated data
     const newOrganization = await createOrganization({
       name: validated.name,
       slug: validated.slug,
-      type: validated.type,
+      organizationType: validated.type,
+      hierarchyPath,
+      hierarchyLevel,
       parentId: validated.parentId || null,
-      description: validated.description || null,
       sectors: validated.sectors || [],
       jurisdiction: validated.jurisdiction || null,
-      contactEmail: validated.contactEmail || null,
-      contactPhone: validated.contactPhone || null,
-      address: validated.address || null,
+      email: validated.contactEmail || null,
+      phone: validated.contactPhone || null,
+      address: validated.address as Record<string, unknown> || null,
       website: validated.website || null,
-      logo: validated.logo || null,
-      primaryColor: validated.primaryColor || null,
-      isActive: validated.isActive,
-      metadata: validated.metadata || {},
+      status: validated.isActive ? 'active' : 'inactive',
+      settings: validated.metadata || {},
     });
 
     return NextResponse.json({

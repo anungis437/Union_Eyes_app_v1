@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
         sourceOrganization: {
           columns: {
             id: true,
-            organizationName: true,
-            organizationLevel: true,
+            name: true,
+            organizationType: true,
           },
         },
       },

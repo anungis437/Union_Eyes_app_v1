@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
         id: organizations.id,
         name: organizations.name,
         slug: organizations.slug,
-        clcAffiliateCode: organizations.clcAffiliateCode,
+        charterNumber: organizations.charterNumber,
       })
       .from(organizations)
       .where(inArray(organizations.id, Array.from(orgIds)));

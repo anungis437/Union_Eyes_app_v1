@@ -9,6 +9,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { sendRegistrationConfirmation } from '@/lib/email/training-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -226,6 +227,39 @@ export async function POST(request: NextRequest) {
         SET waitlist_count = waitlist_count + 1, updated_at = NOW()
         WHERE id = ${sessionId}
       `);
+    }
+
+    // Send registration confirmation email (non-blocking)
+    if (registrationStatus === 'registered') {
+      const emailData = await db.execute(sql`
+        SELECT 
+          m.email, m.first_name, m.last_name,
+          c.course_name, c.course_code, c.total_hours,
+          cs.session_date, cs.end_date, cs.location,
+          i.first_name as instructor_first_name, i.last_name as instructor_last_name
+        FROM course_registrations cr
+        JOIN members m ON m.id = cr.member_id
+        JOIN training_courses c ON c.id = cr.course_id
+        JOIN course_sessions cs ON cs.id = cr.session_id
+        LEFT JOIN members i ON i.id = cs.lead_instructor_id
+        WHERE cr.id = ${result[0].id}
+      `) as unknown as Record<string, any>[];
+
+      if (emailData.length > 0) {
+        const data = emailData[0] as Record<string, any>;
+        sendRegistrationConfirmation({
+          toEmail: data.email as string,
+          memberName: `${data.first_name} ${data.last_name}`,
+          courseName: data.course_name as string,
+          courseCode: data.course_code as string,
+          registrationDate: new Date().toLocaleDateString(),
+          startDate: data.session_date ? new Date(data.session_date).toLocaleDateString() : undefined,
+          endDate: data.end_date ? new Date(data.end_date).toLocaleDateString() : undefined,
+          instructorName: data.instructor_first_name ? `${data.instructor_first_name} ${data.instructor_last_name}` : undefined,
+          location: data.location as string || undefined,
+          totalHours: data.total_hours as number || undefined,
+        }).catch(err => logger.error('Failed to send registration confirmation email', err));
+      }
     }
 
     return NextResponse.json({

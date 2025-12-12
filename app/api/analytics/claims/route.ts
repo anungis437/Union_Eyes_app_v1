@@ -54,7 +54,7 @@ async function handler(req: NextRequest) {
     `);
 
     const analytics = {
-      totalClaims: Number(result.rows[0]?.total_claims || 0),
+      totalClaims: Number((result as any)[0]?.total_claims || 0),
       period: { startDate, endDate }
     };
 
