@@ -220,6 +220,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Create organization
+    // Build hierarchy path
+    let hierarchyPath: string[] = [];
+    if (body.parentId) {
+      const [parentOrg] = await db
+        .select({ hierarchyPath: organizations.hierarchyPath })
+        .from(organizations)
+        .where(eq(organizations.id, body.parentId))
+        .limit(1);
+      if (parentOrg) {
+        hierarchyPath = [...parentOrg.hierarchyPath, body.slug];
+      } else {
+        hierarchyPath = [body.slug];
+      }
+    } else {
+      hierarchyPath = [body.slug];
+    }
+
     const newOrg = await createOrganization({
       name: body.name,
       slug: body.slug,
@@ -227,6 +244,8 @@ export async function POST(request: NextRequest) {
       shortName: body.shortName || null,
       organizationType: body.organizationType,
       parentId: body.parentId || null,
+      hierarchyPath,
+      hierarchyLevel: hierarchyPath.length - 1,
       jurisdiction: body.jurisdiction || null,
       provinceTerritory: body.provinceTerritory || null,
       sectors: body.sectors || [],

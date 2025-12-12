@@ -59,22 +59,12 @@ export async function getOrganizationById(
 ): Promise<SelectOrganization | null> {
   try {
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(eq(organizations.id, id))
       .limit(1);
 
-    return (result[0] as SelectOrganization | undefined) ?? null;
+    return result[0] ?? null;
   } catch (error) {
     console.error("Error fetching organization by ID:", error);
     throw new Error(`Failed to fetch organization with ID ${id}`);
@@ -100,22 +90,12 @@ export async function getOrganizationBySlug(
 ): Promise<SelectOrganization | null> {
   try {
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(eq(organizations.slug, slug))
       .limit(1);
 
-    return (result[0] as SelectOrganization | undefined) ?? null;
+    return result[0] ?? null;
   } catch (error) {
     console.error("Error fetching organization by slug:", error);
     throw new Error(`Failed to fetch organization with slug "${slug}"`);
@@ -136,43 +116,23 @@ export async function getOrganizationWithParent(
   try {
     // Get the organization first
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(eq(organizations.id, id))
       .limit(1);
 
-    const org = (result[0] as SelectOrganization | undefined) ?? null;
+    const org = result[0] ?? null;
     if (!org) return null;
 
     // Get parent if exists
     if (org.parentId) {
       const parentResult = await db
-        .select({
-          id: organizations.id,
-          name: organizations.name,
-          slug: organizations.slug,
-          type: organizations.organizationType,
-          parentId: organizations.parentId,
-          hierarchyPath: organizations.hierarchyPath,
-          hierarchyLevel: organizations.hierarchyLevel,
-          createdAt: organizations.createdAt,
-          updatedAt: organizations.updatedAt,
-        })
+        .select()
         .from(organizations)
         .where(eq(organizations.id, org.parentId))
         .limit(1);
       
-      const parent = (parentResult[0] as SelectOrganization | undefined) ?? undefined;
+      const parent = parentResult[0] ?? undefined;
       return { ...org, parent };
     }
 
@@ -226,22 +186,12 @@ export async function getOrganizations(
     }
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(and(...conditions))
       .orderBy(asc(organizations.name));
     
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error fetching organizations:", error);
     throw new Error(`Failed to fetch organizations${parentId ? ` for parent ${parentId}` : ""}`);
@@ -273,22 +223,12 @@ export async function getOrganizationChildren(
     }
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(and(...conditions))
       .orderBy(asc(organizations.name));
 
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error fetching organization children:", error);
     throw new Error(`Failed to fetch children for organization ${parentId}`);
@@ -328,17 +268,7 @@ export async function getOrganizationDescendants(
     }
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(and(...conditions))
       .orderBy(
@@ -346,7 +276,7 @@ export async function getOrganizationDescendants(
         asc(organizations.name)
       );
     
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error fetching organization descendants:", error);
     throw new Error(`Failed to fetch descendants for organization ${ancestorId}`);
@@ -376,17 +306,7 @@ export async function getOrganizationAncestors(
     
     // Try to find by slug first (more common in API routes)
     const [childBySlug] = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(eq(organizations.slug, childIdOrSlug))
       .limit(1);
@@ -396,17 +316,7 @@ export async function getOrganizationAncestors(
     } else {
       // Fall back to finding by UUID
       const [childById] = await db
-        .select({
-          id: organizations.id,
-          name: organizations.name,
-          slug: organizations.slug,
-          type: organizations.organizationType,
-          parentId: organizations.parentId,
-          hierarchyPath: organizations.hierarchyPath,
-          hierarchyLevel: organizations.hierarchyLevel,
-          createdAt: organizations.createdAt,
-          updatedAt: organizations.updatedAt,
-        })
+        .select()
         .from(organizations)
         .where(eq(organizations.id, childIdOrSlug))
         .limit(1);
@@ -419,22 +329,12 @@ export async function getOrganizationAncestors(
 
     // Query all ancestors using slugs from hierarchy_path (hierarchyPath contains slugs, not UUIDs)
     const ancestors = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(inArray(organizations.slug, child.hierarchyPath))
       .orderBy(asc(organizations.hierarchyLevel));
 
-    return ancestors as SelectOrganization[];
+    return ancestors;
   } catch (error) {
     console.error("Error fetching organization ancestors:", error);
     throw new Error(`Failed to fetch ancestors for organization ${childIdOrSlug}`);
@@ -478,22 +378,12 @@ export async function getOrganizationTree(
       if (maxDepth !== undefined) {
         // Get root level first
         const rootResult = await db
-          .select({
-            id: organizations.id,
-            name: organizations.name,
-            slug: organizations.slug,
-            type: organizations.organizationType,
-            parentId: organizations.parentId,
-            hierarchyPath: organizations.hierarchyPath,
-            hierarchyLevel: organizations.hierarchyLevel,
-            createdAt: organizations.createdAt,
-            updatedAt: organizations.updatedAt,
-          })
+          .select()
           .from(organizations)
           .where(eq(organizations.id, rootId))
           .limit(1);
 
-        const root = (rootResult[0] as SelectOrganization | undefined);
+        const root = rootResult[0];
         if (root) {
           conditions.push(
             sql`${organizations.hierarchyLevel} <= ${root.hierarchyLevel + maxDepth}`
@@ -506,17 +396,7 @@ export async function getOrganizationTree(
     }
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(and(...conditions))
       .orderBy(
@@ -524,7 +404,7 @@ export async function getOrganizationTree(
         asc(organizations.name)
       );
     
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error fetching organization tree:", error);
     throw new Error("Failed to fetch organization tree");
@@ -628,17 +508,7 @@ export async function searchOrganizations(
     const pattern = `%${searchTerm.toLowerCase()}%`;
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(
         and(
@@ -653,7 +523,7 @@ export async function searchOrganizations(
       .orderBy(asc(organizations.hierarchyLevel), asc(organizations.name))
       .limit(limit);
     
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error searching organizations:", error);
     throw new Error(`Failed to search organizations with term "${searchTerm}"`);
@@ -663,12 +533,12 @@ export async function searchOrganizations(
 /**
  * Get organizations by type
  * 
- * @param type - Organization type (congress, federation, union, local, chapter, sector_council)
+ * @param type - Organization type (congress, federation, union, local, region, district)
  * @param parentId - Optional parent filter
  * @returns Array of organizations of specified type
  */
 export async function getOrganizationsByType(
-  type: string,
+  type: 'congress' | 'federation' | 'union' | 'local' | 'region' | 'district',
   parentId?: string
 ): Promise<SelectOrganization[]> {
   try {
@@ -682,22 +552,12 @@ export async function getOrganizationsByType(
     }
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(and(...conditions))
       .orderBy(asc(organizations.name));
     
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error fetching organizations by type:", error);
     throw new Error(`Failed to fetch organizations of type "${type}"`);
@@ -724,22 +584,12 @@ export async function getCLCAffiliatedOrganizations(
     }
 
     const result = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        type: organizations.organizationType,
-        parentId: organizations.parentId,
-        hierarchyPath: organizations.hierarchyPath,
-        hierarchyLevel: organizations.hierarchyLevel,
-        createdAt: organizations.createdAt,
-        updatedAt: organizations.updatedAt,
-      })
+      .select()
       .from(organizations)
       .where(and(...conditions))
       .orderBy(asc(organizations.hierarchyLevel), asc(organizations.name));
     
-    return result as SelectOrganization[];
+    return result;
   } catch (error) {
     console.error("Error fetching CLC-affiliated organizations:", error);
     throw new Error("Failed to fetch CLC-affiliated organizations");

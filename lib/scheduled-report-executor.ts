@@ -330,9 +330,10 @@ async function generateExportFile(
     case 'json':
       return generateJSON(data);
     case 'excel':
-      return generateExcel(data);
+    case 'xlsx':
+      return await generateExcel(data);
     case 'pdf':
-      return generatePDF(data);
+      return await generatePDF(data);
     default:
       throw new Error(`Unsupported export format: ${format}`);
   }
@@ -379,37 +380,264 @@ function generateJSON(data: ReportData): Buffer {
 }
 
 /**
- * Generate Excel file (XLSX)
- * Note: In production, use a library like 'exceljs'
+ * Generate Excel file (XLSX) using exceljs
  */
-function generateExcel(data: ReportData): Buffer {
-  // For now, return CSV format
-  // TODO: Implement proper Excel generation with exceljs
-  return generateCSV(data);
+async function generateExcel(data: ReportData): Promise<Buffer> {
+  try {
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    
+    workbook.creator = 'UnionEyes Report System';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+
+    const worksheet = workbook.addWorksheet('Report', {
+      headerFooter: {
+        firstHeader: 'UnionEyes Report',
+        firstFooter: `Generated: ${new Date().toLocaleDateString()}`,
+      },
+    });
+
+    // Add header row with styling
+    worksheet.columns = data.columns.map(col => ({
+      header: formatColumnHeader(col),
+      key: col,
+      width: Math.max(15, col.length + 5),
+    }));
+
+    // Style header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF2563EB' }, // Blue header
+    };
+    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    headerRow.height = 25;
+
+    // Add data rows
+    data.rows.forEach((row, index) => {
+      const dataRow = worksheet.addRow(row);
+      
+      // Alternate row colors
+      if (index % 2 === 1) {
+        dataRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF3F4F6' }, // Light gray
+        };
+      }
+    });
+
+    // Add borders to all cells
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+          left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+          bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+          right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        };
+      });
+    });
+
+    // Auto-fit columns based on content
+    worksheet.columns.forEach(column => {
+      if (column.values) {
+        let maxLength = 10;
+        column.values.forEach(value => {
+          if (value) {
+            const len = String(value).length;
+            if (len > maxLength) maxLength = Math.min(len, 50);
+          }
+        });
+        column.width = maxLength + 2;
+      }
+    });
+
+    // Add summary row
+    const summaryRow = worksheet.addRow([]);
+    const totalRow = worksheet.addRow([`Total Records: ${data.totalCount}`, '', '', `Generated: ${new Date().toISOString()}`]);
+    totalRow.font = { italic: true, color: { argb: 'FF6B7280' } };
+
+    // Generate buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  } catch (error) {
+    console.error('[Excel] Error generating Excel file:', error);
+    // Fallback to CSV if Excel generation fails
+    return generateCSV(data);
+  }
 }
 
 /**
- * Generate PDF file
- * Note: In production, use a library like 'pdfkit' or 'puppeteer'
+ * Format column header for display
  */
-function generatePDF(data: ReportData): Buffer {
-  // For now, return a simple text representation
-  // TODO: Implement proper PDF generation
-  const lines = [
-    'Report Generated: ' + new Date().toISOString(),
-    '',
-    'Total Records: ' + data.totalCount,
-    '',
-    data.columns.join(' | '),
-    '-'.repeat(80),
-  ];
+function formatColumnHeader(col: string): string {
+  return col
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
 
-  data.rows.slice(0, 100).forEach(row => {
-    const values = data.columns.map(col => String(row[col] || ''));
-    lines.push(values.join(' | '));
-  });
+/**
+ * Generate PDF file using jspdf
+ */
+async function generatePDF(data: ReportData): Promise<Buffer> {
+  try {
+    const { jsPDF } = await import('jspdf');
+    
+    // Create PDF document
+    const doc = new jsPDF({
+      orientation: data.columns.length > 6 ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
 
-  return Buffer.from(lines.join('\n'), 'utf-8');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const usableWidth = pageWidth - (2 * margin);
+    let currentY = margin;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(37, 99, 235); // Blue
+    doc.text('UnionEyes Report', margin, currentY);
+    currentY += 10;
+
+    // Metadata
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(107, 114, 128); // Gray
+    doc.text(`Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, margin, currentY);
+    currentY += 5;
+    doc.text(`Total Records: ${data.totalCount}`, margin, currentY);
+    currentY += 10;
+
+    // Divider line
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 8;
+
+    // Calculate column widths
+    const colCount = Math.min(data.columns.length, 8); // Limit columns for readability
+    const displayColumns = data.columns.slice(0, colCount);
+    const colWidth = usableWidth / colCount;
+
+    // Table header
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(37, 99, 235);
+    doc.rect(margin, currentY - 4, usableWidth, 8, 'F');
+    
+    displayColumns.forEach((col, index) => {
+      const headerText = formatColumnHeader(col);
+      const truncatedHeader = headerText.length > 12 ? headerText.substring(0, 12) + '...' : headerText;
+      doc.text(truncatedHeader, margin + (index * colWidth) + 2, currentY);
+    });
+    currentY += 8;
+
+    // Table rows
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(31, 41, 55);
+    
+    const maxRows = Math.min(data.rows.length, 50); // Limit rows per page
+    
+    for (let i = 0; i < maxRows; i++) {
+      // Check if we need a new page
+      if (currentY > pageHeight - 25) {
+        doc.addPage();
+        currentY = margin;
+        
+        // Repeat header on new page
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.setFillColor(37, 99, 235);
+        doc.rect(margin, currentY - 4, usableWidth, 8, 'F');
+        
+        displayColumns.forEach((col, index) => {
+          const headerText = formatColumnHeader(col);
+          const truncatedHeader = headerText.length > 12 ? headerText.substring(0, 12) + '...' : headerText;
+          doc.text(truncatedHeader, margin + (index * colWidth) + 2, currentY);
+        });
+        currentY += 8;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(31, 41, 55);
+      }
+
+      // Alternate row background
+      if (i % 2 === 1) {
+        doc.setFillColor(249, 250, 251);
+        doc.rect(margin, currentY - 4, usableWidth, 6, 'F');
+      }
+
+      const row = data.rows[i];
+      doc.setFontSize(8);
+      
+      displayColumns.forEach((col, colIndex) => {
+        let value = row[col];
+        if (value === null || value === undefined) value = '-';
+        value = String(value);
+        
+        // Truncate long values
+        const maxLen = Math.floor(colWidth / 2);
+        if (value.length > maxLen) {
+          value = value.substring(0, maxLen - 3) + '...';
+        }
+        
+        doc.text(value, margin + (colIndex * colWidth) + 2, currentY);
+      });
+      
+      currentY += 6;
+    }
+
+    // Footer
+    currentY = pageHeight - 15;
+    doc.setFontSize(8);
+    doc.setTextColor(156, 163, 175);
+    doc.text(`Page 1 of ${doc.getNumberOfPages()}`, pageWidth / 2, currentY, { align: 'center' });
+    doc.text('UnionEyes - Union Management Platform', margin, currentY);
+
+    // Return as buffer
+    const pdfOutput = doc.output('arraybuffer');
+    return Buffer.from(pdfOutput);
+  } catch (error) {
+    console.error('[PDF] Error generating PDF file:', error);
+    // Fallback to text representation
+    const lines = [
+      '='.repeat(80),
+      'UnionEyes Report',
+      '='.repeat(80),
+      '',
+      `Generated: ${new Date().toISOString()}`,
+      `Total Records: ${data.totalCount}`,
+      '',
+      '-'.repeat(80),
+      data.columns.map(c => formatColumnHeader(c)).join(' | '),
+      '-'.repeat(80),
+    ];
+
+    data.rows.slice(0, 100).forEach(row => {
+      const values = data.columns.map(col => {
+        const val = row[col];
+        return val === null || val === undefined ? '-' : String(val).substring(0, 20);
+      });
+      lines.push(values.join(' | '));
+    });
+
+    lines.push('-'.repeat(80));
+    lines.push(`Showing ${Math.min(data.rows.length, 100)} of ${data.totalCount} records`);
+
+    return Buffer.from(lines.join('\n'), 'utf-8');
+  }
 }
 
 // ============================================================================

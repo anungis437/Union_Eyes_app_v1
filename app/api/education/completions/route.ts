@@ -9,6 +9,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { sendCompletionCertificate } from '@/lib/email/training-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -227,9 +228,78 @@ export async function POST(request: NextRequest) {
       WHERE cs.id = (SELECT session_id FROM course_registrations WHERE id = ${registrationId})
     `);
 
+    // Auto-generate certificate PDF if passed and certification is provided
+    let certificateUrl = null;
+    if (passed && registration.provides_certification) {
+      try {
+        // Call certificate generation endpoint
+        const certGenResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/education/certifications/generate?registrationId=${registrationId}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (certGenResponse.ok) {
+          const certData = await certGenResponse.json();
+          certificateUrl = certData.certificateUrl;
+          certificateNumber = certData.certificateNumber;
+          logger.info('Certificate auto-generated on completion', {
+            registrationId,
+            certificateUrl,
+            certificationId: certData.certificationId,
+          });
+        } else {
+          logger.warn('Failed to auto-generate certificate', {
+            registrationId,
+            status: certGenResponse.status,
+          });
+        }
+      } catch (certError) {
+        logger.error('Error auto-generating certificate', certError as Error, {
+          registrationId,
+        });
+        // Don't fail the completion if certificate generation fails
+      }
+    }
+
+    // Send completion email (non-blocking)
+    if (passed) {
+      const emailData = await db.execute(sql`
+        SELECT 
+          m.email, m.first_name, m.last_name,
+          c.course_name, c.course_code, c.total_hours, c.continuing_education_hours, c.clc_approved
+        FROM course_registrations cr
+        JOIN members m ON m.id = cr.member_id
+        JOIN training_courses c ON c.id = cr.course_id
+        WHERE cr.id = ${registrationId}
+      `);
+
+      if (emailData.length > 0) {
+        const data = emailData[0] as Record<string, any>;
+        sendCompletionCertificate({
+          toEmail: String(data.email || ''),
+          memberName: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+          courseName: String(data.course_name || ''),
+          courseCode: String(data.course_code || 'N/A'),
+          completionDate: completionDate ? new Date(completionDate).toLocaleDateString() : new Date().toLocaleDateString(),
+          finalGrade: finalGrade || undefined,
+          totalHours: data.total_hours ? Number(data.total_hours) : undefined,
+          certificateNumber: certificateNumber || `CERT-${registrationId.substring(0, 8).toUpperCase()}`,
+          certificateUrl: certificateUrl || `${process.env.NEXT_PUBLIC_APP_URL}/education/certificates`,
+          continuingEducationHours: data.continuing_education_hours ? Number(data.continuing_education_hours) : undefined,
+          clcApproved: Boolean(data.clc_approved),
+        }).catch(err => logger.error('Failed to send completion certificate email', err));
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: result[0],
+      certificateUrl,
       message: certificateIssued 
         ? 'Course completed and certificate issued successfully' 
         : 'Course completion recorded successfully',

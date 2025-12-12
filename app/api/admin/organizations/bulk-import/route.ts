@@ -20,6 +20,9 @@ import { createOrganization } from "@/db/queries/organization-queries";
 import { eq } from "drizzle-orm";
 
 // Type definitions for import
+type Jurisdiction = "federal" | "AB" | "BC" | "MB" | "NB" | "NL" | "NS" | "NT" | "NU" | "ON" | "PE" | "QC" | "SK" | "YT";
+type LabourSector = "healthcare" | "education" | "public_service" | "trades" | "manufacturing" | "transportation" | "retail" | "hospitality" | "technology" | "construction" | "utilities" | "telecommunications" | "financial_services" | "agriculture" | "arts_culture" | "other";
+
 interface ImportRow {
   name: string;
   slug: string;
@@ -27,7 +30,7 @@ interface ImportRow {
   shortName?: string;
   organizationType: "congress" | "federation" | "union" | "local" | "region" | "district";
   parentSlug?: string;
-  jurisdiction?: string;
+  jurisdiction?: Jurisdiction;
   provinceTerritory?: string;
   sectors?: string;
   email?: string;
@@ -269,23 +272,40 @@ export async function POST(request: NextRequest) {
 
         // Parse sectors from comma-separated string
         const sectors = row.sectors
-          ? row.sectors.split(",").map((s) => s.trim())
-          : [];
+          ? row.sectors.split(",").map((s) => s.trim()) as LabourSector[]
+          : [] as LabourSector[];
 
         // Build address object if any address fields provided
         let address = null;
         if (row.addressLine1 || row.city || row.postalCode) {
           address = {
-            line1: row.addressLine1 || "",
-            line2: row.addressLine2 || "",
+            street: row.addressLine1 || "",
+            unit: row.addressLine2 || "",
             city: row.city || "",
-            provinceState: row.provinceState || "",
-            postalCode: row.postalCode || "",
+            province: row.provinceState || "",
+            postal_code: row.postalCode || "",
             country: row.country || "Canada",
           };
         }
 
         // Create organization
+        // Build hierarchy path - if parent exists, get its hierarchy and add current slug
+        let hierarchyPath: string[] = [];
+        if (parentId) {
+          const parentOrg = await db
+            .select({ hierarchyPath: organizations.hierarchyPath })
+            .from(organizations)
+            .where(eq(organizations.id, parentId))
+            .limit(1);
+          if (parentOrg.length > 0) {
+            hierarchyPath = [...parentOrg[0].hierarchyPath, row.slug];
+          } else {
+            hierarchyPath = [row.slug];
+          }
+        } else {
+          hierarchyPath = [row.slug];
+        }
+
         const newOrg = await createOrganization({
           name: row.name,
           slug: row.slug,
@@ -293,6 +313,8 @@ export async function POST(request: NextRequest) {
           shortName: row.shortName || null,
           organizationType: row.organizationType,
           parentId,
+          hierarchyPath,
+          hierarchyLevel: hierarchyPath.length - 1,
           jurisdiction: row.jurisdiction || null,
           provinceTerritory: row.provinceTerritory || null,
           sectors,
@@ -301,7 +323,7 @@ export async function POST(request: NextRequest) {
           website: row.website || null,
           address,
           clcAffiliated: row.clcAffiliated || false,
-          affiliationDate: row.affiliationDate ? new Date(row.affiliationDate) : null,
+          affiliationDate: row.affiliationDate || null,
           charterNumber: row.charterNumber || null,
           subscriptionTier: row.subscriptionTier || "basic",
           status: row.status || "active",

@@ -825,3 +825,221 @@ COMMENT ON FUNCTION calculate_campaign_health_score IS 'Calculates campaign heal
 
 COMMENT ON VIEW v_organizing_campaign_dashboard IS 'Campaign dashboard with real-time metrics and progress indicators';
 COMMENT ON VIEW v_workplace_contact_map IS 'Workplace contact map for visualization with support levels and committee status';
+
+-- =====================================================================================
+-- ADDITIONAL DATABASE FUNCTIONS (API SUPPORT)
+-- =====================================================================================
+
+-- Function: Validate card check threshold
+-- Called by: /api/organizing/card-check
+-- Purpose: Validates whether campaign has reached required card signing thresholds
+CREATE OR REPLACE FUNCTION validate_card_check_threshold(
+  p_campaign_id UUID,
+  p_validation_date DATE DEFAULT CURRENT_DATE
+) RETURNS TABLE (
+  is_valid BOOLEAN,
+  total_contacts INTEGER,
+  cards_signed INTEGER,
+  support_percentage DECIMAL(5,2),
+  threshold_met BOOLEAN,
+  super_majority_met BOOLEAN,
+  required_percentage DECIMAL(5,2),
+  super_majority_percentage DECIMAL(5,2),
+  validation_message TEXT,
+  cards_needed_for_threshold INTEGER,
+  cards_needed_for_super_majority INTEGER
+) AS $$
+DECLARE
+  v_campaign RECORD;
+  v_cards_signed INTEGER;
+  v_total_contacts INTEGER;
+  v_support_pct DECIMAL(5,2);
+  v_threshold_met BOOLEAN;
+  v_super_majority_met BOOLEAN;
+  v_cards_needed_threshold INTEGER;
+  v_cards_needed_super INTEGER;
+BEGIN
+  -- Get campaign details
+  SELECT * INTO v_campaign 
+  FROM organizing_campaigns 
+  WHERE id = p_campaign_id;
+  
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT 
+      false AS is_valid,
+      0 AS total_contacts,
+      0 AS cards_signed,
+      0.00 AS support_percentage,
+      false AS threshold_met,
+      false AS super_majority_met,
+      0.00 AS required_percentage,
+      0.00 AS super_majority_percentage,
+      'Campaign not found' AS validation_message,
+      0 AS cards_needed_for_threshold,
+      0 AS cards_needed_for_super_majority;
+    RETURN;
+  END IF;
+  
+  -- Count total contacts
+  SELECT COUNT(*) INTO v_total_contacts 
+  FROM organizing_contacts 
+  WHERE campaign_id = p_campaign_id
+  AND card_revoked = false;
+  
+  IF v_total_contacts = 0 THEN
+    RETURN QUERY SELECT 
+      true AS is_valid,
+      0 AS total_contacts,
+      0 AS cards_signed,
+      0.00 AS support_percentage,
+      false AS threshold_met,
+      false AS super_majority_met,
+      COALESCE(v_campaign.card_signing_threshold_percentage, 40.00) AS required_percentage,
+      COALESCE(v_campaign.super_majority_threshold_percentage, 65.00) AS super_majority_percentage,
+      'No contacts in campaign - begin workplace outreach' AS validation_message,
+      0 AS cards_needed_for_threshold,
+      0 AS cards_needed_for_super_majority;
+    RETURN;
+  END IF;
+  
+  -- Count cards signed
+  SELECT COUNT(*) INTO v_cards_signed
+  FROM organizing_contacts
+  WHERE campaign_id = p_campaign_id 
+  AND card_signed = true
+  AND card_signed_date <= p_validation_date
+  AND card_revoked = false;
+  
+  -- Calculate support percentage
+  v_support_pct := (v_cards_signed::DECIMAL / v_total_contacts * 100)::DECIMAL(5,2);
+  
+  -- Check thresholds
+  v_threshold_met := v_support_pct >= COALESCE(v_campaign.card_signing_threshold_percentage, 40.00);
+  v_super_majority_met := v_support_pct >= COALESCE(v_campaign.super_majority_threshold_percentage, 65.00);
+  
+  -- Calculate cards needed
+  v_cards_needed_threshold := GREATEST(0, 
+    CEIL(v_total_contacts * COALESCE(v_campaign.card_signing_threshold_percentage, 40.00) / 100.0)::INTEGER - v_cards_signed
+  );
+  
+  v_cards_needed_super := GREATEST(0,
+    CEIL(v_total_contacts * COALESCE(v_campaign.super_majority_threshold_percentage, 65.00) / 100.0)::INTEGER - v_cards_signed
+  );
+  
+  RETURN QUERY SELECT 
+    true AS is_valid,
+    v_total_contacts,
+    v_cards_signed,
+    v_support_pct AS support_percentage,
+    v_threshold_met AS threshold_met,
+    v_super_majority_met AS super_majority_met,
+    COALESCE(v_campaign.card_signing_threshold_percentage, 40.00) AS required_percentage,
+    COALESCE(v_campaign.super_majority_threshold_percentage, 65.00) AS super_majority_percentage,
+    CASE 
+      WHEN v_super_majority_met THEN 'Super majority achieved - ready to file certification application'
+      WHEN v_threshold_met THEN 'Minimum threshold met - continue organizing to achieve super majority for stronger position'
+      ELSE 'Below threshold - need ' || v_cards_needed_threshold || ' more cards to reach ' || 
+           COALESCE(v_campaign.card_signing_threshold_percentage, 40.00) || '% threshold'
+    END AS validation_message,
+    v_cards_needed_threshold AS cards_needed_for_threshold,
+    v_cards_needed_super AS cards_needed_for_super_majority;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function: Calculate support percentage
+-- Called by: /api/organizing/support-percentage
+-- Purpose: Calculates current support percentage for a campaign as of a specific date
+CREATE OR REPLACE FUNCTION calculate_support_percentage(
+  p_campaign_id UUID,
+  p_as_of_date DATE DEFAULT CURRENT_DATE
+) RETURNS DECIMAL(5,2) AS $$
+DECLARE
+  v_total INTEGER;
+  v_signed INTEGER;
+BEGIN
+  -- Count total contacts (exclude revoked)
+  SELECT COUNT(*) INTO v_total
+  FROM organizing_contacts
+  WHERE campaign_id = p_campaign_id
+  AND card_revoked = false;
+  
+  IF v_total = 0 THEN
+    RETURN 0.00;
+  END IF;
+  
+  -- Count cards signed by specified date
+  SELECT COUNT(*) INTO v_signed
+  FROM organizing_contacts
+  WHERE campaign_id = p_campaign_id
+  AND card_signed = true
+  AND card_signed_date <= p_as_of_date
+  AND card_revoked = false;
+  
+  RETURN (v_signed::DECIMAL / v_total * 100)::DECIMAL(5,2);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function: Get campaign card signing trend
+-- Purpose: Returns historical card signing data for trend analysis
+CREATE OR REPLACE FUNCTION get_campaign_card_signing_trend(
+  p_campaign_id UUID,
+  p_start_date DATE DEFAULT NULL,
+  p_end_date DATE DEFAULT CURRENT_DATE
+) RETURNS TABLE (
+  signing_date DATE,
+  cumulative_cards INTEGER,
+  daily_cards_signed INTEGER,
+  support_percentage DECIMAL(5,2)
+) AS $$
+DECLARE
+  v_launch_date DATE;
+  v_total_contacts INTEGER;
+BEGIN
+  -- Get campaign launch date if start date not provided
+  IF p_start_date IS NULL THEN
+    SELECT campaign_launch_date INTO v_launch_date
+    FROM organizing_campaigns
+    WHERE id = p_campaign_id;
+    
+    p_start_date := COALESCE(v_launch_date, CURRENT_DATE - INTERVAL '90 days');
+  END IF;
+  
+  -- Get total contacts
+  SELECT COUNT(*) INTO v_total_contacts
+  FROM organizing_contacts
+  WHERE campaign_id = p_campaign_id
+  AND card_revoked = false;
+  
+  IF v_total_contacts = 0 THEN
+    v_total_contacts := 1; -- Prevent division by zero
+  END IF;
+  
+  RETURN QUERY
+  WITH date_series AS (
+    SELECT generate_series(p_start_date, p_end_date, '1 day'::INTERVAL)::DATE AS signing_date
+  ),
+  daily_signings AS (
+    SELECT 
+      card_signed_date AS signing_date,
+      COUNT(*) AS daily_count
+    FROM organizing_contacts
+    WHERE campaign_id = p_campaign_id
+    AND card_signed = true
+    AND card_signed_date BETWEEN p_start_date AND p_end_date
+    AND card_revoked = false
+    GROUP BY card_signed_date
+  )
+  SELECT 
+    ds.signing_date,
+    SUM(COALESCE(daily.daily_count, 0)) OVER (ORDER BY ds.signing_date)::INTEGER AS cumulative_cards,
+    COALESCE(daily.daily_count, 0)::INTEGER AS daily_cards_signed,
+    (SUM(COALESCE(daily.daily_count, 0)) OVER (ORDER BY ds.signing_date)::DECIMAL / v_total_contacts * 100)::DECIMAL(5,2) AS support_percentage
+  FROM date_series ds
+  LEFT JOIN daily_signings daily ON daily.signing_date = ds.signing_date
+  ORDER BY ds.signing_date;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+COMMENT ON FUNCTION validate_card_check_threshold IS 'Validates card check threshold with detailed metrics - called by /api/organizing/card-check';
+COMMENT ON FUNCTION calculate_support_percentage IS 'Calculates support percentage as of specific date - called by /api/organizing/support-percentage';
+COMMENT ON FUNCTION get_campaign_card_signing_trend IS 'Returns historical card signing trend data for analytics and visualization';
