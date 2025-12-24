@@ -47,7 +47,7 @@ export async function POST(
       .where(
         and(
           eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.tenantId, user.tenantId)
+          eq(newsletterCampaigns.organizationId, user.tenantId)
         )
       );
 

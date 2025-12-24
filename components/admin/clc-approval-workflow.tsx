@@ -7,7 +7,7 @@
  * Displays approval timeline, history, and provides approval/rejection actions.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,11 +68,7 @@ export function CLCApprovalWorkflow({
   const [rejectionComment, setRejectionComment] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadWorkflowState();
-  }, [remittanceId]);
-
-  const loadWorkflowState = async () => {
+  const loadWorkflowState = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -91,7 +87,11 @@ export function CLCApprovalWorkflow({
     } finally {
       setLoading(false);
     }
-  };
+  }, [remittanceId, userId]);
+
+  useEffect(() => {
+    loadWorkflowState();
+  }, [loadWorkflowState]);
 
   const handleApprove = async () => {
     if (!workflowState?.currentLevel) return;

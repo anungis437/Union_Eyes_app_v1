@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       `,
         { count: 'exact' }
       )
-      .eq('tenant_id', orgId);
+      .eq('organization_id', orgId);
 
     // Apply filters
     if (status) {
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
     const { data: campaign, error } = await supabase
       .from('social_campaigns')
       .insert({
-        tenant_id: orgId,
+        organization_id: orgId,
         name,
         description,
         platforms,
@@ -264,7 +264,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    if (orgId !== campaign.tenant_id) {
+    if (orgId !== campaign.organization_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -367,7 +367,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    if (orgId !== campaign.tenant_id) {
+    if (orgId !== campaign.organization_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

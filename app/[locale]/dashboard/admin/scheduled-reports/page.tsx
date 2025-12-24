@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
@@ -57,11 +57,7 @@ export default function ScheduledReportsPage() {
   const [editingSchedule, setEditingSchedule] = useState<ScheduledReport | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
-  useEffect(() => {
-    fetchSchedules();
-  }, [filter]);
-
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -79,7 +75,11 @@ export default function ScheduledReportsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchSchedules();
+  }, [fetchSchedules]);
 
   const handleToggleActive = async (schedule: ScheduledReport) => {
     try {

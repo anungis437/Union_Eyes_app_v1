@@ -144,7 +144,7 @@ export type SignatureData = {
 
 export const grievanceWorkflows = pgTable("grievance_workflows", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   
@@ -168,7 +168,7 @@ export const grievanceWorkflows = pgTable("grievance_workflows", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_workflows_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_workflows_organization").on(table.organizationId),
   typeIdx: index("idx_grievance_workflows_type").on(table.grievanceType),
   statusIdx: index("idx_grievance_workflows_status").on(table.status),
 }));
@@ -179,7 +179,7 @@ export const grievanceWorkflows = pgTable("grievance_workflows", {
 
 export const grievanceStages = pgTable("grievance_stages", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   workflowId: uuid("workflow_id").references(() => grievanceWorkflows.id, { onDelete: "cascade" }),
   
   // Stage details
@@ -212,7 +212,7 @@ export const grievanceStages = pgTable("grievance_stages", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_stages_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_stages_organization").on(table.organizationId),
   workflowIdx: index("idx_grievance_stages_workflow").on(table.workflowId),
   typeIdx: index("idx_grievance_stages_type").on(table.stageType),
   orderIdx: index("idx_grievance_stages_order").on(table.workflowId, table.orderIndex),
@@ -224,7 +224,7 @@ export const grievanceStages = pgTable("grievance_stages", {
 
 export const grievanceTransitions = pgTable("grievance_transitions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   
   // Transition details
@@ -249,7 +249,7 @@ export const grievanceTransitions = pgTable("grievance_transitions", {
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_transitions_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_transitions_organization").on(table.organizationId),
   claimIdx: index("idx_grievance_transitions_claim").on(table.claimId),
   fromStageIdx: index("idx_grievance_transitions_from_stage").on(table.fromStageId),
   toStageIdx: index("idx_grievance_transitions_to_stage").on(table.toStageId),
@@ -262,7 +262,7 @@ export const grievanceTransitions = pgTable("grievance_transitions", {
 
 export const grievanceAssignments = pgTable("grievance_assignments", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   
   // Assignment details
@@ -287,7 +287,7 @@ export const grievanceAssignments = pgTable("grievance_assignments", {
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_assignments_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_assignments_organization").on(table.organizationId),
   claimIdx: index("idx_grievance_assignments_claim").on(table.claimId),
   assignedToIdx: index("idx_grievance_assignments_assigned_to").on(table.assignedTo),
   statusIdx: index("idx_grievance_assignments_status").on(table.status),
@@ -300,7 +300,7 @@ export const grievanceAssignments = pgTable("grievance_assignments", {
 
 export const grievanceDocuments = pgTable("grievance_documents", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   
   // Document details
@@ -349,7 +349,7 @@ export const grievanceDocuments = pgTable("grievance_documents", {
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_documents_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_documents_organization").on(table.organizationId),
   claimIdx: index("idx_grievance_documents_claim").on(table.claimId),
   typeIdx: index("idx_grievance_documents_type").on(table.documentType),
   versionIdx: index("idx_grievance_documents_version").on(table.parentDocumentId, table.version),
@@ -363,7 +363,7 @@ export const grievanceDocuments = pgTable("grievance_documents", {
 
 export const grievanceDeadlines = pgTable("grievance_deadlines", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   stageId: uuid("stage_id").references(() => grievanceStages.id),
   
@@ -413,7 +413,7 @@ export const grievanceDeadlines = pgTable("grievance_deadlines", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_deadlines_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_deadlines_organization").on(table.organizationId),
   claimIdx: index("idx_grievance_deadlines_claim").on(table.claimId),
   stageIdx: index("idx_grievance_deadlines_stage").on(table.stageId),
   dateIdx: index("idx_grievance_deadlines_date").on(table.deadlineDate),
@@ -426,7 +426,7 @@ export const grievanceDeadlines = pgTable("grievance_deadlines", {
 
 export const grievanceSettlements = pgTable("grievance_settlements", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   
   // Settlement details
@@ -486,7 +486,7 @@ export const grievanceSettlements = pgTable("grievance_settlements", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_settlements_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_settlements_organization").on(table.organizationId),
   claimIdx: index("idx_grievance_settlements_claim").on(table.claimId),
   statusIdx: index("idx_grievance_settlements_status").on(table.status),
   typeIdx: index("idx_grievance_settlements_type").on(table.settlementType),
@@ -499,7 +499,7 @@ export const grievanceSettlements = pgTable("grievance_settlements", {
 
 export const grievanceCommunications = pgTable("grievance_communications", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   
   // Communication details
@@ -540,7 +540,7 @@ export const grievanceCommunications = pgTable("grievance_communications", {
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index("idx_grievance_communications_tenant").on(table.tenantId),
+  organizationIdx: index("idx_grievance_communications_organization").on(table.organizationId),
   claimIdx: index("idx_grievance_communications_claim").on(table.claimId),
   typeIdx: index("idx_grievance_communications_type").on(table.communicationType),
   dateIdx: index("idx_grievance_communications_date").on(table.communicationDate),

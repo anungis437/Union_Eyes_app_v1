@@ -107,8 +107,8 @@ export async function processWeeklyStipends(params: {
         memberId: picketAttendance.memberId,
         checkInTime: picketAttendance.checkInTime,
         hoursWorked: picketAttendance.hoursWorked,
-        approved: picketAttendance.approved,
-        memberName: members.name,
+        coordinatorOverride: picketAttendance.coordinatorOverride,
+        memberName: sql<string>`CONCAT(${members.firstName}, ' ', ${members.lastName})`,
         memberEmail: members.email,
         userId: members.userId,
       })
@@ -117,9 +117,9 @@ export async function processWeeklyStipends(params: {
       .where(
         and(
           eq(picketAttendance.tenantId, tenantId),
-          gte(picketAttendance.checkInTime, new Date(weekStartDate)),
-          lte(picketAttendance.checkInTime, new Date(weekEndDate)),
-          eq(picketAttendance.approved, true) // Only process approved attendance
+          gte(picketAttendance.checkInTime, new Date(weekStartDate).toISOString()),
+          lte(picketAttendance.checkInTime, new Date(weekEndDate).toISOString()),
+          eq(picketAttendance.coordinatorOverride, true) // Only process approved attendance
         )
       )
       .orderBy(picketAttendance.memberId, picketAttendance.checkInTime);
@@ -377,7 +377,7 @@ export async function processDisbursements(params: {
         // TODO: Integrate with Stripe for actual payment processing
         // For now, simulate successful disbursement
         
-        const amount = parseFloat(stipend.approvedAmount || stipend.calculatedAmount);
+        const amount = parseFloat(stipend.totalAmount);
         
         // Simulate Stripe transfer
         logger.info('Would process Stripe transfer', {
@@ -391,9 +391,9 @@ export async function processDisbursements(params: {
           .update(stipendDisbursements)
           .set({
             status: 'disbursed',
-            disbursedAt: new Date(),
+            paymentDate: new Date(),
             notes: `Stripe transfer: txn_simulated_12345`,
-          })
+          } as any)
           .where(eq(stipendDisbursements.id, stipend.id));
 
         disbursed++;
@@ -411,7 +411,7 @@ export async function processDisbursements(params: {
           .set({
             status: 'failed',
             notes: `Error: ${String(disbursementError)}`,
-          })
+          } as any)
           .where(eq(stipendDisbursements.id, stipend.id));
 
         failed++;

@@ -66,7 +66,11 @@ router.post('/queue', async (req: Request, res: Response) => {
 
     const notificationId = await queueNotification({
       tenantId,
-      ...body,
+      userId: body.userId,
+      type: body.type,
+      channels: body.channels,
+      priority: body.priority,
+      data: body.data,
       scheduledFor: body.scheduledFor ? new Date(body.scheduledFor) : undefined,
     });
 

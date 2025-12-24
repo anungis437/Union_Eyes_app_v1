@@ -1,19 +1,19 @@
-import { pgTable, uuid, varchar, text, boolean, timestamp, integer, jsonb, pgPolicy } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, boolean, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { tenants } from './tenants';
-import { users } from './users';
+import { tenants as organizations } from '../../../../db/schema/tenant-management-schema';
+import { profiles } from '../../../../db/schema/profiles-schema';
 
 // Newsletter templates
 export const newsletterTemplates = pgTable('newsletter_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   thumbnailUrl: text('thumbnail_url'),
   htmlContent: text('html_content').notNull(),
   jsonContent: jsonb('json_content'),
   isDefault: boolean('is_default').default(false),
-  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdBy: uuid('created_by').notNull().references(() => profiles.userId),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
@@ -21,7 +21,7 @@ export const newsletterTemplates = pgTable('newsletter_templates', {
 // Newsletters
 export const newsletters = pgTable('newsletters', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.tenantId, { onDelete: 'cascade' }),
   templateId: uuid('template_id').references(() => newsletterTemplates.id, { onDelete: 'set null' }),
   subject: varchar('subject', { length: 500 }).notNull(),
   previewText: varchar('preview_text', { length: 255 }),
@@ -39,7 +39,7 @@ export const newsletters = pgTable('newsletters', {
   openCount: integer('open_count').default(0),
   clickCount: integer('click_count').default(0),
   unsubscribeCount: integer('unsubscribe_count').default(0),
-  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdBy: uuid('created_by').notNull().references(() => profiles.userId),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
@@ -48,7 +48,7 @@ export const newsletters = pgTable('newsletters', {
 export const newsletterRecipients = pgTable('newsletter_recipients', {
   id: uuid('id').primaryKey().defaultRandom(),
   newsletterId: uuid('newsletter_id').notNull().references(() => newsletters.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').references(() => profiles.userId, { onDelete: 'cascade' }),
   email: varchar('email', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
   status: varchar('status', { length: 50 }).notNull().default('pending'),

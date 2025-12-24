@@ -50,7 +50,7 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
           .where(
             and(
               eq(organizationMembers.userId, userId),
-              eq(organizationMembers.tenantId, DEFAULT_ORGANIZATION_ID)
+              eq(organizationMembers.organizationId, DEFAULT_ORGANIZATION_ID)
             )
           )
           .limit(1);
@@ -65,12 +65,12 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
         
         // Otherwise, verify user has explicit membership in this organization
         const userOrg = await db
-          .select({ tenantId: organizationMembers.tenantId })
+          .select({ tenantId: organizationMembers.organizationId })
           .from(organizationMembers)
           .where(
             and(
               eq(organizationMembers.userId, userId),
-              eq(organizationMembers.tenantId, org[0].id)
+              eq(organizationMembers.organizationId, org[0].id)
             )
           )
           .limit(1);
@@ -83,7 +83,7 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
     
     // Get user's first organization (primary/default) - return UUID
     const userOrgs = await db
-      .select({ tenantId: organizationMembers.tenantId })
+      .select({ tenantId: organizationMembers.organizationId })
       .from(organizationMembers)
       .where(eq(organizationMembers.userId, userId))
       .limit(1);

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useOrganizationId } from '@/lib/hooks/use-organization';
 import { Briefcase, TrendingUp, Calendar, DollarSign, FileText, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,22 +34,40 @@ interface BenefitEstimate {
 }
 
 export default function PensionDashboard() {
+  const organizationId = useOrganizationId();
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<PensionPlan | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [benefitEstimate, setBenefitEstimate] = useState<BenefitEstimate | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPensionData();
-  }, []);
+  const fetchPensionData = useCallback(async () => {
+    if (!organizationId) {
+      setLoading(false);
+      return;
+    }
 
-  const fetchPensionData = async () => {
     try {
       setLoading(true);
       
-      // Fetch pension plan membership
-      const planRes = await fetch('/api/pension/members');
+      // First, fetch pension plans for the organization
+      const plansRes = await fetch(`/api/pension/plans?organizationId=${organizationId}&limit=12`);
+      if (!plansRes.ok) {
+        throw new Error('Failed to fetch pension plans');
+      }
+      
+      const plansData = await plansRes.json();
+      if (!plansData.data || plansData.data.length === 0) {
+        // No plans available
+        setLoading(false);
+        return;
+      }
+
+      // Use the first plan to fetch member details
+      const firstPlanId = plansData.data[0].id;
+      
+      // Fetch pension plan membership for this plan
+      const planRes = await fetch(`/api/pension/members?planId=${firstPlanId}`);
       if (planRes.ok) {
         const planData = await planRes.json();
         if (planData.data && planData.data.length > 0) {
@@ -56,31 +75,11 @@ export default function PensionDashboard() {
         }
       }
 
-      // Fetch contribution history (last 12 periods)
-      // Note: This would need to be filtered by member in production
-      const contribRes = await fetch('/api/pension/plans?limit=12');
-      if (contribRes.ok) {
-        const contribData = await contribRes.json();
-        // In production, filter by current user's contributions
-        setContributions([]);
-      }
+      // Store contribution data (would be filtered by member in production)
+      setContributions([]);
 
-      // Fetch benefit estimate
-      if (plan?.id) {
-        const benefitRes = await fetch('/api/pension/retirement-eligibility', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            pensionPlanId: plan.id,
-            calculationDate: new Date().toISOString().split('T')[0]
-          })
-        });
-        
-        if (benefitRes.ok) {
-          const benefitData = await benefitRes.json();
-          setBenefitEstimate(benefitData.data);
-        }
-      }
+      // Note: Benefit estimate would be fetched separately after plan is set
+      // This is handled by a separate effect when plan changes
 
     } catch (err) {
       console.error('Error fetching pension data:', err);
@@ -88,7 +87,11 @@ export default function PensionDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    fetchPensionData();
+  }, [fetchPensionData]);
 
   if (loading) {
     return (

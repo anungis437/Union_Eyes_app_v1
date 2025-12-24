@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
@@ -67,11 +67,7 @@ export default function EquityDashboard({ organizationId }: EquityDashboardProps
   const [error, setError] = useState<string | null>(null);
   const [insufficientData, setInsufficientData] = useState(false);
 
-  useEffect(() => {
-    fetchEquityData();
-  }, [organizationId]);
-
-  const fetchEquityData = async () => {
+  const fetchEquityData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -104,7 +100,11 @@ export default function EquityDashboard({ organizationId }: EquityDashboardProps
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    fetchEquityData();
+  }, [fetchEquityData]);
 
   const generateSnapshot = async () => {
     try {

@@ -41,11 +41,14 @@ export async function GET(request: NextRequest) {
     const toDate = searchParams.get("toDate") || new Date().toISOString();
     const organizationType = searchParams.get("organizationType");
     const resourceType = searchParams.get("resourceType");
+    const sharingLevel = searchParams.get("sharingLevel");
     const limit = parseInt(searchParams.get("limit") || "10");
+    
+    console.log('[org-activity] Request params:', { fromDate, toDate, organizationType, resourceType, sharingLevel, limit });
 
     // Build WHERE conditions for access logs
     const accessLogConditions = [
-      gte(crossOrgAccessLog.accessedAt, new Date(fromDate))
+      gte(crossOrgAccessLog.createdAt, new Date(fromDate))
     ];
 
     if (resourceType) {
@@ -53,11 +56,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Most active organizations (by access count)
-    const mostActiveOrgs = await db
+    // Most active organizations - simplified to avoid join issues
+    const mostActiveOrgsData = await db
       .select({
         organizationId: crossOrgAccessLog.userOrganizationId,
-        organizationName: sql<string>`org.name`,
-        organizationLevel: sql<string>`org.organization_level`,
         totalAccesses: sql<number>`count(*)::int`,
         clauseAccesses: sql<number>`sum(case when ${crossOrgAccessLog.resourceType} = 'clause' then 1 else 0 end)::int`,
         precedentAccesses: sql<number>`sum(case when ${crossOrgAccessLog.resourceType} = 'precedent' then 1 else 0 end)::int`,
@@ -67,42 +69,164 @@ export async function GET(request: NextRequest) {
         citations: sql<number>`sum(case when ${crossOrgAccessLog.accessType} = 'cite' then 1 else 0 end)::int`,
       })
       .from(crossOrgAccessLog)
-      .leftJoin(
-        sql`organizations org`,
-        sql`org.id = ${crossOrgAccessLog.userOrganizationId}`
-      )
       .where(and(...accessLogConditions))
-      .groupBy(crossOrgAccessLog.userOrganizationId, sql`org.name`, sql`org.organization_level`)
+      .groupBy(crossOrgAccessLog.userOrganizationId)
       .orderBy(desc(sql`count(*)`))
       .limit(limit);
+    
+    // Get organization names for most active orgs
+    let mostActiveOrgs: any[] = [];
+    if (mostActiveOrgsData.length > 0) {
+      const activeOrgIds = mostActiveOrgsData.map(o => o.organizationId).filter(Boolean);
+      if (activeOrgIds.length > 0) {
+        const idList = activeOrgIds.map(id => `'${id}'`).join(',');
+        const orgResult = await db.execute(sql.raw(`
+          SELECT id, name, organization_type as \"organizationType\" 
+          FROM organizations 
+          WHERE id = ANY(ARRAY[${idList}]::uuid[])
+        `));
+        const orgData = new Map(((orgResult.rows || []) as any[]).map(o => [o.id, o]));
+        
+        mostActiveOrgs = mostActiveOrgsData.map(o => {
+          const org = orgData.get(o.organizationId);
+          return {
+            ...o,
+            organizationName: org?.name || 'Unknown',
+            organizationType: org?.organizationType || null,
+          };
+        });
+      }
+    }
 
     // Top resource contributors (organizations sharing the most)
-    const topContributors = await db
+    const fromDateObj = new Date(fromDate);
+    
+    // Query clauses separately
+    const clausesConditions = [gte(sharedClauseLibrary.createdAt, fromDateObj)];
+    if (sharingLevel) {
+      clausesConditions.push(eq(sharedClauseLibrary.sharingLevel, sharingLevel));
+    }
+    
+    const clausesData = await db
       .select({
-        organizationId: sql<string>`org.id`,
-        organizationName: sql<string>`org.name`,
-        organizationLevel: sql<string>`org.organization_level`,
-        totalClauses: sql<number>`count(distinct ${sharedClauseLibrary.id})::int`,
-        totalPrecedents: sql<number>`count(distinct ${arbitrationPrecedents.id})::int`,
-        totalResources: sql<number>`(count(distinct ${sharedClauseLibrary.id}) + count(distinct ${arbitrationPrecedents.id}))::int`,
-        clauseViews: sql<number>`sum(${sharedClauseLibrary.viewCount})::int`,
-        precedentViews: sql<number>`sum(${arbitrationPrecedents.viewCount})::int`,
-        clauseCitations: sql<number>`sum(${sharedClauseLibrary.citationCount})::int`,
-        precedentCitations: sql<number>`sum(${arbitrationPrecedents.citationCount})::int`,
+        sourceOrgId: sharedClauseLibrary.sourceOrganizationId,
+        id: sharedClauseLibrary.id,
+        viewCount: sharedClauseLibrary.viewCount,
+        citationCount: sharedClauseLibrary.citationCount,
       })
-      .from(sql`organizations org`)
-      .leftJoin(
-        sharedClauseLibrary,
-        sql`${sharedClauseLibrary.sourceOrganizationId} = org.id AND ${sharedClauseLibrary.createdAt} >= ${new Date(fromDate)}`
-      )
-      .leftJoin(
-        arbitrationPrecedents,
-        sql`${arbitrationPrecedents.sourceOrganizationId} = org.id AND ${arbitrationPrecedents.createdAt} >= ${new Date(fromDate)}`
-      )
-      .groupBy(sql`org.id`, sql`org.name`, sql`org.organization_level`)
-      .having(sql`(count(distinct ${sharedClauseLibrary.id}) + count(distinct ${arbitrationPrecedents.id})) > 0`)
-      .orderBy(desc(sql`(count(distinct ${sharedClauseLibrary.id}) + count(distinct ${arbitrationPrecedents.id}))`))
-      .limit(limit);
+      .from(sharedClauseLibrary)
+      .where(and(...clausesConditions));
+    
+    console.log('[org-activity] clausesData count:', clausesData.length);
+    console.log('[org-activity] clausesData sample:', clausesData[0]);
+
+    // Query precedents separately
+    const precedentsConditions = [gte(arbitrationPrecedents.createdAt, fromDateObj)];
+    if (sharingLevel) {
+      precedentsConditions.push(eq(arbitrationPrecedents.sharingLevel, sharingLevel));
+    }
+    
+    const precedentsData = await db
+      .select({
+        sourceOrgId: arbitrationPrecedents.sourceOrganizationId,
+        id: arbitrationPrecedents.id,
+        viewCount: arbitrationPrecedents.viewCount,
+        citationCount: arbitrationPrecedents.citationCount,
+      })
+      .from(arbitrationPrecedents)
+      .where(and(...precedentsConditions));
+    
+    console.log('[org-activity] precedentsData count:', precedentsData.length);
+    console.log('[org-activity] precedentsData sample:', precedentsData[0]);
+
+    // Aggregate by organization ID
+    const orgStats = new Map<string, {
+      totalClauses: number;
+      totalPrecedents: number;
+      clauseViews: number;
+      precedentViews: number;
+      clauseCitations: number;
+      precedentCitations: number;
+    }>();
+
+    // Process clauses
+    clausesData.forEach(clause => {
+      if (!clause.sourceOrgId) return;
+      const existing = orgStats.get(clause.sourceOrgId) || {
+        totalClauses: 0,
+        totalPrecedents: 0,
+        clauseViews: 0,
+        precedentViews: 0,
+        clauseCitations: 0,
+        precedentCitations: 0,
+      };
+      existing.totalClauses++;
+      existing.clauseViews += clause.viewCount || 0;
+      existing.clauseCitations += clause.citationCount || 0;
+      orgStats.set(clause.sourceOrgId, existing);
+    });
+
+    // Process precedents
+    precedentsData.forEach(precedent => {
+      if (!precedent.sourceOrgId) return;
+      const existing = orgStats.get(precedent.sourceOrgId) || {
+        totalClauses: 0,
+        totalPrecedents: 0,
+        clauseViews: 0,
+        precedentViews: 0,
+        clauseCitations: 0,
+        precedentCitations: 0,
+      };
+      existing.totalPrecedents++;
+      existing.precedentViews += precedent.viewCount || 0;
+      existing.precedentCitations += precedent.citationCount || 0;
+      orgStats.set(precedent.sourceOrgId, existing);
+    });
+
+    // Get organization details using raw SQL to avoid Drizzle issues
+    const contributorOrgIds = Array.from(orgStats.keys());
+    console.log('[org-activity] contributorOrgIds:', contributorOrgIds.length, contributorOrgIds.slice(0, 3));
+    
+    let contributorOrgs: Array<{id: string, name: string, organizationType: string | null}> = [];
+    if (contributorOrgIds.length > 0) {
+      const idList = contributorOrgIds.map(id => `'${id}'`).join(',');
+      console.log('[org-activity] Executing SQL with idList:', idList);
+      const result = await db.execute(sql.raw(`
+        SELECT id, name, organization_type as "organizationType"
+        FROM organizations
+        WHERE id = ANY(ARRAY[${idList}]::uuid[])
+      `));
+      contributorOrgs = (result.rows || []) as Array<{id: string, name: string, organizationType: string | null}>;
+    }
+    console.log('[org-activity] contributorOrgs fetched:', contributorOrgs.length);
+    console.log('[org-activity] contributorOrgs sample:', contributorOrgs[0]);
+
+    const orgMap = new Map(contributorOrgs.map(o => [o.id, o]));
+
+    // Combine and format results
+    const topContributorsData = Array.from(orgStats.entries())
+      .map(([orgId, stats]) => {
+        const org = orgMap.get(orgId);
+        return {
+          organizationId: orgId,
+          organizationName: org?.name || 'Unknown',
+          organizationType: org?.organizationType || null,
+          totalClauses: stats.totalClauses,
+          totalPrecedents: stats.totalPrecedents,
+          totalResources: stats.totalClauses + stats.totalPrecedents,
+          clauseViews: stats.clauseViews,
+          precedentViews: stats.precedentViews,
+          clauseCitations: stats.clauseCitations,
+          precedentCitations: stats.precedentCitations,
+        };
+      })
+      .filter(item => item.totalResources > 0)
+      .sort((a, b) => b.totalResources - a.totalResources)
+      .slice(0, limit);
+
+    const topContributors = topContributorsData;
+    console.log('[org-activity] topContributors final count:', topContributors.length);
+    console.log('[org-activity] topContributors sample:', topContributors[0]);
 
     // Access type breakdown
     const accessTypeBreakdown = await db
@@ -131,66 +255,149 @@ export async function GET(request: NextRequest) {
       .groupBy(crossOrgAccessLog.resourceType)
       .orderBy(desc(sql`count(*)`));
 
-    // Cross-organization collaboration patterns
-    const collaborationPatterns = await db
+    // Cross-organization collaboration patterns - simplified to avoid join issues
+    const collaborationData = await db
       .select({
-        userOrg: sql<string>`user_org.name`,
-        resourceOwnerOrg: sql<string>`owner_org.name`,
+        userOrganizationId: crossOrgAccessLog.userOrganizationId,
+        resourceOrganizationId: crossOrgAccessLog.resourceOrganizationId,
         accessCount: sql<number>`count(*)::int`,
         resourceTypes: sql<string[]>`array_agg(distinct ${crossOrgAccessLog.resourceType})`,
         accessTypes: sql<string[]>`array_agg(distinct ${crossOrgAccessLog.accessType})`,
       })
       .from(crossOrgAccessLog)
-      .leftJoin(
-        sql`organizations user_org`,
-        sql`user_org.id = ${crossOrgAccessLog.userOrganizationId}`
-      )
-      .leftJoin(
-        sql`organizations owner_org`,
-        sql`owner_org.id = ${crossOrgAccessLog.resourceOwnerOrgId}`
-      )
       .where(
         and(
           ...accessLogConditions,
-          sql`${crossOrgAccessLog.userOrganizationId} != ${crossOrgAccessLog.resourceOwnerOrgId}`
+          sql`${crossOrgAccessLog.userOrganizationId} != ${crossOrgAccessLog.resourceOrganizationId}`
         )
       )
-      .groupBy(sql`user_org.name`, sql`owner_org.name`)
+      .groupBy(
+        crossOrgAccessLog.userOrganizationId,
+        crossOrgAccessLog.resourceOrganizationId
+      )
       .orderBy(desc(sql`count(*)`))
       .limit(20);
+    
+    // Get organization names if we have collaboration data
+    let collaborationPatterns: any[] = [];
+    if (collaborationData.length > 0) {
+      const orgIds = [...new Set([
+        ...collaborationData.map(c => c.userOrganizationId),
+        ...collaborationData.map(c => c.resourceOrganizationId)
+      ].filter(Boolean))];
+      
+      if (orgIds.length > 0) {
+        const idList = orgIds.map(id => `'${id}'`).join(',');
+        const orgResult = await db.execute(sql.raw(`
+          SELECT id, name FROM organizations WHERE id = ANY(ARRAY[${idList}]::uuid[])
+        `));
+        const orgNames = new Map(((orgResult.rows || []) as any[]).map(o => [o.id, o.name]));
+        
+        collaborationPatterns = collaborationData.map(c => ({
+          userOrg: orgNames.get(c.userOrganizationId) || 'Unknown',
+          resourceOwnerOrg: orgNames.get(c.resourceOrganizationId) || 'Unknown',
+          accessCount: c.accessCount,
+          resourceTypes: c.resourceTypes,
+          accessTypes: c.accessTypes,
+        }));
+      }
+    }
 
-    // Sharing settings adoption
-    const sharingAdoption = await db
-      .select({
-        clauseSharingEnabled: sql<number>`sum(case when ${organizationSharingSettings.enableClauseSharing} then 1 else 0 end)::int`,
-        precedentSharingEnabled: sql<number>`sum(case when ${organizationSharingSettings.enablePrecedentSharing} then 1 else 0 end)::int`,
-        analyticsSharingEnabled: sql<number>`sum(case when ${organizationSharingSettings.enableAnalyticsSharing} then 1 else 0 end)::int`,
-        totalOrgs: sql<number>`count(*)::int`,
-        autoAnonymize: sql<number>`sum(case when ${organizationSharingSettings.autoAnonymizeClauses} then 1 else 0 end)::int`,
-        alwaysRedact: sql<number>`sum(case when ${organizationSharingSettings.alwaysRedactMemberNames} then 1 else 0 end)::int`,
-      })
+    // Sharing settings adoption - using separate count queries
+    const totalOrgsResult = await db
+      .select({ count: sql<number>`count(*)::int` })
       .from(organizationSharingSettings);
+    
+    const clauseSharingResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationSharingSettings)
+      .where(eq(organizationSharingSettings.autoShareClauses, true));
+    
+    const precedentSharingResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationSharingSettings)
+      .where(eq(organizationSharingSettings.autoSharePrecedents, true));
+    
+    const analyticsSharingResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationSharingSettings)
+      .where(eq(organizationSharingSettings.enableAnalyticsSharing, true));
+    
+    const autoAnonymizeResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationSharingSettings)
+      .where(eq(organizationSharingSettings.autoAnonymizeClauses, true));
+    
+    const alwaysRedactResult = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(organizationSharingSettings)
+      .where(eq(organizationSharingSettings.alwaysRedactMemberNames, true));
+    
+    const sharingAdoption = [{
+      clauseSharingEnabled: clauseSharingResult[0]?.count || 0,
+      precedentSharingEnabled: precedentSharingResult[0]?.count || 0,
+      analyticsSharingEnabled: analyticsSharingResult[0]?.count || 0,
+      totalOrgs: totalOrgsResult[0]?.count || 0,
+      autoAnonymize: autoAnonymizeResult[0]?.count || 0,
+      alwaysRedact: alwaysRedactResult[0]?.count || 0,
+    }];
 
-    // Organization level breakdown
-    const orgLevelBreakdown = await db
+    // Organization type breakdown - using separate queries to avoid join issues
+    const allOrgsBreakdown = await db
       .select({
-        organizationLevel: sql<string>`org.organization_level`,
-        totalOrgs: sql<number>`count(distinct org.id)::int`,
-        totalAccesses: sql<number>`count(${crossOrgAccessLog.id})::int`,
-        avgAccessesPerOrg: sql<number>`(count(${crossOrgAccessLog.id})::numeric / nullif(count(distinct org.id), 0))::numeric(10,2)`,
+        organizationType: organizations.organizationType,
+        orgCount: sql<number>`count(*)::int`,
       })
-      .from(sql`organizations org`)
-      .leftJoin(
-        crossOrgAccessLog,
-        sql`${crossOrgAccessLog.userOrganizationId} = org.id AND ${crossOrgAccessLog.accessedAt} >= ${new Date(fromDate)}`
-      )
-      .groupBy(sql`org.organization_level`)
-      .orderBy(desc(sql`count(${crossOrgAccessLog.id})`));
+      .from(organizations)
+      .groupBy(organizations.organizationType);
+    
+    // Get access logs with organization IDs
+    const accessLogsRaw = await db
+      .select({
+        userOrganizationId: crossOrgAccessLog.userOrganizationId,
+      })
+      .from(crossOrgAccessLog)
+      .where(gte(crossOrgAccessLog.createdAt, fromDateObj));
+    
+    // Count accesses by organization
+    const accessCountByOrg = new Map<string, number>();
+    accessLogsRaw.forEach(log => {
+      if (log.userOrganizationId) {
+        accessCountByOrg.set(log.userOrganizationId, (accessCountByOrg.get(log.userOrganizationId) || 0) + 1);
+      }
+    });
+    
+    // Get org types for accessed orgs
+    const accessedOrgIds = Array.from(accessCountByOrg.keys());
+    let orgTypes = new Map<string, string | null>();
+    if (accessedOrgIds.length > 0) {
+      const idList = accessedOrgIds.map(id => `'${id}'`).join(',');
+      const orgTypesResult = await db.execute(sql.raw(`
+        SELECT id, organization_type FROM organizations WHERE id = ANY(ARRAY[${idList}]::uuid[])
+      `));
+      orgTypes = new Map(((orgTypesResult.rows || []) as any[]).map(o => [o.id, o.organization_type]));
+    }
+    
+    // Aggregate by org type
+    const accessByType = new Map<string | null, number>();
+    accessCountByOrg.forEach((count, orgId) => {
+      const orgType = orgTypes.get(orgId);
+      accessByType.set(orgType, (accessByType.get(orgType) || 0) + count);
+    });
+    
+    const orgLevelBreakdownData = allOrgsBreakdown.map(org => ({
+      organizationType: org.organizationType,
+      totalOrgs: org.orgCount,
+      totalAccesses: accessByType.get(org.organizationType) || 0,
+      avgAccessesPerOrg: org.orgCount > 0 
+        ? Number(((accessByType.get(org.organizationType) || 0) / org.orgCount).toFixed(2))
+        : 0
+    }));
 
     // Daily activity trend (last 30 days)
     const dailyActivity = await db
       .select({
-        date: sql<string>`date_trunc('day', ${crossOrgAccessLog.accessedAt})::date`,
+        date: sql<string>`date_trunc('day', ${crossOrgAccessLog.createdAt})::date`,
         totalAccesses: sql<number>`count(*)::int`,
         uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.userId})::int`,
         uniqueOrgs: sql<number>`count(distinct ${crossOrgAccessLog.userOrganizationId})::int`,
@@ -198,9 +405,9 @@ export async function GET(request: NextRequest) {
         precedentAccesses: sql<number>`sum(case when ${crossOrgAccessLog.resourceType} = 'precedent' then 1 else 0 end)::int`,
       })
       .from(crossOrgAccessLog)
-      .where(gte(crossOrgAccessLog.accessedAt, new Date(fromDate)))
-      .groupBy(sql`date_trunc('day', ${crossOrgAccessLog.accessedAt})`)
-      .orderBy(sql`date_trunc('day', ${crossOrgAccessLog.accessedAt})`);
+      .where(gte(crossOrgAccessLog.createdAt, new Date(fromDate)))
+      .groupBy(sql`date_trunc('day', ${crossOrgAccessLog.createdAt})`)
+      .orderBy(sql`date_trunc('day', ${crossOrgAccessLog.createdAt})`);
 
     // Overall statistics
     const totalStats = await db
@@ -208,8 +415,8 @@ export async function GET(request: NextRequest) {
         totalAccesses: sql<number>`count(*)::int`,
         uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.userId})::int`,
         uniqueAccessorOrgs: sql<number>`count(distinct ${crossOrgAccessLog.userOrganizationId})::int`,
-        uniqueResourceOwners: sql<number>`count(distinct ${crossOrgAccessLog.resourceOwnerOrgId})::int`,
-        totalCrossOrgAccesses: sql<number>`sum(case when ${crossOrgAccessLog.userOrganizationId} != ${crossOrgAccessLog.resourceOwnerOrgId} then 1 else 0 end)::int`,
+        uniqueResourceOwners: sql<number>`count(distinct ${crossOrgAccessLog.resourceOrganizationId})::int`,
+        totalCrossOrgAccesses: sql<number>`sum(case when ${crossOrgAccessLog.userOrganizationId} != ${crossOrgAccessLog.resourceOrganizationId} then 1 else 0 end)::int`,
       })
       .from(crossOrgAccessLog)
       .where(and(...accessLogConditions));
@@ -237,10 +444,14 @@ export async function GET(request: NextRequest) {
         autoAnonymize: 0,
         alwaysRedact: 0,
       },
-      orgLevelBreakdown,
+      orgLevelBreakdown: orgLevelBreakdownData,
       dailyActivity,
     });
+    
+    console.log('[org-activity] SUCCESS - Sending response with contributors:', topContributors.length);
   } catch (error) {
+    console.error('[org-activity] ERROR:', error);
+    console.error('[org-activity] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     logger.error('Error fetching org activity stats', error as Error, {
       correlationId: request.headers.get('x-correlation-id')
     });

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,12 +93,7 @@ export default function ApprenticeshipPortal({
   const [mentors, setMentors] = useState<Record<string, MentorInfo>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEnrollments();
-    fetchCourses();
-  }, [organizationId, memberId]);
-
-  const fetchEnrollments = async () => {
+  const fetchEnrollments = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -145,9 +140,9 @@ export default function ApprenticeshipPortal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, memberId, mentors]);
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/education/courses?organizationId=${organizationId}`
@@ -159,7 +154,12 @@ export default function ApprenticeshipPortal({
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    fetchEnrollments();
+    fetchCourses();
+  }, [fetchEnrollments, fetchCourses]);
 
   const fetchMentorInfo = async (mentorId: string) => {
     try {

@@ -50,9 +50,9 @@ async function queueNotification(request) {
         priority,
         data: JSON.stringify(data),
         status: 'pending',
-        scheduledFor: scheduledFor || new Date(),
+        scheduledFor: (scheduledFor || new Date()).toISOString(),
         attempts: '0',
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
     }).returning();
     return notification.id;
 }

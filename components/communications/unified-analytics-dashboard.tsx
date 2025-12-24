@@ -6,7 +6,7 @@
  * Provides comprehensive insights with time-series charts, channel comparison, and export capabilities
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -177,11 +177,7 @@ export default function UnifiedAnalyticsDashboard() {
   // DATA FETCHING
   // =============================================
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [dateRange, customStartDate, customEndDate]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -203,7 +199,11 @@ export default function UnifiedAnalyticsDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange, customStartDate, customEndDate]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   // =============================================
   // COMPUTED DATA

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Calendar, Clock, MapPin, Users, Video, Plus, Edit, Trash2, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,17 +88,7 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
     registrationCapacity: "",
   });
 
-  // Fetch courses
-  useEffect(() => {
-    fetchCourses();
-  }, [organizationId]);
-
-  // Fetch sessions
-  useEffect(() => {
-    fetchSessions();
-  }, [organizationId, filterStatus, filterCourse]);
-
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const response = await fetch(`/api/education/courses?organizationId=${organizationId}`);
       const data = await response.json();
@@ -107,9 +97,9 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
       console.error("Error fetching courses:", error);
       toast.error("Failed to load courses");
     }
-  };
+  }, [organizationId]);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       setLoading(true);
       let url = `/api/education/sessions?organizationId=${organizationId}`;
@@ -130,7 +120,17 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, filterStatus, filterCourse]);
+
+  // Fetch courses
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  // Fetch sessions
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleCreateSession = async () => {
     try {

@@ -322,6 +322,7 @@ export class DuesCalculationEngine {
           ruleId: calculation.ruleId,
           transactionType: 'payment',
           amount: calculation.amount.toString(),
+          duesAmount: calculation.amount.toString(), // Base dues amount
           lateFeeAmount: '0.00',
           totalAmount: calculation.amount.toString(),
           periodStart: periodStart.toISOString().split('T')[0],

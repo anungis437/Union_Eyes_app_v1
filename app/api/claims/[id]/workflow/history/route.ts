@@ -20,7 +20,7 @@ export async function GET(
     const claim = await db
       .select({
         id: claims.claimId,
-        tenantId: claims.tenantId,
+        tenantId: claims.organizationId,
         memberId: claims.memberId,
         assignedTo: claims.assignedTo,
       })

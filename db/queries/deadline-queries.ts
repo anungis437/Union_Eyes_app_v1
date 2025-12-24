@@ -246,18 +246,37 @@ export async function getPendingClaimDeadlines(claimId: string): Promise<ClaimDe
  * Get critical deadlines for organization (overdue + due within 3 days)
  */
 export async function getCriticalDeadlines(organizationId: string): Promise<any[]> {
-  const result = await db.execute(sql`
-    SELECT * FROM v_critical_deadlines
-    WHERE tenant_id = ${organizationId}
-    ORDER BY 
-      CASE 
-        WHEN is_overdue THEN 1
-        WHEN days_until_due = 0 THEN 2
-        ELSE 3
-      END,
-      due_date
-  `);
-  return result as any[];
+  try {
+    // Check if v_critical_deadlines view exists
+    const viewCheck = await db.execute(sql`
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.views 
+        WHERE table_schema = 'public' 
+        AND table_name = 'v_critical_deadlines'
+      ) as view_exists
+    `);
+    
+    if (!viewCheck[0]?.view_exists) {
+      console.log('[getCriticalDeadlines] v_critical_deadlines view does not exist, returning empty array');
+      return [];
+    }
+
+    const result = await db.execute(sql`
+      SELECT * FROM v_critical_deadlines
+      WHERE tenant_id = ${organizationId}
+      ORDER BY 
+        CASE 
+          WHEN is_overdue THEN 1
+          WHEN days_until_due = 0 THEN 2
+          ELSE 3
+        END,
+        due_date
+    `);
+    return result as any[];
+  } catch (error) {
+    console.error('[getCriticalDeadlines] Error:', error);
+    return [];
+  }
 }
 
 /**

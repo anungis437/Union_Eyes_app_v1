@@ -17,7 +17,7 @@ import {
   unique,
   index,
 } from 'drizzle-orm/pg-core';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // =============================================
@@ -58,9 +58,9 @@ export const pushDevices = pgTable(
   'push_devices',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     profileId: uuid('profile_id')
       .notNull()
       .references(() => profiles.userId, { onDelete: 'cascade' }),
@@ -85,7 +85,7 @@ export const pushDevices = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_push_devices_tenant').on(table.tenantId),
+    organizationIdx: index('idx_push_devices_organization').on(table.organizationId),
     profileIdx: index('idx_push_devices_profile').on(table.profileId),
     tokenIdx: index('idx_push_devices_token').on(table.deviceToken),
     platformIdx: index('idx_push_devices_platform').on(table.platform),
@@ -103,9 +103,9 @@ export const pushNotificationTemplates = pgTable(
   'push_notification_templates',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
 
     // Template information
     name: text('name').notNull(),
@@ -150,7 +150,7 @@ export const pushNotificationTemplates = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_push_templates_tenant').on(table.tenantId),
+    organizationIdx: index('idx_push_templates_organization').on(table.organizationId),
     categoryIdx: index('idx_push_templates_category').on(table.category),
     systemIdx: index('idx_push_templates_system').on(table.isSystem),
     createdIdx: index('idx_push_templates_created').on(table.createdAt),
@@ -165,9 +165,9 @@ export const pushNotifications = pgTable(
   'push_notifications',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
 
     // Campaign information
     name: text('name').notNull(),
@@ -227,7 +227,7 @@ export const pushNotifications = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantIdx: index('idx_push_notifications_tenant').on(table.tenantId),
+    organizationIdx: index('idx_push_notifications_organization').on(table.organizationId),
     templateIdx: index('idx_push_notifications_template').on(table.templateId),
     statusIdx: index('idx_push_notifications_status').on(table.status),
     scheduledIdx: index('idx_push_notifications_scheduled').on(table.scheduledAt),
@@ -293,9 +293,9 @@ export const pushDeliveries = pgTable(
 // =============================================
 
 export const pushDevicesRelations = relations(pushDevices, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [pushDevices.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [pushDevices.organizationId],
+    references: [organizations.id],
   }),
   profile: one(profiles, {
     fields: [pushDevices.profileId],
@@ -307,9 +307,9 @@ export const pushDevicesRelations = relations(pushDevices, ({ one, many }) => ({
 export const pushNotificationTemplatesRelations = relations(
   pushNotificationTemplates,
   ({ one, many }) => ({
-    tenant: one(tenants, {
-      fields: [pushNotificationTemplates.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [pushNotificationTemplates.organizationId],
+      references: [organizations.id],
     }),
     createdByProfile: one(profiles, {
       fields: [pushNotificationTemplates.createdBy],
@@ -320,9 +320,9 @@ export const pushNotificationTemplatesRelations = relations(
 );
 
 export const pushNotificationsRelations = relations(pushNotifications, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [pushNotifications.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [pushNotifications.organizationId],
+    references: [organizations.id],
   }),
   template: one(pushNotificationTemplates, {
     fields: [pushNotifications.templateId],

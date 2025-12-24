@@ -46,7 +46,7 @@ export async function GET(
 
     // Build query for logs where this org is the resource owner
     let query = supabase
-      .from("crossOrgAccessLog")
+      .from("cross_org_access_log")
       .select(
         `
         id,
@@ -104,7 +104,7 @@ export async function GET(
 
     // Calculate stats
     const { data: stats } = await supabase
-      .from("crossOrgAccessLog")
+      .from("cross_org_access_log")
       .select("access_type, resource_type")
       .eq("resource_owner_org_id", organizationId);
 

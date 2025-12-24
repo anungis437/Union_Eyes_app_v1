@@ -104,7 +104,7 @@ export const getDuesTransactionsByOrganization = async (
     const transactions = await db
       .select()
       .from(duesTransactions)
-      .where(eq(duesTransactions.organizationId, organizationId))
+      .where(eq(duesTransactions.tenantId, organizationId))
       .orderBy(desc(duesTransactions.dueDate));
 
     let filtered = transactions;
@@ -221,7 +221,7 @@ export const getOrganizationDuesSummary = async (organizationId: string) => {
     const transactions = await db
       .select()
       .from(duesTransactions)
-      .where(eq(duesTransactions.organizationId, organizationId));
+      .where(eq(duesTransactions.tenantId, organizationId));
 
     const pending = transactions.filter(t => t.status === 'pending');
     const overdue = transactions.filter(t => t.status === 'overdue');

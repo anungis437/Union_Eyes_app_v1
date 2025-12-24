@@ -27,7 +27,7 @@ import {
   inet,
 } from 'drizzle-orm/pg-core';
 import { profiles } from './profiles-schema';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -93,9 +93,9 @@ export const engagementEventEnum = pgEnum('newsletter_engagement_event', [
  */
 export const newsletterTemplates = pgTable('newsletter_templates', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   category: varchar('category', { length: 100 }),
@@ -121,9 +121,9 @@ export const newsletterDistributionLists = pgTable(
   'newsletter_distribution_lists',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
     listType: varchar('list_type', { length: 50 }).default('manual'),
@@ -168,9 +168,9 @@ export const newsletterListSubscribers = pgTable(
  */
 export const newsletterCampaigns = pgTable('newsletter_campaigns', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   templateId: uuid('template_id').references(() => newsletterTemplates.id, {
     onDelete: 'set null',
   }),
@@ -263,9 +263,9 @@ export const newsletterEngagement = pgTable('newsletter_engagement', {
 export const newsletterTemplatesRelations = relations(
   newsletterTemplates,
   ({ one, many }) => ({
-    tenant: one(tenants, {
-      fields: [newsletterTemplates.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [newsletterTemplates.organizationId],
+      references: [organizations.id],
     }),
     creator: one(profiles, {
       fields: [newsletterTemplates.createdBy],
@@ -278,9 +278,9 @@ export const newsletterTemplatesRelations = relations(
 export const newsletterDistributionListsRelations = relations(
   newsletterDistributionLists,
   ({ one, many }) => ({
-    tenant: one(tenants, {
-      fields: [newsletterDistributionLists.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [newsletterDistributionLists.organizationId],
+      references: [organizations.id],
     }),
     creator: one(profiles, {
       fields: [newsletterDistributionLists.createdBy],
@@ -307,9 +307,9 @@ export const newsletterListSubscribersRelations = relations(
 export const newsletterCampaignsRelations = relations(
   newsletterCampaigns,
   ({ one, many }) => ({
-    tenant: one(tenants, {
-      fields: [newsletterCampaigns.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [newsletterCampaigns.organizationId],
+      references: [organizations.id],
     }),
     template: one(newsletterTemplates, {
       fields: [newsletterCampaigns.templateId],

@@ -38,7 +38,6 @@ async function testPhase5AAPI() {
         id: organizationMembers.id,
         userId: organizationMembers.userId,
         organizationId: organizationMembers.organizationId,
-        tenantId: organizationMembers.tenantId,
         role: organizationMembers.role,
       })
       .from(organizationMembers)
@@ -46,15 +45,15 @@ async function testPhase5AAPI() {
     
     console.log(`   Found ${members.length} members:`);
     members.forEach(member => {
-      console.log(`   - User: ${member.userId}, Org: ${member.organizationId}, Tenant: ${member.tenantId}`);
+      console.log(`   - User: ${member.userId}, Org: ${member.organizationId}`);
     });
 
-    // Test 3: Query claims with tenantId
-    console.log('\n✅ Test 3: Query claims with tenantId field');
+    // Test 3: Query claims with organizationId
+    console.log('\n✅ Test 3: Query claims with organizationId field');
     const claimsData = await db
       .select({
         claimId: claims.claimId,
-        tenantId: claims.tenantId,
+        organizationId: claims.organizationId,
         status: claims.status,
         createdAt: claims.createdAt,
       })
@@ -63,11 +62,11 @@ async function testPhase5AAPI() {
     
     console.log(`   Found ${claimsData.length} claims:`);
     claimsData.forEach(claim => {
-      console.log(`   - Claim: ${claim.claimId}, Tenant: ${claim.tenantId}, Status: ${claim.status}`);
+      console.log(`   - Claim: ${claim.claimId}, Org: ${claim.organizationId}, Status: ${claim.status}`);
     });
 
     // Test 4: Join organizations with claims
-    console.log('\n✅ Test 4: Join organizations with claims via tenantId');
+    console.log('\n✅ Test 4: Join organizations with claims via organizationId');
     const orgClaims = await db
       .select({
         orgName: organizations.name,
@@ -75,7 +74,7 @@ async function testPhase5AAPI() {
         status: claims.status,
       })
       .from(organizations)
-      .innerJoin(claims, eq(claims.tenantId, organizations.id))
+      .innerJoin(claims, eq(claims.organizationId, organizations.id))
       .limit(5);
     
     console.log(`   Found ${orgClaims.length} organization-claim pairs:`);
@@ -92,7 +91,7 @@ async function testPhase5AAPI() {
         claimCount: sql<number>`count(${claims.claimId})::int`,
       })
       .from(organizations)
-      .leftJoin(claims, eq(claims.tenantId, organizations.id))
+      .leftJoin(claims, eq(claims.organizationId, organizations.id))
       .groupBy(organizations.id, organizations.name)
       .limit(10);
     
@@ -104,9 +103,9 @@ async function testPhase5AAPI() {
     // Test 6: Verify schema field names
     console.log('\n✅ Test 6: Verify schema field consistency');
     console.log('   ✓ organizations.id (UUID) - Primary key');
-    console.log('   ✓ claims.tenantId (UUID) - References organizations.id');
-    console.log('   ✓ organizationMembers.tenantId (UUID) - References organizations.id');
-    console.log('   ✓ Field naming: tenantId used consistently for organization references');
+    console.log('   ✓ claims.organizationId (UUID) - References organizations.id');
+    console.log('   ✓ organizationMembers.organizationId (UUID) - References organizations.id');
+    console.log('   ✓ Field naming: organizationId used for migrated tables');
 
     console.log('\n' + '='.repeat(60));
     console.log('✅ All Phase 5A API tests passed!\n');

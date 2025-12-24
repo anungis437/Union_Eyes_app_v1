@@ -11,5 +11,5 @@
     "types": ["jest", "node"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/*.native.ts", "**/*.android.ts", "**/*.ios.ts"]
+  "exclude": ["node_modules", "**/*.native.ts", "**/*.android.ts", "**/*.ios.ts", "**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -311,7 +311,7 @@ const TrustAccountDashboard: React.FC<TrustAccountProps> = ({
                 <div className="flex items-center space-x-2">
                   {!transaction.isReconciled && (
                     <Button
-                      variant="default"
+                      variant="success"
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 text-white"
                       onClick={() => onReconcileTransaction(transaction.id)}

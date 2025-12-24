@@ -3,7 +3,7 @@
 // Phase 5A: CLC Multi-Tenancy Support
 // =====================================================
 
-import { pgTable, uuid, text, timestamp, integer, jsonb, boolean, date, pgEnum, index, uniqueIndex, check, type AnyPgColumn } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, jsonb, boolean, date, pgEnum, index, uniqueIndex, check, type AnyPgColumn, varchar, numeric } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // =====================================================
@@ -84,7 +84,7 @@ export const organizations = pgTable(
     hierarchyLevel: integer('hierarchy_level').notNull().default(0),
 
     // Jurisdiction & Sectors
-    jurisdiction: caJurisdictionEnum('jurisdiction'),
+    // jurisdiction: caJurisdictionEnum('jurisdiction'), // Commented out - column does not exist in database
     provinceTerritory: text('province_territory'),
     sectors: labourSectorEnum('sectors').array().default([]),
 
@@ -106,6 +106,11 @@ export const organizations = pgTable(
     affiliationDate: date('affiliation_date'),
     charterNumber: text('charter_number'),
 
+    // CLC Financial Settings (stored in settings JSONB, but commonly accessed)
+    // Note: Per-capita rates are tracked per remittance period in per_capita_remittances table
+    // Default values can be stored in settings: { perCapitaRate: 1.00, remittanceDay: 15 }
+    // These are organization-level defaults that feed into per-capita calculations
+
     // Membership Counts (cached)
     memberCount: integer('member_count').default(0),
     activeMemberCount: integer('active_member_count').default(0),
@@ -114,6 +119,13 @@ export const organizations = pgTable(
     // Billing & Settings
     subscriptionTier: text('subscription_tier'),
     billingContactId: uuid('billing_contact_id'),
+    // Settings JSONB stores flexible configuration:
+    // {
+    //   perCapitaRate?: number;        // Default per-capita rate for remittances
+    //   remittanceDay?: number;        // Day of month for remittances (1-31)
+    //   fiscalYearEnd?: string;        // e.g., "March 31"
+    //   customFields?: Record<string, unknown>;
+    // }
     settings: jsonb('settings').$type<Record<string, unknown>>().default({}),
     featuresEnabled: text('features_enabled').array().default([]),
 
@@ -122,9 +134,16 @@ export const organizations = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
     createdBy: uuid('created_by'),
-
-    // Legacy Migration Support
+    
+    // Legacy & Migration
     legacyTenantId: uuid('legacy_tenant_id'),
+    
+    // CLC Financial Fields
+    clcAffiliateCode: varchar('clc_affiliate_code', { length: 20 }),
+    perCapitaRate: numeric('per_capita_rate', { precision: 10, scale: 2 }),
+    remittanceDay: integer('remittance_day').default(15),
+    lastRemittanceDate: timestamp('last_remittance_date', { withTimezone: true }),
+    fiscalYearEnd: date('fiscal_year_end').default('2024-12-31'),
   },
   (table) => ({
     parentIdx: index('idx_organizations_parent').on(table.parentId),
@@ -133,7 +152,7 @@ export const organizations = pgTable(
     hierarchyLevelIdx: index('idx_organizations_hierarchy_level').on(table.hierarchyLevel),
     statusIdx: index('idx_organizations_status').on(table.status),
     clcAffiliatedIdx: index('idx_organizations_clc_affiliated').on(table.clcAffiliated),
-    jurisdictionIdx: index('idx_organizations_jurisdiction').on(table.jurisdiction),
+    // jurisdictionIdx: index('idx_organizations_jurisdiction').on(table.jurisdiction), // Commented out - column does not exist
     legacyTenantIdx: index('idx_organizations_legacy_tenant').on(table.legacyTenantId),
   })
 );
@@ -252,19 +271,37 @@ export const organizationMembers = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     userId: text('user_id').notNull(),
     
-    // NEW: organization_id (replaces tenant_id)
-    organizationId: uuid('organization_id')
-      .notNull()
-      .references(() => organizations.id, { onDelete: 'cascade' }),
+    // organization_id stores the slug (TEXT), not UUID
+    // This allows flexible reference without strict foreign key constraint
+    organizationId: text('organization_id').notNull(),
     
     // LEGACY: Keep for backward compatibility during migration
     tenantId: uuid('tenant_id'),
     
+    // Required fields in actual database
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    phone: text('phone'),
+    
     role: text('role').notNull(),
     status: text('status').notNull().default('active'),
+    isPrimary: boolean('is_primary').default(false),
+    
+    // Additional fields
+    department: text('department'),
+    position: text('position'),
+    hireDate: timestamp('hire_date', { withTimezone: true }),
     membershipNumber: text('membership_number'),
+    seniority: integer('seniority'),
+    unionJoinDate: timestamp('union_join_date', { withTimezone: true }),
+    preferredContactMethod: text('preferred_contact_method'),
+    metadata: text('metadata'),
+    
+    // Timestamps
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => ({
     orgIdIdx: index('idx_organization_members_org_id').on(table.organizationId),
@@ -289,6 +326,10 @@ export const organizationMembersRelations = relations(organizationMembers, ({ on
 
 // These are partial schemas showing the new organization_id column
 // Full schemas exist elsewhere, this just documents the migration
+// 
+// NOTE: Legacy tenantId fields are kept for backward compatibility during migration.
+// They should be removed in a future major version once all systems are updated.
+// Current status (2024): Migration to organization_id complete, legacy fields deprecated.
 
 export const claimsOrganizationMigration = {
   // Add to existing claims table

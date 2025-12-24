@@ -62,7 +62,7 @@ export async function processMonthlyDuesCalculation(params: {
     const activeMembers = await db
       .select({
         memberId: members.id,
-        memberName: members.name,
+        memberName: sql<string>`CONCAT(${members.firstName}, ' ', ${members.lastName})`,
         memberEmail: members.email,
         assignmentId: duesAssignments.id,
         ruleId: duesAssignments.ruleId,
@@ -76,7 +76,7 @@ export async function processMonthlyDuesCalculation(params: {
       )
       .where(
         and(
-          eq(members.tenantId, tenantId),
+          eq(members.organizationId, tenantId),
           eq(members.status, 'active'),
           lte(duesAssignments.effectiveDate, effectiveDate.toISOString().split('T')[0]),
           or(
@@ -144,10 +144,12 @@ export async function processMonthlyDuesCalculation(params: {
           periodStart: effectiveDate.toISOString().split('T')[0],
           periodEnd: periodEnd.toISOString().split('T')[0],
           amount: totalAmount.toString(),
+          duesAmount: totalAmount.toString(),
+          totalAmount: totalAmount.toString(),
           status: 'pending',
           dueDate: dueDate.toISOString().split('T')[0],
           transactionType: 'dues',
-        });
+        } as any);
 
         membersProcessed++;
         transactionsCreated++;

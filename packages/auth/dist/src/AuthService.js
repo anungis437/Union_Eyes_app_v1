@@ -1,7 +1,7 @@
 // Auth service interface and implementation
 // This is a placeholder for integrating Auth0, Clerk, or custom auth
 // Supabase Auth implementation
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 const supabase = getSupabaseClient();
 export class SupabaseAuthService {
     async getCurrentUser(token) {

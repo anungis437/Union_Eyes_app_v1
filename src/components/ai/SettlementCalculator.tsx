@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DollarSign, Calculator, TrendingUp, Info, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,18 +61,7 @@ export function SettlementCalculator({
   const [showComparison, setShowComparison] = useState(false);
   const [historicalAverage, setHistoricalAverage] = useState<number | null>(null);
 
-  useEffect(() => {
-    // Auto-calculate when significant fields change
-    if (claimData.claimType && claimData.jurisdiction) {
-      const debounceTimeout = setTimeout(() => {
-        calculateSettlement();
-      }, 1000);
-
-      return () => clearTimeout(debounceTimeout);
-    }
-  }, [claimData]);
-
-  const calculateSettlement = async () => {
+  const calculateSettlement = useCallback(async () => {
     if (!claimData.claimType || !claimData.jurisdiction) {
       return;
     }
@@ -108,7 +97,18 @@ export function SettlementCalculator({
     } finally {
       setIsCalculating(false);
     }
-  };
+  }, [claimData, tenantId, onCalculate]);
+
+  useEffect(() => {
+    // Auto-calculate when significant fields change
+    if (claimData.claimType && claimData.jurisdiction) {
+      const debounceTimeout = setTimeout(() => {
+        calculateSettlement();
+      }, 1000);
+
+      return () => clearTimeout(debounceTimeout);
+    }
+  }, [claimData, calculateSettlement]);
 
   const fetchHistoricalAverage = async () => {
     try {

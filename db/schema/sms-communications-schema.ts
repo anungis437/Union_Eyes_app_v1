@@ -16,7 +16,7 @@ import {
   check,
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // ============================================================================
@@ -27,9 +27,9 @@ export const smsTemplates = pgTable(
   'sms_templates',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     description: text('description'),
     messageTemplate: text('message_template').notNull(),
@@ -41,7 +41,7 @@ export const smsTemplates = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantNameUnique: unique().on(table.tenantId, table.name),
+    organizationNameUnique: unique().on(table.organizationId, table.name),
     messageLengthCheck: check('sms_template_message_length', sql`char_length(message_template) <= 1600`),
   })
 );
@@ -55,9 +55,9 @@ export type NewSmsTemplate = typeof smsTemplates.$inferInsert;
 
 export const smsCampaigns = pgTable('sms_campaigns', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   message: text('message').notNull(),
@@ -87,9 +87,9 @@ export type NewSmsCampaign = typeof smsCampaigns.$inferInsert;
 
 export const smsMessages = pgTable('sms_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   userId: text('user_id').references(() => profiles.userId, { onDelete: 'set null' }),
   phoneNumber: text('phone_number').notNull(),
   message: text('message').notNull(),
@@ -118,9 +118,9 @@ export type NewSmsMessage = typeof smsMessages.$inferInsert;
 
 export const smsConversations = pgTable('sms_conversations', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   userId: text('user_id').references(() => profiles.userId, { onDelete: 'set null' }),
   phoneNumber: text('phone_number').notNull(),
   direction: text('direction').notNull(),
@@ -171,9 +171,9 @@ export const smsOptOuts = pgTable(
   'sms_opt_outs',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     userId: text('user_id').references(() => profiles.userId, { onDelete: 'set null' }),
     phoneNumber: text('phone_number').notNull(),
     optedOutAt: timestamp('opted_out_at', { withTimezone: true }).notNull().defaultNow(),
@@ -182,7 +182,7 @@ export const smsOptOuts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantPhoneUnique: unique().on(table.tenantId, table.phoneNumber),
+    organizationPhoneUnique: unique().on(table.organizationId, table.phoneNumber),
   })
 );
 
@@ -197,16 +197,16 @@ export const smsRateLimits = pgTable(
   'sms_rate_limits',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tenantId: uuid('tenant_id')
+    organizationId: uuid('organization_id')
       .notNull()
-      .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
     messagesSent: integer('messages_sent').default(0),
     windowStart: timestamp('window_start', { withTimezone: true }).notNull().defaultNow(),
     windowEnd: timestamp('window_end', { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    tenantWindowUnique: unique().on(table.tenantId, table.windowStart),
+    organizationWindowUnique: unique().on(table.organizationId, table.windowStart),
   })
 );
 
@@ -218,9 +218,9 @@ export type NewSmsRateLimit = typeof smsRateLimits.$inferInsert;
 // ============================================================================
 
 export const smsTemplatesRelations = relations(smsTemplates, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [smsTemplates.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [smsTemplates.organizationId],
+    references: [organizations.id],
   }),
   creator: one(profiles, {
     fields: [smsTemplates.createdBy],
@@ -231,9 +231,9 @@ export const smsTemplatesRelations = relations(smsTemplates, ({ one, many }) => 
 }));
 
 export const smsCampaignsRelations = relations(smsCampaigns, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [smsCampaigns.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [smsCampaigns.organizationId],
+    references: [organizations.id],
   }),
   template: one(smsTemplates, {
     fields: [smsCampaigns.templateId],
@@ -248,9 +248,9 @@ export const smsCampaignsRelations = relations(smsCampaigns, ({ one, many }) => 
 }));
 
 export const smsMessagesRelations = relations(smsMessages, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [smsMessages.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [smsMessages.organizationId],
+    references: [organizations.id],
   }),
   user: one(profiles, {
     fields: [smsMessages.userId],
@@ -267,9 +267,9 @@ export const smsMessagesRelations = relations(smsMessages, ({ one }) => ({
 }));
 
 export const smsConversationsRelations = relations(smsConversations, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [smsConversations.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [smsConversations.organizationId],
+    references: [organizations.id],
   }),
   user: one(profiles, {
     fields: [smsConversations.userId],
@@ -293,9 +293,9 @@ export const smsCampaignRecipientsRelations = relations(smsCampaignRecipients, (
 }));
 
 export const smsOptOutsRelations = relations(smsOptOuts, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [smsOptOuts.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [smsOptOuts.organizationId],
+    references: [organizations.id],
   }),
   user: one(profiles, {
     fields: [smsOptOuts.userId],
@@ -304,8 +304,8 @@ export const smsOptOutsRelations = relations(smsOptOuts, ({ one }) => ({
 }));
 
 export const smsRateLimitsRelations = relations(smsRateLimits, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [smsRateLimits.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [smsRateLimits.organizationId],
+    references: [organizations.id],
   }),
 }));

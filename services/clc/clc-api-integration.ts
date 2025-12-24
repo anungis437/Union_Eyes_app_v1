@@ -150,9 +150,9 @@ export async function syncOrganization(organizationId: string): Promise<SyncResu
       throw new Error(`Organization ${organizationId} not found locally`);
     }
 
-    const affiliateCode = localOrg[0].clcAffiliateCode;
+    const affiliateCode = localOrg[0].charterNumber;
     if (!affiliateCode) {
-      throw new Error(`Organization ${organizationId} has no CLC affiliate code`);
+      throw new Error(`Organization ${organizationId} has no CLC charter number`);
     }
 
     // Fetch from CLC API
@@ -178,8 +178,7 @@ export async function syncOrganization(organizationId: string): Promise<SyncResu
       .update(organizations)
       .set({
         ...updateData,
-        lastSyncedAt: new Date(),
-        syncedFromCLC: true
+        updatedAt: new Date()
       })
       .where(eq(organizations.id, organizationId));
 
@@ -233,7 +232,7 @@ export async function syncAllOrganizations(): Promise<SyncStatistics> {
   const allOrgs = await db
     .select()
     .from(organizations)
-    .where(isNotNull(organizations.clcAffiliateCode));
+    .where(isNotNull(organizations.charterNumber));
 
   const stats: SyncStatistics = {
     totalOrganizations: allOrgs.length,
@@ -290,7 +289,7 @@ export async function createOrganizationFromCLC(
     const existing = await db
       .select()
       .from(organizations)
-      .where(eq(organizations.clcAffiliateCode, affiliateCode))
+      .where(eq(organizations.charterNumber, affiliateCode))
       .limit(1);
 
     if (existing.length > 0) {
@@ -309,17 +308,22 @@ export async function createOrganizationFromCLC(
       .values({
         name: clcOrg.name,
         legalName: clcOrg.legalName,
-        clcAffiliateCode: clcOrg.affiliateCode,
-        organizationType: clcOrg.organizationType,
+        slug: clcOrg.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        organizationType: clcOrg.organizationType as any, // Type assertion for CLC data
         status: clcOrg.status,
-        province: clcOrg.province,
-        city: clcOrg.city,
-        postalCode: clcOrg.postalCode,
-        contactEmail: clcOrg.contactEmail,
-        contactPhone: clcOrg.contactPhone,
-        totalMembers: clcOrg.membershipCount,
-        lastSyncedAt: new Date(),
-        syncedFromCLC: true
+        provinceTerritory: clcOrg.province,
+        address: {
+          city: clcOrg.city,
+          postal_code: clcOrg.postalCode,
+        },
+        email: clcOrg.contactEmail,
+        phone: clcOrg.contactPhone,
+        charterNumber: clcOrg.affiliateCode,
+        memberCount: clcOrg.membershipCount,
+        hierarchyPath: [],
+        hierarchyLevel: 0,
+        clcAffiliated: true,
+        updatedAt: new Date(),
       })
       .returning();
 
@@ -426,7 +430,7 @@ async function handleOrganizationUpdated(clcOrg: CLCOrganization): Promise<SyncR
   const localOrg = await db
     .select()
     .from(organizations)
-    .where(eq(organizations.clcAffiliateCode, clcOrg.affiliateCode))
+    .where(eq(organizations.charterNumber, clcOrg.affiliateCode))
     .limit(1);
 
   if (localOrg.length === 0) {
@@ -442,7 +446,7 @@ async function handleOrganizationDeleted(clcOrg: CLCOrganization): Promise<SyncR
   const localOrg = await db
     .select()
     .from(organizations)
-    .where(eq(organizations.clcAffiliateCode, clcOrg.affiliateCode))
+    .where(eq(organizations.charterNumber, clcOrg.affiliateCode))
     .limit(1);
 
   if (localOrg.length === 0) {
@@ -459,7 +463,7 @@ async function handleOrganizationDeleted(clcOrg: CLCOrganization): Promise<SyncR
     .update(organizations)
     .set({
       status: 'inactive',
-      lastSyncedAt: new Date()
+      updatedAt: new Date()
     })
     .where(eq(organizations.id, localOrg[0].id));
 
@@ -476,7 +480,7 @@ async function handleMembershipUpdated(clcOrg: CLCOrganization): Promise<SyncRes
   const localOrg = await db
     .select()
     .from(organizations)
-    .where(eq(organizations.clcAffiliateCode, clcOrg.affiliateCode))
+    .where(eq(organizations.charterNumber, clcOrg.affiliateCode))
     .limit(1);
 
   if (localOrg.length === 0) {
@@ -493,8 +497,8 @@ async function handleMembershipUpdated(clcOrg: CLCOrganization): Promise<SyncRes
   await db
     .update(organizations)
     .set({
-      totalMembers: clcOrg.membershipCount,
-      lastSyncedAt: new Date()
+      memberCount: clcOrg.membershipCount,
+      updatedAt: new Date()
     })
     .where(eq(organizations.id, localOrg[0].id));
 

@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -87,11 +87,7 @@ export function MemberLearningPortal({ organizationId, memberId }: MemberLearnin
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('my-courses');
 
-  useEffect(() => {
-    fetchMemberData();
-  }, [memberId]);
-
-  const fetchMemberData = async () => {
+  const fetchMemberData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -113,7 +109,11 @@ export function MemberLearningPortal({ organizationId, memberId }: MemberLearnin
     } finally {
       setLoading(false);
     }
-  };
+  }, [memberId]);
+
+  useEffect(() => {
+    fetchMemberData();
+  }, [fetchMemberData]);
 
   const activeCourses = registrations.filter(r => 
     !r.completed && ['registered', 'confirmed', 'attended'].includes(r.registration_status)

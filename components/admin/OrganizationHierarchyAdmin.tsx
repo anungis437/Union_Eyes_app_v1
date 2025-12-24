@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,11 +71,7 @@ export function OrganizationHierarchyAdmin({
     parentOrganizationId: '',
   });
 
-  useEffect(() => {
-    fetchOrganizations();
-  }, [organizationId]);
-
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/organizations/hierarchy?rootOrgId=${organizationId}`);
@@ -90,7 +86,11 @@ export function OrganizationHierarchyAdmin({
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, [fetchOrganizations]);
 
   const buildHierarchyTree = (orgs: Organization[]) => {
     const orgMap = new Map<string, any>();

@@ -27,7 +27,6 @@ export { SessionManagementDashboard } from './components/SessionManagementDashbo
 export { useInvitations } from './hooks/useInvitations';
 export { InviteUserModal } from './components/InviteUserModal';
 export { InvitationList } from './components/InvitationList';
-export { AcceptInvitationPage } from './components/AcceptInvitationPage';
 export { InvitationService } from './services/invitationService';
 export type { Invitation, InvitationCreate, InvitationAccept, InvitationStatus, InvitationEmail, } from './services/invitationService';
 export type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';

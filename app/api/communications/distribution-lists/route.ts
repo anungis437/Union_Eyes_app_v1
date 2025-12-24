@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.tenantId, user.tenantId))
+      .where(eq(newsletterDistributionLists.organizationId, user.tenantId))
       .orderBy(desc(newsletterDistributionLists.createdAt));
 
     return NextResponse.json({ lists });
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const [list] = await db
       .insert(newsletterDistributionLists)
       .values({
-        tenantId: user.tenantId,
+        organizationId: user.tenantId,
         createdBy: user.id,
         ...validatedData,
       })

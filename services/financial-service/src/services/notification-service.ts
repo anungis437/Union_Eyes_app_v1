@@ -101,10 +101,10 @@ export async function queueNotification(request: NotificationRequest): Promise<s
     priority,
     data: JSON.stringify(data),
     status: 'pending',
-    scheduledFor: scheduledFor || new Date(),
+    scheduledFor: (scheduledFor || new Date()).toISOString(),
     attempts: '0',
-    createdAt: new Date(),
-  }).returning();
+    createdAt: new Date().toISOString(),
+  } as any).returning();
 
   return notification.id;
 }
@@ -165,7 +165,7 @@ export async function sendNotification(notificationId: string): Promise<SendNoti
     .set({ 
       attempts: notification.attempts + 1,
       lastAttemptAt: new Date(),
-    })
+    } as any)
     .where(eq(notificationQueue.id, notificationId));
 
   const channelResults: SendNotificationResult['channelResults'] = [];
@@ -224,7 +224,7 @@ export async function sendNotification(notificationId: string): Promise<SendNoti
         .filter(r => !r.success)
         .map(r => `${r.channel}: ${r.error}`)
         .join('; '),
-    })
+    } as any)
     .where(eq(notificationQueue.id, notificationId));
 
   return {
@@ -551,13 +551,13 @@ export async function updateUserNotificationPreferences(
       userId,
       preferences: JSON.stringify(preferences),
       updatedAt: new Date(),
-    })
+    } as any)
     .onConflictDoUpdate({
       target: [userNotificationPreferences.tenantId, userNotificationPreferences.userId],
       set: {
         preferences: JSON.stringify(preferences),
         updatedAt: new Date(),
-      },
+      } as any,
     });
 }
 
@@ -606,7 +606,7 @@ async function logNotification(
     error,
     deliveredAt: status === 'delivered' ? new Date() : undefined,
     createdAt: new Date(),
-  });
+  } as any);
 }
 
 /**

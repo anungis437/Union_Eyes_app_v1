@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -96,11 +96,7 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
     notes: '',
   });
 
-  useEffect(() => {
-    fetchActivities();
-  }, [campaignId]);
-
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/cope/canvassing?campaignId=${campaignId}`);
@@ -137,7 +133,11 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
     } finally {
       setLoading(false);
     }
-  };
+  }, [campaignId]);
+
+  useEffect(() => {
+    fetchActivities();
+  }, [fetchActivities]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

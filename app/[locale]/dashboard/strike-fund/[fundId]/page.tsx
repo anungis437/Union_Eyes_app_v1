@@ -6,7 +6,7 @@
  * Phase 4: Strike Fund Management
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,13 +154,7 @@ export default function StrikeFundDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
-  useEffect(() => {
-    if (userId && orgId && fundId) {
-      fetchFundData();
-    }
-  }, [userId, orgId, fundId]);
-
-  const fetchFundData = async () => {
+  const fetchFundData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -204,7 +198,13 @@ export default function StrikeFundDetailsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, orgId, fundId]);
+
+  useEffect(() => {
+    if (userId && orgId && fundId) {
+      fetchFundData();
+    }
+  }, [userId, orgId, fundId, fetchFundData]);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return "N/A";

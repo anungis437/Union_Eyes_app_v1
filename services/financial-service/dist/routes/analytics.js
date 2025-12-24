@@ -178,7 +178,7 @@ router.get('/summary', async (req, res) => {
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed')));
         const [stipendData] = await db_1.db
             .select({
-            totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC)), 0)`,
+            totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
         })
             .from(schema_1.stipendDisbursements)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid')));
@@ -194,15 +194,15 @@ router.get('/summary', async (req, res) => {
             total: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.donations.amount} AS NUMERIC))`,
         })
             .from(schema_1.donations)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, thirtyDaysAgo)));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, thirtyDaysAgo.toISOString())));
         // Get total stipends (last 30 days)
         const [stipendsData] = await db_1.db
             .select({
             count: (0, drizzle_orm_1.sql) `COUNT(*)`,
-            total: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC))`,
+            total: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC))`,
         })
             .from(schema_1.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, thirtyDaysAgo)));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, thirtyDaysAgo.toISOString())));
         // Get dues collected (last 30 days)
         const [duesData] = await db_1.db
             .select({
@@ -210,7 +210,7 @@ router.get('/summary', async (req, res) => {
             total: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.duesTransactions.amount} AS NUMERIC)), 0)`,
         })
             .from(schema_1.duesTransactions)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.duesTransactions.createdAt, thirtyDaysAgo)));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.duesTransactions.createdAt, thirtyDaysAgo.toISOString())));
         const summary = {
             strikeFunds: {
                 count: Number(fundsData.count),
@@ -267,18 +267,18 @@ router.get('/trends', async (req, res) => {
             count: (0, drizzle_orm_1.sql) `COUNT(*)`,
         })
             .from(schema_1.donations)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate.toISOString())))
             .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.donations.createdAt})`)
             .orderBy((0, drizzle_orm_1.sql) `DATE(${schema_1.donations.createdAt})`);
         // Daily stipends trend
         const stipendsTrend = await db_1.db
             .select({
             date: (0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`,
-            amount: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC))`,
+            amount: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC))`,
             count: (0, drizzle_orm_1.sql) `COUNT(*)`,
         })
             .from(schema_1.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate.toISOString())))
             .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`)
             .orderBy((0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`);
         res.json({
@@ -367,7 +367,7 @@ router.get('/fund-health', async (req, res) => {
                 const [balanceData] = await db_1.db
                     .select({
                     totalDonations: (0, drizzle_orm_1.sql) `COALESCE(SUM(CASE WHEN ${schema_1.donations.status} = 'completed' THEN CAST(${schema_1.donations.amount} AS NUMERIC) ELSE 0 END), 0)`,
-                    totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CASE WHEN ${schema_1.stipendDisbursements.status} = 'paid' THEN CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC) ELSE 0 END), 0)`,
+                    totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
                 })
                     .from(schema_1.donations)
                     .leftJoin(schema_1.stipendDisbursements, (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, schema_1.stipendDisbursements.strikeFundId))
@@ -398,7 +398,7 @@ router.get('/fund-health', async (req, res) => {
                 const [balanceData] = await db_1.db
                     .select({
                     totalDonations: (0, drizzle_orm_1.sql) `COALESCE(SUM(CASE WHEN ${schema_1.donations.status} = 'completed' THEN CAST(${schema_1.donations.amount} AS NUMERIC) ELSE 0 END), 0)`,
-                    totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CASE WHEN ${schema_1.stipendDisbursements.status} = 'paid' THEN CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC) ELSE 0 END), 0)`,
+                    totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
                 })
                     .from(schema_1.donations)
                     .leftJoin(schema_1.stipendDisbursements, (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, schema_1.stipendDisbursements.strikeFundId))

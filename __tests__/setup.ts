@@ -5,11 +5,17 @@
  * - React 18 testing library configuration
  * - Global mocks for Clerk, fetch, etc.
  * - Custom matchers
+ * - Environment variable loading from .env.local
  */
 
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import React from 'react';
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local for tests
+config({ path: path.resolve(process.cwd(), '.env.local') });
 
 // Make React available globally for JSX
 globalThis.React = React;

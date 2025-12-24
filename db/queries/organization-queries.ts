@@ -301,6 +301,8 @@ export async function getOrganizationAncestors(
   childIdOrSlug: string
 ): Promise<SelectOrganization[]> {
   try {
+    console.log('[getOrganizationAncestors] Looking up organization:', childIdOrSlug);
+    
     // Check if input is a slug or UUID by attempting to find by slug first
     let child;
     
@@ -313,6 +315,7 @@ export async function getOrganizationAncestors(
     
     if (childBySlug) {
       child = childBySlug;
+      console.log('[getOrganizationAncestors] Found by slug:', { id: child.id, slug: child.slug, hierarchyPath: child.hierarchyPath });
     } else {
       // Fall back to finding by UUID
       const [childById] = await db
@@ -321,11 +324,22 @@ export async function getOrganizationAncestors(
         .where(eq(organizations.id, childIdOrSlug))
         .limit(1);
       child = childById;
+      if (child) {
+        console.log('[getOrganizationAncestors] Found by ID:', { id: child.id, slug: child.slug, hierarchyPath: child.hierarchyPath });
+      }
     }
 
-    if (!child || !child.hierarchyPath || child.hierarchyPath.length === 0) {
+    if (!child) {
+      console.log('[getOrganizationAncestors] Organization not found');
       return [];
     }
+
+    if (!child.hierarchyPath || child.hierarchyPath.length === 0) {
+      console.log('[getOrganizationAncestors] No hierarchy path, returning empty array');
+      return [];
+    }
+
+    console.log('[getOrganizationAncestors] Fetching ancestors for path:', child.hierarchyPath);
 
     // Query all ancestors using slugs from hierarchy_path (hierarchyPath contains slugs, not UUIDs)
     const ancestors = await db
@@ -334,9 +348,10 @@ export async function getOrganizationAncestors(
       .where(inArray(organizations.slug, child.hierarchyPath))
       .orderBy(asc(organizations.hierarchyLevel));
 
+    console.log('[getOrganizationAncestors] Found ancestors:', ancestors.length);
     return ancestors;
   } catch (error) {
-    console.error("Error fetching organization ancestors:", error);
+    console.error("[getOrganizationAncestors] Error:", error);
     throw new Error(`Failed to fetch ancestors for organization ${childIdOrSlug}`);
   }
 }

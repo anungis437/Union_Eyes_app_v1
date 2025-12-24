@@ -26,7 +26,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { profiles } from './profiles-schema';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 
 // ============================================================================
 // ENUMS
@@ -50,9 +50,9 @@ export const communicationChannelEnum = pgEnum('communication_channel', [
  */
 export const communicationAnalytics = pgTable('communication_analytics', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   date: date('date').notNull(),
   channel: communicationChannelEnum('channel').notNull(),
   
@@ -85,9 +85,9 @@ export const communicationAnalytics = pgTable('communication_analytics', {
  */
 export const userEngagementScores = pgTable('user_engagement_scores', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   userId: uuid('user_id')
     .notNull()
     .references(() => profiles.userId, { onDelete: 'cascade' }),
@@ -126,9 +126,9 @@ export const userEngagementScores = pgTable('user_engagement_scores', {
  */
 export const communicationPreferences = pgTable('communication_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id')
+  organizationId: uuid('organization_id')
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    .references(() => organizations.id, { onDelete: 'cascade' }),
   userId: uuid('user_id')
     .notNull()
     .references(() => profiles.userId, { onDelete: 'cascade' }),
@@ -163,9 +163,9 @@ export const communicationPreferences = pgTable('communication_preferences', {
 export const communicationAnalyticsRelations = relations(
   communicationAnalytics,
   ({ one }) => ({
-    tenant: one(tenants, {
-      fields: [communicationAnalytics.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [communicationAnalytics.organizationId],
+      references: [organizations.id],
     }),
   })
 );
@@ -173,9 +173,9 @@ export const communicationAnalyticsRelations = relations(
 export const userEngagementScoresRelations = relations(
   userEngagementScores,
   ({ one }) => ({
-    tenant: one(tenants, {
-      fields: [userEngagementScores.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [userEngagementScores.organizationId],
+      references: [organizations.id],
     }),
     user: one(profiles, {
       fields: [userEngagementScores.userId],
@@ -187,9 +187,9 @@ export const userEngagementScoresRelations = relations(
 export const communicationPreferencesRelations = relations(
   communicationPreferences,
   ({ one }) => ({
-    tenant: one(tenants, {
-      fields: [communicationPreferences.tenantId],
-      references: [tenants.tenantId],
+    organization: one(organizations, {
+      fields: [communicationPreferences.organizationId],
+      references: [organizations.id],
     }),
     user: one(profiles, {
       fields: [communicationPreferences.userId],

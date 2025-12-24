@@ -22,7 +22,7 @@ import {
   index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // =====================================================================================
@@ -32,7 +32,7 @@ export const organizingCampaigns = pgTable(
   'organizing_campaigns',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
 
     // Campaign identification
     campaignName: varchar('campaign_name', { length: 255 }).notNull(),
@@ -91,7 +91,7 @@ export const organizingCampaigns = pgTable(
     archivedAt: timestamp('archived_at', { withTimezone: true }),
   },
   (table) => ({
-    tenantIdx: index('idx_organizing_campaigns_tenant').on(table.tenantId),
+    organizationIdx: index('idx_organizing_campaigns_organization').on(table.organizationId),
     statusIdx: index('idx_organizing_campaigns_status').on(table.status),
     leadIdx: index('idx_organizing_campaigns_lead').on(table.leadOrganizerId),
     employerIdx: index('idx_organizing_campaigns_employer').on(table.targetEmployer),
@@ -106,7 +106,7 @@ export const organizingContacts = pgTable(
   'organizing_contacts',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
 
     // Contact information
@@ -160,7 +160,7 @@ export const organizingContacts = pgTable(
     updatedBy: text('updated_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_organizing_contacts_tenant').on(table.tenantId),
+    organizationIdx: index('idx_organizing_contacts_organization').on(table.organizationId),
     campaignIdx: index('idx_organizing_contacts_campaign').on(table.campaignId),
     commitmentIdx: index('idx_organizing_contacts_commitment').on(table.commitmentLevel),
     cardSignedIdx: index('idx_organizing_contacts_card_signed').on(table.cardSigned),
@@ -177,7 +177,7 @@ export const cardSigningEvents = pgTable(
   'card_signing_events',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
     contactId: uuid('contact_id').notNull().references(() => organizingContacts.id, { onDelete: 'cascade' }),
 
@@ -215,7 +215,7 @@ export const cardSigningEvents = pgTable(
     createdBy: text('created_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_card_signing_tenant').on(table.tenantId),
+    organizationIdx: index('idx_card_signing_organization').on(table.organizationId),
     campaignIdx: index('idx_card_signing_campaign').on(table.campaignId),
     contactIdx: index('idx_card_signing_contact').on(table.contactId),
     dateIdx: index('idx_card_signing_date').on(table.signedDate),
@@ -231,7 +231,7 @@ export const nlrbClrbFilings = pgTable(
   'nlrb_clrb_filings',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
 
     // Filing identification
@@ -295,7 +295,7 @@ export const nlrbClrbFilings = pgTable(
     updatedBy: text('updated_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_nlrb_clrb_tenant').on(table.tenantId),
+    organizationIdx: index('idx_nlrb_clrb_organization').on(table.organizationId),
     campaignIdx: index('idx_nlrb_clrb_campaign').on(table.campaignId),
     statusIdx: index('idx_nlrb_clrb_status').on(table.status),
     filingNumberIdx: index('idx_nlrb_clrb_filing_number').on(table.filingNumber),
@@ -311,7 +311,7 @@ export const unionRepresentationVotes = pgTable(
   'union_representation_votes',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
     filingId: uuid('filing_id').references(() => nlrbClrbFilings.id),
 
@@ -367,7 +367,7 @@ export const unionRepresentationVotes = pgTable(
     createdBy: text('created_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_union_votes_tenant').on(table.tenantId),
+    organizationIdx: index('idx_union_votes_organization').on(table.organizationId),
     campaignIdx: index('idx_union_votes_campaign').on(table.campaignId),
     filingIdx: index('idx_union_votes_filing').on(table.filingId),
     dateIdx: index('idx_union_votes_date').on(table.voteDate),
@@ -382,7 +382,7 @@ export const fieldOrganizerActivities = pgTable(
   'field_organizer_activities',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
     organizerId: text('organizer_id').notNull().references(() => profiles.userId),
     contactId: uuid('contact_id').references(() => organizingContacts.id),
@@ -429,7 +429,7 @@ export const fieldOrganizerActivities = pgTable(
     createdBy: text('created_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_field_activities_tenant').on(table.tenantId),
+    organizationIdx: index('idx_field_activities_organization').on(table.organizationId),
     campaignIdx: index('idx_field_activities_campaign').on(table.campaignId),
     organizerIdx: index('idx_field_activities_organizer').on(table.organizerId),
     contactIdx: index('idx_field_activities_contact').on(table.contactId),
@@ -445,7 +445,7 @@ export const employerResponses = pgTable(
   'employer_responses',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
 
     // Response details
@@ -515,7 +515,7 @@ export const employerResponses = pgTable(
     updatedBy: text('updated_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_employer_responses_tenant').on(table.tenantId),
+    organizationIdx: index('idx_employer_responses_organization').on(table.organizationId),
     campaignIdx: index('idx_employer_responses_campaign').on(table.campaignId),
     dateIdx: index('idx_employer_responses_date').on(table.responseDate),
     typeIdx: index('idx_employer_responses_type').on(table.responseType),
@@ -530,7 +530,7 @@ export const organizingCampaignMilestones = pgTable(
   'organizing_campaign_milestones',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+    organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
     campaignId: uuid('campaign_id').notNull().references(() => organizingCampaigns.id, { onDelete: 'cascade' }),
 
     // Milestone details
@@ -563,7 +563,7 @@ export const organizingCampaignMilestones = pgTable(
     createdBy: text('created_by').references(() => profiles.userId),
   },
   (table) => ({
-    tenantIdx: index('idx_campaign_milestones_tenant').on(table.tenantId),
+    organizationIdx: index('idx_campaign_milestones_organization').on(table.organizationId),
     campaignIdx: index('idx_campaign_milestones_campaign').on(table.campaignId),
     targetDateIdx: index('idx_campaign_milestones_target_date').on(table.targetDate),
     statusIdx: index('idx_campaign_milestones_status').on(table.status),
@@ -575,9 +575,9 @@ export const organizingCampaignMilestones = pgTable(
 // =====================================================================================
 
 export const organizingCampaignsRelations = relations(organizingCampaigns, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [organizingCampaigns.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [organizingCampaigns.organizationId],
+    references: [organizations.id],
   }),
   leadOrganizer: one(profiles, {
     fields: [organizingCampaigns.leadOrganizerId],
@@ -593,9 +593,9 @@ export const organizingCampaignsRelations = relations(organizingCampaigns, ({ on
 }));
 
 export const organizingContactsRelations = relations(organizingContacts, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [organizingContacts.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [organizingContacts.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [organizingContacts.campaignId],
@@ -606,9 +606,9 @@ export const organizingContactsRelations = relations(organizingContacts, ({ one,
 }));
 
 export const cardSigningEventsRelations = relations(cardSigningEvents, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [cardSigningEvents.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [cardSigningEvents.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [cardSigningEvents.campaignId],
@@ -625,9 +625,9 @@ export const cardSigningEventsRelations = relations(cardSigningEvents, ({ one })
 }));
 
 export const nlrbClrbFilingsRelations = relations(nlrbClrbFilings, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [nlrbClrbFilings.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [nlrbClrbFilings.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [nlrbClrbFilings.campaignId],
@@ -637,9 +637,9 @@ export const nlrbClrbFilingsRelations = relations(nlrbClrbFilings, ({ one, many 
 }));
 
 export const unionRepresentationVotesRelations = relations(unionRepresentationVotes, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [unionRepresentationVotes.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [unionRepresentationVotes.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [unionRepresentationVotes.campaignId],
@@ -652,9 +652,9 @@ export const unionRepresentationVotesRelations = relations(unionRepresentationVo
 }));
 
 export const fieldOrganizerActivitiesRelations = relations(fieldOrganizerActivities, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [fieldOrganizerActivities.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [fieldOrganizerActivities.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [fieldOrganizerActivities.campaignId],
@@ -671,9 +671,9 @@ export const fieldOrganizerActivitiesRelations = relations(fieldOrganizerActivit
 }));
 
 export const employerResponsesRelations = relations(employerResponses, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [employerResponses.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [employerResponses.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [employerResponses.campaignId],
@@ -686,9 +686,9 @@ export const employerResponsesRelations = relations(employerResponses, ({ one })
 }));
 
 export const organizingCampaignMilestonesRelations = relations(organizingCampaignMilestones, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [organizingCampaignMilestones.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [organizingCampaignMilestones.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(organizingCampaigns, {
     fields: [organizingCampaignMilestones.campaignId],

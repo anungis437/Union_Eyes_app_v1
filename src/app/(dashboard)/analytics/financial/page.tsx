@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -82,11 +82,7 @@ export default function FinancialAnalytics() {
   const [categories, setCategories] = useState<CategoryFinancial[]>([]);
   const [costBreakdown, setCostBreakdown] = useState<CostBreakdown[]>([]);
 
-  useEffect(() => {
-    fetchFinancialData();
-  }, [dateRange, viewMode]);
-
-  const fetchFinancialData = async () => {
+  const fetchFinancialData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [summaryRes, trendsRes, outcomesRes, categoriesRes, costsRes] = await Promise.all([
@@ -115,7 +111,11 @@ export default function FinancialAnalytics() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateRange, viewMode]);
+
+  useEffect(() => {
+    fetchFinancialData();
+  }, [fetchFinancialData]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

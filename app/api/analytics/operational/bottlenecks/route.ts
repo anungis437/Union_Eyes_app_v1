@@ -21,7 +21,7 @@ async function handler(req: NextRequest) {
         AVG(EXTRACT(EPOCH FROM (COALESCE(${claims.updatedAt}, NOW()) - ${claims.createdAt})) / 3600) as avg_duration,
         PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (COALESCE(${claims.updatedAt}, NOW()) - ${claims.createdAt})) / 3600) as p75_duration
       FROM ${claims}
-      WHERE ${claims.tenantId} = ${tenantId}
+      WHERE ${claims.organizationId} = ${tenantId}
         AND ${claims.incidentDate} >= ${startDate.toISOString()}::timestamp
       GROUP BY ${claims.status}
     )

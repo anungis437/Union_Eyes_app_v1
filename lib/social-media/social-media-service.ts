@@ -200,20 +200,11 @@ export class SocialMediaService {
       };
 
       // @ts-ignore - Supabase client without Database type
-      await this.supabase
-        .from('social_accounts')
-        .update(updateData)
-        .eq('id', accountId);
+      await this.supabase.from('social_accounts').update(updateData).eq('id', accountId);
     } catch (error) {
       // Update account status to error
       // @ts-ignore - Supabase client without Database type
-      await this.supabase
-        .from('social_accounts')
-        .update({
-          status: 'error',
-          error_message: error instanceof Error ? error.message : 'Token refresh failed',
-        })
-        .eq('id', accountId);
+      await this.supabase.from('social_accounts').update({ status: 'error', error_message: error instanceof Error ? error.message : 'Token refresh failed' }).eq('id', accountId);
 
       throw error;
     }
@@ -223,7 +214,7 @@ export class SocialMediaService {
    * Publish a post to multiple platforms
    */
   async publishPost(
-    tenantId: string,
+    organizationId: string,
     content: UnifiedPostContent,
     createdById: string
   ): Promise<PlatformPostResult[]> {
@@ -233,7 +224,7 @@ export class SocialMediaService {
     const { data: accounts, error } = await this.supabase
       .from('social_accounts')
       .select('*')
-      .eq('tenant_id', tenantId)
+      .eq('organization_id', organizationId)
       .in('platform', content.platforms)
       .eq('status', 'active');
 
@@ -255,7 +246,7 @@ export class SocialMediaService {
           case 'facebook': {
             const metaClient = client as MetaAPIClient;
             const response = await metaClient.publishFacebookPost(
-              account.platformAccountId,
+              account.platformUserId,
               account.accessToken,
               {
                 message: content.text,
@@ -280,7 +271,7 @@ export class SocialMediaService {
             }
 
             const response = await metaClient.publishInstagramPost(
-              account.platformAccountId,
+              account.platformUserId,
               {
                 image_url: content.media_urls[0],
                 caption: content.text,
@@ -323,7 +314,7 @@ export class SocialMediaService {
 
             if (content.media_urls && content.media_urls.length > 0) {
               response = await linkedInClient.createOrganizationPostWithImage(
-                account.platformAccountId,
+                account.platformUserId,
                 {
                   text: content.text,
                   imageUrl: content.media_urls[0],
@@ -331,7 +322,7 @@ export class SocialMediaService {
               );
             } else if (content.link_url) {
               response = await linkedInClient.createOrganizationPostWithLink(
-                account.platformAccountId,
+                account.platformUserId,
                 {
                   text: content.text,
                   linkUrl: content.link_url,
@@ -341,7 +332,7 @@ export class SocialMediaService {
               );
             } else {
               response = await linkedInClient.createOrganizationPost(
-                account.platformAccountId,
+                account.platformUserId,
                 {
                   text: content.text,
                 }
@@ -357,7 +348,7 @@ export class SocialMediaService {
 
         // Save post to database
         const postData = {
-          tenant_id: tenantId,
+          organization_id: organizationId,
           account_id: account.id,
           platform: account.platform,
           platform_post_id: postId,
@@ -408,39 +399,37 @@ export class SocialMediaService {
       throw new Error(`Post not found: ${postId}`);
     }
 
-    const client = await this.getClient(post.account_id);
+    const typedPost = post as any;
+    const client = await this.getClient(typedPost.account_id);
 
     try {
-      switch (post.platform) {
+      switch (typedPost.platform) {
         case 'facebook':
         case 'instagram': {
           const metaClient = client as MetaAPIClient;
-          await metaClient.deletePost(post.platform_post_id, (post.account as any).access_token);
+          await metaClient.deletePost(typedPost.platform_post_id, (typedPost.account as any).access_token);
           break;
         }
 
         case 'twitter': {
           const twitterClient = client as TwitterAPIClient;
-          await twitterClient.deleteTweet(post.platform_post_id);
+          await twitterClient.deleteTweet(typedPost.platform_post_id);
           break;
         }
 
         case 'linkedin': {
           const linkedInClient = client as LinkedInAPIClient;
-          await linkedInClient.deletePost(post.platform_post_id);
+          await linkedInClient.deletePost(typedPost.platform_post_id);
           break;
         }
 
         default:
-          throw new Error(`Unsupported platform: ${post.platform}`);
+          throw new Error(`Unsupported platform: ${typedPost.platform}`);
       }
 
       // Update post status in database
       // @ts-ignore - Supabase client without Database type
-      await this.supabase
-        .from('social_posts')
-        .update({ status: 'deleted', deleted_at: new Date().toISOString() })
-        .eq('id', postId);
+      await this.supabase.from('social_posts').update({ status: 'deleted', deleted_at: new Date().toISOString() }).eq('id', postId);
     } catch (error) {
       throw new Error(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -473,7 +462,7 @@ export class SocialMediaService {
         case 'facebook': {
           const metaClient = client as MetaAPIClient;
           const insights = await metaClient.getPageInsights(
-            typedAccount.platformAccountId,
+            typedAccount.platformUserId,
             typedAccount.accessToken,
             [
               'page_impressions',
@@ -494,7 +483,7 @@ export class SocialMediaService {
         case 'instagram': {
           const metaClient = client as MetaAPIClient;
           const insights = await metaClient.getInstagramInsights(
-            typedAccount.platformAccountId,
+            typedAccount.platformUserId,
             ['impressions', 'reach', 'follower_count'],
             'day',
             startDate,
@@ -514,7 +503,7 @@ export class SocialMediaService {
         case 'linkedin': {
           const linkedInClient = client as LinkedInAPIClient;
           const stats = await linkedInClient.getOrganizationStatistics(
-            typedAccount.platformAccountId,
+            typedAccount.platformUserId,
             startDate,
             endDate
           );
@@ -528,7 +517,7 @@ export class SocialMediaService {
       for (const data of analytics) {
         // @ts-ignore - Supabase client without Database type
         await this.supabase.from('social_analytics').upsert({
-          tenant_id: typedAccount.tenantId,
+          organization_id: typedAccount.organizationId,
           account_id: accountId,
           platform: data.platform,
           date: data.date.toISOString().split('T')[0],
@@ -553,11 +542,11 @@ export class SocialMediaService {
   /**
    * Get rate limit status for all connected accounts
    */
-  async getRateLimitStatus(tenantId: string): Promise<RateLimitStatus[]> {
+  async getRateLimitStatus(organizationId: string): Promise<RateLimitStatus[]> {
     const { data: accounts, error } = await this.supabase
       .from('social_accounts')
       .select('*')
-      .eq('tenant_id', tenantId)
+      .eq('organization_id', organizationId)
       .eq('status', 'active');
 
     if (error || !accounts) {

@@ -112,7 +112,7 @@ export async function processPaymentCollection(params: {
             .set({
               status: 'paid',
               notes: `Paid ${amountToApply} via ${payment.paymentMethod}`,
-            })
+            } as any)
             .where(eq(duesTransactions.id, transaction.id));
 
           updatedTransactionIds.push(transaction.id);
@@ -127,8 +127,7 @@ export async function processPaymentCollection(params: {
               .where(
                 and(
                   eq(arrears.tenantId, tenantId),
-                  eq(arrears.memberId, payment.memberId),
-                  eq(arrears.transactionId, transaction.id)
+                  eq(arrears.memberId, payment.memberId)
                 )
               )
               .limit(1);
@@ -138,9 +137,9 @@ export async function processPaymentCollection(params: {
               await db
                 .update(arrears)
                 .set({
-                  status: 'resolved',
+                  arrearsStatus: 'resolved',
                   notes: `Paid via ${payment.paymentMethod} - Ref: ${payment.referenceNumber}`,
-                })
+                } as any)
                 .where(eq(arrears.id, arrearsRecord[0].id));
 
               arrearsUpdated++;

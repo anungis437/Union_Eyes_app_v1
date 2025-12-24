@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -141,13 +141,7 @@ export default function ApprenticeshipManager({
     currentLevel: "orientation",
   });
 
-  useEffect(() => {
-    fetchPrograms();
-    fetchMembers();
-    fetchCourses();
-  }, [organizationId, programStatusFilter, programTypeFilter]);
-
-  const fetchPrograms = async () => {
+  const fetchPrograms = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -169,9 +163,9 @@ export default function ApprenticeshipManager({
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, programStatusFilter, programTypeFilter]);
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/members?organizationId=${organizationId}`
@@ -183,9 +177,9 @@ export default function ApprenticeshipManager({
     } catch (error) {
       console.error("Error fetching members:", error);
     }
-  };
+  }, [organizationId]);
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/education/courses?organizationId=${organizationId}`
@@ -197,7 +191,13 @@ export default function ApprenticeshipManager({
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    fetchPrograms();
+    fetchMembers();
+    fetchCourses();
+  }, [fetchPrograms, fetchMembers, fetchCourses]);
 
   const fetchEnrollments = async (programId: string) => {
     try {

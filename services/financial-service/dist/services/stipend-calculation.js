@@ -41,8 +41,8 @@ async function calculateWeeklyStipends(request) {
             throw new Error('Strike fund not found');
         }
         // Use fund-specific configuration if available
-        const fundMinHours = strikeFund.minimumHoursPerWeek
-            ? parseFloat(strikeFund.minimumHoursPerWeek)
+        const fundMinHours = strikeFund.minimumAttendanceHours
+            ? parseFloat(strikeFund.minimumAttendanceHours)
             : minimumHours;
         const fundHourlyRate = strikeFund.weeklyStipendAmount
             ? parseFloat(strikeFund.weeklyStipendAmount) / fundMinHours
@@ -54,7 +54,7 @@ async function calculateWeeklyStipends(request) {
             totalHours: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${db_1.schema.picketAttendance.hoursWorked} AS DECIMAL)) AS TEXT)`,
         })
             .from(db_1.schema.picketAttendance)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId), (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, weekStartDate, weekEndDate), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NOT NULL` // Only count completed shifts
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId), (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, weekStartDate.toISOString(), weekEndDate.toISOString()), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NOT NULL` // Only count completed shifts
         ))
             .groupBy(db_1.schema.picketAttendance.memberId);
         // Calculate eligibility for each member
@@ -133,7 +133,7 @@ async function approveDisbursement(tenantId, approval) {
             status: 'approved',
             approvedAt: new Date(),
             approvedBy: approval.approvedBy,
-            approvalNotes: approval.approvalNotes,
+            notes: approval.approvalNotes,
             updatedAt: new Date(),
         })
             .where((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.id, approval.disbursementId));
@@ -166,8 +166,8 @@ async function markDisbursementPaid(tenantId, disbursementId, transactionId, pai
             .update(db_1.schema.stipendDisbursements)
             .set({
             status: 'paid',
-            disbursedAt: new Date(), // Use disbursedAt instead of paidAt
-            notes: `Transaction ID: ${transactionId}, Processed by: ${paidBy}`, // Store in notes
+            paymentDate: new Date(),
+            notes: `Transaction ID: ${transactionId}, Processed by: ${paidBy}`,
         })
             .where((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.id, disbursementId));
         return { success: true };
@@ -198,7 +198,7 @@ async function getMemberDisbursements(tenantId, memberId, strikeFundId) {
             .orderBy((0, drizzle_orm_1.desc)(db_1.schema.stipendDisbursements.weekStartDate));
         return disbursements.map(d => ({
             ...d,
-            amount: parseFloat(d.amount),
+            amount: parseFloat(d.totalAmount),
         }));
     }
     catch (error) {
@@ -218,7 +218,7 @@ async function getPendingDisbursements(tenantId, strikeFundId) {
             .orderBy(db_1.schema.stipendDisbursements.weekStartDate);
         return disbursements.map(d => ({
             ...d,
-            amount: parseFloat(d.amount),
+            amount: parseFloat(d.totalAmount),
         }));
     }
     catch (error) {
@@ -234,7 +234,7 @@ async function getStrikeFundDisbursementSummary(tenantId, strikeFundId) {
         const result = await db_1.db
             .select({
             status: db_1.schema.stipendDisbursements.status,
-            totalAmount: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${db_1.schema.stipendDisbursements.amount} AS DECIMAL)) AS TEXT)`,
+            totalAmount: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${db_1.schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
             memberCount: (0, drizzle_orm_1.sql) `COUNT(DISTINCT ${db_1.schema.stipendDisbursements.memberId})`,
         })
             .from(db_1.schema.stipendDisbursements)

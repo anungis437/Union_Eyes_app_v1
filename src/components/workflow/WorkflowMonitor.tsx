@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Play,
   Pause,
@@ -83,7 +83,7 @@ export function WorkflowMonitor({
   });
 
   // Fetch workflow instances
-  const fetchInstances = async () => {
+  const fetchInstances = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
@@ -109,7 +109,7 @@ export function WorkflowMonitor({
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, statusFilter]);
 
   // Calculate statistics
   const calculateStats = (data: WorkflowInstance[]) => {
@@ -149,7 +149,7 @@ export function WorkflowMonitor({
     }, refreshInterval);
 
     return () => clearInterval(interval);
-  }, [tenantId, statusFilter, refreshInterval]);
+  }, [fetchInstances, refreshInterval]);
 
   // Cancel workflow
   const handleCancel = async (instanceId: string) => {

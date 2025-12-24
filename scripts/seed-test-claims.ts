@@ -40,7 +40,7 @@ async function seedTestClaims() {
   
   const testClaims = [
     {
-      tenantId,
+      organizationId: tenantId,
       memberId,
       isAnonymous: false,
       claimType: "grievance_pay" as const,
@@ -55,7 +55,7 @@ async function seedTestClaims() {
       previouslyReported: false,
     },
     {
-      tenantId,
+      organizationId: tenantId,
       memberId,
       isAnonymous: false,
       claimType: "workplace_safety" as const,
@@ -70,7 +70,7 @@ async function seedTestClaims() {
       previousReportDetails: "Reported to supervisor Mike Johnson 2 weeks ago, no action taken",
     },
     {
-      tenantId,
+      organizationId: tenantId,
       memberId,
       isAnonymous: false,
       claimType: "grievance_schedule" as const,
@@ -86,7 +86,7 @@ async function seedTestClaims() {
       resolutionDate: new Date("2025-11-11"),
     },
     {
-      tenantId,
+      organizationId: tenantId,
       memberId,
       isAnonymous: true,
       claimType: "discrimination_gender" as const,
@@ -101,7 +101,7 @@ async function seedTestClaims() {
       previouslyReported: false,
     },
     {
-      tenantId,
+      organizationId: tenantId,
       memberId,
       isAnonymous: false,
       claimType: "grievance_discipline" as const,

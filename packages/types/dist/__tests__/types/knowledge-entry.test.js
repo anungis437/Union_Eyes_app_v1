@@ -1,13 +1,11 @@
-"use strict";
 /**
  * @fileoverview KnowledgeEntry Type Tests
  * Testing knowledge management type definitions
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-describe('KnowledgeEntry Type Tests', function () {
-    describe('KnowledgeEntry Interface Validation', function () {
-        it('should validate KnowledgeEntry interface structure', function () {
-            var mockKnowledgeEntry = {
+describe('KnowledgeEntry Type Tests', () => {
+    describe('KnowledgeEntry Interface Validation', () => {
+        it('should validate KnowledgeEntry interface structure', () => {
+            const mockKnowledgeEntry = {
                 id: 'knowledge-123',
                 title: 'Contract Law Precedent Analysis',
                 content: 'Detailed analysis of recent contract law precedents affecting commercial transactions...',
@@ -31,15 +29,15 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(mockKnowledgeEntry.created_at).toBeTruthy();
             expect(mockKnowledgeEntry.updated_at).toBeTruthy();
         });
-        it('should validate entry_type union type values', function () {
-            var validEntryTypes = [
+        it('should validate entry_type union type values', () => {
+            const validEntryTypes = [
                 'Legal Principle',
                 'Case Strategy',
                 'Research Note',
                 'Other',
             ];
-            validEntryTypes.forEach(function (entryType) {
-                var mockEntry = {
+            validEntryTypes.forEach(entryType => {
+                const mockEntry = {
                     id: 'test-id',
                     title: 'Test Title',
                     content: 'Test content',
@@ -54,8 +52,8 @@ describe('KnowledgeEntry Type Tests', function () {
                 expect(mockEntry.entry_type).toBe(entryType);
             });
         });
-        it('should validate Legal Principle entry type', function () {
-            var legalPrincipleEntry = {
+        it('should validate Legal Principle entry type', () => {
+            const legalPrincipleEntry = {
                 id: 'legal-principle-001',
                 title: 'Doctrine of Consideration in Contract Formation',
                 content: 'The doctrine of consideration requires that both parties provide something of value in a contract...',
@@ -72,8 +70,8 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(legalPrincipleEntry.tags).toContain('consideration');
             expect(legalPrincipleEntry.source_document_ids).toHaveLength(2);
         });
-        it('should validate Case Strategy entry type', function () {
-            var caseStrategyEntry = {
+        it('should validate Case Strategy entry type', () => {
+            const caseStrategyEntry = {
                 id: 'strategy-001',
                 title: 'Employment Termination Defense Strategy',
                 content: 'When defending wrongful termination claims, focus on documented performance issues and establish a clear defense strategy...',
@@ -90,8 +88,8 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(caseStrategyEntry.tags).toContain('strategy');
             expect(caseStrategyEntry.content).toContain('strategy');
         });
-        it('should validate Research Note entry type', function () {
-            var researchNoteEntry = {
+        it('should validate Research Note entry type', () => {
+            const researchNoteEntry = {
                 id: 'research-note-001',
                 title: 'Recent Changes to Family Law Regulations',
                 content: 'Research findings on the 2024 amendments to family law regulations affecting custody arrangements...',
@@ -108,8 +106,8 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(researchNoteEntry.tags).toContain('2024');
             expect(researchNoteEntry.source_query_ids).toHaveLength(2);
         });
-        it('should validate Other entry type', function () {
-            var otherEntry = {
+        it('should validate Other entry type', () => {
+            const otherEntry = {
                 id: 'other-001',
                 title: 'Court Filing Checklist for Commercial Disputes',
                 content: 'Comprehensive checklist for filing commercial dispute cases in Ontario Superior Court...',
@@ -127,9 +125,9 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(otherEntry.content).toContain('checklist');
         });
     });
-    describe('Array Property Validation', function () {
-        it('should handle empty arrays properly', function () {
-            var entryWithEmptyArrays = {
+    describe('Array Property Validation', () => {
+        it('should handle empty arrays properly', () => {
+            const entryWithEmptyArrays = {
                 id: 'empty-arrays-001',
                 title: 'Test Entry with Empty Arrays',
                 content: 'This entry has empty arrays for testing purposes',
@@ -150,8 +148,8 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(Array.isArray(entryWithEmptyArrays.source_query_ids)).toBe(true);
             expect(entryWithEmptyArrays.source_query_ids).toHaveLength(0);
         });
-        it('should handle populated arrays properly', function () {
-            var entryWithPopulatedArrays = {
+        it('should handle populated arrays properly', () => {
+            const entryWithPopulatedArrays = {
                 id: 'populated-arrays-001',
                 title: 'Entry with Multiple Array Items',
                 content: 'This entry demonstrates multiple items in each array property',
@@ -168,23 +166,23 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(entryWithPopulatedArrays.source_document_ids).toHaveLength(4);
             expect(entryWithPopulatedArrays.source_query_ids).toHaveLength(2);
             // Validate array content types
-            entryWithPopulatedArrays.tags.forEach(function (tag) {
+            entryWithPopulatedArrays.tags.forEach(tag => {
                 expect(typeof tag).toBe('string');
             });
-            entryWithPopulatedArrays.legal_topics.forEach(function (topic) {
+            entryWithPopulatedArrays.legal_topics.forEach(topic => {
                 expect(typeof topic).toBe('string');
             });
-            entryWithPopulatedArrays.source_document_ids.forEach(function (docId) {
+            entryWithPopulatedArrays.source_document_ids.forEach(docId => {
                 expect(typeof docId).toBe('string');
             });
-            entryWithPopulatedArrays.source_query_ids.forEach(function (queryId) {
+            entryWithPopulatedArrays.source_query_ids.forEach(queryId => {
                 expect(typeof queryId).toBe('string');
             });
         });
     });
-    describe('Date String Validation', function () {
-        it('should handle ISO date strings', function () {
-            var entryWithIsoDates = {
+    describe('Date String Validation', () => {
+        it('should handle ISO date strings', () => {
+            const entryWithIsoDates = {
                 id: 'iso-dates-001',
                 title: 'Entry with ISO Date Strings',
                 content: 'Testing ISO 8601 date string format',
@@ -199,14 +197,14 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(entryWithIsoDates.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
             expect(entryWithIsoDates.updated_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
             // Validate they can be parsed as dates
-            var createdDate = new Date(entryWithIsoDates.created_at);
-            var updatedDate = new Date(entryWithIsoDates.updated_at);
+            const createdDate = new Date(entryWithIsoDates.created_at);
+            const updatedDate = new Date(entryWithIsoDates.updated_at);
             expect(createdDate).toBeInstanceOf(Date);
             expect(updatedDate).toBeInstanceOf(Date);
             expect(updatedDate.getTime()).toBeGreaterThan(createdDate.getTime());
         });
-        it('should handle simple date strings', function () {
-            var entryWithSimpleDates = {
+        it('should handle simple date strings', () => {
+            const entryWithSimpleDates = {
                 id: 'simple-dates-001',
                 title: 'Entry with Simple Date Format',
                 content: 'Testing simple date string format',
@@ -224,9 +222,9 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(entryWithSimpleDates.updated_at).toBeTruthy();
         });
     });
-    describe('Content Validation', function () {
-        it('should handle various content lengths', function () {
-            var shortContentEntry = {
+    describe('Content Validation', () => {
+        it('should handle various content lengths', () => {
+            const shortContentEntry = {
                 id: 'short-content',
                 title: 'Brief Note',
                 content: 'Short content.',
@@ -238,7 +236,7 @@ describe('KnowledgeEntry Type Tests', function () {
                 created_at: '2024-01-15T10:30:00Z',
                 updated_at: '2024-01-15T10:30:00Z',
             };
-            var longContentEntry = {
+            const longContentEntry = {
                 id: 'long-content',
                 title: 'Comprehensive Analysis',
                 content: 'This is a very long content entry that contains detailed analysis, multiple paragraphs, and extensive information about legal principles, case law, statutory interpretation, and practical considerations for legal practitioners. It demonstrates that the content field can handle substantial amounts of text without any issues. The content includes references to various legal authorities, procedural requirements, and strategic considerations that would be valuable for legal research and case preparation.',
@@ -255,8 +253,8 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(typeof shortContentEntry.content).toBe('string');
             expect(typeof longContentEntry.content).toBe('string');
         });
-        it('should handle special characters in content', function () {
-            var specialCharEntry = {
+        it('should handle special characters in content', () => {
+            const specialCharEntry = {
                 id: 'special-chars',
                 title: 'Entry with Special Characters',
                 content: 'Content with special characters: §, ©, ®, ™, €, £, ¥, "smart quotes", apostrophes, em-dashes, and legal symbols like § 123(a)(1).',
@@ -276,9 +274,9 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(typeof specialCharEntry.content).toBe('string');
         });
     });
-    describe('Type Safety Validation', function () {
-        it('should enforce type safety for entry_type', function () {
-            var validEntry = {
+    describe('Type Safety Validation', () => {
+        it('should enforce type safety for entry_type', () => {
+            const validEntry = {
                 id: 'type-safety-test',
                 title: 'Type Safety Test',
                 content: 'Testing type safety',
@@ -296,8 +294,8 @@ describe('KnowledgeEntry Type Tests', function () {
             // entry_type: 123 // TypeScript error
             // entry_type: null // TypeScript error
         });
-        it('should enforce array types for array properties', function () {
-            var typedArrayEntry = {
+        it('should enforce array types for array properties', () => {
+            const typedArrayEntry = {
                 id: 'typed-arrays',
                 title: 'Typed Arrays Test',
                 content: 'Testing array type enforcement',
@@ -319,9 +317,9 @@ describe('KnowledgeEntry Type Tests', function () {
             // legal_topics: null // TypeScript error
         });
     });
-    describe('Real-world Knowledge Entry Examples', function () {
-        it('should validate a real legal principle entry', function () {
-            var legalPrincipleExample = {
+    describe('Real-world Knowledge Entry Examples', () => {
+        it('should validate a real legal principle entry', () => {
+            const legalPrincipleExample = {
                 id: 'principle-reasonable-notice',
                 title: 'Reasonable Notice in Employment Termination',
                 content: 'In Canadian employment law, employees are entitled to reasonable notice of termination unless terminated for just cause. The period of reasonable notice is determined by factors including length of service, age, position, and availability of similar employment. The Bardal factors, established in Bardal v. Globe & Mail Ltd., provide the framework for determining reasonable notice periods.',
@@ -339,8 +337,8 @@ describe('KnowledgeEntry Type Tests', function () {
             expect(legalPrincipleExample.content).toContain('Bardal');
             expect(legalPrincipleExample.source_document_ids).toContain('bardal-v-globe-mail');
         });
-        it('should validate a real case strategy entry', function () {
-            var caseStrategyExample = {
+        it('should validate a real case strategy entry', () => {
+            const caseStrategyExample = {
                 id: 'strategy-contract-breach',
                 title: 'Contract Breach Litigation Strategy',
                 content: 'When pursuing a breach of contract claim, establish: (1) existence of valid contract, (2) performance by plaintiff, (3) breach by defendant, (4) damages flowing from breach. Focus on documentary evidence of contract terms, correspondence showing breach, and quantifiable damages. Consider mitigation arguments from defendant.',
@@ -360,3 +358,5 @@ describe('KnowledgeEntry Type Tests', function () {
         });
     });
 });
+export {};
+//# sourceMappingURL=knowledge-entry.test.js.map

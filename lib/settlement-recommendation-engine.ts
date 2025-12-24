@@ -100,7 +100,7 @@ export async function generateSettlementRecommendation(
   try {
     // Get claim details
     const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.tenantId, tenantId)),
+      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
     });
 
     if (!claim) return null;
@@ -187,7 +187,7 @@ async function findSimilarPrecedents(
     // Find resolved/closed claims of same type
     const pastClaims = await db.query.claims.findMany({
       where: and(
-        eq(claims.tenantId, tenantId),
+        eq(claims.organizationId, tenantId),
         eq(claims.claimType, claim.claimType),
         inArray(claims.status, ["resolved", "closed"]),
         sql`${claims.claimId} != ${claim.claimId}` // Exclude current claim

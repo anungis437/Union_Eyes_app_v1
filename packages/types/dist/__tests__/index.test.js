@@ -1,15 +1,13 @@
-"use strict";
 /**
  * @fileoverview Index Export Tests
  * Testing that all types are properly exported from the main index
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var TypesIndex = require("../index");
-describe('Types Index Export Tests', function () {
-    describe('Named Export Validation', function () {
-        it('should export all billing interfaces', function () {
+import * as TypesIndex from '../index';
+describe('Types Index Export Tests', () => {
+    describe('Named Export Validation', () => {
+        it('should export all billing interfaces', () => {
             // Test that we can create instances of each type
-            var timeEntry = {
+            const timeEntry = {
                 id: 'test-id',
                 matter_id: 'matter-123',
                 user_id: 'user-456',
@@ -34,7 +32,7 @@ describe('Types Index Export Tests', function () {
                 approved_at: '2024-01-15T11:00:00Z',
                 invoice_id: 'invoice-001'
             };
-            var invoice = {
+            const invoice = {
                 id: 'invoice-123',
                 client_id: 'client-456',
                 matter_id: 'matter-789',
@@ -48,7 +46,7 @@ describe('Types Index Export Tests', function () {
                 created_at: '2024-01-15T10:30:00Z',
                 updated_at: '2024-01-15T10:30:00Z'
             };
-            var payment = {
+            const payment = {
                 id: 'payment-123',
                 invoice_id: 'invoice-456',
                 amount: 1130.00,
@@ -58,7 +56,7 @@ describe('Types Index Export Tests', function () {
                 created_at: '2024-01-20T14:30:00Z',
                 updated_at: '2024-01-20T14:30:00Z'
             };
-            var trustAccount = {
+            const trustAccount = {
                 id: 'trust-123',
                 client_id: 'client-456',
                 matter_id: 'matter-789',
@@ -67,7 +65,7 @@ describe('Types Index Export Tests', function () {
                 created_at: '2024-01-01T00:00:00Z',
                 updated_at: '2024-01-15T10:30:00Z'
             };
-            var trustTransaction = {
+            const trustTransaction = {
                 id: 'trust-txn-123',
                 trust_account_id: 'trust-456',
                 type: 'Deposit',
@@ -83,8 +81,8 @@ describe('Types Index Export Tests', function () {
             expect(trustAccount.balance).toBe(5000.00);
             expect(trustTransaction.type).toBe('Deposit');
         });
-        it('should export KnowledgeEntry interface', function () {
-            var knowledgeEntry = {
+        it('should export KnowledgeEntry interface', () => {
+            const knowledgeEntry = {
                 id: 'knowledge-123',
                 title: 'Test Knowledge Entry',
                 content: 'Test content for knowledge entry',
@@ -99,11 +97,11 @@ describe('Types Index Export Tests', function () {
             expect(knowledgeEntry.entry_type).toBe('Legal Principle');
             expect(knowledgeEntry.title).toBe('Test Knowledge Entry');
         });
-        it('should export all enum types', function () {
-            var invoiceStatuses = ['Draft', 'Sent', 'Paid', 'Overdue', 'Cancelled'];
-            var paymentStatuses = ['Pending', 'Completed', 'Failed', 'Refunded'];
-            var paymentMethods = ['Credit Card', 'Bank Transfer', 'Cheque', 'Cash', 'Trust Transfer'];
-            var taskCategories = [
+        it('should export all enum types', () => {
+            const invoiceStatuses = ['Draft', 'Sent', 'Paid', 'Overdue', 'Cancelled'];
+            const paymentStatuses = ['Pending', 'Completed', 'Failed', 'Refunded'];
+            const paymentMethods = ['Credit Card', 'Bank Transfer', 'Cheque', 'Cash', 'Trust Transfer'];
+            const taskCategories = [
                 'Legal Research',
                 'Document Drafting',
                 'Client Meeting',
@@ -112,7 +110,7 @@ describe('Types Index Export Tests', function () {
                 'Administrative',
                 'Other'
             ];
-            var taxTypes = ['HST', 'GST', 'PST', 'QST'];
+            const taxTypes = ['HST', 'GST', 'PST', 'QST'];
             expect(invoiceStatuses).toHaveLength(5);
             expect(paymentStatuses).toHaveLength(4);
             expect(paymentMethods).toHaveLength(5);
@@ -120,8 +118,8 @@ describe('Types Index Export Tests', function () {
             expect(taxTypes).toHaveLength(4);
         });
     });
-    describe('Wildcard Export Validation', function () {
-        it('should include all billing types in wildcard export', function () {
+    describe('Wildcard Export Validation', () => {
+        it('should include all billing types in wildcard export', () => {
             // Check that TypesIndex contains the expected exports
             expect(TypesIndex).toBeDefined();
             // Verify we can access types through the wildcard export
@@ -132,10 +130,10 @@ describe('Types Index Export Tests', function () {
             // without runtime errors, which confirms the export structure is correct
         });
     });
-    describe('Type Compatibility Tests', function () {
-        it('should maintain type compatibility across imports', function () {
+    describe('Type Compatibility Tests', () => {
+        it('should maintain type compatibility across imports', () => {
             // Test that types imported via named import are compatible with wildcard import
-            var namedImportEntry = {
+            const namedImportEntry = {
                 id: 'named-import-test',
                 matter_id: 'matter-123',
                 user_id: 'user-456',
@@ -160,21 +158,21 @@ describe('Types Index Export Tests', function () {
             expect(namedImportEntry.id).toBe('named-import-test');
             expect(namedImportEntry.task_category).toBe('Legal Research');
         });
-        it('should support enum value assignments', function () {
-            var status = 'Draft';
-            var paymentMethod = 'Credit Card';
-            var category = 'Document Drafting';
-            var taxType = 'HST';
+        it('should support enum value assignments', () => {
+            const status = 'Draft';
+            const paymentMethod = 'Credit Card';
+            const category = 'Document Drafting';
+            const taxType = 'HST';
             expect(status).toBe('Draft');
             expect(paymentMethod).toBe('Credit Card');
             expect(category).toBe('Document Drafting');
             expect(taxType).toBe('HST');
         });
     });
-    describe('Re-export Functionality', function () {
-        it('should re-export billing types for convenience', function () {
+    describe('Re-export Functionality', () => {
+        it('should re-export billing types for convenience', () => {
             // Test that the convenience re-exports work
-            var invoice = {
+            const invoice = {
                 id: 'convenience-test',
                 client_id: 'client-123',
                 matter_id: 'matter-456',
@@ -188,7 +186,7 @@ describe('Types Index Export Tests', function () {
                 created_at: '2024-01-15T10:30:00Z',
                 updated_at: '2024-01-15T10:30:00Z'
             };
-            var knowledge = {
+            const knowledge = {
                 id: 'convenience-knowledge',
                 title: 'Convenience Test Entry',
                 content: 'Testing re-export functionality',
@@ -203,11 +201,11 @@ describe('Types Index Export Tests', function () {
             expect(invoice.invoice_number).toBe('CONV-001');
             expect(knowledge.title).toBe('Convenience Test Entry');
         });
-        it('should allow mixed usage of wildcard and named imports', function () {
+        it('should allow mixed usage of wildcard and named imports', () => {
             // This test validates that developers can use both import styles
             // without conflicts or type incompatibilities
             // Using named imports (already imported at top)
-            var timeEntry = {
+            const timeEntry = {
                 id: 'mixed-usage-test',
                 matter_id: 'matter-999',
                 user_id: 'user-999',
@@ -232,3 +230,4 @@ describe('Types Index Export Tests', function () {
         });
     });
 });
+//# sourceMappingURL=index.test.js.map

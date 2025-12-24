@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Users,
   Plus,
@@ -146,17 +146,7 @@ export function DistributionListManager() {
   const [filterRoles, setFilterRoles] = useState<string[]>([]);
   const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchLists();
-  }, []);
-
-  useEffect(() => {
-    if (selectedList) {
-      fetchSubscribers(selectedList.id);
-    }
-  }, [selectedList]);
-
-  const fetchLists = async () => {
+  const fetchLists = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/communications/distribution-lists');
@@ -177,9 +167,9 @@ export function DistributionListManager() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const fetchSubscribers = async (listId: string) => {
+  const fetchSubscribers = useCallback(async (listId: string) => {
     try {
       const response = await fetch(
         `/api/communications/distribution-lists/${listId}/subscribers`
@@ -199,7 +189,17 @@ export function DistributionListManager() {
         variant: 'destructive',
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchLists();
+  }, [fetchLists]);
+
+  useEffect(() => {
+    if (selectedList) {
+      fetchSubscribers(selectedList.id);
+    }
+  }, [selectedList, fetchSubscribers]);
 
   const fetchAvailableProfiles = async () => {
     try {

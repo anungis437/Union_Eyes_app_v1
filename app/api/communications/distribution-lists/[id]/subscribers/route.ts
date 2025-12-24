@@ -49,7 +49,7 @@ export async function GET(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.tenantId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, user.tenantId)
         )
       );
 
@@ -105,7 +105,7 @@ export async function POST(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.tenantId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, user.tenantId)
         )
       );
 

@@ -75,7 +75,7 @@ async function generateClaimsReport(
   console.log('Generating claims report', parameters);
 
   // Build query with combined where conditions
-  const conditions: any[] = [eq(claims.tenantId, tenantId)];
+  const conditions: any[] = [eq(claims.organizationId, tenantId)];
   
   if (parameters.startDate && parameters.endDate) {
     conditions.push(
@@ -130,7 +130,7 @@ async function generateMembersReport(
   console.log('Generating members report', parameters);
 
   // Build query with combined where conditions
-  const conditions: any[] = [eq(members.tenantId, tenantId)];
+  const conditions: any[] = [eq(members.organizationId, tenantId)];
   
   if (parameters.status) {
     conditions.push(eq(members.status, parameters.status as any));
@@ -184,7 +184,7 @@ async function generateMembersReport(
   let query = db
     .select()
     .from(grievances)
-    .where(eq(grievances.tenantId, tenantId));
+    .where(eq(grievances.organizationId, tenantId));
 
   // Add filters
   if (parameters.startDate && parameters.endDate) {

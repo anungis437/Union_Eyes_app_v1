@@ -4,6 +4,8 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NLQueryInterface } from '@/src/components/ml/NLQueryInterface';
 import { SmartRecommendations } from '@/src/components/ml/SmartRecommendations';
+import { ChurnRiskDashboard } from '@/src/components/dashboard/ChurnRiskDashboard';
+import { WorkloadForecastDashboard } from '@/src/components/dashboard/WorkloadForecastDashboard';
 import { Sparkles, Lightbulb, TrendingUp } from 'lucide-react';
 
 /**
@@ -57,13 +59,8 @@ export default function MLInsightsPage() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">
-          <div className="rounded-lg border p-6 text-center text-muted-foreground">
-            <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <h3 className="font-medium mb-2">ML Trend Analysis Coming Soon</h3>
-            <p className="text-sm">
-              Advanced pattern detection and predictive analytics visualization
-            </p>
-          </div>
+          <ChurnRiskDashboard />
+          <WorkloadForecastDashboard />
         </TabsContent>
       </Tabs>
     </div>

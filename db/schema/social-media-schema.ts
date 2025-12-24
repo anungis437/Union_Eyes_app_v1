@@ -7,7 +7,7 @@
 
 import { pgTable, pgEnum, uuid, text, timestamp, integer, decimal, boolean, date, jsonb, unique, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // ================================================================
@@ -75,7 +75,7 @@ export const campaignStatusEnum = pgEnum('campaign_status', [
 // Social Media Accounts
 export const socialAccounts = pgTable('social_accounts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Platform Details
   platform: socialPlatformEnum('platform').notNull(),
@@ -115,17 +115,17 @@ export const socialAccounts = pgTable('social_accounts', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
-  tenantIdx: index('idx_social_accounts_tenant').on(table.tenantId),
+  organizationIdx: index('idx_social_accounts_organization').on(table.organizationId),
   platformIdx: index('idx_social_accounts_platform').on(table.platform),
   statusIdx: index('idx_social_accounts_status').on(table.status),
-  primaryIdx: index('idx_social_accounts_primary').on(table.tenantId, table.platform, table.isPrimary),
-  uniquePlatformUser: unique().on(table.tenantId, table.platform, table.platformUserId)
+  primaryIdx: index('idx_social_accounts_primary').on(table.organizationId, table.platform, table.isPrimary),
+  uniquePlatformUser: unique().on(table.organizationId, table.platform, table.platformUserId)
 }));
 
 // Social Media Posts
 export const socialPosts = pgTable('social_posts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   accountId: uuid('account_id').notNull().references(() => socialAccounts.id, { onDelete: 'cascade' }),
   campaignId: uuid('campaign_id').references(() => socialCampaigns.id, { onDelete: 'set null' }),
   
@@ -169,7 +169,7 @@ export const socialPosts = pgTable('social_posts', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true })
 }, (table) => ({
-  tenantIdx: index('idx_social_posts_tenant').on(table.tenantId),
+  organizationIdx: index('idx_social_posts_organization').on(table.organizationId),
   accountIdx: index('idx_social_posts_account').on(table.accountId),
   campaignIdx: index('idx_social_posts_campaign').on(table.campaignId),
   statusIdx: index('idx_social_posts_status').on(table.status),
@@ -180,7 +180,7 @@ export const socialPosts = pgTable('social_posts', {
 // Social Media Campaigns
 export const socialCampaigns = pgTable('social_campaigns', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Campaign Details
   name: text('name').notNull(),
@@ -210,7 +210,7 @@ export const socialCampaigns = pgTable('social_campaigns', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
-  tenantIdx: index('idx_social_campaigns_tenant').on(table.tenantId),
+  organizationIdx: index('idx_social_campaigns_organization').on(table.organizationId),
   statusIdx: index('idx_social_campaigns_status').on(table.status),
   datesIdx: index('idx_social_campaigns_dates').on(table.startDate, table.endDate)
 }));
@@ -218,7 +218,7 @@ export const socialCampaigns = pgTable('social_campaigns', {
 // Social Media Analytics
 export const socialAnalytics = pgTable('social_analytics', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   accountId: uuid('account_id').notNull().references(() => socialAccounts.id, { onDelete: 'cascade' }),
   
   // Analytics Date
@@ -252,7 +252,7 @@ export const socialAnalytics = pgTable('social_analytics', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
-  tenantIdx: index('idx_social_analytics_tenant').on(table.tenantId),
+  organizationIdx: index('idx_social_analytics_organization').on(table.organizationId),
   accountIdx: index('idx_social_analytics_account').on(table.accountId),
   dateIdx: index('idx_social_analytics_date').on(table.analyticsDate),
   accountDateIdx: index('idx_social_analytics_account_date').on(table.accountId, table.analyticsDate),
@@ -262,7 +262,7 @@ export const socialAnalytics = pgTable('social_analytics', {
 // Social Media Feeds
 export const socialFeeds = pgTable('social_feeds', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   accountId: uuid('account_id').notNull().references(() => socialAccounts.id, { onDelete: 'cascade' }),
   
   // Feed Item Details
@@ -293,7 +293,7 @@ export const socialFeeds = pgTable('social_feeds', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
-  tenantIdx: index('idx_social_feeds_tenant').on(table.tenantId),
+  organizationIdx: index('idx_social_feeds_organization').on(table.organizationId),
   accountIdx: index('idx_social_feeds_account').on(table.accountId),
   publishedIdx: index('idx_social_feeds_published').on(table.publishedAt),
   uniqueAccountItem: unique().on(table.accountId, table.platformItemId)
@@ -302,7 +302,7 @@ export const socialFeeds = pgTable('social_feeds', {
 // Social Media Engagement
 export const socialEngagement = pgTable('social_engagement', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   postId: uuid('post_id').notNull().references(() => socialPosts.id, { onDelete: 'cascade' }),
   
   // Engagement Details
@@ -331,7 +331,7 @@ export const socialEngagement = pgTable('social_engagement', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
-  tenantIdx: index('idx_social_engagement_tenant').on(table.tenantId),
+  organizationIdx: index('idx_social_engagement_organization').on(table.organizationId),
   postIdx: index('idx_social_engagement_post').on(table.postId),
   typeIdx: index('idx_social_engagement_type').on(table.engagementType),
   engagedAtIdx: index('idx_social_engagement_engaged_at').on(table.engagedAt),
@@ -343,9 +343,9 @@ export const socialEngagement = pgTable('social_engagement', {
 // ================================================================
 
 export const socialAccountsRelations = relations(socialAccounts, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [socialAccounts.tenantId],
-    references: [tenants.tenantId]
+  organization: one(organizations, {
+    fields: [socialAccounts.organizationId],
+    references: [organizations.id]
   }),
   connectedByProfile: one(profiles, {
     fields: [socialAccounts.connectedBy],
@@ -357,9 +357,9 @@ export const socialAccountsRelations = relations(socialAccounts, ({ one, many })
 }));
 
 export const socialPostsRelations = relations(socialPosts, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [socialPosts.tenantId],
-    references: [tenants.tenantId]
+  organization: one(organizations, {
+    fields: [socialPosts.organizationId],
+    references: [organizations.id]
   }),
   account: one(socialAccounts, {
     fields: [socialPosts.accountId],
@@ -377,9 +377,9 @@ export const socialPostsRelations = relations(socialPosts, ({ one, many }) => ({
 }));
 
 export const socialCampaignsRelations = relations(socialCampaigns, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [socialCampaigns.tenantId],
-    references: [tenants.tenantId]
+  organization: one(organizations, {
+    fields: [socialCampaigns.organizationId],
+    references: [organizations.id]
   }),
   createdByProfile: one(profiles, {
     fields: [socialCampaigns.createdBy],
@@ -389,9 +389,9 @@ export const socialCampaignsRelations = relations(socialCampaigns, ({ one, many 
 }));
 
 export const socialAnalyticsRelations = relations(socialAnalytics, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [socialAnalytics.tenantId],
-    references: [tenants.tenantId]
+  organization: one(organizations, {
+    fields: [socialAnalytics.organizationId],
+    references: [organizations.id]
   }),
   account: one(socialAccounts, {
     fields: [socialAnalytics.accountId],
@@ -400,9 +400,9 @@ export const socialAnalyticsRelations = relations(socialAnalytics, ({ one }) => 
 }));
 
 export const socialFeedsRelations = relations(socialFeeds, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [socialFeeds.tenantId],
-    references: [tenants.tenantId]
+  organization: one(organizations, {
+    fields: [socialFeeds.organizationId],
+    references: [organizations.id]
   }),
   account: one(socialAccounts, {
     fields: [socialFeeds.accountId],
@@ -411,9 +411,9 @@ export const socialFeedsRelations = relations(socialFeeds, ({ one }) => ({
 }));
 
 export const socialEngagementRelations = relations(socialEngagement, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [socialEngagement.tenantId],
-    references: [tenants.tenantId]
+  organization: one(organizations, {
+    fields: [socialEngagement.organizationId],
+    references: [organizations.id]
   }),
   post: one(socialPosts, {
     fields: [socialEngagement.postId],

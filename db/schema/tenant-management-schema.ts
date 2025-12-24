@@ -1,10 +1,24 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, decimal, pgSchema, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
+/**
+ * LEGACY TENANT MANAGEMENT SCHEMA
+ * 
+ * This schema contains the original "tenants" table structure which has been DEPRECATED.
+ * The application is migrating to use "organizations" (schema-organizations.ts) instead.
+ * 
+ * Current Status (2024):
+ * - ✅ New code should use organizations.id instead of tenants.tenantId
+ * - ⚠️ This schema is kept for backward compatibility during migration
+ * - 🔜 Will be removed in a future major version once migration is complete
+ * 
+ * DO NOT add new references to this schema. Use organizations instead.
+ */
+
 // Create tenant_management schema
 export const tenantManagementSchema = pgSchema("tenant_management");
 
-// Tenants table - primary organization/union management
+// Tenants table - primary organization/union management [DEPRECATED - Use organizations table]
 export const tenants = tenantManagementSchema.table("tenants", {
   tenantId: uuid("tenant_id").primaryKey().defaultRandom(),
   tenantSlug: varchar("tenant_slug", { length: 100 }).notNull().unique(),

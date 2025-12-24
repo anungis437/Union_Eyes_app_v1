@@ -50,7 +50,7 @@ export async function sendClaimStatusNotification(
         description: claims.description,
         memberId: claims.memberId,
         assignedTo: claims.assignedTo,
-        tenantId: claims.tenantId,
+        tenantId: claims.organizationId,
       })
       .from(claims)
       .where(eq(claims.claimId, claimId))

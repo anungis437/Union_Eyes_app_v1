@@ -114,6 +114,7 @@ export async function POST(req: NextRequest) {
       memberId,
       transactionType: 'payment_plan_installment',
       amount: installment.amount.toString(),
+      duesAmount: installment.amount.toString(),
       totalAmount: installment.amount.toString(),
       dueDate: new Date(installment.dueDate).toISOString().split('T')[0],
       periodStart: new Date(installment.dueDate).toISOString().split('T')[0],

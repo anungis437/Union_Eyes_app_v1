@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useOrganizationId } from '@/lib/hooks/use-organization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -80,6 +81,7 @@ interface T4ARecord {
 }
 
 export default function PensionAdminPage() {
+  const organizationId = useOrganizationId();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('plans');
   
@@ -91,19 +93,32 @@ export default function PensionAdminPage() {
   const [t4aRecords, setT4ARecords] = useState<T4ARecord[]>([]);
 
   useEffect(() => {
-    loadAdminData();
-  }, []);
+    if (organizationId) {
+      loadAdminData();
+    }
+  }, [organizationId]);
 
   const loadAdminData = async () => {
+    if (!organizationId) return;
+
     try {
       setLoading(true);
       
-      // Load all admin data in parallel
-      const [plansRes, contributionsRes, claimsRes, membersRes, t4aRes] = await Promise.all([
-        fetch('/api/pension/plans'),
-        fetch('/api/pension/plans'), // Reusing for contributions demo
+      // First fetch plans to get a planId
+      const plansRes = await fetch(`/api/pension/plans?organizationId=${organizationId}`);
+      
+      if (!plansRes.ok) {
+        throw new Error('Failed to fetch pension plans');
+      }
+      
+      const plansData = await plansRes.json();
+      const firstPlanId = plansData.data?.[0]?.id;
+      
+      // Load remaining admin data in parallel
+      const [contributionsRes, claimsRes, membersRes, t4aRes] = await Promise.all([
+        fetch(`/api/pension/plans?organizationId=${organizationId}`), // Reusing for contributions demo
         fetch('/api/pension/benefits'),
-        fetch('/api/pension/members'),
+        firstPlanId ? fetch(`/api/pension/members?planId=${firstPlanId}`) : Promise.resolve({ ok: false }),
         fetch('/api/tax/t4a')
       ]);
 

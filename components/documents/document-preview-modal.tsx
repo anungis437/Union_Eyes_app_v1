@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,21 +66,7 @@ export function DocumentPreviewModal({
   const [activeTab, setActiveTab] = useState<'preview' | 'metadata' | 'history'>('preview');
   const [versionHistory, setVersionHistory] = useState<any[]>([]);
 
-  // Reset state when document changes
-  useEffect(() => {
-    if (document) {
-      setZoom(100);
-      setRotation(0);
-      setIsFullscreen(false);
-      setActiveTab('preview');
-      fetchVersionHistory(document.id);
-    }
-  }, [document?.id]);
-
-  /**
-   * Fetch version history for the document
-   */
-  const fetchVersionHistory = async (documentId: string) => {
+  const fetchVersionHistory = useCallback(async (documentId: string) => {
     try {
       const response = await fetch(`/api/documents/${documentId}/versions`);
       if (!response.ok) throw new Error('Failed to fetch version history');
@@ -91,7 +77,18 @@ export function DocumentPreviewModal({
       console.error('Failed to fetch version history:', err);
       setVersionHistory([]);
     }
-  };
+  }, []);
+
+  // Reset state when document changes
+  useEffect(() => {
+    if (document) {
+      setZoom(100);
+      setRotation(0);
+      setIsFullscreen(false);
+      setActiveTab('preview');
+      fetchVersionHistory(document.id);
+    }
+  }, [document?.id, fetchVersionHistory]);
 
   /**
    * Handle keyboard shortcuts

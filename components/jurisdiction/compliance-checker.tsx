@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, XCircle, InfoIcon } from 'lucide-react';
@@ -80,7 +80,7 @@ export function ComplianceChecker({
   const [checks, setChecks] = useState<ComplianceCheck[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const performChecks = async () => {
+  const performChecks = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -196,13 +196,13 @@ export function ComplianceChecker({
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, jurisdiction, data, autoCheck]);
 
   useEffect(() => {
     if (autoCheck && organizationId && data) {
       performChecks();
     }
-  }, [organizationId, jurisdiction, data, autoCheck]);
+  }, [performChecks, autoCheck, organizationId, data]);
 
   const groupedChecks = checks.reduce((acc, check) => {
     if (!acc[check.status]) {

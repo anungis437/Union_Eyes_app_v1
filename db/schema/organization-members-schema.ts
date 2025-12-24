@@ -8,9 +8,8 @@ export const memberStatusEnum = pgEnum("member_status", ["active", "inactive", "
 // Organization Members table
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: text("organization_id").notNull(), // Legacy Clerk organization ID (deprecated)
   userId: text("user_id").notNull(), // Clerk user ID
-  tenantId: uuid("tenant_id").notNull(), // FK to tenant_management.tenants
+  organizationId: uuid("organization_id").notNull(), // FK to organizations table
   
   // Basic Info
   name: text("name").notNull(),

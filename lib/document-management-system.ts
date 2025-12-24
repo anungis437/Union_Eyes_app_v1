@@ -101,7 +101,7 @@ export async function uploadDocument(
     const [document] = await db
       .insert(grievanceDocuments)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId,
         documentName: file.name,
         documentType,
@@ -156,7 +156,7 @@ export async function uploadDocumentVersion(
     const parentDoc = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, parentDocumentId),
-        eq(grievanceDocuments.tenantId, tenantId)
+        eq(grievanceDocuments.organizationId, tenantId)
       ),
     });
 
@@ -197,7 +197,7 @@ export async function uploadDocumentVersion(
     const [newVersion] = await db
       .insert(grievanceDocuments)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId: parentDoc.claimId,
         documentName: file.name,
         documentType: parentDoc.documentType,
@@ -250,7 +250,7 @@ export async function getDocumentVersions(
     const rootDoc = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, documentId),
-        eq(grievanceDocuments.tenantId, tenantId)
+        eq(grievanceDocuments.organizationId, tenantId)
       ),
     });
 
@@ -295,7 +295,7 @@ export async function restoreDocumentVersion(
     const versionDoc = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, versionId),
-        eq(grievanceDocuments.tenantId, tenantId)
+        eq(grievanceDocuments.organizationId, tenantId)
       ),
     });
 
@@ -357,7 +357,7 @@ export async function searchDocuments(
 ): Promise<DocumentSearchResult[]> {
   try {
     let whereConditions = and(
-      eq(grievanceDocuments.tenantId, tenantId),
+      eq(grievanceDocuments.organizationId, tenantId),
       eq(grievanceDocuments.isLatestVersion, true)
     );
 
@@ -535,7 +535,7 @@ export async function markDocumentSigned(
     const document = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, documentId),
-        eq(grievanceDocuments.tenantId, tenantId)
+        eq(grievanceDocuments.organizationId, tenantId)
       ),
     });
 
@@ -578,7 +578,7 @@ export async function getSignatureStatus(
     const document = await db.query.grievanceDocuments.findFirst({
       where: and(
         eq(grievanceDocuments.id, documentId),
-        eq(grievanceDocuments.tenantId, tenantId)
+        eq(grievanceDocuments.organizationId, tenantId)
       ),
     });
 
@@ -618,7 +618,7 @@ export async function applyRetentionPolicy(
     // Find documents matching policy
     const documents = await db.query.grievanceDocuments.findMany({
       where: and(
-        eq(grievanceDocuments.tenantId, tenantId),
+        eq(grievanceDocuments.organizationId, tenantId),
         eq(grievanceDocuments.documentType, policy.documentType),
         sql`${grievanceDocuments.uploadedAt} < ${cutoffDate.toISOString()}`
       ),
@@ -666,7 +666,7 @@ export async function archiveDocument(
       .where(
         and(
           eq(grievanceDocuments.id, documentId),
-          eq(grievanceDocuments.tenantId, tenantId)
+          eq(grievanceDocuments.organizationId, tenantId)
         )
       );
 
@@ -695,7 +695,7 @@ export async function getGrievanceDocuments(
   try {
     let whereConditions = and(
       eq(grievanceDocuments.claimId, claimId),
-      eq(grievanceDocuments.tenantId, tenantId)
+      eq(grievanceDocuments.organizationId, tenantId)
     );
 
     if (!options.includeArchived) {

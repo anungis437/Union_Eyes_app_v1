@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 
 interface CertificationJurisdictionInfoProps {
   certificationId: string;
-  tenantId: string;
+  organizationId: string;
   totalEmployees: number;
   cardsSignedCount?: number;
   certificationMethod?: 'card-check' | 'mandatory-vote' | 'automatic';
@@ -31,7 +31,7 @@ interface CertificationRequirements {
 
 export function CertificationJurisdictionInfo({
   certificationId,
-  tenantId,
+  organizationId,
   totalEmployees,
   cardsSignedCount = 0,
   certificationMethod,
@@ -47,9 +47,9 @@ export function CertificationJurisdictionInfo({
       try {
         setLoading(true);
 
-        // Fetch tenant's jurisdiction
+        // Fetch organization's jurisdiction
         const jurisdictionResponse = await fetch(
-          `/api/jurisdiction/tenant/${tenantId}`
+          `/api/jurisdiction/organization/${organizationId}`
         );
 
         if (!jurisdictionResponse.ok) {
@@ -245,7 +245,7 @@ export function CertificationJurisdictionInfo({
     };
 
     fetchRequirements();
-  }, [certificationId, tenantId]);
+  }, [certificationId, organizationId]);
 
   if (loading) {
     return (

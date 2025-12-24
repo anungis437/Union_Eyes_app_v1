@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from 'next-intl';
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -125,7 +125,7 @@ export default function AdminPage() {
     }
   };
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -141,9 +141,9 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery]);
 
-  const loadOrganizations = async () => {
+  const loadOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -172,7 +172,7 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery]);
 
   const handleDeleteUser = async (userId: string, tenantId: string) => {
     if (!confirm("Are you sure you want to remove this user?")) return;

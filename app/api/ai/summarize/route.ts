@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // 4. Create Supabase client
     const supabase = await createClient();
 
-    // 5. Fetch case/claim data (filtered by tenant)
+    // 5. Fetch case/claim data (filtered by organization)
     const { data: claim, error: claimError } = await supabase
       .from('claims')
       .select(`
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         activities:activities(activity_type, description, created_at)
       `)
       .eq('claim_id', claim_id as any)
-      .eq('tenant_id', (orgId || '') as any)
+      .eq('organization_id', (orgId || '') as any)
       .single();
 
     if (claimError || !claim) {
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       .from('case_summaries')
       .insert({
         claim_id,
-        tenant_id: orgId || (claim as any).tenant_id,
+        organization_id: orgId || (claim as any).organization_id,
         summary_text: summaryText,
         created_by: 'ai', // Mark as AI-generated
         metadata: {
@@ -219,12 +219,12 @@ export async function GET(request: NextRequest) {
     // 3. Create Supabase client
     const supabase = await createClient();
 
-    // 4. Get all AI summaries for this claim (filtered by tenant)
+    // 4. Get all AI summaries for this claim (filtered by organization)
     const { data: summaries, error } = await supabase
       .from('case_summaries')
       .select('*')
       .eq('claim_id', claimId as any)
-      .eq('tenant_id', (orgId || '') as any)
+      .eq('organization_id', (orgId || '') as any)
       .eq('created_by', 'ai' as any)
       .order('created_at', { ascending: false });
 

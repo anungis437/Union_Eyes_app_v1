@@ -52,7 +52,7 @@ export async function GET(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.tenantId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, user.tenantId)
         )
       );
 
@@ -92,7 +92,7 @@ export async function PUT(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.tenantId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, user.tenantId)
         )
       )
       .returning();
@@ -136,7 +136,7 @@ export async function DELETE(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.tenantId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, user.tenantId)
         )
       );
 

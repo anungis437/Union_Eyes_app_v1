@@ -45,7 +45,6 @@ export const arbitrationPrecedents = pgTable("arbitration_precedents", {
   
   // Arbitrator
   arbitratorName: varchar("arbitrator_name", { length: 200 }).notNull(),
-  tribunal: varchar("tribunal", { length: 200 }),
   jurisdiction: varchar("jurisdiction", { length: 50 }).notNull(),
   
   // Case details
@@ -58,20 +57,20 @@ export const arbitrationPrecedents = pgTable("arbitration_precedents", {
   outcome: varchar("outcome", { length: 50 }).notNull(),
   decisionSummary: text("decision_summary").notNull(),
   reasoning: text("reasoning"),
-  keyFindings: text("key_findings").array(),
   
   // Precedent value
-  precedentLevel: varchar("precedent_level", { length: 50 }).notNull().default("low"),
+  precedentialValue: varchar("precedential_value", { length: 20 }).default('medium'),
+  keyPrinciples: text("key_principles").array(),
+  relatedLegislation: text("related_legislation"),
   citedCases: uuid("cited_cases").array(),
   citationCount: integer("citation_count").default(0),
   
   // Documents
-  decisionDocumentUrl: text("decision_document_url"),
-  redactedDocumentUrl: text("redacted_document_url"),
-  
-  // Member privacy
-  isMemberNamesRedacted: boolean("is_member_names_redacted").default(true),
-  grievorNames: text("grievor_names").array(),
+  documentUrl: varchar("document_url", { length: 500 }),
+  documentPath: varchar("document_path", { length: 500 }),
+  redactedDocumentUrl: varchar("redacted_document_url", { length: 500 }),
+  redactedDocumentPath: varchar("redacted_document_path", { length: 500 }),
+  hasRedactedVersion: boolean("has_redacted_version").default(false),
   
   // Sharing controls
   sharingLevel: varchar("sharing_level", { length: 50 }).notNull().default("federation"),
@@ -79,15 +78,14 @@ export const arbitrationPrecedents = pgTable("arbitration_precedents", {
   
   // Metadata
   sector: varchar("sector", { length: 100 }),
-  industry: varchar("industry", { length: 100 }),
-  bargainingUnitSize: varchar("bargaining_unit_size", { length: 50 }),
+  province: varchar("province", { length: 2 }),
   
   // Engagement metrics
   viewCount: integer("view_count").default(0),
   downloadCount: integer("download_count").default(0),
   
   // Audit
-  uploadedBy: uuid("uploaded_by").notNull(),
+  createdBy: uuid("created_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
@@ -97,7 +95,7 @@ export const arbitrationPrecedents = pgTable("arbitration_precedents", {
   arbitratorIdx: index("idx_precedents_arbitrator").on(table.arbitratorName),
   jurisdictionIdx: index("idx_precedents_jurisdiction").on(table.jurisdiction),
   sharingIdx: index("idx_precedents_sharing").on(table.sharingLevel),
-  levelIdx: index("idx_precedents_level").on(table.precedentLevel),
+  levelIdx: index("idx_precedents_level").on(table.precedentialValue),
   sectorIdx: index("idx_precedents_sector").on(table.sector),
 }));
 
@@ -108,7 +106,6 @@ export const precedentTags = pgTable("precedent_tags", {
     .notNull()
     .references(() => arbitrationPrecedents.id, { onDelete: "cascade" }),
   tagName: varchar("tag_name", { length: 100 }).notNull(),
-  createdBy: uuid("created_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   precedentIdx: index("idx_precedent_tags_precedent").on(table.precedentId),

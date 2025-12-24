@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,11 +43,7 @@ export default function DuesPaymentPortal({ userId }: DuesPaymentPortalProps) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadDuesBalance();
-  }, [userId]);
-
-  const loadDuesBalance = async () => {
+  const loadDuesBalance = useCallback(async () => {
     try {
       const response = await fetch(`/api/dues/balance?userId=${userId}`);
       if (!response.ok) throw new Error('Failed to load dues balance');
@@ -63,7 +59,11 @@ export default function DuesPaymentPortal({ userId }: DuesPaymentPortalProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadDuesBalance();
+  }, [loadDuesBalance]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12">Loading...</div>;

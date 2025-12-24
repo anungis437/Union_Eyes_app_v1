@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,17 +71,13 @@ export function StrikeFundDashboard({ organizationId }: StrikeFundDashboardProps
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStrikeFunds();
-  }, [organizationId]);
-
-  useEffect(() => {
     if (selectedFund) {
       fetchPicketLines(selectedFund.id);
       fetchRecentDisbursements(selectedFund.id);
     }
   }, [selectedFund]);
 
-  const fetchStrikeFunds = async () => {
+  const fetchStrikeFunds = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/strike/funds?organizationId=${organizationId}`);
@@ -98,7 +94,11 @@ export function StrikeFundDashboard({ organizationId }: StrikeFundDashboardProps
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, selectedFund]);
+
+  useEffect(() => {
+    fetchStrikeFunds();
+  }, [fetchStrikeFunds]);
 
   const fetchPicketLines = async (fundId: string) => {
     try {

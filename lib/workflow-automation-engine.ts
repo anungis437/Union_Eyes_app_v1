@@ -79,7 +79,7 @@ export async function initializeWorkflow(
     // Find appropriate workflow for this grievance type
     const workflow = await db.query.grievanceWorkflows.findFirst({
       where: and(
-        eq(grievanceWorkflows.tenantId, tenantId),
+        eq(grievanceWorkflows.organizationId, tenantId),
         eq(grievanceWorkflows.grievanceType, grievanceType),
         eq(grievanceWorkflows.status, "active")
       ),
@@ -94,7 +94,7 @@ export async function initializeWorkflow(
       // Try to find default workflow
       const defaultWorkflow = await db.query.grievanceWorkflows.findFirst({
         where: and(
-          eq(grievanceWorkflows.tenantId, tenantId),
+          eq(grievanceWorkflows.organizationId, tenantId),
           eq(grievanceWorkflows.isDefault, true),
           eq(grievanceWorkflows.status, "active")
         ),
@@ -149,7 +149,7 @@ async function startWorkflow(
     const [transition] = await db
       .insert(grievanceTransitions)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId,
         fromStageId: null, // No previous stage
         toStageId: firstStage.id,
@@ -226,7 +226,7 @@ export async function transitionToStage(
       const [pendingTransition] = await db
         .insert(grievanceTransitions)
         .values({
-          tenantId,
+          organizationId: tenantId,
           claimId,
           fromStageId: currentStageId || null,
           toStageId,
@@ -266,7 +266,7 @@ export async function transitionToStage(
     const [transition] = await db
       .insert(grievanceTransitions)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId,
         fromStageId: currentStageId || null,
         toStageId,
@@ -334,7 +334,7 @@ export async function approveTransition(
     const transition = await db.query.grievanceTransitions.findFirst({
       where: and(
         eq(grievanceTransitions.id, transitionId),
-        eq(grievanceTransitions.tenantId, tenantId),
+        eq(grievanceTransitions.organizationId, tenantId),
         eq(grievanceTransitions.requiresApproval, true),
         isNull(grievanceTransitions.approvedBy)
       ),
@@ -434,7 +434,7 @@ export async function getWorkflowStatus(
   try {
     // Get claim details
     const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.tenantId, tenantId)),
+      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
     });
 
     if (!claim) return null;
@@ -492,13 +492,14 @@ export async function getWorkflowStatus(
     });
 
     const upcomingDeadlines = deadlines.map((deadline) => {
+      const deadlineDate = deadline.deadlineDate || new Date();
       const daysRemaining = Math.ceil(
-        (new Date(deadline.deadlineDate).getTime() - new Date().getTime()) /
+        (new Date(deadlineDate).getTime() - new Date().getTime()) /
           (1000 * 60 * 60 * 24)
       );
       return {
         type: deadline.deadlineType,
-        date: new Date(deadline.deadlineDate),
+        date: new Date(deadlineDate),
         daysRemaining,
       };
     });
@@ -507,8 +508,9 @@ export async function getWorkflowStatus(
     const isOverdue = upcomingDeadlines.some((d) => d.daysRemaining < 0);
 
     // Calculate days in current stage
+    const transitionDate = currentTransition.transitionedAt || new Date();
     const daysInCurrentStage = Math.floor(
-      (new Date().getTime() - new Date(currentTransition.transitionedAt).getTime()) /
+      (new Date().getTime() - new Date(transitionDate).getTime()) /
         (1000 * 60 * 60 * 24)
     );
 
@@ -652,7 +654,7 @@ async function evaluateConditions(
 
   // Get claim data
   const claim = await db.query.claims.findFirst({
-    where: and(eq(claims.claimId, claimId), eq(claims.tenantId, tenantId)),
+    where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
   });
 
   if (!claim) return false;
@@ -694,7 +696,7 @@ async function createStageDeadline(
   tenantId: string
 ): Promise<void> {
   await db.insert(grievanceDeadlines).values({
-    tenantId,
+    organizationId: tenantId,
     claimId,
     stageId,
     deadlineType: "stage_completion",
@@ -741,7 +743,7 @@ async function createActionDeadline(
   tenantId: string
 ): Promise<void> {
   await db.insert(grievanceDeadlines).values({
-    tenantId,
+    organizationId: tenantId,
     claimId,
     deadlineType: type,
     deadlineDate: new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
@@ -830,8 +832,9 @@ export async function sendDeadlineReminders(): Promise<void> {
     });
 
     for (const deadline of allDeadlines) {
+      const deadlineDate = deadline.deadlineDate || new Date();
       const daysUntilDeadline = Math.ceil(
-        (new Date(deadline.deadlineDate).getTime() - new Date().getTime()) /
+        (new Date(deadlineDate).getTime() - new Date().getTime()) /
           (1000 * 60 * 60 * 24)
       );
 

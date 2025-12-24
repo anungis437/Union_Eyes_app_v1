@@ -105,7 +105,7 @@ interface ComplianceSummary {
 interface OrganizationPerformance {
   organizationId: string;
   organizationName: string;
-  clcAffiliateCode: string;
+  charterNumber: string;
   remittanceCount: number;
   totalAmount: number;
   paidAmount: number;
@@ -660,7 +660,7 @@ export default function CLCAnalyticsDashboard() {
                     {annualReport.organizationPerformance.slice(0, 20).map((org) => (
                       <TableRow key={org.organizationId}>
                         <TableCell className="font-medium">{org.organizationName}</TableCell>
-                        <TableCell>{org.clcAffiliateCode}</TableCell>
+                        <TableCell>{org.charterNumber}</TableCell>
                         <TableCell className="text-right">{org.remittanceCount}</TableCell>
                         <TableCell className="text-right">${org.totalAmount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</TableCell>
                         <TableCell className="text-right">${org.paidAmount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</TableCell>

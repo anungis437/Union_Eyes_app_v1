@@ -7,7 +7,7 @@
  * Shows user's available organizations with icons, names, and hierarchy paths
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown, Building2, Users, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -39,10 +39,28 @@ export function OrganizationSelector() {
     organization, 
     userOrganizations, 
     switchOrganization,
-    isLoading 
+    isLoading,
+    error,
+    refreshOrganizations
   } = useOrganization();
   
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch - render placeholder until mounted
+  if (!mounted) {
+    return (
+      <div className="w-[280px] h-10 flex items-center border rounded-md px-3 bg-background">
+        <Building2 className="h-4 w-4 text-muted-foreground mr-2" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
+      </div>
+    );
+  }
 
   const handleSelectOrganization = async (orgId: string) => {
     if (orgId !== organizationId) {
@@ -50,6 +68,21 @@ export function OrganizationSelector() {
     }
     setOpen(false);
   };
+
+  if (error) {
+    return (
+      <Button 
+        variant="outline" 
+        className="w-[280px] justify-between text-red-600"
+        onClick={() => refreshOrganizations()}
+      >
+        <span className="flex items-center gap-2">
+          <Building2 className="h-4 w-4" />
+          Error loading - Click to retry
+        </span>
+      </Button>
+    );
+  }
 
   if (isLoading || !organization) {
     return (

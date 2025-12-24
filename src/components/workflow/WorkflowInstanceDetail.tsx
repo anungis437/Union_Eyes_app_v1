@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ArrowLeft,
   Clock,
@@ -86,7 +86,7 @@ export function WorkflowInstanceDetail({
   const [selectedExecution, setSelectedExecution] = useState<NodeExecution | null>(null);
 
   // Fetch instance details
-  const fetchInstanceDetails = async () => {
+  const fetchInstanceDetails = useCallback(async () => {
     try {
       const response = await fetch(`/api/workflow-instances/${instanceId}`, {
         headers: {
@@ -103,7 +103,7 @@ export function WorkflowInstanceDetail({
     } finally {
       setLoading(false);
     }
-  };
+  }, [instanceId, tenantId]);
 
   useEffect(() => {
     fetchInstanceDetails();
@@ -116,7 +116,7 @@ export function WorkflowInstanceDetail({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [instanceId, tenantId, instance?.status]);
+  }, [fetchInstanceDetails, instance]);
 
   // Calculate duration
   const getDuration = () => {
