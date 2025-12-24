@@ -16,7 +16,7 @@ export async function getOrganizationMembers(organizationId: string): Promise<Se
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         isNull(organizationMembers.deletedAt)
       )
     )
@@ -32,7 +32,7 @@ export async function getMemberById(organizationId: string, id: string): Promise
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         eq(organizationMembers.id, id),
         isNull(organizationMembers.deletedAt)
       )
@@ -54,7 +54,7 @@ export async function getMemberByUserId(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         eq(organizationMembers.userId, userId),
         isNull(organizationMembers.deletedAt)
       )
@@ -125,7 +125,7 @@ export async function getMemberCount(organizationId: string): Promise<number> {
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         isNull(organizationMembers.deletedAt)
       )
     );
@@ -142,7 +142,7 @@ export async function getActiveMemberCount(organizationId: string): Promise<numb
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         eq(organizationMembers.status, "active"),
         isNull(organizationMembers.deletedAt)
       )
@@ -163,7 +163,7 @@ export async function getMembersByRole(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         eq(organizationMembers.role, role),
         isNull(organizationMembers.deletedAt)
       )
@@ -183,7 +183,7 @@ export async function getMembersByStatus(
     .from(organizationMembers)
     .where(
       and(
-        eq(organizationMembers.tenantId, organizationId),
+        eq(organizationMembers.organizationId, organizationId),
         eq(organizationMembers.status, status),
         isNull(organizationMembers.deletedAt)
       )
@@ -204,7 +204,7 @@ export async function searchMembers(
   }
 ): Promise<SelectOrganizationMember[]> {
   const conditions = [
-    eq(organizationMembers.tenantId, organizationId),
+    eq(organizationMembers.organizationId, organizationId),
     isNull(organizationMembers.deletedAt),
   ];
 

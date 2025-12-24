@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -115,11 +115,7 @@ export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDash
   const [dateRange, setDateRange] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
 
-  useEffect(() => {
-    loadResults();
-  }, [surveyId, dateRange]);
-
-  const loadResults = async () => {
+  const loadResults = useCallback(async () => {
     try {
       const url = `/api/communications/surveys/${surveyId}/results?dateRange=${dateRange}`;
       const response = await fetch(url);
@@ -138,7 +134,11 @@ export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDash
       });
       setIsLoading(false);
     }
-  };
+  }, [surveyId, dateRange, toast]);
+
+  useEffect(() => {
+    loadResults();
+  }, [loadResults]);
 
   const handleExportCSV = async () => {
     setIsExporting(true);

@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { 
@@ -57,57 +57,57 @@ export default function MemberPortalDashboard() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchMemberData() {
-      try {
-        // Fetch member stats and claims
-        const [memberResponse, duesResponse] = await Promise.all([
-          fetch('/api/members/me'),
-          fetch('/api/portal/dues/balance')
-        ]);
+  const fetchMemberData = useCallback(async () => {
+    try {
+      // Fetch member stats and claims
+      const [memberResponse, duesResponse] = await Promise.all([
+        fetch('/api/members/me'),
+        fetch('/api/portal/dues/balance')
+      ]);
 
-        if (memberResponse.ok) {
-          const data = await memberResponse.json();
-          setStats(data.stats);
-          setRecentClaims(data.recentClaims || []);
-        }
-
-        // Integrate real dues balance from financial service
-        if (duesResponse.ok) {
-          const duesData = await duesResponse.json();
-          setStats(prev => prev ? {
-            ...prev,
-            duesBalance: duesData.balance?.totalOwed || 0,
-            nextDuesDate: duesData.balance?.nextDueDate || null
-          } : null);
-        }
-
-        // Build activity feed from recent claims and transactions
-        const activityItems: Activity[] = [];
-        
-        // Add recent claims to activity
-        recentClaims.slice(0, 3).forEach(claim => {
-          activityItems.push({
-            id: claim.claimId,
-            type: 'claim_submitted',
-            title: `Claim ${claim.claimNumber} Submitted`,
-            description: `${claim.claimType} - Status: ${claim.status}`,
-            timestamp: claim.createdAt,
-          });
-        });
-
-        setActivities(activityItems.sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        ));
-      } catch (error) {
-        console.error('Error fetching member data:', error);
-      } finally {
-        setLoading(false);
+      if (memberResponse.ok) {
+        const data = await memberResponse.json();
+        setStats(data.stats);
+        setRecentClaims(data.recentClaims || []);
       }
-    }
 
+      // Integrate real dues balance from financial service
+      if (duesResponse.ok) {
+        const duesData = await duesResponse.json();
+        setStats(prev => prev ? {
+          ...prev,
+          duesBalance: duesData.balance?.totalOwed || 0,
+          nextDuesDate: duesData.balance?.nextDueDate || null
+        } : null);
+      }
+
+      // Build activity feed from recent claims and transactions
+      const activityItems: Activity[] = [];
+      
+      // Add recent claims to activity
+      recentClaims.slice(0, 3).forEach(claim => {
+        activityItems.push({
+          id: claim.claimId,
+          type: 'claim_submitted',
+          title: `Claim ${claim.claimNumber} Submitted`,
+          description: `${claim.claimType} - Status: ${claim.status}`,
+          timestamp: claim.createdAt,
+        });
+      });
+
+      setActivities(activityItems.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ));
+    } catch (error) {
+      console.error('Error fetching member data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [recentClaims]);
+
+  useEffect(() => {
     fetchMemberData();
-  }, []);
+  }, [fetchMemberData]);
 
   if (loading) {
     return (

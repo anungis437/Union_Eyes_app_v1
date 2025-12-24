@@ -358,8 +358,7 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
             message: metadata.message || null,
             stripePaymentIntentId: paymentIntent.id,
             status: 'completed',
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date().toISOString(),
         });
     }
 }
@@ -384,7 +383,7 @@ async function handleChargeRefunded(charge) {
         status: 'refunded',
         updatedAt: new Date(),
     })
-        .where((0, drizzle_orm_1.eq)(schema.duesTransactions.stripePaymentIntentId, paymentIntentId));
+        .where((0, drizzle_orm_1.eq)(schema.duesTransactions.paymentReference, paymentIntentId));
     await db_1.db.update(schema.donations)
         .set({
         status: 'refunded',
@@ -414,9 +413,9 @@ async function getPaymentSummary(tenantId, strikeFundId, startDate, endDate) {
         .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema.donations.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(schema.donations.status, 'completed')));
     // Stipend disbursements
     const stipendsQuery = db_1.db.select({
-        total: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${schema.stipendDisbursements.amount} AS DECIMAL)) AS TEXT)`,
+        total: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
         count: (0, drizzle_orm_1.sql) `COUNT(*)`,
-        average: (0, drizzle_orm_1.sql) `CAST(AVG(CAST(${schema.stipendDisbursements.amount} AS DECIMAL)) AS TEXT)`,
+        average: (0, drizzle_orm_1.sql) `CAST(AVG(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
     })
         .from(schema.stipendDisbursements)
         .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.status, 'paid')));

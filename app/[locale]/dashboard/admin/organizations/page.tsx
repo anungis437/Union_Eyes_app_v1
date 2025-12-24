@@ -58,6 +58,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { OrganizationBreadcrumb } from "@/components/organization/organization-breadcrumb";
 import { OrganizationTree } from "@/components/organization/organization-tree";
 import { BulkOperations } from "@/components/organization/bulk-operations";
+import { BulkImportOrganizations } from "@/components/admin/bulk-import-organizations";
 import type { Organization, OrganizationType, OrganizationStatus } from "@/types/organization";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -95,6 +96,7 @@ export default function OrganizationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("active");
   const [viewMode, setViewMode] = useState<"table" | "tree">("table");
   const [selectedOrgs, setSelectedOrgs] = useState<Set<string>>(new Set());
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
 
   // Fetch organizations - show children of current organization by default
   const { data, error, isLoading, mutate } = useSWR(
@@ -163,13 +165,23 @@ export default function OrganizationsPage() {
               Manage your organizational hierarchy
             </p>
           </div>
-          <Button 
-            onClick={() => router.push("/dashboard/admin/organizations/new")}
-            className="gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Organization
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => setBulkImportOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Bulk Import
+            </Button>
+            <Button 
+              onClick={() => router.push("/dashboard/admin/organizations/new")}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Organization
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -339,8 +351,8 @@ export default function OrganizationsPage() {
                     </TableHeader>
                     <TableBody>
                       {filteredOrganizations.map((org) => {
-                        const typeInfo = typeConfig[org.organization_type];
-                        const statusInfo = statusConfig[org.status];
+                        const typeInfo = typeConfig[org.organization_type as OrganizationType] || typeConfig.local;
+                        const statusInfo = statusConfig[org.status as OrganizationStatus] || statusConfig.active;
                         
                         return (
                           <TableRow key={org.id}>
@@ -449,6 +461,16 @@ export default function OrganizationsPage() {
           setSelectedOrgs(new Set());
         }}
         onClearSelection={() => setSelectedOrgs(new Set())}
+      />
+
+      {/* Bulk Import Dialog */}
+      <BulkImportOrganizations
+        open={bulkImportOpen}
+        onOpenChange={setBulkImportOpen}
+        onSuccess={() => {
+          mutate();
+          setBulkImportOpen(false);
+        }}
       />
     </div>
   );

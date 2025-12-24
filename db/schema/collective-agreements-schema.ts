@@ -36,7 +36,7 @@ export const cbaStatusEnum = pgEnum("cba_status", [
 // Main Collective Bargaining Agreement table
 export const collectiveAgreements = pgTable("collective_agreements", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   
   // Core identification
   cbaNumber: varchar("cba_number", { length: 100 }).notNull().unique(),
@@ -98,7 +98,7 @@ export const collectiveAgreements = pgTable("collective_agreements", {
   supersededBy: uuid("superseded_by"),
   precedesId: uuid("precedes_id"),
 }, (table) => ({
-  tenantIdx: index("cba_tenant_idx").on(table.tenantId),
+  organizationIdx: index("cba_organization_idx").on(table.organizationId),
   jurisdictionIdx: index("cba_jurisdiction_idx").on(table.jurisdiction),
   employerIdx: index("cba_employer_idx").on(table.employerName),
   unionIdx: index("cba_union_idx").on(table.unionName),

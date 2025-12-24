@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,11 +45,7 @@ export function MemberCertificates({ memberId, organizationId }: MemberCertifica
   const [searchQuery, setSearchQuery] = useState("");
   const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
 
-  useEffect(() => {
-    fetchCertifications();
-  }, [memberId, organizationId]);
-
-  const fetchCertifications = async () => {
+  const fetchCertifications = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -70,7 +66,11 @@ export function MemberCertificates({ memberId, organizationId }: MemberCertifica
     } finally {
       setLoading(false);
     }
-  };
+  }, [memberId, organizationId]);
+
+  useEffect(() => {
+    fetchCertifications();
+  }, [fetchCertifications]);
 
   const downloadCertificate = async (certificationId: string, certificateNumber: string) => {
     try {

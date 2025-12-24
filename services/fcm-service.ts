@@ -2,9 +2,19 @@
  * Firebase Cloud Messaging (FCM) Integration Service
  * Handles push notification sending via FCM with batch processing, delivery tracking, and error handling
  * Supports iOS, Android, and Web push notifications
+ * 
+ * NOTE: Requires firebase-admin package to be installed.
+ * Install with: pnpm add firebase-admin
  */
 
-import * as admin from 'firebase-admin';
+// Optional import - will be checked at runtime
+let admin: any = null;
+try {
+  admin = require('firebase-admin');
+} catch (error) {
+  console.warn('firebase-admin not installed. FCM push notifications will be disabled.');
+}
+
 import { db } from '@/db';
 import {
   pushDevices,
@@ -27,10 +37,10 @@ export interface FCMMessage {
     imageUrl?: string;
   };
   data?: Record<string, string>;
-  android?: admin.messaging.AndroidConfig;
-  apns?: admin.messaging.ApnsConfig;
-  webpush?: admin.messaging.WebpushConfig;
-  fcmOptions?: admin.messaging.FcmOptions;
+  android?: any; // AndroidConfig
+  apns?: any; // ApnsConfig
+  webpush?: any; // WebpushConfig
+  fcmOptions?: any; // FcmOptions
 }
 
 export interface SendResult {
@@ -61,7 +71,7 @@ export interface TopicSubscriptionResult {
   failureCount: number;
   errors: Array<{
     index: number;
-    error: admin.FirebaseError;
+    error: any; // FirebaseError
   }>;
 }
 
@@ -69,7 +79,7 @@ export interface TopicSubscriptionResult {
 // INITIALIZATION
 // =============================================
 
-let firebaseApp: admin.app.App | null = null;
+let firebaseApp: any = null; // app.App
 
 /**
  * Initialize Firebase Admin SDK
@@ -91,9 +101,11 @@ export function initializeFirebase() {
     const credentials = JSON.parse(serviceAccount);
 
     // Initialize Firebase Admin
-    firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert(credentials),
-    });
+    if (admin) {
+      firebaseApp = admin.initializeApp({
+        credential: admin.credential.cert(credentials),
+      });
+    }
 
     console.log('Firebase Admin SDK initialized successfully');
     return firebaseApp;
@@ -106,12 +118,12 @@ export function initializeFirebase() {
 /**
  * Get Firebase Messaging instance
  */
-function getMessaging(): admin.messaging.Messaging | null {
+function getMessaging(): any | null { // Messaging
   const app = firebaseApp || initializeFirebase();
   if (!app) return null;
 
   try {
-    return admin.messaging(app);
+    return admin?.messaging(app);
   } catch (error) {
     console.error('Failed to get Firebase Messaging instance:', error);
     return null;
@@ -149,7 +161,7 @@ export function buildFCMMessage(
   if (device.platform === 'android') {
     message.android = {
       priority: notification.priority === 'urgent' ? 'high' : 'normal',
-      ttl: notification.ttl * 1000, // Convert to milliseconds
+      ttl: (notification.ttl || 3600) * 1000, // Convert to milliseconds
       notification: {
         icon: notification.iconUrl || undefined,
         color: '#0066cc',
@@ -164,7 +176,7 @@ export function buildFCMMessage(
     message.apns = {
       headers: {
         'apns-priority': notification.priority === 'urgent' ? '10' : '5',
-        'apns-expiration': String(Math.floor(Date.now() / 1000) + notification.ttl),
+        'apns-expiration': String(Math.floor(Date.now() / 1000) + (notification.ttl || 3600)),
       },
       payload: {
         aps: {
@@ -407,7 +419,7 @@ export async function sendToProfile(
     .from(pushDevices)
     .where(
       and(
-        eq(pushDevices.tenantId, tenantId),
+        eq(pushDevices.organizationId, tenantId),
         eq(pushDevices.profileId, profileId),
         eq(pushDevices.enabled, true)
       )
@@ -445,7 +457,7 @@ export async function sendToTopic(
   }
 
   try {
-    const message: admin.messaging.TopicMessage = {
+    const message: any = { // TopicMessage
       topic,
       notification: {
         title: notification.title,
@@ -458,7 +470,7 @@ export async function sendToTopic(
       },
       android: {
         priority: notification.priority === 'urgent' ? 'high' : 'normal',
-        ttl: notification.ttl * 1000,
+        ttl: (notification.ttl || 3600) * 1000,
       },
       apns: {
         headers: {
@@ -597,7 +609,7 @@ export async function cleanupInvalidTokens(tenantId: string): Promise<number> {
   const devices = await db
     .select()
     .from(pushDevices)
-    .where(and(eq(pushDevices.tenantId, tenantId), eq(pushDevices.enabled, true)));
+    .where(and(eq(pushDevices.organizationId, tenantId), eq(pushDevices.enabled, true)));
 
   let disabledCount = 0;
 

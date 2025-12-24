@@ -67,7 +67,7 @@ export interface ComplianceSummary {
 export interface OrganizationPerformance {
   organizationId: string;
   organizationName: string;
-  clcAffiliateCode: string;
+  charterNumber: string;
   remittanceCount: number;
   totalAmount: number;
   paidAmount: number;
@@ -162,7 +162,7 @@ export interface StatCanAnnualReport {
 
 export interface StatCanOrganizationInfo {
   name: string;
-  clcAffiliateCode: string;
+  charterNumber: string;
   businessNumber: string;
   fiscalYearEnd: string;
   address: string;
@@ -270,13 +270,13 @@ export async function generateStatCanAnnualReport(fiscalYear: number): Promise<S
 
   const organizationInfo: StatCanOrganizationInfo = {
     name: clcOrg[0]?.name || 'Canadian Labour Congress',
-    clcAffiliateCode: clcOrg[0]?.clcAffiliateCode || 'CLC-001',
+    charterNumber: clcOrg[0]?.charterNumber || 'CLC-001',
     businessNumber: clcOrg[0]?.businessNumber || '',
     fiscalYearEnd: 'March 31',
-    address: clcOrg[0]?.address || '',
+    address: typeof clcOrg[0]?.address === 'object' ? JSON.stringify(clcOrg[0]?.address) : '',
     contactName: clcOrg[0]?.contactName || '',
-    contactEmail: clcOrg[0]?.contactEmail || '',
-    contactPhone: clcOrg[0]?.contactPhone || ''
+    contactEmail: clcOrg[0]?.email || '',
+    contactPhone: clcOrg[0]?.phone || ''
   };
 
   const complianceNotes = generateStatCanComplianceNotes(remittances, fiscalYear);
@@ -518,7 +518,7 @@ export async function analyzeOrganizationPerformance(
     performance.push({
       organizationId: orgId,
       organizationName: org.name,
-      clcAffiliateCode: org.clcAffiliateCode || '',
+      charterNumber: org.charterNumber || '',
       remittanceCount,
       totalAmount,
       paidAmount,

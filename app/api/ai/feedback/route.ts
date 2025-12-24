@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
     // 3. Create Supabase client
     const supabase = await createClient();
 
-    // 4. Verify that query exists and belongs to this tenant
+    // 4. Verify that query exists and belongs to this organization
     const { data: query, error: queryError } = await supabase
       .from('ai_queries')
-      .select('id, tenant_id')
+      .select('id, organization_id')
       .eq('id', query_id as any)
       .single();
 
@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify tenant access
-    if (orgId && (query as any).tenant_id !== orgId) {
+    // Verify organization access
+    if (orgId && (query as any).organization_id !== orgId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       .from('ai_feedback')
       .insert({
         query_id,
-        tenant_id: orgId || (query as any).tenant_id,
+        organization_id: orgId || (query as any).organization_id,
         user_id: userId,
         rating,
         comment: comment || null,
@@ -135,12 +135,12 @@ export async function GET(request: NextRequest) {
     // 3. Create Supabase client
     const supabase = await createClient();
 
-    // 4. Get feedback for this query (filtered by tenant)
+    // 4. Get feedback for this query (filtered by organization)
     const { data: feedback, error } = await supabase
       .from('ai_feedback')
       .select('*')
       .eq('query_id', queryId as any)
-      .eq('tenant_id', (orgId || '') as any)
+      .eq('organization_id', (orgId || '') as any)
       .order('created_at', { ascending: false });
 
     if (error) {

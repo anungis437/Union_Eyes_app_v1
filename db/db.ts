@@ -7,6 +7,14 @@
  * For direct multi-db operations, import from '@/lib/database/multi-db-client'
  */
 
+// Load environment variables first (especially for script execution)
+import { config } from 'dotenv';
+import { resolve } from 'path';
+// Only load .env.local if not in production and DATABASE_URL is not already set
+if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'production') {
+  config({ path: resolve(process.cwd(), '.env.local') });
+}
+
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";

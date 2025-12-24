@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
         id: crossOrgAccessLog.id,
         resourceId: crossOrgAccessLog.resourceId,
         accessType: crossOrgAccessLog.accessType,
-        accessedAt: crossOrgAccessLog.accessedAt,
+        createdAt: crossOrgAccessLog.createdAt,
         userOrganization: {
           id: sql<string>`user_org.id`,
           name: sql<string>`user_org.name`,
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
       )
       .leftJoin(
         sql`organizations owner_org`,
-        sql`owner_org.id = ${crossOrgAccessLog.resourceOwnerOrgId}`
+        sql`owner_org.id = ${crossOrgAccessLog.resourceOrganizationId}`
       )
       .leftJoin(
         sharedClauseLibrary,
@@ -167,10 +167,10 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(crossOrgAccessLog.resourceType, "clause"),
-          gte(crossOrgAccessLog.accessedAt, new Date(fromDate))
+          gte(crossOrgAccessLog.createdAt, new Date(fromDate))
         )
       )
-      .orderBy(desc(crossOrgAccessLog.accessedAt))
+      .orderBy(desc(crossOrgAccessLog.createdAt))
       .limit(20);
 
     // Top tags

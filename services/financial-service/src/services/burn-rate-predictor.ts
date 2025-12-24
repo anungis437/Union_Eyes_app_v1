@@ -84,7 +84,7 @@ export async function getHistoricalBurnRate(
   // Get donations (deposits)
   const donationHistory = await db
     .select({
-      date: sql<Date>`DATE(${donations.createdAt})`,
+      date: sql<string>`DATE(${donations.createdAt})`,
       amount: sql<number>`COALESCE(SUM(CAST(${donations.amount} AS NUMERIC)), 0)`,
     })
     .from(donations)
@@ -93,17 +93,17 @@ export async function getHistoricalBurnRate(
         eq(donations.tenantId, tenantId),
         eq(donations.strikeFundId, fundId),
         eq(donations.status, 'completed'),
-        gte(donations.createdAt, startDate),
-        lte(donations.createdAt, endDate)
+        gte(donations.createdAt, startDate.toISOString()),
+        lte(donations.createdAt, endDate.toISOString())
       )
     )
-    .groupBy(sql`DATE(${donations.createdAt})`);
+    .groupBy(sql<string>`DATE(${donations.createdAt})`);
 
   // Get stipend disbursements (withdrawals)
   const stipendHistory = await db
     .select({
-      date: sql<Date>`DATE(${stipendDisbursements.createdAt})`,
-      amount: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.amount} AS NUMERIC)), 0)`,
+      date: sql<string>`DATE(${stipendDisbursements.createdAt})`,
+      amount: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
     })
     .from(stipendDisbursements)
     .where(
@@ -111,20 +111,20 @@ export async function getHistoricalBurnRate(
         eq(stipendDisbursements.tenantId, tenantId),
         eq(stipendDisbursements.strikeFundId, fundId),
         eq(stipendDisbursements.status, 'paid'),
-        gte(stipendDisbursements.createdAt, startDate),
-        lte(stipendDisbursements.createdAt, endDate)
+        gte(stipendDisbursements.createdAt, startDate.toISOString()),
+        lte(stipendDisbursements.createdAt, endDate.toISOString())
       )
     )
-    .groupBy(sql`DATE(${stipendDisbursements.createdAt})`);
+    .groupBy(sql<string>`DATE(${stipendDisbursements.createdAt})`);
 
   // Combine and calculate daily burn rate
   const dataMap = new Map<string, BurnRateData>();
   
   // Add donations (deposits)
   donationHistory.forEach((record) => {
-    const dateKey = record.date.toISOString().split('T')[0];
+    const dateKey = record.date;
     dataMap.set(dateKey, {
-      date: record.date,
+      date: new Date(record.date),
       balance: 0, // Will calculate running balance later
       deposits: Number(record.amount),
       withdrawals: 0,
@@ -135,14 +135,14 @@ export async function getHistoricalBurnRate(
 
   // Add stipends (withdrawals)
   stipendHistory.forEach((record) => {
-    const dateKey = record.date.toISOString().split('T')[0];
+    const dateKey = record.date;
     const existing = dataMap.get(dateKey);
     if (existing) {
       existing.withdrawals = Number(record.amount);
       existing.netChange = existing.deposits - Number(record.amount);
     } else {
       dataMap.set(dateKey, {
-        date: record.date,
+        date: new Date(record.date),
         balance: 0,
         deposits: 0,
         withdrawals: Number(record.amount),
@@ -250,7 +250,7 @@ export async function generateBurnRateForecast(
   const [balanceResult] = await db
     .select({
       totalDonations: sql<number>`COALESCE(SUM(CAST(${donations.amount} AS NUMERIC)), 0)`,
-      totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.amount} AS NUMERIC)), 0)`,
+      totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
     })
     .from(donations)
     .leftJoin(

@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         rate_limit_remaining,
         rate_limit_reset_at
       `)
-      .eq('tenant_id', orgId)
+      .eq('organization_id', orgId)
       .order('connected_at', { ascending: false });
 
     if (error) {
@@ -195,7 +195,7 @@ export async function DELETE(request: NextRequest) {
     // Verify user has access to this account
     const { data: account, error: fetchError } = await supabase
       .from('social_accounts')
-      .select('*, tenant:tenants(id)')
+      .select('*')
       .eq('id', accountId)
       .single();
 
@@ -203,7 +203,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Account not found' }, { status: 404 });
     }
 
-    if (orgId !== account.tenant_id) {
+    if (orgId !== account.organization_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -281,7 +281,7 @@ export async function PUT(request: NextRequest) {
       .from('social_accounts')
       .select('*')
       .eq('id', account_id)
-      .eq('tenant_id', orgId) // Use orgId from Clerk auth
+      .eq('organization_id', orgId) // Use orgId from Clerk auth
       .single();
 
     if (fetchError || !account) {

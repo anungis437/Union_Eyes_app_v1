@@ -135,7 +135,7 @@ async function checkIn(request, picketLocation) {
             tenantId: request.tenantId,
             strikeFundId: request.strikeFundId,
             memberId: request.memberId,
-            checkInTime: new Date(),
+            checkInTime: new Date().toISOString(),
             checkInLatitude: request.latitude?.toString(),
             checkInLongitude: request.longitude?.toString(),
             checkInMethod: request.method,
@@ -237,7 +237,7 @@ async function getAttendanceHistory(tenantId, strikeFundId, startDate, endDate, 
     const conditions = [
         (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId),
         (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId),
-        (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, startDate, endDate),
+        (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
     ];
     if (memberId) {
         conditions.push((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.memberId, memberId));
@@ -264,7 +264,7 @@ async function getAttendanceSummary(tenantId, strikeFundId, startDate, endDate, 
     const conditions = [
         (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId),
         (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId),
-        (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, startDate, endDate),
+        (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
         (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.hoursWorked} IS NOT NULL`, // Only completed check-ins
     ];
     if (memberId) {
@@ -303,15 +303,14 @@ async function coordinatorOverride(tenantId, strikeFundId, memberId, verifiedBy,
             tenantId,
             strikeFundId,
             memberId,
-            checkInTime,
-            checkOutTime,
+            checkInTime: checkInTime.toISOString(),
+            checkOutTime: checkOutTime.toISOString(),
             checkInMethod: 'manual',
             hoursWorked: hours.toString(),
             durationMinutes: Math.floor(hours * 60).toString(),
             locationVerified: true, // Coordinator verified
             coordinatorOverride: true,
             overrideReason: reason,
-            verifiedBy,
         })
             .returning();
         return {

@@ -216,7 +216,7 @@ router.get('/summary', async (req: Request, res: Response) => {
 
     const [stipendData] = await db
       .select({
-        totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.amount} AS NUMERIC)), 0)`,
+        totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
       })
       .from(stipendDisbursements)
       .where(and(eq(stipendDisbursements.tenantId, tenantId), eq(stipendDisbursements.status, 'paid')));
@@ -240,7 +240,7 @@ router.get('/summary', async (req: Request, res: Response) => {
         and(
           eq(donations.tenantId, tenantId),
           eq(donations.status, 'completed'),
-          gte(donations.createdAt, thirtyDaysAgo)
+          gte(donations.createdAt, thirtyDaysAgo.toISOString())
         )
       );
 
@@ -248,14 +248,14 @@ router.get('/summary', async (req: Request, res: Response) => {
     const [stipendsData] = await db
       .select({
         count: sql<number>`COUNT(*)`,
-        total: sql<number>`SUM(CAST(${stipendDisbursements.amount} AS NUMERIC))`,
+        total: sql<number>`SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC))`,
       })
       .from(stipendDisbursements)
       .where(
         and(
           eq(stipendDisbursements.tenantId, tenantId),
           eq(stipendDisbursements.status, 'paid'),
-          gte(stipendDisbursements.createdAt, thirtyDaysAgo)
+          gte(stipendDisbursements.createdAt, thirtyDaysAgo.toISOString())
         )
       );
 
@@ -270,7 +270,7 @@ router.get('/summary', async (req: Request, res: Response) => {
         and(
           eq(duesTransactions.tenantId, tenantId),
           eq(duesTransactions.status, 'completed'),
-          gte(duesTransactions.createdAt, thirtyDaysAgo)
+          gte(duesTransactions.createdAt, thirtyDaysAgo.toISOString())
         )
       );
 
@@ -337,17 +337,17 @@ router.get('/trends', async (req: Request, res: Response) => {
         and(
           eq(donations.tenantId, tenantId),
           eq(donations.status, 'completed'),
-          gte(donations.createdAt, startDate)
+          gte(donations.createdAt, startDate.toISOString())
         )
       )
-      .groupBy(sql`DATE(${donations.createdAt})`)
-      .orderBy(sql`DATE(${donations.createdAt})`);
+      .groupBy(sql<string>`DATE(${donations.createdAt})`)
+      .orderBy(sql<string>`DATE(${donations.createdAt})`);
 
     // Daily stipends trend
     const stipendsTrend = await db
       .select({
         date: sql<string>`DATE(${stipendDisbursements.createdAt})`,
-        amount: sql<number>`SUM(CAST(${stipendDisbursements.amount} AS NUMERIC))`,
+        amount: sql<number>`SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC))`,
         count: sql<number>`COUNT(*)`,
       })
       .from(stipendDisbursements)
@@ -355,11 +355,11 @@ router.get('/trends', async (req: Request, res: Response) => {
         and(
           eq(stipendDisbursements.tenantId, tenantId),
           eq(stipendDisbursements.status, 'paid'),
-          gte(stipendDisbursements.createdAt, startDate)
+          gte(stipendDisbursements.createdAt, startDate.toISOString())
         )
       )
-      .groupBy(sql`DATE(${stipendDisbursements.createdAt})`)
-      .orderBy(sql`DATE(${stipendDisbursements.createdAt})`);
+      .groupBy(sql<string>`DATE(${stipendDisbursements.createdAt})`)
+      .orderBy(sql<string>`DATE(${stipendDisbursements.createdAt})`);
 
     res.json({
       success: true,
@@ -458,7 +458,7 @@ router.get('/fund-health', async (req: Request, res: Response) => {
           const [balanceData] = await db
             .select({
               totalDonations: sql<number>`COALESCE(SUM(CASE WHEN ${donations.status} = 'completed' THEN CAST(${donations.amount} AS NUMERIC) ELSE 0 END), 0)`,
-              totalStipends: sql<number>`COALESCE(SUM(CASE WHEN ${stipendDisbursements.status} = 'paid' THEN CAST(${stipendDisbursements.amount} AS NUMERIC) ELSE 0 END), 0)`,
+              totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
             })
             .from(donations)
             .leftJoin(stipendDisbursements, eq(donations.strikeFundId, stipendDisbursements.strikeFundId))
@@ -492,7 +492,7 @@ router.get('/fund-health', async (req: Request, res: Response) => {
           const [balanceData] = await db
             .select({
               totalDonations: sql<number>`COALESCE(SUM(CASE WHEN ${donations.status} = 'completed' THEN CAST(${donations.amount} AS NUMERIC) ELSE 0 END), 0)`,
-              totalStipends: sql<number>`COALESCE(SUM(CASE WHEN ${stipendDisbursements.status} = 'paid' THEN CAST(${stipendDisbursements.amount} AS NUMERIC) ELSE 0 END), 0)`,
+              totalStipends: sql<number>`COALESCE(SUM(CAST(${stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
             })
             .from(donations)
             .leftJoin(stipendDisbursements, eq(donations.strikeFundId, stipendDisbursements.strikeFundId))

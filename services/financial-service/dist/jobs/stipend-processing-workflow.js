@@ -73,14 +73,14 @@ async function processWeeklyStipends(params) {
             memberId: schema_1.picketAttendance.memberId,
             checkInTime: schema_1.picketAttendance.checkInTime,
             hoursWorked: schema_1.picketAttendance.hoursWorked,
-            approved: schema_1.picketAttendance.approved,
-            memberName: schema_1.members.name,
+            coordinatorOverride: schema_1.picketAttendance.coordinatorOverride,
+            memberName: (0, drizzle_orm_1.sql) `CONCAT(${schema_1.members.firstName}, ' ', ${schema_1.members.lastName})`,
             memberEmail: schema_1.members.email,
             userId: schema_1.members.userId,
         })
             .from(schema_1.picketAttendance)
             .innerJoin(schema_1.members, (0, drizzle_orm_1.eq)(schema_1.picketAttendance.memberId, schema_1.members.id))
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.picketAttendance.tenantId, tenantId), (0, drizzle_orm_1.gte)(schema_1.picketAttendance.checkInTime, new Date(weekStartDate)), (0, drizzle_orm_1.lte)(schema_1.picketAttendance.checkInTime, new Date(weekEndDate)), (0, drizzle_orm_1.eq)(schema_1.picketAttendance.approved, true) // Only process approved attendance
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.picketAttendance.tenantId, tenantId), (0, drizzle_orm_1.gte)(schema_1.picketAttendance.checkInTime, new Date(weekStartDate).toISOString()), (0, drizzle_orm_1.lte)(schema_1.picketAttendance.checkInTime, new Date(weekEndDate).toISOString()), (0, drizzle_orm_1.eq)(schema_1.picketAttendance.coordinatorOverride, true) // Only process approved attendance
         ))
             .orderBy(schema_1.picketAttendance.memberId, schema_1.picketAttendance.checkInTime);
         logger.info(`Found ${attendanceRecords.length} approved attendance records`);
@@ -107,7 +107,7 @@ async function processWeeklyStipends(params) {
             memberStipends.set(key, existing);
         }
         // Calculate stipend amounts with caps
-        for (const [memberId, data] of memberStipends.entries()) {
+        for (const [memberId, data] of Array.from(memberStipends.entries())) {
             try {
                 // Apply weekly maximum days cap
                 const compensableDays = Math.min(data.qualifyingDays, rules.weeklyMaxDays);
@@ -280,7 +280,7 @@ async function processDisbursements(params) {
             try {
                 // TODO: Integrate with Stripe for actual payment processing
                 // For now, simulate successful disbursement
-                const amount = parseFloat(stipend.approvedAmount || stipend.calculatedAmount);
+                const amount = parseFloat(stipend.totalAmount);
                 // Simulate Stripe transfer
                 logger.info('Would process Stripe transfer', {
                     stipendId: stipend.id,
@@ -292,7 +292,7 @@ async function processDisbursements(params) {
                     .update(schema_1.stipendDisbursements)
                     .set({
                     status: 'disbursed',
-                    disbursedAt: new Date(),
+                    paymentDate: new Date(),
                     notes: `Stripe transfer: txn_simulated_12345`,
                 })
                     .where((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.id, stipend.id));

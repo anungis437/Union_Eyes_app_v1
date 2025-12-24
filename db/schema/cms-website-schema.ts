@@ -1,6 +1,6 @@
 import { pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, date, uniqueIndex, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // =============================================
@@ -9,7 +9,7 @@ import { profiles } from './profiles-schema';
 
 export const cmsTemplates = pgTable('cms_templates', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   templateType: text('template_type').notNull(), // 'page', 'post', 'event', 'landing', 'custom'
@@ -22,12 +22,12 @@ export const cmsTemplates = pgTable('cms_templates', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index('idx_cms_templates_tenant').on(table.tenantId),
+  organizationIdx: index('idx_cms_templates_organization').on(table.organizationId),
 }));
 
 export const cmsPages = pgTable('cms_pages', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   templateId: uuid('template_id').references(() => cmsTemplates.id, { onDelete: 'set null' }),
   title: text('title').notNull(),
   slug: text('slug').notNull(),
@@ -49,15 +49,15 @@ export const cmsPages = pgTable('cms_pages', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantSlugUnique: uniqueIndex('cms_pages_tenant_slug_unique').on(table.tenantId, table.slug),
-  tenantStatusIdx: index('idx_cms_pages_tenant_status').on(table.tenantId, table.status),
-  slugIdx: index('idx_cms_pages_slug').on(table.tenantId, table.slug),
-  publishedIdx: index('idx_cms_pages_published').on(table.tenantId, table.publishedAt),
+  organizationSlugUnique: uniqueIndex('cms_pages_organization_slug_unique').on(table.organizationId, table.slug),
+  organizationStatusIdx: index('idx_cms_pages_organization_status').on(table.organizationId, table.status),
+  slugIdx: index('idx_cms_pages_slug').on(table.organizationId, table.slug),
+  publishedIdx: index('idx_cms_pages_published').on(table.organizationId, table.publishedAt),
 }));
 
 export const cmsBlocks = pgTable('cms_blocks', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   blockType: text('block_type').notNull(), // 'text', 'heading', 'image', 'video', 'gallery', 'button', etc.
   category: text('category'),
@@ -72,7 +72,7 @@ export const cmsBlocks = pgTable('cms_blocks', {
 
 export const cmsNavigationMenus = pgTable('cms_navigation_menus', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   location: text('location').notNull(), // 'header', 'footer', 'sidebar', 'mobile'
   items: jsonb('items').notNull().default([]),
@@ -80,12 +80,12 @@ export const cmsNavigationMenus = pgTable('cms_navigation_menus', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantLocationUnique: uniqueIndex('cms_navigation_tenant_location_unique').on(table.tenantId, table.location),
+  organizationLocationUnique: uniqueIndex('cms_navigation_organization_location_unique').on(table.organizationId, table.location),
 }));
 
 export const cmsMediaLibrary = pgTable('cms_media_library', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   fileName: text('file_name').notNull(),
   fileUrl: text('file_url').notNull(),
   fileType: text('file_type').notNull(), // 'image', 'video', 'document', 'audio'
@@ -100,7 +100,7 @@ export const cmsMediaLibrary = pgTable('cms_media_library', {
   uploadedBy: text('uploaded_by').references(() => profiles.userId),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index('idx_cms_media_tenant').on(table.tenantId, table.fileType),
+  organizationIdx: index('idx_cms_media_organization').on(table.organizationId, table.fileType),
   tagsIdx: index('idx_cms_media_tags').on(table.tags),
 }));
 
@@ -110,7 +110,7 @@ export const cmsMediaLibrary = pgTable('cms_media_library', {
 
 export const donationCampaigns = pgTable('donation_campaigns', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   slug: text('slug').notNull(),
   description: text('description'),
@@ -136,14 +136,14 @@ export const donationCampaigns = pgTable('donation_campaigns', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantSlugUnique: uniqueIndex('donation_campaigns_tenant_slug_unique').on(table.tenantId, table.slug),
-  slugIdx: index('idx_donation_campaigns_slug').on(table.tenantId, table.slug),
-  statusIdx: index('idx_donation_campaigns_status').on(table.tenantId, table.status),
+  organizationSlugUnique: uniqueIndex('donation_campaigns_organization_slug_unique').on(table.organizationId, table.slug),
+  slugIdx: index('idx_donation_campaigns_slug').on(table.organizationId, table.slug),
+  statusIdx: index('idx_donation_campaigns_status').on(table.organizationId, table.status),
 }));
 
 export const donations = pgTable('donations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   campaignId: uuid('campaign_id').references(() => donationCampaigns.id, { onDelete: 'set null' }),
   donorName: text('donor_name'),
   donorEmail: text('donor_email'),
@@ -167,14 +167,14 @@ export const donations = pgTable('donations', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantIdx: index('idx_donations_tenant').on(table.tenantId, table.createdAt),
+  organizationIdx: index('idx_donations_organization').on(table.organizationId, table.createdAt),
   campaignIdx: index('idx_donations_campaign').on(table.campaignId, table.paymentStatus),
   emailIdx: index('idx_donations_email').on(table.donorEmail),
 }));
 
 export const donationReceipts = pgTable('donation_receipts', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   donationId: uuid('donation_id').notNull().references(() => donations.id, { onDelete: 'cascade' }),
   receiptNumber: text('receipt_number').notNull().unique(),
   receiptType: text('receipt_type').notNull(), // 'payment', 'tax', 'yearly_summary'
@@ -184,7 +184,7 @@ export const donationReceipts = pgTable('donation_receipts', {
   sentAt: timestamp('sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantReceiptUnique: uniqueIndex('donation_receipts_tenant_number_unique').on(table.tenantId, table.receiptNumber),
+  organizationReceiptUnique: uniqueIndex('donation_receipts_organization_number_unique').on(table.organizationId, table.receiptNumber),
 }));
 
 // =============================================
@@ -193,7 +193,7 @@ export const donationReceipts = pgTable('donation_receipts', {
 
 export const publicEvents = pgTable('public_events', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   slug: text('slug').notNull(),
   description: text('description'),
@@ -236,16 +236,16 @@ export const publicEvents = pgTable('public_events', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantSlugUnique: uniqueIndex('public_events_tenant_slug_unique').on(table.tenantId, table.slug),
-  tenantIdx: index('idx_events_tenant').on(table.tenantId, table.startDate),
-  slugIdx: index('idx_events_slug').on(table.tenantId, table.slug),
-  statusIdx: index('idx_events_status').on(table.tenantId, table.registrationStatus),
+  organizationSlugUnique: uniqueIndex('public_events_organization_slug_unique').on(table.organizationId, table.slug),
+  organizationIdx: index('idx_events_organization').on(table.organizationId, table.startDate),
+  slugIdx: index('idx_events_slug').on(table.organizationId, table.slug),
+  statusIdx: index('idx_events_status').on(table.organizationId, table.registrationStatus),
   datesIdx: index('idx_events_dates').on(table.startDate, table.endDate),
 }));
 
 export const eventRegistrations = pgTable('event_registrations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   eventId: uuid('event_id').notNull().references(() => publicEvents.id, { onDelete: 'cascade' }),
   profileId: text('profile_id').references(() => profiles.userId),
   firstName: text('first_name').notNull(),
@@ -278,7 +278,7 @@ export const eventRegistrations = pgTable('event_registrations', {
 
 export const eventCheckIns = pgTable('event_check_ins', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   eventId: uuid('event_id').notNull().references(() => publicEvents.id, { onDelete: 'cascade' }),
   registrationId: uuid('registration_id').notNull().references(() => eventRegistrations.id, { onDelete: 'cascade' }),
   checkInMethod: text('check_in_method').notNull(), // 'qr_code', 'manual', 'self', 'nfc'
@@ -294,7 +294,7 @@ export const eventCheckIns = pgTable('event_check_ins', {
 
 export const jobPostings = pgTable('job_postings', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   slug: text('slug').notNull(),
   employerName: text('employer_name').notNull(),
@@ -343,9 +343,9 @@ export const jobPostings = pgTable('job_postings', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantSlugUnique: uniqueIndex('job_postings_tenant_slug_unique').on(table.tenantId, table.slug),
-  tenantIdx: index('idx_jobs_tenant').on(table.tenantId, table.status, table.postedDate),
-  slugIdx: index('idx_jobs_slug').on(table.tenantId, table.slug),
+  organizationSlugUnique: uniqueIndex('job_postings_organization_slug_unique').on(table.organizationId, table.slug),
+  organizationIdx: index('idx_jobs_organization').on(table.organizationId, table.status, table.postedDate),
+  slugIdx: index('idx_jobs_slug').on(table.organizationId, table.slug),
   categoryIdx: index('idx_jobs_category').on(table.category, table.status),
   locationIdx: index('idx_jobs_location').on(table.city, table.province, table.status),
   featuredIdx: index('idx_jobs_featured').on(table.featured, table.status, table.postedDate),
@@ -353,7 +353,7 @@ export const jobPostings = pgTable('job_postings', {
 
 export const jobApplications = pgTable('job_applications', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   jobPostingId: uuid('job_posting_id').notNull().references(() => jobPostings.id, { onDelete: 'cascade' }),
   profileId: text('profile_id').references(() => profiles.userId),
   firstName: text('first_name').notNull(),
@@ -390,7 +390,7 @@ export const jobApplications = pgTable('job_applications', {
 
 export const jobSaved = pgTable('job_saved', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   profileId: text('profile_id').notNull().references(() => profiles.userId, { onDelete: 'cascade' }),
   jobPostingId: uuid('job_posting_id').notNull().references(() => jobPostings.id, { onDelete: 'cascade' }),
   notes: text('notes'),
@@ -405,7 +405,7 @@ export const jobSaved = pgTable('job_saved', {
 
 export const websiteSettings = pgTable('website_settings', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }).unique(),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }).unique(),
   siteName: text('site_name').notNull(),
   siteTagline: text('site_tagline'),
   siteDescription: text('site_description'),
@@ -436,7 +436,7 @@ export const websiteSettings = pgTable('website_settings', {
 
 export const pageAnalytics = pgTable('page_analytics', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   pageId: uuid('page_id').references(() => cmsPages.id, { onDelete: 'cascade' }),
   eventId: uuid('event_id').references(() => publicEvents.id, { onDelete: 'cascade' }),
   jobId: uuid('job_id').references(() => jobPostings.id, { onDelete: 'cascade' }),
@@ -451,7 +451,7 @@ export const pageAnalytics = pgTable('page_analytics', {
   conversionCount: integer('conversion_count').default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (table) => ({
-  tenantPageDateUnique: uniqueIndex('page_analytics_tenant_page_date_unique').on(table.tenantId, table.pageId, table.metricDate),
+  organizationPageDateUnique: uniqueIndex('page_analytics_organization_page_date_unique').on(table.organizationId, table.pageId, table.metricDate),
 }));
 
 // =============================================
@@ -459,9 +459,9 @@ export const pageAnalytics = pgTable('page_analytics', {
 // =============================================
 
 export const cmsTemplatesRelations = relations(cmsTemplates, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [cmsTemplates.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [cmsTemplates.organizationId],
+    references: [organizations.id],
   }),
   pages: many(cmsPages),
   createdByProfile: one(profiles, {
@@ -471,9 +471,9 @@ export const cmsTemplatesRelations = relations(cmsTemplates, ({ one, many }) => 
 }));
 
 export const cmsPagesRelations = relations(cmsPages, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [cmsPages.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [cmsPages.organizationId],
+    references: [organizations.id],
   }),
   template: one(cmsTemplates, {
     fields: [cmsPages.templateId],
@@ -496,9 +496,9 @@ export const cmsPagesRelations = relations(cmsPages, ({ one, many }) => ({
 }));
 
 export const donationCampaignsRelations = relations(donationCampaigns, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [donationCampaigns.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [donationCampaigns.organizationId],
+    references: [organizations.id],
   }),
   donations: many(donations),
   createdByProfile: one(profiles, {
@@ -509,9 +509,9 @@ export const donationCampaignsRelations = relations(donationCampaigns, ({ one, m
 }));
 
 export const donationsRelations = relations(donations, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [donations.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [donations.organizationId],
+    references: [organizations.id],
   }),
   campaign: one(donationCampaigns, {
     fields: [donations.campaignId],
@@ -521,9 +521,9 @@ export const donationsRelations = relations(donations, ({ one, many }) => ({
 }));
 
 export const donationReceiptsRelations = relations(donationReceipts, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [donationReceipts.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [donationReceipts.organizationId],
+    references: [organizations.id],
   }),
   donation: one(donations, {
     fields: [donationReceipts.donationId],
@@ -532,9 +532,9 @@ export const donationReceiptsRelations = relations(donationReceipts, ({ one }) =
 }));
 
 export const publicEventsRelations = relations(publicEvents, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [publicEvents.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [publicEvents.organizationId],
+    references: [organizations.id],
   }),
   registrations: many(eventRegistrations),
   checkIns: many(eventCheckIns),
@@ -546,9 +546,9 @@ export const publicEventsRelations = relations(publicEvents, ({ one, many }) => 
 }));
 
 export const eventRegistrationsRelations = relations(eventRegistrations, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [eventRegistrations.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [eventRegistrations.organizationId],
+    references: [organizations.id],
   }),
   event: one(publicEvents, {
     fields: [eventRegistrations.eventId],
@@ -566,9 +566,9 @@ export const eventRegistrationsRelations = relations(eventRegistrations, ({ one,
 }));
 
 export const eventCheckInsRelations = relations(eventCheckIns, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [eventCheckIns.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [eventCheckIns.organizationId],
+    references: [organizations.id],
   }),
   event: one(publicEvents, {
     fields: [eventCheckIns.eventId],
@@ -585,9 +585,9 @@ export const eventCheckInsRelations = relations(eventCheckIns, ({ one }) => ({
 }));
 
 export const jobPostingsRelations = relations(jobPostings, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [jobPostings.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [jobPostings.organizationId],
+    references: [organizations.id],
   }),
   applications: many(jobApplications),
   saved: many(jobSaved),
@@ -599,9 +599,9 @@ export const jobPostingsRelations = relations(jobPostings, ({ one, many }) => ({
 }));
 
 export const jobApplicationsRelations = relations(jobApplications, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [jobApplications.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [jobApplications.organizationId],
+    references: [organizations.id],
   }),
   jobPosting: one(jobPostings, {
     fields: [jobApplications.jobPostingId],
@@ -618,9 +618,9 @@ export const jobApplicationsRelations = relations(jobApplications, ({ one }) => 
 }));
 
 export const jobSavedRelations = relations(jobSaved, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [jobSaved.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [jobSaved.organizationId],
+    references: [organizations.id],
   }),
   profile: one(profiles, {
     fields: [jobSaved.profileId],
@@ -633,16 +633,16 @@ export const jobSavedRelations = relations(jobSaved, ({ one }) => ({
 }));
 
 export const websiteSettingsRelations = relations(websiteSettings, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [websiteSettings.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [websiteSettings.organizationId],
+    references: [organizations.id],
   }),
 }));
 
 export const pageAnalyticsRelations = relations(pageAnalytics, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [pageAnalytics.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [pageAnalytics.organizationId],
+    references: [organizations.id],
   }),
   page: one(cmsPages, {
     fields: [pageAnalytics.pageId],

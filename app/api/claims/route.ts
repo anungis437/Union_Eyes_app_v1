@@ -22,7 +22,7 @@ export const GET = withTenantAuth(async (request: NextRequest, context) => {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // Build query conditions - always filter by tenant
-    const conditions = [eq(claims.tenantId, tenantId)];
+    const conditions = [eq(claims.organizationId, tenantId)];
     
     if (status && status !== "all") {
       conditions.push(eq(claims.status, status as any));
@@ -123,7 +123,7 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
       .insert(claims)
       .values({
         claimNumber,
-        tenantId,
+        organizationId: tenantId,
         memberId: userId,
         isAnonymous: body.isAnonymous ?? true,
         claimType: body.claimType,

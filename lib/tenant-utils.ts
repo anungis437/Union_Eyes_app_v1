@@ -40,6 +40,12 @@ export async function getTenantIdForUser(clerkUserId: string): Promise<string> {
     const cookieStore = await cookies();
     const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
     
+    console.log('[getTenantIdForUser] Cookie check:', { 
+      userId: clerkUserId, 
+      selectedTenantId,
+      allCookies: cookieStore.getAll().map(c => c.name)
+    });
+    
     if (selectedTenantId) {
       // Verify user has access to the selected tenant
       const userTenant = await db
@@ -53,8 +59,16 @@ export async function getTenantIdForUser(clerkUserId: string): Promise<string> {
         )
         .limit(1);
       
+      console.log('[getTenantIdForUser] Access check:', {
+        selectedTenantId,
+        hasAccess: userTenant.length > 0
+      });
+      
       if (userTenant.length > 0) {
+        console.log('[getTenantIdForUser] ✅ Using selected tenant:', selectedTenantId);
         return selectedTenantId;
+      } else {
+        console.log('[getTenantIdForUser] ⚠️ User has no access to selected tenant, falling back');
       }
     }
     
@@ -66,11 +80,13 @@ export async function getTenantIdForUser(clerkUserId: string): Promise<string> {
       .limit(1);
     
     if (userTenants.length > 0) {
+      console.log('[getTenantIdForUser] ⚠️ Fallback to first tenant:', userTenants[0].tenantId);
       return userTenants[0].tenantId;
     }
     
     // Final fallback to default tenant
     const tenantId = DEFAULT_TENANT_ID;
+    console.log('[getTenantIdForUser] ⚠️ Fallback to DEFAULT_TENANT_ID:', tenantId);
     
     // Validate that tenant exists
     const tenant = await db

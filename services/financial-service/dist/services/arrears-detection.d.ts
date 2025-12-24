@@ -8,10 +8,10 @@ export interface ArrearsDetectionConfig {
     lateFeePercentage?: number;
     lateFeeFixedAmount?: number;
     escalationThresholds?: {
-        level1Days: number;
-        level2Days: number;
-        level3Days: number;
-        level4Days: number;
+        level1Days?: number;
+        level2Days?: number;
+        level3Days?: number;
+        level4Days?: number;
     };
 }
 export interface DetectedArrears {

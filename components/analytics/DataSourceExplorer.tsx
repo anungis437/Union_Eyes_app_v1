@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -149,7 +149,7 @@ export function DataSourceExplorer({
     if (selectedSource && !expandedSources.includes(selectedSource)) {
       setExpandedSources([...expandedSources, selectedSource]);
     }
-  }, [selectedSource]);
+  }, [selectedSource, expandedSources]);
 
   // Filter data sources by search
   const filteredSources = dataSources.filter(

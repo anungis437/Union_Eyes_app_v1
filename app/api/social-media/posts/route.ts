@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         campaign:social_campaigns(id, name),
         created_by_profile:profiles!created_by(id, first_name, last_name)
       `, { count: 'exact' })
-      .eq('tenant_id', orgId)
+      .eq('organization_id', orgId)
       .order('created_at', { ascending: false });
 
     // Apply filters
@@ -228,10 +228,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Post ID required' }, { status: 400 });
     }
 
-    // Verify user has access to this post (belongs to their tenant)
+    // Verify user has access to this post (belongs to their organization)
     const { data: post, error: fetchError } = await supabase
       .from('social_posts')
-      .select('*, account:social_accounts(tenant_id)')
+      .select('*, account:social_accounts(organization_id)')
       .eq('id', postId)
       .single();
 
@@ -239,7 +239,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    if (orgId !== (post.account as any).tenant_id) {
+    if (orgId !== (post.account as any).organization_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

@@ -51,12 +51,17 @@ const arrearsDetectionSchema = z.object({
   createCases: z.boolean().default(true),
   escalationThresholds: z
     .object({
-      level1Days: z.number().int().positive().default(30),
-      level2Days: z.number().int().positive().default(60),
-      level3Days: z.number().int().positive().default(90),
-      level4Days: z.number().int().positive().default(120),
+      level1Days: z.number().int().positive().optional(),
+      level2Days: z.number().int().positive().optional(),
+      level3Days: z.number().int().positive().optional(),
+      level4Days: z.number().int().positive().optional(),
     })
-    .optional(),
+    .default({
+      level1Days: 30,
+      level2Days: 60,
+      level3Days: 90,
+      level4Days: 120,
+    }),
 });
 
 /**
@@ -361,7 +366,7 @@ router.post('/:id/payment-plan', async (req: Request, res: Response) => {
         installmentAmount: validatedData.installmentAmount.toString(),
         numberOfInstallments: validatedData.numberOfInstallments.toString(),
         paymentSchedule,
-      })
+      } as any)
       .where(eq(schema.arrearsCases.id, id))
       .returning();
 
@@ -422,7 +427,7 @@ router.put('/:id/status', async (req: Request, res: Response) => {
         escalationLevel: escalationLevels[validatedData.status].toString(),
         notes: validatedData.notes,
         updatedBy: userId,
-      })
+      } as any)
       .where(
         and(
           eq(schema.arrearsCases.id, id),
@@ -503,7 +508,7 @@ router.post('/:id/contact', async (req: Request, res: Response) => {
         contactHistory,
         lastContactDate: new Date(),
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(schema.arrearsCases.id, id))
       .returning();
 

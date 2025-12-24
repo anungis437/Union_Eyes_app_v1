@@ -85,7 +85,7 @@ router.post('/:fundId/check-in', async (req, res) => {
         res.status(201).json({
             success: true,
             data: {
-                attendance: result.rows[0],
+                attendance: result[0],
                 locationVerified,
                 message: 'Successfully checked in to picket line',
             },
@@ -137,7 +137,7 @@ router.post('/:fundId/check-out', async (req, res) => {
         AND check_out_time IS NULL
       RETURNING *
     `);
-        if (result.rows.length === 0) {
+        if (result.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'No active check-in found',
@@ -145,7 +145,7 @@ router.post('/:fundId/check-out', async (req, res) => {
         }
         res.json({
             success: true,
-            data: result.rows[0],
+            data: result[0],
         });
     }
     catch (error) {
@@ -250,7 +250,7 @@ router.get('/', async (req, res) => {
     `);
         res.json({
             success: true,
-            data: result.rows,
+            data: result,
         });
     }
     catch (error) {
@@ -296,7 +296,7 @@ router.post('/', async (req, res) => {
     `);
         res.status(201).json({
             success: true,
-            data: result.rows[0],
+            data: result[0],
         });
     }
     catch (error) {

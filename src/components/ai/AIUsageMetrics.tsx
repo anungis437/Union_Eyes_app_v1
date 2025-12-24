@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Activity,
   DollarSign,
@@ -62,11 +62,7 @@ export function AIUsageMetrics({ tenantId, className = '' }: AIUsageMetricsProps
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchMetrics();
-  }, [timeRange]);
-
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -93,7 +89,11 @@ export function AIUsageMetrics({ tenantId, className = '' }: AIUsageMetricsProps
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [timeRange, tenantId, totalStats]);
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {

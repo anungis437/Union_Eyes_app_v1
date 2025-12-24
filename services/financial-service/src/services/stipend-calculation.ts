@@ -79,8 +79,8 @@ export async function calculateWeeklyStipends(
     }
 
     // Use fund-specific configuration if available
-    const fundMinHours = strikeFund.minimumHoursPerWeek 
-      ? parseFloat(strikeFund.minimumHoursPerWeek) 
+    const fundMinHours = strikeFund.minimumAttendanceHours 
+      ? parseFloat(strikeFund.minimumAttendanceHours) 
       : minimumHours;
     const fundHourlyRate = strikeFund.weeklyStipendAmount 
       ? parseFloat(strikeFund.weeklyStipendAmount) / fundMinHours 
@@ -97,7 +97,7 @@ export async function calculateWeeklyStipends(
         and(
           eq(schema.picketAttendance.tenantId, tenantId),
           eq(schema.picketAttendance.strikeFundId, strikeFundId),
-          between(schema.picketAttendance.checkInTime, weekStartDate, weekEndDate),
+          between(schema.picketAttendance.checkInTime, weekStartDate.toISOString(), weekEndDate.toISOString()),
           sql`${schema.picketAttendance.checkOutTime} IS NOT NULL` // Only count completed shifts
         )
       )
@@ -195,9 +195,9 @@ export async function approveDisbursement(
         status: 'approved',
         approvedAt: new Date(),
         approvedBy: approval.approvedBy,
-        approvalNotes: approval.approvalNotes,
+        notes: approval.approvalNotes,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(schema.stipendDisbursements.id, approval.disbursementId));
 
     return { success: true };
@@ -242,9 +242,9 @@ export async function markDisbursementPaid(
       .update(schema.stipendDisbursements)
       .set({
         status: 'paid',
-        disbursedAt: new Date(), // Use disbursedAt instead of paidAt
-        notes: `Transaction ID: ${transactionId}, Processed by: ${paidBy}`, // Store in notes
-      })
+        paymentDate: new Date(),
+        notes: `Transaction ID: ${transactionId}, Processed by: ${paidBy}`,
+      } as any)
       .where(eq(schema.stipendDisbursements.id, disbursementId));
 
     return { success: true };
@@ -282,7 +282,7 @@ export async function getMemberDisbursements(
 
     return disbursements.map(d => ({
       ...d,
-      amount: parseFloat(d.amount),
+      amount: parseFloat(d.totalAmount),
     }));
   } catch (error: any) {
     console.error('Get disbursements error:', error);
@@ -312,7 +312,7 @@ export async function getPendingDisbursements(
 
     return disbursements.map(d => ({
       ...d,
-      amount: parseFloat(d.amount),
+      amount: parseFloat(d.totalAmount),
     }));
   } catch (error: any) {
     console.error('Get pending disbursements error:', error);
@@ -336,7 +336,7 @@ export async function getStrikeFundDisbursementSummary(
     const result = await db
       .select({
         status: schema.stipendDisbursements.status,
-        totalAmount: sql<string>`CAST(SUM(CAST(${schema.stipendDisbursements.amount} AS DECIMAL)) AS TEXT)`,
+        totalAmount: sql<string>`CAST(SUM(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
         memberCount: sql<number>`COUNT(DISTINCT ${schema.stipendDisbursements.memberId})`,
       })
       .from(schema.stipendDisbursements)

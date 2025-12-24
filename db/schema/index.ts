@@ -50,5 +50,12 @@ export * from "./grievance-workflow-schema";
 // Education & Training System
 export * from "./education-training-schema";
 
+// Q1 2025: Advanced Analytics
+export * from "../../database/schema/analytics";
+
 // Document Management System
 export * from "./documents-schema";
+
+// Machine Learning & Predictions
+// NOTE: ML predictions now part of Q1 2025 analytics schema (exported above)
+// export * from "./ml-predictions-schema";

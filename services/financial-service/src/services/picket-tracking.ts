@@ -227,7 +227,7 @@ export async function checkIn(
         tenantId: request.tenantId,
         strikeFundId: request.strikeFundId,
         memberId: request.memberId,
-        checkInTime: new Date(),
+        checkInTime: new Date().toISOString(),
         checkInLatitude: request.latitude?.toString(),
         checkInLongitude: request.longitude?.toString(),
         checkInMethod: request.method,
@@ -238,7 +238,7 @@ export async function checkIn(
         coordinatorOverride: request.coordinatorOverride || false,
         overrideReason: request.overrideReason,
         verifiedBy: request.verifiedBy,
-      })
+      } as any)
       .returning();
 
     return {
@@ -302,7 +302,7 @@ export async function checkOut(
         durationMinutes: durationMinutes.toString(),
         hoursWorked: hoursWorked.toString(),
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(schema.picketAttendance.id, request.attendanceId));
 
     return {
@@ -361,7 +361,7 @@ export async function getAttendanceHistory(
   const conditions = [
     eq(schema.picketAttendance.tenantId, tenantId),
     eq(schema.picketAttendance.strikeFundId, strikeFundId),
-    between(schema.picketAttendance.checkInTime, startDate, endDate),
+    between(schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
   ];
 
   if (memberId) {
@@ -398,7 +398,7 @@ export async function getAttendanceSummary(
   const conditions = [
     eq(schema.picketAttendance.tenantId, tenantId),
     eq(schema.picketAttendance.strikeFundId, strikeFundId),
-    between(schema.picketAttendance.checkInTime, startDate, endDate),
+    between(schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
     sql`${schema.picketAttendance.hoursWorked} IS NOT NULL`, // Only completed check-ins
   ];
 
@@ -450,16 +450,15 @@ export async function coordinatorOverride(
         tenantId,
         strikeFundId,
         memberId,
-        checkInTime,
-        checkOutTime,
+        checkInTime: checkInTime.toISOString(),
+        checkOutTime: checkOutTime.toISOString(),
         checkInMethod: 'manual',
         hoursWorked: hours.toString(),
         durationMinutes: Math.floor(hours * 60).toString(),
         locationVerified: true, // Coordinator verified
         coordinatorOverride: true,
         overrideReason: reason,
-        verifiedBy,
-      })
+      } as any)
       .returning();
 
     return {

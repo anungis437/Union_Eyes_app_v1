@@ -1,23 +1,12 @@
-"use strict";
 /**
  * @fileoverview Type Validation Tests
  * Testing TypeScript type definitions and interface compliance
  */
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = require("../../index");
-describe('Type Validation Tests', function () {
-    describe('Core Interface Validation', function () {
-        it('should validate TimeEntry interface structure', function () {
-            var mockTimeEntry = {
+import { InvoiceStatus, PaymentStatus, PaymentMethod, TrustTransactionType, TaskCategory, ActivityType, SyncStatus, MatterStatus, ExpenseStatus, TaxType, } from '../../index';
+describe('Type Validation Tests', () => {
+    describe('Core Interface Validation', () => {
+        it('should validate TimeEntry interface structure', () => {
+            const mockTimeEntry = {
                 id: 'time-123',
                 userId: 'user-456',
                 matterId: 'matter-789',
@@ -32,8 +21,8 @@ describe('Type Validation Tests', function () {
                 billableAmount: 875.00,
                 nonBillableAmount: undefined,
                 description: 'Legal research on contract terms',
-                category: index_1.TaskCategory.RESEARCH,
-                activityType: index_1.ActivityType.BILLABLE,
+                category: TaskCategory.RESEARCH,
+                activityType: ActivityType.BILLABLE,
                 tags: ['contract', 'research', 'commercial'],
                 isBillable: true,
                 isSubmitted: true,
@@ -43,7 +32,7 @@ describe('Type Validation Tests', function () {
                 billingStatus: 'approved',
                 createdAt: new Date('2024-01-15T09:00:00Z'),
                 updatedAt: new Date('2024-01-15T12:00:00Z'),
-                syncStatus: index_1.SyncStatus.SYNCED,
+                syncStatus: SyncStatus.SYNCED,
             };
             // Validate required properties exist
             expect(mockTimeEntry.id).toBeDefined();
@@ -55,13 +44,13 @@ describe('Type Validation Tests', function () {
             expect(mockTimeEntry.duration).toBeGreaterThan(0);
             expect(mockTimeEntry.billableRate).toBeGreaterThan(0);
             expect(mockTimeEntry.description).toBeTruthy();
-            expect(mockTimeEntry.category).toBe(index_1.TaskCategory.RESEARCH);
-            expect(mockTimeEntry.activityType).toBe(index_1.ActivityType.BILLABLE);
+            expect(mockTimeEntry.category).toBe(TaskCategory.RESEARCH);
+            expect(mockTimeEntry.activityType).toBe(ActivityType.BILLABLE);
             expect(Array.isArray(mockTimeEntry.tags)).toBe(true);
             expect(typeof mockTimeEntry.isBillable).toBe('boolean');
         });
-        it('should validate Invoice interface structure', function () {
-            var mockInvoice = {
+        it('should validate Invoice interface structure', () => {
+            const mockInvoice = {
                 id: 'inv-123',
                 invoiceNumber: 'INV-2024-001',
                 clientId: 'client-456',
@@ -70,7 +59,7 @@ describe('Type Validation Tests', function () {
                 issueDate: new Date('2024-01-15'),
                 dueDate: new Date('2024-02-14'),
                 sentAt: new Date('2024-01-15T14:30:00Z'),
-                status: index_1.InvoiceStatus.SENT,
+                status: InvoiceStatus.SENT,
                 subtotal: 1225.00,
                 taxAmount: 159.25,
                 totalAmount: 1384.25,
@@ -89,7 +78,7 @@ describe('Type Validation Tests', function () {
             };
             expect(mockInvoice.id).toBeDefined();
             expect(mockInvoice.invoiceNumber).toMatch(/^INV-\d{4}-\d{3}$/);
-            expect(mockInvoice.status).toBe(index_1.InvoiceStatus.SENT);
+            expect(mockInvoice.status).toBe(InvoiceStatus.SENT);
             expect(mockInvoice.subtotal).toBeGreaterThan(0);
             expect(mockInvoice.totalAmount).toBe(mockInvoice.subtotal + mockInvoice.taxAmount);
             expect(mockInvoice.outstandingAmount).toBe(mockInvoice.totalAmount - mockInvoice.paidAmount);
@@ -97,33 +86,33 @@ describe('Type Validation Tests', function () {
             expect(Array.isArray(mockInvoice.expenses)).toBe(true);
             expect(Array.isArray(mockInvoice.fixedFees)).toBe(true);
         });
-        it('should validate Payment interface structure', function () {
-            var mockPayment = {
+        it('should validate Payment interface structure', () => {
+            const mockPayment = {
                 id: 'pay-123',
                 invoiceId: 'inv-456',
                 clientId: 'client-789',
                 firmId: 'firm-303',
                 amount: 1384.25,
-                paymentMethod: index_1.PaymentMethod.CREDIT_CARD,
+                paymentMethod: PaymentMethod.CREDIT_CARD,
                 paymentDate: new Date('2024-01-20T10:15:00Z'),
                 processorId: 'stripe-pi-123abc',
                 processorType: 'stripe',
                 transactionId: 'txn-456def',
-                status: index_1.PaymentStatus.COMPLETED,
+                status: PaymentStatus.COMPLETED,
                 createdAt: new Date('2024-01-20T10:15:00Z'),
                 notes: 'Payment processed successfully via Stripe',
             };
             expect(mockPayment.id).toBeDefined();
             expect(mockPayment.invoiceId).toBeDefined();
             expect(mockPayment.amount).toBeGreaterThan(0);
-            expect(mockPayment.paymentMethod).toBe(index_1.PaymentMethod.CREDIT_CARD);
-            expect(mockPayment.status).toBe(index_1.PaymentStatus.COMPLETED);
+            expect(mockPayment.paymentMethod).toBe(PaymentMethod.CREDIT_CARD);
+            expect(mockPayment.status).toBe(PaymentStatus.COMPLETED);
             expect(mockPayment.paymentDate).toBeInstanceOf(Date);
             expect(mockPayment.processorId).toBeTruthy();
             expect(mockPayment.transactionId).toBeTruthy();
         });
-        it('should validate TrustAccount interface structure', function () {
-            var mockTrustAccount = {
+        it('should validate TrustAccount interface structure', () => {
+            const mockTrustAccount = {
                 id: 'trust-123',
                 firmId: 'firm-456',
                 accountName: 'Client Trust Account',
@@ -145,14 +134,14 @@ describe('Type Validation Tests', function () {
             expect(typeof mockTrustAccount.isActive).toBe('boolean');
             expect(mockTrustAccount.createdAt).toBeInstanceOf(Date);
         });
-        it('should validate TrustTransaction interface structure', function () {
-            var mockTrustTransaction = {
+        it('should validate TrustTransaction interface structure', () => {
+            const mockTrustTransaction = {
                 id: 'tt-123',
                 trustAccountId: 'trust-456',
                 clientId: 'client-789',
                 matterId: 'matter-101',
                 firmId: 'firm-303',
-                type: index_1.TrustTransactionType.DEPOSIT,
+                type: TrustTransactionType.DEPOSIT,
                 amount: 5000.00,
                 description: 'Retainer deposit for litigation matter',
                 reference: 'RETAINER-2024-001',
@@ -166,97 +155,97 @@ describe('Type Validation Tests', function () {
             };
             expect(mockTrustTransaction.id).toBeDefined();
             expect(mockTrustTransaction.trustAccountId).toBeDefined();
-            expect(mockTrustTransaction.type).toBe(index_1.TrustTransactionType.DEPOSIT);
+            expect(mockTrustTransaction.type).toBe(TrustTransactionType.DEPOSIT);
             expect(mockTrustTransaction.amount).toBeGreaterThan(0);
             expect(mockTrustTransaction.reference).toMatch(/^[A-Z]+-\d{4}-\d{3}$/);
             expect(mockTrustTransaction.transactionDate).toBeInstanceOf(Date);
             expect(mockTrustTransaction.createdAt).toBeInstanceOf(Date);
         });
     });
-    describe('Enum Validation', function () {
-        it('should validate InvoiceStatus enum values', function () {
-            expect(index_1.InvoiceStatus.DRAFT).toBe('draft');
-            expect(index_1.InvoiceStatus.SENT).toBe('sent');
-            expect(index_1.InvoiceStatus.VIEWED).toBe('viewed');
-            expect(index_1.InvoiceStatus.PAID).toBe('paid');
-            expect(index_1.InvoiceStatus.PARTIAL).toBe('partial');
-            expect(index_1.InvoiceStatus.OVERDUE).toBe('overdue');
-            expect(index_1.InvoiceStatus.CANCELLED).toBe('cancelled');
+    describe('Enum Validation', () => {
+        it('should validate InvoiceStatus enum values', () => {
+            expect(InvoiceStatus.DRAFT).toBe('draft');
+            expect(InvoiceStatus.SENT).toBe('sent');
+            expect(InvoiceStatus.VIEWED).toBe('viewed');
+            expect(InvoiceStatus.PAID).toBe('paid');
+            expect(InvoiceStatus.PARTIAL).toBe('partial');
+            expect(InvoiceStatus.OVERDUE).toBe('overdue');
+            expect(InvoiceStatus.CANCELLED).toBe('cancelled');
             // Verify all expected values are present
-            var expectedStatuses = ['draft', 'sent', 'viewed', 'paid', 'partial', 'overdue', 'cancelled'];
-            var actualStatuses = Object.values(index_1.InvoiceStatus);
-            expectedStatuses.forEach(function (status) {
+            const expectedStatuses = ['draft', 'sent', 'viewed', 'paid', 'partial', 'overdue', 'cancelled'];
+            const actualStatuses = Object.values(InvoiceStatus);
+            expectedStatuses.forEach(status => {
                 expect(actualStatuses).toContain(status);
             });
         });
-        it('should validate PaymentStatus enum values', function () {
-            expect(index_1.PaymentStatus.PENDING).toBe('pending');
-            expect(index_1.PaymentStatus.PROCESSING).toBe('processing');
-            expect(index_1.PaymentStatus.COMPLETED).toBe('completed');
-            expect(index_1.PaymentStatus.FAILED).toBe('failed');
-            expect(index_1.PaymentStatus.REFUNDED).toBe('refunded');
-            expect(index_1.PaymentStatus.CANCELLED).toBe('cancelled');
-            var expectedStatuses = ['pending', 'processing', 'completed', 'failed', 'refunded', 'cancelled'];
-            var actualStatuses = Object.values(index_1.PaymentStatus);
-            expectedStatuses.forEach(function (status) {
+        it('should validate PaymentStatus enum values', () => {
+            expect(PaymentStatus.PENDING).toBe('pending');
+            expect(PaymentStatus.PROCESSING).toBe('processing');
+            expect(PaymentStatus.COMPLETED).toBe('completed');
+            expect(PaymentStatus.FAILED).toBe('failed');
+            expect(PaymentStatus.REFUNDED).toBe('refunded');
+            expect(PaymentStatus.CANCELLED).toBe('cancelled');
+            const expectedStatuses = ['pending', 'processing', 'completed', 'failed', 'refunded', 'cancelled'];
+            const actualStatuses = Object.values(PaymentStatus);
+            expectedStatuses.forEach(status => {
                 expect(actualStatuses).toContain(status);
             });
         });
-        it('should validate PaymentMethod enum values', function () {
-            expect(index_1.PaymentMethod.CREDIT_CARD).toBe('credit_card');
-            expect(index_1.PaymentMethod.BANK_TRANSFER).toBe('bank_transfer');
-            expect(index_1.PaymentMethod.CHECK).toBe('check');
-            expect(index_1.PaymentMethod.CASH).toBe('cash');
-            expect(index_1.PaymentMethod.WIRE_TRANSFER).toBe('wire_transfer');
-            expect(index_1.PaymentMethod.INTERAC).toBe('interac');
-            var expectedMethods = ['credit_card', 'bank_transfer', 'check', 'cash', 'wire_transfer', 'interac'];
-            var actualMethods = Object.values(index_1.PaymentMethod);
-            expectedMethods.forEach(function (method) {
+        it('should validate PaymentMethod enum values', () => {
+            expect(PaymentMethod.CREDIT_CARD).toBe('credit_card');
+            expect(PaymentMethod.BANK_TRANSFER).toBe('bank_transfer');
+            expect(PaymentMethod.CHECK).toBe('check');
+            expect(PaymentMethod.CASH).toBe('cash');
+            expect(PaymentMethod.WIRE_TRANSFER).toBe('wire_transfer');
+            expect(PaymentMethod.INTERAC).toBe('interac');
+            const expectedMethods = ['credit_card', 'bank_transfer', 'check', 'cash', 'wire_transfer', 'interac'];
+            const actualMethods = Object.values(PaymentMethod);
+            expectedMethods.forEach(method => {
                 expect(actualMethods).toContain(method);
             });
         });
-        it('should validate TaskCategory enum values', function () {
-            expect(index_1.TaskCategory.RESEARCH).toBe('research');
-            expect(index_1.TaskCategory.DRAFTING).toBe('drafting');
-            expect(index_1.TaskCategory.CORRESPONDENCE).toBe('correspondence');
-            expect(index_1.TaskCategory.COURT_APPEARANCE).toBe('court_appearance');
-            expect(index_1.TaskCategory.CLIENT_MEETING).toBe('client_meeting');
-            expect(index_1.TaskCategory.NEGOTIATION).toBe('negotiation');
-            expect(index_1.TaskCategory.ADMINISTRATIVE).toBe('administrative');
-            expect(index_1.TaskCategory.TRAVEL).toBe('travel');
-            var expectedCategories = [
+        it('should validate TaskCategory enum values', () => {
+            expect(TaskCategory.RESEARCH).toBe('research');
+            expect(TaskCategory.DRAFTING).toBe('drafting');
+            expect(TaskCategory.CORRESPONDENCE).toBe('correspondence');
+            expect(TaskCategory.COURT_APPEARANCE).toBe('court_appearance');
+            expect(TaskCategory.CLIENT_MEETING).toBe('client_meeting');
+            expect(TaskCategory.NEGOTIATION).toBe('negotiation');
+            expect(TaskCategory.ADMINISTRATIVE).toBe('administrative');
+            expect(TaskCategory.TRAVEL).toBe('travel');
+            const expectedCategories = [
                 'research', 'drafting', 'correspondence', 'court_appearance',
                 'client_meeting', 'negotiation', 'administrative', 'travel',
                 'real_estate', 'employment', 'wills_estates', 'corporate',
                 'litigation', 'general'
             ];
-            var actualCategories = Object.values(index_1.TaskCategory);
-            expectedCategories.forEach(function (category) {
+            const actualCategories = Object.values(TaskCategory);
+            expectedCategories.forEach(category => {
                 expect(actualCategories).toContain(category);
             });
         });
-        it('should validate TaxType enum values', function () {
-            expect(index_1.TaxType.HST).toBe('hst');
-            expect(index_1.TaxType.GST).toBe('gst');
-            expect(index_1.TaxType.PST).toBe('pst');
-            expect(index_1.TaxType.QST).toBe('qst');
-            var expectedTaxTypes = ['hst', 'gst', 'pst', 'qst'];
-            var actualTaxTypes = Object.values(index_1.TaxType);
-            expectedTaxTypes.forEach(function (taxType) {
+        it('should validate TaxType enum values', () => {
+            expect(TaxType.HST).toBe('hst');
+            expect(TaxType.GST).toBe('gst');
+            expect(TaxType.PST).toBe('pst');
+            expect(TaxType.QST).toBe('qst');
+            const expectedTaxTypes = ['hst', 'gst', 'pst', 'qst'];
+            const actualTaxTypes = Object.values(TaxType);
+            expectedTaxTypes.forEach(taxType => {
                 expect(actualTaxTypes).toContain(taxType);
             });
         });
     });
-    describe('Complex Type Validation', function () {
-        it('should validate BillingConfiguration interface structure', function () {
-            var mockConfig = {
+    describe('Complex Type Validation', () => {
+        it('should validate BillingConfiguration interface structure', () => {
+            const mockConfig = {
                 firmId: 'firm-123',
                 defaultHourlyRate: 350.00,
                 currency: 'CAD',
                 defaultCurrency: 'CAD',
                 taxRates: [
-                    { jurisdiction: 'ON', rate: 0.13, type: index_1.TaxType.HST },
-                    { jurisdiction: 'BC', rate: 0.12, type: index_1.TaxType.GST },
+                    { jurisdiction: 'ON', rate: 0.13, type: TaxType.HST },
+                    { jurisdiction: 'BC', rate: 0.12, type: TaxType.GST },
                 ],
                 paymentTerms: 30,
                 defaultPaymentTerms: 'Net 30 days',
@@ -287,15 +276,15 @@ describe('Type Validation Tests', function () {
             expect(mockConfig.hstRate).toBeGreaterThan(0);
             expect(mockConfig.invoiceNumberFormat).toContain('{YYYY}');
         });
-        it('should validate TaxCalculation interface structure', function () {
-            var mockTaxCalc = {
+        it('should validate TaxCalculation interface structure', () => {
+            const mockTaxCalc = {
                 subtotal: 1000.00,
                 taxAmount: 130.00,
                 totalAmount: 1130.00,
                 breakdown: [
                     {
                         jurisdiction: 'ON',
-                        type: index_1.TaxType.HST,
+                        type: TaxType.HST,
                         rate: 0.13,
                         amount: 130.00,
                     },
@@ -306,12 +295,12 @@ describe('Type Validation Tests', function () {
             expect(mockTaxCalc.totalAmount).toBe(mockTaxCalc.subtotal + mockTaxCalc.taxAmount);
             expect(Array.isArray(mockTaxCalc.breakdown)).toBe(true);
             expect(mockTaxCalc.breakdown).toHaveLength(1);
-            expect(mockTaxCalc.breakdown[0].type).toBe(index_1.TaxType.HST);
+            expect(mockTaxCalc.breakdown[0].type).toBe(TaxType.HST);
             expect(mockTaxCalc.breakdown[0].rate).toBe(0.13);
             expect(mockTaxCalc.breakdown[0].amount).toBe(130.00);
         });
-        it('should validate User and Firm interface structures', function () {
-            var mockUser = {
+        it('should validate User and Firm interface structures', () => {
+            const mockUser = {
                 id: 'user-123',
                 name: 'John Doe',
                 email: 'john.doe@lawfirm.com',
@@ -321,7 +310,7 @@ describe('Type Validation Tests', function () {
                 createdAt: new Date('2024-01-01T00:00:00Z'),
                 updatedAt: new Date('2024-01-15T12:00:00Z'),
             };
-            var mockFirm = {
+            const mockFirm = {
                 id: 'firm-456',
                 name: 'Smith & Associates',
                 address: {
@@ -350,28 +339,28 @@ describe('Type Validation Tests', function () {
             expect(mockFirm.taxId).toMatch(/^BN\d{9}RT\d{4}$/);
         });
     });
-    describe('Request/Response Type Validation', function () {
-        it('should validate TimeTrackingRequest interface', function () {
-            var mockRequest = {
+    describe('Request/Response Type Validation', () => {
+        it('should validate TimeTrackingRequest interface', () => {
+            const mockRequest = {
                 matterId: 'matter-123',
                 clientId: 'client-456',
                 description: 'Research contract law precedents',
-                category: index_1.TaskCategory.RESEARCH,
-                activityType: index_1.ActivityType.BILLABLE,
+                category: TaskCategory.RESEARCH,
+                activityType: ActivityType.BILLABLE,
                 billableRate: 350.00,
             };
             expect(mockRequest.matterId).toBeDefined();
             expect(mockRequest.clientId).toBeDefined();
             expect(mockRequest.description).toBeTruthy();
-            expect(mockRequest.category).toBe(index_1.TaskCategory.RESEARCH);
-            expect(mockRequest.activityType).toBe(index_1.ActivityType.BILLABLE);
+            expect(mockRequest.category).toBe(TaskCategory.RESEARCH);
+            expect(mockRequest.activityType).toBe(ActivityType.BILLABLE);
             expect(mockRequest.billableRate).toBeGreaterThan(0);
         });
-        it('should validate TimeEntryUpdateRequest interface', function () {
-            var mockUpdateRequest = {
+        it('should validate TimeEntryUpdateRequest interface', () => {
+            const mockUpdateRequest = {
                 description: 'Updated description for time entry',
-                category: index_1.TaskCategory.DRAFTING,
-                activityType: index_1.ActivityType.BILLABLE,
+                category: TaskCategory.DRAFTING,
+                activityType: ActivityType.BILLABLE,
                 startTime: new Date('2024-01-15T09:00:00Z'),
                 endTime: new Date('2024-01-15T11:30:00Z'),
                 duration: 150,
@@ -380,23 +369,23 @@ describe('Type Validation Tests', function () {
                 tags: ['contract', 'drafting', 'commercial'],
             };
             expect(mockUpdateRequest.description).toBeTruthy();
-            expect(mockUpdateRequest.category).toBe(index_1.TaskCategory.DRAFTING);
+            expect(mockUpdateRequest.category).toBe(TaskCategory.DRAFTING);
             expect(mockUpdateRequest.startTime).toBeInstanceOf(Date);
             expect(mockUpdateRequest.endTime).toBeInstanceOf(Date);
             expect(mockUpdateRequest.duration).toBeGreaterThan(0);
             expect(typeof mockUpdateRequest.isBillable).toBe('boolean');
             expect(Array.isArray(mockUpdateRequest.tags)).toBe(true);
         });
-        it('should validate ActiveTimer interface', function () {
-            var mockActiveTimer = {
+        it('should validate ActiveTimer interface', () => {
+            const mockActiveTimer = {
                 id: 'timer-123',
                 userId: 'user-456',
                 matterId: 'matter-789',
                 clientId: 'client-101',
                 startTime: new Date('2024-01-15T09:00:00Z'),
                 description: 'Ongoing legal research',
-                category: index_1.TaskCategory.RESEARCH,
-                activityType: index_1.ActivityType.BILLABLE,
+                category: TaskCategory.RESEARCH,
+                activityType: ActivityType.BILLABLE,
                 isRunning: true,
                 elapsedTime: 90, // 1.5 hours in minutes
                 billableRate: 350.00,
@@ -413,9 +402,9 @@ describe('Type Validation Tests', function () {
             expect(mockActiveTimer.lastUpdate).toBeInstanceOf(Date);
         });
     });
-    describe('Type Safety and Optional Properties', function () {
-        it('should handle optional properties correctly', function () {
-            var minimalTimeEntry = {
+    describe('Type Safety and Optional Properties', () => {
+        it('should handle optional properties correctly', () => {
+            const minimalTimeEntry = {
                 id: 'time-123',
                 userId: 'user-456',
                 matterId: 'matter-789',
@@ -427,15 +416,15 @@ describe('Type Validation Tests', function () {
                 billableRate: 350.00,
                 billableAmount: 350.00,
                 description: 'Basic time entry',
-                category: index_1.TaskCategory.GENERAL,
-                activityType: index_1.ActivityType.BILLABLE,
+                category: TaskCategory.GENERAL,
+                activityType: ActivityType.BILLABLE,
                 tags: [],
                 isBillable: true,
                 isSubmitted: false,
                 billingStatus: 'draft',
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                syncStatus: index_1.SyncStatus.PENDING,
+                syncStatus: SyncStatus.PENDING,
             };
             // Optional properties should be allowed to be undefined
             expect(minimalTimeEntry.taskId).toBeUndefined();
@@ -445,61 +434,62 @@ describe('Type Validation Tests', function () {
             expect(minimalTimeEntry.approvedBy).toBeUndefined();
             expect(minimalTimeEntry.approvedAt).toBeUndefined();
         });
-        it('should validate required vs optional properties', function () {
+        it('should validate required vs optional properties', () => {
             // Test that required properties cannot be undefined
-            var requiredFields = [
+            const requiredFields = [
                 'id', 'userId', 'matterId', 'clientId', 'firmId',
                 'startTime', 'duration', 'isRunning', 'billableRate',
                 'billableAmount', 'description', 'category', 'activityType',
                 'tags', 'isBillable', 'isSubmitted', 'billingStatus',
                 'createdAt', 'updatedAt', 'syncStatus'
             ];
-            var optionalFields = [
+            const optionalFields = [
                 'taskId', 'endTime', 'nonBillableAmount', 'submittedAt',
                 'approvedBy', 'approvedAt'
             ];
             expect(requiredFields).toHaveLength(20);
             expect(optionalFields).toHaveLength(6);
-            expect(__spreadArray(__spreadArray([], requiredFields, true), optionalFields, true)).toHaveLength(26);
+            expect([...requiredFields, ...optionalFields]).toHaveLength(26);
         });
     });
-    describe('Enum Value Completeness', function () {
-        it('should have all expected enum values for comprehensive coverage', function () {
+    describe('Enum Value Completeness', () => {
+        it('should have all expected enum values for comprehensive coverage', () => {
             // Verify enum completeness for legal billing system
-            expect(Object.keys(index_1.InvoiceStatus)).toHaveLength(7);
-            expect(Object.keys(index_1.PaymentStatus)).toHaveLength(6);
-            expect(Object.keys(index_1.PaymentMethod)).toHaveLength(6);
-            expect(Object.keys(index_1.TrustTransactionType)).toHaveLength(5);
-            expect(Object.keys(index_1.TaskCategory)).toHaveLength(14);
-            expect(Object.keys(index_1.ActivityType)).toHaveLength(3);
-            expect(Object.keys(index_1.SyncStatus)).toHaveLength(3);
-            expect(Object.keys(index_1.MatterStatus)).toHaveLength(4);
-            expect(Object.keys(index_1.ExpenseStatus)).toHaveLength(5);
-            expect(Object.keys(index_1.TaxType)).toHaveLength(4);
+            expect(Object.keys(InvoiceStatus)).toHaveLength(7);
+            expect(Object.keys(PaymentStatus)).toHaveLength(6);
+            expect(Object.keys(PaymentMethod)).toHaveLength(6);
+            expect(Object.keys(TrustTransactionType)).toHaveLength(5);
+            expect(Object.keys(TaskCategory)).toHaveLength(14);
+            expect(Object.keys(ActivityType)).toHaveLength(3);
+            expect(Object.keys(SyncStatus)).toHaveLength(3);
+            expect(Object.keys(MatterStatus)).toHaveLength(4);
+            expect(Object.keys(ExpenseStatus)).toHaveLength(5);
+            expect(Object.keys(TaxType)).toHaveLength(4);
         });
-        it('should validate Canadian legal practice area coverage', function () {
-            var legalPracticeAreas = [
-                index_1.TaskCategory.REAL_ESTATE,
-                index_1.TaskCategory.EMPLOYMENT,
-                index_1.TaskCategory.WILLS_ESTATES,
-                index_1.TaskCategory.CORPORATE,
-                index_1.TaskCategory.LITIGATION,
-                index_1.TaskCategory.GENERAL,
+        it('should validate Canadian legal practice area coverage', () => {
+            const legalPracticeAreas = [
+                TaskCategory.REAL_ESTATE,
+                TaskCategory.EMPLOYMENT,
+                TaskCategory.WILLS_ESTATES,
+                TaskCategory.CORPORATE,
+                TaskCategory.LITIGATION,
+                TaskCategory.GENERAL,
             ];
-            legalPracticeAreas.forEach(function (area) {
-                expect(Object.values(index_1.TaskCategory)).toContain(area);
+            legalPracticeAreas.forEach(area => {
+                expect(Object.values(TaskCategory)).toContain(area);
             });
         });
-        it('should validate Canadian tax system coverage', function () {
-            var canadianTaxTypes = [
-                index_1.TaxType.HST, // Harmonized Sales Tax (ON, NB, NL, NS, PE)
-                index_1.TaxType.GST, // Goods and Services Tax (Federal)
-                index_1.TaxType.PST, // Provincial Sales Tax (BC, SK, MB)
-                index_1.TaxType.QST, // Quebec Sales Tax (QC)
+        it('should validate Canadian tax system coverage', () => {
+            const canadianTaxTypes = [
+                TaxType.HST, // Harmonized Sales Tax (ON, NB, NL, NS, PE)
+                TaxType.GST, // Goods and Services Tax (Federal)
+                TaxType.PST, // Provincial Sales Tax (BC, SK, MB)
+                TaxType.QST, // Quebec Sales Tax (QC)
             ];
-            canadianTaxTypes.forEach(function (taxType) {
-                expect(Object.values(index_1.TaxType)).toContain(taxType);
+            canadianTaxTypes.forEach(taxType => {
+                expect(Object.values(TaxType)).toContain(taxType);
             });
         });
     });
 });
+//# sourceMappingURL=billing-types.test.js.map

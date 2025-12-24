@@ -5064,3 +5064,170 @@ export const vTrainingProgramProgress = pgTable("v_training_program_progress", {
 	completed: boolean("completed"),
 	completionDate: date("completion_date"),
 });
+
+// ============================================
+// Q1 2025 - Advanced Analytics Tables
+// ============================================
+
+// Analytics Metrics - Computed metrics for dashboards and reporting
+export const analyticsMetrics = pgTable("analytics_metrics", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+	metricType: text("metric_type").notNull(), // 'claims_volume', 'resolution_time', 'member_growth', 'custom'
+	metricName: text("metric_name").notNull(),
+	metricValue: numeric("metric_value").notNull(),
+	metricUnit: text("metric_unit"), // 'count', 'percentage', 'days', 'dollars'
+	periodType: text("period_type").notNull(), // 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+	periodStart: timestamp("period_start").notNull(),
+	periodEnd: timestamp("period_end").notNull(),
+	metadata: jsonb("metadata"), // Additional context
+	comparisonValue: numeric("comparison_value"), // Previous period value
+	trend: text("trend"), // 'up', 'down', 'stable'
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+	orgIdx: index("analytics_metrics_org_idx").on(table.organizationId),
+	typeIdx: index("analytics_metrics_type_idx").on(table.metricType),
+	periodIdx: index("analytics_metrics_period_idx").on(table.periodStart, table.periodEnd),
+}));
+
+// KPI Configurations - User-defined KPIs with thresholds and alerts
+export const kpiConfigurations = pgTable("kpi_configurations", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+	createdBy: uuid("created_by").notNull(), // FK to users.userId
+	name: text("name").notNull(),
+	description: text("description"),
+	metricType: text("metric_type").notNull(),
+	dataSource: text("data_source").notNull(), // 'claims', 'members', 'financial', 'custom_query'
+	calculation: jsonb("calculation").notNull(), // Formula, aggregation, filters
+	visualizationType: text("visualization_type").notNull(), // 'line', 'bar', 'pie', 'gauge', 'number'
+	targetValue: numeric("target_value"),
+	warningThreshold: numeric("warning_threshold"),
+	criticalThreshold: numeric("critical_threshold"),
+	alertEnabled: boolean("alert_enabled").default(false),
+	alertRecipients: jsonb("alert_recipients"), // Array of user IDs or emails
+	refreshInterval: integer("refresh_interval").default(3600), // Seconds
+	isActive: boolean("is_active").default(true),
+	displayOrder: integer("display_order"),
+	dashboardLayout: jsonb("dashboard_layout"), // Position, size in grid
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+	orgIdx: index("kpi_configurations_org_idx").on(table.organizationId),
+	activeIdx: index("kpi_configurations_active_idx").on(table.isActive),
+	createdByIdx: index("kpi_configurations_created_by_idx").on(table.createdBy),
+}));
+
+// ML Predictions - Machine learning predictions for forecasting
+export const mlPredictions = pgTable("ml_predictions", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+	predictionType: text("prediction_type").notNull(), // 'claims_volume', 'resource_needs', 'budget_forecast'
+	modelName: text("model_name").notNull(), // 'arima', 'prophet', 'linear_regression', 'random_forest'
+	modelVersion: text("model_version").notNull(),
+	targetDate: timestamp("target_date").notNull(),
+	predictedValue: numeric("predicted_value").notNull(),
+	confidenceInterval: jsonb("confidence_interval"), // { lower: number, upper: number }
+	confidenceScore: numeric("confidence_score"), // 0-1
+	features: jsonb("features"), // Input features used
+	actualValue: numeric("actual_value"), // Filled when actual data available
+	accuracy: numeric("accuracy"), // Calculated after actual value known
+	metadata: jsonb("metadata"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	validatedAt: timestamp("validated_at"),
+}, (table) => ({
+	orgIdx: index("ml_predictions_org_idx").on(table.organizationId),
+	typeIdx: index("ml_predictions_type_idx").on(table.predictionType),
+	dateIdx: index("ml_predictions_date_idx").on(table.targetDate),
+	modelIdx: index("ml_predictions_model_idx").on(table.modelName, table.modelVersion),
+}));
+
+// Trend Analyses - Trend detection and anomaly detection
+export const trendAnalyses = pgTable("trend_analyses", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+	analysisType: text("analysis_type").notNull(), // 'trend', 'anomaly', 'pattern', 'correlation'
+	dataSource: text("data_source").notNull(),
+	timeRange: jsonb("time_range").notNull(), // { start: date, end: date }
+	detectedTrend: text("detected_trend"), // 'increasing', 'decreasing', 'seasonal', 'cyclical', 'stable'
+	trendStrength: numeric("trend_strength"), // 0-1
+	anomaliesDetected: jsonb("anomalies_detected"), // Array of anomaly points
+	anomalyCount: integer("anomaly_count").default(0),
+	seasonalPattern: jsonb("seasonal_pattern"),
+	correlations: jsonb("correlations"),
+	insights: text("insights"), // AI-generated insights
+	recommendations: jsonb("recommendations"),
+	statisticalTests: jsonb("statistical_tests"),
+	visualizationData: jsonb("visualization_data"),
+	confidence: numeric("confidence"), // 0-1
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+	orgIdx: index("trend_analyses_org_idx").on(table.organizationId),
+	typeIdx: index("trend_analyses_type_idx").on(table.analysisType),
+	createdIdx: index("trend_analyses_created_idx").on(table.createdAt),
+	dataSourceIdx: index("trend_analyses_data_source_idx").on(table.dataSource),
+}));
+
+// Insight Recommendations - AI-generated insights and recommendations
+export const insightRecommendations = pgTable("insight_recommendations", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+	insightType: text("insight_type").notNull(), // 'opportunity', 'risk', 'optimization', 'alert', 'information'
+	category: text("category").notNull(), // 'claims', 'members', 'financial', 'operations', 'compliance'
+	priority: text("priority").notNull(), // 'critical', 'high', 'medium', 'low'
+	title: text("title").notNull(),
+	description: text("description").notNull(),
+	dataSource: jsonb("data_source"),
+	metrics: jsonb("metrics"),
+	trend: text("trend"),
+	impact: text("impact"),
+	recommendations: jsonb("recommendations"), // Array of actionable recommendations
+	actionRequired: boolean("action_required").default(false),
+	actionDeadline: timestamp("action_deadline"),
+	estimatedBenefit: text("estimated_benefit"),
+	confidenceScore: numeric("confidence_score"), // 0-1
+	relatedEntities: jsonb("related_entities"),
+	status: text("status").default('new'), // 'new', 'acknowledged', 'in_progress', 'completed', 'dismissed'
+	acknowledgedBy: uuid("acknowledged_by"), // FK to users.userId
+	acknowledgedAt: timestamp("acknowledged_at"),
+	dismissedBy: uuid("dismissed_by"), // FK to users.userId
+	dismissedAt: timestamp("dismissed_at"),
+	dismissalReason: text("dismissal_reason"),
+	completedAt: timestamp("completed_at"),
+	notes: text("notes"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+	orgIdx: index("insight_recommendations_org_idx").on(table.organizationId),
+	statusIdx: index("insight_recommendations_status_idx").on(table.status),
+	priorityIdx: index("insight_recommendations_priority_idx").on(table.priority),
+	createdIdx: index("insight_recommendations_created_idx").on(table.createdAt),
+	categoryIdx: index("insight_recommendations_category_idx").on(table.category),
+}));
+
+// Comparative Analyses - Cross-organization comparisons and benchmarking
+export const comparativeAnalyses = pgTable("comparative_analyses", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+	analysisName: text("analysis_name").notNull(),
+	comparisonType: text("comparison_type").notNull(), // 'peer_comparison', 'industry_benchmark', 'historical_comparison'
+	organizationIds: jsonb("organization_ids"), // Array of org IDs being compared
+	metrics: jsonb("metrics").notNull(),
+	timeRange: jsonb("time_range").notNull(),
+	results: jsonb("results").notNull(),
+	benchmarks: jsonb("benchmarks"),
+	organizationRanking: jsonb("organization_ranking"),
+	gaps: jsonb("gaps"),
+	strengths: jsonb("strengths"),
+	recommendations: jsonb("recommendations"),
+	visualizationData: jsonb("visualization_data"),
+	isPublic: boolean("is_public").default(false),
+	createdBy: uuid("created_by").notNull(), // FK to users.userId
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+	orgIdx: index("comparative_analyses_org_idx").on(table.organizationId),
+	createdIdx: index("comparative_analyses_created_idx").on(table.createdAt),
+	typeIdx: index("comparative_analyses_type_idx").on(table.comparisonType),
+	createdByIdx: index("comparative_analyses_created_by_idx").on(table.createdBy),
+}));

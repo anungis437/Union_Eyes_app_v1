@@ -196,7 +196,7 @@ export const arbitratorProfiles = pgTable("arbitrator_profiles", {
 export const bargainingNotes = pgTable("bargaining_notes", {
   id: uuid("id").primaryKey().defaultRandom(),
   cbaId: uuid("cba_id").references(() => collectiveAgreements.id, { onDelete: "cascade" }),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   
   // Session details
   sessionDate: timestamp("session_date", { withTimezone: true }).notNull(),
@@ -241,7 +241,7 @@ export const bargainingNotes = pgTable("bargaining_notes", {
   lastModifiedBy: uuid("last_modified_by"),
 }, (table) => ({
   cbaIdx: index("bargaining_notes_cba_idx").on(table.cbaId),
-  tenantIdx: index("bargaining_notes_tenant_idx").on(table.tenantId),
+  organizationIdx: index("bargaining_notes_organization_idx").on(table.organizationId),
   sessionDateIdx: index("bargaining_notes_session_date_idx").on(table.sessionDate),
   sessionTypeIdx: index("bargaining_notes_session_type_idx").on(table.sessionType),
 }));

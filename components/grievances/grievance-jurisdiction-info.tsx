@@ -10,7 +10,7 @@ import { CAJurisdiction, getDeadlineUrgency } from '@/lib/jurisdiction-helpers';
 
 interface GrievanceJurisdictionInfoProps {
   grievanceId: string;
-  tenantId: string;
+  organizationId: string;
   currentStep: string;
   filedDate: string;
   status: string;
@@ -34,7 +34,7 @@ interface ArbitrationDeadline {
 
 export function GrievanceJurisdictionInfo({
   grievanceId,
-  tenantId,
+  organizationId,
   currentStep,
   filedDate,
   status,
@@ -51,9 +51,9 @@ export function GrievanceJurisdictionInfo({
       try {
         setLoading(true);
 
-        // Fetch tenant's jurisdiction
+        // Fetch organization's jurisdiction
         const jurisdictionResponse = await fetch(
-          `/api/jurisdiction/tenant/${tenantId}`
+          `/api/jurisdiction/organization/${organizationId}`
         );
 
         if (!jurisdictionResponse.ok) {
@@ -150,7 +150,7 @@ export function GrievanceJurisdictionInfo({
     };
 
     fetchJurisdictionData();
-  }, [grievanceId, tenantId, currentStep, status, filedDate]);
+  }, [grievanceId, organizationId, currentStep, status, filedDate]);
 
   if (loading) {
     return (

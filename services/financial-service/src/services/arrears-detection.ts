@@ -12,10 +12,10 @@ export interface ArrearsDetectionConfig {
   lateFeePercentage?: number;
   lateFeeFixedAmount?: number;
   escalationThresholds?: {
-    level1Days: number; // Initial contact
-    level2Days: number; // Payment plan offer
-    level3Days: number; // Suspension warning
-    level4Days: number; // Legal action
+    level1Days?: number; // Initial contact
+    level2Days?: number; // Payment plan offer
+    level3Days?: number; // Suspension warning
+    level4Days?: number; // Legal action
   };
 }
 
@@ -162,7 +162,7 @@ export async function createArrearsCases(
           transactionIds: arrears.transactionIds,
           escalationLevel: Math.floor(arrears.daysOverdue / 30).toString(),
           updatedAt: new Date(),
-        })
+        } as any)
         .where(eq(schema.arrearsCases.id, existingCase.id));
 
       createdCaseIds.push(existingCase.id);
@@ -187,7 +187,7 @@ export async function createArrearsCases(
           notes: `Auto-generated case: ${arrears.transactionCount} overdue transaction(s), ${arrears.daysOverdue} days overdue`,
           createdAt: new Date(),
           updatedAt: new Date(),
-        })
+        } as any)
         .returning();
 
       createdCaseIds.push(newCase.id);
@@ -228,7 +228,7 @@ export async function applyLateFees(
             lateFeeAmount: lateFee.toString(),
             totalAmount: newTotal.toString(),
             updatedAt: new Date(),
-          })
+          } as any)
           .where(eq(schema.duesTransactions.id, transactionId));
 
         totalFeesApplied += lateFee;
@@ -245,10 +245,10 @@ export async function applyLateFees(
 function determineSuggestedEscalation(
   daysOverdue: number,
   thresholds?: {
-    level1Days: number;
-    level2Days: number;
-    level3Days: number;
-    level4Days: number;
+    level1Days?: number;
+    level2Days?: number;
+    level3Days?: number;
+    level4Days?: number;
   }
 ): string {
   const defaultThresholds = {

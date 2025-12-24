@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -341,22 +341,8 @@ export function FormulaBuilder({
   const [isValid, setIsValid] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Validate formula on change
-  useEffect(() => {
-    if (!formula.trim()) {
-      setValidationError(null);
-      setIsValid(false);
-      return;
-    }
-
-    // Basic validation
-    const validation = validateFormula(formula);
-    setValidationError(validation.error);
-    setIsValid(validation.isValid);
-  }, [formula]);
-
   // Validate formula
-  const validateFormula = (formulaText: string): { isValid: boolean; error: string | null } => {
+  const validateFormula = useCallback((formulaText: string): { isValid: boolean; error: string | null } => {
     // Check for balanced parentheses
     const openParens = (formulaText.match(/\(/g) || []).length;
     const closeParens = (formulaText.match(/\)/g) || []).length;
@@ -389,7 +375,21 @@ export function FormulaBuilder({
     }
 
     return { isValid: true, error: null };
-  };
+  }, []);
+
+  // Validate formula on change
+  useEffect(() => {
+    if (!formula.trim()) {
+      setValidationError(null);
+      setIsValid(false);
+      return;
+    }
+
+    // Basic validation
+    const validation = validateFormula(formula);
+    setValidationError(validation.error);
+    setIsValid(validation.isValid);
+  }, [formula, validateFormula]);
 
   // Filter functions
   const filteredFunctions = FORMULA_FUNCTIONS.filter(

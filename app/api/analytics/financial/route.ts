@@ -42,7 +42,7 @@ async function handler(req: NextRequest) {
     })
     .from(claims)
     .where(and(
-      eq(claims.tenantId, tenantId),
+      eq(claims.organizationId, tenantId),
       gte(claims.filedDate, startDate)
     ));
 
@@ -54,7 +54,7 @@ async function handler(req: NextRequest) {
     })
     .from(claims)
     .where(and(
-      eq(claims.tenantId, tenantId),
+      eq(claims.organizationId, tenantId),
       gte(claims.filedDate, prevStartDate),
       sql`${claims.filedDate} < ${startDate}`
     ));

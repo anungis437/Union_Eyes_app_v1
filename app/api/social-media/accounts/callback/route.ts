@@ -158,7 +158,7 @@ async function handleMetaCallback(
   code: string,
   redirectUri: string,
   platform: string,
-  tenantId: string,
+  organizationId: string,
   userId: string,
   supabase: any
 ) {
@@ -201,13 +201,13 @@ async function handleMetaCallback(
     const { data: existingAccount } = await supabase
       .from('social_accounts')
       .select('id')
-      .eq('tenant_id', tenantId)
+      .eq('organization_id', organizationId)
       .eq('platform', accountPlatform)
       .eq('platform_account_id', accountId)
       .single();
 
     const accountData = {
-      tenant_id: tenantId,
+      organization_id: organizationId,
       platform: accountPlatform,
       platform_account_id: accountId,
       platform_username: accountUsername,
@@ -246,7 +246,7 @@ async function handleTwitterCallback(
   code: string,
   codeVerifier: string,
   redirectUri: string,
-  tenantId: string,
+  organizationId: string,
   userId: string,
   supabase: any
 ) {
@@ -268,13 +268,13 @@ async function handleTwitterCallback(
   const { data: existingAccount } = await supabase
     .from('social_accounts')
     .select('id')
-    .eq('tenant_id', tenantId)
+    .eq('organization_id', organizationId)
     .eq('platform', 'twitter')
     .eq('platform_account_id', userInfo.id)
     .single();
 
   const accountData = {
-    tenant_id: tenantId,
+    organization_id: organizationId,
     platform: 'twitter',
     platform_account_id: userInfo.id,
     platform_username: userInfo.username,
@@ -313,7 +313,7 @@ async function handleTwitterCallback(
 async function handleLinkedInCallback(
   code: string,
   redirectUri: string,
-  tenantId: string,
+  organizationId: string,
   userId: string,
   supabase: any
 ) {
@@ -344,13 +344,13 @@ async function handleLinkedInCallback(
     const { data: existingAccount } = await supabase
       .from('social_accounts')
       .select('id')
-      .eq('tenant_id', tenantId)
+      .eq('organization_id', organizationId)
       .eq('platform', 'linkedin')
       .eq('platform_account_id', org.id)
       .single();
 
     const accountData = {
-      tenant_id: tenantId,
+      organization_id: organizationId,
       platform: 'linkedin',
       platform_account_id: org.id,
       platform_username: orgDetails.vanityName || org.id,

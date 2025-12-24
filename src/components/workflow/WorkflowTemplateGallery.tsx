@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FileInput,
   CheckSquare,
@@ -93,7 +93,7 @@ export function WorkflowTemplateGallery({
   });
 
   // Fetch templates
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (categoryFilter !== 'all') {
@@ -119,11 +119,11 @@ export function WorkflowTemplateGallery({
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, categoryFilter]);
 
   useEffect(() => {
     fetchTemplates();
-  }, [tenantId, categoryFilter]);
+  }, [fetchTemplates]);
 
   // Open customization dialog
   const openCustomizeDialog = (template: WorkflowTemplate) => {

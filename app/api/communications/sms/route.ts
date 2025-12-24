@@ -133,7 +133,7 @@ async function getTemplates(tenantId: string) {
   const templates = await db
     .select()
     .from(smsTemplates)
-    .where(and(eq(smsTemplates.tenantId, tenantId), eq(smsTemplates.isActive, true)))
+    .where(and(eq(smsTemplates.organizationId, tenantId), eq(smsTemplates.isActive, true)))
     .orderBy(desc(smsTemplates.createdAt));
 
   return NextResponse.json({ templates });
@@ -143,7 +143,7 @@ async function getCampaigns(tenantId: string) {
   const campaigns = await db
     .select()
     .from(smsCampaigns)
-    .where(eq(smsCampaigns.tenantId, tenantId))
+    .where(eq(smsCampaigns.organizationId, tenantId))
     .orderBy(desc(smsCampaigns.createdAt));
 
   return NextResponse.json({ campaigns });
@@ -270,7 +270,7 @@ async function createTemplate(userId: string, body: any) {
   }
 
   const newTemplate: NewSmsTemplate = {
-    tenantId,
+    organizationId: tenantId,
     name,
     description,
     messageTemplate,
@@ -296,7 +296,7 @@ async function createCampaign(userId: string, body: any) {
   }
 
   const newCampaign: NewSmsCampaign = {
-    tenantId,
+    organizationId: tenantId,
     name,
     description,
     message,
@@ -353,7 +353,7 @@ async function sendCampaignAction(userId: string, body: any) {
 
   try {
     const result = await sendBulkSms({
-      tenantId: campaign.tenantId,
+      tenantId: campaign.organizationId,
       userId,
       recipients,
       message: campaign.message,

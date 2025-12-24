@@ -24,42 +24,43 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
+    const tenantId = searchParams.get('tenantId'); // Add tenantId filter
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Build query
-    let query = db
+    // Build base where conditions
+    const baseConditions = [eq(inAppNotifications.userId, userId)];
+    
+    // Add tenant filter if provided
+    if (tenantId) {
+      baseConditions.push(eq(inAppNotifications.tenantId, tenantId));
+    }
+
+    // Build query with optional unreadOnly filter
+    const whereConditions = unreadOnly 
+      ? [...baseConditions, eq(inAppNotifications.read, false)]
+      : baseConditions;
+
+    const notifications = await db
       .select()
       .from(inAppNotifications)
-      .where(eq(inAppNotifications.userId, userId))
+      .where(and(...whereConditions))
       .orderBy(desc(inAppNotifications.createdAt))
       .limit(limit);
 
-    if (unreadOnly) {
-      query = db
-        .select()
-        .from(inAppNotifications)
-        .where(
-          and(
-            eq(inAppNotifications.userId, userId),
-            eq(inAppNotifications.read, false)
-          )
-        )
-        .orderBy(desc(inAppNotifications.createdAt))
-        .limit(limit);
+    // Get unread count with tenant filter
+    const unreadCountConditions = [
+      eq(inAppNotifications.userId, userId),
+      eq(inAppNotifications.read, false),
+    ];
+    
+    if (tenantId) {
+      unreadCountConditions.push(eq(inAppNotifications.tenantId, tenantId));
     }
 
-    const notifications = await query;
-
-    // Get unread count
     const unreadCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(inAppNotifications)
-      .where(
-        and(
-          eq(inAppNotifications.userId, userId),
-          eq(inAppNotifications.read, false)
-        )
-      );
+      .where(and(...unreadCountConditions));
 
     return NextResponse.json({
       notifications,

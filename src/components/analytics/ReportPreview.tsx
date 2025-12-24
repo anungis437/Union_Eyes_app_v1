@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -76,14 +76,7 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'data' | 'visualization'>('visualization');
 
-  // Fetch report data when opened
-  useEffect(() => {
-    if (open) {
-      fetchReportData();
-    }
-  }, [open]);
-
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -131,7 +124,14 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [config]);
+
+  // Fetch report data when opened
+  useEffect(() => {
+    if (open) {
+      fetchReportData();
+    }
+  }, [open, fetchReportData]);
 
   const generateMockData = (config: ReportConfig): any[] => {
     // Generate mock data based on config

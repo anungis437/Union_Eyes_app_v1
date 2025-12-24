@@ -24,7 +24,7 @@ async function handler(req: NextRequest) {
     .from(claims)
     .where(
       and(
-        eq(claims.tenantId, tenantId),
+        eq(claims.organizationId, tenantId),
         gte(claims.incidentDate, startDate)
       )
     );
@@ -38,7 +38,7 @@ async function handler(req: NextRequest) {
     .from(claims)
     .where(
       and(
-        eq(claims.tenantId, tenantId),
+        eq(claims.organizationId, tenantId),
         sql`${claims.status} IN ('under_review', 'assigned', 'investigation')`,
         sql`${claims.assignedTo} IS NOT NULL`
       )
@@ -71,7 +71,7 @@ async function handler(req: NextRequest) {
     .from(claims)
     .where(
       and(
-        eq(claims.tenantId, tenantId),
+        eq(claims.organizationId, tenantId),
         gte(claims.incidentDate, prevStartDate),
         sql`${claims.incidentDate} < ${startDate.toISOString()}::timestamp`
       )

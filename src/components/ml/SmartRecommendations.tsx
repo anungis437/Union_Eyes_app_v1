@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,7 +63,7 @@ export function SmartRecommendations({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -85,11 +85,11 @@ export function SmartRecommendations({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [type, claimId]);
 
   useEffect(() => {
     fetchRecommendations();
-  }, [type, claimId]);
+  }, [fetchRecommendations]);
 
   if (isLoading) {
     return (

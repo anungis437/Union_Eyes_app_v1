@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -76,7 +76,7 @@ export function WorkflowAnalytics({
   const [timeRange, setTimeRange] = useState<string>('7d');
 
   // Fetch workflows list
-  const fetchWorkflows = async () => {
+  const fetchWorkflows = useCallback(async () => {
     try {
       const response = await fetch('/api/workflows', {
         headers: {
@@ -91,10 +91,10 @@ export function WorkflowAnalytics({
     } catch (error) {
       console.error('Error fetching workflows:', error);
     }
-  };
+  }, [tenantId]);
 
   // Fetch workflow analytics
-  const fetchWorkflowAnalytics = async (wfId: string) => {
+  const fetchWorkflowAnalytics = useCallback(async (wfId: string) => {
     try {
       const response = await fetch(`/api/workflows/${wfId}/analytics`, {
         headers: {
@@ -109,10 +109,10 @@ export function WorkflowAnalytics({
     } catch (error) {
       console.error('Error fetching workflow analytics:', error);
     }
-  };
+  }, [tenantId]);
 
   // Fetch overview analytics
-  const fetchOverviewAnalytics = async () => {
+  const fetchOverviewAnalytics = useCallback(async () => {
     try {
       const response = await fetch('/api/analytics/overview', {
         headers: {
@@ -127,10 +127,10 @@ export function WorkflowAnalytics({
     } catch (error) {
       console.error('Error fetching overview analytics:', error);
     }
-  };
+  }, [tenantId]);
 
   // Fetch data based on selection
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
 
     if (selectedWorkflow === 'overview') {
@@ -142,15 +142,15 @@ export function WorkflowAnalytics({
     }
 
     setLoading(false);
-  };
+  }, [selectedWorkflow, fetchOverviewAnalytics, fetchWorkflowAnalytics]);
 
   useEffect(() => {
     fetchWorkflows();
-  }, [tenantId]);
+  }, [fetchWorkflows]);
 
   useEffect(() => {
     fetchData();
-  }, [tenantId, selectedWorkflow, timeRange]);
+  }, [fetchData, timeRange]);
 
   // Format duration
   const formatDuration = (ms: number) => {

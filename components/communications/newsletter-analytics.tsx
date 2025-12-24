@@ -15,7 +15,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -121,11 +121,7 @@ export function NewsletterAnalytics({ campaignId }: NewsletterAnalyticsProps) {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | 'all'>('all');
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [campaignId, timeRange]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -153,7 +149,11 @@ export function NewsletterAnalytics({ campaignId }: NewsletterAnalyticsProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [campaignId, timeRange, toast]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   const handleExport = async () => {
     try {

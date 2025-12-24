@@ -98,7 +98,7 @@ async function generateStewardRecommendations(
     // Find unassigned claims
     const unassignedClaims = await db.query.claims.findMany({
       where: and(
-        eq(claims.tenantId, tenantId),
+        eq(claims.organizationId, tenantId),
         isNull(claims.assignedTo),
         ne(claims.status, 'closed')
       )
@@ -114,7 +114,7 @@ async function generateStewardRecommendations(
         .from(claims)
         .where(
           and(
-            eq(claims.tenantId, tenantId),
+            eq(claims.organizationId, tenantId),
             ne(claims.status, 'closed')
           )
         )
@@ -153,7 +153,7 @@ async function generateStewardRecommendations(
       .innerJoin(users, eq(claims.assignedTo, users.userId))
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           ne(claims.status, 'closed')
         )
       )
@@ -280,7 +280,7 @@ async function generateStrategyRecommendations(
         wonCount: sql<number>`count(*) filter (where status = 'won')::int`,
       })
       .from(claims)
-      .where(eq(claims.tenantId, tenantId))
+      .where(eq(claims.organizationId, tenantId))
       .groupBy(claims.claimType);
 
     // Find claim types with low win rates
@@ -332,7 +332,7 @@ async function generatePriorityRecommendations(
 
     const oldOpenClaims = await db.query.claims.findMany({
       where: and(
-        eq(claims.tenantId, tenantId),
+        eq(claims.organizationId, tenantId),
         ne(claims.status, 'closed'),
         lte(claims.createdAt, thirtyDaysAgo)
       ),

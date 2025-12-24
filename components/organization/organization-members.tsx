@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,11 +74,7 @@ export function OrganizationMembers({ organizationId, className }: OrganizationM
   const [transferTargetOrg, setTransferTargetOrg] = useState<string>("");
   const [transferring, setTransferring] = useState(false);
 
-  useEffect(() => {
-    loadMembers();
-  }, [organizationId]);
-
-  const loadMembers = async () => {
+  const loadMembers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/organizations/${organizationId}/members`);
@@ -91,7 +87,11 @@ export function OrganizationMembers({ organizationId, className }: OrganizationM
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
 
   const filteredMembers = members.filter(member => {
     const matchesSearch = !searchQuery || 

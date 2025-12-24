@@ -102,11 +102,11 @@ export async function POST(request: NextRequest) {
         .where(eq(profilesTable.userId, userId));
       
       // Get tenant/organization from first transaction
-      const organizationId = selectedTransactions[0].organizationId;
+      const tenantId = selectedTransactions[0].tenantId;
       const [tenant] = await db
         .select()
         .from(tenants)
-        .where(eq(tenants.tenantId, organizationId));
+        .where(eq(tenants.tenantId, tenantId));
 
       // Update transactions as paid and generate receipts
       const receipts: string[] = [];

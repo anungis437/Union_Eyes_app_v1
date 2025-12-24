@@ -79,8 +79,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
 
   /**
    * Load user's organizations from API
+   * This is extracted as a separate function for manual refresh
    */
-  const loadUserOrganizations = useCallback(async () => {
+  const loadUserOrganizations = useCallback(async (abortSignal?: AbortSignal) => {
     if (!userId) {
       setIsLoading(false);
       return;
@@ -90,53 +91,94 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       setIsLoading(true);
       setError(null);
 
-      // Get user's organization memberships
+      console.log('[OrganizationContext] Fetching organizations for user:', userId);
+
+      // Get user's organization memberships with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch('/api/users/me/organizations', {
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: abortSignal || controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error('Failed to load organizations');
+        const errorText = await response.text();
+        console.error('[OrganizationContext] API error:', response.status, errorText);
+        throw new Error(`Failed to load organizations: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('[OrganizationContext] Received data:', {
+        organizationsCount: data.organizations?.length || 0,
+        membershipsCount: data.memberships?.length || 0,
+      });
+
       setUserOrganizations(data.organizations || []);
       setUserMemberships(data.memberships || []);
 
       // If user has organizations, select the primary one or first available
       if (data.organizations && data.organizations.length > 0) {
-        // Check if there's a selected organization in cookie
+        // Check if there's a selected organization in cookie (stored as UUID)
         const cookies = document.cookie.split(';');
         const selectedOrgCookie = cookies.find(c => c.trim().startsWith('selected_organization_id='));
         let selectedOrgId = selectedOrgCookie?.split('=')[1];
 
-        // Validate that user has access to the selected organization
+        // Validate that user has access to the selected organization (by UUID)
         const hasAccess = data.organizations.some((org: Organization) => org.id === selectedOrgId);
         
         if (!selectedOrgId || !hasAccess) {
           // Find primary organization
           const primaryMembership = data.memberships?.find((m: OrganizationMember) => m.isPrimary);
-          selectedOrgId = primaryMembership?.organizationId || data.organizations[0]?.id || null;
+          
+          if (primaryMembership) {
+            // Membership organizationId is the UUID, matches organizations.id directly
+            const primaryOrg = data.organizations.find((o: Organization) => 
+              o.id === primaryMembership.organizationId
+            );
+            selectedOrgId = primaryOrg?.id || data.organizations[0]?.id || null;
+          } else {
+            // Default to first organization
+            selectedOrgId = data.organizations[0]?.id || null;
+          }
         }
 
         setOrganizationId(selectedOrgId || null);
 
-        // Load organization details
+        // Load organization details (by UUID)
         const org = data.organizations.find((o: Organization) => o.id === selectedOrgId);
         if (org) {
           setOrganization(org);
           // Load organization path inline to avoid dependency issues
-          const pathResponse = await fetch(`/api/organizations/${selectedOrgId}/path`);
+          const pathResponse = await fetch(`/api/organizations/${org.id}/path`, {
+            credentials: 'include',
+            signal: abortSignal || controller.signal,
+          });
           if (pathResponse.ok) {
             const pathResult = await pathResponse.json();
             setOrganizationPath(pathResult.data || []);
           }
         }
+      } else if (data.memberships && data.memberships.length > 0) {
+        // User has memberships but no organizations found
+        // This can happen if organization records don't exist in DB
+        console.error('[OrganizationContext] User has memberships but no organizations found');
+        console.error('[OrganizationContext] Membership slugs:', data.memberships.map((m: OrganizationMember) => m.organizationId));
+        setError('Organization data not found. Please contact support.');
       }
     } catch (err) {
-      console.error('Error loading organizations:', err);
+      // Don't show error if request was aborted (cleanup)
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('[OrganizationContext] Request aborted');
+        return;
+      }
+      
+      console.error('[OrganizationContext] Error loading organizations:', err);
       setError(err instanceof Error ? err.message : 'Failed to load organizations');
     } finally {
       setIsLoading(false);
@@ -148,7 +190,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
    */
   const loadOrganizationPath = useCallback(async (orgId: string) => {
     try {
-      const response = await fetch(`/api/organizations/${orgId}/path`);
+      const response = await fetch(`/api/organizations/${orgId}/path`, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const result = await response.json();
         setOrganizationPath(result.data || []);
@@ -163,7 +207,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
    */
   const loadOrganizationTree = useCallback(async () => {
     try {
-      const response = await fetch('/api/organizations/tree');
+      const response = await fetch('/api/organizations/tree', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const result = await response.json();
         setOrganizationTree(result.data || []);
@@ -187,7 +233,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       
       // If no direct access, check if user is super admin via API
       if (!hasAccess) {
-        const userResponse = await fetch('/api/users/me');
+        const userResponse = await fetch('/api/users/me', {
+          credentials: 'include',
+        });
         if (userResponse.ok) {
           const userData = await userResponse.json();
           const isSuperAdmin = userData.role === 'super_admin' || userData.isSuperAdmin;
@@ -200,8 +248,9 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         }
       }
 
-      // Update cookie
+      // Update cookies - set both for compatibility with tenant middleware
       document.cookie = `selected_organization_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
+      document.cookie = `selected_tenant_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
 
       // Update state
       setOrganizationId(newOrganizationId);
@@ -230,24 +279,30 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
 
   // Load organizations when user is authenticated
   useEffect(() => {
-    if (authLoaded) {
-      if (userId) {
-        loadUserOrganizations();
-      } else {
-        // User is not authenticated, stop loading
-        setIsLoading(false);
-      }
+    const controller = new AbortController();
+
+    if (authLoaded && userId) {
+      loadUserOrganizations(controller.signal);
+    } else if (authLoaded && !userId) {
+      setIsLoading(false);
     }
+
+    return () => {
+      controller.abort();
+    };
   }, [authLoaded, userId, loadUserOrganizations]);
 
   // Set API cookie when organization changes
   useEffect(() => {
-    if (organization) {
+    if (organization && organizationId) {
       console.log('[OrganizationContext] Setting API cookie for organization:', organization.slug);
+      // Set both slug and ID cookies for backward compatibility
       document.cookie = `active-organization=${organization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`; // 30 days
-      console.log('[OrganizationContext] Cookie set:', `active-organization=${organization.slug}`);
+      document.cookie = `selected_organization_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
+      document.cookie = `selected_tenant_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year (for tenant middleware)
+      console.log('[OrganizationContext] Cookies set:', `active-organization=${organization.slug}, selected_organization_id=${organizationId}, selected_tenant_id=${organizationId}`);
     }
-  }, [organization]);
+  }, [organization, organizationId]);
 
   const value: OrganizationContextValue = {
     organizationId,

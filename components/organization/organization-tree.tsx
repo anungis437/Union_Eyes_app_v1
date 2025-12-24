@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ChevronRight, ChevronDown, Building2, Globe, Users, MapPin, Network, GitBranch, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,11 +52,7 @@ export function OrganizationTree({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadTree();
-  }, [rootOrgId]);
-
-  const loadTree = async () => {
+  const loadTree = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -75,7 +71,11 @@ export function OrganizationTree({
     } finally {
       setLoading(false);
     }
-  };
+  }, [rootOrgId]);
+
+  useEffect(() => {
+    loadTree();
+  }, [loadTree]);
 
   const loadChildren = async (node: OrganizationTreeNode, path: number[]) => {
     const updateTree = (tree: OrganizationTreeNode, targetPath: number[], children: OrganizationTreeNode[]): OrganizationTreeNode => {

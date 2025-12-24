@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     let query = db
       .select()
       .from(newsletterTemplates)
-      .where(eq(newsletterTemplates.tenantId, user.tenantId))
+      .where(eq(newsletterTemplates.organizationId, user.tenantId))
       .$dynamic();
 
     if (category && category !== 'all') {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     const [template] = await db
       .insert(newsletterTemplates)
       .values({
-        tenantId: user.tenantId,
+        organizationId: user.tenantId,
         createdBy: user.id,
         ...validatedData,
       })

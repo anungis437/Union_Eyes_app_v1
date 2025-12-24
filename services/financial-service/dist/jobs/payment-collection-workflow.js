@@ -95,14 +95,14 @@ async function processPaymentCollection(params) {
                         const arrearsRecord = await db_1.db
                             .select()
                             .from(schema_1.arrears)
-                            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.arrears.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.arrears.memberId, payment.memberId), (0, drizzle_orm_1.eq)(schema_1.arrears.transactionId, transaction.id)))
+                            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.arrears.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.arrears.memberId, payment.memberId)))
                             .limit(1);
                         if (arrearsRecord.length > 0) {
                             // Mark arrears as resolved
                             await db_1.db
                                 .update(schema_1.arrears)
                                 .set({
-                                status: 'resolved',
+                                arrearsStatus: 'resolved',
                                 notes: `Paid via ${payment.paymentMethod} - Ref: ${payment.referenceNumber}`,
                             })
                                 .where((0, drizzle_orm_1.eq)(schema_1.arrears.id, arrearsRecord[0].id));

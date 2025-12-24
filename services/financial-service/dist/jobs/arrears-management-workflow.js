@@ -54,7 +54,7 @@ async function processArrearsManagement(params) {
             dueDate: schema_1.duesTransactions.dueDate,
             periodStart: schema_1.duesTransactions.periodStart,
             periodEnd: schema_1.duesTransactions.periodEnd,
-            memberName: schema_1.members.name,
+            memberName: (0, drizzle_orm_1.sql) `CONCAT(${schema_1.members.firstName}, ' ', ${schema_1.members.lastName})`,
             memberEmail: schema_1.members.email,
         })
             .from(schema_1.duesTransactions)
@@ -68,7 +68,7 @@ async function processArrearsManagement(params) {
                 const existingArrears = await db_1.db
                     .select()
                     .from(schema_1.arrears)
-                    .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.arrears.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.arrears.memberId, record.memberId), (0, drizzle_orm_1.eq)(schema_1.arrears.status, 'active')))
+                    .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.arrears.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.arrears.memberId, record.memberId), (0, drizzle_orm_1.eq)(schema_1.arrears.arrearsStatus, 'active')))
                     .limit(1);
                 const daysOverdue = Math.floor((scanDate.getTime() - new Date(record.dueDate).getTime()) / (1000 * 60 * 60 * 24));
                 // Determine notification stage based on days overdue
@@ -89,7 +89,7 @@ async function processArrearsManagement(params) {
                         memberId: record.memberId,
                         totalOwed: record.amount,
                         oldestDebtDate: record.dueDate,
-                        status: 'active',
+                        arrearsStatus: 'active',
                         notes: `1 overdue transaction(s), ${daysOverdue} days overdue. Last notification: ${scanDate.toISOString()}`,
                     });
                     arrearsCreated++;

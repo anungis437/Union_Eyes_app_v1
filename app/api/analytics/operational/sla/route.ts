@@ -27,7 +27,7 @@ async function handler(req: NextRequest) {
         COUNT(CASE WHEN EXTRACT(EPOCH FROM (${claims.closedAt} - ${claims.createdAt})) / 86400 <= 30 THEN 1 END) as "onTime",
         COUNT(CASE WHEN EXTRACT(EPOCH FROM (${claims.closedAt} - ${claims.createdAt})) / 86400 > 30 THEN 1 END) as overdue
       FROM ${claims}
-      WHERE ${claims.tenantId} = ${tenantId}
+      WHERE ${claims.organizationId} = ${tenantId}
         AND ${claims.status} = 'resolved'
         AND ${claims.closedAt} >= ${startDate.toISOString()}::timestamp
       GROUP BY date_trunc('day', ${claims.closedAt})

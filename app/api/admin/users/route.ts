@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       .insert(tenantUsers)
       .values({
         userId: targetUserId,
-        tenantId,
+        tenantId: tenantId,
         role,
         isActive: true,
         joinedAt: new Date(),

@@ -36,7 +36,7 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
       .where(
         and(
           inArray(cbaClause.id, clauseIds),
-          eq(collectiveAgreements.tenantId, tenantId)
+          eq(collectiveAgreements.organizationId, tenantId)
         )
       );
 
@@ -57,7 +57,7 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
       .where(
         and(
           inArray(clauseComparisons.id, clauseIds),
-          eq(clauseComparisons.tenantId, tenantId)
+          eq(clauseComparisons.organizationId, tenantId)
         )
       )
       .limit(1);
@@ -79,7 +79,7 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
     const comparison = {
       comparisonName: `${analysisType} comparison - ${new Date().toISOString()}`,
       clauseType: clauseObjects[0].clauseType, // Use first clause's type
-      tenantId,
+      organizationId: tenantId,
       clauseIds,
       analysisResults: {
         similarities: contentAnalysis.similarities.map(s => ({ description: s, clauseIds })),
@@ -192,7 +192,7 @@ export const GET = withTenantAuth(async (request: NextRequest, context) => {
       .where(
         and(
           inArray(clauseComparisons.id, clauseIds),
-          eq(clauseComparisons.tenantId, tenantId)
+          eq(clauseComparisons.organizationId, tenantId)
         )
       )
       .limit(10);

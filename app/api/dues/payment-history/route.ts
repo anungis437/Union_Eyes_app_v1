@@ -35,7 +35,12 @@ export async function GET(request: NextRequest) {
         id: duesTransactions.id,
         date: duesTransactions.createdAt,
         amount: duesTransactions.amount,
+        duesAmount: duesTransactions.duesAmount,
+        copeAmount: duesTransactions.copeAmount,
+        pacAmount: duesTransactions.pacAmount,
+        strikeFundAmount: duesTransactions.strikeFundAmount,
         lateFeeAmount: duesTransactions.lateFeeAmount,
+        adjustmentAmount: duesTransactions.adjustmentAmount,
         totalAmount: duesTransactions.totalAmount,
         status: duesTransactions.status,
         paymentMethod: duesTransactions.paymentMethod,
@@ -43,6 +48,7 @@ export async function GET(request: NextRequest) {
         periodEnd: duesTransactions.periodEnd,
         paidDate: duesTransactions.paidDate,
         paymentReference: duesTransactions.paymentReference,
+        receiptUrl: duesTransactions.receiptUrl,
       })
       .from(duesTransactions)
       .where(eq(duesTransactions.memberId, member.id))
@@ -53,12 +59,18 @@ export async function GET(request: NextRequest) {
       id: payment.id,
       date: payment.paidDate || payment.date,
       amount: parseFloat(payment.amount.toString()),
+      duesAmount: parseFloat(payment.duesAmount?.toString() || '0'),
+      copeAmount: parseFloat(payment.copeAmount?.toString() || '0'),
+      pacAmount: parseFloat(payment.pacAmount?.toString() || '0'),
+      strikeFundAmount: parseFloat(payment.strikeFundAmount?.toString() || '0'),
       lateFeeAmount: parseFloat(payment.lateFeeAmount?.toString() || '0'),
+      adjustmentAmount: parseFloat(payment.adjustmentAmount?.toString() || '0'),
       totalAmount: parseFloat(payment.totalAmount?.toString() || payment.amount.toString()),
       status: payment.status,
       paymentMethod: payment.paymentMethod || 'N/A',
       periodStart: payment.periodStart,
       periodEnd: payment.periodEnd,
+      receiptUrl: payment.receiptUrl,
     }));
 
     return NextResponse.json(formattedPayments);

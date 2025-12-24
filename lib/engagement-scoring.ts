@@ -123,7 +123,7 @@ export async function calculateEngagementScore(
     .from(smsMessages)
     .where(
       and(
-        eq(smsMessages.tenantId, tenantId),
+        eq(smsMessages.organizationId, tenantId),
         eq(smsMessages.userId, profileId),
         gte(smsMessages.sentAt, cutoffDate)
       )
@@ -290,7 +290,7 @@ async function calculatePreviousScore(
     .from(smsMessages)
     .where(
       and(
-        eq(smsMessages.tenantId, tenantId),
+        eq(smsMessages.organizationId, tenantId),
         eq(smsMessages.userId, profileId),
         gte(smsMessages.sentAt, previousCutoffStart),
         sql`${smsMessages.sentAt} < ${previousCutoffEnd}`
@@ -351,7 +351,7 @@ export async function calculateAllEngagementScores(
   const allProfiles = await db
     .select({ id: organizationMembers.userId })
     .from(organizationMembers)
-    .where(eq(organizationMembers.tenantId, tenantId));
+    .where(eq(organizationMembers.organizationId, tenantId));
 
   // Calculate scores in parallel
   const scores = await Promise.all(
@@ -383,7 +383,7 @@ export async function getEngagementHistory(
       .from(smsMessages)
       .where(
         and(
-          eq(smsMessages.tenantId, tenantId),
+          eq(smsMessages.organizationId, tenantId),
           eq(smsMessages.userId, profileId),
           gte(smsMessages.sentAt, monthStart),
           sql`${smsMessages.sentAt} < ${monthEnd}`

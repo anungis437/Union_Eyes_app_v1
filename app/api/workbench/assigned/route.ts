@@ -12,7 +12,7 @@ import { withTenantAuth } from "@/lib/tenant-middleware";
 
 export const GET = withTenantAuth(async (request: NextRequest, context) => {
   try {
-    const { tenantId, userId: clerkUserId } = context;
+    const { tenantId: organizationId, userId: clerkUserId } = context;
     
     if (!clerkUserId) {
       return NextResponse.json(
@@ -43,8 +43,8 @@ export const GET = withTenantAuth(async (request: NextRequest, context) => {
       });
     }
 
-    // Fetch claims assigned to this user for the current tenant
-    const assignedClaims = await getClaimsAssignedToUser(dbUser.userId, tenantId);
+    // Fetch claims assigned to this user for the current organization
+    const assignedClaims = await getClaimsAssignedToUser(dbUser.userId, organizationId);
 
     return NextResponse.json({
       claims: assignedClaims || [],

@@ -11,7 +11,9 @@ import {
   text, 
   boolean, 
   timestamp,
-  index
+  index,
+  jsonb,
+  integer
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { organizations } from "../schema-organizations";
@@ -27,25 +29,22 @@ export const organizationSharingSettings = pgTable("organization_sharing_setting
     .unique()
     .references(() => organizations.id, { onDelete: "cascade" }),
   
-  // Clause library sharing
-  enableClauseSharing: boolean("enable_clause_sharing").default(false),
-  defaultClauseSharingLevel: varchar("default_clause_sharing_level", { length: 50 }).default("private"),
-  autoAnonymizeClauses: boolean("auto_anonymize_clauses").default(true),
-  
-  // Precedent sharing
-  enablePrecedentSharing: boolean("enable_precedent_sharing").default(false),
-  defaultPrecedentSharingLevel: varchar("default_precedent_sharing_level", { length: 50 }).default("federation"),
-  alwaysRedactMemberNames: boolean("always_redact_member_names").default(true),
-  
-  // Analytics sharing
-  enableAnalyticsSharing: boolean("enable_analytics_sharing").default(false),
-  shareMemberCounts: boolean("share_member_counts").default(false),
-  shareFinancialData: boolean("share_financial_data").default(false),
-  shareClaimsData: boolean("share_claims_data").default(false),
-  shareStrikeData: boolean("share_strike_data").default(false),
+  // Federation sharing settings
+  allowFederationSharing: boolean("allow_federation_sharing").default(false),
+  allowSectorSharing: boolean("allow_sector_sharing").default(false),
+  allowProvinceSharing: boolean("allow_province_sharing").default(false),
+  allowCongressSharing: boolean("allow_congress_sharing").default(false),
+  autoShareClauses: boolean("auto_share_clauses").default(false),
+  autoSharePrecedents: boolean("auto_share_precedents").default(false),
+  requireAnonymization: boolean("require_anonymization").default(true),
+  defaultSharingLevel: varchar("default_sharing_level", { length: 50 }).default('private'),
+  allowedSharingLevels: varchar("allowed_sharing_levels", { length: 50 }).array(),
+  sharingApprovalRequired: boolean("sharing_approval_required").default(true),
+  sharingApproverRole: varchar("sharing_approver_role", { length: 50 }).default('admin'),
+  maxSharedClauses: integer("max_shared_clauses"),
+  maxSharedPrecedents: integer("max_shared_precedents"),
   
   // Audit
-  lastModifiedBy: uuid("last_modified_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
@@ -68,27 +67,25 @@ export const crossOrgAccessLog = pgTable("cross_org_access_log", {
   // What was accessed
   resourceType: varchar("resource_type", { length: 50 }).notNull(),
   resourceId: uuid("resource_id").notNull(),
-  resourceOwnerOrgId: uuid("resource_owner_org_id")
-    .notNull()
-    .references(() => organizations.id),
+  resourceOrganizationId: uuid("resource_organization_id").notNull(),
   
   // Access context
   accessType: varchar("access_type", { length: 50 }).notNull(),
-  sharingLevel: varchar("sharing_level", { length: 50 }),
-  wasGrantExplicit: boolean("was_grant_explicit").default(false),
+  accessGrantedVia: varchar("access_granted_via", { length: 50 }),
   
   // Request metadata
   ipAddress: varchar("ip_address", { length: 45 }),
   userAgent: text("user_agent"),
+  metadata: jsonb("metadata"),
   
   // Audit
-  accessedAt: timestamp("accessed_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   userIdx: index("idx_access_log_user").on(table.userId),
   userOrgIdx: index("idx_access_log_user_org").on(table.userOrganizationId),
   resourceIdx: index("idx_access_log_resource").on(table.resourceType, table.resourceId),
-  ownerIdx: index("idx_access_log_owner").on(table.resourceOwnerOrgId),
-  dateIdx: index("idx_access_log_date").on(table.accessedAt),
+  ownerIdx: index("idx_access_log_owner").on(table.resourceOrganizationId),
+  dateIdx: index("idx_access_log_date").on(table.createdAt),
 }));
 
 // ============================================================================
@@ -147,7 +144,7 @@ export const crossOrgAccessLogRelations = relations(crossOrgAccessLog, ({ one })
     relationName: "userOrganization",
   }),
   resourceOwnerOrg: one(organizations, {
-    fields: [crossOrgAccessLog.resourceOwnerOrgId],
+    fields: [crossOrgAccessLog.resourceOrganizationId],
     references: [organizations.id],
     relationName: "resourceOwnerOrg",
   }),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Check, X, Users, Calendar, CheckCircle2, XCircle, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,19 +78,7 @@ export function AttendanceTracker({ organizationId }: AttendanceTrackerProps) {
     new Date().toISOString().split("T")[0]
   );
 
-  // Fetch sessions on mount
-  useEffect(() => {
-    fetchSessions();
-  }, [organizationId]);
-
-  // Fetch attendance when session changes
-  useEffect(() => {
-    if (selectedSessionId) {
-      fetchAttendance(selectedSessionId);
-    }
-  }, [selectedSessionId]);
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/education/sessions?organizationId=${organizationId}&sessionStatus=registration_open,in_progress,completed`
@@ -101,7 +89,19 @@ export function AttendanceTracker({ organizationId }: AttendanceTrackerProps) {
       console.error("Error fetching sessions:", error);
       toast.error("Failed to load sessions");
     }
-  };
+  }, [organizationId]);
+
+  // Fetch sessions on mount
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
+
+  // Fetch attendance when session changes
+  useEffect(() => {
+    if (selectedSessionId) {
+      fetchAttendance(selectedSessionId);
+    }
+  }, [selectedSessionId]);
 
   const fetchAttendance = async (sessionId: string) => {
     try {

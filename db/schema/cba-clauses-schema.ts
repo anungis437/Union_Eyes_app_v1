@@ -98,7 +98,7 @@ export const clauseComparisons = pgTable("clause_comparisons", {
   
   comparisonName: varchar("comparison_name", { length: 200 }).notNull(),
   clauseType: clauseTypeEnum("clause_type").notNull(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   
   // Clauses being compared
   clauseIds: jsonb("clause_ids").$type<string[]>().notNull(),
@@ -118,7 +118,7 @@ export const clauseComparisons = pgTable("clause_comparisons", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   createdBy: uuid("created_by").notNull(),
 }, (table) => ({
-  tenantIdx: index("clause_comparisons_tenant_idx").on(table.tenantId),
+  organizationIdx: index("clause_comparisons_organization_idx").on(table.organizationId),
   typeIdx: index("clause_comparisons_type_idx").on(table.clauseType),
 }));
 

@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -45,7 +45,7 @@ export function RuleComparison({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadComparison = async () => {
+  const loadComparison = useCallback(async () => {
     if (selectedJurisdictions.length === 0) return;
 
     setLoading(true);
@@ -69,13 +69,13 @@ export function RuleComparison({
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedJurisdictions, ruleCategory]);
 
   useEffect(() => {
     if (selectedJurisdictions.length > 0) {
       loadComparison();
     }
-  }, [selectedJurisdictions, ruleCategory]);
+  }, [loadComparison, selectedJurisdictions]);
 
   const getParameterValue = (rule: JurisdictionRule, key: string) => {
     const value = rule.parameters[key];

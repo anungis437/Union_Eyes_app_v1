@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         )
       `
       )
-      .eq('account.tenant_id', orgId)
+      .eq('account.organization_id', orgId)
       .gte('date', startDate)
       .lte('date', endDate);
 
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
       `,
         { count: 'exact' }
       )
-      .eq('account.tenant_id', orgId)
+      .eq('account.organization_id', orgId)
       .eq('status', 'published')
       .gte('published_at', startDateStr)
       .lte('published_at', endDateStr);
@@ -290,7 +290,7 @@ export async function PUT(request: NextRequest) {
     // Verify user has access to this campaign
     const { data: campaign, error: fetchError } = await supabase
       .from('social_campaigns')
-      .select('*, tenant:tenants(id)')
+      .select('*')
       .eq('id', campaignId)
       .single();
 
@@ -298,7 +298,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    if (orgId !== campaign.tenant_id) {
+    if (orgId !== campaign.organization_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -504,7 +504,7 @@ export async function DELETE(request: NextRequest) {
             campaign:social_campaigns(name)
           `
           )
-          .eq('account.tenant_id', orgId)
+          .eq('account.organization_id', orgId)
           .eq('status', 'published')
           .gte('published_at', startDate)
           .lte('published_at', endDate)
@@ -547,7 +547,7 @@ export async function DELETE(request: NextRequest) {
             account:social_accounts(platform, platform_username)
           `
           )
-          .eq('account.tenant_id', orgId)
+          .eq('account.organization_id', orgId)
           .gte('date', startDate)
           .lte('date', endDate)
           .order('date', { ascending: true });
@@ -574,7 +574,7 @@ export async function DELETE(request: NextRequest) {
         const { data: campaigns } = await supabase
           .from('social_campaigns')
           .select('*')
-          .eq('tenant_id', orgId)
+          .eq('organization_id', orgId)
           .order('created_at', { ascending: false });
 
         // Fetch metrics for each campaign

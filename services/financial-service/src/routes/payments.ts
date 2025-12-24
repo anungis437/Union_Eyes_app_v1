@@ -151,7 +151,12 @@ router.post('/stipends/payout', async (req: Request, res: Response) => {
       tenantId,
       disbursementId: validatedData.disbursementId,
       amount: validatedData.amount,
-      recipientBankAccount: validatedData.recipientBankAccount,
+      recipientBankAccount: validatedData.recipientBankAccount as {
+        accountNumber: string;
+        routingNumber: string;
+        accountHolderName: string;
+        accountType: 'checking' | 'savings';
+      },
       description: validatedData.description,
     });
 

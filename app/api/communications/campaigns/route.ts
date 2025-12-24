@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       })
       .from(newsletterCampaigns)
       .leftJoin(newsletterTemplates, eq(newsletterCampaigns.templateId, newsletterTemplates.id))
-      .where(eq(newsletterCampaigns.tenantId, user.tenantId))
+      .where(eq(newsletterCampaigns.organizationId, user.tenantId))
       .$dynamic();
 
     if (status) {
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.tenantId, user.tenantId));
+      .where(eq(newsletterDistributionLists.organizationId, user.tenantId));
 
     const validListIds = lists.map(l => l.id);
     const invalidListIds = validatedData.distributionListIds.filter(
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     const [campaign] = await db
       .insert(newsletterCampaigns)
       .values({
-        tenantId: user.tenantId,
+        organizationId: user.tenantId,
         createdBy: user.id,
         name: validatedData.name,
         subject: validatedData.subject,

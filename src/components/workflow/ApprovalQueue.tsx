@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CheckCircle,
   XCircle,
@@ -75,7 +75,7 @@ export function ApprovalQueue({
   });
 
   // Fetch approval requests
-  const fetchApprovals = async () => {
+  const fetchApprovals = useCallback(async () => {
     try {
       const response = await fetch('/api/approvals', {
         headers: {
@@ -94,7 +94,7 @@ export function ApprovalQueue({
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, userId]);
 
   // Calculate statistics
   const calculateStats = (data: ApprovalRequest[]) => {
@@ -115,7 +115,7 @@ export function ApprovalQueue({
     }, 10000); // Refresh every 10 seconds
 
     return () => clearInterval(interval);
-  }, [tenantId, userId]);
+  }, [fetchApprovals]);
 
   // Open approval dialog
   const openApprovalDialog = (approval: ApprovalRequest, type: 'approve' | 'reject') => {

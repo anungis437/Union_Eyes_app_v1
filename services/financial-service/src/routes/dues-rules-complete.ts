@@ -225,7 +225,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       .set({
         isActive: false,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(and(
         eq(schema.duesRules.id, id),
         eq(schema.duesRules.tenantId, tenantId)
@@ -290,7 +290,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
         ruleName: newName,
         tenantId,
         createdBy: userId,
-      })
+      } as any)
       .returning();
 
     res.status(201).json({ success: true, data: duplicatedRule });

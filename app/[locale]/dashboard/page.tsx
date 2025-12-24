@@ -37,6 +37,7 @@ interface DashboardStats {
   pendingReviews: number;
   resolvedCases: number;
   highPriorityClaims: number;
+  activeMembers?: number;
 }
 
 interface DeadlineSummary {
@@ -200,22 +201,33 @@ export default function DashboardPage() {
     onTimePercentage: 0,
   });
   const [criticalDeadlines, setCriticalDeadlines] = useState<CriticalDeadline[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [activities, setActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDeadlines, setIsLoadingDeadlines] = useState(true);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   
   // Fetch real dashboard statistics
   useEffect(() => {
+    if (!organizationId) return;
+
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/dashboard/stats', {
+        const response = await fetch(`/api/dashboard/stats?tenantId=${organizationId}`, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
         if (response.ok) {
           const data = await response.json();
+          console.log('[Dashboard] Received stats:', data);
+          console.log('[Dashboard] activeMembers value:', data.activeMembers);
           setDashboardStats(data);
+        } else {
+          console.error('[Dashboard] Failed to fetch stats:', response.status);
         }
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -225,7 +237,64 @@ export default function DashboardPage() {
     };
     
     fetchStats();
-  }, []);
+  }, [organizationId]);
+
+  // Fetch notifications
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const fetchNotifications = async () => {
+      try {
+        setIsLoadingNotifications(true);
+        const response = await fetch(`/api/notifications?tenantId=${organizationId}&limit=5`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data.notifications || []);
+          setUnreadNotificationsCount(data.unreadCount || 0);
+        } else {
+          console.error('[Dashboard] Failed to fetch notifications:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      } finally {
+        setIsLoadingNotifications(false);
+      }
+    };
+    
+    fetchNotifications();
+  }, [organizationId]);
+
+  // Fetch activities
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const fetchActivities = async () => {
+      try {
+        setIsLoadingActivities(true);
+        const response = await fetch(`/api/activities?tenantId=${organizationId}&limit=5`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setActivities(data.activities || []);
+        } else {
+          console.error('[Dashboard] Failed to fetch activities:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching activities:', error);
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    };
+    
+    fetchActivities();
+  }, [organizationId]);
 
   // Fetch deadline data
   useEffect(() => {
@@ -273,6 +342,14 @@ export default function DashboardPage() {
       return { ...stat, value: isLoading ? "..." : dashboardStats.activeClaims, change: t('dashboard.highPriority', { count: dashboardStats.highPriorityClaims }) };
     } else if (stat.title === t('dashboard.pendingReviews')) {
       return { ...stat, value: isLoading ? "..." : dashboardStats.pendingReviews, change: t('dashboard.inYourQueue') };
+    } else if (stat.title === t('members.activeMembers')) {
+      const memberValue = isLoading ? "..." : (dashboardStats.activeMembers || 0);
+      console.log('[Dashboard] Mapping activeMembers stat:', { 
+        isLoading, 
+        activeMembers: dashboardStats.activeMembers, 
+        finalValue: memberValue 
+      });
+      return { ...stat, value: memberValue, change: t('members.totalMembers') };
     } else if (stat.title === t('analytics.resolutionRate')) {
       const total = dashboardStats.activeClaims + dashboardStats.resolvedCases;
       const rate = total > 0 ? Math.round((dashboardStats.resolvedCases / total) * 100) : 0;
@@ -386,13 +463,12 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="mb-8"
       >
         <DeadlineWidget
           summary={deadlineSummary}
           criticalDeadlines={criticalDeadlines}
           loading={isLoadingDeadlines}
-          onViewAll={() => router.push('/deadlines')}
+          onViewAll={() => router.push('/dashboard/deadlines')}
         />
       </motion.div>
 
@@ -413,13 +489,78 @@ export default function DashboardPage() {
               <CardDescription>{t('dashboard.latestActions')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <div className="inline-flex p-3 rounded-full bg-gray-100 mb-3">
-                  <FileText size={24} className="text-gray-400" />
+              {isLoadingActivities ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">{t('common.loading')}</p>
                 </div>
-                <p className="text-gray-600">{t('dashboard.noActivity')}</p>
-                <p className="text-sm text-gray-500 mt-1">{t('dashboard.actionsAppearHere')}</p>
-              </div>
+              ) : activities.length > 0 ? (
+                <div className="space-y-3">
+                  {activities.map((activity) => (
+                    <div 
+                      key={activity.id}
+                      className="p-3 rounded-lg border bg-gray-50 border-gray-200 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-full ${
+                          activity.color === 'red' ? 'bg-red-100' :
+                          activity.color === 'orange' ? 'bg-orange-100' :
+                          activity.color === 'green' ? 'bg-green-100' :
+                          activity.color === 'purple' ? 'bg-purple-100' :
+                          'bg-blue-100'
+                        }`}>
+                          {activity.icon === 'file' ? (
+                            <FileText size={16} className={`${
+                              activity.color === 'red' ? 'text-red-600' :
+                              activity.color === 'orange' ? 'text-orange-600' :
+                              activity.color === 'green' ? 'text-green-600' :
+                              activity.color === 'purple' ? 'text-purple-600' :
+                              'text-blue-600'
+                            }`} />
+                          ) : activity.icon === 'clock' ? (
+                            <Clock size={16} className={`${
+                              activity.color === 'red' ? 'text-red-600' :
+                              activity.color === 'orange' ? 'text-orange-600' :
+                              activity.color === 'green' ? 'text-green-600' :
+                              activity.color === 'purple' ? 'text-purple-600' :
+                              'text-blue-600'
+                            }`} />
+                          ) : (
+                            <Users size={16} className={`${
+                              activity.color === 'red' ? 'text-red-600' :
+                              activity.color === 'orange' ? 'text-orange-600' :
+                              activity.color === 'green' ? 'text-green-600' :
+                              activity.color === 'purple' ? 'text-purple-600' :
+                              'text-blue-600'
+                            }`} />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-900">{activity.description}</p>
+                          {activity.claimNumber && (
+                            <Link 
+                              href={`/dashboard/claims/${activity.id}`}
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              {activity.claimNumber}
+                            </Link>
+                          )}
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(activity.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="inline-flex p-3 rounded-full bg-gray-100 mb-3">
+                    <FileText size={24} className="text-gray-400" />
+                  </div>
+                  <p className="text-gray-600">{t('dashboard.noActivity')}</p>
+                  <p className="text-sm text-gray-500 mt-1">{t('dashboard.actionsAppearHere')}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -435,17 +576,70 @@ export default function DashboardPage() {
               <CardTitle className="flex items-center gap-2">
                 <Bell size={20} className="text-orange-600" />
                 {t('dashboard.importantAlerts')}
+                {unreadNotificationsCount > 0 && (
+                  <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-700">
+                    {unreadNotificationsCount} {t('common.new')}
+                  </span>
+                )}
               </CardTitle>
               <CardDescription>{t('dashboard.timeSensitive')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
-                  <Bell size={24} className="text-green-600" />
+              {isLoadingNotifications ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">{t('common.loading')}</p>
                 </div>
-                <p className="text-gray-600">{t('dashboard.allCaughtUp')}</p>
-                <p className="text-sm text-gray-500 mt-1">{t('dashboard.noUrgentAlerts')}</p>
-              </div>
+              ) : notifications.length > 0 ? (
+                <div className="space-y-3">
+                  {notifications.map((notification) => (
+                    <div 
+                      key={notification.id}
+                      className={`p-3 rounded-lg border ${
+                        !notification.read 
+                          ? 'bg-orange-50 border-orange-200' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-full ${
+                          notification.type === 'error' ? 'bg-red-100' :
+                          notification.type === 'warning' ? 'bg-orange-100' :
+                          notification.type === 'success' ? 'bg-green-100' :
+                          'bg-blue-100'
+                        }`}>
+                          <AlertCircle size={16} className={
+                            notification.type === 'error' ? 'text-red-600' :
+                            notification.type === 'warning' ? 'text-orange-600' :
+                            notification.type === 'success' ? 'text-green-600' :
+                            'text-blue-600'
+                          } />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-gray-900">{notification.title}</p>
+                          <p className="text-xs text-gray-600 mt-0.5">{notification.message}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notification.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Link 
+                    href="/dashboard/notifications" 
+                    className="block text-center text-sm text-blue-600 hover:text-blue-700 font-medium mt-4"
+                  >
+                    {t('common.viewAll')} <ArrowRight size={14} className="inline ml-1" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
+                    <Bell size={24} className="text-green-600" />
+                  </div>
+                  <p className="text-gray-600">{t('dashboard.allCaughtUp')}</p>
+                  <p className="text-sm text-gray-500 mt-1">{t('dashboard.noUrgentAlerts')}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

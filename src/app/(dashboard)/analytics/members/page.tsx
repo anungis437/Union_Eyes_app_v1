@@ -11,7 +11,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
   TrendLineChart, 
   BarChartComponent, 
@@ -109,11 +109,7 @@ export default function MemberEngagementDashboard() {
   const [dateRange, setDateRange] = useState('90'); // days
   const [riskFilter, setRiskFilter] = useState<'all' | 'high' | 'medium'>('high');
 
-  useEffect(() => {
-    fetchMemberAnalytics();
-  }, [dateRange, riskFilter]);
-
-  const fetchMemberAnalytics = async () => {
+  const fetchMemberAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -150,7 +146,11 @@ export default function MemberEngagementDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange, riskFilter]);
+
+  useEffect(() => {
+    fetchMemberAnalytics();
+  }, [fetchMemberAnalytics]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

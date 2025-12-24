@@ -15,7 +15,7 @@ async function handler(req: NextRequest) {
       COALESCE(AVG(EXTRACT(EPOCH FROM (NOW() - ${claims.createdAt})) / 3600), 0) as "avgAge",
       COALESCE(MAX(EXTRACT(EPOCH FROM (NOW() - ${claims.createdAt})) / 3600), 0) as oldest
     FROM ${claims}
-    WHERE ${claims.tenantId} = ${tenantId}
+    WHERE ${claims.organizationId} = ${tenantId}
       AND ${claims.status} IN ('under_review', 'assigned', 'investigation', 'pending_documentation')
     GROUP BY ${claims.priority}
     ORDER BY 

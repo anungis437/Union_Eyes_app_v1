@@ -68,7 +68,7 @@ router.post('/check-in', async (req: Request, res: Response) => {
         overrideReason: validatedData.overrideReason,
         verifiedBy: validatedData.verifiedBy,
       },
-      validatedData.picketLocation
+      validatedData.picketLocation as PicketService.PicketLocation | undefined
     );
 
     if (!result.success) {

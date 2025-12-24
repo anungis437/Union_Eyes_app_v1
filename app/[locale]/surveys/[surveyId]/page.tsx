@@ -15,7 +15,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,11 +94,7 @@ export default function SurveyResponsePage() {
   const [respondentName, setRespondentName] = useState('');
   const [respondentEmail, setRespondentEmail] = useState('');
 
-  useEffect(() => {
-    loadSurvey();
-  }, [surveyId]);
-
-  const loadSurvey = async () => {
+  const loadSurvey = useCallback(async () => {
     try {
       const response = await fetch(`/api/communications/surveys/${surveyId}`);
       if (!response.ok) throw new Error('Survey not found');
@@ -122,7 +118,11 @@ export default function SurveyResponsePage() {
       });
       setIsLoading(false);
     }
-  };
+  }, [surveyId]);
+
+  useEffect(() => {
+    loadSurvey();
+  }, [loadSurvey]);
 
   const updateAnswer = (questionId: string, answer: Partial<Answer>) => {
     const newAnswers = new Map(answers);

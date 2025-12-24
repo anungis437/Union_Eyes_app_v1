@@ -1,7 +1,7 @@
 // User Profile Service
 // Comprehensive service for managing user profiles across all applications
 // Part of Phase 2 Week 1 Day 6 - Unified User Profile Management
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 // =============================================================================
 // USER PROFILE SERVICE
 // =============================================================================

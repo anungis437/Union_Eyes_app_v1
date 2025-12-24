@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       `,
         { count: 'exact' }
       )
-      .eq('account.tenant_id', orgId);
+      .eq('account.organization_id', orgId);
 
     // Apply filters
     if (platform) {
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     let accountsQuery = supabase
       .from('social_accounts')
       .select('*')
-      .eq('tenant_id', orgId)
+      .eq('organization_id', orgId)
       .eq('status', 'active');
 
     if (account_ids && account_ids.length > 0) {
@@ -260,7 +260,7 @@ export async function PUT(request: NextRequest) {
         *,
         account:social_accounts!social_posts_account_id_fkey(
           id,
-          tenant_id,
+          organization_id,
           platform,
           platform_username,
           platform_account_name,
@@ -289,7 +289,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify user has access to this post
-    if (orgId !== post.account.tenant_id) {
+    if (orgId !== post.account.organization_id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -345,7 +345,7 @@ export async function PUT(request: NextRequest) {
         )
       `
       )
-      .eq('account.tenant_id', orgId)
+      .eq('account.organization_id', orgId)
       .eq('status', 'published')
       .neq('id', postId)
       .or(
@@ -407,7 +407,7 @@ export async function DELETE(request: NextRequest) {
         // Verify user has access to this post
         const { data: post } = await supabase
           .from('social_posts')
-          .select('*, account:social_accounts!social_posts_account_id_fkey(tenant_id)')
+          .select('*, account:social_accounts!social_posts_account_id_fkey(organization_id)')
           .eq('id', postId)
           .single();
 
@@ -420,7 +420,7 @@ export async function DELETE(request: NextRequest) {
           continue;
         }
 
-        if (post.account.tenant_id !== orgId) {
+        if (post.account.organization_id !== orgId) {
           results.push({
             post_id: postId,
             status: 'error',
