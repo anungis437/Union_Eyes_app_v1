@@ -7,7 +7,7 @@
 
 import { pgTable, uuid, varchar, text, timestamp, boolean, integer, jsonb, pgEnum, time, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { tenants } from './tenant-management-schema';
+import { organizations } from '../schema-organizations';
 import { profiles } from './profiles-schema';
 
 // =====================================================================================
@@ -127,7 +127,7 @@ export const workflowExecutionStatus = pgEnum('workflow_execution_status', [
 export const alertRules = pgTable('alert_rules', {
   // Identity
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Rule Definition
   name: varchar('name', { length: 255 }).notNull(),
@@ -159,7 +159,7 @@ export const alertRules = pgTable('alert_rules', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  tenantIdx: index('idx_alert_rules_tenant').on(table.tenantId),
+  organizationIdx: index('idx_alert_rules_organization').on(table.organizationId),
   categoryIdx: index('idx_alert_rules_category').on(table.category),
   triggerIdx: index('idx_alert_rules_trigger').on(table.triggerType),
   executionIdx: index('idx_alert_rules_next_execution').on(table.lastExecutedAt),
@@ -216,7 +216,7 @@ export const alertActions = pgTable('alert_actions', {
 export const alertEscalations = pgTable('alert_escalations', {
   // Identity
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   alertRuleId: uuid('alert_rule_id').notNull().references(() => alertRules.id, { onDelete: 'cascade' }),
   
   // Escalation Definition
@@ -241,7 +241,7 @@ export const alertEscalations = pgTable('alert_escalations', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  tenantIdx: index('idx_alert_escalations_tenant').on(table.tenantId),
+  organizationIdx: index('idx_alert_escalations_organization').on(table.organizationId),
   ruleIdx: index('idx_alert_escalations_rule').on(table.alertRuleId),
   statusIdx: index('idx_alert_escalations_status').on(table.status, table.nextEscalationAt),
 }));
@@ -283,7 +283,7 @@ export const alertExecutions = pgTable('alert_executions', {
 export const workflowDefinitions = pgTable('workflow_definitions', {
   // Identity
   id: uuid('id').primaryKey().defaultRandom(),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Workflow Definition
   name: varchar('name', { length: 255 }).notNull(),
@@ -313,7 +313,7 @@ export const workflowDefinitions = pgTable('workflow_definitions', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  tenantIdx: index('idx_workflow_definitions_tenant').on(table.tenantId),
+  organizationIdx: index('idx_workflow_definitions_organization').on(table.organizationId),
   triggerIdx: index('idx_workflow_definitions_trigger').on(table.triggerType),
   categoryIdx: index('idx_workflow_definitions_category').on(table.category),
 }));
@@ -322,7 +322,7 @@ export const workflowExecutions = pgTable('workflow_executions', {
   // Identity
   id: uuid('id').primaryKey().defaultRandom(),
   workflowDefinitionId: uuid('workflow_definition_id').notNull().references(() => workflowDefinitions.id, { onDelete: 'cascade' }),
-  tenantId: uuid('tenant_id').notNull().references(() => tenants.tenantId, { onDelete: 'cascade' }),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   
   // Execution Context
   triggeredBy: workflowTriggerType('triggered_by').notNull(),
@@ -355,7 +355,7 @@ export const workflowExecutions = pgTable('workflow_executions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   workflowIdx: index('idx_workflow_executions_workflow').on(table.workflowDefinitionId, table.createdAt),
-  tenantIdx: index('idx_workflow_executions_tenant').on(table.tenantId, table.status),
+  organizationIdx: index('idx_workflow_executions_organization').on(table.organizationId, table.status),
   statusIdx: index('idx_workflow_executions_status').on(table.status, table.startedAt),
 }));
 
@@ -386,9 +386,9 @@ export const alertRecipients = pgTable('alert_recipients', {
 // =====================================================================================
 
 export const alertRulesRelations = relations(alertRules, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [alertRules.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [alertRules.organizationId],
+    references: [organizations.id],
   }),
   creator: one(profiles, {
     fields: [alertRules.createdBy],
@@ -416,9 +416,9 @@ export const alertActionsRelations = relations(alertActions, ({ one }) => ({
 }));
 
 export const alertEscalationsRelations = relations(alertEscalations, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [alertEscalations.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [alertEscalations.organizationId],
+    references: [organizations.id],
   }),
   alertRule: one(alertRules, {
     fields: [alertEscalations.alertRuleId],
@@ -438,9 +438,9 @@ export const alertExecutionsRelations = relations(alertExecutions, ({ one }) => 
 }));
 
 export const workflowDefinitionsRelations = relations(workflowDefinitions, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [workflowDefinitions.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [workflowDefinitions.organizationId],
+    references: [organizations.id],
   }),
   creator: one(profiles, {
     fields: [workflowDefinitions.createdBy],
@@ -450,9 +450,9 @@ export const workflowDefinitionsRelations = relations(workflowDefinitions, ({ on
 }));
 
 export const workflowExecutionsRelations = relations(workflowExecutions, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [workflowExecutions.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [workflowExecutions.organizationId],
+    references: [organizations.id],
   }),
   workflowDefinition: one(workflowDefinitions, {
     fields: [workflowExecutions.workflowDefinitionId],

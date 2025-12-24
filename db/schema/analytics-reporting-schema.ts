@@ -22,7 +22,7 @@ import {
   bigint,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { tenants } from "./tenant-management-schema";
+import { organizations } from "../schema-organizations";
 
 // =============================================================================
 // TABLE 1: analytics_scheduled_reports
@@ -33,9 +33,9 @@ export const analyticsScheduledReports = pgTable("analytics_scheduled_reports", 
   id: uuid("id").primaryKey().defaultRandom(),
 
   // Multi-tenancy
-  tenantId: uuid("tenant_id")
+  organizationId: uuid("organization_id")
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: "cascade" }),
+    .references(() => organizations.id, { onDelete: "cascade" }),
 
   // Report configuration
   reportName: text("report_name").notNull(),
@@ -73,18 +73,18 @@ export const analyticsScheduledReports = pgTable("analytics_scheduled_reports", 
 
 // Indexes for analytics_scheduled_reports
 export const analyticsScheduledReportsIndexes = [
-  { name: "idx_scheduled_reports_tenant", columns: ["tenant_id"] },
+  { name: "idx_scheduled_reports_organization", columns: ["organization_id"] },
   { name: "idx_scheduled_reports_next_run", columns: ["next_run_at"], where: "is_active = true" },
   { name: "idx_scheduled_reports_type", columns: ["report_type"] },
   { name: "idx_scheduled_reports_created_by", columns: ["created_by"] },
-  { name: "idx_scheduled_reports_active", columns: ["tenant_id", "is_active"] },
+  { name: "idx_scheduled_reports_active", columns: ["organization_id", "is_active"] },
 ];
 
 // Relations for analytics_scheduled_reports
 export const analyticsScheduledReportsRelations = relations(analyticsScheduledReports, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [analyticsScheduledReports.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [analyticsScheduledReports.organizationId],
+    references: [organizations.id],
   }),
   deliveries: many(reportDeliveryHistory),
 }));
@@ -102,9 +102,9 @@ export const reportDeliveryHistory = pgTable("report_delivery_history", {
   id: uuid("id").primaryKey().defaultRandom(),
 
   // Multi-tenancy
-  tenantId: uuid("tenant_id")
+  organizationId: uuid("organization_id")
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: "cascade" }),
+    .references(() => organizations.id, { onDelete: "cascade" }),
 
   // Report reference
   scheduledReportId: uuid("scheduled_report_id").references(() => analyticsScheduledReports.id, {
@@ -149,7 +149,7 @@ export const reportDeliveryHistory = pgTable("report_delivery_history", {
 
 // Indexes for report_delivery_history
 export const reportDeliveryHistoryIndexes = [
-  { name: "idx_report_delivery_tenant", columns: ["tenant_id"] },
+  { name: "idx_report_delivery_organization", columns: ["organization_id"] },
   { name: "idx_report_delivery_scheduled_report", columns: ["scheduled_report_id"] },
   { name: "idx_report_delivery_status", columns: ["status"] },
   { name: "idx_report_delivery_created_at", columns: ["created_at"] },
@@ -159,9 +159,9 @@ export const reportDeliveryHistoryIndexes = [
 
 // Relations for report_delivery_history
 export const reportDeliveryHistoryRelations = relations(reportDeliveryHistory, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [reportDeliveryHistory.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [reportDeliveryHistory.organizationId],
+    references: [organizations.id],
   }),
   scheduledReport: one(analyticsScheduledReports, {
     fields: [reportDeliveryHistory.scheduledReportId],
@@ -296,9 +296,9 @@ export const tenantBenchmarkSnapshots = pgTable("tenant_benchmark_snapshots", {
   id: uuid("id").primaryKey().defaultRandom(),
 
   // Multi-tenancy
-  tenantId: uuid("tenant_id")
+  organizationId: uuid("organization_id")
     .notNull()
-    .references(() => tenants.tenantId, { onDelete: "cascade" }),
+    .references(() => organizations.id, { onDelete: "cascade" }),
 
   // Metric reference
   benchmarkCategoryId: uuid("benchmark_category_id")
@@ -337,21 +337,21 @@ export const tenantBenchmarkSnapshots = pgTable("tenant_benchmark_snapshots", {
 
 // Indexes for tenant_benchmark_snapshots
 export const tenantBenchmarkSnapshotsIndexes = [
-  { name: "idx_tenant_benchmark_snapshots_tenant", columns: ["tenant_id"] },
+  { name: "idx_tenant_benchmark_snapshots_organization", columns: ["organization_id"] },
   { name: "idx_tenant_benchmark_snapshots_category", columns: ["benchmark_category_id"] },
   { name: "idx_tenant_benchmark_snapshots_period", columns: ["period_start", "period_end"] },
   {
     name: "idx_tenant_benchmark_snapshots_composite",
-    columns: ["tenant_id", "benchmark_category_id", "period_start"],
+    columns: ["organization_id", "benchmark_category_id", "period_start"],
   },
   { name: "idx_tenant_benchmark_snapshots_performance", columns: ["performance_indicator"] },
 ];
 
 // Relations for tenant_benchmark_snapshots
 export const tenantBenchmarkSnapshotsRelations = relations(tenantBenchmarkSnapshots, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [tenantBenchmarkSnapshots.tenantId],
-    references: [tenants.tenantId],
+  organization: one(organizations, {
+    fields: [tenantBenchmarkSnapshots.organizationId],
+    references: [organizations.id],
   }),
   category: one(benchmarkCategories, {
     fields: [tenantBenchmarkSnapshots.benchmarkCategoryId],

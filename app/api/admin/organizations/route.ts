@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
       parentId: body.parentId || null,
       hierarchyPath,
       hierarchyLevel: hierarchyPath.length - 1,
-      jurisdiction: body.jurisdiction || null,
+      // jurisdiction: body.jurisdiction || null, // Column does not exist in database
       provinceTerritory: body.provinceTerritory || null,
       sectors: body.sectors || [],
       email: body.email || null,

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         where: eq(claims.claimId, body.claimId)
       });
       
-      if (!claim || claim.tenantId !== tenantId) {
+      if (!claim || claim.organizationId !== tenantId) {
         return NextResponse.json({ error: 'Claim not found' }, { status: 404 });
       }
       

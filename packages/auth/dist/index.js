@@ -33,7 +33,8 @@ export { SessionManagementDashboard } from './components/SessionManagementDashbo
 export { useInvitations } from './hooks/useInvitations';
 export { InviteUserModal } from './components/InviteUserModal';
 export { InvitationList } from './components/InvitationList';
-export { AcceptInvitationPage } from './components/AcceptInvitationPage';
+// Temporarily disabled for Next.js build (uses react-router-dom)
+// export { AcceptInvitationPage } from './components/AcceptInvitationPage';
 // Invitation Service and Types
 export { InvitationService } from './services/invitationService';
 //# sourceMappingURL=index.js.map

@@ -3,7 +3,7 @@
  *
  * Tracks all authentication events for security compliance and monitoring.
  */
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 // Initialize supabase client
 const supabase = getSupabaseClient();
 // =========================================================================

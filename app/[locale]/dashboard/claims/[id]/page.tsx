@@ -15,7 +15,7 @@ import Link from 'next/link';
 interface Claim {
   claimId: string;
   claimNumber: string;
-  tenantId: string;
+  organizationId: string;
   claimType: string;
   status: string;
   priority: string;
@@ -285,7 +285,7 @@ export default function ClaimDetailPage() {
             >
               <ClaimJurisdictionInfo
                 claimId={claim.claimId}
-                tenantId={claim.tenantId}
+                tenantId={claim.organizationId}
                 claimType={claim.claimType}
                 status={claim.status}
                 filedDate={claim.filedDate}

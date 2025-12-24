@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -407,7 +407,7 @@ export function ReportBuilder({
   };
 
   // Live preview with debounce
-  const fetchPreviewData = async () => {
+  const fetchPreviewData = useCallback(async () => {
     if (!config.dataSourceId || config.fields.length === 0) {
       setPreviewData(null);
       return;
@@ -434,7 +434,7 @@ export function ReportBuilder({
     } finally {
       setPreviewLoading(false);
     }
-  };
+  }, [config]);
 
   // Debounced preview update
   useEffect(() => {
@@ -445,7 +445,7 @@ export function ReportBuilder({
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [config.dataSourceId, config.fields, config.filters, config.groupBy, config.sortBy, showPreview]);
+  }, [config.dataSourceId, config.fields, config.filters, config.groupBy, config.sortBy, showPreview, fetchPreviewData]);
 
   // Handle formula field creation
   const handleFormulaFieldCreate = (formulaField: { alias?: string; formula: string }) => {

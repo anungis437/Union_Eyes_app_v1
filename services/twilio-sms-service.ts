@@ -141,7 +141,7 @@ export async function isPhoneOptedOut(tenantId: string, phoneNumber: string): Pr
   const optOut = await db
     .select()
     .from(smsOptOuts)
-    .where(and(eq(smsOptOuts.tenantId, tenantId), eq(smsOptOuts.phoneNumber, phoneNumber)))
+    .where(and(eq(smsOptOuts.organizationId, tenantId), eq(smsOptOuts.phoneNumber, phoneNumber)))
     .limit(1);
 
   return optOut.length > 0;
@@ -159,7 +159,7 @@ async function checkRateLimit(tenantId: string): Promise<boolean> {
     .from(smsRateLimits)
     .where(
       and(
-        eq(smsRateLimits.tenantId, tenantId),
+        eq(smsRateLimits.organizationId, tenantId),
         sql`${smsRateLimits.windowStart} >= ${windowStart}`
       )
     )
@@ -168,7 +168,7 @@ async function checkRateLimit(tenantId: string): Promise<boolean> {
   if (!rateLimit) {
     // Create new rate limit window
     await db.insert(smsRateLimits).values({
-      tenantId,
+      organizationId: tenantId,
       messagesSent: 0,
       windowStart: now,
       windowEnd: new Date(now.getTime() + RATE_LIMIT_WINDOW_MINUTES * 60 * 1000),
@@ -193,7 +193,7 @@ async function incrementRateLimit(tenantId: string): Promise<void> {
     })
     .where(
       and(
-        eq(smsRateLimits.tenantId, tenantId),
+        eq(smsRateLimits.organizationId, tenantId),
         sql`${smsRateLimits.windowStart} >= ${windowStart}`
       )
     );
@@ -256,7 +256,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     const [dbMessage] = await db
       .insert(smsMessages)
       .values({
-        tenantId,
+        organizationId: tenantId,
         userId,
         phoneNumber,
         message,
@@ -306,7 +306,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     // Log error to database
     if (options.phoneNumber) {
       await db.insert(smsMessages).values({
-        tenantId: options.tenantId,
+        organizationId: options.tenantId,
         userId: options.userId,
         phoneNumber: options.phoneNumber,
         message: options.message,
@@ -500,7 +500,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
 
     // Store inbound message in conversations table
     const conversation: NewSmsConversation = {
-      tenantId: 'REPLACE_WITH_TENANT_ID', // TODO: Implement tenant resolution
+      organizationId: 'REPLACE_WITH_TENANT_ID', // TODO: Implement tenant resolution
       phoneNumber: From,
       direction: 'inbound',
       message: Body || '',
@@ -536,7 +536,7 @@ export async function handleOptOut(
 
     // Insert opt-out record
     await db.insert(smsOptOuts).values({
-      tenantId,
+      organizationId: tenantId,
       phoneNumber,
       optedOutVia: via,
       reason: 'User requested opt-out via SMS',
@@ -567,7 +567,7 @@ export async function getSmsTemplate(templateId: string, tenantId: string) {
   const [template] = await db
     .select()
     .from(smsTemplates)
-    .where(and(eq(smsTemplates.id, templateId), eq(smsTemplates.tenantId, tenantId)))
+    .where(and(eq(smsTemplates.id, templateId), eq(smsTemplates.organizationId, tenantId)))
     .limit(1);
 
   return template;

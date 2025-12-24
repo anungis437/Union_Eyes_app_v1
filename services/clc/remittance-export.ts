@@ -220,7 +220,7 @@ export class RemittanceExportService {
         fromOrg: {
           id: organizations.id,
           name: organizations.name,
-          code: organizations.clcAffiliateCode,
+          code: organizations.charterNumber,
         },
       })
       .from(perCapitaRemittances)
@@ -262,7 +262,7 @@ export class RemittanceExportService {
         fromOrgCode: result.fromOrg.code || '',
         toOrgId: result.remittance.toOrganizationId,
         toOrgName: parent?.name || 'Unknown',
-        toOrgCode: parent?.clcAffiliateCode || '',
+        toOrgCode: parent?.charterNumber || '',
         periodStart,
         periodEnd,
         remittableMembers: result.remittance.remittableMembers || 0,

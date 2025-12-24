@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
                 .from(claims)
                 .where(
                   and(
-                    eq(claims.tenantId, org.id),
+                    eq(claims.organizationId, org.id),
                     sql`${claims.status} IN ('submitted', 'under_review', 'assigned', 'investigation', 'pending_documentation')`
                   )
                 )
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       hierarchyLevel,
       parentId: validated.parentId || null,
       sectors: validated.sectors || [],
-      jurisdiction: validated.jurisdiction || null,
+      // jurisdiction: validated.jurisdiction || null, // Column does not exist in database
       email: validated.contactEmail || null,
       phone: validated.contactPhone || null,
       address: validated.address as Record<string, unknown> || null,

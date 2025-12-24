@@ -162,7 +162,7 @@ export async function createDeadline(
   try {
     // Get claim details
     const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.tenantId, tenantId)),
+      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
     });
 
     if (!claim) {
@@ -194,7 +194,7 @@ export async function createDeadline(
     const [deadline] = await db
       .insert(grievanceDeadlines)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId,
         deadlineType,
         dueDate,
@@ -291,7 +291,7 @@ export async function completeDeadline(
         notes,
       })
       .where(
-        and(eq(grievanceDeadlines.id, deadlineId), eq(grievanceDeadlines.tenantId, tenantId))
+        and(eq(grievanceDeadlines.id, deadlineId), eq(grievanceDeadlines.organizationId, tenantId))
       );
 
     // Cancel any pending reminder notifications
@@ -439,7 +439,7 @@ export async function getUpcomingDeadlines(
 
     const deadlines = await db.query.grievanceDeadlines.findMany({
       where: and(
-        eq(grievanceDeadlines.tenantId, tenantId),
+        eq(grievanceDeadlines.organizationId, tenantId),
         eq(grievanceDeadlines.status, "pending"),
         lte(grievanceDeadlines.dueDate, futureDate)
       ),
@@ -462,7 +462,7 @@ export async function getOverdueDeadlines(tenantId: string): Promise<DeadlineAle
 
     const deadlines = await db.query.grievanceDeadlines.findMany({
       where: and(
-        eq(grievanceDeadlines.tenantId, tenantId),
+        eq(grievanceDeadlines.organizationId, tenantId),
         eq(grievanceDeadlines.status, "pending"),
         lte(grievanceDeadlines.dueDate, today)
       ),
@@ -487,7 +487,7 @@ export async function getGrievanceDeadlines(
     const deadlines = await db.query.grievanceDeadlines.findMany({
       where: and(
         eq(grievanceDeadlines.claimId, claimId),
-        eq(grievanceDeadlines.tenantId, tenantId)
+        eq(grievanceDeadlines.organizationId, tenantId)
       ),
       orderBy: [asc(grievanceDeadlines.dueDate)],
     });
@@ -593,7 +593,7 @@ async function scheduleReminders(
       // Only schedule if in future
       if (isBefore(new Date(), reminderDate)) {
         await db.insert(notifications).values({
-          tenantId: deadline.tenantId,
+          tenantId: deadline.organizationId,
           userId: recipientUserId,
           type: "deadline_reminder",
           title: `Deadline Reminder: ${deadline.description || "Upcoming deadline"}`,
@@ -645,7 +645,7 @@ async function sendEscalationNotification(alert: DeadlineAlert): Promise<void> {
     // Notify assigned officer
     if (deadline.assignedTo) {
       await db.insert(notifications).values({
-        tenantId: deadline.tenantId,
+        tenantId: deadline.organizationId,
         userId: deadline.assignedTo,
         type: "deadline_missed",
         title: `OVERDUE: ${deadline.description}`,
@@ -660,14 +660,14 @@ async function sendEscalationNotification(alert: DeadlineAlert): Promise<void> {
     // Notify supervisors/admins
     const admins = await db.query.organizationMembers.findMany({
       where: and(
-        eq(organizationMembers.organizationId, deadline.tenantId),
+        eq(organizationMembers.organizationId, deadline.organizationId),
         eq(organizationMembers.role, "admin")
       ),
     });
 
     for (const admin of admins) {
       await db.insert(notifications).values({
-        tenantId: deadline.tenantId,
+        tenantId: deadline.organizationId,
         userId: admin.userId,
         type: "deadline_missed",
         title: `Escalation: Missed Deadline`,

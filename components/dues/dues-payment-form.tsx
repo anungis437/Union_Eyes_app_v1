@@ -207,9 +207,16 @@ function PaymentForm({
 export default function DuesPaymentForm(props: DuesPaymentFormProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initError, setInitError] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    // Don't initialize if balance is 0 or negative, or if we already have an error
+    if (props.currentBalance <= 0 || initError) {
+      setLoading(false);
+      return;
+    }
+
     const initializePayment = async () => {
       try {
         const response = await fetch('/api/dues/create-payment-intent', {
@@ -222,6 +229,7 @@ export default function DuesPaymentForm(props: DuesPaymentFormProps) {
         });
 
         if (!response.ok) {
+          setInitError(true);
           throw new Error('Failed to initialize payment');
         }
 
@@ -229,6 +237,7 @@ export default function DuesPaymentForm(props: DuesPaymentFormProps) {
         setClientSecret(clientSecret);
       } catch (error) {
         console.error('Error initializing payment:', error);
+        setInitError(true);
         toast({
           title: 'Error',
           description: 'Failed to initialize payment form',
@@ -240,7 +249,9 @@ export default function DuesPaymentForm(props: DuesPaymentFormProps) {
     };
 
     initializePayment();
-  }, [props.userId, props.currentBalance, toast]);
+    // Only run once on mount or when userId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.userId]);
 
   if (loading) {
     return (
@@ -255,6 +266,28 @@ export default function DuesPaymentForm(props: DuesPaymentFormProps) {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show message if balance is zero or negative
+  if (props.currentBalance <= 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Make a Payment</CardTitle>
+          <CardDescription>
+            Pay your union dues securely using credit card or ACH
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              You have no outstanding balance. No payment is required at this time.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );

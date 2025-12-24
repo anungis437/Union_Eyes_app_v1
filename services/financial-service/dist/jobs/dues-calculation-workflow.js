@@ -47,7 +47,7 @@ async function processMonthlyDuesCalculation(params) {
         const activeMembers = await db_1.db
             .select({
             memberId: schema_1.members.id,
-            memberName: schema_1.members.name,
+            memberName: (0, drizzle_orm_1.sql) `CONCAT(${schema_1.members.firstName}, ' ', ${schema_1.members.lastName})`,
             memberEmail: schema_1.members.email,
             assignmentId: schema_1.duesAssignments.id,
             ruleId: schema_1.duesAssignments.ruleId,
@@ -56,7 +56,7 @@ async function processMonthlyDuesCalculation(params) {
         })
             .from(schema_1.members)
             .innerJoin(schema_1.duesAssignments, (0, drizzle_orm_1.eq)(schema_1.members.id, schema_1.duesAssignments.memberId))
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.members.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.members.status, 'active'), (0, drizzle_orm_1.lte)(schema_1.duesAssignments.effectiveDate, effectiveDate.toISOString().split('T')[0]), (0, drizzle_orm_1.or)((0, drizzle_orm_1.isNull)(schema_1.duesAssignments.endDate), (0, drizzle_orm_1.gte)(schema_1.duesAssignments.endDate, effectiveDate.toISOString().split('T')[0]))));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.members.organizationId, tenantId), (0, drizzle_orm_1.eq)(schema_1.members.status, 'active'), (0, drizzle_orm_1.lte)(schema_1.duesAssignments.effectiveDate, effectiveDate.toISOString().split('T')[0]), (0, drizzle_orm_1.or)((0, drizzle_orm_1.isNull)(schema_1.duesAssignments.endDate), (0, drizzle_orm_1.gte)(schema_1.duesAssignments.endDate, effectiveDate.toISOString().split('T')[0]))));
         logger.info(`Found ${activeMembers.length} active members with dues assignments`);
         // Process each member
         for (const member of activeMembers) {
@@ -101,6 +101,8 @@ async function processMonthlyDuesCalculation(params) {
                     periodStart: effectiveDate.toISOString().split('T')[0],
                     periodEnd: periodEnd.toISOString().split('T')[0],
                     amount: totalAmount.toString(),
+                    duesAmount: totalAmount.toString(),
+                    totalAmount: totalAmount.toString(),
                     status: 'pending',
                     dueDate: dueDate.toISOString().split('T')[0],
                     transactionType: 'dues',

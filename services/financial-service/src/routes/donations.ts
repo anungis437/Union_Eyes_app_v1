@@ -13,7 +13,7 @@ const router = Router();
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-06-20', // Latest stable version supported by types
+  apiVersion: '2025-02-24.acacia' as const,
 });
 
 // Validation schemas

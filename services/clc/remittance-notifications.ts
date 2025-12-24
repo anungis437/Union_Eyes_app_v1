@@ -67,7 +67,7 @@ interface RemittanceNotificationData {
   remittanceId: string;
   organizationId: string;
   organizationName: string;
-  clcAffiliateCode: string;
+  charterNumber: string;
   remittanceMonth: Date;
   dueDate: Date;
   amount: number;
@@ -248,7 +248,7 @@ export async function sendMonthlyReminder(
     remittanceId: '', // Not yet created
     organizationId,
     organizationName: org[0].name,
-    clcAffiliateCode: org[0].clcAffiliateCode || '',
+    charterNumber: org[0].charterNumber || '',
     remittanceMonth,
     dueDate: calculateDueDate(remittanceMonth),
     amount: 0, // Not yet calculated
@@ -458,7 +458,7 @@ async function fetchRemittanceData(remittanceId: string): Promise<RemittanceNoti
     remittanceId: remittance.id,
     organizationId: organization.id,
     organizationName: organization.name,
-    clcAffiliateCode: organization.clcAffiliateCode || '',
+    charterNumber: organization.charterNumber || '',
     remittanceMonth: new Date(remittance.remittanceYear, remittance.remittanceMonth - 1, 1),
     dueDate: new Date(remittance.dueDate),
     amount: Number(remittance.totalAmount),
@@ -547,7 +547,7 @@ function generateOverdueTemplate(
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>CLC Affiliate Code:</strong></td>
-                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.clcAffiliateCode}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.charterNumber}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Period:</strong></td>
@@ -617,7 +617,7 @@ function generatePaymentConfirmationTemplate(
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>CLC Affiliate Code:</strong></td>
-                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.clcAffiliateCode}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.charterNumber}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Period:</strong></td>
@@ -676,7 +676,7 @@ function generateMonthlyReminderTemplate(
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>CLC Affiliate Code:</strong></td>
-                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.clcAffiliateCode}</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.charterNumber}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Period:</strong></td>
@@ -755,7 +755,7 @@ function generateExecutiveEscalationTemplate(
                 ${remittances.map(r => `
                   <tr>
                     <td style="padding: 10px; border: 1px solid #e5e7eb;">${r.organizationName}</td>
-                    <td style="padding: 10px; border: 1px solid #e5e7eb;">${r.clcAffiliateCode}</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">${r.charterNumber}</td>
                     <td style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">${r.remittanceMonth.toLocaleDateString('en-CA', { year: 'numeric', month: 'short' })}</td>
                     <td style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">$${r.amount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}</td>
                     <td style="padding: 10px; text-align: right; border: 1px solid #e5e7eb; color: #dc2626; font-weight: bold;">${r.daysOverdue}</td>

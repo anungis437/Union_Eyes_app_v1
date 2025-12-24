@@ -41,10 +41,10 @@ describe('Analytics Endpoints - Comprehensive Tests', () => {
     
     // Create test member
     const memberResult = await db.insert(members).values({
-      tenantId: TEST_TENANT_ID,
       organizationId: TEST_TENANT_ID,
       userId: TEST_USER_ID,
-      name: 'Test Donor',
+      firstName: 'Test',
+      lastName: 'Donor',
       email: 'donor@test.com',
       status: 'active',
     } as any).returning();
@@ -139,7 +139,7 @@ describe('Analytics Endpoints - Comprehensive Tests', () => {
     await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
     await db.delete(donations).where(eq(donations.tenantId, TEST_TENANT_ID));
     await db.delete(strikeFunds).where(eq(strikeFunds.tenantId, TEST_TENANT_ID));
-    await db.delete(members).where(eq(members.tenantId, TEST_TENANT_ID));
+    await db.delete(members).where(eq(members.organizationId, TEST_TENANT_ID));
     
     console.log('Analytics test data cleaned up');
   });

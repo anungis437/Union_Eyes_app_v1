@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -80,11 +80,7 @@ export function SmsCampaignBuilder({
   const [scheduledDate, setScheduledDate] = useState<string>('');
 
   // Load templates
-  useEffect(() => {
-    loadTemplates();
-  }, []);
-
-  const loadTemplates = async () => {
+  const loadTemplates = useCallback(async () => {
     try {
       const response = await fetch(`/api/communications/sms/templates?tenantId=${tenantId}`);
       if (!response.ok) throw new Error('Failed to load templates');
@@ -98,7 +94,11 @@ export function SmsCampaignBuilder({
         variant: 'destructive',
       });
     }
-  };
+  }, [tenantId, toast]);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
 
   // Calculate segments and cost
   const calculateSegments = (text: string): number => {

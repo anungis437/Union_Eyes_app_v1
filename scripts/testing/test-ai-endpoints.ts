@@ -54,7 +54,7 @@ async function testFeedbackGet(queryId: string) {
     .from('ai_feedback')
     .select('*')
     .eq('query_id', queryId)
-    .eq('tenant_id', 'test-tenant-001')
+    .eq('organization_id', 'test-tenant-001')
     .order('created_at', { ascending: false });
 
   if (error) {

@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,15 +63,7 @@ export function QuickPollWidget({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
 
-  useEffect(() => {
-    loadPoll();
-    
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(loadPoll, 10000);
-    return () => clearInterval(interval);
-  }, [pollId]);
-
-  const loadPoll = async () => {
+  const loadPoll = useCallback(async () => {
     try {
       const response = await fetch(`/api/communications/polls/${pollId}`);
       if (!response.ok) throw new Error('Failed to load poll');
@@ -94,7 +86,15 @@ export function QuickPollWidget({
       });
       setIsLoading(false);
     }
-  };
+  }, [pollId, toast]);
+
+  useEffect(() => {
+    loadPoll();
+    
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(loadPoll, 10000);
+    return () => clearInterval(interval);
+  }, [pollId, loadPoll]);
 
   const handleVote = async () => {
     if (!selectedOption) {

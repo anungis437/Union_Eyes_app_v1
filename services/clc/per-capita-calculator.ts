@@ -187,25 +187,27 @@ export async function calculatePerCapita(
     return null;
   }
 
-  // Must have per-capita rate configured
-  if (!org.perCapitaRate || parseFloat(org.perCapitaRate) <= 0) {
-    console.log(`Organization ${org.name} has no per-capita rate - skipping`);
+  // Get per-capita rate from organization settings
+  const orgSettings = (org.settings as any) || {};
+  const perCapitaRate = parseFloat(orgSettings.perCapitaRate || '1.0');
+  
+  if (perCapitaRate <= 0) {
+    console.log(`Organization ${org.name} has invalid per-capita rate - skipping`);
     return null;
   }
 
   // Count members
   const memberCounts = await countGoodStandingMembers(organizationId);
 
-  // Calculate total amount
-  const perCapitaRate = parseFloat(org.perCapitaRate);
+  // Calculate total amount using rate from settings
   const totalAmount = memberCounts.remittable * perCapitaRate;
 
-  // Calculate due date (remittance_day of next month)
-  const remittanceDay = org.remittanceDay || DEFAULT_REMITTANCE_DAY;
+  // Calculate due date using remittanceDay from settings or default
+  const remittanceDay = parseInt(orgSettings.remittanceDay || DEFAULT_REMITTANCE_DAY.toString());
   const dueDate = new Date(remittanceYear, remittanceMonth, remittanceDay);
 
   // Get CLC account code (or use default)
-  const clcAccountCode = org.clcAffiliateCode || CLC_PER_CAPITA_ACCOUNT;
+  const clcAccountCode = org.charterNumber || CLC_PER_CAPITA_ACCOUNT;
 
   return {
     fromOrganizationId: organizationId,
@@ -233,17 +235,22 @@ export async function calculateAllPerCapita(
 ): Promise<PerCapitaCalculation[]> {
   console.log(`Starting per-capita calculation for ${remittanceMonth}/${remittanceYear}`);
 
-  // Get all organizations with parent and per-capita rate
-  const orgsWithRate = await db
+  // Get all active organizations with parent (potential remitters)
+  const orgsWithParent = await db
     .select()
     .from(organizations)
     .where(
       and(
         isNotNull(organizations.parentId),
-        isNotNull(organizations.perCapitaRate),
         eq(organizations.status, 'active')
       )
     );
+
+  // Filter to those with per-capita rate in settings
+  const orgsWithRate = orgsWithParent.filter(org => {
+    const settings = (org.settings as any) || {};
+    return settings.perCapitaRate && parseFloat(settings.perCapitaRate) > 0;
+  });
 
   console.log(`Found ${orgsWithRate.length} organizations with per-capita rates`);
 
@@ -433,13 +440,21 @@ export async function updateLastRemittanceDate(
   organizationId: string,
   remittanceDate: Date
 ): Promise<void> {
-  await db
-    .update(organizations)
-    .set({ 
-      lastRemittanceDate: remittanceDate,
-      updatedAt: new Date().toISOString(),
-    })
-    .where(eq(organizations.id, organizationId));
+  // Update organization settings to track last remittance
+  const org = await db.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1);
+  if (org[0]) {
+    const settings = (org[0].settings as any) || {};
+    await db
+      .update(organizations)
+      .set({ 
+        settings: {
+          ...settings,
+          lastRemittanceDate: remittanceDate.toISOString()
+        },
+        updatedAt: new Date(),
+      })
+      .where(eq(organizations.id, organizationId));
+  }
 }
 
 // =====================================================================================

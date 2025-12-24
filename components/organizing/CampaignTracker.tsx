@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -83,11 +83,7 @@ export function CampaignTracker({ organizationId }: CampaignTrackerProps) {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, [organizationId, selectedStatus]);
-
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const statusParam = selectedStatus !== 'all' ? `&status=${selectedStatus}` : '';
@@ -117,7 +113,11 @@ export function CampaignTracker({ organizationId }: CampaignTrackerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, selectedStatus]);
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   const calculateCardSigningPercentage = (campaign: Campaign): number => {
     if (!campaign.card_signing_goal) return 0;

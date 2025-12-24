@@ -8,6 +8,8 @@
  * @see https://developer.twitter.com/en/docs/twitter-api
  */
 
+import { createHash, randomBytes } from 'crypto';
+
 // Types for Twitter API v2 responses
 export interface TwitterOAuthTokenResponse {
   token_type: string;
@@ -370,7 +372,7 @@ export class TwitterAPIClient {
   ): Promise<TwitterMedia> {
     // For v1.1 media upload endpoint (still used for media)
     const formData = new FormData();
-    const blob = new Blob([mediaData], { type: mediaType });
+    const blob = new Blob([new Uint8Array(mediaData)], { type: mediaType });
     formData.append('media', blob);
 
     if (altText) {
@@ -769,12 +771,10 @@ export function generatePKCE(): { verifier: string; challenge: string } {
   const verifier = generateRandomString(128);
 
   // Create SHA-256 hash of verifier
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const hashBuffer = crypto.subtle.digestSync('SHA-256', data);
+  const hash = createHash('sha256').update(verifier).digest();
 
   // Base64 URL encode the hash
-  const challenge = base64UrlEncode(hashBuffer);
+  const challenge = base64UrlEncode(hash.buffer);
 
   return { verifier, challenge };
 }
@@ -785,7 +785,7 @@ export function generatePKCE(): { verifier: string; challenge: string } {
 function generateRandomString(length: number): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
   let result = '';
-  const randomValues = crypto.getRandomValues(new Uint8Array(length));
+  const randomValues = randomBytes(length);
 
   for (let i = 0; i < length; i++) {
     result += chars[randomValues[i] % chars.length];

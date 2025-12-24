@@ -5,7 +5,7 @@
  * After user profile is created/updated, JWT claims must be set for
  * JWT-based RLS policies to work correctly.
  */
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 // =========================================================================
 // JWT CLAIMS UTILITIES
 // =========================================================================

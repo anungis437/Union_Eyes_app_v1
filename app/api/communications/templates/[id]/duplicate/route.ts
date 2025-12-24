@@ -34,7 +34,7 @@ export async function POST(
       .where(
         and(
           eq(newsletterTemplates.id, params.id),
-          eq(newsletterTemplates.tenantId, user.tenantId)
+          eq(newsletterTemplates.organizationId, user.tenantId)
         )
       );
 
@@ -46,7 +46,7 @@ export async function POST(
     const [duplicate] = await db
       .insert(newsletterTemplates)
       .values({
-        tenantId: user.tenantId,
+        organizationId: user.tenantId,
         createdBy: user.id,
         name: `${original.name} (Copy)`,
         description: original.description,

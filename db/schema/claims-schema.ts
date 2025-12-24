@@ -41,7 +41,7 @@ export const claimTypeEnum = pgEnum("claim_type", [
 export const claims = pgTable("claims", {
   claimId: uuid("claim_id").primaryKey().defaultRandom(),
   claimNumber: varchar("claim_number", { length: 50 }).notNull().unique(),
-  tenantId: uuid("tenant_id").notNull(),
+  organizationId: uuid("organization_id").notNull(),
   memberId: uuid("member_id").notNull(),
   isAnonymous: boolean("is_anonymous").default(true),
   

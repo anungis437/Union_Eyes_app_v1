@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -127,13 +127,7 @@ export function SurveyBuilder({ tenantId, surveyId, onSave, onCancel }: SurveyBu
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
 
   // Load existing survey
-  useEffect(() => {
-    if (surveyId) {
-      loadSurvey();
-    }
-  }, [surveyId]);
-
-  const loadSurvey = async () => {
+  const loadSurvey = useCallback(async () => {
     try {
       // TODO: Implement API call
       toast({
@@ -148,7 +142,13 @@ export function SurveyBuilder({ tenantId, surveyId, onSave, onCancel }: SurveyBu
         variant: 'destructive',
       });
     }
-  };
+  }, [surveyId, toast]);
+
+  useEffect(() => {
+    if (surveyId) {
+      loadSurvey();
+    }
+  }, [surveyId, loadSurvey]);
 
   // Add new question
   const addQuestion = (type: QuestionType) => {

@@ -7,7 +7,7 @@ import {
   crossOrgAccessLog,
   organizations 
 } from "@/db/schema";
-import { eq, and, gte, desc, sql } from "drizzle-orm";
+import { eq, and, gte, desc, sql, inArray } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
 
@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
     const grievanceType = searchParams.get("grievanceType");
     const outcome = searchParams.get("outcome");
     const precedentLevel = searchParams.get("precedentLevel");
+    
+    console.log('[precedent-stats] Request params:', { fromDate, toDate, sector, jurisdiction, grievanceType, outcome, precedentLevel });
     const sharingLevel = searchParams.get("sharingLevel");
     const limit = parseInt(searchParams.get("limit") || "10");
 
@@ -73,22 +75,22 @@ export async function GET(request: NextRequest) {
     }
 
     if (precedentLevel) {
-      conditions.push(eq(arbitrationPrecedents.precedentLevel, precedentLevel));
+      conditions.push(eq(arbitrationPrecedents.precedentialValue, precedentLevel));
     }
 
     if (sharingLevel) {
       conditions.push(eq(arbitrationPrecedents.sharingLevel, sharingLevel));
     }
 
-    // Most cited precedents
-    const mostCited = await db
+    // Most cited precedents - using separate queries to avoid leftJoin issues
+    const mostCitedRaw = await db
       .select({
         id: arbitrationPrecedents.id,
         caseNumber: arbitrationPrecedents.caseNumber,
         caseTitle: arbitrationPrecedents.caseTitle,
         grievanceType: arbitrationPrecedents.grievanceType,
         outcome: arbitrationPrecedents.outcome,
-        precedentLevel: arbitrationPrecedents.precedentLevel,
+        precedentialValue: arbitrationPrecedents.precedentialValue,
         citationCount: arbitrationPrecedents.citationCount,
         viewCount: arbitrationPrecedents.viewCount,
         decisionDate: arbitrationPrecedents.decisionDate,
@@ -96,27 +98,61 @@ export async function GET(request: NextRequest) {
         jurisdiction: arbitrationPrecedents.jurisdiction,
         sector: arbitrationPrecedents.sector,
         sharingLevel: arbitrationPrecedents.sharingLevel,
-        sourceOrganization: {
-          id: organizations.id,
-          name: organizations.name,
-          organizationType: organizations.organizationType,
-        },
+        sourceOrganizationId: arbitrationPrecedents.sourceOrganizationId,
       })
       .from(arbitrationPrecedents)
-      .leftJoin(organizations, eq(arbitrationPrecedents.sourceOrganizationId, organizations.id))
       .where(and(...conditions))
       .orderBy(desc(arbitrationPrecedents.citationCount))
       .limit(limit);
+    
+    console.log('[precedent-stats] mostCitedRaw count:', mostCitedRaw.length);
+    console.log('[precedent-stats] mostCitedRaw sample:', mostCitedRaw[0]);
 
-    // Most viewed precedents
-    const mostViewed = await db
+    // Get unique organization IDs for mostCited
+    const citedOrgIds = [...new Set(mostCitedRaw.map(p => p.sourceOrganizationId).filter(Boolean))];
+    console.log('[precedent-stats] citedOrgIds:', citedOrgIds.length, citedOrgIds.slice(0, 3));
+
+    // Fetch organizations for mostCited using raw SQL to avoid Drizzle issues
+    let citedOrgs: Array<{id: string, name: string, organizationType: string | null}> = [];
+    if (citedOrgIds.length > 0) {
+      const idList = citedOrgIds.map(id => `'${id}'`).join(',');
+      console.log('[precedent-stats] Executing SQL with idList:', idList);
+      const result = await db.execute(sql.raw(`
+        SELECT id, name, organization_type as "organizationType"
+        FROM organizations
+        WHERE id = ANY(ARRAY[${idList}]::uuid[])
+      `));
+      citedOrgs = result.rows as Array<{id: string, name: string, organizationType: string | null}>;
+    }
+    console.log('[precedent-stats] citedOrgs fetched:', citedOrgs.length);
+
+    const citedOrgMap = new Map(citedOrgs.map(o => [o.id, o]));
+
+    // Join in memory
+    const mostCited = mostCitedRaw.map(p => {
+      const org = citedOrgMap.get(p.sourceOrganizationId);
+      return {
+        ...p,
+        sourceOrganization: org ? {
+          id: org.id,
+          name: org.name,
+          organizationType: org.organizationType,
+        } : null,
+      };
+    });
+    
+    console.log('[precedent-stats] mostCited final count:', mostCited.length);
+    console.log('[precedent-stats] mostCited sample with org:', mostCited[0]);
+
+    // Most viewed precedents - using separate queries to avoid leftJoin issues
+    const mostViewedRaw = await db
       .select({
         id: arbitrationPrecedents.id,
         caseNumber: arbitrationPrecedents.caseNumber,
         caseTitle: arbitrationPrecedents.caseTitle,
         grievanceType: arbitrationPrecedents.grievanceType,
         outcome: arbitrationPrecedents.outcome,
-        precedentLevel: arbitrationPrecedents.precedentLevel,
+        precedentialValue: arbitrationPrecedents.precedentialValue,
         viewCount: arbitrationPrecedents.viewCount,
         citationCount: arbitrationPrecedents.citationCount,
         decisionDate: arbitrationPrecedents.decisionDate,
@@ -124,17 +160,46 @@ export async function GET(request: NextRequest) {
         jurisdiction: arbitrationPrecedents.jurisdiction,
         sector: arbitrationPrecedents.sector,
         sharingLevel: arbitrationPrecedents.sharingLevel,
-        sourceOrganization: {
-          id: organizations.id,
-          name: organizations.name,
-          organizationType: organizations.organizationType,
-        },
+        sourceOrganizationId: arbitrationPrecedents.sourceOrganizationId,
       })
       .from(arbitrationPrecedents)
-      .leftJoin(organizations, eq(arbitrationPrecedents.sourceOrganizationId, organizations.id))
       .where(and(...conditions))
       .orderBy(desc(arbitrationPrecedents.viewCount))
       .limit(limit);
+
+    // Get unique organization IDs
+    const orgIds = [...new Set(mostViewedRaw.map(p => p.sourceOrganizationId).filter(Boolean))];
+    console.log('[precedent-stats] orgIds for mostViewed:', orgIds.length, orgIds.slice(0, 3));
+
+    // Fetch organizations using raw SQL to avoid Drizzle issues
+    let orgs: Array<{id: string, name: string, organizationType: string | null}> = [];
+    if (orgIds.length > 0) {
+      const idList = orgIds.map(id => `'${id}'`).join(',');
+      console.log('[precedent-stats] Executing SQL for mostViewed with idList:', idList);
+      const result = await db.execute(sql.raw(`
+        SELECT id, name, organization_type as "organizationType"
+        FROM organizations
+        WHERE id = ANY(ARRAY[${idList}]::uuid[])
+      `));
+      orgs = result.rows as Array<{id: string, name: string, organizationType: string | null}>;
+    }
+    console.log('[precedent-stats] orgs fetched for mostViewed:', orgs.length);
+    console.log('[precedent-stats] orgs sample:', orgs[0]);
+
+    const orgMap = new Map(orgs.map(o => [o.id, o]));
+
+    // Join in memory
+    const mostViewed = mostViewedRaw.map(p => {
+      const org = orgMap.get(p.sourceOrganizationId);
+      return {
+        ...p,
+        sourceOrganizationName: org?.name || null,
+        sourceOrganizationType: org?.organizationType || null,
+      };
+    });
+    
+    console.log('[precedent-stats] mostViewed final count:', mostViewed.length);
+    console.log('[precedent-stats] mostViewed sample with org:', mostViewed[0]);
 
     // Outcome distribution
     const outcomeDistribution = await db
@@ -156,7 +221,7 @@ export async function GET(request: NextRequest) {
         count: sql<number>`count(*)::int`,
         totalViews: sql<number>`sum(${arbitrationPrecedents.viewCount})::int`,
         totalCitations: sql<number>`sum(${arbitrationPrecedents.citationCount})::int`,
-        avgPrecedentLevel: sql<number>`avg(case when ${arbitrationPrecedents.precedentLevel} = 'high' then 3 when ${arbitrationPrecedents.precedentLevel} = 'medium' then 2 else 1 end)::numeric(3,2)`,
+        avgPrecedentLevel: sql<number>`avg(case when ${arbitrationPrecedents.precedentialValue} = 'high' then 3 when ${arbitrationPrecedents.precedentialValue} = 'medium' then 2 else 1 end)::numeric(3,2)`,
       })
       .from(arbitrationPrecedents)
       .where(and(...conditions))
@@ -195,14 +260,14 @@ export async function GET(request: NextRequest) {
     // Precedent level distribution
     const precedentLevelDistribution = await db
       .select({
-        precedentLevel: arbitrationPrecedents.precedentLevel,
+        precedentLevel: arbitrationPrecedents.precedentialValue,
         count: sql<number>`count(*)::int`,
         totalCitations: sql<number>`sum(${arbitrationPrecedents.citationCount})::int`,
         avgCitationCount: sql<number>`avg(${arbitrationPrecedents.citationCount})::numeric(10,2)`,
       })
       .from(arbitrationPrecedents)
       .where(and(...conditions))
-      .groupBy(arbitrationPrecedents.precedentLevel)
+      .groupBy(arbitrationPrecedents.precedentialValue)
       .orderBy(desc(sql`count(*)`));
 
     // Top arbitrators
@@ -222,44 +287,46 @@ export async function GET(request: NextRequest) {
       .limit(15);
 
     // Recent activity from access logs
-    const recentActivity = await db
+    // Fetch recent activity (without leftJoin to avoid orderSelectedFields error)
+    const recentActivityRaw = await db
       .select({
         id: crossOrgAccessLog.id,
         resourceId: crossOrgAccessLog.resourceId,
         accessType: crossOrgAccessLog.accessType,
-        accessedAt: crossOrgAccessLog.accessedAt,
-        userOrganization: {
-          id: sql<string>`user_org.id`,
-          name: sql<string>`user_org.name`,
-        },
-        resourceOwnerOrganization: {
-          id: sql<string>`owner_org.id`,
-          name: sql<string>`owner_org.name`,
-        },
-        caseNumber: arbitrationPrecedents.caseNumber,
-        caseTitle: arbitrationPrecedents.caseTitle,
+        createdAt: crossOrgAccessLog.createdAt,
+        userOrgId: crossOrgAccessLog.userOrganizationId,
+        resourceOwnerOrgId: crossOrgAccessLog.resourceOrganizationId,
       })
       .from(crossOrgAccessLog)
-      .leftJoin(
-        sql`organizations user_org`,
-        sql`user_org.id = ${crossOrgAccessLog.userOrganizationId}`
-      )
-      .leftJoin(
-        sql`organizations owner_org`,
-        sql`owner_org.id = ${crossOrgAccessLog.resourceOwnerOrgId}`
-      )
-      .leftJoin(
-        arbitrationPrecedents,
-        eq(crossOrgAccessLog.resourceId, arbitrationPrecedents.id)
-      )
       .where(
         and(
           eq(crossOrgAccessLog.resourceType, "precedent"),
-          gte(crossOrgAccessLog.accessedAt, new Date(fromDate))
+          gte(crossOrgAccessLog.createdAt, new Date(fromDate))
         )
       )
-      .orderBy(desc(crossOrgAccessLog.accessedAt))
+      .orderBy(desc(crossOrgAccessLog.createdAt))
       .limit(20);
+
+    // Fetch case details separately
+    const resourceIds = recentActivityRaw.map(r => r.resourceId).filter(Boolean);
+    const precedentDetails = resourceIds.length > 0
+      ? await db
+          .select({
+            id: arbitrationPrecedents.id,
+            caseNumber: arbitrationPrecedents.caseNumber,
+            caseTitle: arbitrationPrecedents.caseTitle,
+          })
+          .from(arbitrationPrecedents)
+          .where(sql`${arbitrationPrecedents.id} = ANY(${sql.raw(`ARRAY[${resourceIds.map(id => `'${id}'`).join(',')}]::uuid[]`)})`)
+      : [];
+
+    // Merge the results
+    const precedentMap = new Map(precedentDetails.map(p => [p.id, p]));
+    const recentActivity = recentActivityRaw.map(activity => ({
+      ...activity,
+      caseNumber: precedentMap.get(activity.resourceId)?.caseNumber ?? null,
+      caseTitle: precedentMap.get(activity.resourceId)?.caseTitle ?? null,
+    }));
 
     // Top tags
     const topTags = await db
@@ -313,7 +380,11 @@ export async function GET(request: NextRequest) {
       topTags,
       recentActivity,
     });
+    
+    console.log('[precedent-stats] SUCCESS - Sending response with mostCited:', mostCited.length, 'mostViewed:', mostViewed.length);
   } catch (error) {
+    console.error('[precedent-stats] ERROR:', error);
+    console.error('[precedent-stats] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     logger.error('Error fetching precedent stats', error as Error, {
       correlationId: request.headers.get('x-correlation-id')
     });

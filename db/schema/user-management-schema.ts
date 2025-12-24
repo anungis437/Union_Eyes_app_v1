@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, inet, pgSchema, check } from "drizzle-orm/pg-core";
 import { sql, relations } from "drizzle-orm";
-import { tenants } from "./tenant-management-schema";
+import { organizations } from "../schema-organizations";
 
 // Create user_management schema
 export const userManagementSchema = pgSchema("user_management");
@@ -40,16 +40,17 @@ export const users = userManagementSchema.table("users", {
     sql`${table.phone} IS NULL OR ${table.phone} ~ '^\\+?[1-9]\\d{1,14}$'`),
 }));
 
-// Tenant users table - links users to tenants with roles
+// Tenant users table - links users to organizations with roles
 // NOTE: userId uses VARCHAR to support Clerk user IDs (format: "user_xxxxx")
+// NOTE: Column name is "tenant_id" in database to match existing schema
 export const tenantUsers = userManagementSchema.table("tenant_users", {
   tenantUserId: uuid("tenant_user_id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().references(() => tenants.tenantId, { onDelete: "cascade" }),
+  tenantId: uuid("tenant_id").notNull().references(() => organizations.id, { onDelete: "cascade" }), // Changed from organizationId to tenantId
   userId: varchar("user_id", { length: 255 }).notNull(), // Changed from uuid to support Clerk IDs
   role: varchar("role", { length: 50 }).notNull().default("member"),
   permissions: jsonb("permissions").default(sql`'[]'::jsonb`),
   isActive: boolean("is_active").default(true),
-  isPrimary: boolean("is_primary").default(false), // Indicates if this is the user's primary tenant
+  isPrimary: boolean("is_primary").default(false), // Indicates if this is the user's primary organization
   invitedBy: uuid("invited_by").references(() => users.userId),
   invitedAt: timestamp("invited_at", { withTimezone: true }),
   joinedAt: timestamp("joined_at", { withTimezone: true }),
@@ -62,7 +63,7 @@ export const tenantUsers = userManagementSchema.table("tenant_users", {
 export const userSessions = userManagementSchema.table("user_sessions", {
   sessionId: uuid("session_id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.userId, { onDelete: "cascade" }),
-  tenantId: uuid("tenant_id").references(() => tenants.tenantId, { onDelete: "cascade" }),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
   sessionToken: text("session_token").notNull().unique(),
   refreshToken: text("refresh_token").unique(),
   deviceInfo: jsonb("device_info").default(sql`'{}'::jsonb`),
@@ -93,9 +94,9 @@ export const oauthProviders = userManagementSchema.table("oauth_providers", {
 
 // Define relations
 export const tenantUsersRelations = relations(tenantUsers, ({ one }) => ({
-  tenant: one(tenants, {
+  organization: one(organizations, {
     fields: [tenantUsers.tenantId],
-    references: [tenants.tenantId],
+    references: [organizations.id],
   }),
 }));
 

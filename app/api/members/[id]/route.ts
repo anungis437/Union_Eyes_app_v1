@@ -36,7 +36,7 @@ export const GET = withRoleAuth('member', async (
     }
 
     // Verify member belongs to current organization
-    if (member.tenantId !== organizationId) {
+    if (member.organizationId !== organizationId) {
       return NextResponse.json(
         { success: false, error: 'Access denied - member belongs to different organization' },
         { status: 403 }
@@ -87,7 +87,7 @@ export const PATCH = withRoleAuth('steward', async (
     }
 
     // Verify member belongs to current organization
-    if (existingMember.tenantId !== organizationId) {
+    if (existingMember.organizationId !== organizationId) {
       return NextResponse.json(
         { success: false, error: 'Access denied - member belongs to different organization' },
         { status: 403 }

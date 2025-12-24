@@ -64,9 +64,9 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
       );
     }
 
-    // Create member with tenant ID
+    // Create member with organization ID
     const newMember = await createMember({
-      tenantId: organizationId,
+      organizationId: organizationId,
       userId: `user_${Date.now()}`, // Generate temporary user ID
       name,
       email,
@@ -80,7 +80,6 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
       membershipNumber,
       unionJoinDate: body.unionJoinDate ? new Date(body.unionJoinDate) : new Date(),
       metadata: "{}", // Legacy field, keep for backward compatibility
-      organizationId: 'legacy', // Legacy field, keep for backward compatibility
     });
 
     return NextResponse.json({

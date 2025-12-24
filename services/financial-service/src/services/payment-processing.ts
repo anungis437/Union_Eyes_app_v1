@@ -16,7 +16,7 @@ import { eq, and, sql } from 'drizzle-orm';
 
 // Initialize Stripe (use test key in development)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
-  apiVersion: '2024-06-20', // Latest stable version supported by types
+  apiVersion: '2025-02-24.acacia' as const,
 });
 
 // Payment processor types
@@ -130,7 +130,7 @@ export async function confirmDuesPayment(
         paymentDate: new Date(),
         stripePaymentIntentId: paymentIntentId,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(and(
         eq(schema.duesTransactions.id, transactionId),
         eq(schema.duesTransactions.tenantId, tenantId)
@@ -200,7 +200,7 @@ export async function createStipendPayout(
         transactionId,
         paidAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as any)
       .where(and(
         eq(schema.stipendDisbursements.id, disbursementId),
         eq(schema.stipendDisbursements.tenantId, tenantId)
@@ -280,7 +280,7 @@ export async function batchProcessStipendPayouts(
           transactionId,
           paidAt: new Date(),
           updatedAt: new Date(),
-        })
+        } as any)
         .where(eq(schema.stipendDisbursements.id, disbursementId));
 
       results.push({
@@ -428,7 +428,7 @@ export async function confirmDonationPayment(
         status: 'completed',
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      } as any)
       .returning({ id: schema.donations.id });
 
     return donation.id;
@@ -499,7 +499,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: any): Promise<void> {
         paymentDate: new Date(),
         stripePaymentIntentId: paymentIntent.id,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(schema.duesTransactions.id, metadata.transactionId));
 
   } else if (type === 'donation') {
@@ -517,9 +517,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: any): Promise<void> {
         message: metadata.message || null,
         stripePaymentIntentId: paymentIntent.id,
         status: 'completed',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+        createdAt: new Date().toISOString(),
+      } as any);
   }
 }
 
@@ -533,7 +532,7 @@ async function handlePaymentIntentFailed(paymentIntent: any): Promise<void> {
         status: 'failed',
         stripePaymentIntentId: paymentIntent.id,
         updatedAt: new Date(),
-      })
+      } as any)
       .where(eq(schema.duesTransactions.id, metadata.transactionId));
   }
 }
@@ -546,14 +545,14 @@ async function handleChargeRefunded(charge: any): Promise<void> {
     .set({
       status: 'refunded',
       updatedAt: new Date(),
-    })
-    .where(eq(schema.duesTransactions.stripePaymentIntentId, paymentIntentId));
+    } as any)
+    .where(eq(schema.duesTransactions.paymentReference, paymentIntentId));
 
   await db.update(schema.donations)
     .set({
       status: 'refunded',
       updatedAt: new Date(),
-    })
+    } as any)
     .where(eq(schema.donations.stripePaymentIntentId, paymentIntentId));
 }
 
@@ -618,9 +617,9 @@ export async function getPaymentSummary(
 
   // Stipend disbursements
   const stipendsQuery = db.select({
-    total: sql<string>`CAST(SUM(CAST(${schema.stipendDisbursements.amount} AS DECIMAL)) AS TEXT)`,
+    total: sql<string>`CAST(SUM(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
     count: sql<number>`COUNT(*)`,
-    average: sql<string>`CAST(AVG(CAST(${schema.stipendDisbursements.amount} AS DECIMAL)) AS TEXT)`,
+    average: sql<string>`CAST(AVG(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
   })
   .from(schema.stipendDisbursements)
   .where(and(

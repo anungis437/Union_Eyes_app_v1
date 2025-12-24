@@ -1,6 +1,6 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, pgSchema, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { tenants } from "./tenant-management-schema";
+import { organizations } from "../schema-organizations";
 import { users } from "./user-management-schema";
 
 // Create audit_security schema
@@ -9,7 +9,7 @@ export const auditSecuritySchema = pgSchema("audit_security");
 // Audit logs table - comprehensive system activity tracking
 export const auditLogs = auditSecuritySchema.table("audit_logs", {
   auditId: uuid("audit_id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").references(() => tenants.tenantId),
+  organizationId: uuid("organization_id").references(() => organizations.id),
   userId: uuid("user_id").references(() => users.userId),
   action: varchar("action", { length: 100 }).notNull(),
   resourceType: varchar("resource_type", { length: 50 }).notNull(),
@@ -37,7 +37,7 @@ export const auditLogs = auditSecuritySchema.table("audit_logs", {
 // Security events table - security-specific event tracking
 export const securityEvents = auditSecuritySchema.table("security_events", {
   eventId: uuid("event_id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").references(() => tenants.tenantId),
+  organizationId: uuid("organization_id").references(() => organizations.id),
   userId: uuid("user_id").references(() => users.userId),
   eventType: varchar("event_type", { length: 50 }).notNull(),
   eventCategory: varchar("event_category", { length: 30 }).notNull(),

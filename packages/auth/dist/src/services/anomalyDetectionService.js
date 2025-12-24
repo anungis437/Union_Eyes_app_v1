@@ -10,7 +10,7 @@
  * @date October 23, 2025
  * @phase Phase 2 Week 1 Day 7
  */
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 import { SecurityAuditService } from './securityAuditService';
 // ============================================================================
 // SERVICE CLASS

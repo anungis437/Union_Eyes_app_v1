@@ -67,8 +67,8 @@ export async function GET(
     const documents = {
       precedentId,
       decisionDocument: {
-        url: precedent.decisionDocumentUrl || null,
-        available: !!precedent.decisionDocumentUrl,
+        url: precedent.documentUrl || null,
+        available: !!precedent.documentUrl,
       },
       redactedDocument: {
         url: precedent.redactedDocumentUrl || null,
@@ -182,7 +182,7 @@ export async function POST(
 
     // Update precedent with document URL
     const updateField =
-      documentType === 'decision' ? 'decisionDocumentUrl' : 'redactedDocumentUrl';
+      documentType === 'decision' ? 'documentUrl' : 'redactedDocumentUrl';
     
     // Delete old document if exists
     const oldUrl = precedent[updateField];
@@ -297,7 +297,7 @@ export async function DELETE(
 
     // Get the document URL
     const urlField =
-      documentType === 'decision' ? 'decisionDocumentUrl' : 'redactedDocumentUrl';
+      documentType === 'decision' ? 'documentUrl' : 'redactedDocumentUrl';
     const documentUrl = precedent[urlField];
 
     if (!documentUrl) {

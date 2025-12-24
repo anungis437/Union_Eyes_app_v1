@@ -69,7 +69,7 @@ export async function processArrearsManagement(params: {
         dueDate: duesTransactions.dueDate,
         periodStart: duesTransactions.periodStart,
         periodEnd: duesTransactions.periodEnd,
-        memberName: members.name,
+        memberName: sql<string>`CONCAT(${members.firstName}, ' ', ${members.lastName})`,
         memberEmail: members.email,
       })
       .from(duesTransactions)
@@ -95,7 +95,7 @@ export async function processArrearsManagement(params: {
             and(
               eq(arrears.tenantId, tenantId),
               eq(arrears.memberId, record.memberId),
-              eq(arrears.status, 'active')
+              eq(arrears.arrearsStatus, 'active')
             )
           )
           .limit(1);
@@ -121,9 +121,9 @@ export async function processArrearsManagement(params: {
             memberId: record.memberId,
             totalOwed: record.amount,
             oldestDebtDate: record.dueDate,
-            status: 'active',
+            arrearsStatus: 'active',
             notes: `1 overdue transaction(s), ${daysOverdue} days overdue. Last notification: ${scanDate.toISOString()}`,
-          });
+          } as any);
 
           arrearsCreated++;
           logger.info(`Created arrears record for member ${record.memberId}`);
@@ -136,7 +136,7 @@ export async function processArrearsManagement(params: {
             .set({
               totalOwed: currentTotal.toString(),
               notes: `Multiple overdue transactions, ${daysOverdue} days overdue. Last notification: ${scanDate.toISOString()}`,
-            })
+            } as any)
             .where(eq(arrears.id, existingArrears[0].id));
 
           logger.info(`Updated arrears record for member ${record.memberId}`);
@@ -165,7 +165,7 @@ export async function processArrearsManagement(params: {
         // Update transaction status
         await db
           .update(duesTransactions)
-          .set({ status: 'overdue', updatedAt: scanDate })
+          .set({ status: 'overdue', updatedAt: scanDate } as any)
           .where(eq(duesTransactions.id, record.transactionId));
 
       } catch (recordError) {

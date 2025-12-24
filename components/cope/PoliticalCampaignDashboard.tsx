@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -84,11 +84,7 @@ export function PoliticalCampaignDashboard({ organizationId }: PoliticalCampaign
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>('all');
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, [organizationId, selectedType]);
-
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const typeParam = selectedType !== 'all' ? `&campaignType=${selectedType}` : '';
@@ -103,7 +99,11 @@ export function PoliticalCampaignDashboard({ organizationId }: PoliticalCampaign
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, selectedType]);
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   const calculateProgress = (current: number, goal: number): number => {
     if (!goal) return 0;

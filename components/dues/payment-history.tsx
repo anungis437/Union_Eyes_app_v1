@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,11 +38,7 @@ export default function PaymentHistory({ userId }: PaymentHistoryProps) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadPaymentHistory();
-  }, [userId]);
-
-  const loadPaymentHistory = async () => {
+  const loadPaymentHistory = useCallback(async () => {
     try {
       const response = await fetch(`/api/dues/payment-history?userId=${userId}`);
       if (!response.ok) throw new Error('Failed to load payment history');
@@ -58,7 +54,11 @@ export default function PaymentHistory({ userId }: PaymentHistoryProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, toast]);
+
+  useEffect(() => {
+    loadPaymentHistory();
+  }, [loadPaymentHistory]);
 
   const handleDownloadReceipt = async (paymentId: string) => {
     try {

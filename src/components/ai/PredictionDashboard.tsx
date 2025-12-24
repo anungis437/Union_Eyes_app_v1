@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, 
   Clock, 
@@ -83,13 +83,7 @@ export function PredictionDashboard({
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('outcome');
 
-  useEffect(() => {
-    if (claimId || claimData) {
-      loadPredictions();
-    }
-  }, [claimId, claimData]);
-
-  const loadPredictions = async () => {
+  const loadPredictions = useCallback(async () => {
     setIsLoading(true);
     try {
       await Promise.all([
@@ -103,7 +97,13 @@ export function PredictionDashboard({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [claimId, claimData, tenantId]);
+
+  useEffect(() => {
+    if (claimId || claimData) {
+      loadPredictions();
+    }
+  }, [claimId, claimData, loadPredictions]);
 
   const fetchOutcomePrediction = async () => {
     if (!claimData) return;

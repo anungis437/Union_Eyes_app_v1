@@ -92,7 +92,7 @@ export const getClaimsByOrganization = async (organizationSlug: string, limit?: 
     let query = db
       .select()
       .from(claims)
-      .where(eq(claims.tenantId, tenantId))
+      .where(eq(claims.organizationId, tenantId))
       .orderBy(desc(claims.createdAt));
     
     if (limit) {
@@ -211,7 +211,7 @@ export const getClaimsAssignedToUser = async (userId: string, organizationSlug?:
         .limit(1);
       
       if (org) {
-        conditions.push(eq(claims.tenantId, org.id));
+        conditions.push(eq(claims.organizationId, org.id));
       }
     }
     
@@ -231,17 +231,24 @@ export const getClaimsAssignedToUser = async (userId: string, organizationSlug?:
 /**
  * Get claim statistics for dashboard
  */
-export const getClaimStatistics = async (organizationSlug: string) => {
+export const getClaimStatistics = async (organizationSlugOrId: string) => {
   try {
-    // Convert organization slug to UUID (tenantId)
+    // Check if input is a UUID (contains hyphens and is 36 chars) or a slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(organizationSlugOrId);
+    
+    // Convert organization slug/id to UUID (tenantId)
     const [org] = await db
       .select({ id: organizations.id })
       .from(organizations)
-      .where(eq(organizations.slug, organizationSlug))
+      .where(
+        isUUID 
+          ? eq(organizations.id, organizationSlugOrId)
+          : eq(organizations.slug, organizationSlugOrId)
+      )
       .limit(1);
     
     if (!org) {
-      throw new Error(`Organization with slug ${organizationSlug} not found`);
+      throw new Error(`Organization with ${isUUID ? 'id' : 'slug'} ${organizationSlugOrId} not found`);
     }
     
     const tenantId = org.id;
@@ -252,7 +259,7 @@ export const getClaimStatistics = async (organizationSlug: string) => {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           sql`${claims.status} NOT IN ('resolved', 'closed', 'rejected')`
         )
       );
@@ -263,7 +270,7 @@ export const getClaimStatistics = async (organizationSlug: string) => {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           sql`${claims.status} IN ('submitted', 'under_review')`
         )
       );
@@ -274,7 +281,7 @@ export const getClaimStatistics = async (organizationSlug: string) => {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           eq(claims.status, 'resolved')
         )
       );
@@ -285,7 +292,7 @@ export const getClaimStatistics = async (organizationSlug: string) => {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           sql`${claims.priority} IN ('high', 'critical')`,
           sql`${claims.status} NOT IN ('resolved', 'closed', 'rejected')`
         )

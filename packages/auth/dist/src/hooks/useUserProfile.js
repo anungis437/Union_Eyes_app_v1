@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../unified-auth/AuthProvider';
 import { getUserProfileService } from '../services/userProfileService';
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 // =============================================================================
 // HOOK IMPLEMENTATION
 // =============================================================================

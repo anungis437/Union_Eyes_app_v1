@@ -98,7 +98,7 @@ export async function autoAssignGrievance(
   try {
     // Get claim details
     const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.tenantId, tenantId)),
+      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
     });
 
     if (!claim) {
@@ -151,7 +151,7 @@ export async function autoAssignGrievance(
     const [assignment] = await db
       .insert(grievanceAssignments)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId,
         assignedTo: bestMatch.userId,
         role,
@@ -237,7 +237,7 @@ export async function manuallyAssignGrievance(
     const [assignment] = await db
       .insert(grievanceAssignments)
       .values({
-        tenantId,
+        organizationId: tenantId,
         claimId,
         assignedTo,
         role,
@@ -291,7 +291,7 @@ export async function reassignGrievance(
     const currentAssignment = await db.query.grievanceAssignments.findFirst({
       where: and(
         eq(grievanceAssignments.id, currentAssignmentId),
-        eq(grievanceAssignments.tenantId, tenantId)
+        eq(grievanceAssignments.organizationId, tenantId)
       ),
     });
 
@@ -343,7 +343,7 @@ export async function getAssignmentRecommendations(
 ): Promise<AssignmentRecommendation[]> {
   try {
     const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.tenantId, tenantId)),
+      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
     });
 
     if (!claim) return [];
@@ -529,7 +529,7 @@ export async function getOfficerWorkload(
     const assignments = await db.query.grievanceAssignments.findMany({
       where: and(
         eq(grievanceAssignments.assignedTo, userId),
-        eq(grievanceAssignments.tenantId, tenantId)
+        eq(grievanceAssignments.organizationId, tenantId)
       ),
       with: {
         claim: true,
@@ -680,7 +680,7 @@ export async function suggestWorkloadBalancing(
       const recentAssignments = await db.query.grievanceAssignments.findMany({
         where: and(
           eq(grievanceAssignments.assignedTo, overloadedOfficer.userId),
-          eq(grievanceAssignments.tenantId, tenantId),
+          eq(grievanceAssignments.organizationId, tenantId),
           eq(grievanceAssignments.status, "assigned")
         ),
         orderBy: [desc(grievanceAssignments.assignedAt)],
@@ -742,7 +742,7 @@ export async function removeCollaborator(
     const assignment = await db.query.grievanceAssignments.findFirst({
       where: and(
         eq(grievanceAssignments.id, assignmentId),
-        eq(grievanceAssignments.tenantId, tenantId)
+        eq(grievanceAssignments.organizationId, tenantId)
       ),
     });
 
@@ -789,7 +789,7 @@ export async function getGrievanceTeam(
     const assignments = await db.query.grievanceAssignments.findMany({
       where: and(
         eq(grievanceAssignments.claimId, claimId),
-        eq(grievanceAssignments.tenantId, tenantId)
+        eq(grievanceAssignments.organizationId, tenantId)
       ),
       orderBy: [desc(grievanceAssignments.assignedAt)],
     });

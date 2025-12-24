@@ -57,7 +57,7 @@ const cacheWarmingJob: JobConfig = {
     try {
       // Get all active tenants
       const tenants = await db
-        .selectDistinct({ tenantId: claims.tenantId })
+        .selectDistinct({ tenantId: claims.organizationId })
         .from(claims);
 
       for (const { tenantId } of tenants) {

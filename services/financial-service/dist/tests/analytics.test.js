@@ -35,10 +35,10 @@ let testMemberId;
         console.log('Setting up analytics test data...');
         // Create test member
         const memberResult = await db_1.db.insert(schema_1.members).values({
-            tenantId: TEST_TENANT_ID,
             organizationId: TEST_TENANT_ID,
             userId: TEST_USER_ID,
-            name: 'Test Donor',
+            firstName: 'Test',
+            lastName: 'Donor',
             email: 'donor@test.com',
             status: 'active',
         }).returning();
@@ -120,7 +120,7 @@ let testMemberId;
         await db_1.db.delete(schema_1.stipendDisbursements).where((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.donations).where((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.strikeFunds).where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, TEST_TENANT_ID));
-        await db_1.db.delete(schema_1.members).where((0, drizzle_orm_1.eq)(schema_1.members.tenantId, TEST_TENANT_ID));
+        await db_1.db.delete(schema_1.members).where((0, drizzle_orm_1.eq)(schema_1.members.organizationId, TEST_TENANT_ID));
         console.log('Analytics test data cleaned up');
     });
     (0, globals_1.describe)('GET /api/analytics/summary', () => {

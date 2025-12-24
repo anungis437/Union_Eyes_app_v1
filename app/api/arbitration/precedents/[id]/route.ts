@@ -218,7 +218,6 @@ export async function PATCH(
     if (body.unionName !== undefined) updates.unionName = body.unionName;
     if (body.employerName !== undefined) updates.employerName = body.employerName;
     if (body.arbitratorName !== undefined) updates.arbitratorName = body.arbitratorName;
-    if (body.tribunal !== undefined) updates.tribunal = body.tribunal;
     if (body.jurisdiction !== undefined) updates.jurisdiction = body.jurisdiction;
     if (body.grievanceType !== undefined) updates.grievanceType = body.grievanceType;
     if (body.issueSummary !== undefined) updates.issueSummary = body.issueSummary;
@@ -227,18 +226,23 @@ export async function PATCH(
     if (body.outcome !== undefined) updates.outcome = body.outcome;
     if (body.decisionSummary !== undefined) updates.decisionSummary = body.decisionSummary;
     if (body.reasoning !== undefined) updates.reasoning = body.reasoning;
-    if (body.keyFindings !== undefined) updates.keyFindings = body.keyFindings;
-    if (body.precedentLevel !== undefined) updates.precedentLevel = body.precedentLevel;
+    if (body.keyFindings !== undefined) updates.keyPrinciples = body.keyFindings;
+    if (body.relatedLegislation !== undefined) updates.relatedLegislation = body.relatedLegislation;
+    if (body.precedentLevel !== undefined) updates.precedentialValue = body.precedentLevel;
     if (body.citedCases !== undefined) updates.citedCases = body.citedCases;
-    if (body.decisionDocumentUrl !== undefined) updates.decisionDocumentUrl = body.decisionDocumentUrl;
-    if (body.redactedDocumentUrl !== undefined) updates.redactedDocumentUrl = body.redactedDocumentUrl;
-    if (body.isMemberNamesRedacted !== undefined) updates.isMemberNamesRedacted = body.isMemberNamesRedacted;
-    if (body.grievorNames !== undefined) updates.grievorNames = body.grievorNames;
+    if (body.decisionDocumentUrl !== undefined) {
+      updates.documentUrl = body.decisionDocumentUrl;
+      if (body.documentPath !== undefined) updates.documentPath = body.documentPath;
+    }
+    if (body.redactedDocumentUrl !== undefined) {
+      updates.redactedDocumentUrl = body.redactedDocumentUrl;
+      if (body.redactedDocumentPath !== undefined) updates.redactedDocumentPath = body.redactedDocumentPath;
+      updates.hasRedactedVersion = !!body.redactedDocumentUrl;
+    }
     if (body.sharingLevel !== undefined) updates.sharingLevel = body.sharingLevel;
     if (body.sharedWithOrgIds !== undefined) updates.sharedWithOrgIds = body.sharedWithOrgIds;
     if (body.sector !== undefined) updates.sector = body.sector;
-    if (body.industry !== undefined) updates.industry = body.industry;
-    if (body.bargainingUnitSize !== undefined) updates.bargainingUnitSize = body.bargainingUnitSize;
+    if (body.province !== undefined) updates.province = body.province;
 
     // Update precedent
     const [updated] = await db

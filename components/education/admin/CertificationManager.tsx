@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,12 +76,7 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
     continuingEducationHours: "",
   });
 
-  useEffect(() => {
-    fetchCertifications();
-    fetchCourses();
-  }, [organizationId]);
-
-  const fetchCertifications = async () => {
+  const fetchCertifications = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -101,9 +96,9 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const params = new URLSearchParams({ organizationId });
       const response = await fetch(`/api/education/courses?${params}`);
@@ -114,7 +109,12 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    fetchCertifications();
+    fetchCourses();
+  }, [fetchCertifications, fetchCourses]);
 
   const handleIssueCertification = async () => {
     try {

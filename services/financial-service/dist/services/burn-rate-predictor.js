@@ -34,24 +34,24 @@ async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
         amount: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.donations.amount} AS NUMERIC)), 0)`,
     })
         .from(schema_1.donations)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate), (0, drizzle_orm_1.lte)(schema_1.donations.createdAt, endDate)))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate.toISOString()), (0, drizzle_orm_1.lte)(schema_1.donations.createdAt, endDate.toISOString())))
         .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.donations.createdAt})`);
     // Get stipend disbursements (withdrawals)
     const stipendHistory = await db_1.db
         .select({
         date: (0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`,
-        amount: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC)), 0)`,
+        amount: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
     })
         .from(schema_1.stipendDisbursements)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate), (0, drizzle_orm_1.lte)(schema_1.stipendDisbursements.createdAt, endDate)))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate.toISOString()), (0, drizzle_orm_1.lte)(schema_1.stipendDisbursements.createdAt, endDate.toISOString())))
         .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`);
     // Combine and calculate daily burn rate
     const dataMap = new Map();
     // Add donations (deposits)
     donationHistory.forEach((record) => {
-        const dateKey = record.date.toISOString().split('T')[0];
+        const dateKey = record.date;
         dataMap.set(dateKey, {
-            date: record.date,
+            date: new Date(record.date),
             balance: 0, // Will calculate running balance later
             deposits: Number(record.amount),
             withdrawals: 0,
@@ -61,7 +61,7 @@ async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
     });
     // Add stipends (withdrawals)
     stipendHistory.forEach((record) => {
-        const dateKey = record.date.toISOString().split('T')[0];
+        const dateKey = record.date;
         const existing = dataMap.get(dateKey);
         if (existing) {
             existing.withdrawals = Number(record.amount);
@@ -69,7 +69,7 @@ async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
         }
         else {
             dataMap.set(dateKey, {
-                date: record.date,
+                date: new Date(record.date),
                 balance: 0,
                 deposits: 0,
                 withdrawals: Number(record.amount),
@@ -151,7 +151,7 @@ async function generateBurnRateForecast(tenantId, fundId, forecastDays = 90) {
     const [balanceResult] = await db_1.db
         .select({
         totalDonations: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.donations.amount} AS NUMERIC)), 0)`,
-        totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.amount} AS NUMERIC)), 0)`,
+        totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
     })
         .from(schema_1.donations)
         .leftJoin(schema_1.stipendDisbursements, (0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid')))

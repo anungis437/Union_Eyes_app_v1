@@ -76,7 +76,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           gte(claims.createdAt, startOfDay),
           sql`${claims.createdAt} <= ${endOfDay.toISOString()}::timestamp`
         )
@@ -91,7 +91,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           sql`${claims.status} = 'resolved'`,
           gte(claims.closedAt, startOfDay),
           sql`${claims.closedAt} <= ${endOfDay.toISOString()}::timestamp`
@@ -107,7 +107,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           sql`${claims.createdAt} <= ${endOfDay.toISOString()}::timestamp`
         )
       );
@@ -122,7 +122,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, tenantId),
+          eq(claims.organizationId, tenantId),
           sql`${claims.createdAt} <= ${endOfDay.toISOString()}::timestamp`
         )
       );
@@ -154,7 +154,7 @@ class AnalyticsAggregationService {
         avgResolutionDays: sql<number>`AVG(CASE WHEN ${claims.status} = 'resolved' THEN EXTRACT(EPOCH FROM (${claims.closedAt} - ${claims.createdAt})) / 86400 END)`,
       })
       .from(claims)
-      .where(eq(claims.tenantId, tenantId));
+      .where(eq(claims.organizationId, tenantId));
 
     const resolutionRate = claimsMetrics.total > 0 
       ? (claimsMetrics.resolved / claimsMetrics.total) * 100 
@@ -168,7 +168,7 @@ class AnalyticsAggregationService {
         totalCosts: sql<number>`COALESCE(SUM(legal_costs + COALESCE(court_costs, 0)), 0)`,
       })
       .from(claims)
-      .where(eq(claims.tenantId, tenantId));
+      .where(eq(claims.organizationId, tenantId));
 
     const netValue = financialMetrics.totalSettlements - financialMetrics.totalCosts;
     const roi = financialMetrics.totalCosts > 0 
@@ -184,7 +184,7 @@ class AnalyticsAggregationService {
         resolved: sql<number>`COUNT(CASE WHEN ${claims.status} = 'resolved' THEN 1 END)`,
       })
       .from(claims)
-      .where(eq(claims.tenantId, tenantId));
+      .where(eq(claims.organizationId, tenantId));
 
     const slaCompliance = operationalMetrics.resolved > 0
       ? (operationalMetrics.onTime / operationalMetrics.resolved) * 100
@@ -235,7 +235,7 @@ class AnalyticsAggregationService {
         totalSettlements: sql<number>`COALESCE(SUM(CASE WHEN ${claims.status} = 'resolved' AND resolution_outcome = 'won' AND ${claims.closedAt} BETWEEN ${startDate.toISOString()}::timestamp AND ${endDate.toISOString()}::timestamp THEN settlement_amount ELSE 0 END), 0)`,
       })
       .from(claims)
-      .where(eq(claims.tenantId, tenantId));
+      .where(eq(claims.organizationId, tenantId));
 
     return {
       tenantId,
@@ -254,7 +254,7 @@ class AnalyticsAggregationService {
     
     // Get all unique tenant IDs
     const tenants = await db
-      .selectDistinct({ tenantId: claims.tenantId })
+      .selectDistinct({ tenantId: claims.organizationId })
       .from(claims);
 
     const yesterday = new Date();

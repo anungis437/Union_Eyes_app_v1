@@ -227,7 +227,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       .set({
         isActive: false,
         endDate: new Date().toISOString().split('T')[0],
-      })
+      } as any)
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
         eq(schema.memberDuesAssignments.tenantId, tenantId)

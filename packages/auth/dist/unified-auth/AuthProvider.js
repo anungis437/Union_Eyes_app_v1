@@ -6,7 +6,7 @@ import { jsx as _jsx } from "react/jsx-runtime";
  * Provides SSO functionality, session management, and authentication state.
  */
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { getSupabaseClient } from '@court-lens/supabase';
+import { getSupabaseClient } from '@unioneyes/supabase';
 import { SessionManager } from '../session-manager';
 import { AuditLogger } from './audit-logger';
 // Initialize supabase client

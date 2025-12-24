@@ -42,12 +42,17 @@ const arrearsDetectionSchema = zod_1.z.object({
     createCases: zod_1.z.boolean().default(true),
     escalationThresholds: zod_1.z
         .object({
-        level1Days: zod_1.z.number().int().positive().default(30),
-        level2Days: zod_1.z.number().int().positive().default(60),
-        level3Days: zod_1.z.number().int().positive().default(90),
-        level4Days: zod_1.z.number().int().positive().default(120),
+        level1Days: zod_1.z.number().int().positive().optional(),
+        level2Days: zod_1.z.number().int().positive().optional(),
+        level3Days: zod_1.z.number().int().positive().optional(),
+        level4Days: zod_1.z.number().int().positive().optional(),
     })
-        .optional(),
+        .default({
+        level1Days: 30,
+        level2Days: 60,
+        level3Days: 90,
+        level4Days: 120,
+    }),
 });
 /**
  * POST /api/arrears/detect

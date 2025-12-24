@@ -30,7 +30,7 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context, 
       .from(claims)
       .where(
         and(
-          eq(claims.tenantId, organizationId),
+          eq(claims.organizationId, organizationId),
           eq(claims.memberId, memberId)
         )
       )

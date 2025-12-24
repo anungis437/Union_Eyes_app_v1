@@ -10,7 +10,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
   TrendLineChart, 
   BarChartComponent, 
@@ -64,11 +64,7 @@ export default function ExecutiveDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState(30); // days
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [dateRange]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/analytics/executive?days=${dateRange}`);
@@ -81,7 +77,11 @@ export default function ExecutiveDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

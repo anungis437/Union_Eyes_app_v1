@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -84,15 +84,7 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [clcApprovedOnly, setClcApprovedOnly] = useState(false);
 
-  useEffect(() => {
-    fetchCourses();
-  }, [organizationId]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [courses, searchTerm, categoryFilter, deliveryFilter, difficultyFilter, clcApprovedOnly]);
-
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/education/courses?organizationId=${organizationId}`);
@@ -106,9 +98,9 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...courses];
 
     // Search
@@ -140,7 +132,15 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
     }
 
     setFilteredCourses(filtered);
-  };
+  }, [courses, searchTerm, categoryFilter, deliveryFilter, difficultyFilter, clcApprovedOnly]);
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleEnroll = async (sessionId: string) => {
     if (!memberId) {
