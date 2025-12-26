@@ -9,7 +9,26 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/*/package.json ./packages/
+
+# Copy all package.json files from workspace packages
+# Create directory structure first
+RUN mkdir -p packages/ai packages/auth packages/database packages/db packages/financial packages/multi-tenant packages/shared packages/supabase packages/types packages/ui
+
+# Copy individual package.json files
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/database/package.json ./packages/database/
+COPY packages/db/package.json ./packages/db/
+COPY packages/financial/package.json ./packages/financial/
+COPY packages/multi-tenant/package.json ./packages/multi-tenant/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/supabase/package.json ./packages/supabase/
+COPY packages/types/package.json ./packages/types/
+COPY packages/ui/package.json ./packages/ui/
+
+# Copy services package.json if they exist
+RUN mkdir -p services/financial-service
+COPY services/financial-service/package.json ./services/financial-service/ 2>/dev/null || true
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
