@@ -16,12 +16,12 @@
   },
   "include": [
     "index.ts",
-    "unified-auth/**/*.ts",
-    "unified-auth/**/*.tsx",
-    "middleware/**/*.ts",
-    "middleware/**/*.tsx",
-    "components/**/*.ts",
-    "components/**/*.tsx"
+    "unified-auth/**/*",
+    "middleware/**/*",
+    "components/**/*",
+    "hooks/**/*",
+    "utils/**/*",
+    "services/**/*"
   ],
   "exclude": [
     "node_modules",
