@@ -5,7 +5,15 @@ import CompletionCertificateEmail from "@/emails/training/completion-certificate
 import CertificationExpiryWarningEmail from "@/emails/training/certification-expiry-warning";
 import ProgramMilestoneEmail from "@/emails/training/program-milestone";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors
+let resend: Resend | null = null;
+function getResend() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
+
 const fromEmail = process.env.RESEND_FROM_EMAIL || "training@union.org";
 const unionName = process.env.NEXT_PUBLIC_UNION_NAME || "Union";
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -43,7 +51,7 @@ export async function sendRegistrationConfirmation({
   totalHours?: number;
 }): Promise<SendEmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: fromEmail,
       to: [toEmail],
       subject: `Registration Confirmed: ${courseName}`,
@@ -109,7 +117,7 @@ export async function sendSessionReminder({
     const reminderType =
       daysUntilSession === 1 ? "Tomorrow" : `${daysUntilSession} Days`;
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: fromEmail,
       to: [toEmail],
       subject: `Reminder: Training Session in ${reminderType} - ${courseName}`,
@@ -173,7 +181,7 @@ export async function sendCompletionCertificate({
   clcApproved?: boolean;
 }): Promise<SendEmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: fromEmail,
       to: [toEmail],
       subject: `Congratulations! Course Completed: ${courseName}`,
@@ -235,7 +243,7 @@ export async function sendCertificationExpiryWarning({
   try {
     const urgencyLevel = daysUntilExpiry <= 30 ? "URGENT" : "Important";
     
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: fromEmail,
       to: [toEmail],
       subject: `${urgencyLevel}: Certification Expires in ${daysUntilExpiry} Days - ${certificationName}`,
@@ -303,7 +311,7 @@ export async function sendProgramMilestone({
   nextMilestone?: string;
 }): Promise<SendEmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: fromEmail,
       to: [toEmail],
       subject: `Milestone Achieved: ${milestoneTitle} - ${programName}`,
@@ -415,3 +423,4 @@ export async function batchSendExpiryWarnings(
 
   return results;
 }
+

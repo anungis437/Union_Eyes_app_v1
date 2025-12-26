@@ -21,10 +21,10 @@ export { validatePassword, calculatePasswordStrength, generatePolicyDescription,
 export { usePasswordValidation } from './hooks/usePasswordValidation';
 // Password Strength Meter Component
 export { PasswordStrengthMeter } from './components/PasswordStrengthMeter';
-// Change Password Component
-export { ChangePasswordPage } from './components/ChangePasswordPage';
-// Password Expiration Warning
-export { PasswordExpirationBanner, useDaysUntilExpiration } from './components/PasswordExpirationBanner';
+// Change Password Component - Temporarily disabled (uses react-router-dom)
+// export { ChangePasswordPage } from './components/ChangePasswordPage';
+// Password Expiration Warning - Temporarily disabled (uses react-router-dom)
+// export { PasswordExpirationBanner, useDaysUntilExpiration } from './components/PasswordExpirationBanner';
 // Session Management Components
 export { SessionCard } from './components/SessionCard';
 export { SessionList } from './components/SessionList';
