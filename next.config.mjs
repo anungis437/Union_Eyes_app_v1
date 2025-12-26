@@ -68,8 +68,8 @@ const nextConfig = {
   },
   
   // Output optimization
-  // Disable standalone mode - causes issues with pnpm workspaces
-  // output: 'standalone',
+  // Enable standalone mode for Docker deployments
+  output: 'standalone',
   
   // Image optimization
   images: {
