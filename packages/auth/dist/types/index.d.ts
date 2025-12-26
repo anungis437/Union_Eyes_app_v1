@@ -19,8 +19,6 @@ export { validatePassword, calculatePasswordStrength, generatePolicyDescription,
 export type { PasswordPolicyConfig, PasswordStrength, PasswordValidationResult, } from './utils/passwordPolicy';
 export { usePasswordValidation } from './hooks/usePasswordValidation';
 export { PasswordStrengthMeter } from './components/PasswordStrengthMeter';
-export { ChangePasswordPage } from './components/ChangePasswordPage';
-export { PasswordExpirationBanner, useDaysUntilExpiration } from './components/PasswordExpirationBanner';
 export { SessionCard } from './components/SessionCard';
 export { SessionList } from './components/SessionList';
 export { SessionManagementDashboard } from './components/SessionManagementDashboard';

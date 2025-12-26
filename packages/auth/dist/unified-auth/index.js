@@ -15,7 +15,5 @@ export { updateUserJWTClaims, populateJWTClaimsFromProfile, createUserProfileWit
 // RBAC
 export { RBAC, ROLE_DEFINITIONS } from '../rbac';
 // Middleware (SSO and protected routes)
-export { ProtectedRoute, useSSO, SSOMiddleware } from '../middleware';
-// UI Components
-export { LoginPage } from '../components';
+export { useSSO, SSOMiddleware } from '../middleware';
 //# sourceMappingURL=index.js.map

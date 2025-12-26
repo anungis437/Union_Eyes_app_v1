@@ -1,0 +1,290 @@
+2025-12-23T23:54:23.7465896Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/23/2025 23:58:23
+2025-12-23T23:58:23.7507887Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T00:29:22.7500020Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T00:29:22.7514758Z Site startup probe failed after 16.9918663 seconds.
+2025-12-24T00:29:22.9310916Z Failed to start site. Revert by stopping site.
+2025-12-24T00:29:22.9672265Z Site: unioneyes-staging-app stopped.
+2025-12-24T00:29:24.1184527Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 00:33:24
+2025-12-24T00:33:24.1202322Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T01:04:28.4403646Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T01:04:28.4714147Z Site startup probe failed after 19.2263551 seconds.
+2025-12-24T01:04:28.6593300Z Failed to start site. Revert by stopping site.
+2025-12-24T01:04:28.6771514Z Site: unioneyes-staging-app stopped.
+2025-12-24T01:04:30.6128633Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 01:08:30
+2025-12-24T01:08:30.6115583Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T01:39:28.5007064Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T01:39:28.5325687Z Site startup probe failed after 19.8227607 seconds.
+2025-12-24T01:39:28.7166145Z Failed to start site. Revert by stopping site.
+2025-12-24T01:39:28.7439194Z Site: unioneyes-staging-app stopped.
+2025-12-24T01:39:29.6575059Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 01:43:29
+2025-12-24T01:43:29.6596267Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T02:14:27.9804925Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T02:14:28.0207555Z Site startup probe failed after 16.5849634 seconds.
+2025-12-24T02:14:28.2627390Z Failed to start site. Revert by stopping site.
+2025-12-24T02:14:28.2812994Z Site: unioneyes-staging-app stopped.
+2025-12-24T02:14:29.0243841Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 02:18:29
+2025-12-24T02:18:29.0243594Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T02:49:29.9895500Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T02:49:30.0102170Z Site startup probe failed after 17.8369697 seconds.
+2025-12-24T02:49:30.1732491Z Failed to start site. Revert by stopping site.
+2025-12-24T02:49:30.2028111Z Site: unioneyes-staging-app stopped.
+2025-12-24T02:49:30.8870189Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 02:53:30
+2025-12-24T02:53:30.8878461Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T03:24:34.0020741Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T03:24:34.0210233Z Site startup probe failed after 18.2416202 seconds.
+2025-12-24T03:24:34.1984718Z Failed to start site. Revert by stopping site.
+2025-12-24T03:24:34.2086379Z Site: unioneyes-staging-app stopped.
+2025-12-24T03:24:35.1442693Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 03:28:35
+2025-12-24T03:28:35.1921924Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T03:59:35.8835662Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T03:59:35.9214884Z Site startup probe failed after 19.2316804 seconds.
+2025-12-24T03:59:36.0871949Z Failed to start site. Revert by stopping site.
+2025-12-24T03:59:36.0961910Z Site: unioneyes-staging-app stopped.
+2025-12-24T03:59:37.1788987Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 04:03:37
+2025-12-24T04:03:37.1817902Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T04:34:35.9640770Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T04:34:35.9934206Z Site startup probe failed after 16.4837694 seconds.
+2025-12-24T04:34:36.1513422Z Failed to start site. Revert by stopping site.
+2025-12-24T04:34:36.1614480Z Site: unioneyes-staging-app stopped.
+2025-12-24T04:34:37.0215356Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 04:38:37
+2025-12-24T04:38:37.0234470Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T05:09:41.1180531Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T05:09:41.1452531Z Site startup probe failed after 20.0950142 seconds.
+2025-12-24T05:09:41.3103300Z Failed to start site. Revert by stopping site.
+2025-12-24T05:09:41.3234073Z Site: unioneyes-staging-app stopped.
+2025-12-24T05:09:42.0553313Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 05:13:42
+2025-12-24T05:13:42.0399858Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T05:44:42.0554306Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T05:44:42.0837003Z Site startup probe failed after 17.2859558 seconds.
+2025-12-24T05:44:42.2495174Z Failed to start site. Revert by stopping site.
+2025-12-24T05:44:42.2592501Z Site: unioneyes-staging-app stopped.
+2025-12-24T05:44:42.8281788Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 05:48:42
+2025-12-24T05:48:42.8326458Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T06:19:48.1187024Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T06:19:48.1534138Z Site startup probe failed after 23.7409908 seconds.
+2025-12-24T06:19:48.3268163Z Failed to start site. Revert by stopping site.
+2025-12-24T06:19:48.3301702Z Site: unioneyes-staging-app stopped.
+2025-12-24T06:19:49.0802645Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 06:23:49
+2025-12-24T06:23:49.0817325Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T06:54:47.9343278Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T06:54:47.9814116Z Site startup probe failed after 20.0636704 seconds.
+2025-12-24T06:54:48.2109111Z Failed to start site. Revert by stopping site.
+2025-12-24T06:54:48.2293281Z Site: unioneyes-staging-app stopped.
+2025-12-24T06:54:48.9680815Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 06:58:48
+2025-12-24T06:58:48.9652187Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T07:29:50.3933560Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T07:29:50.4227328Z Site startup probe failed after 20.5093875 seconds.
+2025-12-24T07:29:50.5922759Z Failed to start site. Revert by stopping site.
+2025-12-24T07:29:50.6038377Z Site: unioneyes-staging-app stopped.
+2025-12-24T07:29:51.2496277Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 07:33:51
+2025-12-24T07:33:51.2268828Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T08:04:49.0222184Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T08:04:49.0505345Z Site startup probe failed after 18.9767843 seconds.
+2025-12-24T08:04:49.2485243Z Failed to start site. Revert by stopping site.
+2025-12-24T08:04:49.2597299Z Site: unioneyes-staging-app stopped.
+2025-12-24T08:04:50.0723161Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 08:08:50
+2025-12-24T08:08:50.0759722Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T08:39:51.9349354Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T08:39:51.9577502Z Site startup probe failed after 17.2374518 seconds.
+2025-12-24T08:39:52.1665206Z Failed to start site. Revert by stopping site.
+2025-12-24T08:39:52.1764840Z Site: unioneyes-staging-app stopped.
+2025-12-24T08:39:52.8816089Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 08:43:52
+2025-12-24T08:43:52.8632133Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T09:14:52.9555828Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T09:14:52.9742785Z Site startup probe failed after 17.323017 seconds.
+2025-12-24T09:14:53.1421208Z Failed to start site. Revert by stopping site.
+2025-12-24T09:14:53.1450671Z Site: unioneyes-staging-app stopped.
+2025-12-24T09:14:53.7352622Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 09:18:53
+2025-12-24T09:18:53.7364010Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T09:49:54.2380183Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T09:49:54.2667971Z Site startup probe failed after 17.9766728 seconds.
+2025-12-24T09:49:54.6527225Z Failed to start site. Revert by stopping site.
+2025-12-24T09:49:54.6835936Z Site: unioneyes-staging-app stopped.
+2025-12-24T09:49:56.6061524Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 09:53:56
+2025-12-24T09:53:56.6093754Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T10:24:56.2836092Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T10:24:56.3017191Z Site startup probe failed after 18.1025966 seconds.
+2025-12-24T10:24:56.4554515Z Failed to start site. Revert by stopping site.
+2025-12-24T10:24:56.4664787Z Site: unioneyes-staging-app stopped.
+2025-12-24T10:24:57.0774628Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 10:28:57
+2025-12-24T10:28:57.2762158Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T10:59:59.0282600Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T10:59:59.0464409Z Site startup probe failed after 19.5481111 seconds.
+2025-12-24T10:59:59.1954028Z Failed to start site. Revert by stopping site.
+2025-12-24T10:59:59.2058470Z Site: unioneyes-staging-app stopped.
+2025-12-24T10:59:59.9853945Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 11:03:59
+2025-12-24T11:03:59.9879960Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T11:35:00.5508737Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T11:35:00.5718939Z Site startup probe failed after 18.7507733 seconds.
+2025-12-24T11:35:00.7214377Z Failed to start site. Revert by stopping site.
+2025-12-24T11:35:00.7299983Z Site: unioneyes-staging-app stopped.
+2025-12-24T11:35:01.5246633Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 11:39:01
+2025-12-24T11:39:01.5273650Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T12:10:03.1122519Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T12:10:03.1506356Z Site startup probe failed after 19.5796645 seconds.
+2025-12-24T12:10:03.5200624Z Failed to start site. Revert by stopping site.
+2025-12-24T12:10:03.5486698Z Site: unioneyes-staging-app stopped.
+2025-12-24T12:10:05.6201194Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 12:14:05
+2025-12-24T12:14:05.6131102Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T12:45:06.3843953Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T12:45:06.4055871Z Site startup probe failed after 20.3353553 seconds.
+2025-12-24T12:45:06.5620475Z Failed to start site. Revert by stopping site.
+2025-12-24T12:45:06.5701608Z Site: unioneyes-staging-app stopped.
+2025-12-24T12:45:07.1303893Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 12:49:07
+2025-12-24T12:49:07.1324873Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T13:20:10.7195468Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T13:20:10.7982331Z Site startup probe failed after 22.8108698 seconds.
+2025-12-24T13:20:11.0467175Z Failed to start site. Revert by stopping site.
+2025-12-24T13:20:11.0545011Z Site: unioneyes-staging-app stopped.
+2025-12-24T13:20:11.7046935Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 13:24:11
+2025-12-24T13:24:11.7030529Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T13:55:09.0773604Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T13:55:09.0962709Z Site startup probe failed after 19.2586607 seconds.
+2025-12-24T13:55:09.2546969Z Failed to start site. Revert by stopping site.
+2025-12-24T13:55:09.2655785Z Site: unioneyes-staging-app stopped.
+2025-12-24T13:55:09.7957071Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 13:59:09
+2025-12-24T13:59:09.8001853Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T14:30:16.9728653Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T14:30:17.0015759Z Site startup probe failed after 24.4740296 seconds.
+2025-12-24T14:30:17.1632114Z Failed to start site. Revert by stopping site.
+2025-12-24T14:30:17.1725414Z Site: unioneyes-staging-app stopped.
+2025-12-24T14:30:17.9469295Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 14:34:17
+2025-12-24T14:34:17.9402024Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T15:05:13.1624701Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T15:05:13.1821944Z Site startup probe failed after 18.7596802 seconds.
+2025-12-24T15:05:13.3459395Z Failed to start site. Revert by stopping site.
+2025-12-24T15:05:13.3546706Z Site: unioneyes-staging-app stopped.
+2025-12-24T15:05:14.0991268Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 15:09:14
+2025-12-24T15:09:14.1005663Z Site: unioneyes-staging-app is unblocked.
+2025-12-24T15:40:16.4707129Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T15:40:16.5125248Z Site startup probe failed after 20.4982302 seconds.
+2025-12-24T15:40:16.6540394Z Failed to start site. Revert by stopping site.
+2025-12-24T15:40:16.6633826Z Site: unioneyes-staging-app stopped.
+2025-12-24T15:47:43.0936570Z Container start method called.
+2025-12-24T15:47:43.0940065Z Establishing network.
+2025-12-24T15:47:43.0942526Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-24T15:50:35.9739870Z Image unioneyesstagingacr.azurecr.io/unioneyes:latest is pulled from registry unioneyesstagingacr.azurecr.io
+2025-12-24T15:50:35.9777998Z Container is starting.
+2025-12-24T15:50:35.9908155Z Establishing user namespace if not established already.
+2025-12-24T15:50:35.9921568Z Establishing network if not established already.
+2025-12-24T15:50:35.9959716Z Mounting volumes.
+2025-12-24T15:50:35.9997747Z Nested mountpoint volatile/logs
+2025-12-24T15:50:36.0262732Z Nested mountpoint 
+2025-12-24T15:50:36.1442526Z Creating container.
+2025-12-24T15:50:36.1450183Z Creating pipes for streaming container io.
+2025-12-24T15:50:36.1458534Z Creating stdout named pipe at /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stdout_2c9b25ec3bab4e568be9e3e7f50f4b8c.
+2025-12-24T15:50:36.1558073Z Successfully created stdout named pipe at: /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stdout_2c9b25ec3bab4e568be9e3e7f50f4b8c.
+2025-12-24T15:50:36.1642153Z Opening named pipe /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stdout_2c9b25ec3bab4e568be9e3e7f50f4b8c for reading in non-blocking mode.
+2025-12-24T15:50:36.1644922Z Successfully opened named pipe: /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stdout_2c9b25ec3bab4e568be9e3e7f50f4b8c.
+2025-12-24T15:50:36.1650296Z Successfully removed non-blocking flag from /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stdout_2c9b25ec3bab4e568be9e3e7f50f4b8c.
+2025-12-24T15:50:36.1661286Z Creating stderr named pipe at /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stderr_d7a53aca78cb4f72911dcaf47e503b0f.
+2025-12-24T15:50:36.1739645Z Successfully created stderr named pipe at: /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stderr_d7a53aca78cb4f72911dcaf47e503b0f.
+2025-12-24T15:50:36.1741733Z Opening named pipe /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stderr_d7a53aca78cb4f72911dcaf47e503b0f for reading in non-blocking mode.
+2025-12-24T15:50:36.1746875Z Successfully opened named pipe: /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stderr_d7a53aca78cb4f72911dcaf47e503b0f.
+2025-12-24T15:50:36.1761915Z Successfully removed non-blocking flag from /podr/container/pipe/9ff1cdcbc11f_unioneyes-staging-app/stderr_d7a53aca78cb4f72911dcaf47e503b0f.
+2025-12-24T15:50:36.1827721Z Overriding PORT environment variable with port exposed by container image.
+2025-12-24T15:50:37.3662918Z Container get mounts received unexpected exception.
+2025-12-24T15:50:37.3768351Z Container get mounts received unexpected exception.
+2025-12-24T15:50:37.3992053Z Container get processes received unexpected exception.
+2025-12-24T15:50:37.4089433Z Container get processes received unexpected exception.
+2025-12-24T15:50:37.5323188Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-24T15:50:37.5333954Z Setting value of PORT variable to 3000
+2025-12-24T15:50:37.5387205Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-24T15:50:38.3649430Z Starting container: 9ff1cdcbc11f_unioneyes-staging-app.
+2025-12-24T15:50:38.4639446Z Starting watchers and probes.
+2025-12-24T15:50:38.5020860Z Starting metrics collection.
+2025-12-24T15:50:38.5199060Z Container is running.
+2025-12-24T15:50:38.6592806Z Container start method finished after 175565 ms.
+2025-12-24T15:50:55.7141275Z Container has finished running with exit code: 1.
+2025-12-24T15:50:55.7151870Z Container is terminating. Grace period: 5 seconds.
+2025-12-24T15:50:55.7228449Z Stop and delete container. Retry count = 0
+2025-12-24T15:50:55.7236443Z Stopping container: 9ff1cdcbc11f_unioneyes-staging-app.
+2025-12-24T15:50:55.8535392Z Deleting container: 9ff1cdcbc11f_unioneyes-staging-app. Retry count = 0
+2025-12-24T15:50:56.4158593Z Container spec TerminationMessagePolicy  path 
+2025-12-24T15:50:56.4258358Z Container is terminated. Total time elapsed: 709 ms.
+2025-12-24T15:50:56.4281036Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T15:50:56.4545354Z Site startup probe failed after 17.7097053 seconds.
+2025-12-24T15:50:56.6735643Z Failed to start site. Revert by stopping site.
+2025-12-24T15:50:56.6845003Z Site: unioneyes-staging-app stopped.
+2025-12-24T16:06:08.0717038Z Container start method called.
+2025-12-24T16:06:08.0722739Z Establishing network.
+2025-12-24T16:06:08.0731324Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-24T16:06:09.5438952Z Container is starting.
+2025-12-24T16:06:09.5450324Z Establishing user namespace if not established already.
+2025-12-24T16:06:09.5455393Z Establishing network if not established already.
+2025-12-24T16:06:09.5549054Z Mounting volumes.
+2025-12-24T16:06:09.5554849Z Nested mountpoint volatile/logs
+2025-12-24T16:06:09.5941163Z Nested mountpoint 
+2025-12-24T16:06:09.7028742Z Creating container.
+2025-12-24T16:06:09.7029843Z Creating pipes for streaming container io.
+2025-12-24T16:06:09.7030756Z Creating stdout named pipe at /podr/container/pipe/a68efba69123_unioneyes-staging-app/stdout_592d714df8034eb69567efe7969c439c.
+2025-12-24T16:06:09.7804817Z Successfully created stdout named pipe at: /podr/container/pipe/a68efba69123_unioneyes-staging-app/stdout_592d714df8034eb69567efe7969c439c.
+2025-12-24T16:06:09.7817296Z Opening named pipe /podr/container/pipe/a68efba69123_unioneyes-staging-app/stdout_592d714df8034eb69567efe7969c439c for reading in non-blocking mode.
+2025-12-24T16:06:09.7822070Z Successfully opened named pipe: /podr/container/pipe/a68efba69123_unioneyes-staging-app/stdout_592d714df8034eb69567efe7969c439c.
+2025-12-24T16:06:09.7824560Z Successfully removed non-blocking flag from /podr/container/pipe/a68efba69123_unioneyes-staging-app/stdout_592d714df8034eb69567efe7969c439c.
+2025-12-24T16:06:09.7925419Z Creating stderr named pipe at /podr/container/pipe/a68efba69123_unioneyes-staging-app/stderr_2745f766326c46e68b703960aeccaf63.
+2025-12-24T16:06:09.7929261Z Successfully created stderr named pipe at: /podr/container/pipe/a68efba69123_unioneyes-staging-app/stderr_2745f766326c46e68b703960aeccaf63.
+2025-12-24T16:06:09.7930861Z Opening named pipe /podr/container/pipe/a68efba69123_unioneyes-staging-app/stderr_2745f766326c46e68b703960aeccaf63 for reading in non-blocking mode.
+2025-12-24T16:06:09.7932138Z Successfully opened named pipe: /podr/container/pipe/a68efba69123_unioneyes-staging-app/stderr_2745f766326c46e68b703960aeccaf63.
+2025-12-24T16:06:09.7933072Z Successfully removed non-blocking flag from /podr/container/pipe/a68efba69123_unioneyes-staging-app/stderr_2745f766326c46e68b703960aeccaf63.
+2025-12-24T16:06:09.7934147Z Overriding PORT environment variable with port exposed by container image.
+2025-12-24T16:06:09.9146075Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-24T16:06:09.9214858Z Setting value of PORT variable to 3000
+2025-12-24T16:06:09.9225230Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-24T16:06:10.6775168Z Starting container: a68efba69123_unioneyes-staging-app.
+2025-12-24T16:06:10.7731597Z Starting watchers and probes.
+2025-12-24T16:06:10.7870356Z Starting metrics collection.
+2025-12-24T16:06:10.7968207Z Container is running.
+2025-12-24T16:06:11.5501521Z Container start method finished after 3478 ms.
+2025-12-24T16:06:29.0157952Z Container has finished running with exit code: 1.
+2025-12-24T16:06:29.0160101Z Container is terminating. Grace period: 5 seconds.
+2025-12-24T16:06:29.0278797Z Stop and delete container. Retry count = 0
+2025-12-24T16:06:29.0332657Z Stopping container: a68efba69123_unioneyes-staging-app.
+2025-12-24T16:06:29.1638428Z Deleting container: a68efba69123_unioneyes-staging-app. Retry count = 0
+2025-12-24T16:06:29.7785928Z Container spec TerminationMessagePolicy  path 
+2025-12-24T16:06:29.7868081Z Container is terminated. Total time elapsed: 758 ms.
+2025-12-24T16:06:29.7875976Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T16:06:29.8079428Z Site startup probe failed after 18.092929 seconds.
+2025-12-24T16:06:30.0569439Z Failed to start site. Revert by stopping site.
+2025-12-24T16:06:30.0669002Z Site: unioneyes-staging-app stopped.
+2025-12-24T16:06:46.7283351Z Container start method called.
+2025-12-24T16:06:46.7370600Z Establishing network.
+2025-12-24T16:06:46.7373999Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-24T16:06:47.2125406Z Container is starting.
+2025-12-24T16:06:47.2218794Z Establishing user namespace if not established already.
+2025-12-24T16:06:47.2243180Z Establishing network if not established already.
+2025-12-24T16:06:47.2324409Z Mounting volumes.
+2025-12-24T16:06:47.2338869Z Nested mountpoint volatile/logs
+2025-12-24T16:06:47.2613878Z Nested mountpoint 
+2025-12-24T16:06:47.4626862Z Creating container.
+2025-12-24T16:06:47.4816167Z Creating pipes for streaming container io.
+2025-12-24T16:06:47.4904106Z Creating stdout named pipe at /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stdout_69e702ea08394a70bb8695d903892348.
+2025-12-24T16:06:47.5000694Z Successfully created stdout named pipe at: /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stdout_69e702ea08394a70bb8695d903892348.
+2025-12-24T16:06:47.5019537Z Opening named pipe /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stdout_69e702ea08394a70bb8695d903892348 for reading in non-blocking mode.
+2025-12-24T16:06:47.5094960Z Successfully opened named pipe: /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stdout_69e702ea08394a70bb8695d903892348.
+2025-12-24T16:06:47.5100113Z Successfully removed non-blocking flag from /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stdout_69e702ea08394a70bb8695d903892348.
+2025-12-24T16:06:47.5115424Z Creating stderr named pipe at /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stderr_0d2908d12cf14c26a2d371f267b519e8.
+2025-12-24T16:06:47.5130488Z Successfully created stderr named pipe at: /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stderr_0d2908d12cf14c26a2d371f267b519e8.
+2025-12-24T16:06:47.5219230Z Opening named pipe /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stderr_0d2908d12cf14c26a2d371f267b519e8 for reading in non-blocking mode.
+2025-12-24T16:06:47.5302629Z Successfully opened named pipe: /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stderr_0d2908d12cf14c26a2d371f267b519e8.
+2025-12-24T16:06:47.5314203Z Successfully removed non-blocking flag from /podr/container/pipe/ff678eb3c297_unioneyes-staging-app/stderr_0d2908d12cf14c26a2d371f267b519e8.
+2025-12-24T16:06:47.5326291Z Overriding PORT environment variable with port exposed by container image.
+2025-12-24T16:06:47.6493573Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-24T16:06:47.6503244Z Setting value of PORT variable to 3000
+2025-12-24T16:06:47.6618702Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-24T16:06:48.7875854Z Starting container: ff678eb3c297_unioneyes-staging-app.
+2025-12-24T16:06:48.9853296Z Starting watchers and probes.
+2025-12-24T16:06:48.9927827Z Starting metrics collection.
+2025-12-24T16:06:48.9944492Z Container is running.
+2025-12-24T16:06:49.1723905Z Container start method finished after 2436 ms.
+2025-12-24T16:07:10.0464658Z Container has finished running with exit code: 1.
+2025-12-24T16:07:10.0556981Z Container is terminating. Grace period: 5 seconds.
+2025-12-24T16:07:10.0567316Z Stop and delete container. Retry count = 0
+2025-12-24T16:07:10.0641283Z Stopping container: ff678eb3c297_unioneyes-staging-app.
+2025-12-24T16:07:10.1647400Z Deleting container: ff678eb3c297_unioneyes-staging-app. Retry count = 0
+2025-12-24T16:07:10.9252484Z Container spec TerminationMessagePolicy  path 
+2025-12-24T16:07:10.9334818Z Container is terminated. Total time elapsed: 870 ms.
+2025-12-24T16:07:10.9347019Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-24T16:07:10.9640208Z Site startup probe failed after 21.745945 seconds.
+2025-12-24T16:07:11.1405687Z Failed to start site. Revert by stopping site.
+2025-12-24T16:07:11.1509375Z Site: unioneyes-staging-app stopped.

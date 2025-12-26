@@ -13,7 +13,6 @@ export type { AuthAuditEvent, AuditLogEntry } from './audit-logger';
 export { updateUserJWTClaims, populateJWTClaimsFromProfile, createUserProfileWithClaims, refreshJWTClaims, } from './jwt-claims';
 export type { JWTClaims } from './jwt-claims';
 export { RBAC, ROLE_DEFINITIONS } from '../rbac';
-export { ProtectedRoute, useSSO, SSOMiddleware } from '../middleware';
-export { LoginPage } from '../components';
+export { useSSO, SSOMiddleware } from '../middleware';
 export type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 //# sourceMappingURL=index.d.ts.map

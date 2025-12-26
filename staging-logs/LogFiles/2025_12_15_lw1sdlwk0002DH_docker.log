@@ -1,0 +1,54 @@
+2025-12-14T23:49:35.8121721Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/14/2025 23:53:35
+2025-12-14T23:53:35.8014648Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T00:23:29.2570900Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T00:23:29.2787196Z Site startup probe failed after 18.9134082 seconds.
+2025-12-15T00:23:29.5190270Z Failed to start site. Revert by stopping site.
+2025-12-15T00:23:29.5311372Z Site: unioneyes-staging-app stopped.
+2025-12-15T00:23:30.3368137Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 00:27:30
+2025-12-15T00:27:30.3439395Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T00:32:48.9050787Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T00:32:48.9262763Z Site startup probe failed after 39.5161659 seconds.
+2025-12-15T00:32:49.0918368Z Failed to start site. Revert by stopping site.
+2025-12-15T00:32:49.1021079Z Site: unioneyes-staging-app stopped.
+2025-12-15T00:32:49.8643096Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 00:36:49
+2025-12-15T00:36:49.8577349Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T01:03:32.5540921Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T01:03:32.5720872Z Site startup probe failed after 18.5112278 seconds.
+2025-12-15T01:03:32.7563703Z Failed to start site. Revert by stopping site.
+2025-12-15T01:03:32.7733786Z Site: unioneyes-staging-app stopped.
+2025-12-15T01:03:33.5126403Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 01:07:33
+2025-12-15T01:07:33.5146113Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T01:12:31.1027426Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T01:12:31.1417016Z Site startup probe failed after 36.2286887 seconds.
+2025-12-15T01:12:31.4434841Z Failed to start site. Revert by stopping site.
+2025-12-15T01:12:31.4624837Z Site: unioneyes-staging-app stopped.
+2025-12-15T01:12:32.4272132Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 01:16:32
+2025-12-15T01:16:32.7143249Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T01:43:34.1361189Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T01:43:34.1681799Z Site startup probe failed after 18.7092556 seconds.
+2025-12-15T01:43:34.3533848Z Failed to start site. Revert by stopping site.
+2025-12-15T01:43:34.3675455Z Site: unioneyes-staging-app stopped.
+2025-12-15T01:43:35.2291824Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 01:47:35
+2025-12-15T01:47:35.2292235Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T01:58:16.7812215Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T01:58:16.8267007Z Site startup probe failed after 23.0553247 seconds.
+2025-12-15T01:58:17.0030903Z Failed to start site. Revert by stopping site.
+2025-12-15T01:58:17.0119761Z Site: unioneyes-staging-app stopped.
+2025-12-15T01:58:17.7512523Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 02:02:17
+2025-12-15T02:02:17.7505890Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T02:33:36.0398348Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T02:33:36.0771685Z Site startup probe failed after 18.6850385 seconds.
+2025-12-15T02:33:36.2513841Z Failed to start site. Revert by stopping site.
+2025-12-15T02:33:36.2694563Z Site: unioneyes-staging-app stopped.
+2025-12-15T02:33:37.2513239Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 02:37:37
+2025-12-15T02:37:37.2554385Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T02:48:52.9608981Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T02:48:52.9777157Z Site startup probe failed after 17.1929772 seconds.
+2025-12-15T02:48:53.1322785Z Failed to start site. Revert by stopping site.
+2025-12-15T02:48:53.1693804Z Site: unioneyes-staging-app stopped.
+2025-12-15T02:48:53.8097835Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/15/2025 02:52:53
+2025-12-15T02:52:53.8153258Z Site: unioneyes-staging-app is unblocked.
+2025-12-15T03:21:38.2547241Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-15T03:21:38.2773815Z Site startup probe failed after 18.1653317 seconds.
+2025-12-15T03:21:38.4542158Z Failed to start site. Revert by stopping site.
+2025-12-15T03:21:38.4627543Z Site: unioneyes-staging-app stopped.

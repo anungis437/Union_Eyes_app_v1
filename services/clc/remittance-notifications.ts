@@ -97,7 +97,14 @@ type NotificationType =
 // CONFIGURATION
 // ============================================================================
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialize Resend client
+let resend: Resend | null = null;
+function getResendClient() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 const NOTIFICATION_CONFIG = {
   overdue: {
@@ -839,7 +846,7 @@ async function sendEmail(
   html: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const result = await resend.emails.send({
+    const result = await getResendClient().emails.send({
       from: FROM_EMAIL,
       to,
       subject,
