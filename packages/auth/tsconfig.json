@@ -15,15 +15,27 @@
     "rootDir": "."
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx"
+    "index.ts",
+    "unified-auth/**/*.ts",
+    "unified-auth/**/*.tsx",
+    "middleware/**/*.ts",
+    "middleware/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "examples",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/__tests__/**",
+    "components/ChangePasswordPage.tsx",
+    "components/LoginPage.tsx",
+    "components/PasswordExpirationBanner.tsx",
+    "middleware/ProtectedRoute.tsx"
   ],
   "references": [
     {
