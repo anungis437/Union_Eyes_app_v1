@@ -15,13 +15,8 @@
     "rootDir": "."
   },
   "include": [
-    "index.ts",
-    "unified-auth/**/*",
-    "middleware/**/*",
-    "components/**/*",
-    "hooks/**/*",
-    "utils/**/*",
-    "services/**/*"
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules",
@@ -31,11 +26,7 @@
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
-    "**/__tests__/**",
-    "components/ChangePasswordPage.tsx",
-    "components/LoginPage.tsx",
-    "components/PasswordExpirationBanner.tsx",
-    "middleware/ProtectedRoute.tsx"
+    "**/__tests__/**"
   ],
   "references": [
     {
