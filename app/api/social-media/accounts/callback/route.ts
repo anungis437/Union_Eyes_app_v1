@@ -12,11 +12,18 @@ import { createTwitterClient } from '@/lib/social-media/twitter-api-client';
 import { createLinkedInClient } from '@/lib/social-media/linkedin-api-client';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-// Supabase client for social media tables (not in Drizzle schema yet)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Lazy initialization for Supabase client
+let supabase: SupabaseClient | null = null;
+function getSupabaseClient() {
+  if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return supabase;
+}
 
 /**
  * GET /api/social-media/accounts/callback
@@ -234,7 +241,7 @@ async function handleMetaCallback(
         .eq('id', existingAccount.id);
     } else {
       // Insert new account
-      await supabase.from('social_accounts').insert(accountData);
+      await getSupabaseClient().from('social_accounts').insert(accountData);
     }
   }
 }
@@ -303,7 +310,7 @@ async function handleTwitterCallback(
       .eq('id', existingAccount.id);
   } else {
     // Insert new account
-    await supabase.from('social_accounts').insert(accountData);
+    await getSupabaseClient().from('social_accounts').insert(accountData);
   }
 }
 
@@ -379,7 +386,7 @@ async function handleLinkedInCallback(
         .eq('id', existingAccount.id);
     } else {
       // Insert new account
-      await supabase.from('social_accounts').insert(accountData);
+      await getSupabaseClient().from('social_accounts').insert(accountData);
     }
   }
 }
