@@ -38,10 +38,10 @@ export type { JWTClaims } from './jwt-claims';
 export { RBAC, ROLE_DEFINITIONS } from '../rbac';
 
 // Middleware (SSO and protected routes)
-export { ProtectedRoute, useSSO, SSOMiddleware } from '../middleware';
+export { useSSO, SSOMiddleware } from '../middleware';
 
 // UI Components
-export { LoginPage } from '../components';
+// export { LoginPage } from '../components';
 
 // Re-export commonly used types
 export type {

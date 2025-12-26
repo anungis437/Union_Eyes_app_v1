@@ -8,7 +8,14 @@ import { Resend } from 'resend';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { ReceiptDocument, ReceiptData } from '@/components/pdf/receipt-template';
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+// Lazy initialize Resend client
+let resend: Resend | null = null;
+function getResendClient() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY!);
+  }
+  return resend;
+}
 
 // Send invoice email to a member
 export async function POST(req: NextRequest) {
@@ -227,7 +234,7 @@ export async function POST(req: NextRequest) {
       emailData.attachments = allAttachments;
     }
 
-    const emailResult = await resend.emails.send(emailData);
+    const emailResult = await getResendClient().emails.send(emailData);
 
     // TODO: Log email in notification_log table
     // await db.insert(notificationLog).values({

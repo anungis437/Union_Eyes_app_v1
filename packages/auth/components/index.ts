@@ -4,4 +4,5 @@
  * Reusable UI components for authentication flows.
  */
 
-export { LoginPage } from './LoginPage';
+// Temporarily disabled for Next.js build (uses react-router-dom)
+// export { LoginPage } from './LoginPage';
