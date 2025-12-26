@@ -47,8 +47,24 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV WHOP_WEBHOOK_KEY=${WHOP_WEBHOOK_KEY}
 
+# Stub environment variables for build-time only (prevent module initialization errors)
+ENV NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder_anon_key
+ENV SUPABASE_SERVICE_ROLE_KEY=placeholder_service_role_key
+ENV RESEND_API_KEY=re_placeholder_key
+ENV STRIPE_SECRET_KEY=sk_test_placeholder
+ENV AZURE_SPEECH_KEY=placeholder_speech_key
+ENV AZURE_SPEECH_REGION=canadacentral
+ENV WEBHOOK_KEY=placeholder_webhook_key
+
 # Build the application (workspace packages already built in deps stage)
-RUN pnpm build
+# Exclude financial-service (standalone service with missing dependencies)
+# Build workspace packages
+RUN pnpm build --filter='!financial-service'
+
+# Copy pre-built .next directory from local build
+# This avoids build-time environment variable issues with module-level initializations
+COPY .next ./.next
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner

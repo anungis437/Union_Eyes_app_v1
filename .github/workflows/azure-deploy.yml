@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - staging
+  workflow_dispatch:  # Allow manual triggering
 
 env:
   NODE_VERSION: '20'
@@ -75,6 +76,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+            --file Dockerfile.staging \
             --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.STAGING_APP_URL }} \
             --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
             --build-arg DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }} \
@@ -99,15 +101,26 @@ jobs:
             --name unioneyes-staging-app \
             --resource-group unioneyes-staging-rg \
             --settings \
+              NODE_ENV="production" \
+              NEXT_TELEMETRY_DISABLED="1" \
               DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}" \
               NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
               CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
+              NEXT_PUBLIC_APP_URL="${{ secrets.STAGING_APP_URL }}" \
+              AZURE_KEY_VAULT_NAME="${{ secrets.AZURE_KEY_VAULT_NAME }}" \
+              AZURE_KEY_VAULT_SECRET_NAME="${{ secrets.AZURE_KEY_VAULT_SECRET_NAME }}" \
+              AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}" \
+              AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}" \
+              AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}" \
               AZURE_STORAGE_ACCOUNT_NAME="${{ secrets.STAGING_AZURE_STORAGE_ACCOUNT_NAME }}" \
               AZURE_STORAGE_ACCOUNT_KEY="${{ secrets.STAGING_AZURE_STORAGE_ACCOUNT_KEY }}" \
               AZURE_SPEECH_KEY="${{ secrets.STAGING_AZURE_SPEECH_KEY }}" \
               AZURE_SPEECH_REGION="${{ secrets.STAGING_AZURE_SPEECH_REGION }}" \
               AZURE_OPENAI_ENDPOINT="${{ secrets.STAGING_AZURE_OPENAI_ENDPOINT }}" \
-              AZURE_OPENAI_KEY="${{ secrets.STAGING_AZURE_OPENAI_KEY }}"
+              AZURE_OPENAI_KEY="${{ secrets.STAGING_AZURE_OPENAI_KEY }}" \
+              SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+              SENTRY_ORG="${{ secrets.SENTRY_ORG }}" \
+              SENTRY_PROJECT="${{ secrets.SENTRY_PROJECT }}"
 
   # Deploy to Production
   deploy-production:
