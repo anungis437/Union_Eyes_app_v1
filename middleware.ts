@@ -12,8 +12,12 @@ const isPublicRoute = createRouteMatcher([
   "/:locale",
   "/login(.*)",
   "/signup(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
   "/:locale/login(.*)",
-  "/:locale/signup(.*)"
+  "/:locale/signup(.*)",
+  "/:locale/sign-in(.*)",
+  "/:locale/sign-up(.*)"
 ]);
 
 // Create i18n middleware
