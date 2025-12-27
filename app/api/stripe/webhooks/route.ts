@@ -15,7 +15,8 @@ const relevantEvents = new Set<Stripe.Event.Type>([
   "payment_intent.payment_failed",
   "payment_method.attached",
   "payment_method.detached",
-  "setup_intent.succeeded"
+  // DISABLED: Payment methods not implemented yet
+  // "setup_intent.succeeded"
 ]);
 
 // Default usage credits for Pro plan
@@ -67,9 +68,10 @@ export async function POST(req: Request) {
           await handleDuesPaymentFailed(event);
           break;
           
-        case "setup_intent.succeeded":
-          await handleSetupIntentSuccess(event);
-          break;
+        // DISABLED: Payment methods table not implemented yet
+        // case "setup_intent.succeeded":
+        //   await handleSetupIntentSuccess(event);
+        //   break;
 
         default:
           throw new Error("Unhandled relevant event!");
@@ -322,7 +324,8 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
   }
 }
 
-async function handleSetupIntentSuccess(event: Stripe.Event) {
+// DISABLED: Payment methods table not implemented yet
+/* async function handleSetupIntentSuccess(event: Stripe.Event) {
   const setupIntent = event.data.object as Stripe.SetupIntent;
   
   try {
@@ -386,4 +389,4 @@ async function handleSetupIntentSuccess(event: Stripe.Event) {
   } catch (error) {
     console.error(`Error processing setup intent success: ${error}`);
   }
-}
+} */
