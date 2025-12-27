@@ -10,8 +10,7 @@ export default function SignInPage() {
           appearance={{ 
             elements: {
               formButtonPrimary: "bg-primary hover:bg-primary/90",
-              card: "rounded-xl shadow-sm",
-              formFieldInput: "rounded-lg border-gray-300 dark:border-gray-700"
+              card: "rounded-xl shadow-sm"
             }
           }}
         />
