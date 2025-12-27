@@ -38,6 +38,20 @@ const nextConfig = {
       logLevel: 'error',
       logAll: false,
       contextDirectory: process.cwd(),
+      // Limit memory usage during trace collection
+      memoryLimit: 2048,
+    },
+    // Disable output file tracing to prevent hanging during build
+    outputFileTracingRoot: undefined,
+    outputFileTracingIncludes: {},
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@swc/core-linux-x64-gnu',
+        'node_modules/@swc/core-linux-x64-musl', 
+        'node_modules/@esbuild/linux-x64',
+        'node_modules/sharp',
+        'node_modules/canvas',
+      ],
     },
     // Optimize package imports
     optimizePackageImports: [
@@ -68,8 +82,9 @@ const nextConfig = {
   },
   
   // Output optimization
-  // Enable standalone mode for Docker deployments
-  output: 'standalone',
+  // Disable standalone mode for Docker to prevent trace collection hanging
+  // Docker already handles dependencies, no need for Next.js to trace them
+  output: process.env.DOCKER_BUILD === 'true' ? undefined : 'standalone',
   
   // Image optimization
   images: {
