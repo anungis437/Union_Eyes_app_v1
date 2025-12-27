@@ -1,0 +1,1228 @@
+2025-12-27T00:22:49.0349705Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T00:22:50.5474874Z   ▲ Next.js 14.2.7
+2025-12-27T00:22:50.5475553Z   - Local:        http://localhost:3000
+2025-12-27T00:22:50.5475582Z 
+2025-12-27T00:22:50.5475607Z  ✓ Starting...
+2025-12-27T00:22:54.1163989Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T00:22:54.1164461Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T00:22:54.1164498Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T00:22:54.1164531Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T00:29:30.8498402Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T00:29:32.5668031Z   ▲ Next.js 14.2.7
+2025-12-27T00:29:32.5687411Z   - Local:        http://localhost:3000
+2025-12-27T00:29:32.5853262Z 
+2025-12-27T00:29:32.5853555Z  ✓ Starting...
+2025-12-27T00:29:36.7520193Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T00:29:36.7520833Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T00:29:36.7520959Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T00:29:36.7520993Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T00:56:30.9449923Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T00:56:33.5959793Z   ▲ Next.js 14.2.7
+2025-12-27T00:56:33.5966705Z   - Local:        http://localhost:3000
+2025-12-27T00:56:33.5978218Z 
+2025-12-27T00:56:33.5987859Z  ✓ Starting...
+2025-12-27T00:56:40.1544267Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T00:56:40.1544829Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T00:56:40.1544867Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T00:56:40.1544896Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T01:27:51.1993638Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T01:27:52.7738694Z   ▲ Next.js 14.2.7
+2025-12-27T01:27:52.7739282Z   - Local:        http://localhost:3000
+2025-12-27T01:27:52.7739315Z 
+2025-12-27T01:27:52.7739339Z  ✓ Starting...
+2025-12-27T01:27:56.6444406Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T01:27:56.6444915Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T01:27:56.6444957Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T01:27:56.6444985Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T01:37:31.5309301Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T01:37:33.2472013Z   ▲ Next.js 14.2.7
+2025-12-27T01:37:33.2490601Z   - Local:        http://localhost:3000
+2025-12-27T01:37:33.2591709Z 
+2025-12-27T01:37:33.2591863Z  ✓ Starting...
+2025-12-27T01:37:37.2713130Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T01:37:37.2714208Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T01:37:37.2714245Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T01:37:37.2714442Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T02:07:52.4168715Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T02:07:53.8186144Z   ▲ Next.js 14.2.7
+2025-12-27T02:07:53.8265041Z   - Local:        http://localhost:3000
+2025-12-27T02:07:53.8265444Z 
+2025-12-27T02:07:53.8265484Z  ✓ Starting...
+2025-12-27T02:07:57.8499499Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T02:07:57.8500009Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T02:07:57.8500051Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T02:07:57.8500170Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T02:26:00.3609091Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T02:26:02.5299260Z   ▲ Next.js 14.2.7
+2025-12-27T02:26:02.5299819Z   - Local:        http://localhost:3000
+2025-12-27T02:26:02.5299853Z 
+2025-12-27T02:26:02.5383765Z  ✓ Starting...
+2025-12-27T02:26:08.0943884Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T02:26:08.0944435Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T02:26:08.0944470Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T02:26:08.0944496Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T02:57:56.2100374Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T02:57:57.8132132Z   ▲ Next.js 14.2.7
+2025-12-27T02:57:57.8132580Z   - Local:        http://localhost:3000
+2025-12-27T02:57:57.8132605Z 
+2025-12-27T02:57:57.8132628Z  ✓ Starting...
+2025-12-27T02:58:03.3730127Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T02:58:03.3730911Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T02:58:03.3730952Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T02:58:03.3730988Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T03:05:55.2963451Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T03:05:58.8617660Z   ▲ Next.js 14.2.7
+2025-12-27T03:05:58.8617996Z   - Local:        http://localhost:3000
+2025-12-27T03:05:58.8618022Z 
+2025-12-27T03:05:58.8618133Z  ✓ Starting...
+2025-12-27T03:06:06.4186853Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T03:06:06.4187276Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T03:06:06.4187309Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T03:06:06.4187386Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T03:37:59.2803814Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T03:38:02.5571759Z   ▲ Next.js 14.2.7
+2025-12-27T03:38:02.5843483Z   - Local:        http://localhost:3000
+2025-12-27T03:38:02.5843708Z 
+2025-12-27T03:38:02.5843746Z  ✓ Starting...
+2025-12-27T03:38:08.5416135Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T03:38:08.5418670Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T03:38:08.5418747Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T03:38:08.5418776Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T03:42:28.8859233Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T03:42:31.0262554Z   ▲ Next.js 14.2.7
+2025-12-27T03:42:31.0281057Z   - Local:        http://localhost:3000
+2025-12-27T03:42:31.0377648Z 
+2025-12-27T03:42:31.0380354Z  ✓ Starting...
+2025-12-27T03:42:34.8600107Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T03:42:34.8600436Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T03:42:34.8600471Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T03:42:34.8600579Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T04:04:10.9512111Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T04:04:12.7556423Z   ▲ Next.js 14.2.7
+2025-12-27T04:04:12.7559934Z   - Local:        http://localhost:3000
+2025-12-27T04:04:12.7620304Z 
+2025-12-27T04:04:12.7647600Z  ✓ Starting...
+2025-12-27T04:04:16.2398266Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T04:04:16.2398769Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T04:04:16.2398810Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T04:04:16.2398933Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T04:27:24.7691565Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T04:27:29.0602348Z   ▲ Next.js 14.2.7
+2025-12-27T04:27:29.0690877Z   - Local:        http://localhost:3000
+2025-12-27T04:27:29.0691217Z 
+2025-12-27T04:27:29.0691251Z  ✓ Starting...
+2025-12-27T04:27:35.2370493Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T04:27:35.2370967Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T04:27:35.2371045Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T04:27:35.2371076Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T04:44:50.0887499Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T04:44:51.7691607Z   ▲ Next.js 14.2.7
+2025-12-27T04:44:51.7710617Z   - Local:        http://localhost:3000
+2025-12-27T04:44:51.7710804Z 
+2025-12-27T04:44:51.7710830Z  ✓ Starting...
+2025-12-27T04:44:55.9067899Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T04:44:55.9068366Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T04:44:55.9068549Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T04:44:55.9068583Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T04:56:51.6068880Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T04:56:53.3435042Z   ▲ Next.js 14.2.7
+2025-12-27T04:56:53.3535603Z   - Local:        http://localhost:3000
+2025-12-27T04:56:53.3535866Z 
+2025-12-27T04:56:53.3535902Z  ✓ Starting...
+2025-12-27T04:56:57.9876050Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T04:56:57.9876544Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T04:56:57.9876575Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T04:56:57.9876600Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T05:09:57.3278984Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T05:09:59.1106312Z   ▲ Next.js 14.2.7
+2025-12-27T05:09:59.1108944Z   - Local:        http://localhost:3000
+2025-12-27T05:09:59.1111345Z 
+2025-12-27T05:09:59.1113347Z  ✓ Starting...
+2025-12-27T05:10:06.0162429Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T05:10:06.0162750Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T05:10:06.0162786Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T05:10:06.0162911Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T05:25:01.2922019Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T05:25:03.9506565Z   ▲ Next.js 14.2.7
+2025-12-27T05:25:03.9599750Z   - Local:        http://localhost:3000
+2025-12-27T05:25:03.9599905Z 
+2025-12-27T05:25:03.9599943Z  ✓ Starting...
+2025-12-27T05:25:07.2941214Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T05:25:07.2941794Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T05:25:07.2941835Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T05:25:07.2941872Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T05:39:11.7970429Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T05:39:13.5831959Z   ▲ Next.js 14.2.7
+2025-12-27T05:39:13.5919702Z   - Local:        http://localhost:3000
+2025-12-27T05:39:13.5919783Z 
+2025-12-27T05:39:13.5919818Z  ✓ Starting...
+2025-12-27T05:39:16.9121563Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T05:39:16.9122039Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T05:39:16.9122077Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T05:39:16.9122186Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T05:50:42.3315995Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T05:50:44.0371448Z   ▲ Next.js 14.2.7
+2025-12-27T05:50:44.0419175Z   - Local:        http://localhost:3000
+2025-12-27T05:50:44.0427443Z 
+2025-12-27T05:50:44.0427503Z  ✓ Starting...
+2025-12-27T05:50:47.7183730Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T05:50:47.7184159Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T05:50:47.7184197Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T05:50:47.7184227Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T06:09:54.7020096Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-27T06:09:57.5761933Z   ▲ Next.js 14.2.7
+2025-12-27T06:09:57.5771630Z   - Local:        http://localhost:3000
+2025-12-27T06:09:57.5781434Z 
+2025-12-27T06:09:57.5790518Z  ✓ Starting...
+2025-12-27T06:10:01.6892494Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-27T06:10:01.6892975Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-27T06:10:01.6893012Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-27T06:10:01.6893137Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-27T06:26:45.0015621Z   ▲ Next.js 14.2.25
+2025-12-27T06:26:45.0211497Z   - Local:        http://localhost:3000
+2025-12-27T06:26:45.0211790Z 
+2025-12-27T06:26:45.0211834Z  ✓ Starting...
+2025-12-27T06:26:48.6764579Z  ⚠ Invalid next.config.mjs options detected: 
+2025-12-27T06:26:48.6785220Z  ⚠     Expected object, received boolean at "experimental.turbotrace"
+2025-12-27T06:26:48.7042956Z  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+2025-12-27T06:26:49.0154602Z  ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+2025-12-27T06:26:53.1149006Z  ✓ Ready in 10.9s
+2025-12-27T06:27:04.1230832Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T06:27:04.1231278Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T06:27:04.1231313Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T06:27:04.1231337Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T06:27:04.1231359Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T06:27:04.1231406Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T06:27:04.1231431Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T06:27:04.1231550Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T06:27:04.1231575Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T06:27:04.1231606Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T06:27:04.1231628Z   severity_local: 'ERROR',
+2025-12-27T06:27:04.1231649Z   severity: 'ERROR',
+2025-12-27T06:27:04.1231669Z   code: '42P01',
+2025-12-27T06:27:04.1231689Z   position: '96',
+2025-12-27T06:27:04.1231710Z   file: 'parse_relation.c',
+2025-12-27T06:27:04.1231730Z   line: '1449',
+2025-12-27T06:27:04.1231752Z   routine: 'parserOpenTable'
+2025-12-27T06:27:04.1231798Z }
+2025-12-27T06:45:33.3091602Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T06:45:33.3095741Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T06:45:33.3095853Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T06:45:33.3095878Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T06:45:33.3095902Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T06:45:33.3095923Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T06:45:33.3095946Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T06:45:33.3095970Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T06:45:33.3095993Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T06:45:33.3096013Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T06:45:33.3096033Z   severity_local: 'ERROR',
+2025-12-27T06:45:33.3096102Z   severity: 'ERROR',
+2025-12-27T06:45:33.3096122Z   code: '42P01',
+2025-12-27T06:45:33.3096140Z   position: '96',
+2025-12-27T06:45:33.3096161Z   file: 'parse_relation.c',
+2025-12-27T06:45:33.3096180Z   line: '1449',
+2025-12-27T06:45:33.3096201Z   routine: 'parserOpenTable'
+2025-12-27T06:45:33.3096219Z }
+2025-12-27T07:06:52.7953753Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T07:06:52.7956297Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T07:06:52.7956361Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T07:06:52.7956386Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T07:06:52.7956408Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T07:06:52.7956431Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T07:06:52.7956455Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T07:06:52.7956477Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T07:06:52.7956501Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T07:06:52.7956523Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T07:06:52.7956543Z   severity_local: 'ERROR',
+2025-12-27T07:06:52.7956614Z   severity: 'ERROR',
+2025-12-27T07:06:52.7956638Z   code: '42P01',
+2025-12-27T07:06:52.7956658Z   position: '96',
+2025-12-27T07:06:52.7956680Z   file: 'parse_relation.c',
+2025-12-27T07:06:52.7956700Z   line: '1449',
+2025-12-27T07:06:52.7956722Z   routine: 'parserOpenTable'
+2025-12-27T07:06:52.7956742Z }
+2025-12-27T07:24:33.0127817Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T07:24:33.0194457Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T07:24:33.0194676Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T07:24:33.0194703Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T07:24:33.0194727Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T07:24:33.0194753Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T07:24:33.0194900Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T07:24:33.0194923Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T07:24:33.0194946Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T07:24:33.0194968Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T07:24:33.0194991Z   severity_local: 'ERROR',
+2025-12-27T07:24:33.0195085Z   severity: 'ERROR',
+2025-12-27T07:24:33.0195107Z   code: '42P01',
+2025-12-27T07:24:33.0195127Z   position: '96',
+2025-12-27T07:24:33.0195149Z   file: 'parse_relation.c',
+2025-12-27T07:24:33.0195169Z   line: '1449',
+2025-12-27T07:24:33.0195190Z   routine: 'parserOpenTable'
+2025-12-27T07:24:33.0195210Z }
+2025-12-27T07:35:45.5588684Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T07:35:45.5589921Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T07:35:45.5589948Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T07:35:45.5589970Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T07:35:45.5589993Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T07:35:45.5590013Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T07:35:45.5590034Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T07:35:45.5590056Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T07:35:45.5590077Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T07:35:45.5590097Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T07:35:45.5590118Z   severity_local: 'ERROR',
+2025-12-27T07:35:45.5590167Z   severity: 'ERROR',
+2025-12-27T07:35:45.5590187Z   code: '42P01',
+2025-12-27T07:35:45.5590209Z   position: '96',
+2025-12-27T07:35:45.5590228Z   file: 'parse_relation.c',
+2025-12-27T07:35:45.5590247Z   line: '1449',
+2025-12-27T07:35:45.5590266Z   routine: 'parserOpenTable'
+2025-12-27T07:35:45.5590285Z }
+2025-12-27T07:48:57.8207285Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T07:48:57.8208085Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T07:48:57.8208114Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T07:48:57.8208135Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T07:48:57.8208156Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T07:48:57.8208176Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T07:48:57.8208197Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T07:48:57.8208217Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T07:48:57.8208238Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T07:48:57.8208258Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T07:48:57.8208278Z   severity_local: 'ERROR',
+2025-12-27T07:48:57.8208491Z   severity: 'ERROR',
+2025-12-27T07:48:57.8208510Z   code: '42P01',
+2025-12-27T07:48:57.8208529Z   position: '96',
+2025-12-27T07:48:57.8208547Z   file: 'parse_relation.c',
+2025-12-27T07:48:57.8208564Z   line: '1449',
+2025-12-27T07:48:57.8208584Z   routine: 'parserOpenTable'
+2025-12-27T07:48:57.8208601Z }
+2025-12-27T08:09:32.4128266Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T08:09:32.4134046Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T08:09:32.4134135Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T08:09:32.4134161Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T08:09:32.4134183Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T08:09:32.4134205Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T08:09:32.4134228Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T08:09:32.4134251Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T08:09:32.4134274Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T08:09:32.4134296Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T08:09:32.4134316Z   severity_local: 'ERROR',
+2025-12-27T08:09:32.4134382Z   severity: 'ERROR',
+2025-12-27T08:09:32.4134403Z   code: '42P01',
+2025-12-27T08:09:32.4134423Z   position: '96',
+2025-12-27T08:09:32.4134445Z   file: 'parse_relation.c',
+2025-12-27T08:09:32.4134465Z   line: '1449',
+2025-12-27T08:09:32.4134488Z   routine: 'parserOpenTable'
+2025-12-27T08:09:32.4134507Z }
+2025-12-27T08:25:43.2621044Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T08:25:43.2702193Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T08:25:43.2702477Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T08:25:43.2702503Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T08:25:43.2702524Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T08:25:43.2702544Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T08:25:43.2702565Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T08:25:43.2702689Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T08:25:43.2702711Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T08:25:43.2702732Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T08:25:43.2702752Z   severity_local: 'ERROR',
+2025-12-27T08:25:43.2702863Z   severity: 'ERROR',
+2025-12-27T08:25:43.2702884Z   code: '42P01',
+2025-12-27T08:25:43.2702903Z   position: '96',
+2025-12-27T08:25:43.2702922Z   file: 'parse_relation.c',
+2025-12-27T08:25:43.2702941Z   line: '1449',
+2025-12-27T08:25:43.2702961Z   routine: 'parserOpenTable'
+2025-12-27T08:25:43.2703150Z }
+2025-12-27T08:41:24.5337491Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T08:41:24.5338704Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T08:41:24.5338751Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T08:41:24.5338776Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T08:41:24.5338800Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T08:41:24.5338824Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T08:41:24.5338848Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T08:41:24.5338870Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T08:41:24.5338895Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T08:41:24.5338918Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T08:41:24.5338939Z   severity_local: 'ERROR',
+2025-12-27T08:41:24.5338999Z   severity: 'ERROR',
+2025-12-27T08:41:24.5339019Z   code: '42P01',
+2025-12-27T08:41:24.5339041Z   position: '96',
+2025-12-27T08:41:24.5339062Z   file: 'parse_relation.c',
+2025-12-27T08:41:24.5339082Z   line: '1449',
+2025-12-27T08:41:24.5339104Z   routine: 'parserOpenTable'
+2025-12-27T08:41:24.5339124Z }
+2025-12-27T08:53:02.3361790Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T08:53:02.3525318Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T08:53:02.3525509Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T08:53:02.3525539Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T08:53:02.3525564Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T08:53:02.3525590Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T08:53:02.3525614Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T08:53:02.3525635Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T08:53:02.3525658Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T08:53:02.3525684Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T08:53:02.3525711Z   severity_local: 'ERROR',
+2025-12-27T08:53:02.3525794Z   severity: 'ERROR',
+2025-12-27T08:53:02.3525817Z   code: '42P01',
+2025-12-27T08:53:02.3525837Z   position: '96',
+2025-12-27T08:53:02.3525859Z   file: 'parse_relation.c',
+2025-12-27T08:53:02.3525879Z   line: '1449',
+2025-12-27T08:53:02.3525901Z   routine: 'parserOpenTable'
+2025-12-27T08:53:02.3525922Z }
+2025-12-27T09:07:10.4477993Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T09:07:10.4478316Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T09:07:10.4478344Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T09:07:10.4478368Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T09:07:10.4478390Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T09:07:10.4478412Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T09:07:10.4478435Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T09:07:10.4478457Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T09:07:10.4478480Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T09:07:10.4478502Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T09:07:10.4478522Z   severity_local: 'ERROR',
+2025-12-27T09:07:10.4478579Z   severity: 'ERROR',
+2025-12-27T09:07:10.4478602Z   code: '42P01',
+2025-12-27T09:07:10.4478623Z   position: '96',
+2025-12-27T09:07:10.4478644Z   file: 'parse_relation.c',
+2025-12-27T09:07:10.4478666Z   line: '1449',
+2025-12-27T09:07:10.4478687Z   routine: 'parserOpenTable'
+2025-12-27T09:07:10.4478707Z }
+2025-12-27T09:24:47.1428658Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T09:24:47.1442104Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T09:24:47.1442183Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T09:24:47.1442209Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T09:24:47.1442232Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T09:24:47.1442255Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T09:24:47.1442277Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T09:24:47.1442298Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T09:24:47.1442321Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T09:24:47.1442342Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T09:24:47.1442363Z   severity_local: 'ERROR',
+2025-12-27T09:24:47.1442427Z   severity: 'ERROR',
+2025-12-27T09:24:47.1442447Z   code: '42P01',
+2025-12-27T09:24:47.1442467Z   position: '96',
+2025-12-27T09:24:47.1442488Z   file: 'parse_relation.c',
+2025-12-27T09:24:47.1442507Z   line: '1449',
+2025-12-27T09:24:47.1442528Z   routine: 'parserOpenTable'
+2025-12-27T09:24:47.1442547Z }
+2025-12-27T09:36:50.6687255Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T09:36:50.6688069Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T09:36:50.6688104Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T09:36:50.6688128Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T09:36:50.6688149Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T09:36:50.6688171Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T09:36:50.6688193Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T09:36:50.6688215Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T09:36:50.6688239Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T09:36:50.6688262Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T09:36:50.6688283Z   severity_local: 'ERROR',
+2025-12-27T09:36:50.6688336Z   severity: 'ERROR',
+2025-12-27T09:36:50.6688357Z   code: '42P01',
+2025-12-27T09:36:50.6688376Z   position: '96',
+2025-12-27T09:36:50.6688399Z   file: 'parse_relation.c',
+2025-12-27T09:36:50.6688418Z   line: '1449',
+2025-12-27T09:36:50.6688440Z   routine: 'parserOpenTable'
+2025-12-27T09:36:50.6688552Z }
+2025-12-27T09:49:00.4201956Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T09:49:00.4202438Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T09:49:00.4202468Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T09:49:00.4202490Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T09:49:00.4202512Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T09:49:00.4202533Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T09:49:00.4202556Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T09:49:00.4202577Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T09:49:00.4202598Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T09:49:00.4202623Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T09:49:00.4202643Z   severity_local: 'ERROR',
+2025-12-27T09:49:00.4202702Z   severity: 'ERROR',
+2025-12-27T09:49:00.4202723Z   code: '42P01',
+2025-12-27T09:49:00.4202742Z   position: '96',
+2025-12-27T09:49:00.4202762Z   file: 'parse_relation.c',
+2025-12-27T09:49:00.4202782Z   line: '1449',
+2025-12-27T09:49:00.4202802Z   routine: 'parserOpenTable'
+2025-12-27T09:49:00.4202821Z }
+2025-12-27T10:06:36.5505550Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T10:06:36.5505797Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T10:06:36.5505824Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T10:06:36.5505846Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T10:06:36.5505867Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T10:06:36.5505888Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T10:06:36.5505911Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T10:06:36.5505931Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T10:06:36.5505953Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T10:06:36.5505974Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T10:06:36.5505994Z   severity_local: 'ERROR',
+2025-12-27T10:06:36.5506038Z   severity: 'ERROR',
+2025-12-27T10:06:36.5506057Z   code: '42P01',
+2025-12-27T10:06:36.5506077Z   position: '96',
+2025-12-27T10:06:36.5506097Z   file: 'parse_relation.c',
+2025-12-27T10:06:36.5506116Z   line: '1449',
+2025-12-27T10:06:36.5506136Z   routine: 'parserOpenTable'
+2025-12-27T10:06:36.5506154Z }
+2025-12-27T10:24:48.5127465Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T10:24:48.5134786Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T10:24:48.5134861Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T10:24:48.5134885Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T10:24:48.5134907Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T10:24:48.5134929Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T10:24:48.5134954Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T10:24:48.5134976Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T10:24:48.5134998Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T10:24:48.5135021Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T10:24:48.5135041Z   severity_local: 'ERROR',
+2025-12-27T10:24:48.5135114Z   severity: 'ERROR',
+2025-12-27T10:24:48.5135136Z   code: '42P01',
+2025-12-27T10:24:48.5135155Z   position: '96',
+2025-12-27T10:24:48.5135177Z   file: 'parse_relation.c',
+2025-12-27T10:24:48.5135197Z   line: '1449',
+2025-12-27T10:24:48.5135217Z   routine: 'parserOpenTable'
+2025-12-27T10:24:48.5135235Z }
+2025-12-27T10:38:44.7578137Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T10:38:44.7579004Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T10:38:44.7579030Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T10:38:44.7579051Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T10:38:44.7579070Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T10:38:44.7579090Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T10:38:44.7579110Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T10:38:44.7579131Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T10:38:44.7579151Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T10:38:44.7579171Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T10:38:44.7579190Z   severity_local: 'ERROR',
+2025-12-27T10:38:44.7579239Z   severity: 'ERROR',
+2025-12-27T10:38:44.7579259Z   code: '42P01',
+2025-12-27T10:38:44.7579278Z   position: '96',
+2025-12-27T10:38:44.7579297Z   file: 'parse_relation.c',
+2025-12-27T10:38:44.7579316Z   line: '1449',
+2025-12-27T10:38:44.7579335Z   routine: 'parserOpenTable'
+2025-12-27T10:38:44.7579353Z }
+2025-12-27T10:49:46.1632535Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T10:49:46.1633125Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T10:49:46.1633156Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T10:49:46.1633180Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T10:49:46.1633201Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T10:49:46.1633224Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T10:49:46.1633247Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T10:49:46.1633268Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T10:49:46.1633291Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T10:49:46.1633313Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T10:49:46.1633335Z   severity_local: 'ERROR',
+2025-12-27T10:49:46.1633396Z   severity: 'ERROR',
+2025-12-27T10:49:46.1633417Z   code: '42P01',
+2025-12-27T10:49:46.1633437Z   position: '96',
+2025-12-27T10:49:46.1633459Z   file: 'parse_relation.c',
+2025-12-27T10:49:46.1633479Z   line: '1449',
+2025-12-27T10:49:46.1633501Z   routine: 'parserOpenTable'
+2025-12-27T10:49:46.1633521Z }
+2025-12-27T11:06:02.9498086Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T11:06:02.9685609Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T11:06:02.9685746Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T11:06:02.9685779Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T11:06:02.9685801Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T11:06:02.9685824Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T11:06:02.9685855Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T11:06:02.9685883Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T11:06:02.9685908Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T11:06:02.9685931Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T11:06:02.9685952Z   severity_local: 'ERROR',
+2025-12-27T11:06:02.9686035Z   severity: 'ERROR',
+2025-12-27T11:06:02.9686057Z   code: '42P01',
+2025-12-27T11:06:02.9686077Z   position: '96',
+2025-12-27T11:06:02.9686100Z   file: 'parse_relation.c',
+2025-12-27T11:06:02.9686120Z   line: '1449',
+2025-12-27T11:06:02.9686142Z   routine: 'parserOpenTable'
+2025-12-27T11:06:02.9686161Z }
+2025-12-27T11:23:23.1827059Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T11:23:23.1828669Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T11:23:23.1828726Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T11:23:23.1828751Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T11:23:23.1828774Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T11:23:23.1828797Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T11:23:23.1828822Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T11:23:23.1828845Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T11:23:23.1828868Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T11:23:23.1828891Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T11:23:23.1828912Z   severity_local: 'ERROR',
+2025-12-27T11:23:23.1828990Z   severity: 'ERROR',
+2025-12-27T11:23:23.1829013Z   code: '42P01',
+2025-12-27T11:23:23.1829825Z   position: '96',
+2025-12-27T11:23:23.1829870Z   file: 'parse_relation.c',
+2025-12-27T11:23:23.1829890Z   line: '1449',
+2025-12-27T11:23:23.1829911Z   routine: 'parserOpenTable'
+2025-12-27T11:23:23.1829931Z }
+2025-12-27T11:34:51.2331039Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T11:34:51.2331797Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T11:34:51.2331830Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T11:34:51.2331852Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T11:34:51.2331876Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T11:34:51.2331899Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T11:34:51.2331922Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T11:34:51.2331945Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T11:34:51.2331967Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T11:34:51.2331990Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T11:34:51.2332012Z   severity_local: 'ERROR',
+2025-12-27T11:34:51.2332224Z   severity: 'ERROR',
+2025-12-27T11:34:51.2332248Z   code: '42P01',
+2025-12-27T11:34:51.2332267Z   position: '96',
+2025-12-27T11:34:51.2332287Z   file: 'parse_relation.c',
+2025-12-27T11:34:51.2332307Z   line: '1449',
+2025-12-27T11:34:51.2332328Z   routine: 'parserOpenTable'
+2025-12-27T11:34:51.2332347Z }
+2025-12-27T11:48:57.1966910Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T11:48:57.1967454Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T11:48:57.1967484Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T11:48:57.1967506Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T11:48:57.1967529Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T11:48:57.1967551Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T11:48:57.1967576Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T11:48:57.1967598Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T11:48:57.1967621Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T11:48:57.1967644Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T11:48:57.1967665Z   severity_local: 'ERROR',
+2025-12-27T11:48:57.1967724Z   severity: 'ERROR',
+2025-12-27T11:48:57.1967746Z   code: '42P01',
+2025-12-27T11:48:57.1967766Z   position: '96',
+2025-12-27T11:48:57.1967787Z   file: 'parse_relation.c',
+2025-12-27T11:48:57.1967807Z   line: '1449',
+2025-12-27T11:48:57.1967828Z   routine: 'parserOpenTable'
+2025-12-27T11:48:57.1967849Z }
+2025-12-27T12:11:23.6912694Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T12:11:23.6933814Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T12:11:23.6933890Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T12:11:23.6933913Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T12:11:23.6963268Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T12:11:23.6963377Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T12:11:23.6963399Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T12:11:23.6963419Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T12:11:23.6963439Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T12:11:23.6963458Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T12:11:23.6963477Z   severity_local: 'ERROR',
+2025-12-27T12:11:23.6963534Z   severity: 'ERROR',
+2025-12-27T12:11:23.6963554Z   code: '42P01',
+2025-12-27T12:11:23.6963572Z   position: '96',
+2025-12-27T12:11:23.6963591Z   file: 'parse_relation.c',
+2025-12-27T12:11:23.6963608Z   line: '1449',
+2025-12-27T12:11:23.6963627Z   routine: 'parserOpenTable'
+2025-12-27T12:11:23.6963644Z }
+2025-12-27T12:28:39.5262432Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T12:28:39.5262877Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T12:28:39.5262904Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T12:28:39.5262926Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T12:28:39.5262947Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T12:28:39.5262968Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T12:28:39.5262989Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T12:28:39.5263010Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T12:28:39.5263032Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T12:28:39.5263053Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T12:28:39.5263073Z   severity_local: 'ERROR',
+2025-12-27T12:28:39.5343391Z   severity: 'ERROR',
+2025-12-27T12:28:39.5344043Z   code: '42P01',
+2025-12-27T12:28:39.5344078Z   position: '96',
+2025-12-27T12:28:39.5344098Z   file: 'parse_relation.c',
+2025-12-27T12:28:39.5344278Z   line: '1449',
+2025-12-27T12:28:39.5344303Z   routine: 'parserOpenTable'
+2025-12-27T12:28:39.5344321Z }
+2025-12-27T12:52:15.8375183Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T12:52:15.8448968Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T12:52:15.8449227Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T12:52:15.8449259Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T12:52:15.8449289Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T12:52:15.8449313Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T12:52:15.8449337Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T12:52:15.8449358Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T12:52:15.8449382Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T12:52:15.8449408Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T12:52:15.8449432Z   severity_local: 'ERROR',
+2025-12-27T12:52:15.8449538Z   severity: 'ERROR',
+2025-12-27T12:52:15.8449560Z   code: '42P01',
+2025-12-27T12:52:15.8449580Z   position: '96',
+2025-12-27T12:52:15.8449601Z   file: 'parse_relation.c',
+2025-12-27T12:52:15.8449621Z   line: '1449',
+2025-12-27T12:52:15.8449643Z   routine: 'parserOpenTable'
+2025-12-27T12:52:15.8449663Z }
+2025-12-27T13:13:40.8658301Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T13:13:40.8658612Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T13:13:40.8658639Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T13:13:40.8658660Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T13:13:40.8658685Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T13:13:40.8658705Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T13:13:40.8658726Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T13:13:40.8658746Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T13:13:40.8658768Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T13:13:40.8658789Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T13:13:40.8658808Z   severity_local: 'ERROR',
+2025-12-27T13:13:40.8658865Z   severity: 'ERROR',
+2025-12-27T13:13:40.8658885Z   code: '42P01',
+2025-12-27T13:13:40.8658903Z   position: '96',
+2025-12-27T13:13:40.8658926Z   file: 'parse_relation.c',
+2025-12-27T13:13:40.8658945Z   line: '1449',
+2025-12-27T13:13:40.8658964Z   routine: 'parserOpenTable'
+2025-12-27T13:13:40.8658983Z }
+2025-12-27T13:30:21.9301198Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T13:30:21.9303763Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T13:30:21.9303810Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T13:30:21.9303831Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T13:30:21.9303853Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T13:30:21.9303874Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T13:30:21.9303894Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T13:30:21.9303914Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T13:30:21.9303935Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T13:30:21.9303954Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T13:30:21.9303974Z   severity_local: 'ERROR',
+2025-12-27T13:30:21.9304041Z   severity: 'ERROR',
+2025-12-27T13:30:21.9304248Z   code: '42P01',
+2025-12-27T13:30:21.9304268Z   position: '96',
+2025-12-27T13:30:21.9304288Z   file: 'parse_relation.c',
+2025-12-27T13:30:21.9304307Z   line: '1449',
+2025-12-27T13:30:21.9304328Z   routine: 'parserOpenTable'
+2025-12-27T13:30:21.9304523Z }
+2025-12-27T13:49:40.2317210Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T13:49:40.2317726Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T13:49:40.2317756Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T13:49:40.2317779Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T13:49:40.2317801Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T13:49:40.2317824Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T13:49:40.2317847Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T13:49:40.2317870Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T13:49:40.2317893Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T13:49:40.2317915Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T13:49:40.2317937Z   severity_local: 'ERROR',
+2025-12-27T13:49:40.2317997Z   severity: 'ERROR',
+2025-12-27T13:49:40.2318018Z   code: '42P01',
+2025-12-27T13:49:40.2318101Z   position: '96',
+2025-12-27T13:49:40.2318122Z   file: 'parse_relation.c',
+2025-12-27T13:49:40.2318142Z   line: '1449',
+2025-12-27T13:49:40.2318165Z   routine: 'parserOpenTable'
+2025-12-27T13:49:40.2318185Z }
+2025-12-27T14:06:26.0377969Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T14:06:26.0392114Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T14:06:26.0392216Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T14:06:26.0392243Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T14:06:26.0392267Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T14:06:26.0392289Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T14:06:26.0392313Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T14:06:26.0392336Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T14:06:26.0392362Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T14:06:26.0392386Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T14:06:26.0392407Z   severity_local: 'ERROR',
+2025-12-27T14:06:26.0392467Z   severity: 'ERROR',
+2025-12-27T14:06:26.0392488Z   code: '42P01',
+2025-12-27T14:06:26.0392508Z   position: '96',
+2025-12-27T14:06:26.0392531Z   file: 'parse_relation.c',
+2025-12-27T14:06:26.0392551Z   line: '1449',
+2025-12-27T14:06:26.0392573Z   routine: 'parserOpenTable'
+2025-12-27T14:06:26.0392593Z }
+2025-12-27T14:24:35.2758537Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T14:24:35.2846391Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T14:24:35.2846537Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T14:24:35.2846563Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T14:24:35.2846591Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T14:24:35.2846616Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T14:24:35.2846640Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T14:24:35.2846661Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T14:24:35.2846684Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T14:24:35.2846709Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T14:24:35.2846733Z   severity_local: 'ERROR',
+2025-12-27T14:24:35.2846811Z   severity: 'ERROR',
+2025-12-27T14:24:35.2846834Z   code: '42P01',
+2025-12-27T14:24:35.2846853Z   position: '96',
+2025-12-27T14:24:35.2846874Z   file: 'parse_relation.c',
+2025-12-27T14:24:35.2846893Z   line: '1449',
+2025-12-27T14:24:35.2846914Z   routine: 'parserOpenTable'
+2025-12-27T14:24:35.2846933Z }
+2025-12-27T14:37:14.8557694Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T14:37:14.9121879Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T14:37:14.9122029Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T14:37:14.9122064Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T14:37:14.9122089Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T14:37:14.9122118Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T14:37:14.9125352Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T14:37:14.9125406Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T14:37:14.9125432Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T14:37:14.9125455Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T14:37:14.9125477Z   severity_local: 'ERROR',
+2025-12-27T14:37:14.9125543Z   severity: 'ERROR',
+2025-12-27T14:37:14.9125566Z   code: '42P01',
+2025-12-27T14:37:14.9125587Z   position: '96',
+2025-12-27T14:37:14.9125608Z   file: 'parse_relation.c',
+2025-12-27T14:37:14.9125629Z   line: '1449',
+2025-12-27T14:37:14.9125651Z   routine: 'parserOpenTable'
+2025-12-27T14:37:14.9125671Z }
+2025-12-27T14:49:23.9605162Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T14:49:23.9605651Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T14:49:23.9605680Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T14:49:23.9605704Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T14:49:23.9605723Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T14:49:23.9605745Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T14:49:23.9605766Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T14:49:23.9605787Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T14:49:23.9605809Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T14:49:23.9605829Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T14:49:23.9605850Z   severity_local: 'ERROR',
+2025-12-27T14:49:23.9605906Z   severity: 'ERROR',
+2025-12-27T14:49:23.9605926Z   code: '42P01',
+2025-12-27T14:49:23.9605945Z   position: '96',
+2025-12-27T14:49:23.9605964Z   file: 'parse_relation.c',
+2025-12-27T14:49:23.9605983Z   line: '1449',
+2025-12-27T14:49:23.9606003Z   routine: 'parserOpenTable'
+2025-12-27T14:49:23.9606022Z }
+2025-12-27T15:06:21.4363490Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T15:06:21.4373264Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T15:06:21.4373321Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T15:06:21.4373345Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T15:06:21.4373367Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T15:06:21.4373388Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T15:06:21.4373414Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T15:06:21.4373436Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T15:06:21.4373460Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T15:06:21.4373481Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T15:06:21.4373502Z   severity_local: 'ERROR',
+2025-12-27T15:06:21.4373563Z   severity: 'ERROR',
+2025-12-27T15:06:21.4373585Z   code: '42P01',
+2025-12-27T15:06:21.4373606Z   position: '96',
+2025-12-27T15:06:21.4373627Z   file: 'parse_relation.c',
+2025-12-27T15:06:21.4373647Z   line: '1449',
+2025-12-27T15:06:21.4373668Z   routine: 'parserOpenTable'
+2025-12-27T15:06:21.4373688Z }
+2025-12-27T15:24:32.6093880Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T15:24:32.6097674Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T15:24:32.6097719Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T15:24:32.6097742Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T15:24:32.6097763Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T15:24:32.6097784Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T15:24:32.6097806Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T15:24:32.6097828Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T15:24:32.6097849Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T15:24:32.6097870Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T15:24:32.6097890Z   severity_local: 'ERROR',
+2025-12-27T15:24:32.6097941Z   severity: 'ERROR',
+2025-12-27T15:24:32.6097962Z   code: '42P01',
+2025-12-27T15:24:32.6097980Z   position: '96',
+2025-12-27T15:24:32.6098000Z   file: 'parse_relation.c',
+2025-12-27T15:24:32.6098019Z   line: '1449',
+2025-12-27T15:24:32.6098039Z   routine: 'parserOpenTable'
+2025-12-27T15:24:32.6098058Z }
+2025-12-27T15:36:11.1007827Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T15:36:11.1008306Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T15:36:11.1008335Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T15:36:11.1008358Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T15:36:11.1008380Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T15:36:11.1008402Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T15:36:11.1008425Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T15:36:11.1008449Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T15:36:11.1008471Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T15:36:11.1008494Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T15:36:11.1008516Z   severity_local: 'ERROR',
+2025-12-27T15:36:11.1008569Z   severity: 'ERROR',
+2025-12-27T15:36:11.1008592Z   code: '42P01',
+2025-12-27T15:36:11.1008612Z   position: '96',
+2025-12-27T15:36:11.1008632Z   file: 'parse_relation.c',
+2025-12-27T15:36:11.1008653Z   line: '1449',
+2025-12-27T15:36:11.1008674Z   routine: 'parserOpenTable'
+2025-12-27T15:36:11.1008693Z }
+2025-12-27T15:49:02.6059893Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T15:49:02.6085019Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T15:49:02.6085098Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T15:49:02.6085127Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T15:49:02.6085150Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T15:49:02.6085172Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T15:49:02.6085195Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T15:49:02.6085217Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T15:49:02.6085243Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T15:49:02.6085267Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T15:49:02.6085289Z   severity_local: 'ERROR',
+2025-12-27T15:49:02.6085353Z   severity: 'ERROR',
+2025-12-27T15:49:02.6085375Z   code: '42P01',
+2025-12-27T15:49:02.6085396Z   position: '96',
+2025-12-27T15:49:02.6085417Z   file: 'parse_relation.c',
+2025-12-27T15:49:02.6085436Z   line: '1449',
+2025-12-27T15:49:02.6085458Z   routine: 'parserOpenTable'
+2025-12-27T15:49:02.6085478Z }
+2025-12-27T16:07:34.5446290Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T16:07:34.5446585Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T16:07:34.5446608Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T16:07:34.5446629Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T16:07:34.5446647Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T16:07:34.5446666Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T16:07:34.5446686Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T16:07:34.5446705Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T16:07:34.5446727Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T16:07:34.5446745Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T16:07:34.5446762Z   severity_local: 'ERROR',
+2025-12-27T16:07:34.5446808Z   severity: 'ERROR',
+2025-12-27T16:07:34.5446826Z   code: '42P01',
+2025-12-27T16:07:34.5446843Z   position: '96',
+2025-12-27T16:07:34.5446861Z   file: 'parse_relation.c',
+2025-12-27T16:07:34.5446878Z   line: '1449',
+2025-12-27T16:07:34.5446897Z   routine: 'parserOpenTable'
+2025-12-27T16:07:34.5446914Z }
+2025-12-27T16:25:22.0674820Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T16:25:22.0675260Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T16:25:22.0675293Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T16:25:22.0675316Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T16:25:22.0675338Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T16:25:22.0675360Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T16:25:22.0675383Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T16:25:22.0675405Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T16:25:22.0675428Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T16:25:22.0675450Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T16:25:22.0675471Z   severity_local: 'ERROR',
+2025-12-27T16:25:22.0675522Z   severity: 'ERROR',
+2025-12-27T16:25:22.0675543Z   code: '42P01',
+2025-12-27T16:25:22.0675563Z   position: '96',
+2025-12-27T16:25:22.0675584Z   file: 'parse_relation.c',
+2025-12-27T16:25:22.0675604Z   line: '1449',
+2025-12-27T16:25:22.0675625Z   routine: 'parserOpenTable'
+2025-12-27T16:25:22.0675645Z }
+2025-12-27T16:40:16.6034131Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T16:40:16.6034440Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T16:40:16.6034468Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T16:40:16.6034491Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T16:40:16.6034513Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T16:40:16.6034585Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T16:40:16.6034608Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T16:40:16.6034735Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T16:40:16.6034765Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T16:40:16.6035111Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T16:40:16.6035172Z   severity_local: 'ERROR',
+2025-12-27T16:40:16.6039662Z   severity: 'ERROR',
+2025-12-27T16:40:16.6039719Z   code: '42P01',
+2025-12-27T16:40:16.6039739Z   position: '96',
+2025-12-27T16:40:16.6039758Z   file: 'parse_relation.c',
+2025-12-27T16:40:16.6039777Z   line: '1449',
+2025-12-27T16:40:16.6039796Z   routine: 'parserOpenTable'
+2025-12-27T16:40:16.6039816Z }
+2025-12-27T16:51:15.7897383Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T16:51:15.7897838Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T16:51:15.7897868Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T16:51:15.7897890Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T16:51:15.7897910Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T16:51:15.7897931Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T16:51:15.7897952Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T16:51:15.7897972Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T16:51:15.7897993Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T16:51:15.7898013Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T16:51:15.7898033Z   severity_local: 'ERROR',
+2025-12-27T16:51:15.7898240Z   severity: 'ERROR',
+2025-12-27T16:51:15.7898261Z   code: '42P01',
+2025-12-27T16:51:15.7898280Z   position: '96',
+2025-12-27T16:51:15.7898299Z   file: 'parse_relation.c',
+2025-12-27T16:51:15.7898317Z   line: '1449',
+2025-12-27T16:51:15.7898336Z   routine: 'parserOpenTable'
+2025-12-27T16:51:15.7898354Z }
+2025-12-27T17:06:17.5764917Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T17:06:17.5765569Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T17:06:17.5765596Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T17:06:17.5765619Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T17:06:17.5765640Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T17:06:17.5765839Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T17:06:17.5765863Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T17:06:17.5765884Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T17:06:17.5765907Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T17:06:17.5765929Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T17:06:17.5765948Z   severity_local: 'ERROR',
+2025-12-27T17:06:17.5766002Z   severity: 'ERROR',
+2025-12-27T17:06:17.5766022Z   code: '42P01',
+2025-12-27T17:06:17.5766041Z   position: '96',
+2025-12-27T17:06:17.5766062Z   file: 'parse_relation.c',
+2025-12-27T17:06:17.5766081Z   line: '1449',
+2025-12-27T17:06:17.5766103Z   routine: 'parserOpenTable'
+2025-12-27T17:06:17.5766122Z }
+2025-12-27T17:24:35.4321449Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T17:24:35.4322595Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T17:24:35.4322627Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T17:24:35.4322650Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T17:24:35.4322671Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T17:24:35.4322693Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T17:24:35.4322716Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T17:24:35.4322900Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T17:24:35.4322923Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T17:24:35.4322946Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T17:24:35.4322966Z   severity_local: 'ERROR',
+2025-12-27T17:24:35.4323019Z   severity: 'ERROR',
+2025-12-27T17:24:35.4323040Z   code: '42P01',
+2025-12-27T17:24:35.4323059Z   position: '96',
+2025-12-27T17:24:35.4323080Z   file: 'parse_relation.c',
+2025-12-27T17:24:35.4323099Z   line: '1449',
+2025-12-27T17:24:35.4323120Z   routine: 'parserOpenTable'
+2025-12-27T17:24:35.4323404Z }
+2025-12-27T17:36:26.1958768Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T17:36:26.1959475Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T17:36:26.1959504Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T17:36:26.1959586Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T17:36:26.1959610Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T17:36:26.1959632Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T17:36:26.1959655Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T17:36:26.1959677Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T17:36:26.1959700Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T17:36:26.1959722Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T17:36:26.1959743Z   severity_local: 'ERROR',
+2025-12-27T17:36:26.1959797Z   severity: 'ERROR',
+2025-12-27T17:36:26.1959820Z   code: '42P01',
+2025-12-27T17:36:26.1959840Z   position: '96',
+2025-12-27T17:36:26.1959861Z   file: 'parse_relation.c',
+2025-12-27T17:36:26.1959882Z   line: '1449',
+2025-12-27T17:36:26.1959903Z   routine: 'parserOpenTable'
+2025-12-27T17:36:26.1959922Z }
+2025-12-27T17:49:04.8462339Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T17:49:04.8462858Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T17:49:04.8462889Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T17:49:04.8462912Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T17:49:04.8462934Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T17:49:04.8462957Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T17:49:04.8462980Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T17:49:04.8463068Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T17:49:04.8463092Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T17:49:04.8463114Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T17:49:04.8463136Z   severity_local: 'ERROR',
+2025-12-27T17:49:04.8463196Z   severity: 'ERROR',
+2025-12-27T17:49:04.8463217Z   code: '42P01',
+2025-12-27T17:49:04.8463238Z   position: '96',
+2025-12-27T17:49:04.8463259Z   file: 'parse_relation.c',
+2025-12-27T17:49:04.8463279Z   line: '1449',
+2025-12-27T17:49:04.8463301Z   routine: 'parserOpenTable'
+2025-12-27T17:49:04.8463321Z }
+2025-12-27T18:09:26.0093189Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T18:09:26.0169417Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:09:26.0192867Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:09:26.0192929Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:09:26.0192958Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:09:26.0192985Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:09:26.0193008Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:09:26.0193031Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:09:26.0193056Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:09:26.0193081Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T18:09:26.0193108Z   severity_local: 'ERROR',
+2025-12-27T18:09:26.0261935Z   severity: 'ERROR',
+2025-12-27T18:09:26.0262061Z   code: '42P01',
+2025-12-27T18:09:26.0262086Z   position: '96',
+2025-12-27T18:09:26.0262108Z   file: 'parse_relation.c',
+2025-12-27T18:09:26.0262129Z   line: '1449',
+2025-12-27T18:09:26.0262152Z   routine: 'parserOpenTable'
+2025-12-27T18:09:26.0262171Z }
+2025-12-27T18:26:05.6732825Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T18:26:05.6733503Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:26:05.6733539Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:26:05.6733565Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:26:05.6733588Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:26:05.6733611Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:26:05.6733636Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:26:05.6733659Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:26:05.6733683Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:26:05.6733707Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T18:26:05.6733729Z   severity_local: 'ERROR',
+2025-12-27T18:26:05.6733784Z   severity: 'ERROR',
+2025-12-27T18:26:05.6733806Z   code: '42P01',
+2025-12-27T18:26:05.6733828Z   position: '96',
+2025-12-27T18:26:05.6733850Z   file: 'parse_relation.c',
+2025-12-27T18:26:05.6733871Z   line: '1449',
+2025-12-27T18:26:05.6733893Z   routine: 'parserOpenTable'
+2025-12-27T18:26:05.6733914Z }
+2025-12-27T18:30:52.2337387Z Error fetching dues balance: F: invalid input syntax for type uuid: "user_35NlrrNcfTv0DMh2kzBHyXZRtpb"
+2025-12-27T18:30:52.2337733Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:30:52.2337759Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:30:52.2337779Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:30:52.2337799Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:30:52.2337820Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:30:52.2337839Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:30:52.2337858Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:30:52.2337877Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:30:52.2337896Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T18:30:52.2337914Z   severity_local: 'ERROR',
+2025-12-27T18:30:52.2337966Z   severity: 'ERROR',
+2025-12-27T18:30:52.2337984Z   code: '22P02',
+2025-12-27T18:30:52.2338004Z   where: "unnamed portal parameter $1 = '...'",
+2025-12-27T18:30:52.2338022Z   file: 'uuid.c',
+2025-12-27T18:30:52.2338041Z   line: '133',
+2025-12-27T18:30:52.2338059Z   routine: 'string_to_uuid'
+2025-12-27T18:30:52.2338077Z }
+2025-12-27T18:31:36.0097681Z [org-activity] ERROR: F: syntax error at or near "="
+2025-12-27T18:31:36.0098093Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:31:36.0098123Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:31:36.0098147Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:31:36.0098170Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:31:36.0098194Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:31:36.0098217Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:31:36.0098240Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:31:36.0098263Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:31:36.0098288Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T18:31:36.0098310Z   severity_local: 'ERROR',
+2025-12-27T18:31:36.0098471Z   severity: 'ERROR',
+2025-12-27T18:31:36.0098492Z   code: '42601',
+2025-12-27T18:31:36.0098512Z   position: '66',
+2025-12-27T18:31:36.0098533Z   file: 'scan.l',
+2025-12-27T18:31:36.0098553Z   line: '1244',
+2025-12-27T18:31:36.0098575Z   routine: 'scanner_yyerror'
+2025-12-27T18:31:36.0098595Z }
+2025-12-27T18:31:38.0534901Z [org-activity] Error stack: F: syntax error at or near "="
+2025-12-27T18:31:38.0535105Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:31:38.0535133Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:31:38.0535157Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:31:38.0535179Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:31:38.0535201Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:31:38.0535251Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:31:38.0535274Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:31:38.0535297Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:31:38.0535321Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+2025-12-27T18:43:04.7936200Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T18:43:04.7936734Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:43:04.7936957Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:43:04.7936982Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:43:04.7937003Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:43:04.7937024Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:43:04.7937046Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:43:04.7937066Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:43:04.7937088Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:43:04.7937111Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T18:43:04.7937130Z   severity_local: 'ERROR',
+2025-12-27T18:43:04.7937186Z   severity: 'ERROR',
+2025-12-27T18:43:04.7937206Z   code: '42P01',
+2025-12-27T18:43:04.7937225Z   position: '96',
+2025-12-27T18:43:04.7937246Z   file: 'parse_relation.c',
+2025-12-27T18:43:04.7937265Z   line: '1449',
+2025-12-27T18:43:04.7937284Z   routine: 'parserOpenTable'
+2025-12-27T18:43:04.7937302Z }
+2025-12-27T18:54:06.3052369Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T18:54:06.3052988Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T18:54:06.3053017Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T18:54:06.3053042Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T18:54:06.3053064Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T18:54:06.3053087Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T18:54:06.3053110Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T18:54:06.3053134Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T18:54:06.3053156Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T18:54:06.3053179Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T18:54:06.3053201Z   severity_local: 'ERROR',
+2025-12-27T18:54:06.3104712Z   severity: 'ERROR',
+2025-12-27T18:54:06.3104831Z   code: '42P01',
+2025-12-27T18:54:06.3104854Z   position: '96',
+2025-12-27T18:54:06.3104875Z   file: 'parse_relation.c',
+2025-12-27T18:54:06.3104896Z   line: '1449',
+2025-12-27T18:54:06.3104917Z   routine: 'parserOpenTable'
+2025-12-27T18:54:06.3104937Z }
+2025-12-27T19:05:33.6587642Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T19:05:33.6588148Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T19:05:33.6588184Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T19:05:33.6588208Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T19:05:33.6588231Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T19:05:33.6588254Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T19:05:33.6588278Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T19:05:33.6588301Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T19:05:33.6588325Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T19:05:33.6588348Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T19:05:33.6588371Z   severity_local: 'ERROR',
+2025-12-27T19:05:33.6588420Z   severity: 'ERROR',
+2025-12-27T19:05:33.6588441Z   code: '42P01',
+2025-12-27T19:05:33.6588462Z   position: '96',
+2025-12-27T19:05:33.6588483Z   file: 'parse_relation.c',
+2025-12-27T19:05:33.6588504Z   line: '1449',
+2025-12-27T19:05:33.6588526Z   routine: 'parserOpenTable'
+2025-12-27T19:05:33.6588546Z }
+2025-12-27T19:15:57.6512304Z   ▲ Next.js 14.2.25
+2025-12-27T19:15:57.7024935Z   - Local:        http://localhost:3000
+2025-12-27T19:15:57.7025177Z 
+2025-12-27T19:15:57.7025223Z  ✓ Starting...
+2025-12-27T19:16:01.9078561Z  ⚠ Invalid next.config.mjs options detected: 
+2025-12-27T19:16:01.9079232Z  ⚠     Expected object, received boolean at "experimental.turbotrace"
+2025-12-27T19:16:01.9079282Z  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+2025-12-27T19:16:02.8817254Z  ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+2025-12-27T19:16:08.6403312Z  ✓ Ready in 14.4s
+2025-12-27T19:23:16.7996369Z   ▲ Next.js 14.2.25
+2025-12-27T19:23:16.8180024Z   - Local:        http://localhost:3000
+2025-12-27T19:23:16.8180336Z 
+2025-12-27T19:23:16.8180389Z  ✓ Starting...
+2025-12-27T19:23:20.6660821Z  ⚠ Invalid next.config.mjs options detected: 
+2025-12-27T19:23:20.6734703Z  ⚠     Expected object, received boolean at "experimental.turbotrace"
+2025-12-27T19:23:20.6735118Z  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+2025-12-27T19:23:20.9603271Z  ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+2025-12-27T19:23:24.7057387Z  ✓ Ready in 10s
+2025-12-27T19:23:32.9356159Z [Cron] Error executing scheduled reports: F: relation "report_schedules" does not exist
+2025-12-27T19:23:32.9356615Z     at D (/app/.next/server/commons.js:59:2300)
+2025-12-27T19:23:32.9356644Z     at /app/.next/server/commons.js:59:3345
+2025-12-27T19:23:32.9356665Z     at TLSSocket.eb (/app/.next/server/commons.js:59:3350)
+2025-12-27T19:23:32.9356685Z     at TLSSocket.emit (node:events:524:28)
+2025-12-27T19:23:32.9356736Z     at addChunk (node:internal/streams/readable:561:12)
+2025-12-27T19:23:32.9356757Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-12-27T19:23:32.9356778Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-12-27T19:23:32.9356798Z     at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2025-12-27T19:23:32.9356825Z     at TLSWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+2025-12-27T19:23:32.9356871Z   severity_local: 'ERROR',
+2025-12-27T19:23:32.9356891Z   severity: 'ERROR',
+2025-12-27T19:23:32.9356909Z   code: '42P01',
+2025-12-27T19:23:32.9356926Z   position: '96',
+2025-12-27T19:23:32.9356945Z   file: 'parse_relation.c',
+2025-12-27T19:23:32.9356963Z   line: '1449',
+2025-12-27T19:23:32.9356982Z   routine: 'parserOpenTable'
+2025-12-27T19:23:32.9357003Z }
+2025-12-27T19:23:53.4476189Z Error: Clerk: Handshake token verification failed: Unable to find a signing key in JWKS that matches the kid='ins_35LaZ6alP06tI2j113tLJTvg1bE' of the provided session token. Please make sure that the __session cookie or the HTTP authorization header contain a Clerk-generated session JWT. The following kid is available: ins_37RPUe3djfO2RJdj0u6WP6zSiGO Go to your Dashboard and validate your secret and public keys are correct. Contact support@clerk.com if the issue persists. (reason=jwk-kid-mismatch, token-carrier=undefined).
+2025-12-27T19:23:53.4476697Z     at /app/.next/server/383.js:12:4496
+2025-12-27T19:23:53.4476726Z     at u (/app/.next/server/383.js:12:4572)
+2025-12-27T19:23:53.4476750Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-12-27T19:23:53.4476773Z     at async /app/.next/server/383.js:30:4374
+2025-12-27T19:23:53.4476795Z     at async ed (/app/.next/server/383.js:30:90531)
+2025-12-27T19:23:53.4476824Z     at async /app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/web/sandbox/sandbox.js:110:22
+2025-12-27T19:23:53.4476855Z     at async runWithTaggedErrors (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/web/sandbox/sandbox.js:107:9)
+2025-12-27T19:23:53.4476909Z     at async NextNodeServer.runMiddleware (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next-server.js:1068:24)
+2025-12-27T19:23:53.4476940Z     at async NextNodeServer.handleCatchallMiddlewareRequest (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next-server.js:322:26)
+2025-12-27T19:23:53.4476970Z     at async NextNodeServer.handleRequestImpl (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/base-server.js:824:28)
+2025-12-27T19:23:53.8785663Z Error [ERR_HTTP_HEADERS_SENT]: Cannot append headers after they are sent to the client
+2025-12-27T19:23:53.8793076Z     at ServerResponse.appendHeader (node:_http_outgoing:711:11)
+2025-12-27T19:23:53.8798229Z     at /app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:24757
+2025-12-27T19:23:53.8803837Z     at _Headers.forEach (node:internal/deps/undici/undici:4698:26)
+2025-12-27T19:23:53.9067725Z     at m (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:24739)
+2025-12-27T19:23:53.9067997Z     at P (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:83073)
+2025-12-27T19:23:53.9068030Z     at nW (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:69673)
+2025-12-27T19:23:53.9068056Z     at n1 (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:81756)
+2025-12-27T19:23:53.9068075Z     at AsyncLocalStorage.run (node:async_hooks:346:14)
+2025-12-27T19:23:53.9068104Z     at Timeout._onTimeout (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:87776)
+2025-12-27T19:23:53.9068121Z     at listOnTimeout (node:internal/timers:581:17) {
+2025-12-27T19:23:53.9068139Z   code: 'ERR_HTTP_HEADERS_SENT',
+2025-12-27T19:23:53.9068156Z   digest: '2584200581'
+2025-12-27T19:23:53.9068173Z }
+2025-12-27T19:24:18.3133585Z Error: Clerk: Handshake token verification failed: Unable to find a signing key in JWKS that matches the kid='ins_35LaZ6alP06tI2j113tLJTvg1bE' of the provided session token. Please make sure that the __session cookie or the HTTP authorization header contain a Clerk-generated session JWT. The following kid is available: ins_37RPUe3djfO2RJdj0u6WP6zSiGO Go to your Dashboard and validate your secret and public keys are correct. Contact support@clerk.com if the issue persists. (reason=jwk-kid-mismatch, token-carrier=undefined).
+2025-12-27T19:24:18.3134066Z     at /app/.next/server/383.js:12:4496
+2025-12-27T19:24:18.3134099Z     at u (/app/.next/server/383.js:12:4572)
+2025-12-27T19:24:18.3134127Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-12-27T19:24:18.3134146Z     at async /app/.next/server/383.js:30:4374
+2025-12-27T19:24:18.3134165Z     at async ed (/app/.next/server/383.js:30:90531)
+2025-12-27T19:24:18.3134192Z     at async /app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/web/sandbox/sandbox.js:110:22
+2025-12-27T19:24:18.3134220Z     at async runWithTaggedErrors (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/web/sandbox/sandbox.js:107:9)
+2025-12-27T19:24:18.3134319Z     at async NextNodeServer.runMiddleware (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next-server.js:1068:24)
+2025-12-27T19:24:18.3134348Z     at async NextNodeServer.handleCatchallMiddlewareRequest (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next-server.js:322:26)
+2025-12-27T19:24:18.3134374Z     at async NextNodeServer.handleRequestImpl (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/base-server.js:824:28)
+2025-12-27T19:24:18.4233092Z Error [ERR_HTTP_HEADERS_SENT]: Cannot append headers after they are sent to the client
+2025-12-27T19:24:18.4233703Z     at ServerResponse.appendHeader (node:_http_outgoing:711:11)
+2025-12-27T19:24:18.4233745Z     at /app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:24757
+2025-12-27T19:24:18.4233768Z     at _Headers.forEach (node:internal/deps/undici/undici:4698:26)
+2025-12-27T19:24:18.4233798Z     at m (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:24739)
+2025-12-27T19:24:18.4233911Z     at P (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:83073)
+2025-12-27T19:24:18.4233941Z     at nW (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:69673)
+2025-12-27T19:24:18.4233968Z     at n1 (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:81756)
+2025-12-27T19:24:18.4233990Z     at AsyncLocalStorage.run (node:async_hooks:346:14)
+2025-12-27T19:24:18.4234019Z     at Timeout._onTimeout (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:87776)
+2025-12-27T19:24:18.4234040Z     at listOnTimeout (node:internal/timers:581:17) {
+2025-12-27T19:24:18.4234061Z   code: 'ERR_HTTP_HEADERS_SENT',
+2025-12-27T19:24:18.4234081Z   digest: '2584200581'
+2025-12-27T19:24:18.4234101Z }
+2025-12-27T19:24:26.9259331Z Error: Clerk: Handshake token verification failed: Unable to find a signing key in JWKS that matches the kid='ins_35LaZ6alP06tI2j113tLJTvg1bE' of the provided session token. Please make sure that the __session cookie or the HTTP authorization header contain a Clerk-generated session JWT. The following kid is available: ins_37RPUe3djfO2RJdj0u6WP6zSiGO Go to your Dashboard and validate your secret and public keys are correct. Contact support@clerk.com if the issue persists. (reason=jwk-kid-mismatch, token-carrier=undefined).
+2025-12-27T19:24:26.9259918Z     at /app/.next/server/383.js:12:4496
+2025-12-27T19:24:26.9259946Z     at u (/app/.next/server/383.js:12:4572)
+2025-12-27T19:24:26.9259972Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-12-27T19:24:26.9259996Z     at async /app/.next/server/383.js:30:4374
+2025-12-27T19:24:26.9260016Z     at async ed (/app/.next/server/383.js:30:90531)
+2025-12-27T19:24:26.9260210Z     at async /app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/web/sandbox/sandbox.js:110:22
+2025-12-27T19:24:26.9260239Z     at async runWithTaggedErrors (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/web/sandbox/sandbox.js:107:9)
+2025-12-27T19:24:26.9260270Z     at async NextNodeServer.runMiddleware (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next-server.js:1068:24)
+2025-12-27T19:24:26.9260378Z     at async NextNodeServer.handleCatchallMiddlewareRequest (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next-server.js:322:26)
+2025-12-27T19:24:26.9260404Z     at async NextNodeServer.handleRequestImpl (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/base-server.js:824:28)
+2025-12-27T19:24:27.0020727Z Error [ERR_HTTP_HEADERS_SENT]: Cannot append headers after they are sent to the client
+2025-12-27T19:24:27.0021367Z     at ServerResponse.appendHeader (node:_http_outgoing:711:11)
+2025-12-27T19:24:27.0021414Z     at /app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:24757
+2025-12-27T19:24:27.0021437Z     at _Headers.forEach (node:internal/deps/undici/undici:4698:26)
+2025-12-27T19:24:27.0021466Z     at m (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:24739)
+2025-12-27T19:24:27.0021501Z     at P (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:83073)
+2025-12-27T19:24:27.0021619Z     at nW (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:69673)
+2025-12-27T19:24:27.0021650Z     at n1 (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:81756)
+2025-12-27T19:24:27.0021671Z     at AsyncLocalStorage.run (node:async_hooks:346:14)
+2025-12-27T19:24:27.0021700Z     at Timeout._onTimeout (/app/node_modules/.pnpm/next@14.2.25_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:87776)
+2025-12-27T19:24:27.0021723Z     at listOnTimeout (node:internal/timers:581:17) {
+2025-12-27T19:24:27.0021743Z   code: 'ERR_HTTP_HEADERS_SENT',
+2025-12-27T19:24:27.0021764Z   digest: '2584200581'
+2025-12-27T19:24:27.0021783Z }

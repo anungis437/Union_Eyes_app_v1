@@ -1,0 +1,369 @@
+2025-12-25T00:24:58.9181764Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T00:25:00.6459448Z   ▲ Next.js 14.2.7
+2025-12-25T00:25:00.6459933Z   - Local:        http://localhost:3000
+2025-12-25T00:25:00.6459960Z 
+2025-12-25T00:25:00.6459990Z  ✓ Starting...
+2025-12-25T00:25:05.2249492Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T00:25:05.2430091Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T00:25:05.2430298Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T00:25:05.2430335Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T01:00:01.2403766Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T01:00:04.7211162Z   ▲ Next.js 14.2.7
+2025-12-25T01:00:04.7301370Z   - Local:        http://localhost:3000
+2025-12-25T01:00:04.7301598Z 
+2025-12-25T01:00:04.7301634Z  ✓ Starting...
+2025-12-25T01:00:13.3032234Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T01:00:13.3032674Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T01:00:13.3032705Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T01:00:13.3032806Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T01:35:04.8874935Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T01:35:06.1895114Z   ▲ Next.js 14.2.7
+2025-12-25T01:35:06.1899744Z   - Local:        http://localhost:3000
+2025-12-25T01:35:06.1982586Z 
+2025-12-25T01:35:06.1982686Z  ✓ Starting...
+2025-12-25T01:35:09.5525496Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T01:35:09.5525992Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T01:35:09.5526026Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T01:35:09.5526319Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T02:10:07.7325505Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T02:10:09.1316106Z   ▲ Next.js 14.2.7
+2025-12-25T02:10:09.1319790Z   - Local:        http://localhost:3000
+2025-12-25T02:10:09.1322957Z 
+2025-12-25T02:10:09.1325330Z  ✓ Starting...
+2025-12-25T02:10:12.6174118Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T02:10:12.6174506Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T02:10:12.6174538Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T02:10:12.6174565Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T02:45:08.1298060Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T02:45:09.6717964Z   ▲ Next.js 14.2.7
+2025-12-25T02:45:09.6736111Z   - Local:        http://localhost:3000
+2025-12-25T02:45:09.6801553Z 
+2025-12-25T02:45:09.6818776Z  ✓ Starting...
+2025-12-25T02:45:12.7800252Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T02:45:12.7801204Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T02:45:12.7801239Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T02:45:12.7801263Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T03:20:10.8171203Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T03:20:12.3494903Z   ▲ Next.js 14.2.7
+2025-12-25T03:20:12.3500054Z   - Local:        http://localhost:3000
+2025-12-25T03:20:12.3502513Z 
+2025-12-25T03:20:12.3505606Z  ✓ Starting...
+2025-12-25T03:20:15.9911384Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T03:20:15.9911782Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T03:20:15.9911813Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T03:20:15.9911912Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T03:55:10.9767638Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T03:55:12.5604148Z   ▲ Next.js 14.2.7
+2025-12-25T03:55:12.5607472Z   - Local:        http://localhost:3000
+2025-12-25T03:55:12.5609754Z 
+2025-12-25T03:55:12.5612106Z  ✓ Starting...
+2025-12-25T03:55:16.0200714Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T03:55:16.0201092Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T03:55:16.0201126Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T03:55:16.0201156Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T04:30:14.1364724Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T04:30:15.6248428Z   ▲ Next.js 14.2.7
+2025-12-25T04:30:15.6252287Z   - Local:        http://localhost:3000
+2025-12-25T04:30:15.6254753Z 
+2025-12-25T04:30:15.6257326Z  ✓ Starting...
+2025-12-25T04:30:18.8368315Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T04:30:18.8369073Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T04:30:18.8369107Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T04:30:18.8369135Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T05:05:14.4651478Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T05:05:16.1056556Z   ▲ Next.js 14.2.7
+2025-12-25T05:05:16.1102070Z   - Local:        http://localhost:3000
+2025-12-25T05:05:16.1102164Z 
+2025-12-25T05:05:16.1102192Z  ✓ Starting...
+2025-12-25T05:05:19.4582605Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T05:05:19.4583075Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T05:05:19.4583111Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T05:05:19.4583136Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T05:40:17.3055295Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T05:40:18.7499289Z   ▲ Next.js 14.2.7
+2025-12-25T05:40:18.7499894Z   - Local:        http://localhost:3000
+2025-12-25T05:40:18.7499923Z 
+2025-12-25T05:40:18.7500028Z  ✓ Starting...
+2025-12-25T05:40:22.1201698Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T05:40:22.1202074Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T05:40:22.1202112Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T05:40:22.1202138Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T06:15:19.3865034Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T06:15:21.0467555Z   ▲ Next.js 14.2.7
+2025-12-25T06:15:21.0473458Z   - Local:        http://localhost:3000
+2025-12-25T06:15:21.0476288Z 
+2025-12-25T06:15:21.0478889Z  ✓ Starting...
+2025-12-25T06:15:24.3224094Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T06:15:24.3224603Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T06:15:24.3224725Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T06:15:24.3224761Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T06:50:21.3139029Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T06:50:22.8156399Z   ▲ Next.js 14.2.7
+2025-12-25T06:50:22.8321058Z   - Local:        http://localhost:3000
+2025-12-25T06:50:22.8321225Z 
+2025-12-25T06:50:22.8321429Z  ✓ Starting...
+2025-12-25T06:50:26.1802550Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T06:50:26.1803032Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T06:50:26.1803070Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T06:50:26.1803094Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T07:25:24.6700650Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T07:25:26.1333867Z   ▲ Next.js 14.2.7
+2025-12-25T07:25:26.1334352Z   - Local:        http://localhost:3000
+2025-12-25T07:25:26.1334383Z 
+2025-12-25T07:25:26.1336260Z  ✓ Starting...
+2025-12-25T07:25:30.0342992Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T07:25:30.0360511Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T07:25:30.0457557Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T07:25:30.0457634Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T08:00:26.7845701Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T08:00:28.3805123Z   ▲ Next.js 14.2.7
+2025-12-25T08:00:28.3805818Z   - Local:        http://localhost:3000
+2025-12-25T08:00:28.3805847Z 
+2025-12-25T08:00:28.3805876Z  ✓ Starting...
+2025-12-25T08:00:32.2821749Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T08:00:32.2822383Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T08:00:32.2822421Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T08:00:32.2822532Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T08:35:29.2866411Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T08:35:31.0502750Z   ▲ Next.js 14.2.7
+2025-12-25T08:35:31.0522160Z   - Local:        http://localhost:3000
+2025-12-25T08:35:31.0533995Z 
+2025-12-25T08:35:31.0634819Z  ✓ Starting...
+2025-12-25T08:35:34.2183566Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T08:35:34.2184044Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T08:35:34.2184075Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T08:35:34.2184103Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T09:10:30.3834839Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T09:10:31.7761411Z   ▲ Next.js 14.2.7
+2025-12-25T09:10:31.7843147Z   - Local:        http://localhost:3000
+2025-12-25T09:10:31.7843322Z 
+2025-12-25T09:10:31.7843445Z  ✓ Starting...
+2025-12-25T09:10:35.3674100Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T09:10:35.3674567Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T09:10:35.3674595Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T09:10:35.3674618Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T09:45:34.4678129Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T09:45:35.7982762Z   ▲ Next.js 14.2.7
+2025-12-25T09:45:35.7983063Z   - Local:        http://localhost:3000
+2025-12-25T09:45:35.7983090Z 
+2025-12-25T09:45:35.7983119Z  ✓ Starting...
+2025-12-25T09:45:39.7056133Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T09:45:39.7056522Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T09:45:39.7056550Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T09:45:39.7056655Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T10:20:35.3497243Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T10:20:36.8472036Z   ▲ Next.js 14.2.7
+2025-12-25T10:20:36.8472251Z   - Local:        http://localhost:3000
+2025-12-25T10:20:36.8472275Z 
+2025-12-25T10:20:36.8472299Z  ✓ Starting...
+2025-12-25T10:20:40.6707147Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T10:20:40.6707528Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T10:20:40.6707558Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T10:20:40.6707643Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T10:55:36.4966647Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T10:55:38.0796857Z   ▲ Next.js 14.2.7
+2025-12-25T10:55:38.0883040Z   - Local:        http://localhost:3000
+2025-12-25T10:55:38.0894526Z 
+2025-12-25T10:55:38.0917790Z  ✓ Starting...
+2025-12-25T10:55:41.3305677Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T10:55:41.3306347Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T10:55:41.3306385Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T10:55:41.3306480Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T11:30:38.9282351Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T11:30:40.3223462Z   ▲ Next.js 14.2.7
+2025-12-25T11:30:40.3225870Z   - Local:        http://localhost:3000
+2025-12-25T11:30:40.3228098Z 
+2025-12-25T11:30:40.3230139Z  ✓ Starting...
+2025-12-25T11:30:43.9156832Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T11:30:43.9158562Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T11:30:43.9158613Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T11:30:43.9158642Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T12:05:41.1822306Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T12:05:42.8606691Z   ▲ Next.js 14.2.7
+2025-12-25T12:05:42.8611640Z   - Local:        http://localhost:3000
+2025-12-25T12:05:42.8613816Z 
+2025-12-25T12:05:42.8615974Z  ✓ Starting...
+2025-12-25T12:05:46.4193770Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T12:05:46.4194080Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T12:05:46.4194116Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T12:05:46.4194146Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T12:40:43.1863327Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T12:40:44.7950381Z   ▲ Next.js 14.2.7
+2025-12-25T12:40:44.7958201Z   - Local:        http://localhost:3000
+2025-12-25T12:40:44.7963431Z 
+2025-12-25T12:40:44.7972320Z  ✓ Starting...
+2025-12-25T12:40:48.5168537Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T12:40:48.5169314Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T12:40:48.5169438Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T12:40:48.5169469Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T13:15:45.2982630Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T13:15:46.8239251Z   ▲ Next.js 14.2.7
+2025-12-25T13:15:46.8256392Z   - Local:        http://localhost:3000
+2025-12-25T13:15:46.8267490Z 
+2025-12-25T13:15:46.8351712Z  ✓ Starting...
+2025-12-25T13:15:50.3189624Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T13:15:50.3190178Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T13:15:50.3190211Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T13:15:50.3190237Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T13:50:46.4892603Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T13:50:48.6017583Z   ▲ Next.js 14.2.7
+2025-12-25T13:50:48.6024181Z   - Local:        http://localhost:3000
+2025-12-25T13:50:48.6027469Z 
+2025-12-25T13:50:48.6033252Z  ✓ Starting...
+2025-12-25T13:50:51.9834465Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T13:50:51.9835244Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T13:50:51.9835279Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T13:50:51.9835394Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T14:25:49.0857422Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T14:25:50.7009468Z   ▲ Next.js 14.2.7
+2025-12-25T14:25:50.7012351Z   - Local:        http://localhost:3000
+2025-12-25T14:25:50.7014898Z 
+2025-12-25T14:25:50.7018047Z  ✓ Starting...
+2025-12-25T14:25:53.8425846Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T14:25:53.8426304Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T14:25:53.8426340Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T14:25:53.8426581Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T15:00:50.6025144Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T15:00:52.2123748Z   ▲ Next.js 14.2.7
+2025-12-25T15:00:52.2147242Z   - Local:        http://localhost:3000
+2025-12-25T15:00:52.2255328Z 
+2025-12-25T15:00:52.2255616Z  ✓ Starting...
+2025-12-25T15:00:55.8065683Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T15:00:55.8066079Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T15:00:55.8066111Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T15:00:55.8066136Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T15:35:52.2683026Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T15:35:53.5410633Z   ▲ Next.js 14.2.7
+2025-12-25T15:35:53.5416053Z   - Local:        http://localhost:3000
+2025-12-25T15:35:53.5419683Z 
+2025-12-25T15:35:53.5422472Z  ✓ Starting...
+2025-12-25T15:35:57.1151336Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T15:35:57.1152004Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T15:35:57.1152103Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T15:35:57.1152130Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T16:10:55.3117922Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T16:10:57.4864668Z   ▲ Next.js 14.2.7
+2025-12-25T16:10:57.4871807Z   - Local:        http://localhost:3000
+2025-12-25T16:10:57.4874855Z 
+2025-12-25T16:10:57.4878720Z  ✓ Starting...
+2025-12-25T16:11:01.3615618Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T16:11:01.3616207Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T16:11:01.3616245Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T16:11:01.3616271Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T16:45:57.3631552Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T16:45:58.8385554Z   ▲ Next.js 14.2.7
+2025-12-25T16:45:58.8401152Z   - Local:        http://localhost:3000
+2025-12-25T16:45:58.8406602Z 
+2025-12-25T16:45:58.8485716Z  ✓ Starting...
+2025-12-25T16:46:02.4646194Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T16:46:02.4646704Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T16:46:02.4646848Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T16:46:02.4646881Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T17:20:59.2120581Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T17:21:00.8057741Z   ▲ Next.js 14.2.7
+2025-12-25T17:21:00.8155728Z   - Local:        http://localhost:3000
+2025-12-25T17:21:00.8157530Z 
+2025-12-25T17:21:00.8157605Z  ✓ Starting...
+2025-12-25T17:21:04.5438827Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T17:21:04.5439563Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T17:21:04.5439676Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T17:21:04.5439703Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T17:56:01.7959985Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T17:56:05.5818155Z   ▲ Next.js 14.2.7
+2025-12-25T17:56:05.5818595Z   - Local:        http://localhost:3000
+2025-12-25T17:56:05.5818631Z 
+2025-12-25T17:56:05.5818657Z  ✓ Starting...
+2025-12-25T17:56:09.1987343Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T17:56:09.1987877Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T17:56:09.1987912Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T17:56:09.1987937Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T18:31:04.4135221Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T18:31:06.3695760Z   ▲ Next.js 14.2.7
+2025-12-25T18:31:06.3846486Z   - Local:        http://localhost:3000
+2025-12-25T18:31:06.3846566Z 
+2025-12-25T18:31:06.3846597Z  ✓ Starting...
+2025-12-25T18:31:09.9648525Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T18:31:09.9648997Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T18:31:09.9649035Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T18:31:09.9649068Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T19:06:06.7813074Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T19:06:08.1920057Z   ▲ Next.js 14.2.7
+2025-12-25T19:06:08.1920510Z   - Local:        http://localhost:3000
+2025-12-25T19:06:08.1920541Z 
+2025-12-25T19:06:08.1920562Z  ✓ Starting...
+2025-12-25T19:06:11.9667630Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T19:06:11.9668081Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T19:06:11.9668114Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T19:06:11.9668139Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T19:41:07.5787721Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T19:41:10.8074505Z   ▲ Next.js 14.2.7
+2025-12-25T19:41:10.8159179Z   - Local:        http://localhost:3000
+2025-12-25T19:41:10.8159319Z 
+2025-12-25T19:41:10.8159347Z  ✓ Starting...
+2025-12-25T19:41:14.3055092Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T19:41:14.3055466Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T19:41:14.3055494Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T19:41:14.3055516Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T20:16:08.8999883Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T20:16:10.2976441Z   ▲ Next.js 14.2.7
+2025-12-25T20:16:10.2976705Z   - Local:        http://localhost:3000
+2025-12-25T20:16:10.2976727Z 
+2025-12-25T20:16:10.2976973Z  ✓ Starting...
+2025-12-25T20:16:13.7174624Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T20:16:13.7175258Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T20:16:13.7175296Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T20:16:13.7175324Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T20:51:10.7783841Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T20:51:12.2931243Z   ▲ Next.js 14.2.7
+2025-12-25T20:51:12.2953365Z   - Local:        http://localhost:3000
+2025-12-25T20:51:12.2953842Z 
+2025-12-25T20:51:12.2953880Z  ✓ Starting...
+2025-12-25T20:51:16.0345010Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T20:51:16.0345751Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T20:51:16.0345786Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T20:51:16.0345821Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T21:26:13.2627148Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T21:26:14.7125175Z   ▲ Next.js 14.2.7
+2025-12-25T21:26:14.7221327Z   - Local:        http://localhost:3000
+2025-12-25T21:26:14.7221435Z 
+2025-12-25T21:26:14.7221462Z  ✓ Starting...
+2025-12-25T21:26:18.3065843Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T21:26:18.3066277Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T21:26:18.3066319Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T21:26:18.3066580Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T22:01:14.5736524Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T22:01:16.2810449Z   ▲ Next.js 14.2.7
+2025-12-25T22:01:16.2912378Z   - Local:        http://localhost:3000
+2025-12-25T22:01:16.2912791Z 
+2025-12-25T22:01:16.2912832Z  ✓ Starting...
+2025-12-25T22:01:19.5243790Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T22:01:19.5244258Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T22:01:19.5244287Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T22:01:19.5244310Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T22:36:16.7593225Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T22:36:18.1657356Z   ▲ Next.js 14.2.7
+2025-12-25T22:36:18.1663145Z   - Local:        http://localhost:3000
+2025-12-25T22:36:18.1665613Z 
+2025-12-25T22:36:18.1667778Z  ✓ Starting...
+2025-12-25T22:36:21.6653651Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T22:36:21.6654463Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T22:36:21.6654504Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T22:36:21.6654533Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T23:11:21.3093669Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T23:11:23.0170783Z   ▲ Next.js 14.2.7
+2025-12-25T23:11:23.0193211Z   - Local:        http://localhost:3000
+2025-12-25T23:11:23.0196887Z 
+2025-12-25T23:11:23.0200347Z  ✓ Starting...
+2025-12-25T23:11:26.5209546Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T23:11:26.5210632Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T23:11:26.5210668Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T23:11:26.5210694Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-25T23:46:20.8340702Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-25T23:46:22.5010846Z   ▲ Next.js 14.2.7
+2025-12-25T23:46:22.5113741Z   - Local:        http://localhost:3000
+2025-12-25T23:46:22.5114000Z 
+2025-12-25T23:46:22.5114036Z  ✓ Starting...
+2025-12-25T23:46:25.9940018Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-25T23:46:25.9940548Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-25T23:46:25.9940594Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-25T23:46:25.9940622Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
