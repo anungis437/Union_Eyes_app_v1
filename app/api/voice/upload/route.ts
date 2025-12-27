@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialization to avoid module-level env var access during build
+let supabaseClient: ReturnType<typeof createClient> | null = null;
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+  }
+  return supabaseClient;
+}
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -61,7 +68,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { data, error } = await getSupabaseClient().storage
       .from('voice-recordings')
       .upload(filename, buffer, {
         contentType: audioFile.type,
@@ -77,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = getSupabaseClient().storage
       .from('voice-recordings')
       .getPublicUrl(filename);
 
@@ -129,7 +136,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete from Supabase Storage
-    const { error } = await supabase.storage
+    const { error } = await getSupabaseClient().storage
       .from('voice-recordings')
       .remove([path]);
 
