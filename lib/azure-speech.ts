@@ -5,18 +5,18 @@
 
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
-if (!process.env.AZURE_SPEECH_KEY) {
-  throw new Error("AZURE_SPEECH_KEY is not defined in environment variables");
-}
-
-if (!process.env.AZURE_SPEECH_REGION) {
-  throw new Error("AZURE_SPEECH_REGION is not defined in environment variables");
-}
-
 /**
  * Creates a speech configuration for Azure Speech Services
  */
 export function createSpeechConfig() {
+  if (!process.env.AZURE_SPEECH_KEY) {
+    throw new Error("AZURE_SPEECH_KEY is not defined in environment variables");
+  }
+
+  if (!process.env.AZURE_SPEECH_REGION) {
+    throw new Error("AZURE_SPEECH_REGION is not defined in environment variables");
+  }
+
   const speechConfig = sdk.SpeechConfig.fromSubscription(
     process.env.AZURE_SPEECH_KEY!,
     process.env.AZURE_SPEECH_REGION!
