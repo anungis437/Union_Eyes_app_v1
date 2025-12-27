@@ -2,8 +2,8 @@ name: Scheduled Reports Cron
 
 on:
   schedule:
-    # Run every 15 minutes
-    - cron: '*/15 * * * *'
+    # Run every Monday at 9am UTC
+    - cron: '0 9 * * 1'
   # Allow manual triggering for testing
   workflow_dispatch:
 
