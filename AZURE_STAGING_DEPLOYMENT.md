@@ -8,6 +8,12 @@
 - `NEXT_PUBLIC_APP_URL` - Staging app URL (https://unioneyes-staging-app.azurewebsites.net)
 - `NEXT_TELEMETRY_DISABLED=1`
 
+### ⚠️ IMPORTANT: Production Keys Required
+**DO NOT use development keys (pk_test_*) in staging/production environments!**
+- Development keys have strict usage limits and will cause warnings
+- Get production keys from [Clerk Dashboard](https://dashboard.clerk.com/)
+- Production keys start with `pk_live_` (publishable) and `sk_live_` (secret)
+
 ### Database
 - `DATABASE_URL` - PostgreSQL connection string (Azure Database for PostgreSQL)
 
