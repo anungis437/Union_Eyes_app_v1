@@ -75,8 +75,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./next.config.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy the .next build directory (non-standalone mode)
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+# Copy node_modules for runtime dependencies
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -92,5 +94,5 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/api/health/liveness || exit 1
 
-# Start application
-CMD ["node", "server.js"]
+# Start application using Next.js start command
+CMD ["node_modules/.bin/next", "start"]
