@@ -33,26 +33,8 @@ const nextConfig = {
   
   // Experimental features for faster builds
   experimental: {
-    // Turbotrace for faster dependency analysis
-    turbotrace: {
-      logLevel: 'error',
-      logAll: false,
-      contextDirectory: process.cwd(),
-      // Limit memory usage during trace collection
-      memoryLimit: 2048,
-    },
-    // Disable output file tracing to prevent hanging during build
-    outputFileTracingRoot: undefined,
-    outputFileTracingIncludes: {},
-    outputFileTracingExcludes: {
-      '*': [
-        'node_modules/@swc/core-linux-x64-gnu',
-        'node_modules/@swc/core-linux-x64-musl', 
-        'node_modules/@esbuild/linux-x64',
-        'node_modules/sharp',
-        'node_modules/canvas',
-      ],
-    },
+    // Completely disable turbotrace to prevent build hanging
+    turbotrace: false,
     // Optimize package imports
     optimizePackageImports: [
       '@radix-ui/react-accordion',
