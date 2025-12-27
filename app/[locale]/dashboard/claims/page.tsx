@@ -118,7 +118,9 @@ const mapDbClaimToCase = (claim: DbClaim): Case => ({
   priority: mapDbPriorityToUi(claim.priority),
   category: claimTypeLabels[claim.claimType] || claim.claimType,
   submittedDate: new Date(claim.createdAt).toISOString().split('T')[0],
-  lastUpdate: new Date(claim.lastActivityAt).toISOString().split('T')[0],
+  lastUpdate: claim.lastActivityAt 
+    ? new Date(claim.lastActivityAt).toISOString().split('T')[0] 
+    : new Date(claim.createdAt).toISOString().split('T')[0],
   assignedTo: claim.assignedTo || undefined,
   notes: claim.resolutionNotes || undefined,
 });

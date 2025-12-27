@@ -224,7 +224,8 @@
     "unauthorized": "You are not authorized to perform this action.",
     "notFound": "The requested resource was not found.",
     "validationError": "Please check your input and try again.",
-    "serverError": "Server error. Please try again later."
+    "serverError": "Server error. Please try again later.",
+    "loadingError": "Failed to load data. Please refresh the page."
   },
   "financial": {
     "title": "Financial Analytics",
