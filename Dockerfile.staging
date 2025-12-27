@@ -47,6 +47,7 @@ ARG DATABASE_URL
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DOCKER_BUILD=true
 
 # Build workspace packages first (ui, auth, ai, etc.)
 RUN pnpm --filter "@unioneyes/*" build || echo "Some packages failed to build, continuing..."
