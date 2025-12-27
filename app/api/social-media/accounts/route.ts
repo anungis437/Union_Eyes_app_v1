@@ -11,12 +11,19 @@ import { createMetaClient } from '@/lib/social-media/meta-api-client';
 import { createTwitterClient, generatePKCE } from '@/lib/social-media/twitter-api-client';
 import { createLinkedInClient } from '@/lib/social-media/linkedin-api-client';
 import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@getSupabaseClient()/getSupabaseClient()-js';
 
-// Supabase client for social media tables (not in Drizzle schema yet)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Lazy initialization to avoid build-time execution
+let supabaseClient: ReturnType<typeof createClient> | null = null;
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return supabaseClient;
+}
 
 /**
  * GET /api/social-media/accounts
@@ -36,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch accounts
-    const { data: accounts, error } = await supabase
+    const { data: accounts, error } = await getSupabaseClient()
       .from('social_accounts')
       .select(`
         id,
@@ -193,7 +200,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify user has access to this account
-    const { data: account, error: fetchError } = await supabase
+    const { data: account, error: fetchError } = await getSupabaseClient()
       .from('social_accounts')
       .select('*')
       .eq('id', accountId)
@@ -226,7 +233,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete account from database
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await getSupabaseClient()
       .from('social_accounts')
       .delete()
       .eq('id', accountId);
@@ -277,7 +284,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify user has access to this account
-    const { data: account, error: fetchError } = await supabase
+    const { data: account, error: fetchError } = await getSupabaseClient()
       .from('social_accounts')
       .select('*')
       .eq('id', account_id)
@@ -349,7 +356,7 @@ export async function PUT(request: NextRequest) {
         updateData.refresh_token = newRefreshToken;
       }
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await getSupabaseClient()
         .from('social_accounts')
         .update(updateData)
         .eq('id', account_id);
@@ -364,7 +371,7 @@ export async function PUT(request: NextRequest) {
       });
     } catch (error) {
       // Update account status to error
-      await supabase
+      await getSupabaseClient()
         .from('social_accounts')
         .update({
           status: 'error',
