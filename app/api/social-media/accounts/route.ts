@@ -11,7 +11,7 @@ import { createMetaClient } from '@/lib/social-media/meta-api-client';
 import { createTwitterClient, generatePKCE } from '@/lib/social-media/twitter-api-client';
 import { createLinkedInClient } from '@/lib/social-media/linkedin-api-client';
 import { cookies } from 'next/headers';
-import { createClient } from '@getSupabaseClient()/getSupabaseClient()-js';
+import { createClient } from '@supabase/supabase-js';
 
 // Lazy initialization to avoid build-time execution
 let supabaseClient: ReturnType<typeof createClient> | null = null;
