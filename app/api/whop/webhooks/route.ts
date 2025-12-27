@@ -6,8 +6,14 @@ import { NextResponse } from "next/server";
 import { handlePaymentSuccess, handlePaymentFailed } from "./utils/payment-handlers";
 import { handleMembershipChange } from "./utils/membership-handlers";
 
-// Create the webhook handler at the module level
-const handleWebhook = makeWebhookHandler();
+// Lazy initialization to avoid module-level env var access during build
+let handleWebhook: ReturnType<typeof makeWebhookHandler> | null = null;
+function getWebhookHandler() {
+  if (!getWebhookHandler()) {
+    handleWebhook = makeWebhookHandler();
+  }
+  return getWebhookHandler();
+}
 
 /**
  * Main webhook handler function
@@ -54,7 +60,7 @@ export async function POST(req: Request) {
     
     // Process the webhook with error handling for each handler function
     try {
-      return handleWebhook(newReq, {
+      return getWebhookHandler()(newReq, {
         // When a membership becomes invalid
         membershipWentInvalid(event) {
           try {
