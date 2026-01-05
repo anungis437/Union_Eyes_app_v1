@@ -42,7 +42,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={poppins.className} suppressHydrationWarning>
-        <ClerkProvider>
+        <ClerkProvider
+          signInUrl="/en-CA/login"
+          signUpUrl="/en-CA/signup"
+          signInFallbackRedirectUrl="/en-CA/dashboard"
+          signUpFallbackRedirectUrl="/en-CA/dashboard"
+        >
           <Providers
             attribute="class"
             defaultTheme="light"
