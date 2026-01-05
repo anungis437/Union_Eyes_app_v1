@@ -39,14 +39,6 @@ export default clerkMiddleware((auth, req) => {
     return NextResponse.next();
   }
   
-  // Protect non-public routes
-  if (!isPublicRoute(req)) {
-    auth().protect();
-  }
-  
-  // For non-API routes, run i18n middleware and return its response
-  return intlMiddleware(req);
-  
   // Check for problematic URLs that might cause 431 errors
   // This covers both Clerk handshake params and payment provider redirects
   if (
@@ -81,20 +73,23 @@ export default clerkMiddleware((auth, req) => {
   // Special handling for frictionless payment flow
   // If a user has just completed signup after payment and is authenticated,
   // redirect them to the dashboard instead of keeping them on the signup page
-  if (req.nextUrl.pathname.startsWith('/signup') && req.nextUrl.search.includes('payment=success')) {
-    const { userId } = auth();
-    
-    // If user is authenticated and on signup page with payment=success, they should go to dashboard
-    if (userId) {
-      console.log("Frictionless payment user authenticated, redirecting to dashboard");
-      const dashboardUrl = new URL('/dashboard', req.url);
-      dashboardUrl.searchParams.set('payment', 'success');
-      dashboardUrl.searchParams.set('cb', Date.now().toString().slice(-4));
-      return NextResponse.redirect(dashboardUrl);
-    }
+  const { userId } = auth();
+  
+  // Prevent logged-in users from accessing signup/login pages (causes redirect loop)
+  if (userId && (req.nextUrl.pathname.includes('/signup') || req.nextUrl.pathname.includes('/login'))) {
+    console.log("Authenticated user trying to access auth page, redirecting to dashboard");
+    const locale = req.nextUrl.pathname.split('/')[1] || defaultLocale;
+    const dashboardUrl = new URL(`/${locale}/dashboard`, req.url);
+    return NextResponse.redirect(dashboardUrl);
   }
   
-  return NextResponse.next();
+  // Protect non-public routes
+  if (!isPublicRoute(req)) {
+    auth().protect();
+  }
+  
+  // For non-API routes, run i18n middleware and return its response
+  return intlMiddleware(req);
 });
 
 export const config = {
