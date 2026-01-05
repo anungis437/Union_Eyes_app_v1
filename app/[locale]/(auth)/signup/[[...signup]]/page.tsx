@@ -151,6 +151,7 @@ export default function SignUpPage() {
       {/* Clerk SignUp component */}
       {!signupComplete && (
         <SignUp 
+          fallbackRedirectUrl="/dashboard"
           appearance={{ 
             baseTheme: theme === "dark" ? dark : undefined,
             elements: {

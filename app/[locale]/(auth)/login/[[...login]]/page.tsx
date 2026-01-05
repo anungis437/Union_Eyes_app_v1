@@ -15,7 +15,7 @@ export default function LoginPage() {
       <div className="w-full">
         <SignIn
           // Always redirect to dashboard or the specified redirect URL
-          redirectUrl={redirectUrl || "/dashboard"}
+          fallbackRedirectUrl={redirectUrl || "/dashboard"}
           appearance={{ 
             baseTheme: theme === "dark" ? dark : undefined,
             elements: {
