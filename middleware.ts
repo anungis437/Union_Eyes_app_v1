@@ -26,8 +26,6 @@ const intlMiddleware = createIntlMiddleware({
 
 // This handles both payment provider use cases from whop-setup.md and stripe-setup.md
 export default clerkMiddleware((auth, req) => {
-  const { userId } = auth();
-  
   // Skip middleware for static files and API routes
   if (req.nextUrl.pathname.startsWith('/api') || 
       req.nextUrl.pathname.startsWith('/_next') ||
@@ -37,16 +35,6 @@ export default clerkMiddleware((auth, req) => {
       console.log("Skipping Clerk auth for Whop webhook endpoint");
     }
     return NextResponse.next();
-  }
-  
-  // Prevent logged-in users from accessing signup/login pages
-  if (userId && (req.nextUrl.pathname.includes('/signup') || req.nextUrl.pathname.includes('/login'))) {
-    console.log("Authenticated user trying to access auth page, redirecting to dashboard");
-    const locale = req.nextUrl.pathname.split('/')[1] || defaultLocale;
-    // Check if locale is valid
-    const validLocale = locales.includes(locale as any) ? locale : defaultLocale;
-    const dashboardUrl = new URL(`/${validLocale}/dashboard`, req.url);
-    return NextResponse.redirect(dashboardUrl);
   }
   
   // Check for problematic URLs that might cause 431 errors
