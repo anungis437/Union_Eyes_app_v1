@@ -1,6 +1,6 @@
 "use client";
 
-import { SignUp } from "@clerk/nextjs";
+import { SignUp, useUser } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { useTheme } from "next-themes";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -25,6 +25,7 @@ export default function SignUpPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isLoaded, signUp } = useSignUp();
+  const { isSignedIn, isLoaded: userLoaded } = useUser();
   
   // States for profile claiming
   const [claimingProfile, setClaimingProfile] = useState(false);
@@ -40,6 +41,18 @@ export default function SignUpPage() {
   const email = searchParams.get("email");
   const token = searchParams.get("token");
   const isPaymentSuccess = searchParams.get("payment") === "success";
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (userLoaded && isSignedIn) {
+      router.push("/dashboard");
+    }
+  }, [userLoaded, isSignedIn, router]);
+
+  // Don't render SignUp if already signed in
+  if (!userLoaded || isSignedIn) {
+    return null;
+  }
   
   // Define handleProfileClaiming with useCallback to avoid dependency issues
   const handleProfileClaiming = useCallback(async (userId: string) => {
