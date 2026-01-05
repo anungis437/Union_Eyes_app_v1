@@ -26,17 +26,27 @@ const intlMiddleware = createIntlMiddleware({
 
 // This handles both payment provider use cases from whop-setup.md and stripe-setup.md
 export default clerkMiddleware((auth, req) => {
-  // Skip i18n middleware for API routes
-  if (req.nextUrl.pathname.startsWith('/api')) {
+  const { userId } = auth();
+  
+  // Skip middleware for static files and API routes
+  if (req.nextUrl.pathname.startsWith('/api') || 
+      req.nextUrl.pathname.startsWith('/_next') ||
+      req.nextUrl.pathname.includes('.')) {
     // Skip auth for webhook endpoints
     if (req.nextUrl.pathname.startsWith('/api/whop/webhooks')) {
       console.log("Skipping Clerk auth for Whop webhook endpoint");
-      return NextResponse.next();
     }
-    
-    // For other API routes, continue without i18n middleware
-    // API routes should handle their own auth checks
     return NextResponse.next();
+  }
+  
+  // Prevent logged-in users from accessing signup/login pages
+  if (userId && (req.nextUrl.pathname.includes('/signup') || req.nextUrl.pathname.includes('/login'))) {
+    console.log("Authenticated user trying to access auth page, redirecting to dashboard");
+    const locale = req.nextUrl.pathname.split('/')[1] || defaultLocale;
+    // Check if locale is valid
+    const validLocale = locales.includes(locale as any) ? locale : defaultLocale;
+    const dashboardUrl = new URL(`/${validLocale}/dashboard`, req.url);
+    return NextResponse.redirect(dashboardUrl);
   }
   
   // Check for problematic URLs that might cause 431 errors
@@ -70,19 +80,6 @@ export default clerkMiddleware((auth, req) => {
     return NextResponse.redirect(url);
   }
 
-  // Special handling for frictionless payment flow
-  // If a user has just completed signup after payment and is authenticated,
-  // redirect them to the dashboard instead of keeping them on the signup page
-  const { userId } = auth();
-  
-  // Prevent logged-in users from accessing signup/login pages (causes redirect loop)
-  if (userId && (req.nextUrl.pathname.includes('/signup') || req.nextUrl.pathname.includes('/login'))) {
-    console.log("Authenticated user trying to access auth page, redirecting to dashboard");
-    const locale = req.nextUrl.pathname.split('/')[1] || defaultLocale;
-    const dashboardUrl = new URL(`/${locale}/dashboard`, req.url);
-    return NextResponse.redirect(dashboardUrl);
-  }
-  
   // Protect non-public routes
   if (!isPublicRoute(req)) {
     auth().protect();
