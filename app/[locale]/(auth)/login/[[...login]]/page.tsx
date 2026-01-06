@@ -5,6 +5,7 @@ import { dark } from "@clerk/themes";
 import { useTheme } from "next-themes";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -16,13 +17,17 @@ export default function LoginPage() {
   // Redirect if already signed in
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      router.push(redirectUrl || "/dashboard");
+      router.replace(redirectUrl || "/dashboard");
     }
   }, [isLoaded, isSignedIn, redirectUrl, router]);
 
-  // Don't render SignIn if already signed in
+  // Don't render SignIn if already signed in or still loading
   if (!isLoaded || isSignedIn) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin h-8 w-8 text-purple-600" />
+      </div>
+    );
   }
 
   return (
@@ -30,7 +35,7 @@ export default function LoginPage() {
       <div className="w-full">
         <SignIn
           // Always redirect to dashboard or the specified redirect URL
-          fallbackRedirectUrl={redirectUrl || "/dashboard"}
+          fallbackRedirectUrl={redirectUrl || "/en-CA/dashboard"}
           appearance={{ 
             baseTheme: theme === "dark" ? dark : undefined,
             elements: {

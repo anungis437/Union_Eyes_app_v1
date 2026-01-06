@@ -45,13 +45,17 @@ export default function SignUpPage() {
   // Redirect if already signed in
   useEffect(() => {
     if (userLoaded && isSignedIn) {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     }
   }, [userLoaded, isSignedIn, router]);
 
-  // Don't render SignUp if already signed in
+  // Don't render SignUp if already signed in or still loading
   if (!userLoaded || isSignedIn) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin h-8 w-8 text-purple-600" />
+      </div>
+    );
   }
   
   // Define handleProfileClaiming with useCallback to avoid dependency issues
@@ -164,7 +168,7 @@ export default function SignUpPage() {
       {/* Clerk SignUp component */}
       {!signupComplete && (
         <SignUp 
-          fallbackRedirectUrl="/dashboard"
+          fallbackRedirectUrl="/en-CA/dashboard"
           appearance={{ 
             baseTheme: theme === "dark" ? dark : undefined,
             elements: {
