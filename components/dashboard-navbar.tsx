@@ -21,12 +21,12 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
   const locale = useLocale();
   const [notificationCount] = useState(3); // TODO: Replace with actual notification count
   
-  // TODO: Implement proper admin role checking
-  const isAdmin = false;
+  // TODO: Implement proper admin role checking from organizationMembers
+  const isAdmin = true; // Temporary: Show all nav items
   const isCongressStaff = false; // TODO: Implement congress staff role checking
   const isFederationStaff = false; // TODO: Implement federation staff role checking
-  const isOfficer = false; // TODO: Implement officer role checking
-  const isSteward = false; // TODO: Implement steward role checking
+  const isOfficer = true; // Temporary: Show officer items
+  const isSteward = true; // Temporary: Show steward items
   const isCrossOrgStaff = isCongressStaff || isFederationStaff;
 
   // Navigation items based on user role

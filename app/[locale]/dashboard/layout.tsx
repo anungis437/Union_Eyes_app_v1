@@ -78,8 +78,39 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   let profile = await getProfileByUserId(userId);
 
+  // Auto-create profile if it doesn't exist (prevents redirect loop)
   if (!profile) {
-    return redirect("/signup");
+    const user = await currentUser();
+    const userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
+    const firstName = user?.firstName || "";
+    const lastName = user?.lastName || "";
+    
+    logger.info(`Auto-creating profile for user ${userId} (${userEmail})`);
+    
+    try {
+      // Create the profile
+      const profileData = {
+        clerkUserId: userId,
+        email: userEmail,
+        firstName: firstName,
+        lastName: lastName,
+      };
+      
+      await db.insert(profiles).values(profileData);
+      
+      // Fetch the newly created profile
+      profile = await getProfileByUserId(userId);
+      
+      if (!profile) {
+        logger.error(`Failed to create profile for user ${userId}`);
+        return redirect("/signup");
+      }
+      
+      logger.info(`Successfully created profile ${profile.id} for user ${userId}`);
+    } catch (error) {
+      logger.error(`Error creating profile for user ${userId}:`, error);
+      return redirect("/signup");
+    }
   }
 
   // Run just-in-time credit check for expired subscriptions
