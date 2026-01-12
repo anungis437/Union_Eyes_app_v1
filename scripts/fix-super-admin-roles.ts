@@ -20,10 +20,36 @@ const SUPER_ADMINS = [
 async function fixSuperAdminRoles() {
   console.log('🔧 Fixing super admin roles in Default Organization...\n');
 
+  // First, verify what's currently in the database
+  console.log('📋 Current roles:\n');
+  for (const admin of SUPER_ADMINS) {
+    const [current] = await db
+      .select({
+        name: organizationMembers.name,
+        email: organizationMembers.email,
+        role: organizationMembers.role,
+        status: organizationMembers.status
+      })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.userId, admin.userId),
+          eq(organizationMembers.organizationId, DEFAULT_ORG_ID)
+        )
+      )
+      .limit(1);
+
+    if (current) {
+      console.log(`${current.name} (${current.email}): ${current.role}`);
+    }
+  }
+
+  console.log('\n🔧 Updating to super_admin...\n');
+
   for (const admin of SUPER_ADMINS) {
     console.log(`Updating ${admin.name} (${admin.email})...`);
     
-    const result = await db
+    await db
       .update(organizationMembers)
       .set({
         role: 'super_admin',
@@ -40,7 +66,7 @@ async function fixSuperAdminRoles() {
   }
 
   // Verify the changes
-  console.log('📋 Verifying super admin roles:\n');
+  console.log('✅ Verifying updated roles:\n');
   
   for (const admin of SUPER_ADMINS) {
     const [membership] = await db
@@ -67,7 +93,11 @@ async function fixSuperAdminRoles() {
   }
 
   console.log('✅ Super admin roles fixed!\n');
-  console.log('🚀 Next steps:');
+  console.log('🚀 Deploy this change:');
+  console.log('   git add -A');
+  console.log('   git commit -m "Update admin roles to super_admin"');
+  console.log('   git push origin staging');
+  console.log('\n💡 After deployment:');
   console.log('   1. Hard refresh browser (Ctrl+Shift+R)');
   console.log('   2. Admin navigation should now be visible');
   console.log('   3. Admin API endpoints should return 200 instead of 403\n');
