@@ -12,8 +12,9 @@ import { cookies } from "next/headers";
 
 /**
  * Default organization ID used for system operations
+ * This should match the Master Admin organization where super admins are members
  */
-export const DEFAULT_ORGANIZATION_ID = "00000000-0000-0000-0000-000000000001";
+export const DEFAULT_ORGANIZATION_ID = "4ba2afb4-2058-4ada-b3d7-74794c9775b2"; // Master Admin org
 
 /**
  * Get the organization ID for a given user ID.
