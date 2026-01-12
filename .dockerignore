@@ -4,6 +4,9 @@
 .gitignore
 .gitattributes
 
+# Temporarily exclude AI routes (require workspace packages)
+app/api/ai
+
 # Dependencies - exclude ALL node_modules (we'll install fresh in container)
 node_modules
 **/node_modules
