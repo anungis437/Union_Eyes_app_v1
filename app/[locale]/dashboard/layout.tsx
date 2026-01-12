@@ -15,10 +15,12 @@ import PaymentSuccessPopup from "@/components/payment-success-popup";
 import { OrganizationSelector } from "@/components/organization/organization-selector";
 import { OrganizationBreadcrumb } from "@/components/organization/organization-breadcrumb";
 import LanguageSwitcher from "@/components/language-switcher";
-import { getUserRole } from "@/lib/auth-middleware";
 import { cookies } from "next/headers";
 import type { SelectProfile } from "@/db/schema/profiles-schema";
 import { logger } from "@/lib/logger";
+import { getUserRoleInOrganization, getOrganizationIdForUser } from "@/lib/organization-utils";
+import { db } from "@/db/db";
+import { profiles } from "@/db/schema";
 
 /**
  * Check if a free user with an expired billing cycle needs their credits downgraded
@@ -125,15 +127,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const user = await currentUser();
   const userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
   
-  // Fetch actual user role from tenantUsers table
-  const cookieStore = cookies();
-  const organizationId = cookieStore.get('active-organization')?.value;
+  // Get user's organization and role
+  const organizationId = await getOrganizationIdForUser(userId);
+  const userRole = await getUserRoleInOrganization(userId, organizationId) || 'member';
   
-  const userRole = organizationId 
-    ? await getUserRole(userId, organizationId) || 'member'
-    : 'member';
-  
-  logger.debug('User role fetched', {
+  logger.debug('User role fetched from organizationMembers', {
     userId,
     organizationId,
     role: userRole
