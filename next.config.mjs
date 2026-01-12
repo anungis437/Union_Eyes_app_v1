@@ -70,6 +70,14 @@ const nextConfig = {
   // Docker already handles dependencies, no need for Next.js to trace them
   output: process.env.DOCKER_BUILD === 'true' ? undefined : 'standalone',
   
+  // Skip API route static analysis during build (speeds up Docker builds)
+  // API routes are inherently dynamic and don't need static generation
+  staticPageGenerationTimeout: 120, // 2 minutes max per page
+  generateBuildId: async () => {
+    // Use git commit hash or timestamp for build ID
+    return process.env.BUILD_ID || Date.now().toString();
+  },
+  
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
