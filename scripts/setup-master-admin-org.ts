@@ -137,7 +137,7 @@ async function setupMasterAdminOrg() {
         
         await db.insert(organizationMembers).values({
           id: uuidv4(),
-          tenantId: '00000000-0000-0000-0000-000000000001',  // Use default tenant ID
+          tenantId: masterOrg.id,  // Use the Master Admin org ID as tenant ID
           organizationId: masterOrg.id,
           userId: profile.userId,
           name: fullName || email,
