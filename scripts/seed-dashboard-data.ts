@@ -67,7 +67,7 @@ async function seedData() {
       // Add to organization
       await db.insert(organizationMembers).values({
         id: orgMemberId,
-        tenantId: '4ba2afb4-2058-4ada-b3d7-74794c9775b2', // Master Admin org (default org)
+        tenantId: '458a56cb-251a-4c91-a0b5-81bb8ac39087', // Default Organization
         organizationId: orgId,
         userId: clerkUserId,
         name: `Member ${i}`,
