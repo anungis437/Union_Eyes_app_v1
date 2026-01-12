@@ -425,3 +425,4 @@ export interface ClientTrustBalance {
     balance: number;
     lastTransactionDate: Date;
 }
+//# sourceMappingURL=billing.d.ts.map

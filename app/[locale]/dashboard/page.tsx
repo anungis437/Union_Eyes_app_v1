@@ -4,8 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
-
-export const dynamic = 'force-dynamic';
 import { 
   FileText, 
   Mic, 
@@ -26,6 +24,7 @@ import { useEffect, useState } from "react";
 import { DeadlineWidget } from "@/components/deadlines";
 import { useRouter } from "next/navigation";
 import { useOrganizationId } from "@/lib/hooks/use-organization";
+import { SeedDataButton } from "@/components/dev/seed-data-button";
 
 type UserRole = "member" | "steward" | "officer" | "admin";
 
@@ -186,12 +185,17 @@ export default function DashboardPage() {
   const organizationId = useOrganizationId();
   const userRole = getUserRole();
   const t = useTranslations();
+  const [mounted, setMounted] = useState(false);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     activeClaims: 0,
     pendingReviews: 0,
     resolvedCases: 0,
     highPriorityClaims: 0,
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [deadlineSummary, setDeadlineSummary] = useState<DeadlineSummary>({
     activeDeadlines: 0,
     overdueCount: 0,
@@ -369,8 +373,38 @@ export default function DashboardPage() {
     return t('common.goodEvening');
   };
 
+  // SSR Guard: Prevent hydration errors
+  if (!mounted || !user) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-6 md:p-10">
+        <div className="animate-pulse space-y-6">
+          <div className="h-24 bg-gray-200 rounded-lg"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-96 bg-gray-200 rounded-lg"></div>
+            <div className="h-96 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-6 md:p-10">
+      {/* Development Helper - Remove after testing */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h3 className="text-sm font-semibold text-yellow-800 mb-2">
+            🔧 Development Tools
+          </h3>
+          <SeedDataButton />
+        </div>
+      )}
+
       {/* Welcome Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
