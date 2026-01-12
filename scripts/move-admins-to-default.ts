@@ -55,12 +55,12 @@ async function main() {
       userId: admin.userId,
       email: admin.email,
       name: admin.name,
-      role: 'admin',
+      role: 'super_admin',  // Changed from 'admin' to 'super_admin'
       status: 'active',
       joinedAt: new Date()
     });
     
-    console.log(`  ✓ Added ${admin.email} to Default Organization as admin`);
+    console.log(`  ✓ Added ${admin.email} to Default Organization as super_admin`);
   }
   
   console.log('\n✅ Migration complete!\n');
