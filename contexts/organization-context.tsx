@@ -82,7 +82,14 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
    * This is extracted as a separate function for manual refresh
    */
   const loadUserOrganizations = useCallback(async (abortSignal?: AbortSignal) => {
+    // Wait for auth to be loaded before attempting to fetch
+    if (!authLoaded) {
+      console.log('[OrganizationContext] Auth not loaded yet, skipping fetch');
+      return;
+    }
+
     if (!userId) {
+      console.log('[OrganizationContext] No userId, user not authenticated');
       setIsLoading(false);
       return;
     }
@@ -110,6 +117,15 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('[OrganizationContext] API error:', response.status, errorText);
+        
+        // If 401, it means user session expired or not authenticated
+        if (response.status === 401) {
+          console.log('[OrganizationContext] Unauthorized - user needs to sign in');
+          setIsLoading(false);
+          setError('Please sign in to continue');
+          return;
+        }
+        
         throw new Error(`Failed to load organizations: ${response.status}`);
       }
 
@@ -183,7 +199,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, authLoaded]);
 
   /**
    * Load organization hierarchy path (ancestors)
