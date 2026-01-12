@@ -115,8 +115,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     }
   }
 
-  // Run just-in-time credit check for expired subscriptions
-  profile = await checkExpiredSubscriptionCredits(profile);
+  // TEMPORARILY DISABLED: Run just-in-time credit check for expired subscriptions
+  // This was causing 504 timeouts on staging due to sequential database queries
+  // TODO: Re-enable this as a background job or client-side check
+  // profile = await checkExpiredSubscriptionCredits(profile);
   
   // Verify profile is still valid after check
   if (!profile) {

@@ -33,8 +33,10 @@ const nextConfig = {
   
   // Experimental features for faster builds
   experimental: {
-    // Completely disable turbotrace to prevent build hanging
-    turbotrace: false,
+    // Disable turbotrace to prevent build hanging
+    turbotrace: {
+      logAll: false,
+    },
     // Optimize package imports
     optimizePackageImports: [
       '@radix-ui/react-accordion',
