@@ -17,9 +17,11 @@ import LanguageSwitcher from "./language-switcher";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
@@ -33,6 +35,37 @@ export default function Header() {
   };
 
   const isActive = (path: string) => pathname === path;
+
+  // Prevent hydration mismatch by not rendering animations until mounted
+  if (!mounted) {
+    return (
+      <div className="sticky top-0 z-50 w-full px-4 py-3 flex justify-center">
+        <header 
+          className="rounded-xl backdrop-blur-xl bg-white/50 border border-white/40 shadow-sm relative overflow-hidden max-w-fit mx-auto"
+          style={{ 
+            minWidth: 'min(95%, 800px)',
+            backdropFilter: 'blur(12px)'
+          }}
+        >
+          <div className="px-6 py-3 relative">
+            <div className="flex items-center justify-between gap-8">
+              {/* Minimal skeleton during SSR */}
+              <div className="flex items-center space-x-3">
+                <div className="bg-primary/10 p-2 rounded-xl shadow-sm border border-primary/20">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 text-primary" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
+        </header>
+      </div>
+    );
+  }
 
   return (
     <div className="sticky top-0 z-50 w-full px-4 py-3 flex justify-center">
