@@ -26,7 +26,20 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (!member) {
-      return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+      // Return default values instead of 404 - member might not be in financial system yet
+      return NextResponse.json({
+        currentBalance: 0,
+        nextDueDate: null,
+        nextDueAmount: 0,
+        overdueAmount: 0,
+        lastPaymentDate: null,
+        lastPaymentAmount: 0,
+        isInArrears: false,
+        arrearsAmount: 0,
+        membershipStatus: 'pending',
+        autoPayEnabled: false,
+        paymentMethodLast4: null,
+      });
     }
 
     // Get active dues assignment
@@ -123,9 +136,20 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching dues balance:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    // Return default values instead of 500 to prevent UI crashes
+    return NextResponse.json({
+      currentBalance: 0,
+      nextDueDate: null,
+      nextDueAmount: 0,
+      overdueAmount: 0,
+      lastPaymentDate: null,
+      lastPaymentAmount: 0,
+      isInArrears: false,
+      arrearsAmount: 0,
+      membershipStatus: 'pending',
+      autoPayEnabled: false,
+      paymentMethodLast4: null,
+      _error: 'Failed to fetch dues balance - financial system may not be initialized',
+    });
   }
 }

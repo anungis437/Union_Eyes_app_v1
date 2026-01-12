@@ -23,12 +23,7 @@ export function generateMetadata(): Metadata {
   return {
     title: "Union Claims Platform",
     description: "A comprehensive platform for union claims and grievance management.",
-    icons: {
-      icon: [
-        { url: '/favicon.ico' },
-        { url: '/icon.png', sizes: '32x32', type: 'image/png' }
-      ]
-    },
+    // Next.js will automatically use app/icon.tsx for favicon and icon
     other: {
       ...Sentry.getTraceData()
     }
