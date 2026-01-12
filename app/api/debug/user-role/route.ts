@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema-organizations';
 import { eq } from 'drizzle-orm';
+import { getUserRoleInOrganization, getOrganizationIdForUser } from '@/lib/organization-utils';
 
 const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
@@ -22,13 +23,22 @@ export async function GET() {
       .where(eq(organizationMembers.organizationId, DEFAULT_ORG_ID))
       .limit(1);
 
+    // Get the role using the same function as dashboard
+    const resolvedOrgId = await getOrganizationIdForUser(userId);
+    const resolvedRole = await getUserRoleInOrganization(userId, resolvedOrgId);
+
     return NextResponse.json({
       userId,
       defaultOrganizationId: DEFAULT_ORG_ID,
       membership: membership || null,
       hasMembership: !!membership,
       isActive: membership?.status === 'active',
-      role: membership?.role || null
+      role: membership?.role || null,
+      // Dashboard resolution (what the sidebar sees)
+      dashboardResolution: {
+        organizationId: resolvedOrgId,
+        role: resolvedRole || 'member'
+      }
     });
   } catch (error) {
     console.error('Debug endpoint error:', error);
