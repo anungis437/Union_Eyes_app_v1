@@ -10,3 +10,4 @@ export interface KnowledgeEntry {
     created_at: string;
     updated_at: string;
 }
+//# sourceMappingURL=KnowledgeEntry.d.ts.map

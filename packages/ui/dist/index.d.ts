@@ -7,3 +7,4 @@ export type { AppItem } from './components/UniversalAppSwitcher';
 export type { NavItem } from './components/UnifiedLayout';
 export { cn } from './utils/cn';
 export { parseTimeEntry, calculateBillableAmount, formatCurrency, formatDuration } from './utils/timeUtils';
+//# sourceMappingURL=index.d.ts.map
