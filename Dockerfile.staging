@@ -1,4 +1,4 @@
-# Staging Dockerfile - Full build process
+# Staging Dockerfile - Optimized build process
 # Stage 1: Dependencies
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
@@ -8,23 +8,10 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
-# Copy workspace packages structure
-# First create all package directories
-RUN mkdir -p packages/ai packages/auth packages/financial packages/multi-tenant packages/supabase packages/types packages/ui
-
-# Copy only existing package.json files
-COPY packages/ai/package.json ./packages/ai/
-COPY packages/auth/package.json ./packages/auth/
-COPY packages/financial/package.json ./packages/financial/
-COPY packages/multi-tenant/package.json ./packages/multi-tenant/
-COPY packages/supabase/package.json ./packages/supabase/
-COPY packages/types/package.json ./packages/types/
-COPY packages/ui/package.json ./packages/ui/
-
-# Install all dependencies (both root and workspace packages)
-RUN pnpm install --frozen-lockfile
+# Install dependencies without workspace packages (faster)
+RUN pnpm install --frozen-lockfile --ignore-workspace
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -35,9 +22,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages ./packages
 
-# Copy application source code
+# Copy application source code (skip workspace packages)
 COPY . .
 
 # Set build-time environment variables
@@ -49,9 +35,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV DOCKER_BUILD=true
 
-# Skip workspace packages build - causes timeouts
-# Build the application directly
-RUN pnpm build:next
+# Build the Next.js application with optimizations
+RUN pnpm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
