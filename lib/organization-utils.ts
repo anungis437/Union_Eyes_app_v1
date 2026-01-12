@@ -202,3 +202,52 @@ export async function userHasOrganizationAccess(
     return false;
   }
 }
+
+/**
+ * Get user's role in an organization from organizationMembers table
+ * 
+ * @param userId - The Clerk user ID
+ * @param organizationId - The organization ID
+ * @returns The user's role or null if not found
+ */
+export async function getUserRoleInOrganization(
+  userId: string,
+  organizationId: string
+): Promise<"member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff" | null> {
+  try {
+    const result = await db
+      .select({ role: organizationMembers.role })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.status, 'active')
+        )
+      )
+      .limit(1);
+    
+    if (result.length === 0) {
+      return null;
+    }
+    
+    // Map database roles to UI roles
+    const dbRole = result[0].role;
+    const roleMap: { [key: string]: "member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff" } = {
+      'member': 'member',
+      'steward': 'steward',
+      'union_steward': 'steward',
+      'officer': 'officer',
+      'union_officer': 'officer',
+      'admin': 'admin',
+      'super_admin': 'admin',
+      'congress_staff': 'congress_staff',
+      'federation_staff': 'federation_staff',
+    };
+    
+    return roleMap[dbRole] || 'member';
+  } catch (error) {
+    console.error(`Error fetching user role:`, error);
+    return null;
+  }
+}
