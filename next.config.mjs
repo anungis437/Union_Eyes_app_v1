@@ -34,7 +34,7 @@ const nextConfig = {
   // Experimental features for faster builds
   experimental: {
     // Disable turbotrace to prevent build hanging
-    turbotrace: {
+    turbotrace: process.env.DOCKER_BUILD === 'true' ? false : {
       logAll: false,
     },
     // Optimize package imports
