@@ -1,8 +1,10 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { organizationMembers, organizations } from '@/db/schema-organizations';
-import { eq, and } from 'drizzle-orm';
+import { organizationMembers } from '@/db/schema-organizations';
+import { eq } from 'drizzle-orm';
+
+const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
 export async function GET() {
   try {
@@ -12,31 +14,21 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Get all memberships for this user
-    const memberships = await db
-      .select({
-        organizationId: organizationMembers.organizationId,
-        organizationName: organizations.name,
-        role: organizationMembers.role,
-        status: organizationMembers.status,
-        email: organizationMembers.email,
-        joinedAt: organizationMembers.joinedAt
-      })
-      .from(organizationMembers)
-      .leftJoin(organizations, eq(organizationMembers.organizationId, organizations.id))
-      .where(eq(organizationMembers.userId, userId));
-
-    // Get Default Organization ID
-    const [defaultOrg] = await db
+    // Get membership in Default Organization only
+    const [membership] = await db
       .select()
-      .from(organizations)
-      .where(eq(organizations.name, 'Default Organization'));
+      .from(organizationMembers)
+      .where(eq(organizationMembers.userId, userId))
+      .where(eq(organizationMembers.organizationId, DEFAULT_ORG_ID))
+      .limit(1);
 
     return NextResponse.json({
       userId,
-      defaultOrganizationId: defaultOrg?.id,
-      memberships,
-      totalMemberships: memberships.length
+      defaultOrganizationId: DEFAULT_ORG_ID,
+      membership: membership || null,
+      hasMembership: !!membership,
+      isActive: membership?.status === 'active',
+      role: membership?.role || null
     });
   } catch (error) {
     console.error('Debug endpoint error:', error);
