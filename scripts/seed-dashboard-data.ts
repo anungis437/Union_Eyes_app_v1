@@ -149,3 +149,4 @@ seedData()
     console.error('❌ Seeding failed:', error);
     process.exit(1);relative flex h-screen overflow-hidden bg-gray-50
   });
+relative flex h-screrelative flex h-screen overflow-hidden bg-gray-50

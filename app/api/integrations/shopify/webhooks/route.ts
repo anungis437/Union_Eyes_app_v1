@@ -1,0 +1,283 @@
+import { NextRequest, NextResponse } from 'next';
+import {
+  verifyShopifySignature,
+  parseShopifyHeaders,
+  processWebhookIdempotent,
+  extractRedemptionIdFromDiscount,
+} from '@/lib/services/rewards/webhook-service';
+import {
+  markRedemptionOrdered,
+  markRedemptionFulfilled,
+  processRedemptionRefund,
+  getRedemptionByOrderId,
+} from '@/lib/services/rewards/redemption-service';
+import { db } from '@/db';
+
+/**
+ * Shopify Webhook Handler
+ * 
+ * Handles all Shopify webhooks for the Recognition & Rewards system.
+ * 
+ * Supported Topics:
+ * - orders/paid: Mark redemption as ordered when payment confirmed
+ * - orders/fulfilled: Mark redemption as fulfilled when order ships
+ * - refunds/create: Process credit refund when order refunded
+ * 
+ * Security:
+ * - HMAC signature verification (timing-safe)
+ * - Idempotency via X-Shopify-Webhook-Id header
+ * 
+ * @see docs/recognition/api-contracts.md
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Extract raw body for signature verification
+    const rawBody = await request.text();
+    
+    // 2. Parse Shopify headers
+    const headers = parseShopifyHeaders(request.headers);
+    const { topic, webhookId, hmacHeader } = headers;
+
+    if (!topic || !webhookId || !hmacHeader) {
+      return NextResponse.json(
+        { error: 'Missing required Shopify headers' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Verify HMAC signature
+    const isValid = await verifyShopifySignature(
+      rawBody,
+      hmacHeader,
+      process.env.SHOPIFY_WEBHOOK_SECRET!
+    );
+
+    if (!isValid) {
+      console.error('[Webhook] Invalid HMAC signature', { topic, webhookId });
+      return NextResponse.json(
+        { error: 'Invalid signature' },
+        { status: 401 }
+      );
+    }
+
+    // 4. Parse webhook payload
+    let payload: any;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid JSON payload' },
+        { status: 400 }
+      );
+    }
+
+    // 5. Route by topic with idempotency
+    const result = await processWebhookIdempotent(
+      webhookId,
+      topic,
+      async () => {
+        switch (topic) {
+          case 'orders/paid':
+            return await handleOrderPaid(payload);
+          
+          case 'orders/fulfilled':
+            return await handleOrderFulfilled(payload);
+          
+          case 'refunds/create':
+            return await handleRefundCreated(payload);
+          
+          default:
+            console.warn('[Webhook] Unhandled topic', { topic, webhookId });
+            return { status: 'ignored', reason: 'unsupported_topic' };
+        }
+      }
+    );
+
+    // 6. Return success
+    return NextResponse.json(
+      { status: 'ok', result },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error('[Webhook] Processing error', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Handle orders/paid webhook
+ * 
+ * When a Shopify order is paid, mark the redemption as "ordered".
+ * This confirms that the member completed checkout successfully.
+ */
+async function handleOrderPaid(payload: any) {
+  const orderId = String(payload.id);
+  const orderNumber = payload.order_number;
+  const discountCodes = payload.discount_codes || [];
+
+  console.log('[Webhook] orders/paid', { orderId, orderNumber, discountCodes });
+
+  // Extract redemption ID from discount code
+  const redemptionId = extractRedemptionIdFromDiscount(discountCodes);
+  
+  if (!redemptionId) {
+    console.warn('[Webhook] No Union Eyes discount code found', { orderId });
+    return { status: 'ignored', reason: 'no_redemption_discount' };
+  }
+
+  // Mark redemption as ordered
+  await markRedemptionOrdered(
+    db,
+    redemptionId,
+    orderId,
+    {
+      order_number: orderNumber,
+      total_price: payload.total_price,
+      currency: payload.currency,
+      line_items: payload.line_items?.map((item: any) => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      customer: {
+        id: payload.customer?.id,
+        email: payload.customer?.email,
+        first_name: payload.customer?.first_name,
+        last_name: payload.customer?.last_name,
+      },
+      paid_at: payload.created_at,
+    }
+  );
+
+  return { 
+    status: 'processed', 
+    redemption_id: redemptionId,
+    order_id: orderId 
+  };
+}
+
+/**
+ * Handle orders/fulfilled webhook
+ * 
+ * When a Shopify order is fulfilled (shipped), mark the redemption as "fulfilled".
+ * This completes the redemption lifecycle.
+ */
+async function handleOrderFulfilled(payload: any) {
+  const orderId = String(payload.id);
+  const orderNumber = payload.order_number;
+  const fulfillments = payload.fulfillments || [];
+
+  console.log('[Webhook] orders/fulfilled', { orderId, orderNumber, fulfillments: fulfillments.length });
+
+  // Find redemption by order ID
+  const redemption = await getRedemptionByOrderId(db, orderId);
+  
+  if (!redemption) {
+    console.warn('[Webhook] Redemption not found for order', { orderId });
+    return { status: 'ignored', reason: 'redemption_not_found' };
+  }
+
+  // Extract fulfillment details
+  const latestFulfillment = fulfillments[fulfillments.length - 1];
+  const fulfillmentDetails = latestFulfillment ? {
+    fulfillment_id: String(latestFulfillment.id),
+    tracking_company: latestFulfillment.tracking_company,
+    tracking_number: latestFulfillment.tracking_number,
+    tracking_url: latestFulfillment.tracking_url,
+    status: latestFulfillment.status,
+    fulfilled_at: latestFulfillment.created_at,
+  } : undefined;
+
+  // Mark redemption as fulfilled
+  await markRedemptionFulfilled(
+    db,
+    redemption.id,
+    fulfillmentDetails
+  );
+
+  return { 
+    status: 'processed', 
+    redemption_id: redemption.id,
+    order_id: orderId 
+  };
+}
+
+/**
+ * Handle refunds/create webhook
+ * 
+ * When a Shopify order is refunded, return credits to the member's wallet.
+ * This ensures members aren't charged for cancelled/returned orders.
+ */
+async function handleRefundCreated(payload: any) {
+  const refundId = String(payload.id);
+  const orderId = String(payload.order_id);
+  const refundLineItems = payload.refund_line_items || [];
+
+  console.log('[Webhook] refunds/create', { refundId, orderId, lineItems: refundLineItems.length });
+
+  // Find redemption by order ID
+  const redemption = await getRedemptionByOrderId(db, orderId);
+  
+  if (!redemption) {
+    console.warn('[Webhook] Redemption not found for refund', { orderId, refundId });
+    return { status: 'ignored', reason: 'redemption_not_found' };
+  }
+
+  // Calculate total refund amount (in cents/minor units)
+  const totalRefund = refundLineItems.reduce((sum: number, item: any) => {
+    return sum + parseFloat(item.subtotal || 0);
+  }, 0);
+
+  // Process refund (returns credits to wallet)
+  await processRedemptionRefund(
+    db,
+    redemption.id,
+    refundId,
+    {
+      refund_amount: totalRefund,
+      currency: payload.currency || 'CAD',
+      refund_line_items: refundLineItems.map((item: any) => ({
+        line_item_id: item.line_item_id,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+        total_tax: item.total_tax,
+      })),
+      refunded_at: payload.created_at,
+      note: payload.note,
+    }
+  );
+
+  return { 
+    status: 'processed', 
+    redemption_id: redemption.id,
+    refund_id: refundId,
+    credits_refunded: redemption.credits_redeemed 
+  };
+}
+
+/**
+ * GET handler - Health check endpoint
+ * 
+ * Returns 200 OK to verify webhook endpoint is reachable.
+ * Shopify may check this during webhook setup.
+ */
+export async function GET(request: NextRequest) {
+  return NextResponse.json(
+    { 
+      status: 'ok', 
+      endpoint: 'shopify-webhooks',
+      supported_topics: [
+        'orders/paid',
+        'orders/fulfilled',
+        'refunds/create'
+      ]
+    },
+    { status: 200 }
+  );
+}
