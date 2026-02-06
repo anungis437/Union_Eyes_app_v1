@@ -86,10 +86,13 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 | **AI Workbench** | Multi-provider AI assistance for union work | ✅ Production |
 | **Reports & Analytics** | Custom reports, scheduled reporting, analytics | ✅ Production |
 | **Document Management** | Secure file storage with encryption | ✅ Production |
+| **GDPR Compliance** | Cookie consent, data export, right to be forgotten | ✅ Production |
+| **E-Signatures** | DocuSign/HelloSign integration with audit trails | ✅ Production |
+| **AI Chatbot** | Union rights Q&A with RAG, multi-provider support | ✅ Production |
+| **Accessibility** | WCAG 2.2 AA compliance monitoring and testing | ✅ Production |
+| **International Addresses** | Global address formats with validation | ✅ Production |
 
 ---
-
-## ✨ Key Features
 
 ## ✨ Key Features
 
@@ -172,6 +175,60 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - GDPR/PIPEDA/SOC 2 compliant
 - Comprehensive audit logging
 - Role-based access control
+
+### 📜 **GDPR Compliance** ✨ NEW
+- Cookie consent management with granular controls
+- Data export (Article 15 - Right of Access)
+- Right to be forgotten (Article 17 - Data Erasure)
+- Consent tracking and versioning
+- Data retention policies
+- Processing activity records (Article 30)
+- Anonymization audit trails
+- [View documentation](docs/gdpr-and-signatures.md)
+
+### ✍️ **E-Signature Integration** ✨ NEW
+- DocuSign integration (enterprise-grade)
+- HelloSign/Dropbox Sign support
+- Internal signature system (no external API)
+- Sequential and parallel signing workflows
+- Multi-factor authentication options
+- Complete audit trail with geolocation
+- Webhook support for real-time updates
+- Template management for reusable documents
+- [View documentation](docs/gdpr-and-signatures.md)
+
+### 🤖 **AI Chatbot with RAG** ✨ NEW (Priority 2)
+- Union rights Q&A assistant powered by AI
+- Multi-provider support (OpenAI GPT-4, Anthropic Claude, Google Gemini)
+- RAG (Retrieval-Augmented Generation) with vector search
+- Knowledge base integration (CBAs, policies, laws, precedents)
+- Citation tracking and source display
+- Conversation history and session management
+- Content safety filtering
+- Usage analytics and cost tracking
+- [View documentation](docs/PRIORITY_2_FEATURES.md#1-ai-chatbot-with-rag)
+
+### ♿ **Accessibility Audit (WCAG 2.2 AA)** ✨ NEW (Priority 2)
+- Automated accessibility testing (axe-core, Lighthouse)
+- WCAG 2.2 Level A and AA compliance
+- Issue tracking with severity classification
+- Color contrast checker
+- Keyboard navigation validator
+- Screen reader compatibility testing
+- Compliance reporting and scoring
+- CI/CD integration for pre-deployment checks
+- [View documentation](docs/PRIORITY_2_FEATURES.md#2-accessibility-audit-wcag-22-aa)
+
+### 🌍 **International Address Formats** ✨ NEW (Priority 2)
+- Support for 23+ countries with localized formats
+- Address validation (Google Maps, SmartyStreets, HERE)
+- Geocoding with latitude/longitude resolution
+- Postal code validation patterns
+- Country-specific field labels and requirements
+- Address standardization (USPS, Canada Post, Royal Mail)
+- Validation caching to reduce API costs
+- Change history audit trail
+- [View documentation](docs/PRIORITY_2_FEATURES.md#3-international-address-formats)
 
 ---
 
