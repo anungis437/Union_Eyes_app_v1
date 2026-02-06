@@ -234,7 +234,33 @@ async function handleDuesPaymentSuccess(event: Stripe.Event) {
         console.log(`Updated AutoPay settings for member ${transaction.memberId}`);
       }
       
-      // TODO: Send payment confirmation email to member
+      // Send payment confirmation email
+      try {
+        const { FinancialEmailService } = await import('@/lib/services/financial-email-service');
+        const { Decimal } = await import('decimal.js');
+        
+        const [member] = await db
+          .select()
+          .from(members)
+          .where(eq(members.id, transaction.memberId))
+          .limit(1);
+        
+        if (member && member.email) {
+          await FinancialEmailService.sendPaymentConfirmation({
+            to: member.email,
+            memberName: `${member.firstName} ${member.lastName}`,
+            transactionId: transaction.id,
+            amount: new Decimal(transaction.totalAmount),
+            currency: 'CAD',
+            paymentMethod: 'Credit Card',
+            paymentDate: new Date(),
+            receiptUrl: transaction.receiptUrl,
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send payment confirmation email:', emailError);
+        // Don't fail the webhook if email fails
+      }
     } else {
       console.warn(`No transaction found for payment intent ${paymentIntent.id}`);
     }
@@ -315,7 +341,44 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
         }
       }
       
-      // TODO: Send payment failure email to member
+      // Send payment failure email
+      try {
+        const { FinancialEmailService } = await import('@/lib/services/financial-email-service');
+        const { Decimal } = await import('decimal.js');
+        
+        const [member] = await db
+          .select()
+          .from(members)
+          .where(eq(members.id, transaction.memberId))
+          .limit(1);
+        
+        if (member && member.email) {
+          await FinancialEmailService.sendPaymentFailure({
+            to: member.email,
+            memberName: `${member.firstName} ${member.lastName}`,
+            amount: new Decimal(transaction.totalAmount),
+            currency: 'CAD',
+            failureReason: paymentIntent.last_payment_error?.message || 'Payment processing failed',
+            failureDate: new Date(),
+            retryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/portal/dues/pay?retry=${transaction.id}`,
+            supportEmail: process.env.SUPPORT_EMAIL || 'support@unioneyes.com',
+          });
+          
+          // If AutoPay was disabled, send additional notification
+          if (settings && parseInt(newFailureCount) >= 3) {
+            await FinancialEmailService.sendAutopayDisabled({
+              to: member.email,
+              memberName: `${member.firstName} ${member.lastName}`,
+              failureCount: 3,
+              lastFailureReason: paymentIntent.last_payment_error?.message || 'Payment processing failed',
+              updatePaymentUrl: `${process.env.NEXT_PUBLIC_APP_URL}/portal/settings/autopay`,
+            });
+          }
+        }
+      } catch (emailError) {
+        console.error('Failed to send payment failure email:', emailError);
+        // Don't fail the webhook if email fails
+      }
     } else {
       console.warn(`No transaction found for payment intent ${paymentIntent.id}`);
     }

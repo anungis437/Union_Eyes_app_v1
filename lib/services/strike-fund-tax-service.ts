@@ -16,6 +16,8 @@ import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { users, strikeFundDisbursements } from '@/db/schema';
 import { decryptSIN } from '@/lib/encryption';
 import { logger } from '@/lib/logger';
+
+export interface T4ASlip {
   slipType: 'T4A';
   taxYear: number;
   recipientName: string;

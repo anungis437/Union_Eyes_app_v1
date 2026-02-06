@@ -38,6 +38,11 @@ export const precedentValueEnum = pgEnum("precedent_value", [
   "low"
 ]);
 
+// Export enum types
+export type DecisionTypeEnum = typeof decisionTypeEnum.enumValues[number];
+export type OutcomeEnum = typeof outcomeEnum.enumValues[number];
+export type PrecedentValueEnum = typeof precedentValueEnum.enumValues[number];
+
 // Arbitration Decisions table
 export const arbitrationDecisions = pgTable("arbitration_decisions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -98,6 +103,9 @@ export const arbitrationDecisions = pgTable("arbitration_decisions", {
   fullText: text("full_text").notNull(),
   summary: text("summary"),
   headnote: text("headnote"),
+  precedentSummary: text("precedent_summary"),
+  reasoning: text("reasoning"),
+  keyFacts: text("key_facts"),
   
   // Classification
   sector: varchar("sector", { length: 100 }),
