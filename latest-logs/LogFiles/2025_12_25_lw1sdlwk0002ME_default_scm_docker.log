@@ -1,0 +1,2 @@
+2025-12-25T00:37:28.5402673Z warn: Microsoft.AspNetCore.Server.Kestrel[22]
+2025-12-25T00:37:28.5403182Z       As of "12/25/2025 00:37:28 +00:00", the heartbeat has been running for "00:00:01.1867567" which is longer than "00:00:01". This could be caused by thread pool starvation.

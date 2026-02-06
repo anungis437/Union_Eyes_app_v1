@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "Sentry": {
+      "url": "https://mcp.sentry.dev/mcp/nzila-ventures/union_eyes",
+      "type": "http"
+    }
+  }
+}

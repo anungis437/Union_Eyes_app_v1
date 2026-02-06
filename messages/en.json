@@ -1,0 +1,522 @@
+{
+  "common": {
+    "appName": "UnionEyes",
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "viewDetails": "View Details",
+    "noResults": "No results found",
+    "selectLanguage": "Select Language",
+    "english": "English",
+    "french": "Français",
+    "voiceToText": "Voice-to-Text",
+    "useVoiceRecorder": "Use Voice Recorder",
+    "hideVoiceRecorder": "Hide Voice Recorder",
+    "voiceDescription": "Prefer to speak your claim? Use voice recording to automatically transcribe your description."
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "claims": "Claims",
+    "myClaims": "My Claims",
+    "submitClaim": "Submit Claim",
+    "members": "Members",
+    "admin": "Admin",
+    "settings": "Settings",
+    "profile": "Profile",
+    "signOut": "Sign Out",
+    "help": "Help",
+    "documentation": "Documentation",
+    "support": "Support"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "enterEmail": "Enter your email",
+    "enterPassword": "Enter your password",
+    "confirmPassword": "Confirm Password",
+    "invalidCredentials": "Invalid email or password",
+    "accountCreated": "Account created successfully",
+    "passwordReset": "Password reset email sent"
+  },
+  "claims": {
+    "title": "Claims",
+    "newClaim": "New Claim",
+    "submitClaim": "Submit a Claim",
+    "reviewMessage": "Please provide detailed information about your claim. Your submission will be reviewed by a Labour Relations Officer.",
+    "claimDetails": "Claim Details",
+    "claimNumber": "Claim Number",
+    "claimType": "Claim Type",
+    "claimStatus": "Status",
+    "claimDate": "Claim Date",
+    "incidentDate": "Incident Date",
+    "dateOfIncident": "Date of Incident",
+    "locationDepartment": "Location/Department",
+    "locationPlaceholder": "e.g., Manufacturing Floor, HR Office, etc.",
+    "description": "Description",
+    "detailedDescription": "Detailed Description",
+    "descriptionPlaceholder": "Type your detailed description here (minimum 50 characters)...",
+    "descriptionInfo": "Provide as much detail as possible including: what happened, who was involved (without identifying yourself if anonymous), when it occurred, and any relevant context.",
+    "descriptionMinChars": "minimum",
+    "location": "Location",
+    "witnesses": "Witnesses",
+    "witnessesPresent": "Were there witnesses present?",
+    "witnessDetails": "Witness Details",
+    "witnessDetailsPlaceholder": "Provide names, roles, or descriptions of witnesses (if known)...",
+    "previouslyReported": "Has this been previously reported?",
+    "previousReportDetails": "Previous Report Details",
+    "previousReportPlaceholder": "Describe when and how this was previously reported...",
+    "desiredOutcome": "Desired Outcome",
+    "desiredOutcomePlaceholder": "What resolution or action are you seeking?...",
+    "attachments": "Attachments",
+    "addAttachment": "Add Attachment",
+    "removeAttachment": "Remove Attachment",
+    "uploadFiles": "Upload Supporting Documents",
+    "uploadFilesDescription": "Upload any relevant documents, photos, or evidence (max 10MB per file)",
+    "fileSelected": "file selected",
+    "filesSelected": "files selected",
+    "privacyTitle": "Privacy & Anonymity",
+    "privacyDescription": "Your identity is protected throughout the claims process. You will be assigned an anonymous member ID. Only authorized LROs can view claim details. All communications are encrypted and secure.",
+    "submitAnonymously": "Submit anonymously (recommended)",
+    "submitButton": "Submit Claim",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "selectClaimType": "Select a claim type...",
+    "required": "*",
+    "status": {
+      "pending": "Pending",
+      "under_review": "Under Review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "closed": "Closed"
+    },
+    "types": {
+      "grievance": "Grievance",
+      "grievanceDiscipline": "Grievance - Disciplinary Action",
+      "grievanceSchedule": "Grievance - Work Schedule",
+      "grievancePay": "Grievance - Pay/Compensation",
+      "workplaceSafety": "Workplace Safety",
+      "discriminationAge": "Discrimination - Age",
+      "discriminationGender": "Discrimination - Gender",
+      "discriminationRace": "Discrimination - Race",
+      "discriminationDisability": "Discrimination - Disability",
+      "harassmentVerbal": "Harassment - Verbal",
+      "harassmentPhysical": "Harassment - Physical",
+      "harassmentSexual": "Harassment - Sexual",
+      "contractDispute": "Contract Dispute",
+      "retaliation": "Retaliation",
+      "discipline": "Discipline",
+      "harassment": "Harassment",
+      "safety": "Safety Concern",
+      "wage": "Wage Dispute",
+      "hours": "Hours/Scheduling",
+      "termination": "Termination",
+      "other": "Other"
+    },
+    "validation": {
+      "typeRequired": "Claim type is required",
+      "dateRequired": "Incident date is required",
+      "descriptionRequired": "Description is required",
+      "descriptionMinLength": "Description must be at least 20 characters",
+      "locationRequired": "Location is required"
+    },
+    "messages": {
+      "submitSuccess": "Claim submitted successfully",
+      "submitError": "Failed to submit claim. Please try again.",
+      "updateSuccess": "Claim updated successfully",
+      "deleteSuccess": "Claim deleted successfully",
+      "loadError": "Failed to load claims"
+    }
+  },
+  "voice": {
+    "title": "Voice-to-Text",
+    "useVoiceRecorder": "Use Voice Recorder",
+    "hideVoiceRecorder": "Hide Voice Recorder",
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "pauseRecording": "Pause Recording",
+    "resumeRecording": "Resume Recording",
+    "playback": "Play Recording",
+    "deleteRecording": "Delete Recording",
+    "transcribe": "Transcribe Audio",
+    "transcribing": "Transcribing...",
+    "recording": "Recording...",
+    "paused": "Paused",
+    "transcription": "Transcription",
+    "clickToStart": "Click the microphone to start recording",
+    "minutes": "minutes",
+    "transcriptionComplete": "Transcription complete",
+    "transcriptionSuccess": "Your voice has been converted to text",
+    "transcriptionFailed": "Transcription failed",
+    "unknownError": "Unknown error",
+    "recordingTime": "Recording Time",
+    "maxDuration": "Maximum Duration",
+    "description": "Prefer to speak your claim? Use voice recording to automatically transcribe your description.",
+    "tips": {
+      "title": "Recording Tips",
+      "speakClearly": "Speak clearly and at normal pace",
+      "minimizeNoise": "Minimize background noise",
+      "stayClose": "Stay 6-12 inches from microphone",
+      "usePause": "Use pause button for long pauses",
+      "reviewText": "Review and edit transcription"
+    },
+    "messages": {
+      "recordingStarted": "Recording started",
+      "recordingStopped": "Recording stopped",
+      "speakClearly": "Speak clearly into your microphone",
+      "duration": "Duration",
+      "transcriptionComplete": "Transcription complete",
+      "transcriptionConverted": "Your voice has been converted to text",
+      "transcriptionFailed": "Failed to transcribe audio",
+      "permissionDenied": "Microphone permission denied",
+      "permissionRequired": "Please allow microphone access to record",
+      "noSpeechDetected": "No speech detected in recording",
+      "recordingFailed": "Failed to start recording"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "recentClaims": "Recent Claims",
+    "pendingClaims": "Pending Claims",
+    "activeClaims": "Active Claims",
+    "resolvedClaims": "Resolved Claims",
+    "totalClaims": "Total Claims",
+    "thisMonth": "This Month",
+    "thisYear": "This Year",
+    "statistics": "Statistics",
+    "quickActions": "Quick Actions",
+    "viewAll": "View All"
+  },
+  "members": {
+    "title": "Members",
+    "memberList": "Member List",
+    "memberDetails": "Member Details",
+    "memberNumber": "Member Number",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "status": "Status",
+    "joinDate": "Join Date",
+    "active": "Active",
+    "inactive": "Inactive",
+    "suspended": "Suspended"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "users": "Users",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "settings": "Settings",
+    "reports": "Reports",
+    "analytics": "Analytics",
+    "systemHealth": "System Health",
+    "logs": "Logs"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Network error. Check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "validation": "Please check your input and try again.",
+    "serverError": "Server error. Please try again later.",
+    "timeout": "Request timed out. Please try again."
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "phone": "Please enter a valid phone number",
+    "minLength": "Minimum length is {min} characters",
+    "maxLength": "Maximum length is {max} characters",
+    "invalidFormat": "Invalid format",
+    "passwordMismatch": "Passwords do not match",
+    "fileSize": "File size must be less than {size}MB",
+    "fileType": "Invalid file type"
+  },
+  "rewards": {
+    "wallet": {
+      "title": "My Reward Wallet",
+      "description": "View your reward credits and redeem them for products and services",
+      "redeemButton": "Redeem Credits",
+      "balance": {
+        "title": "Available Credits",
+        "subtitle": "credits ready to redeem",
+        "info": "Information about credits",
+        "tooltip": "Credits are earned through recognition awards and can be redeemed for products and services via Shop Moi Ça."
+      },
+      "stats": {
+        "totalEarned": "Total Earned",
+        "totalRedeemed": "Total Redeemed",
+        "lastActivity": "Last Activity",
+        "allTime": "All time",
+        "mostRecent": "Most recent transaction"
+      },
+      "ledger": {
+        "title": "Transaction History",
+        "description": "Complete record of all credit transactions",
+        "empty": "No transactions yet",
+        "columns": {
+          "date": "Date",
+          "description": "Description",
+          "type": "Type",
+          "amount": "Amount",
+          "balance": "Balance"
+        },
+        "types": {
+          "earned": "Award Received",
+          "redeemed": "Credits Redeemed",
+          "refund": "Refund Processed",
+          "adjustment": "Balance Adjustment",
+          "revoked": "Award Revoked"
+        },
+        "badges": {
+          "earned": "Earned",
+          "redeemed": "Redeemed",
+          "refund": "Refund",
+          "adjustment": "Adjustment",
+          "revoked": "Revoked"
+        }
+      }
+    },
+    "redeem": {
+      "title": "Redeem Your Credits",
+      "description": "Convert your reward credits into products and services",
+      "balanceTitle": "Available Balance",
+      "balanceMessage": "You have {balance} credits available to redeem",
+      "shopify": {
+        "title": "Shop Moi Ça Store",
+        "description": "Browse our curated collection of products and redeem your credits"
+      },
+      "manual": {
+        "title": "Request Redemption",
+        "description": "Submit a redemption request and our team will process it"
+      },
+      "howItWorks": {
+        "title": "How It Works",
+        "step1": "Select the amount of credits you want to redeem",
+        "step2": "Credits are deducted from your balance immediately",
+        "step3": "Complete checkout in the Shop Moi Ça store",
+        "step4": "Track your order status in your transaction history"
+      },
+      "form": {
+        "creditsLabel": "Credits to Redeem",
+        "creditsHelper": "Maximum: {balance} credits",
+        "notesLabel": "Notes (Optional)",
+        "notesPlaceholder": "Add any special requests or notes...",
+        "submitShopify": "Continue to Shop Moi Ça",
+        "submitManual": "Submit Redemption Request",
+        "noBalance": "You need credits to redeem",
+        "errors": {
+          "invalidAmount": "Please enter a valid amount",
+          "insufficientBalance": "You do not have enough credits",
+          "failed": "Failed to initiate redemption",
+          "unknown": "An error occurred"
+        }
+      }
+    },
+    "admin": {
+      "overview": {
+        "title": "Recognition & Rewards Administration",
+        "description": "Manage recognition programs, approve awards, and track budget allocations",
+        "metrics": {
+          "activePrograms": "Active Programs",
+          "programsSubtext": "Recognition programs",
+          "pendingApprovals": "Pending Approvals",
+          "approvalsSubtext": "Awards awaiting review",
+          "totalIssued": "Total Issued",
+          "issuedSubtext": "Credits issued",
+          "totalRedeemed": "Total Redeemed",
+          "redeemedSubtext": "Credits redeemed"
+        },
+        "quickActions": {
+          "title": "Quick Actions",
+          "programs": {
+            "title": "Manage Programs",
+            "description": "Create and configure recognition programs"
+          },
+          "awards": {
+            "title": "Review Awards",
+            "description": "Approve and issue recognition awards"
+          },
+          "budgets": {
+            "title": "Manage Budgets",
+            "description": "Allocate and track budget envelopes"
+          },
+          "shopify": {
+            "title": "Shopify Config",
+            "description": "Configure Shop Moi Ça integration"
+          },
+          "reports": {
+            "title": "View Reports",
+            "description": "Analytics and insights dashboard"
+          },
+          "members": {
+            "title": "Member Wallets",
+            "description": "View member balances and history"
+          }
+        },
+        "recentActivity": {
+          "title": "Recent Activity",
+          "description": "Latest awards and redemptions across the organization",
+          "placeholder": "Activity feed coming soon"
+        }
+      },
+      "programs": {
+        "title": "Recognition Programs",
+        "description": "Create and manage recognition programs and their award types",
+        "backToAdmin": "Back to Admin",
+        "list": {
+          "title": "All Programs",
+          "description": "Configure programs, award types, and approval workflows",
+          "empty": "No programs created yet",
+          "columns": {
+            "name": "Program Name",
+            "status": "Status",
+            "created": "Created",
+            "actions": "Actions"
+          },
+          "actions": {
+            "open": "Open menu",
+            "edit": "Edit",
+            "archive": "Archive",
+            "activate": "Activate"
+          }
+        },
+        "create": {
+          "button": "Create Program",
+          "title": "Create Recognition Program",
+          "description": "Set up a new recognition program for your organization",
+          "fields": {
+            "name": "Program Name",
+            "namePlaceholder": "e.g., Employee of the Month",
+            "description": "Description",
+            "descriptionPlaceholder": "Describe the purpose and criteria of this program...",
+            "status": "Status",
+            "statusDraft": "Draft",
+            "statusActive": "Active"
+          },
+          "cancel": "Cancel",
+          "submit": "Create Program",
+          "error": "Failed to create program",
+          "errorUnknown": "An error occurred"
+        }
+      },
+      "awards": {
+        "title": "Awards Management",
+        "description": "Review, approve, and issue recognition awards to members",
+        "backToAdmin": "Back to Admin",
+        "tabs": {
+          "pending": "Pending Approval",
+          "approved": "Approved",
+          "issued": "Issued"
+        },
+        "pending": {
+          "title": "Pending Approvals",
+          "description": "Awards awaiting management approval"
+        },
+        "approved": {
+          "title": "Approved Awards",
+          "description": "Awards approved and ready to be issued"
+        },
+        "issued": {
+          "title": "Issued Awards",
+          "description": "Awards that have been issued to members"
+        },
+        "queue": {
+          "empty": "No awards in this status",
+          "columns": {
+            "recipient": "Recipient",
+            "award": "Award Type",
+            "credits": "Credits",
+            "date": "Date",
+            "actions": "Actions"
+          },
+          "actions": {
+            "approve": "Approve",
+            "reject": "Reject",
+            "issue": "Issue"
+          }
+        },
+        "create": {
+          "button": "Create Award"
+        }
+      },
+      "budgets": {
+        "title": "Budget Management",
+        "description": "Allocate budgets and track spending across programs",
+        "backToAdmin": "Back to Admin",
+        "usage": {
+          "ongoing": "Ongoing",
+          "used": "Used",
+          "utilized": "utilized",
+          "remaining": "remaining"
+        },
+        "list": {
+          "title": "All Budget Envelopes",
+          "description": "Configure budget allocations for recognition programs",
+          "empty": "No budget envelopes created yet",
+          "ongoing": "Ongoing",
+          "columns": {
+            "name": "Name",
+            "allocated": "Allocated",
+            "used": "Used",
+            "remaining": "Remaining",
+            "period": "Period"
+          }
+        },
+        "create": {
+          "button": "Create Budget"
+        }
+      },
+      "shopify": {
+        "title": "Shopify Configuration",
+        "description": "Configure Shop Moi Ça integration for member redemptions",
+        "backToAdmin": "Back to Admin",
+        "status": {
+          "title": "Connection Status",
+          "description": "Current state of Shopify integration",
+          "connected": "Connected",
+          "error": "Connection Error",
+          "notConfigured": "Not Configured",
+          "checklist": "Configuration Checklist",
+          "configured": "Configured",
+          "missing": "Missing",
+          "test": "Test Connection"
+        },
+        "webhooks": {
+          "title": "Webhook Configuration",
+          "description": "Configure webhooks in your Shopify admin to receive order updates",
+          "instructionsTitle": "Setup Instructions",
+          "step1": "1. Go to Shopify Admin → Settings → Notifications",
+          "step2": "2. Scroll to Webhooks section and add the following:",
+          "copy": "Copy"
+        },
+        "setup": {
+          "title": "Setup Guide",
+          "description": "Add these environment variables to your .env file"
+        }
+      }
+    }
+  }
+}

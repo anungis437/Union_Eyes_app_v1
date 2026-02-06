@@ -1,0 +1,4 @@
+
+> @unioneyes/supabase@0.1.0 build C:\APPS\Union_Eyes_app_v1\packages\supabase
+> tsc -p tsconfig.build.json
+

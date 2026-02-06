@@ -1,83 +1,149 @@
 /**
- * Sidebar component for the Template App
- * Provides primary navigation for the dashboard with a clean, modern UI
- * Features user avatar at the bottom and billing management option
+ * Sidebar component for UnionEyes
+ * Provides comprehensive navigation for union stakeholders with role-based access
+ * Supports members, stewards, officers, and administrators
  */
 "use client";
 
-import { Home, Settings, Database, Target, Users, Sparkles, CreditCard } from "lucide-react";
+import { 
+  Home, 
+  Settings, 
+  FileText, 
+  Users, 
+  Vote, 
+  BookOpen, 
+  Shield, 
+  BarChart3, 
+  Mic,
+  FileBarChart,
+  Bell,
+  Scale,
+  Library,
+  GitCompare,
+  Target,
+  Building2,
+  Network,
+  Briefcase,
+  Flag,
+  DollarSign,
+  GraduationCap,
+  MessageSquare
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { SelectProfile } from "@/db/schema/profiles-schema";
-import { CreditUsageDisplay } from "@/components/credit-usage-display";
-import UpgradePlanPopup from "@/components/upgrade-plan-popup";
-import { useState, useEffect, useCallback } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   profile: SelectProfile | null;
   userEmail?: string;
   whopMonthlyPlanId: string;
   whopYearlyPlanId: string;
+  userRole?: "member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff"; // Role-based navigation
 }
 
-export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYearlyPlanId }: SidebarProps) {
+export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYearlyPlanId, userRole = "member" }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const locale = useLocale();
+  const t = useTranslations();
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Prevent hydration issues by only rendering UserButton on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   const isActive = (path: string) => pathname === path;
-  
-  // Check if user has reached credit limit
-  const hasReachedCreditLimit = useCallback(() => {
-    if (!profile) return false;
-    const usedCredits = profile.usedCredits ?? 0;
-    const usageCredits = profile.usageCredits ?? 0;
-    return usedCredits >= usageCredits;
-  }, [profile]);
 
-  // Plan IDs now come from props, not environment variables
-  
-  const navItems = [
-    { href: "/dashboard", icon: <Home size={16} />, label: "Home" },
-    { href: "/dashboard/settings", icon: <Settings size={16} />, label: "Settings" },
-    { href: "/dashboard/data-source", icon: <Database size={16} />, label: "Data source" },
-    { href: "/dashboard/targets", icon: <Target size={16} />, label: "Targets" },
-    { href: "/dashboard/members", icon: <Users size={16} />, label: "Members" },
+  // Navigation organized by sections with human-friendly labels
+  const getNavigationSections = () => [
+    {
+      title: t('sidebar.yourUnion'),
+      roles: ["member", "steward", "officer", "admin"],
+      items: [
+        { href: `/${locale}/dashboard`, icon: <Home size={16} />, label: t('navigation.dashboard'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/claims`, icon: <FileText size={16} />, label: t('claims.myCases'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/claims/new`, icon: <Mic size={16} />, label: t('claims.submitNew'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/pension`, icon: <Briefcase size={16} />, label: 'My Pension & Benefits', roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/dues`, icon: <DollarSign size={16} />, label: 'Dues & Payments', roles: ["member", "steward", "officer", "admin"] },
+      ]
+    },
+    {
+      title: t('sidebar.participation'),
+      roles: ["member", "steward", "officer", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/education`, icon: <GraduationCap size={16} />, label: 'Education & Training', roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/voting`, icon: <Vote size={16} />, label: t('navigation.vote'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/agreements`, icon: <BookOpen size={16} />, label: t('sidebar.ourAgreements'), roles: ["member", "steward", "officer", "admin"] },
+      ]
+    },
+    {
+      title: t('sidebar.representativeTools'),
+      roles: ["steward", "officer", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/workbench`, icon: <FileBarChart size={16} />, label: t('claims.caseQueue'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/members`, icon: <Users size={16} />, label: t('members.directory'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: t('sidebar.clauseLibrary'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/analytics`, icon: <BarChart3 size={16} />, label: t('sidebar.insights'), roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedents', roles: ["steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["officer", "admin"] },
+      ]
+    },
+    {
+      title: t('sidebar.leadership'),
+      roles: ["officer", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/communications`, icon: <MessageSquare size={16} />, label: 'Communications', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/grievances`, icon: <Scale size={16} />, label: t('grievance.title'), roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/targets`, icon: <Target size={16} />, label: 'Performance Targets', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/organizing`, icon: <Flag size={16} />, label: 'Organizing Campaigns', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/strike-fund`, icon: <DollarSign size={16} />, label: 'Strike Fund', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/notifications`, icon: <Bell size={16} />, label: t('sidebar.alerts'), roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/pension/admin`, icon: <Briefcase size={16} />, label: 'Pension Administration', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/pension/trustee`, icon: <Shield size={16} />, label: 'Trustee Portal', roles: ["officer", "admin"] },
+      ]
+    },
+    {
+      title: 'Cross-Organizational Operations',
+      roles: ["congress_staff", "federation_staff", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedent Database', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: 'Shared Clause Library', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/admin/organizations`, icon: <Building2 size={16} />, label: 'Affiliate Management', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/compliance`, icon: <FileBarChart size={16} />, label: 'Compliance Reports', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/sector-analytics`, icon: <BarChart3 size={16} />, label: 'Sector Analytics', roles: ["congress_staff", "admin"] },
+      ]
+    },
+    {
+      title: t('sidebar.system'),
+      roles: ["admin"],
+      items: [
+        { href: `/${locale}/dashboard/admin`, icon: <Shield size={16} />, label: t('navigation.adminPanel'), roles: ["admin"] },
+        { href: `/${locale}/dashboard/settings`, icon: <Settings size={16} />, label: t('sidebar.preferences'), roles: ["member", "steward", "officer", "admin", "congress_staff", "federation_staff"] },
+      ]
+    }
   ];
-
-  // Handle navigation item click
-  const handleNavItemClick = (e: React.MouseEvent, href: string) => {
-    if (hasReachedCreditLimit()) {
-      e.preventDefault(); // Prevent navigation
-      setShowUpgradePopup(true); // Show upgrade popup
-    } else {
-      // Normal navigation handled by Link component
-    }
-  };
   
-  // Show upgrade popup on initial load if needed
-  useEffect(() => {
-    if (hasReachedCreditLimit()) {
-      setShowUpgradePopup(true);
-    }
-  }, [profile, hasReachedCreditLimit]);
+  const navigationSections = getNavigationSections();
+
+  // Filter sections and items based on user role
+  const getVisibleSections = () => {
+    return navigationSections
+      .map(section => ({
+        ...section,
+        items: section.items.filter(item => item.roles.includes(userRole))
+      }))
+      .filter(section => section.items.length > 0 && section.roles.includes(userRole));
+  };
+
+  const visibleSections = getVisibleSections();
 
   return (
-    <>
-      {profile && (
-        <UpgradePlanPopup 
-          profile={profile} 
-          monthlyPlanId={whopMonthlyPlanId} 
-          yearlyPlanId={whopYearlyPlanId}
-          isOpen={showUpgradePopup}
-          onOpenChange={setShowUpgradePopup}
-        />
-      )}
-      
-      <div className="h-screen w-[60px] md:w-[220px] bg-white/60 backdrop-blur-xl border-r border-white/40 flex flex-col justify-between py-5 relative overflow-hidden">
+    <div className="h-screen w-[60px] md:w-[220px] bg-white/60 backdrop-blur-xl border-r border-white/40 flex flex-col justify-between py-5 relative overflow-hidden">
         {/* Glassmorphism effects */}
         <motion.div 
           className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 pointer-events-none"
@@ -100,168 +166,112 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
 
         {/* Logo */}
         <div className="px-3 mb-8 relative z-10">
-          <Link href="/dashboard">
+          <Link href={`/${locale}/dashboard`}>
             <motion.div 
-              className="flex items-center justify-center md:justify-start"
+              className="flex items-center justify-center md:justify-start gap-2"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="hidden md:block">
-                <span className="font-bold text-lg">App Name</span>
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 shadow-lg">
+                <Shield size={18} className="text-white" />
               </div>
-              <div className="block md:hidden text-center">
-                <span className="font-bold text-sm">A</span>
+              <div className="hidden md:block">
+                <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">UnionEyes</span>
               </div>
             </motion.div>
           </Link>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 px-3 relative z-10">
-          <div className="space-y-1.5">
-            {navItems.map((item) => (
-              <Link 
-                key={item.href} 
-                href={item.href} 
-                className="block"
-                onClick={(e) => handleNavItemClick(e, item.href)}
-              >
-                <motion.div 
-                  className={`flex items-center py-2 px-3 rounded-lg cursor-pointer transition-all ${
-                    isActive(item.href) 
-                      ? "bg-[#1a1a1a] text-white shadow-sm" 
-                      : "text-gray-600 hover:bg-gray-100/80 hover:border-gray-200/50 hover:shadow-md"
-                  }`}
-                  whileHover={{ 
-                    scale: 1.03, 
-                    x: 4,
-                    transition: { duration: 0.2 }
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="flex items-center justify-center">
-                    {item.icon}
-                  </div>
-                  <span className={`ml-3 hidden md:block text-sm font-medium`}>
-                    {item.label}
-                  </span>
-                </motion.div>
-              </Link>
+        {/* Navigation Sections */}
+        <nav className="flex-1 px-3 relative z-10 overflow-y-auto">
+          <div className="space-y-6">
+            {visibleSections.map((section, sectionIndex) => (
+              <div key={section.title}>
+                {/* Section Header */}
+                <div className="mb-2 px-3">
+                  <h3 className="hidden md:block text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                    {section.title}
+                  </h3>
+                  <div className="md:hidden h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2" />
+                </div>
+                
+                {/* Section Items */}
+                <div className="space-y-0.5">
+                  {section.items.map((item) => (
+                    <Link 
+                      key={item.href} 
+                      href={item.href} 
+                      className="block"
+                    >
+                      <motion.div 
+                        className={`flex items-center py-2.5 px-3 rounded-lg cursor-pointer transition-all ${
+                          isActive(item.href) 
+                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30" 
+                            : "text-gray-600 hover:bg-white/80 hover:shadow-sm"
+                        }`}
+                        whileHover={{ 
+                          scale: 1.02, 
+                          x: 2,
+                          transition: { duration: 0.2 }
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center justify-center">
+                          {item.icon}
+                        </div>
+                        <span className={`ml-3 hidden md:block text-sm font-medium`}>
+                          {item.label}
+                        </span>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </nav>
 
-        {/* Bottom Section - Account and Subscription Management */}
+        {/* Bottom Section - User Profile */}
         <div className="mt-auto pt-4 relative z-10">
-          {/* Subscription Management Section */}
-          <div className="px-3 mb-4">
-            {/* Subtle section divider */}
-            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-4" />
-            
-            {/* Upgrade Button - Links to pricing page */}
-            <Link href="/pricing">
-              <motion.div
-                whileHover={{ 
-                  scale: 1.03,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <Button 
-                  variant="default" 
-                  size="sm"
-                  className="w-full flex items-center justify-center md:justify-start gap-1.5 py-1.5 h-auto transition-colors shadow-sm mb-3 relative overflow-hidden group"
-                >
-                  {/* Button hover effect */}
-                  <span className="absolute inset-0 w-full h-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <Sparkles size={14} className="relative z-10" />
-                  <span className="hidden md:block text-xs font-medium relative z-10">Upgrade</span>
-                </Button>
-              </motion.div>
-            </Link>
-            
-            {/* Billing Button - Only visible for members with whopMembershipId */}
-            {profile?.whopMembershipId && (
-              <Link 
-                href={`http://whop.com/orders/${profile.whopMembershipId}/manage`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <motion.div
-                  whileHover={{ 
-                    scale: 1.03,
-                    transition: { duration: 0.2 }
-                  }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="w-full flex items-center justify-center md:justify-start gap-1.5 border-white/60 bg-white/70 hover:bg-white/90 hover:border-white py-1.5 h-auto transition-all shadow-sm hover:shadow-md"
-                  >
-                    <CreditCard size={14} className="text-gray-600" />
-                    <span className="hidden md:block text-xs">Billing</span>
-                  </Button>
-                </motion.div>
-              </Link>
-            )}
-          </div>
+          <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-3" />
           
-          {/* Credit Usage Display */}
-          <div className="px-3 mb-4">
-            <div className="hidden md:block">
-              <CreditUsageDisplay />
-            </div>
-            <div className="block md:hidden text-center">
-              <div className="bg-white/80 py-2 px-1 rounded-lg shadow-sm border border-white/80">
-                <div className="text-[10px] font-medium text-gray-600 mb-1">Credits</div>
-                <div className="flex justify-center">
-                  <div className="w-6 h-6 flex items-center justify-center">
-                    <svg 
-                      viewBox="0 0 24 24" 
-                      className="w-3.5 h-3.5 text-primary"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                  </div>
-                </div>
+          {/* User Profile Link */}
+          <Link href="/dashboard/profile">
+            <motion.div 
+              className="flex items-center px-3 py-3 hover:bg-white/70 rounded-lg mx-2 cursor-pointer transition-colors"
+              whileHover={{ 
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/80 flex items-center justify-center bg-white/80 shadow-sm">
+                {isMounted ? (
+                  <UserButton 
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        userButtonAvatarBox: "w-8 h-8",
+                        userButtonTrigger: "w-8 h-8 rounded-full"
+                      }
+                    }} 
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+                )}
               </div>
-            </div>
-          </div>
-          
-          {/* User Profile Section */}
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-          <motion.div 
-            className="flex items-center px-3 py-3 hover:bg-white/50 rounded-lg mx-2 cursor-pointer"
-            whileHover={{ 
-              scale: 1.02,
-              transition: { duration: 0.2 }
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="w-7 h-7 rounded-full overflow-hidden border border-white/80 flex items-center justify-center bg-white/80 shadow-sm">
-              <UserButton 
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-7 h-7",
-                    userButtonTrigger: "w-7 h-7 rounded-full"
-                  }
-                }} 
-              />
-            </div>
-            <span className="text-xs text-gray-600 hidden md:block ml-3 font-medium truncate max-w-[120px]">
-              {userEmail || "Account"}
-            </span>
-          </motion.div>
+              <div className="hidden md:block ml-3 flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {userEmail?.split('@')[0] || t('common.member')}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {t('sidebar.viewProfile')}
+                </p>
+              </div>
+            </motion.div>
+          </Link>
         </div>
       </div>
-    </>
   );
 } 

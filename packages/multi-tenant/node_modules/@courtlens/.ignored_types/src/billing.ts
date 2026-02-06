@@ -1,0 +1,473 @@
+// Billing Core Types
+export interface TimeEntry {
+  id: string;
+  userId: string;
+  matterId: string;
+  taskId: string | undefined;
+  clientId: string;
+  firmId: string;
+  startTime: Date;
+  endTime: Date | undefined;
+  duration: number;
+  isRunning: boolean;
+  billableRate: number;
+  billableAmount: number;
+  nonBillableAmount: number | undefined;
+  description: string;
+  category: TaskCategory;
+  activityType: ActivityType;
+  tags: string[];
+  isBillable: boolean;
+  isSubmitted: boolean;
+  submittedAt: Date | undefined;
+  approvedBy: string | undefined;
+  approvedAt: Date | undefined;
+  billingStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+  syncStatus: SyncStatus;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  clientId: string;
+  matterId: string;
+  firmId: string;
+  issueDate: Date;
+  dueDate: Date;
+  sentAt: Date | undefined;
+  status: InvoiceStatus;
+  subtotal: number;
+  taxAmount: number;
+  totalAmount: number;
+  paidAmount: number;
+  outstandingAmount: number;
+  currency: string;
+  terms: string;
+  notes: string | undefined;
+  timeEntries: string[];
+  expenses: string[];
+  fixedFees: string[];
+  createdAt: Date;
+  updatedAt: Date | undefined;
+  clientMessage: string | undefined;
+  paymentInstructions: string | undefined;
+}
+
+export interface Payment {
+  id: string;
+  invoiceId: string;
+  clientId: string;
+  firmId: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  paymentDate: Date;
+  processorId: string;
+  processorType: PaymentProcessorType;
+  transactionId: string;
+  status: PaymentStatus;
+  createdAt: Date;
+  notes: string;
+}
+
+export interface TrustAccount {
+  id: string;
+  firmId: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  currentBalance: number;
+  availableBalance: number;
+  isIOLTA: boolean;
+  iolaRegistrationNumber: string;
+  createdAt: Date;
+  isActive: boolean;
+}
+
+export interface TrustTransaction {
+  id: string;
+  trustAccountId: string;
+  clientId: string;
+  matterId: string;
+  firmId: string;
+  type: TrustTransactionType;
+  amount: number;
+  description: string;
+  reference: string;
+  transactionDate: Date;
+  createdAt: Date;
+  invoiceId: string | undefined;
+  paymentId: string | undefined;
+  approvedBy: string | undefined;
+  approvedAt: Date | undefined;
+  status: TrustTransactionStatus;
+}
+
+export interface Client {
+  id: string;
+  firmId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: Address;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+}
+
+export interface Matter {
+  id: string;
+  clientId: string;
+  firmId: string;
+  name: string;
+  description?: string;
+  practiceArea: string;
+  status: MatterStatus;
+  openDate: Date;
+  closeDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BillingRate {
+  id: string;
+  firmId: string;
+  userId?: string;
+  clientId?: string;
+  matterId?: string;
+  practiceArea?: string;
+  taskCategory?: TaskCategory;
+  hourlyRate: number;
+  currency: string;
+  effectiveDate: Date;
+  endDate?: Date;
+  createdAt: Date;
+}
+
+export interface Expense {
+  id: string;
+  userId: string;
+  matterId?: string;
+  clientId: string;
+  firmId: string;
+  amount: number;
+  currency: string;
+  category: string;
+  description: string;
+  date: Date;
+  receiptUrl?: string;
+  isBillable: boolean;
+  isReimbursable: boolean;
+  status: ExpenseStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FixedFeeItem {
+  id: string;
+  description: string;
+  amount: number;
+  currency: string;
+}
+
+export interface BillingConfiguration {
+  firmId: string;
+  defaultHourlyRate: number;
+  currency: string;
+  defaultCurrency: string;
+  taxRates: TaxRate[];
+  paymentTerms: number;
+  defaultPaymentTerms: string;
+  roundingPrecision: number;
+  trustAccountingEnabled: boolean;
+  autoSubmitTimeEntries: boolean;
+  requireExpenseReceipts: boolean;
+  minimumTimeIncrement: number;
+  hstRate: number;
+  gstRate: number;
+  qstRate: number;
+  hstNumber: string;
+  gstNumber: string;
+  qstNumber: string;
+  invoiceNumberFormat: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TaxRate {
+  jurisdiction: string;
+  rate: number;
+  type: TaxType;
+}
+
+export interface TaxCalculation {
+  subtotal: number;
+  taxAmount: number;
+  totalAmount: number;
+  breakdown: TaxBreakdown[];
+}
+
+export interface TaxBreakdown {
+  jurisdiction: string;
+  type: TaxType;
+  rate: number;
+  amount: number;
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+}
+
+// Enums
+export enum InvoiceStatus {
+  DRAFT = 'draft',
+  SENT = 'sent',
+  VIEWED = 'viewed', 
+  PAID = 'paid',
+  PARTIAL = 'partial',
+  OVERDUE = 'overdue',
+  CANCELLED = 'cancelled'
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+  CANCELLED = 'cancelled'
+}
+
+export enum PaymentMethod {
+  CREDIT_CARD = 'credit_card',
+  BANK_TRANSFER = 'bank_transfer',
+  CHECK = 'check',
+  CASH = 'cash',
+  WIRE_TRANSFER = 'wire_transfer',
+  INTERAC = 'interac'
+}
+
+export enum PaymentProcessorType {
+  STRIPE = 'stripe',
+  PAYPAL = 'paypal',
+  MONERIS = 'moneris',
+  SQUARE = 'square',
+  MANUAL = 'manual'
+}
+
+export enum TrustTransactionType {
+  DEPOSIT = 'deposit',
+  WITHDRAWAL = 'withdrawal',
+  TRANSFER = 'transfer',
+  INTEREST = 'interest',
+  FEE = 'fee'
+}
+
+export enum TrustTransactionStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  COMPLETED = 'completed',
+  REJECTED = 'rejected'
+}
+
+export enum TaskCategory {
+  RESEARCH = 'research',
+  DRAFTING = 'drafting',
+  CORRESPONDENCE = 'correspondence',
+  COURT_APPEARANCE = 'court_appearance',
+  CLIENT_MEETING = 'client_meeting',
+  NEGOTIATION = 'negotiation',
+  ADMINISTRATIVE = 'administrative',
+  TRAVEL = 'travel',
+  REAL_ESTATE = 'real_estate',
+  EMPLOYMENT = 'employment',
+  WILLS_ESTATES = 'wills_estates',
+  CORPORATE = 'corporate',
+  LITIGATION = 'litigation',
+  GENERAL = 'general'
+}
+
+export enum ActivityType {
+  BILLABLE = 'billable',
+  NON_BILLABLE = 'non_billable',
+  PRO_BONO = 'pro_bono'
+}
+
+export enum SyncStatus {
+  SYNCED = 'synced',
+  PENDING = 'pending',
+  ERROR = 'error'
+}
+
+export enum MatterStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  CLOSED = 'closed',
+  ON_HOLD = 'on_hold'
+}
+
+export enum ExpenseStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  REIMBURSED = 'reimbursed'
+}
+
+export enum TaxType {
+  HST = 'hst',
+  GST = 'gst', 
+  PST = 'pst',
+  QST = 'qst'
+}
+
+// Request/Response Types
+export interface InvoiceGenerationRequest {
+  clientId: string;
+  matterId: string;
+  dueDate: Date;
+  timeEntries?: string[];
+  expenses?: string[];
+  fixedFees?: FixedFeeItem[];
+  notes?: string;
+  clientMessage?: string;
+}
+
+export interface TimeEntryRequest {
+  matterId: string;
+  taskId: string | undefined;
+  clientId: string;
+  startTime: Date;
+  endTime: Date | undefined;
+  duration: number | undefined;
+  description: string;
+  category: TaskCategory;
+  activityType: ActivityType;
+  tags: string[] | undefined;
+  isBillable: boolean | undefined;
+  customRate: number | undefined;
+}
+
+export interface PaymentProcessingRequest {
+  invoiceId: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  processorType: PaymentProcessorType;
+  paymentDetails: any;
+  clientId: string;
+}
+
+// Trust Account Types
+export interface TrustDepositRequest {
+  trustAccountId: string;
+  clientId: string;
+  matterId?: string;
+  amount: number;
+  description: string;
+  reference: string;
+  transactionDate?: Date;
+}
+
+export interface TrustWithdrawalRequest {
+  trustAccountId: string;
+  clientId: string;
+  matterId?: string;
+  amount: number;
+  description: string;
+  reference: string;
+  purpose: string;
+  invoiceId?: string;
+  requiresApproval?: boolean;
+}
+
+// Analytics and Reporting Types
+export interface BillingMetrics {
+  totalRevenue: number;
+  billableHours: number;
+  realizationRate: number;
+  averageHourlyRate: number;
+  outstandingInvoices: number;
+  collectionRate: number;
+}
+
+export interface TimeTrackingMetrics {
+  totalHours: number;
+  billableHours: number;
+  nonBillableHours: number;
+  utilizationRate: number;
+  averageSessionDuration: number;
+}
+
+// User and Firm Types
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  firmId: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Firm {
+  id: string;
+  name: string;
+  address: Address;
+  phone: string;
+  email: string;
+  website?: string;
+  taxId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Additional Types for Time Tracking
+export interface ActiveTimer {
+  id: string;
+  userId: string;
+  matterId: string;
+  clientId: string;
+  startTime: Date;
+  description: string;
+  category: TaskCategory;
+  activityType: ActivityType;
+  isRunning: boolean;
+  elapsedTime: number;
+  billableRate: number;
+  currentDuration: number;
+  lastUpdate: Date;
+}
+
+export interface TimeTrackingRequest {
+  matterId: string;
+  clientId: string;
+  description: string;
+  category: TaskCategory;
+  activityType: ActivityType;
+  billableRate?: number;
+}
+
+export interface TimeEntryUpdateRequest {
+  description?: string;
+  category?: TaskCategory;
+  activityType?: ActivityType;
+  startTime?: Date;
+  endTime?: Date;
+  duration?: number;
+  isBillable?: boolean;
+  billableRate?: number;
+  tags?: string[];
+}
+
+export interface ClientTrustBalance {
+  clientId: string;
+  clientName: string;
+  balance: number;
+  lastTransactionDate: Date;
+}

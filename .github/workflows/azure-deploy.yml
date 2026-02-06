@@ -1,0 +1,180 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main        # Production deployment
+      - staging     # Staging deployment
+  pull_request:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Build and test job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # Skipping linting, type-checking, and build - Docker will handle full build with all env vars
+
+  # Deploy to Staging
+  deploy-staging:
+    needs: build
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://unioneyes-staging-app.azurewebsites.net
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Build and push Docker image
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.STAGING_ACR_LOGIN_SERVER }}
+          username: ${{ secrets.STAGING_ACR_USERNAME }}
+          password: ${{ secrets.STAGING_ACR_PASSWORD }}
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            --file Dockerfile.staging \
+            --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.STAGING_APP_URL }} \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
+            --build-arg DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }} \
+            -t ${{ secrets.STAGING_ACR_LOGIN_SERVER }}/unioneyes:${{ github.sha }} \
+            -t ${{ secrets.STAGING_ACR_LOGIN_SERVER }}/unioneyes:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.STAGING_ACR_LOGIN_SERVER }}/unioneyes:${{ github.sha }}
+          docker push ${{ secrets.STAGING_ACR_LOGIN_SERVER }}/unioneyes:latest
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: unioneyes-staging-app
+          images: ${{ secrets.STAGING_ACR_LOGIN_SERVER }}/unioneyes:${{ github.sha }}
+
+      - name: Configure App Settings
+        run: |
+          az webapp config appsettings set \
+            --name unioneyes-staging-app \
+            --resource-group unioneyes-staging-rg \
+            --settings \
+              NODE_ENV="production" \
+              NEXT_TELEMETRY_DISABLED="1" \
+              DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}" \
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+              CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
+              NEXT_PUBLIC_APP_URL="${{ secrets.STAGING_APP_URL }}" \
+              AZURE_KEY_VAULT_NAME="${{ secrets.AZURE_KEY_VAULT_NAME }}" \
+              AZURE_KEY_VAULT_SECRET_NAME="${{ secrets.AZURE_KEY_VAULT_SECRET_NAME }}" \
+              AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}" \
+              AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}" \
+              AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}" \
+              AZURE_STORAGE_ACCOUNT_NAME="${{ secrets.STAGING_AZURE_STORAGE_ACCOUNT_NAME }}" \
+              AZURE_STORAGE_ACCOUNT_KEY="${{ secrets.STAGING_AZURE_STORAGE_ACCOUNT_KEY }}" \
+              AZURE_SPEECH_KEY="${{ secrets.STAGING_AZURE_SPEECH_KEY }}" \
+              AZURE_SPEECH_REGION="${{ secrets.STAGING_AZURE_SPEECH_REGION }}" \
+              AZURE_OPENAI_ENDPOINT="${{ secrets.STAGING_AZURE_OPENAI_ENDPOINT }}" \
+              AZURE_OPENAI_KEY="${{ secrets.STAGING_AZURE_OPENAI_KEY }}" \
+              SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+              SENTRY_ORG="${{ secrets.SENTRY_ORG }}" \
+              SENTRY_PROJECT="${{ secrets.SENTRY_PROJECT }}"
+
+  # Deploy to Production
+  deploy-production:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://unioneyes-prod-app.azurewebsites.net
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Build and push Docker image
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.PROD_ACR_LOGIN_SERVER }}
+          username: ${{ secrets.PROD_ACR_USERNAME }}
+          password: ${{ secrets.PROD_ACR_PASSWORD }}
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.PROD_APP_URL }} \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
+            --build-arg DATABASE_URL=${{ secrets.PROD_DATABASE_URL }} \
+            -t ${{ secrets.PROD_ACR_LOGIN_SERVER }}/unioneyes:${{ github.sha }} \
+            -t ${{ secrets.PROD_ACR_LOGIN_SERVER }}/unioneyes:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.PROD_ACR_LOGIN_SERVER }}/unioneyes:${{ github.sha }}
+          docker push ${{ secrets.PROD_ACR_LOGIN_SERVER }}/unioneyes:latest
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: unioneyes-prod-app
+          images: ${{ secrets.PROD_ACR_LOGIN_SERVER }}/unioneyes:${{ github.sha }}
+
+      - name: Configure App Settings
+        run: |
+          az webapp config appsettings set \
+            --name unioneyes-prod-app \
+            --resource-group unioneyes-prod-rg \
+            --settings \
+              DATABASE_URL="${{ secrets.PROD_DATABASE_URL }}" \
+              NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+              CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
+              AZURE_STORAGE_ACCOUNT_NAME="${{ secrets.PROD_AZURE_STORAGE_ACCOUNT_NAME }}" \
+              AZURE_STORAGE_ACCOUNT_KEY="${{ secrets.PROD_AZURE_STORAGE_ACCOUNT_KEY }}" \
+              AZURE_SPEECH_KEY="${{ secrets.PROD_AZURE_SPEECH_KEY }}" \
+              AZURE_SPEECH_REGION="${{ secrets.PROD_AZURE_SPEECH_REGION }}" \
+              AZURE_OPENAI_ENDPOINT="${{ secrets.PROD_AZURE_OPENAI_ENDPOINT }}" \
+              AZURE_OPENAI_KEY="${{ secrets.PROD_AZURE_OPENAI_KEY }}"
+
+      - name: Run database migrations
+        run: |
+          # Add migration command here when ready
+          echo "Database migrations would run here"
