@@ -334,6 +334,161 @@
           "unknown": "Une erreur s'est produite"
         }
       }
+    },
+    "admin": {
+      "overview": {
+        "title": "Administration Reconnaissance et Récompenses",
+        "description": "Gérer les programmes de reconnaissance, approuver les prix et suivre les allocations budgétaires",
+        "metrics": {
+          "activePrograms": "Programmes Actifs",
+          "programsSubtext": "Programmes de reconnaissance",
+          "pendingApprovals": "Approbations en Attente",
+          "approvalsSubtext": "Prix en attente de révision",
+          "totalIssued": "Total Émis",
+          "issuedSubtext": "Crédits émis",
+          "totalRedeemed": "Total Échangé",
+          "redeemedSubtext": "Crédits échangés"
+        },
+        "quickActions": {
+          "title": "Actions Rapides",
+          "programs": {
+            "title": "Gérer les Programmes",
+            "description": "Créer et configurer des programmes de reconnaissance"
+          },
+          "awards": {
+            "title": "Réviser les Prix",
+            "description": "Approuver et émettre des prix de reconnaissance"
+          },
+          "budgets": {
+            "title": "Gérer les Budgets",
+            "description": "Allouer et suivre les enveloppes budgétaires"
+          },
+          "shopify": {
+            "title": "Config Shopify",
+            "description": "Configurer l'intégration Shop Moi Ça"
+          },
+          "reports": {
+            "title": "Voir les Rapports",
+            "description": "Tableau de bord analytique et insights"
+          },
+          "members": {
+            "title": "Portefeuilles Membres",
+            "description": "Voir les soldes et l'historique des membres"
+          }
+        },
+        "recentActivity": {
+          "title": "Activité Récente",
+          "description": "Derniers prix et échanges dans l'organisation",
+          "placeholder": "Flux d'activité à venir"
+        }
+      },
+      "programs": {
+        "title": "Programmes de Reconnaissance",
+        "description": "Créer et gérer des programmes de reconnaissance et leurs types de prix",
+        "backToAdmin": "Retour à l'Administration",
+        "list": {
+          "title": "Tous les Programmes",
+          "description": "Configurer les programmes, types de prix et flux d'approbation",
+          "empty": "Aucun programme créé pour le moment",
+          "columns": {
+            "name": "Nom du Programme",
+            "status": "Statut",
+            "created": "Créé",
+            "actions": "Actions"
+          },
+          "actions": {
+            "open": "Ouvrir le menu",
+            "edit": "Modifier",
+            "archive": "Archiver",
+            "activate": "Activer"
+          }
+        },
+        "create": {
+          "button": "Créer un Programme",
+          "title": "Créer un Programme de Reconnaissance",
+          "description": "Configurer un nouveau programme de reconnaissance pour votre organisation",
+          "fields": {
+            "name": "Nom du Programme",
+            "namePlaceholder": "ex., Employé du Mois",
+            "description": "Description",
+            "descriptionPlaceholder": "Décrivez l'objectif et les critères de ce programme...",
+            "status": "Statut",
+            "statusDraft": "Brouillon",
+            "statusActive": "Actif"
+          },
+          "cancel": "Annuler",
+          "submit": "Créer le Programme",
+          "error": "Échec de la création du programme",
+          "errorUnknown": "Une erreur s'est produite"
+        }
+      },
+      "awards": {
+        "title": "Gestion des Prix",
+        "description": "Réviser, approuver et émettre des prix de reconnaissance aux membres",
+        "backToAdmin": "Retour à l'Administration",
+        "tabs": {
+          "pending": "En Attente d'Approbation",
+          "approved": "Approuvés",
+          "issued": "Émis"
+        },
+        "pending": {
+          "title": "Approbations en Attente",
+          "description": "Prix en attente d'approbation de la direction"
+        },
+        "approved": {
+          "title": "Prix Approuvés",
+          "description": "Prix approuvés et prêts à être émis"
+        },
+        "issued": {
+          "title": "Prix Émis",
+          "description": "Prix qui ont été émis aux membres"
+        },
+        "queue": {
+          "empty": "Aucun prix dans ce statut",
+          "columns": {
+            "recipient": "Destinataire",
+            "award": "Type de Prix",
+            "credits": "Crédits",
+            "date": "Date",
+            "actions": "Actions"
+          },
+          "actions": {
+            "approve": "Approuver",
+            "reject": "Rejeter",
+            "issue": "Émettre"
+          }
+        },
+        "create": {
+          "button": "Créer un Prix"
+        }
+      },
+      "budgets": {
+        "title": "Gestion des Budgets",
+        "description": "Allouer des budgets et suivre les dépenses dans les programmes",
+        "backToAdmin": "Retour à l'Administration",
+        "usage": {
+          "ongoing": "En cours",
+          "used": "Utilisé",
+          "utilized": "utilisé",
+          "remaining": "restant"
+        },
+        "list": {
+          "title": "Toutes les Enveloppes Budgétaires",
+          "description": "Configurer les allocations budgétaires pour les programmes de reconnaissance",
+          "empty": "Aucune enveloppe budgétaire créée pour le moment",
+          "ongoing": "En cours",
+          "columns": {
+            "name": "Nom",
+            "allocated": "Alloué",
+            "used": "Utilisé",
+            "remaining": "Restant",
+            "period": "Période"
+          }
+        },
+        "create": {
+          "button": "Créer un Budget"
+        }
+      }
     }
   }
 }
