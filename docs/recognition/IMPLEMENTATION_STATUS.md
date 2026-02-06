@@ -31,57 +31,62 @@
 - [x] Admin and member-scoped operations
 - [x] Auth and role enforcement
 
+#### Phase 3: Part 2 - API Routes (ed597bf5)
+- [x] Shopify webhook handler: `app/api/integrations/shopify/webhooks/route.ts`
+- [x] Member wallet API: `app/api/rewards/wallet/route.ts`
+- [x] Redemptions API: `app/api/rewards/redemptions/route.ts`
+- [x] HMAC signature verification
+- [x] Idempotency handling
+
+#### Phase 4: Part 1 - Member Wallet UI (4c1a8771)
+- [x] Wallet page: `app/[locale]/dashboard/rewards/page.tsx`
+- [x] Redemption page: `app/[locale]/dashboard/rewards/redeem/page.tsx`
+- [x] WalletBalanceCard component
+- [x] LedgerTable component
+- [x] RedemptionForm component
+- [x] i18n translations (EN/FR)
+
 ---
 
 ## REMAINING WORK
 
-### Phase 3: Part 2 - API Routes (IN PROGRESS)
+### Phase 4: Part 2 - Admin UI (IN PROGRESS)
 
 #### Need to Create:
 
-**1. Webhook Endpoint: `/app/api/integrations/shopify/webhooks/route.ts`**
-- POST handler for all Shopify webhooks
-- Parse headers: `parseShopifyHeaders()`
-- Verify HMAC: `verifyShopifySignature()`
-- Route by topic: `orders/paid`, `orders/fulfilled`, `refunds/create`
-- Use `processWebhookIdempotent()` wrapper
-- Update redemption statuses
-- Process refunds
+**Admin Console Structure**: `/app/[locale]/dashboard/admin/rewards/`
 
-**2. Member Wallet API: `/app/api/rewards/wallet/route.ts`**
-- GET: Balance + recent ledger entries
-- Uses `getMyWalletBalance()` and `getMyWalletLedger()` actions
+**1. Programs Management** (`programs/page.tsx`)
+- List all programs with status filters
+- Create new program modal/form
+- Edit existing programs
+- Archive/activate programs
+- Award types CRUD within program context
 
-**3. Redemption API: `/app/api/rewards/redemptions/route.ts`**
-- POST: Initiate redemption (uses `initiateRedemption()` action)
-- GET: List user redemptions
+**2. Awards Queue** (`awards/page.tsx`)
+- Pending approvals table with filters
+- Approve/reject actions with notes
+- Issue awards (manual or batch)
+- View issued awards history
+- Revoke awards with reason
 
-**4. Admin API: `/app/api/recognition/[resource]/route.ts`** (optional)
-- Can use server actions directly from UI, or create REST endpoints
-- Resources: programs, award-types, awards, budgets
+**3. Budget Management** (`budgets/page.tsx`)
+- List budget envelopes
+- Create new envelopes with allocations
+- View usage progress bars
+- Budget vs actual reporting
 
----
+**4. Shopify Configuration** (`shopify/page.tsx`)
+- Connection status indicator
+- Test connection button
+- Configure allowed collections
+- View webhook status
 
-### Phase 4: UI Implementation
-
-#### Member UX:
-**File**: `app/[locale]/dashboard/rewards/page.tsx`
-- Wallet card: balance, expiring soon (future)
-- Ledger table with filters
-- CTA: "Redeem credits" button
-
-**File**: `app/[locale]/dashboard/rewards/redeem/page.tsx`
-- If Shopify enabled: curated product catalog
-- Initiate redemption flow
-- Redirect to Shopify checkout
-
-#### Admin UX:
-**Folder**: `app/[locale]/dashboard/admin/rewards/`
-- `programs/page.tsx`: CRUD programs and award types
-- `awards/page.tsx`: Pending approvals queue, issue awards
-- `budgets/page.tsx`: Create/edit envelopes, usage progress
-- `shopify/page.tsx`: Config Shopify connection
-- `reports/page.tsx`: Analytics dashboard
+**5. Reports Dashboard** (`reports/page.tsx`)
+- Total credits issued/redeemed metrics
+- Top award recipients
+- Budget utilization charts
+- Redemption trends
 
 ---
 
