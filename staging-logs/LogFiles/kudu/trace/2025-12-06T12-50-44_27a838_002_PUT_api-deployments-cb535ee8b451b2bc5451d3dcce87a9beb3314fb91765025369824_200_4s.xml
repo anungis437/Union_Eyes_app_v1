@@ -1,0 +1,6 @@
+<step title="Incoming Request" date="2025-12-06T12:50:44.778" instance="27a838" url="/api/deployments/cb535ee8b451b2bc5451d3dcce87a9beb3314fb91765025369824" method="PUT" type="request" pid="770,1,5" Host="unioneyes-staging-app.scm.azurewebsites.net" User-Agent="GITHUBACTIONS_DeployWebAppToAzure_015d3871cb96941e1d769cf15263711940e88e04d0efe9fe66346b30c522933a" Authorization="Bea..." Content-Type="application/json; charset=utf-8" Content-Length="319" X-ARR-LOG-ID="a62dfb79-cacb-44af-a825-ed0231329820" CLIENT-IP="52.176.35.116:52288" X-SITE-DEPLOYMENT-ID="unioneyes-staging-app" WAS-DEFAULT-HOSTNAME="unioneyes-staging-app.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/deployments/cb535ee8b451b2bc5451d3dcce87a9beb3314fb91765025369824" X-Client-IP="52.176.35.116" X-Client-Port="52288" >
+  <step title="DeploymentService.Deploy(id)" date="2025-12-06T12:50:46.777" >
+    <step title="DeploymentService.Create(id)" date="2025-12-06T12:50:46.797" /><!-- duration: 1485ms -->
+  </step><!-- duration: 1518ms -->
+  <step title="Outgoing response" date="2025-12-06T12:50:48.495" type="response" statusCode="200" statusText="OK" /><!-- duration: 10ms -->
+</step><!-- duration: 3738ms -->

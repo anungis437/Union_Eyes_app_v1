@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>cb535ee8b451b2bc5451d3dcce87a9beb3314fb91765025369824</id>
+  <author>anungis437</author>
+  <deployer>GitHub</deployer>
+  <authorEmail />
+  <message>{"type":"Deployment","sha":"cb535ee8b451b2bc5451d3dcce87a9beb3314fb9","repoName":"anungis437/Union_Eyes_app_v1","actor":"anungis437","slotName":"production"}</message>
+  <progress />
+  <status>Success</status>
+  <statusText />
+  <lastSuccessEndTime>2025-12-06T12:50:46.7882379Z</lastSuccessEndTime>
+  <receivedTime>2025-12-06T12:50:46.7882379Z</receivedTime>
+  <startTime>2025-12-06T12:50:46.7882379Z</startTime>
+  <endTime>2025-12-06T12:50:46.7882379Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>

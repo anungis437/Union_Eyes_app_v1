@@ -1,0 +1,67 @@
+[
+  {
+    "name": "DATABASE_URL",
+    "value": "postgresql://unionadmin:UnionEyes2025!Production@unioneyes-prod-db.postgres.database.azure.com:5432/unioneyes?sslmode=require",
+    "slotSetting": false
+  },
+  {
+    "name": "NODE_ENV",
+    "value": "production",
+    "slotSetting": false
+  },
+  {
+    "name": "NEXT_PUBLIC_APP_URL",
+    "value": "https://unioneyes-prod-app.azurewebsites.net",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_STORAGE_ACCOUNT_NAME",
+    "value": "unioneyesprodstorage",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_STORAGE_ACCOUNT_KEY",
+    "value": "fdT/TDPOBs+U4EmYXgfwyr1EnqXa4CTTy/kXtNzWnBD+HQaT993LSpbdjRI2l2dvjE/HG2T5oyOw+AStekn8cw==",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_STORAGE_CONTAINER_NAME",
+    "value": "unioneyes-uploads",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_SPEECH_KEY",
+    "value": "AnupH20JacXqZmVirT4ZKobkqSHc46b9ntJp8GsQ4HlNyh3kJX30JQQJ99BKACBsN54XJ3w3AAAYACOGNxvt",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_SPEECH_REGION",
+    "value": "canadacentral",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_OPENAI_ENDPOINT",
+    "value": "https://canadacentral.api.cognitive.microsoft.com/",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_OPENAI_KEY",
+    "value": "4FVVo0ryCIazqFx5aZxSf6q5cLn9GmFqpB8cBSHSLAr2stbCS8BDJQQJ99BKACBsN54XJ3w3AAABACOGc1ij",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_OPENAI_DEPLOYMENT_NAME",
+    "value": "gpt-4",
+    "slotSetting": false
+  },
+  {
+    "name": "AZURE_OPENAI_API_VERSION",
+    "value": "2024-02-15-preview",
+    "slotSetting": false
+  },
+  {
+    "name": "SIGN_IN_FALLBACK_REDIRECT_URL",
+    "value": "/dashboard",
+    "slotSetting": false
+  }
+]
