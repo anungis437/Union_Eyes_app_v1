@@ -29,6 +29,13 @@
       "when": 1764959585710,
       "tag": "0003_curious_agent_zero",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770354827930,
+      "tag": "0004_loud_agent_brand",
+      "breakpoints": true
     }
   ]
 }

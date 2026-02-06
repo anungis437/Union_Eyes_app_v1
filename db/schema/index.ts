@@ -68,8 +68,8 @@ export * from "./lmbp-immigration-schema"; // LMBP Immigration System (Validator
 export * from "./governance-schema"; // Golden Share Governance (Validator #16)
 // P1: Critical Compliance Validators
 export * from "./provincial-privacy-schema";
-export * from "./indigenous-data-sovereignty-schema";
-export * from "./strike-fund-tax-reporting-schema";
+export * from "./indigenous-data-schema";
+export * from "./strike-fund-tax-schema";
 export * from "./force-majeure-schema";
 
 // P2: High-Impact Compliance Validators
