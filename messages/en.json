@@ -334,6 +334,161 @@
           "unknown": "An error occurred"
         }
       }
+    },
+    "admin": {
+      "overview": {
+        "title": "Recognition & Rewards Administration",
+        "description": "Manage recognition programs, approve awards, and track budget allocations",
+        "metrics": {
+          "activePrograms": "Active Programs",
+          "programsSubtext": "Recognition programs",
+          "pendingApprovals": "Pending Approvals",
+          "approvalsSubtext": "Awards awaiting review",
+          "totalIssued": "Total Issued",
+          "issuedSubtext": "Credits issued",
+          "totalRedeemed": "Total Redeemed",
+          "redeemedSubtext": "Credits redeemed"
+        },
+        "quickActions": {
+          "title": "Quick Actions",
+          "programs": {
+            "title": "Manage Programs",
+            "description": "Create and configure recognition programs"
+          },
+          "awards": {
+            "title": "Review Awards",
+            "description": "Approve and issue recognition awards"
+          },
+          "budgets": {
+            "title": "Manage Budgets",
+            "description": "Allocate and track budget envelopes"
+          },
+          "shopify": {
+            "title": "Shopify Config",
+            "description": "Configure Shop Moi Ça integration"
+          },
+          "reports": {
+            "title": "View Reports",
+            "description": "Analytics and insights dashboard"
+          },
+          "members": {
+            "title": "Member Wallets",
+            "description": "View member balances and history"
+          }
+        },
+        "recentActivity": {
+          "title": "Recent Activity",
+          "description": "Latest awards and redemptions across the organization",
+          "placeholder": "Activity feed coming soon"
+        }
+      },
+      "programs": {
+        "title": "Recognition Programs",
+        "description": "Create and manage recognition programs and their award types",
+        "backToAdmin": "Back to Admin",
+        "list": {
+          "title": "All Programs",
+          "description": "Configure programs, award types, and approval workflows",
+          "empty": "No programs created yet",
+          "columns": {
+            "name": "Program Name",
+            "status": "Status",
+            "created": "Created",
+            "actions": "Actions"
+          },
+          "actions": {
+            "open": "Open menu",
+            "edit": "Edit",
+            "archive": "Archive",
+            "activate": "Activate"
+          }
+        },
+        "create": {
+          "button": "Create Program",
+          "title": "Create Recognition Program",
+          "description": "Set up a new recognition program for your organization",
+          "fields": {
+            "name": "Program Name",
+            "namePlaceholder": "e.g., Employee of the Month",
+            "description": "Description",
+            "descriptionPlaceholder": "Describe the purpose and criteria of this program...",
+            "status": "Status",
+            "statusDraft": "Draft",
+            "statusActive": "Active"
+          },
+          "cancel": "Cancel",
+          "submit": "Create Program",
+          "error": "Failed to create program",
+          "errorUnknown": "An error occurred"
+        }
+      },
+      "awards": {
+        "title": "Awards Management",
+        "description": "Review, approve, and issue recognition awards to members",
+        "backToAdmin": "Back to Admin",
+        "tabs": {
+          "pending": "Pending Approval",
+          "approved": "Approved",
+          "issued": "Issued"
+        },
+        "pending": {
+          "title": "Pending Approvals",
+          "description": "Awards awaiting management approval"
+        },
+        "approved": {
+          "title": "Approved Awards",
+          "description": "Awards approved and ready to be issued"
+        },
+        "issued": {
+          "title": "Issued Awards",
+          "description": "Awards that have been issued to members"
+        },
+        "queue": {
+          "empty": "No awards in this status",
+          "columns": {
+            "recipient": "Recipient",
+            "award": "Award Type",
+            "credits": "Credits",
+            "date": "Date",
+            "actions": "Actions"
+          },
+          "actions": {
+            "approve": "Approve",
+            "reject": "Reject",
+            "issue": "Issue"
+          }
+        },
+        "create": {
+          "button": "Create Award"
+        }
+      },
+      "budgets": {
+        "title": "Budget Management",
+        "description": "Allocate budgets and track spending across programs",
+        "backToAdmin": "Back to Admin",
+        "usage": {
+          "ongoing": "Ongoing",
+          "used": "Used",
+          "utilized": "utilized",
+          "remaining": "remaining"
+        },
+        "list": {
+          "title": "All Budget Envelopes",
+          "description": "Configure budget allocations for recognition programs",
+          "empty": "No budget envelopes created yet",
+          "ongoing": "Ongoing",
+          "columns": {
+            "name": "Name",
+            "allocated": "Allocated",
+            "used": "Used",
+            "remaining": "Remaining",
+            "period": "Period"
+          }
+        },
+        "create": {
+          "button": "Create Budget"
+        }
+      }
     }
   }
 }
