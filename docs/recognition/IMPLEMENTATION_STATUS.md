@@ -46,11 +46,19 @@
 - [x] RedemptionForm component
 - [x] i18n translations (EN/FR)
 
+#### Phase 4: Part 2 - Admin Console UI (e0d1e8fe)
+- [x] Admin dashboard: `app/[locale]/dashboard/admin/rewards/page.tsx`
+- [x] Programs management: `programs/page.tsx`
+- [x] Awards queue: `awards/page.tsx`
+- [x] Budget management: `budgets/page.tsx`
+- [x] Admin components (lists, dialogs)
+- [x] Complete admin translations (EN/FR)
+
 ---
 
 ## REMAINING WORK
 
-### Phase 4: Part 2 - Admin UI (IN PROGRESS)
+### Phase 5: Shopify Integration (NEXT)
 
 #### Need to Create:
 
@@ -93,16 +101,36 @@
 ### Phase 5: Shopify Integration
 
 **File**: `lib/services/rewards/shopify-service.ts`
-- `fetchCuratedCollections()` - Storefront API GraphQL
-- `createDiscountCode()` - Admin API REST
-- `createCheckoutSession()` - Generate checkout URL with discount
+
+**Core Functions Needed**:
+1. `fetchCuratedCollections()` - Storefront API GraphQL
+   - Query products from allowed_collections
+   - Return product catalog with prices, images, variants
+   
+2. `createDiscountCode()` - Admin API REST
+   - Generate unique code: `UE{redemption_id}`
+   - Set fixed amount discount
+   - Link to redemption record
+   
+3. `createCheckoutSession()` - Generate checkout URL
+   - Build Shopify checkout URL
+   - Pre-apply discount code
+   - Return URL for redirect
 
 **Integration Flow**:
-1. Member clicks "Redeem"
-2. Call `initiateRedemption()` (deducts credits)
-3. Create discount code: `UE{redemption_id}`
-4. Return checkout URL
-5. Webhook updates status on payment/fulfillment
+1. Member clicks "Redeem" → `initiateRedemption()` deducts credits
+2. Call `createDiscountCode()` with redemption amount
+3. Return `createCheckoutSession()` URL
+4. Member completes checkout on Shopify
+5. Webhooks update redemption status
+
+**Environment Variables Required**:
+```env
+SHOPIFY_SHOP_DOMAIN=shop-moi-ca.myshopify.com
+SHOPIFY_STOREFRONT_TOKEN=xxx
+SHOPIFY_ADMIN_TOKEN=xxx
+SHOPIFY_WEBHOOK_SECRET=xxx
+```
 
 ---
 
