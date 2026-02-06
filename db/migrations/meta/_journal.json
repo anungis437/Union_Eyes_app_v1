@@ -36,6 +36,13 @@
       "when": 1770355877546,
       "tag": "0004_phase2_complete",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770371778360,
+      "tag": "0005_lazy_kate_bishop",
+      "breakpoints": true
     }
   ]
 }

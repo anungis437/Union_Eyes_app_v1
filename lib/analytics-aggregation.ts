@@ -12,7 +12,7 @@
  * Created: November 15, 2025
  */
 
-import { db } from '@/db/db';
+import { db } from '@/db';
 import { claims, users } from '@/db/schema';
 import { eq, and, gte, sql, count } from 'drizzle-orm';
 

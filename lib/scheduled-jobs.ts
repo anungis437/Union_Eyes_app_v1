@@ -14,7 +14,7 @@
 
 import { aggregationService } from '@/lib/analytics-aggregation';
 import { warmAnalyticsCache, getAnalyticsCacheStats } from '@/lib/analytics-middleware';
-import { db } from '@/db/db';
+import { db } from '@/db';
 import { claims } from '@/db/schema/claims-schema';
 import { sql } from 'drizzle-orm';
 

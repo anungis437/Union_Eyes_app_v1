@@ -258,10 +258,10 @@ export async function setCSRFCookie(
  * });
  * ```
  */
-export function getCSRFTokenFromCookie(): string | null {
+export async function getCSRFTokenFromCookie(): Promise<string | null> {
   if (typeof document === 'undefined') {
     // Server-side - use next/headers
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     return cookieStore.get(CSRF_COOKIE_NAME)?.value || null;
   }
 
