@@ -12,13 +12,16 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import LanguageSwitcher from "./language-switcher";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
@@ -32,6 +35,37 @@ export default function Header() {
   };
 
   const isActive = (path: string) => pathname === path;
+
+  // Prevent hydration mismatch by not rendering animations until mounted
+  if (!mounted) {
+    return (
+      <div className="sticky top-0 z-50 w-full px-4 py-3 flex justify-center">
+        <header 
+          className="rounded-xl backdrop-blur-xl bg-white/50 border border-white/40 shadow-sm relative overflow-hidden max-w-fit mx-auto"
+          style={{ 
+            minWidth: 'min(95%, 800px)',
+            backdropFilter: 'blur(12px)'
+          }}
+        >
+          <div className="px-6 py-3 relative">
+            <div className="flex items-center justify-between gap-8">
+              {/* Minimal skeleton during SSR */}
+              <div className="flex items-center space-x-3">
+                <div className="bg-primary/10 p-2 rounded-xl shadow-sm border border-primary/20">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 text-primary" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
+        </header>
+      </div>
+    );
+  }
 
   return (
     <div className="sticky top-0 z-50 w-full px-4 py-3 flex justify-center">
@@ -106,8 +140,8 @@ export default function Header() {
                   <path d="M4 12h16" />
                 </svg>
               </div>
-              <div className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Template App
+              <div className="text-lg font-bold bg-gradient-to-r from-blue-900 to-blue-600 bg-clip-text text-transparent">
+                UnionEyes
               </div>
             </motion.div>
 
@@ -122,16 +156,18 @@ export default function Header() {
 
               <SignedIn>
                 <NavButton 
-                  href="/dashboard" 
+                  href="/en-CA/dashboard" 
                   icon={<LayoutDashboard size={18} />} 
                   label="Dashboard"
-                  isActive={isActive("/dashboard")}
+                  isActive={isActive("/en-CA/dashboard") || isActive("/fr-CA/dashboard")}
                 />
               </SignedIn>
             </nav>
 
             {/* Right side actions */}
             <div className="flex items-center space-x-3">
+              <LanguageSwitcher />
+              
               <SignedOut>
                 <Link href="/login?redirect_url=/dashboard">
                   <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
@@ -246,10 +282,10 @@ export default function Header() {
 
                 <SignedIn>
                   <MobileNavLink 
-                    href="/dashboard" 
+                    href="/en-CA/dashboard" 
                     icon={<LayoutDashboard size={18} />} 
                     label="Dashboard" 
-                    isActive={isActive("/dashboard")}
+                    isActive={isActive("/en-CA/dashboard") || isActive("/fr-CA/dashboard")}
                     onClick={toggleMenu}
                   />
                 </SignedIn>

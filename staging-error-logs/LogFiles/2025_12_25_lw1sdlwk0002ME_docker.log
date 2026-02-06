@@ -1,0 +1,1767 @@
+2025-12-24T23:50:07.8066201Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/24/2025 23:54:07
+2025-12-24T23:54:07.8086610Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T00:24:55.8609742Z Container start method called.
+2025-12-25T00:24:55.8702878Z Establishing network.
+2025-12-25T00:24:55.8806866Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T00:24:56.4880650Z Container is starting.
+2025-12-25T00:24:56.4963044Z Establishing user namespace if not established already.
+2025-12-25T00:24:56.4984022Z Establishing network if not established already.
+2025-12-25T00:24:56.5063128Z Mounting volumes.
+2025-12-25T00:24:56.5093759Z Nested mountpoint volatile/logs
+2025-12-25T00:24:56.5652435Z Nested mountpoint 
+2025-12-25T00:24:56.6970110Z Creating container.
+2025-12-25T00:24:56.6988722Z Creating pipes for streaming container io.
+2025-12-25T00:24:56.7270222Z Creating stdout named pipe at /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stdout_0112efcac225412799733d9db14aadcd.
+2025-12-25T00:24:56.7378996Z Successfully created stdout named pipe at: /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stdout_0112efcac225412799733d9db14aadcd.
+2025-12-25T00:24:56.7461931Z Opening named pipe /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stdout_0112efcac225412799733d9db14aadcd for reading in non-blocking mode.
+2025-12-25T00:24:56.7466738Z Successfully opened named pipe: /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stdout_0112efcac225412799733d9db14aadcd.
+2025-12-25T00:24:56.7483705Z Successfully removed non-blocking flag from /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stdout_0112efcac225412799733d9db14aadcd.
+2025-12-25T00:24:56.7488037Z Creating stderr named pipe at /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stderr_f0a686de91af41e8b96097658dad0409.
+2025-12-25T00:24:56.7492510Z Successfully created stderr named pipe at: /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stderr_f0a686de91af41e8b96097658dad0409.
+2025-12-25T00:24:56.7562296Z Opening named pipe /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stderr_f0a686de91af41e8b96097658dad0409 for reading in non-blocking mode.
+2025-12-25T00:24:56.7570563Z Successfully opened named pipe: /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stderr_f0a686de91af41e8b96097658dad0409.
+2025-12-25T00:24:56.7590801Z Successfully removed non-blocking flag from /podr/container/pipe/ababb70c89e3_unioneyes-staging-app/stderr_f0a686de91af41e8b96097658dad0409.
+2025-12-25T00:24:56.7677454Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T00:24:56.8445247Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T00:24:56.8468230Z Setting value of PORT variable to 3000
+2025-12-25T00:24:56.8550999Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T00:24:57.7000367Z Starting container: ababb70c89e3_unioneyes-staging-app.
+2025-12-25T00:24:57.9197271Z Starting watchers and probes.
+2025-12-25T00:24:57.9413697Z Starting metrics collection.
+2025-12-25T00:24:57.9681433Z Container is running.
+2025-12-25T00:24:58.8283620Z Container start method finished after 2966 ms.
+2025-12-25T00:25:05.3105523Z Container has finished running with exit code: 1.
+2025-12-25T00:25:05.3140050Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T00:25:05.3317426Z Stop and delete container. Retry count = 0
+2025-12-25T00:25:05.3345173Z Stopping container: ababb70c89e3_unioneyes-staging-app.
+2025-12-25T00:25:05.4212513Z Deleting container: ababb70c89e3_unioneyes-staging-app. Retry count = 0
+2025-12-25T00:25:05.6728650Z Container spec TerminationMessagePolicy  path 
+2025-12-25T00:25:05.6806838Z Container is terminated. Total time elapsed: 352 ms.
+2025-12-25T00:25:05.6826995Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T00:25:05.7203463Z Site startup probe failed after 6.7805461 seconds.
+2025-12-25T00:25:06.1863840Z Failed to start site. Revert by stopping site.
+2025-12-25T00:25:06.1989351Z Site: unioneyes-staging-app stopped.
+2025-12-25T00:25:06.8492603Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 00:29:06
+2025-12-25T00:29:06.8418401Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T00:59:57.2925570Z Container start method called.
+2025-12-25T00:59:57.3294147Z Establishing network.
+2025-12-25T00:59:57.3314373Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T00:59:58.2543554Z Container is starting.
+2025-12-25T00:59:58.2562078Z Establishing user namespace if not established already.
+2025-12-25T00:59:58.2647399Z Establishing network if not established already.
+2025-12-25T00:59:58.2731517Z Mounting volumes.
+2025-12-25T00:59:58.2772524Z Nested mountpoint volatile/logs
+2025-12-25T00:59:58.2929547Z Nested mountpoint 
+2025-12-25T00:59:58.4434739Z Creating container.
+2025-12-25T00:59:58.4463361Z Creating pipes for streaming container io.
+2025-12-25T00:59:58.4662280Z Creating stdout named pipe at /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stdout_6f1bfc3084584e498cfcfa1b3733190b.
+2025-12-25T00:59:58.5019676Z Successfully created stdout named pipe at: /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stdout_6f1bfc3084584e498cfcfa1b3733190b.
+2025-12-25T00:59:58.5030714Z Opening named pipe /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stdout_6f1bfc3084584e498cfcfa1b3733190b for reading in non-blocking mode.
+2025-12-25T00:59:58.5047310Z Successfully opened named pipe: /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stdout_6f1bfc3084584e498cfcfa1b3733190b.
+2025-12-25T00:59:58.5053527Z Successfully removed non-blocking flag from /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stdout_6f1bfc3084584e498cfcfa1b3733190b.
+2025-12-25T00:59:58.5139768Z Creating stderr named pipe at /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stderr_baeecb7af87e48c085f333b6ab13b3cf.
+2025-12-25T00:59:58.5147491Z Successfully created stderr named pipe at: /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stderr_baeecb7af87e48c085f333b6ab13b3cf.
+2025-12-25T00:59:58.5223998Z Opening named pipe /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stderr_baeecb7af87e48c085f333b6ab13b3cf for reading in non-blocking mode.
+2025-12-25T00:59:58.5243975Z Successfully opened named pipe: /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stderr_baeecb7af87e48c085f333b6ab13b3cf.
+2025-12-25T00:59:58.5245880Z Successfully removed non-blocking flag from /podr/container/pipe/af1dc41af766_unioneyes-staging-app/stderr_baeecb7af87e48c085f333b6ab13b3cf.
+2025-12-25T00:59:58.5322625Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T00:59:58.7308309Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T00:59:58.7359793Z Setting value of PORT variable to 3000
+2025-12-25T00:59:58.7373919Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T00:59:59.8134639Z Starting container: af1dc41af766_unioneyes-staging-app.
+2025-12-25T01:00:00.0419957Z Starting watchers and probes.
+2025-12-25T01:00:00.0634621Z Starting metrics collection.
+2025-12-25T01:00:00.0919506Z Container is running.
+2025-12-25T01:00:00.9049671Z Container start method finished after 3586 ms.
+2025-12-25T01:00:13.4118629Z Container has finished running with exit code: 1.
+2025-12-25T01:00:13.4150343Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T01:00:13.4313663Z Stop and delete container. Retry count = 0
+2025-12-25T01:00:13.4322154Z Stopping container: af1dc41af766_unioneyes-staging-app.
+2025-12-25T01:00:13.5265725Z Deleting container: af1dc41af766_unioneyes-staging-app. Retry count = 0
+2025-12-25T01:00:13.8615246Z Container spec TerminationMessagePolicy  path 
+2025-12-25T01:00:13.8625479Z Container is terminated. Total time elapsed: 446 ms.
+2025-12-25T01:00:13.8798437Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T01:00:13.9730590Z Site startup probe failed after 12.9196027 seconds.
+2025-12-25T01:00:14.3285043Z Failed to start site. Revert by stopping site.
+2025-12-25T01:00:14.3479970Z Site: unioneyes-staging-app stopped.
+2025-12-25T01:00:15.1588719Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 01:04:15
+2025-12-25T01:04:15.1657554Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T01:35:00.2206704Z Container start method called.
+2025-12-25T01:35:00.2225612Z Establishing network.
+2025-12-25T01:35:00.2240190Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T01:35:02.2354083Z Container is starting.
+2025-12-25T01:35:02.2375039Z Establishing user namespace if not established already.
+2025-12-25T01:35:02.2445497Z Establishing network if not established already.
+2025-12-25T01:35:02.2450402Z Mounting volumes.
+2025-12-25T01:35:02.2544280Z Nested mountpoint volatile/logs
+2025-12-25T01:35:02.3262107Z Nested mountpoint 
+2025-12-25T01:35:02.5222738Z Creating container.
+2025-12-25T01:35:02.5285956Z Creating pipes for streaming container io.
+2025-12-25T01:35:02.5291562Z Creating stdout named pipe at /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stdout_95686e8f3e694e00b1286b64ef8b38e4.
+2025-12-25T01:35:02.5587166Z Successfully created stdout named pipe at: /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stdout_95686e8f3e694e00b1286b64ef8b38e4.
+2025-12-25T01:35:02.5589806Z Opening named pipe /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stdout_95686e8f3e694e00b1286b64ef8b38e4 for reading in non-blocking mode.
+2025-12-25T01:35:02.5593493Z Successfully opened named pipe: /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stdout_95686e8f3e694e00b1286b64ef8b38e4.
+2025-12-25T01:35:02.5595345Z Successfully removed non-blocking flag from /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stdout_95686e8f3e694e00b1286b64ef8b38e4.
+2025-12-25T01:35:02.5597177Z Creating stderr named pipe at /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stderr_c87367cfcca3403ba7524cb3986c3493.
+2025-12-25T01:35:02.5599245Z Successfully created stderr named pipe at: /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stderr_c87367cfcca3403ba7524cb3986c3493.
+2025-12-25T01:35:02.5603744Z Opening named pipe /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stderr_c87367cfcca3403ba7524cb3986c3493 for reading in non-blocking mode.
+2025-12-25T01:35:02.5605390Z Successfully opened named pipe: /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stderr_c87367cfcca3403ba7524cb3986c3493.
+2025-12-25T01:35:02.5607193Z Successfully removed non-blocking flag from /podr/container/pipe/d243dd6f3242_unioneyes-staging-app/stderr_c87367cfcca3403ba7524cb3986c3493.
+2025-12-25T01:35:02.5778525Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T01:35:02.8430004Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T01:35:02.8491308Z Setting value of PORT variable to 3000
+2025-12-25T01:35:02.8500803Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T01:35:03.6788137Z Starting container: d243dd6f3242_unioneyes-staging-app.
+2025-12-25T01:35:03.8072670Z Starting watchers and probes.
+2025-12-25T01:35:03.8309807Z Starting metrics collection.
+2025-12-25T01:35:03.8570141Z Container is running.
+2025-12-25T01:35:04.0439578Z Container start method finished after 3822 ms.
+2025-12-25T01:35:09.6744958Z Container has finished running with exit code: 1.
+2025-12-25T01:35:09.6844873Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T01:35:09.6944619Z Stop and delete container. Retry count = 0
+2025-12-25T01:35:09.6963951Z Stopping container: d243dd6f3242_unioneyes-staging-app.
+2025-12-25T01:35:09.7910932Z Deleting container: d243dd6f3242_unioneyes-staging-app. Retry count = 0
+2025-12-25T01:35:10.2695641Z Container spec TerminationMessagePolicy  path 
+2025-12-25T01:35:10.2888848Z Container is terminated. Total time elapsed: 603 ms.
+2025-12-25T01:35:10.3060124Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T01:35:10.3864505Z Site startup probe failed after 6.2892651 seconds.
+2025-12-25T01:35:10.6354408Z Failed to start site. Revert by stopping site.
+2025-12-25T01:35:10.6534716Z Site: unioneyes-staging-app stopped.
+2025-12-25T01:35:11.3734617Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 01:39:11
+2025-12-25T01:39:11.3735754Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T02:10:01.9030861Z Container start method called.
+2025-12-25T02:10:01.9128103Z Establishing network.
+2025-12-25T02:10:01.9423480Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T02:10:03.2896647Z Container is starting.
+2025-12-25T02:10:03.3772907Z Establishing user namespace if not established already.
+2025-12-25T02:10:03.3850267Z Establishing network if not established already.
+2025-12-25T02:10:03.3853559Z Mounting volumes.
+2025-12-25T02:10:03.3964828Z Nested mountpoint volatile/logs
+2025-12-25T02:10:03.4334474Z Nested mountpoint 
+2025-12-25T02:10:03.7438710Z Creating container.
+2025-12-25T02:10:03.7441302Z Creating pipes for streaming container io.
+2025-12-25T02:10:03.7443472Z Creating stdout named pipe at /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stdout_24718d6e2000441a8b90224f1dbfd70d.
+2025-12-25T02:10:03.7550651Z Successfully created stdout named pipe at: /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stdout_24718d6e2000441a8b90224f1dbfd70d.
+2025-12-25T02:10:03.7611182Z Opening named pipe /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stdout_24718d6e2000441a8b90224f1dbfd70d for reading in non-blocking mode.
+2025-12-25T02:10:03.7622840Z Successfully opened named pipe: /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stdout_24718d6e2000441a8b90224f1dbfd70d.
+2025-12-25T02:10:03.7625078Z Successfully removed non-blocking flag from /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stdout_24718d6e2000441a8b90224f1dbfd70d.
+2025-12-25T02:10:03.7626904Z Creating stderr named pipe at /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stderr_070fb15f1c8e4803834a3f3bf51c62c9.
+2025-12-25T02:10:03.7634669Z Successfully created stderr named pipe at: /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stderr_070fb15f1c8e4803834a3f3bf51c62c9.
+2025-12-25T02:10:03.7636304Z Opening named pipe /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stderr_070fb15f1c8e4803834a3f3bf51c62c9 for reading in non-blocking mode.
+2025-12-25T02:10:03.7637852Z Successfully opened named pipe: /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stderr_070fb15f1c8e4803834a3f3bf51c62c9.
+2025-12-25T02:10:03.7638857Z Successfully removed non-blocking flag from /podr/container/pipe/2dd2c5345645_unioneyes-staging-app/stderr_070fb15f1c8e4803834a3f3bf51c62c9.
+2025-12-25T02:10:03.7731785Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T02:10:04.0832738Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T02:10:04.0835074Z Setting value of PORT variable to 3000
+2025-12-25T02:10:04.0845798Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T02:10:05.8046068Z Starting container: 2dd2c5345645_unioneyes-staging-app.
+2025-12-25T02:10:06.1114405Z Starting watchers and probes.
+2025-12-25T02:10:06.1701333Z Starting metrics collection.
+2025-12-25T02:10:06.1804789Z Container is running.
+2025-12-25T02:10:06.9689545Z Container start method finished after 5065 ms.
+2025-12-25T02:10:12.8444738Z Container has finished running with exit code: 1.
+2025-12-25T02:10:12.8530061Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T02:10:12.8558634Z Stop and delete container. Retry count = 0
+2025-12-25T02:10:12.8633730Z Stopping container: 2dd2c5345645_unioneyes-staging-app.
+2025-12-25T02:10:13.0414690Z Deleting container: 2dd2c5345645_unioneyes-staging-app. Retry count = 0
+2025-12-25T02:10:13.3626056Z Container spec TerminationMessagePolicy  path 
+2025-12-25T02:10:13.3897896Z Container is terminated. Total time elapsed: 536 ms.
+2025-12-25T02:10:13.3922093Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T02:10:13.4530648Z Site startup probe failed after 6.3822419 seconds.
+2025-12-25T02:10:13.7796142Z Failed to start site. Revert by stopping site.
+2025-12-25T02:10:13.7991614Z Site: unioneyes-staging-app stopped.
+2025-12-25T02:10:14.6705323Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 02:14:14
+2025-12-25T02:14:14.6660780Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T02:45:05.1164625Z Container start method called.
+2025-12-25T02:45:05.1183062Z Establishing network.
+2025-12-25T02:45:05.1284762Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T02:45:05.7468163Z Container is starting.
+2025-12-25T02:45:05.7481356Z Establishing user namespace if not established already.
+2025-12-25T02:45:05.7549668Z Establishing network if not established already.
+2025-12-25T02:45:05.7556386Z Mounting volumes.
+2025-12-25T02:45:05.7583932Z Nested mountpoint volatile/logs
+2025-12-25T02:45:05.7758748Z Nested mountpoint 
+2025-12-25T02:45:05.8940108Z Creating container.
+2025-12-25T02:45:05.8945224Z Creating pipes for streaming container io.
+2025-12-25T02:45:05.8951635Z Creating stdout named pipe at /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stdout_04eaf450911d4589b76a5c0798c20f47.
+2025-12-25T02:45:05.9125525Z Successfully created stdout named pipe at: /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stdout_04eaf450911d4589b76a5c0798c20f47.
+2025-12-25T02:45:05.9218468Z Opening named pipe /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stdout_04eaf450911d4589b76a5c0798c20f47 for reading in non-blocking mode.
+2025-12-25T02:45:05.9320492Z Successfully opened named pipe: /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stdout_04eaf450911d4589b76a5c0798c20f47.
+2025-12-25T02:45:05.9341004Z Successfully removed non-blocking flag from /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stdout_04eaf450911d4589b76a5c0798c20f47.
+2025-12-25T02:45:05.9422972Z Creating stderr named pipe at /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stderr_8c87f54883e94295b9a5a565d4fb7638.
+2025-12-25T02:45:05.9434447Z Successfully created stderr named pipe at: /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stderr_8c87f54883e94295b9a5a565d4fb7638.
+2025-12-25T02:45:05.9513115Z Opening named pipe /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stderr_8c87f54883e94295b9a5a565d4fb7638 for reading in non-blocking mode.
+2025-12-25T02:45:05.9526095Z Successfully opened named pipe: /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stderr_8c87f54883e94295b9a5a565d4fb7638.
+2025-12-25T02:45:05.9642950Z Successfully removed non-blocking flag from /podr/container/pipe/cdabd2ce4776_unioneyes-staging-app/stderr_8c87f54883e94295b9a5a565d4fb7638.
+2025-12-25T02:45:06.0199834Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T02:45:06.1083252Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T02:45:06.1084975Z Setting value of PORT variable to 3000
+2025-12-25T02:45:06.1086806Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T02:45:06.9667094Z Starting container: cdabd2ce4776_unioneyes-staging-app.
+2025-12-25T02:45:07.0884651Z Starting watchers and probes.
+2025-12-25T02:45:07.1079015Z Starting metrics collection.
+2025-12-25T02:45:07.1189158Z Container is running.
+2025-12-25T02:45:07.9654231Z Container start method finished after 2848 ms.
+2025-12-25T02:45:12.9533307Z Container has finished running with exit code: 1.
+2025-12-25T02:45:12.9819173Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T02:45:12.9904805Z Stop and delete container. Retry count = 0
+2025-12-25T02:45:12.9917671Z Stopping container: cdabd2ce4776_unioneyes-staging-app.
+2025-12-25T02:45:13.2432444Z Deleting container: cdabd2ce4776_unioneyes-staging-app. Retry count = 0
+2025-12-25T02:45:13.6750030Z Container spec TerminationMessagePolicy  path 
+2025-12-25T02:45:13.6832804Z Container is terminated. Total time elapsed: 696 ms.
+2025-12-25T02:45:13.6860788Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T02:45:13.7434033Z Site startup probe failed after 5.6972741 seconds.
+2025-12-25T02:45:14.0027511Z Failed to start site. Revert by stopping site.
+2025-12-25T02:45:14.0144766Z Site: unioneyes-staging-app stopped.
+2025-12-25T02:45:14.4705208Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 02:49:14
+2025-12-25T02:49:15.2051916Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T03:20:06.7781597Z Container start method called.
+2025-12-25T03:20:06.7785940Z Establishing network.
+2025-12-25T03:20:06.7866479Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T03:20:08.4419844Z Container is starting.
+2025-12-25T03:20:08.4432149Z Establishing user namespace if not established already.
+2025-12-25T03:20:08.4438186Z Establishing network if not established already.
+2025-12-25T03:20:08.4440228Z Mounting volumes.
+2025-12-25T03:20:08.4526718Z Nested mountpoint volatile/logs
+2025-12-25T03:20:08.4639635Z Nested mountpoint 
+2025-12-25T03:20:08.6406817Z Creating container.
+2025-12-25T03:20:08.6409043Z Creating pipes for streaming container io.
+2025-12-25T03:20:08.6410235Z Creating stdout named pipe at /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stdout_88c1010757a8446285ddbe879d4f0232.
+2025-12-25T03:20:08.6501104Z Successfully created stdout named pipe at: /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stdout_88c1010757a8446285ddbe879d4f0232.
+2025-12-25T03:20:08.6512855Z Opening named pipe /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stdout_88c1010757a8446285ddbe879d4f0232 for reading in non-blocking mode.
+2025-12-25T03:20:08.6521234Z Successfully opened named pipe: /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stdout_88c1010757a8446285ddbe879d4f0232.
+2025-12-25T03:20:08.6530228Z Successfully removed non-blocking flag from /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stdout_88c1010757a8446285ddbe879d4f0232.
+2025-12-25T03:20:08.6629602Z Creating stderr named pipe at /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stderr_e3661b403cd64aaab2573e91dc29bef2.
+2025-12-25T03:20:08.6632487Z Successfully created stderr named pipe at: /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stderr_e3661b403cd64aaab2573e91dc29bef2.
+2025-12-25T03:20:08.6706165Z Opening named pipe /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stderr_e3661b403cd64aaab2573e91dc29bef2 for reading in non-blocking mode.
+2025-12-25T03:20:08.6799941Z Successfully opened named pipe: /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stderr_e3661b403cd64aaab2573e91dc29bef2.
+2025-12-25T03:20:08.6802439Z Successfully removed non-blocking flag from /podr/container/pipe/6f6461dced95_unioneyes-staging-app/stderr_e3661b403cd64aaab2573e91dc29bef2.
+2025-12-25T03:20:08.6818969Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T03:20:08.8105363Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T03:20:08.8182741Z Setting value of PORT variable to 3000
+2025-12-25T03:20:08.8192254Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T03:20:09.5605604Z Starting container: 6f6461dced95_unioneyes-staging-app.
+2025-12-25T03:20:09.7003444Z Starting watchers and probes.
+2025-12-25T03:20:09.7145254Z Starting metrics collection.
+2025-12-25T03:20:09.7222233Z Container is running.
+2025-12-25T03:20:09.8303314Z Container start method finished after 3051 ms.
+2025-12-25T03:20:16.1486741Z Container has finished running with exit code: 1.
+2025-12-25T03:20:16.1511302Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T03:20:16.1885955Z Stop and delete container. Retry count = 0
+2025-12-25T03:20:16.2110676Z Stopping container: 6f6461dced95_unioneyes-staging-app.
+2025-12-25T03:20:16.3690060Z Deleting container: 6f6461dced95_unioneyes-staging-app. Retry count = 0
+2025-12-25T03:20:16.6759938Z Container spec TerminationMessagePolicy  path 
+2025-12-25T03:20:16.6783757Z Container is terminated. Total time elapsed: 519 ms.
+2025-12-25T03:20:16.6799024Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T03:20:16.7189458Z Site startup probe failed after 6.751464 seconds.
+2025-12-25T03:20:16.9693465Z Failed to start site. Revert by stopping site.
+2025-12-25T03:20:16.9809519Z Site: unioneyes-staging-app stopped.
+2025-12-25T03:20:17.4134455Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 03:24:17
+2025-12-25T03:24:17.4205023Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T03:55:07.6527111Z Container start method called.
+2025-12-25T03:55:07.6754859Z Establishing network.
+2025-12-25T03:55:07.6822123Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T03:55:08.3579062Z Container is starting.
+2025-12-25T03:55:08.3631872Z Establishing user namespace if not established already.
+2025-12-25T03:55:08.3717729Z Establishing network if not established already.
+2025-12-25T03:55:08.3733785Z Mounting volumes.
+2025-12-25T03:55:08.3832290Z Nested mountpoint volatile/logs
+2025-12-25T03:55:08.4014365Z Nested mountpoint 
+2025-12-25T03:55:08.6309669Z Creating container.
+2025-12-25T03:55:08.6318131Z Creating pipes for streaming container io.
+2025-12-25T03:55:08.6409546Z Creating stdout named pipe at /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stdout_b0e47ec2cd9d40159e8f008aa90126c1.
+2025-12-25T03:55:08.6490217Z Successfully created stdout named pipe at: /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stdout_b0e47ec2cd9d40159e8f008aa90126c1.
+2025-12-25T03:55:08.6500625Z Opening named pipe /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stdout_b0e47ec2cd9d40159e8f008aa90126c1 for reading in non-blocking mode.
+2025-12-25T03:55:08.6505992Z Successfully opened named pipe: /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stdout_b0e47ec2cd9d40159e8f008aa90126c1.
+2025-12-25T03:55:08.6510746Z Successfully removed non-blocking flag from /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stdout_b0e47ec2cd9d40159e8f008aa90126c1.
+2025-12-25T03:55:08.6523410Z Creating stderr named pipe at /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stderr_a433ca73df6547638e1dd6bdc1ee7179.
+2025-12-25T03:55:08.6613666Z Successfully created stderr named pipe at: /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stderr_a433ca73df6547638e1dd6bdc1ee7179.
+2025-12-25T03:55:08.6623719Z Opening named pipe /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stderr_a433ca73df6547638e1dd6bdc1ee7179 for reading in non-blocking mode.
+2025-12-25T03:55:08.6699162Z Successfully opened named pipe: /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stderr_a433ca73df6547638e1dd6bdc1ee7179.
+2025-12-25T03:55:08.6701351Z Successfully removed non-blocking flag from /podr/container/pipe/cafa0e7ea9f7_unioneyes-staging-app/stderr_a433ca73df6547638e1dd6bdc1ee7179.
+2025-12-25T03:55:08.6716642Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T03:55:08.7888314Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T03:55:08.7905459Z Setting value of PORT variable to 3000
+2025-12-25T03:55:08.7919831Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T03:55:09.5819610Z Starting container: cafa0e7ea9f7_unioneyes-staging-app.
+2025-12-25T03:55:09.6976449Z Starting watchers and probes.
+2025-12-25T03:55:09.7561560Z Starting metrics collection.
+2025-12-25T03:55:09.7668720Z Container is running.
+2025-12-25T03:55:09.9382572Z Container start method finished after 2285 ms.
+2025-12-25T03:55:16.2271669Z Container has finished running with exit code: 1.
+2025-12-25T03:55:16.2341965Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T03:55:16.2441247Z Stop and delete container. Retry count = 0
+2025-12-25T03:55:16.2451293Z Stopping container: cafa0e7ea9f7_unioneyes-staging-app.
+2025-12-25T03:55:16.3155343Z Deleting container: cafa0e7ea9f7_unioneyes-staging-app. Retry count = 0
+2025-12-25T03:55:16.5931927Z Container spec TerminationMessagePolicy  path 
+2025-12-25T03:55:16.5957062Z Container is terminated. Total time elapsed: 357 ms.
+2025-12-25T03:55:16.6027505Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T03:55:16.6313078Z Site startup probe failed after 6.5879402 seconds.
+2025-12-25T03:55:16.8215129Z Failed to start site. Revert by stopping site.
+2025-12-25T03:55:16.8343428Z Site: unioneyes-staging-app stopped.
+2025-12-25T03:55:17.3983885Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 03:59:17
+2025-12-25T03:59:18.0641133Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T04:30:10.4220605Z Container start method called.
+2025-12-25T04:30:10.4409820Z Establishing network.
+2025-12-25T04:30:10.4428278Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T04:30:11.8548112Z Container is starting.
+2025-12-25T04:30:11.8565966Z Establishing user namespace if not established already.
+2025-12-25T04:30:11.8575677Z Establishing network if not established already.
+2025-12-25T04:30:11.8633351Z Mounting volumes.
+2025-12-25T04:30:11.8641906Z Nested mountpoint volatile/logs
+2025-12-25T04:30:11.8848621Z Nested mountpoint 
+2025-12-25T04:30:12.0258057Z Creating container.
+2025-12-25T04:30:12.0259736Z Creating pipes for streaming container io.
+2025-12-25T04:30:12.0261423Z Creating stdout named pipe at /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stdout_aff54016327343c2866764b0bec4597e.
+2025-12-25T04:30:12.0453224Z Successfully created stdout named pipe at: /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stdout_aff54016327343c2866764b0bec4597e.
+2025-12-25T04:30:12.0455105Z Opening named pipe /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stdout_aff54016327343c2866764b0bec4597e for reading in non-blocking mode.
+2025-12-25T04:30:12.0459838Z Successfully opened named pipe: /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stdout_aff54016327343c2866764b0bec4597e.
+2025-12-25T04:30:12.0462508Z Successfully removed non-blocking flag from /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stdout_aff54016327343c2866764b0bec4597e.
+2025-12-25T04:30:12.0633567Z Creating stderr named pipe at /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stderr_1acdb986f8dc47cd89ad5b1d006849f6.
+2025-12-25T04:30:12.0647724Z Successfully created stderr named pipe at: /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stderr_1acdb986f8dc47cd89ad5b1d006849f6.
+2025-12-25T04:30:12.0654019Z Opening named pipe /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stderr_1acdb986f8dc47cd89ad5b1d006849f6 for reading in non-blocking mode.
+2025-12-25T04:30:12.0665073Z Successfully opened named pipe: /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stderr_1acdb986f8dc47cd89ad5b1d006849f6.
+2025-12-25T04:30:12.0753651Z Successfully removed non-blocking flag from /podr/container/pipe/a051c39e2f81_unioneyes-staging-app/stderr_1acdb986f8dc47cd89ad5b1d006849f6.
+2025-12-25T04:30:12.0761940Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T04:30:12.1487888Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T04:30:12.1498062Z Setting value of PORT variable to 3000
+2025-12-25T04:30:12.1530445Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T04:30:13.0142045Z Starting container: a051c39e2f81_unioneyes-staging-app.
+2025-12-25T04:30:13.1362299Z Starting watchers and probes.
+2025-12-25T04:30:13.1536278Z Starting metrics collection.
+2025-12-25T04:30:13.1634734Z Container is running.
+2025-12-25T04:30:13.9797784Z Container start method finished after 3556 ms.
+2025-12-25T04:30:19.0236186Z Container has finished running with exit code: 1.
+2025-12-25T04:30:19.0262371Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T04:30:19.0366270Z Stop and delete container. Retry count = 0
+2025-12-25T04:30:19.0434336Z Stopping container: a051c39e2f81_unioneyes-staging-app.
+2025-12-25T04:30:19.1249554Z Deleting container: a051c39e2f81_unioneyes-staging-app. Retry count = 0
+2025-12-25T04:30:19.3801460Z Container spec TerminationMessagePolicy  path 
+2025-12-25T04:30:19.3819828Z Container is terminated. Total time elapsed: 355 ms.
+2025-12-25T04:30:19.3828402Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T04:30:19.4232223Z Site startup probe failed after 5.3685592 seconds.
+2025-12-25T04:30:19.6500677Z Failed to start site. Revert by stopping site.
+2025-12-25T04:30:19.6610389Z Site: unioneyes-staging-app stopped.
+2025-12-25T04:30:20.1275904Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 04:34:20
+2025-12-25T04:34:20.1255575Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T05:05:11.6450335Z Container start method called.
+2025-12-25T05:05:11.6543176Z Establishing network.
+2025-12-25T05:05:11.6559305Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T05:05:12.1704676Z Container is starting.
+2025-12-25T05:05:12.1761045Z Establishing user namespace if not established already.
+2025-12-25T05:05:12.1769723Z Establishing network if not established already.
+2025-12-25T05:05:12.1774737Z Mounting volumes.
+2025-12-25T05:05:12.1853520Z Nested mountpoint volatile/logs
+2025-12-25T05:05:12.1979529Z Nested mountpoint 
+2025-12-25T05:05:12.3868298Z Creating container.
+2025-12-25T05:05:12.4058936Z Creating pipes for streaming container io.
+2025-12-25T05:05:12.4061550Z Creating stdout named pipe at /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stdout_1a71637e9a184b5297af026aa8d3ccdf.
+2025-12-25T05:05:12.4174181Z Successfully created stdout named pipe at: /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stdout_1a71637e9a184b5297af026aa8d3ccdf.
+2025-12-25T05:05:12.4237542Z Opening named pipe /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stdout_1a71637e9a184b5297af026aa8d3ccdf for reading in non-blocking mode.
+2025-12-25T05:05:12.4244388Z Successfully opened named pipe: /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stdout_1a71637e9a184b5297af026aa8d3ccdf.
+2025-12-25T05:05:12.4247185Z Successfully removed non-blocking flag from /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stdout_1a71637e9a184b5297af026aa8d3ccdf.
+2025-12-25T05:05:12.4248576Z Creating stderr named pipe at /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stderr_525d0071418b4ceb9908100efe050178.
+2025-12-25T05:05:12.4250329Z Successfully created stderr named pipe at: /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stderr_525d0071418b4ceb9908100efe050178.
+2025-12-25T05:05:12.4251197Z Opening named pipe /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stderr_525d0071418b4ceb9908100efe050178 for reading in non-blocking mode.
+2025-12-25T05:05:12.4252652Z Successfully opened named pipe: /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stderr_525d0071418b4ceb9908100efe050178.
+2025-12-25T05:05:12.4253543Z Successfully removed non-blocking flag from /podr/container/pipe/9a66bad5f032_unioneyes-staging-app/stderr_525d0071418b4ceb9908100efe050178.
+2025-12-25T05:05:12.4348354Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T05:05:12.5573068Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T05:05:12.5583197Z Setting value of PORT variable to 3000
+2025-12-25T05:05:12.5629574Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T05:05:13.3181933Z Starting container: 9a66bad5f032_unioneyes-staging-app.
+2025-12-25T05:05:13.4855720Z Starting watchers and probes.
+2025-12-25T05:05:13.4971537Z Starting metrics collection.
+2025-12-25T05:05:13.5243559Z Container is running.
+2025-12-25T05:05:15.1300342Z Container start method finished after 3484 ms.
+2025-12-25T05:05:19.5764596Z Container has finished running with exit code: 1.
+2025-12-25T05:05:19.5879184Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T05:05:19.5987068Z Stop and delete container. Retry count = 0
+2025-12-25T05:05:19.6046608Z Stopping container: 9a66bad5f032_unioneyes-staging-app.
+2025-12-25T05:05:19.7063056Z Deleting container: 9a66bad5f032_unioneyes-staging-app. Retry count = 0
+2025-12-25T05:05:20.0135065Z Container spec TerminationMessagePolicy  path 
+2025-12-25T05:05:20.0231403Z Container is terminated. Total time elapsed: 421 ms.
+2025-12-25T05:05:20.0242525Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T05:05:20.0829612Z Site startup probe failed after 4.8134405 seconds.
+2025-12-25T05:05:20.3535142Z Failed to start site. Revert by stopping site.
+2025-12-25T05:05:20.3648687Z Site: unioneyes-staging-app stopped.
+2025-12-25T05:05:20.8251274Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 05:09:20
+2025-12-25T05:09:20.8252142Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T05:40:14.2065221Z Container start method called.
+2025-12-25T05:40:14.2112806Z Establishing network.
+2025-12-25T05:40:14.2128580Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T05:40:14.9047952Z Container is starting.
+2025-12-25T05:40:14.9059381Z Establishing user namespace if not established already.
+2025-12-25T05:40:14.9065034Z Establishing network if not established already.
+2025-12-25T05:40:14.9068754Z Mounting volumes.
+2025-12-25T05:40:14.9279219Z Nested mountpoint volatile/logs
+2025-12-25T05:40:14.9458680Z Nested mountpoint 
+2025-12-25T05:40:15.1153206Z Creating container.
+2025-12-25T05:40:15.1155673Z Creating pipes for streaming container io.
+2025-12-25T05:40:15.1158305Z Creating stdout named pipe at /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stdout_2dc3316658b94f4e80b5ba6df73dc8a9.
+2025-12-25T05:40:15.1242784Z Successfully created stdout named pipe at: /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stdout_2dc3316658b94f4e80b5ba6df73dc8a9.
+2025-12-25T05:40:15.1247549Z Opening named pipe /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stdout_2dc3316658b94f4e80b5ba6df73dc8a9 for reading in non-blocking mode.
+2025-12-25T05:40:15.1252751Z Successfully opened named pipe: /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stdout_2dc3316658b94f4e80b5ba6df73dc8a9.
+2025-12-25T05:40:15.1259672Z Successfully removed non-blocking flag from /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stdout_2dc3316658b94f4e80b5ba6df73dc8a9.
+2025-12-25T05:40:15.1261241Z Creating stderr named pipe at /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stderr_6a3c3afce7104167af2d60fe0e1d33fb.
+2025-12-25T05:40:15.1263206Z Successfully created stderr named pipe at: /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stderr_6a3c3afce7104167af2d60fe0e1d33fb.
+2025-12-25T05:40:15.1423899Z Opening named pipe /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stderr_6a3c3afce7104167af2d60fe0e1d33fb for reading in non-blocking mode.
+2025-12-25T05:40:15.1428835Z Successfully opened named pipe: /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stderr_6a3c3afce7104167af2d60fe0e1d33fb.
+2025-12-25T05:40:15.1433475Z Successfully removed non-blocking flag from /podr/container/pipe/1c41719b6135_unioneyes-staging-app/stderr_6a3c3afce7104167af2d60fe0e1d33fb.
+2025-12-25T05:40:15.1529467Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T05:40:15.3075273Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T05:40:15.3112405Z Setting value of PORT variable to 3000
+2025-12-25T05:40:15.3128891Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T05:40:16.1181068Z Starting container: 1c41719b6135_unioneyes-staging-app.
+2025-12-25T05:40:16.2252376Z Starting watchers and probes.
+2025-12-25T05:40:16.2454504Z Starting metrics collection.
+2025-12-25T05:40:16.2544739Z Container is running.
+2025-12-25T05:40:16.4500493Z Container start method finished after 2216 ms.
+2025-12-25T05:40:22.1912740Z Container has finished running with exit code: 1.
+2025-12-25T05:40:22.1988822Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T05:40:22.2012211Z Stop and delete container. Retry count = 0
+2025-12-25T05:40:22.2016400Z Stopping container: 1c41719b6135_unioneyes-staging-app.
+2025-12-25T05:40:22.3134820Z Deleting container: 1c41719b6135_unioneyes-staging-app. Retry count = 0
+2025-12-25T05:40:22.5928196Z Container spec TerminationMessagePolicy  path 
+2025-12-25T05:40:22.6007285Z Container is terminated. Total time elapsed: 401 ms.
+2025-12-25T05:40:22.6009240Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T05:40:22.6811653Z Site startup probe failed after 6.1479333 seconds.
+2025-12-25T05:40:22.9672868Z Failed to start site. Revert by stopping site.
+2025-12-25T05:40:22.9726989Z Site: unioneyes-staging-app stopped.
+2025-12-25T05:40:23.4463597Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 05:44:23
+2025-12-25T05:44:23.4451926Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T06:15:16.0496077Z Container start method called.
+2025-12-25T06:15:16.0577564Z Establishing network.
+2025-12-25T06:15:16.0587937Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T06:15:17.1699325Z Container is starting.
+2025-12-25T06:15:17.1718900Z Establishing user namespace if not established already.
+2025-12-25T06:15:17.1720601Z Establishing network if not established already.
+2025-12-25T06:15:17.1790665Z Mounting volumes.
+2025-12-25T06:15:17.1800292Z Nested mountpoint volatile/logs
+2025-12-25T06:15:17.1995000Z Nested mountpoint 
+2025-12-25T06:15:17.3210322Z Creating container.
+2025-12-25T06:15:17.3220055Z Creating pipes for streaming container io.
+2025-12-25T06:15:17.3617982Z Creating stdout named pipe at /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stdout_31449538e3b543cd89130f97badf71f2.
+2025-12-25T06:15:17.3682671Z Successfully created stdout named pipe at: /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stdout_31449538e3b543cd89130f97badf71f2.
+2025-12-25T06:15:17.3690148Z Opening named pipe /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stdout_31449538e3b543cd89130f97badf71f2 for reading in non-blocking mode.
+2025-12-25T06:15:17.3696720Z Successfully opened named pipe: /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stdout_31449538e3b543cd89130f97badf71f2.
+2025-12-25T06:15:17.3699807Z Successfully removed non-blocking flag from /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stdout_31449538e3b543cd89130f97badf71f2.
+2025-12-25T06:15:17.3705353Z Creating stderr named pipe at /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stderr_536b21f59bdc4bdeab0eb71d5d00e839.
+2025-12-25T06:15:17.3712622Z Successfully created stderr named pipe at: /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stderr_536b21f59bdc4bdeab0eb71d5d00e839.
+2025-12-25T06:15:17.3791073Z Opening named pipe /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stderr_536b21f59bdc4bdeab0eb71d5d00e839 for reading in non-blocking mode.
+2025-12-25T06:15:17.3793566Z Successfully opened named pipe: /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stderr_536b21f59bdc4bdeab0eb71d5d00e839.
+2025-12-25T06:15:17.3802495Z Successfully removed non-blocking flag from /podr/container/pipe/a14d6dc9bb56_unioneyes-staging-app/stderr_536b21f59bdc4bdeab0eb71d5d00e839.
+2025-12-25T06:15:17.3807345Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T06:15:17.4571289Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T06:15:17.4581499Z Setting value of PORT variable to 3000
+2025-12-25T06:15:17.4595153Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T06:15:18.4013981Z Starting container: a14d6dc9bb56_unioneyes-staging-app.
+2025-12-25T06:15:18.4959376Z Starting watchers and probes.
+2025-12-25T06:15:18.5134891Z Starting metrics collection.
+2025-12-25T06:15:18.5162762Z Container is running.
+2025-12-25T06:15:20.2461554Z Container start method finished after 4196 ms.
+2025-12-25T06:15:24.4909998Z Container has finished running with exit code: 1.
+2025-12-25T06:15:24.4990810Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T06:15:24.5255995Z Stop and delete container. Retry count = 0
+2025-12-25T06:15:24.5345485Z Stopping container: a14d6dc9bb56_unioneyes-staging-app.
+2025-12-25T06:15:24.6196567Z Deleting container: a14d6dc9bb56_unioneyes-staging-app. Retry count = 0
+2025-12-25T06:15:24.8783259Z Container spec TerminationMessagePolicy  path 
+2025-12-25T06:15:24.8859290Z Container is terminated. Total time elapsed: 386 ms.
+2025-12-25T06:15:24.8867828Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T06:15:24.9560718Z Site startup probe failed after 4.5813246 seconds.
+2025-12-25T06:15:25.1803714Z Failed to start site. Revert by stopping site.
+2025-12-25T06:15:25.1942130Z Site: unioneyes-staging-app stopped.
+2025-12-25T06:15:25.7384743Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 06:19:25
+2025-12-25T06:19:26.0493448Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T06:50:18.2095703Z Container start method called.
+2025-12-25T06:50:18.2113378Z Establishing network.
+2025-12-25T06:50:18.2187866Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T06:50:18.7713551Z Container is starting.
+2025-12-25T06:50:18.7824791Z Establishing user namespace if not established already.
+2025-12-25T06:50:18.7830581Z Establishing network if not established already.
+2025-12-25T06:50:18.7896179Z Mounting volumes.
+2025-12-25T06:50:18.7906174Z Nested mountpoint volatile/logs
+2025-12-25T06:50:18.8221243Z Nested mountpoint 
+2025-12-25T06:50:19.0395847Z Creating container.
+2025-12-25T06:50:19.0402653Z Creating pipes for streaming container io.
+2025-12-25T06:50:19.0411132Z Creating stdout named pipe at /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stdout_04dfe8b84c664deba59616e6469e7ebb.
+2025-12-25T06:50:19.0555216Z Successfully created stdout named pipe at: /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stdout_04dfe8b84c664deba59616e6469e7ebb.
+2025-12-25T06:50:19.0575850Z Opening named pipe /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stdout_04dfe8b84c664deba59616e6469e7ebb for reading in non-blocking mode.
+2025-12-25T06:50:19.0598487Z Successfully opened named pipe: /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stdout_04dfe8b84c664deba59616e6469e7ebb.
+2025-12-25T06:50:19.0681194Z Successfully removed non-blocking flag from /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stdout_04dfe8b84c664deba59616e6469e7ebb.
+2025-12-25T06:50:19.0689910Z Creating stderr named pipe at /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stderr_46a7121fb7684d5597d36638e5db9529.
+2025-12-25T06:50:19.0699783Z Successfully created stderr named pipe at: /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stderr_46a7121fb7684d5597d36638e5db9529.
+2025-12-25T06:50:19.0778033Z Opening named pipe /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stderr_46a7121fb7684d5597d36638e5db9529 for reading in non-blocking mode.
+2025-12-25T06:50:19.0800649Z Successfully opened named pipe: /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stderr_46a7121fb7684d5597d36638e5db9529.
+2025-12-25T06:50:19.0881605Z Successfully removed non-blocking flag from /podr/container/pipe/baf45abfcb3a_unioneyes-staging-app/stderr_46a7121fb7684d5597d36638e5db9529.
+2025-12-25T06:50:19.0895204Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T06:50:19.1728491Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T06:50:19.1739587Z Setting value of PORT variable to 3000
+2025-12-25T06:50:19.1756792Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T06:50:19.9616684Z Starting container: baf45abfcb3a_unioneyes-staging-app.
+2025-12-25T06:50:20.0901301Z Starting watchers and probes.
+2025-12-25T06:50:20.1087181Z Starting metrics collection.
+2025-12-25T06:50:20.1307451Z Container is running.
+2025-12-25T06:50:20.8140247Z Container start method finished after 2604 ms.
+2025-12-25T06:50:26.2525409Z Container has finished running with exit code: 1.
+2025-12-25T06:50:26.2810428Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T06:50:26.2895277Z Stop and delete container. Retry count = 0
+2025-12-25T06:50:26.2909572Z Stopping container: baf45abfcb3a_unioneyes-staging-app.
+2025-12-25T06:50:26.3704844Z Deleting container: baf45abfcb3a_unioneyes-staging-app. Retry count = 0
+2025-12-25T06:50:26.6408275Z Container spec TerminationMessagePolicy  path 
+2025-12-25T06:50:26.6489199Z Container is terminated. Total time elapsed: 367 ms.
+2025-12-25T06:50:26.6507628Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T06:50:26.7607037Z Site startup probe failed after 5.8340222 seconds.
+2025-12-25T06:50:27.0908873Z Failed to start site. Revert by stopping site.
+2025-12-25T06:50:27.0957009Z Site: unioneyes-staging-app stopped.
+2025-12-25T06:50:27.6549713Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 06:54:27
+2025-12-25T06:54:27.6583021Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T07:25:20.5808412Z Container start method called.
+2025-12-25T07:25:20.5826992Z Establishing network.
+2025-12-25T07:25:20.5844377Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T07:25:22.3339712Z Container is starting.
+2025-12-25T07:25:22.3424458Z Establishing user namespace if not established already.
+2025-12-25T07:25:22.3443558Z Establishing network if not established already.
+2025-12-25T07:25:22.3510858Z Mounting volumes.
+2025-12-25T07:25:22.3539214Z Nested mountpoint volatile/logs
+2025-12-25T07:25:22.3811234Z Nested mountpoint 
+2025-12-25T07:25:22.5118711Z Creating container.
+2025-12-25T07:25:22.5131984Z Creating pipes for streaming container io.
+2025-12-25T07:25:22.5314744Z Creating stdout named pipe at /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stdout_aa40f288cef84e2289c9693bdc8b11dc.
+2025-12-25T07:25:22.5401111Z Successfully created stdout named pipe at: /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stdout_aa40f288cef84e2289c9693bdc8b11dc.
+2025-12-25T07:25:22.5424437Z Opening named pipe /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stdout_aa40f288cef84e2289c9693bdc8b11dc for reading in non-blocking mode.
+2025-12-25T07:25:22.5510086Z Successfully opened named pipe: /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stdout_aa40f288cef84e2289c9693bdc8b11dc.
+2025-12-25T07:25:22.5514782Z Successfully removed non-blocking flag from /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stdout_aa40f288cef84e2289c9693bdc8b11dc.
+2025-12-25T07:25:22.5536229Z Creating stderr named pipe at /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stderr_69b1880c98c8417a9d0944b2d193765d.
+2025-12-25T07:25:22.5600098Z Successfully created stderr named pipe at: /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stderr_69b1880c98c8417a9d0944b2d193765d.
+2025-12-25T07:25:22.5601996Z Opening named pipe /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stderr_69b1880c98c8417a9d0944b2d193765d for reading in non-blocking mode.
+2025-12-25T07:25:22.5604319Z Successfully opened named pipe: /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stderr_69b1880c98c8417a9d0944b2d193765d.
+2025-12-25T07:25:22.5605452Z Successfully removed non-blocking flag from /podr/container/pipe/c2754e09c03d_unioneyes-staging-app/stderr_69b1880c98c8417a9d0944b2d193765d.
+2025-12-25T07:25:22.5606478Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T07:25:22.6476516Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T07:25:22.6496088Z Setting value of PORT variable to 3000
+2025-12-25T07:25:22.6523688Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T07:25:23.5286617Z Starting container: c2754e09c03d_unioneyes-staging-app.
+2025-12-25T07:25:23.7773603Z Starting watchers and probes.
+2025-12-25T07:25:23.8225401Z Starting metrics collection.
+2025-12-25T07:25:23.8336310Z Container is running.
+2025-12-25T07:25:25.3548549Z Container start method finished after 4773 ms.
+2025-12-25T07:25:30.1034306Z Container has finished running with exit code: 1.
+2025-12-25T07:25:30.1247381Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T07:25:30.1329892Z Stop and delete container. Retry count = 0
+2025-12-25T07:25:30.1334848Z Stopping container: c2754e09c03d_unioneyes-staging-app.
+2025-12-25T07:25:30.2131274Z Deleting container: c2754e09c03d_unioneyes-staging-app. Retry count = 0
+2025-12-25T07:25:30.4481071Z Container spec TerminationMessagePolicy  path 
+2025-12-25T07:25:30.4560445Z Container is terminated. Total time elapsed: 325 ms.
+2025-12-25T07:25:30.4572865Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T07:25:30.5476037Z Site startup probe failed after 5.0836455 seconds.
+2025-12-25T07:25:30.7655068Z Failed to start site. Revert by stopping site.
+2025-12-25T07:25:30.7762888Z Site: unioneyes-staging-app stopped.
+2025-12-25T07:25:31.3313543Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 07:29:31
+2025-12-25T07:29:31.3312012Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T08:00:22.2059294Z Container start method called.
+2025-12-25T08:00:22.2094598Z Establishing network.
+2025-12-25T08:00:22.2257109Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T08:00:24.2210464Z Container is starting.
+2025-12-25T08:00:24.2219389Z Establishing user namespace if not established already.
+2025-12-25T08:00:24.2226240Z Establishing network if not established already.
+2025-12-25T08:00:24.2235389Z Mounting volumes.
+2025-12-25T08:00:24.2308886Z Nested mountpoint volatile/logs
+2025-12-25T08:00:24.2684608Z Nested mountpoint 
+2025-12-25T08:00:24.4495617Z Creating container.
+2025-12-25T08:00:24.4499782Z Creating pipes for streaming container io.
+2025-12-25T08:00:24.4501859Z Creating stdout named pipe at /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stdout_50027ac74856463db0352a1b3f038122.
+2025-12-25T08:00:24.4607344Z Successfully created stdout named pipe at: /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stdout_50027ac74856463db0352a1b3f038122.
+2025-12-25T08:00:24.4612134Z Opening named pipe /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stdout_50027ac74856463db0352a1b3f038122 for reading in non-blocking mode.
+2025-12-25T08:00:24.4614407Z Successfully opened named pipe: /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stdout_50027ac74856463db0352a1b3f038122.
+2025-12-25T08:00:24.4616012Z Successfully removed non-blocking flag from /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stdout_50027ac74856463db0352a1b3f038122.
+2025-12-25T08:00:24.4847106Z Creating stderr named pipe at /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stderr_fee88ce838c74535863ca0d94448d642.
+2025-12-25T08:00:24.4851925Z Successfully created stderr named pipe at: /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stderr_fee88ce838c74535863ca0d94448d642.
+2025-12-25T08:00:24.4866592Z Opening named pipe /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stderr_fee88ce838c74535863ca0d94448d642 for reading in non-blocking mode.
+2025-12-25T08:00:24.4869139Z Successfully opened named pipe: /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stderr_fee88ce838c74535863ca0d94448d642.
+2025-12-25T08:00:24.4944595Z Successfully removed non-blocking flag from /podr/container/pipe/7a6ae44de75e_unioneyes-staging-app/stderr_fee88ce838c74535863ca0d94448d642.
+2025-12-25T08:00:24.4957388Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T08:00:24.5913131Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T08:00:24.5923455Z Setting value of PORT variable to 3000
+2025-12-25T08:00:24.5953267Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T08:00:25.3912948Z Starting container: 7a6ae44de75e_unioneyes-staging-app.
+2025-12-25T08:00:25.5146088Z Starting watchers and probes.
+2025-12-25T08:00:25.5895424Z Starting metrics collection.
+2025-12-25T08:00:25.5988177Z Container is running.
+2025-12-25T08:00:26.5173511Z Container start method finished after 4311 ms.
+2025-12-25T08:00:32.4005684Z Container has finished running with exit code: 1.
+2025-12-25T08:00:32.4007251Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T08:00:32.4010138Z Stop and delete container. Retry count = 0
+2025-12-25T08:00:32.4011214Z Stopping container: 7a6ae44de75e_unioneyes-staging-app.
+2025-12-25T08:00:32.4991646Z Deleting container: 7a6ae44de75e_unioneyes-staging-app. Retry count = 0
+2025-12-25T08:00:32.7822587Z Container spec TerminationMessagePolicy  path 
+2025-12-25T08:00:32.7824184Z Container is terminated. Total time elapsed: 381 ms.
+2025-12-25T08:00:32.7825206Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T08:00:32.8337957Z Site startup probe failed after 6.2871392 seconds.
+2025-12-25T08:00:33.0716954Z Failed to start site. Revert by stopping site.
+2025-12-25T08:00:33.0825397Z Site: unioneyes-staging-app stopped.
+2025-12-25T08:00:33.5655820Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 08:04:33
+2025-12-25T08:04:33.5653344Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T08:35:24.2279132Z Container start method called.
+2025-12-25T08:35:24.2283737Z Establishing network.
+2025-12-25T08:35:24.2643687Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T08:35:27.0950147Z Container is starting.
+2025-12-25T08:35:27.0953054Z Establishing user namespace if not established already.
+2025-12-25T08:35:27.0954521Z Establishing network if not established already.
+2025-12-25T08:35:27.0956050Z Mounting volumes.
+2025-12-25T08:35:27.0970769Z Nested mountpoint volatile/logs
+2025-12-25T08:35:27.1058457Z Nested mountpoint 
+2025-12-25T08:35:27.2302795Z Creating container.
+2025-12-25T08:35:27.2304049Z Creating pipes for streaming container io.
+2025-12-25T08:35:27.2305269Z Creating stdout named pipe at /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stdout_22329dfc30c34bfbb370f1257547c7b5.
+2025-12-25T08:35:27.2502481Z Successfully created stdout named pipe at: /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stdout_22329dfc30c34bfbb370f1257547c7b5.
+2025-12-25T08:35:27.2503790Z Opening named pipe /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stdout_22329dfc30c34bfbb370f1257547c7b5 for reading in non-blocking mode.
+2025-12-25T08:35:27.2504995Z Successfully opened named pipe: /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stdout_22329dfc30c34bfbb370f1257547c7b5.
+2025-12-25T08:35:27.2505910Z Successfully removed non-blocking flag from /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stdout_22329dfc30c34bfbb370f1257547c7b5.
+2025-12-25T08:35:27.2506993Z Creating stderr named pipe at /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stderr_38551a5da71f4dffa618ee35c24acfcd.
+2025-12-25T08:35:27.2508499Z Successfully created stderr named pipe at: /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stderr_38551a5da71f4dffa618ee35c24acfcd.
+2025-12-25T08:35:27.2509371Z Opening named pipe /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stderr_38551a5da71f4dffa618ee35c24acfcd for reading in non-blocking mode.
+2025-12-25T08:35:27.2510673Z Successfully opened named pipe: /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stderr_38551a5da71f4dffa618ee35c24acfcd.
+2025-12-25T08:35:27.2511957Z Successfully removed non-blocking flag from /podr/container/pipe/1570679f1cf0_unioneyes-staging-app/stderr_38551a5da71f4dffa618ee35c24acfcd.
+2025-12-25T08:35:27.2707327Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T08:35:27.3315231Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T08:35:27.3334948Z Setting value of PORT variable to 3000
+2025-12-25T08:35:27.3390971Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T08:35:28.0018223Z Starting container: 1570679f1cf0_unioneyes-staging-app.
+2025-12-25T08:35:28.1231109Z Starting watchers and probes.
+2025-12-25T08:35:28.1614524Z Starting metrics collection.
+2025-12-25T08:35:28.1627685Z Container is running.
+2025-12-25T08:35:29.2882242Z Container start method finished after 5058 ms.
+2025-12-25T08:35:34.2980257Z Container has finished running with exit code: 1.
+2025-12-25T08:35:34.2993494Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T08:35:34.3079391Z Stop and delete container. Retry count = 0
+2025-12-25T08:35:34.3087752Z Stopping container: 1570679f1cf0_unioneyes-staging-app.
+2025-12-25T08:35:34.4780404Z Deleting container: 1570679f1cf0_unioneyes-staging-app. Retry count = 0
+2025-12-25T08:35:34.9639419Z Container get mounts received unexpected exception.
+2025-12-25T08:35:34.9642541Z Container get mounts received unexpected exception.
+2025-12-25T08:35:34.9919222Z Container get processes received unexpected exception.
+2025-12-25T08:35:35.0534710Z Container get processes received unexpected exception.
+2025-12-25T08:35:35.0832751Z Container spec TerminationMessagePolicy  path 
+2025-12-25T08:35:35.0915312Z Container is terminated. Total time elapsed: 791 ms.
+2025-12-25T08:35:35.0925047Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T08:35:35.1324205Z Site startup probe failed after 5.8257008 seconds.
+2025-12-25T08:35:35.3709003Z Failed to start site. Revert by stopping site.
+2025-12-25T08:35:35.3794382Z Site: unioneyes-staging-app stopped.
+2025-12-25T08:35:35.8205576Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 08:39:35
+2025-12-25T08:39:35.8225966Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T09:10:26.5557218Z Container start method called.
+2025-12-25T09:10:26.5648850Z Establishing network.
+2025-12-25T09:10:26.5659858Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T09:10:27.2740656Z Container is starting.
+2025-12-25T09:10:27.2860428Z Establishing user namespace if not established already.
+2025-12-25T09:10:27.2928278Z Establishing network if not established already.
+2025-12-25T09:10:27.2930425Z Mounting volumes.
+2025-12-25T09:10:27.3049491Z Nested mountpoint volatile/logs
+2025-12-25T09:10:27.3553000Z Nested mountpoint 
+2025-12-25T09:10:27.5338085Z Creating container.
+2025-12-25T09:10:27.5530644Z Creating pipes for streaming container io.
+2025-12-25T09:10:27.5531865Z Creating stdout named pipe at /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stdout_10a3b91973a24d029dbeb0196d712ad0.
+2025-12-25T09:10:27.5809250Z Successfully created stdout named pipe at: /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stdout_10a3b91973a24d029dbeb0196d712ad0.
+2025-12-25T09:10:27.5832708Z Opening named pipe /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stdout_10a3b91973a24d029dbeb0196d712ad0 for reading in non-blocking mode.
+2025-12-25T09:10:27.5918555Z Successfully opened named pipe: /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stdout_10a3b91973a24d029dbeb0196d712ad0.
+2025-12-25T09:10:27.5923770Z Successfully removed non-blocking flag from /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stdout_10a3b91973a24d029dbeb0196d712ad0.
+2025-12-25T09:10:27.6013833Z Creating stderr named pipe at /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stderr_2dca4579fb5140be89f2990b037e4e96.
+2025-12-25T09:10:27.6025179Z Successfully created stderr named pipe at: /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stderr_2dca4579fb5140be89f2990b037e4e96.
+2025-12-25T09:10:27.6111141Z Opening named pipe /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stderr_2dca4579fb5140be89f2990b037e4e96 for reading in non-blocking mode.
+2025-12-25T09:10:27.6124598Z Successfully opened named pipe: /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stderr_2dca4579fb5140be89f2990b037e4e96.
+2025-12-25T09:10:27.6126668Z Successfully removed non-blocking flag from /podr/container/pipe/3f8ad2f90338_unioneyes-staging-app/stderr_2dca4579fb5140be89f2990b037e4e96.
+2025-12-25T09:10:27.6197428Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T09:10:27.7478210Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T09:10:27.7524637Z Setting value of PORT variable to 3000
+2025-12-25T09:10:27.7544552Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T09:10:28.5446858Z Starting container: 3f8ad2f90338_unioneyes-staging-app.
+2025-12-25T09:10:28.7189016Z Starting watchers and probes.
+2025-12-25T09:10:28.7401929Z Starting metrics collection.
+2025-12-25T09:10:28.7580237Z Container is running.
+2025-12-25T09:10:29.1666781Z Container start method finished after 2600 ms.
+2025-12-25T09:10:35.4960432Z Container has finished running with exit code: 1.
+2025-12-25T09:10:35.4984003Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T09:10:35.5161409Z Stop and delete container. Retry count = 0
+2025-12-25T09:10:35.5170369Z Stopping container: 3f8ad2f90338_unioneyes-staging-app.
+2025-12-25T09:10:35.6685897Z Deleting container: 3f8ad2f90338_unioneyes-staging-app. Retry count = 0
+2025-12-25T09:10:35.9451755Z Container spec TerminationMessagePolicy  path 
+2025-12-25T09:10:35.9663549Z Container is terminated. Total time elapsed: 459 ms.
+2025-12-25T09:10:35.9685912Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T09:10:36.0184905Z Site startup probe failed after 6.7912082 seconds.
+2025-12-25T09:10:36.2222909Z Failed to start site. Revert by stopping site.
+2025-12-25T09:10:36.2322505Z Site: unioneyes-staging-app stopped.
+2025-12-25T09:10:36.7502145Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 09:14:36
+2025-12-25T09:14:36.7402833Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T09:45:29.6456565Z Container start method called.
+2025-12-25T09:45:29.6658744Z Establishing network.
+2025-12-25T09:45:29.6663917Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T09:45:32.0701816Z Container is starting.
+2025-12-25T09:45:32.0886580Z Establishing user namespace if not established already.
+2025-12-25T09:45:32.0888591Z Establishing network if not established already.
+2025-12-25T09:45:32.0890087Z Mounting volumes.
+2025-12-25T09:45:32.0897815Z Nested mountpoint volatile/logs
+2025-12-25T09:45:32.1300019Z Nested mountpoint 
+2025-12-25T09:45:32.3667438Z Creating container.
+2025-12-25T09:45:32.3675840Z Creating pipes for streaming container io.
+2025-12-25T09:45:32.3677886Z Creating stdout named pipe at /podr/container/pipe/1026397d7837_unioneyes-staging-app/stdout_2401c5f87ed64179b2ac8e6eb85f0db5.
+2025-12-25T09:45:32.3780832Z Successfully created stdout named pipe at: /podr/container/pipe/1026397d7837_unioneyes-staging-app/stdout_2401c5f87ed64179b2ac8e6eb85f0db5.
+2025-12-25T09:45:32.3783449Z Opening named pipe /podr/container/pipe/1026397d7837_unioneyes-staging-app/stdout_2401c5f87ed64179b2ac8e6eb85f0db5 for reading in non-blocking mode.
+2025-12-25T09:45:32.3785352Z Successfully opened named pipe: /podr/container/pipe/1026397d7837_unioneyes-staging-app/stdout_2401c5f87ed64179b2ac8e6eb85f0db5.
+2025-12-25T09:45:32.3786427Z Successfully removed non-blocking flag from /podr/container/pipe/1026397d7837_unioneyes-staging-app/stdout_2401c5f87ed64179b2ac8e6eb85f0db5.
+2025-12-25T09:45:32.3787798Z Creating stderr named pipe at /podr/container/pipe/1026397d7837_unioneyes-staging-app/stderr_07f7bb8ea9834675975310c1660ad9c1.
+2025-12-25T09:45:32.3789316Z Successfully created stderr named pipe at: /podr/container/pipe/1026397d7837_unioneyes-staging-app/stderr_07f7bb8ea9834675975310c1660ad9c1.
+2025-12-25T09:45:32.3790299Z Opening named pipe /podr/container/pipe/1026397d7837_unioneyes-staging-app/stderr_07f7bb8ea9834675975310c1660ad9c1 for reading in non-blocking mode.
+2025-12-25T09:45:32.3791448Z Successfully opened named pipe: /podr/container/pipe/1026397d7837_unioneyes-staging-app/stderr_07f7bb8ea9834675975310c1660ad9c1.
+2025-12-25T09:45:32.3792721Z Successfully removed non-blocking flag from /podr/container/pipe/1026397d7837_unioneyes-staging-app/stderr_07f7bb8ea9834675975310c1660ad9c1.
+2025-12-25T09:45:32.3793968Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T09:45:32.4855586Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T09:45:32.4870087Z Setting value of PORT variable to 3000
+2025-12-25T09:45:32.4943206Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T09:45:33.1386412Z Starting container: 1026397d7837_unioneyes-staging-app.
+2025-12-25T09:45:33.2601547Z Starting watchers and probes.
+2025-12-25T09:45:33.2982512Z Starting metrics collection.
+2025-12-25T09:45:33.3182447Z Container is running.
+2025-12-25T09:45:33.6213692Z Container start method finished after 3958 ms.
+2025-12-25T09:45:39.7929595Z Container has finished running with exit code: 1.
+2025-12-25T09:45:39.8028845Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T09:45:39.8158968Z Stop and delete container. Retry count = 0
+2025-12-25T09:45:39.8161008Z Stopping container: 1026397d7837_unioneyes-staging-app.
+2025-12-25T09:45:39.9435471Z Deleting container: 1026397d7837_unioneyes-staging-app. Retry count = 0
+2025-12-25T09:45:40.2032443Z Container spec TerminationMessagePolicy  path 
+2025-12-25T09:45:40.2112778Z Container is terminated. Total time elapsed: 402 ms.
+2025-12-25T09:45:40.2131298Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T09:45:40.2639917Z Site startup probe failed after 6.6292419 seconds.
+2025-12-25T09:45:40.4807911Z Failed to start site. Revert by stopping site.
+2025-12-25T09:45:40.4900176Z Site: unioneyes-staging-app stopped.
+2025-12-25T09:45:40.9817644Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 09:49:40
+2025-12-25T09:49:40.9840886Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T10:20:30.8457385Z Container start method called.
+2025-12-25T10:20:30.8467095Z Establishing network.
+2025-12-25T10:20:30.8567141Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T10:20:33.1145897Z Container is starting.
+2025-12-25T10:20:33.1240834Z Establishing user namespace if not established already.
+2025-12-25T10:20:33.1312633Z Establishing network if not established already.
+2025-12-25T10:20:33.1320770Z Mounting volumes.
+2025-12-25T10:20:33.1406113Z Nested mountpoint volatile/logs
+2025-12-25T10:20:33.1602679Z Nested mountpoint 
+2025-12-25T10:20:33.3073489Z Creating container.
+2025-12-25T10:20:33.3075486Z Creating pipes for streaming container io.
+2025-12-25T10:20:33.3077540Z Creating stdout named pipe at /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stdout_7eebace36fb9493aa57f2992cb4bdace.
+2025-12-25T10:20:33.3356515Z Successfully created stdout named pipe at: /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stdout_7eebace36fb9493aa57f2992cb4bdace.
+2025-12-25T10:20:33.3358929Z Opening named pipe /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stdout_7eebace36fb9493aa57f2992cb4bdace for reading in non-blocking mode.
+2025-12-25T10:20:33.3361107Z Successfully opened named pipe: /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stdout_7eebace36fb9493aa57f2992cb4bdace.
+2025-12-25T10:20:33.3363041Z Successfully removed non-blocking flag from /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stdout_7eebace36fb9493aa57f2992cb4bdace.
+2025-12-25T10:20:33.3372117Z Creating stderr named pipe at /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stderr_b397a7e0cf1640618ca02f94c06bb2fb.
+2025-12-25T10:20:33.3440887Z Successfully created stderr named pipe at: /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stderr_b397a7e0cf1640618ca02f94c06bb2fb.
+2025-12-25T10:20:33.3445396Z Opening named pipe /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stderr_b397a7e0cf1640618ca02f94c06bb2fb for reading in non-blocking mode.
+2025-12-25T10:20:33.3447979Z Successfully opened named pipe: /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stderr_b397a7e0cf1640618ca02f94c06bb2fb.
+2025-12-25T10:20:33.3455422Z Successfully removed non-blocking flag from /podr/container/pipe/fc4762580e7e_unioneyes-staging-app/stderr_b397a7e0cf1640618ca02f94c06bb2fb.
+2025-12-25T10:20:33.3552213Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T10:20:33.4320144Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T10:20:33.4328730Z Setting value of PORT variable to 3000
+2025-12-25T10:20:33.4341971Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T10:20:34.1868451Z Starting container: fc4762580e7e_unioneyes-staging-app.
+2025-12-25T10:20:34.3055538Z Starting watchers and probes.
+2025-12-25T10:20:34.3323677Z Starting metrics collection.
+2025-12-25T10:20:34.3349605Z Container is running.
+2025-12-25T10:20:35.2790493Z Container start method finished after 4433 ms.
+2025-12-25T10:20:40.7422568Z Container has finished running with exit code: 1.
+2025-12-25T10:20:40.7506719Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T10:20:40.7636915Z Stop and delete container. Retry count = 0
+2025-12-25T10:20:40.7812700Z Stopping container: fc4762580e7e_unioneyes-staging-app.
+2025-12-25T10:20:40.8635679Z Deleting container: fc4762580e7e_unioneyes-staging-app. Retry count = 0
+2025-12-25T10:20:41.2205921Z Container spec TerminationMessagePolicy  path 
+2025-12-25T10:20:41.2285636Z Container is terminated. Total time elapsed: 476 ms.
+2025-12-25T10:20:41.2291858Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T10:20:41.3386202Z Site startup probe failed after 6.0289174 seconds.
+2025-12-25T10:20:41.6702450Z Failed to start site. Revert by stopping site.
+2025-12-25T10:20:41.7481098Z Site: unioneyes-staging-app stopped.
+2025-12-25T10:20:42.4482210Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 10:24:42
+2025-12-25T10:24:42.4546867Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T10:55:32.7978894Z Container start method called.
+2025-12-25T10:55:32.8166152Z Establishing network.
+2025-12-25T10:55:32.8180644Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T10:55:33.3933964Z Container is starting.
+2025-12-25T10:55:33.4017655Z Establishing user namespace if not established already.
+2025-12-25T10:55:33.4031322Z Establishing network if not established already.
+2025-12-25T10:55:33.4036665Z Mounting volumes.
+2025-12-25T10:55:33.4129787Z Nested mountpoint volatile/logs
+2025-12-25T10:55:33.4306411Z Nested mountpoint 
+2025-12-25T10:55:33.5532330Z Creating container.
+2025-12-25T10:55:33.5730751Z Creating pipes for streaming container io.
+2025-12-25T10:55:33.5801480Z Creating stdout named pipe at /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stdout_d4413b9ab335490fb31b3e68aa8b4580.
+2025-12-25T10:55:33.5825264Z Successfully created stdout named pipe at: /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stdout_d4413b9ab335490fb31b3e68aa8b4580.
+2025-12-25T10:55:33.5843120Z Opening named pipe /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stdout_d4413b9ab335490fb31b3e68aa8b4580 for reading in non-blocking mode.
+2025-12-25T10:55:33.5900929Z Successfully opened named pipe: /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stdout_d4413b9ab335490fb31b3e68aa8b4580.
+2025-12-25T10:55:33.5910733Z Successfully removed non-blocking flag from /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stdout_d4413b9ab335490fb31b3e68aa8b4580.
+2025-12-25T10:55:33.5922018Z Creating stderr named pipe at /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stderr_8f7d0c7fe42949dd8941fd9c284f5133.
+2025-12-25T10:55:33.5927336Z Successfully created stderr named pipe at: /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stderr_8f7d0c7fe42949dd8941fd9c284f5133.
+2025-12-25T10:55:33.5930667Z Opening named pipe /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stderr_8f7d0c7fe42949dd8941fd9c284f5133 for reading in non-blocking mode.
+2025-12-25T10:55:33.5933998Z Successfully opened named pipe: /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stderr_8f7d0c7fe42949dd8941fd9c284f5133.
+2025-12-25T10:55:33.5936375Z Successfully removed non-blocking flag from /podr/container/pipe/7ffa8fe9e031_unioneyes-staging-app/stderr_8f7d0c7fe42949dd8941fd9c284f5133.
+2025-12-25T10:55:33.6024410Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T10:55:33.6901904Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T10:55:33.6914534Z Setting value of PORT variable to 3000
+2025-12-25T10:55:33.6991485Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T10:55:34.9491095Z Starting container: 7ffa8fe9e031_unioneyes-staging-app.
+2025-12-25T10:55:35.1471592Z Starting watchers and probes.
+2025-12-25T10:55:35.1950062Z Starting metrics collection.
+2025-12-25T10:55:35.2488848Z Container is running.
+2025-12-25T10:55:35.9809265Z Container start method finished after 3181 ms.
+2025-12-25T10:55:41.4862510Z Container has finished running with exit code: 1.
+2025-12-25T10:55:41.4955098Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T10:55:41.5050262Z Stop and delete container. Retry count = 0
+2025-12-25T10:55:41.5060457Z Stopping container: 7ffa8fe9e031_unioneyes-staging-app.
+2025-12-25T10:55:41.6519926Z Deleting container: 7ffa8fe9e031_unioneyes-staging-app. Retry count = 0
+2025-12-25T10:55:41.8934361Z Container spec TerminationMessagePolicy  path 
+2025-12-25T10:55:41.9086391Z Container is terminated. Total time elapsed: 412 ms.
+2025-12-25T10:55:41.9102340Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T10:55:41.9993402Z Site startup probe failed after 5.9173553 seconds.
+2025-12-25T10:55:42.2245295Z Failed to start site. Revert by stopping site.
+2025-12-25T10:55:42.2368512Z Site: unioneyes-staging-app stopped.
+2025-12-25T10:55:42.6340253Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 10:59:42
+2025-12-25T10:59:42.6348696Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T11:30:35.6825433Z Container start method called.
+2025-12-25T11:30:35.6828990Z Establishing network.
+2025-12-25T11:30:35.6836864Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T11:30:36.3740805Z Container is starting.
+2025-12-25T11:30:36.3744118Z Establishing user namespace if not established already.
+2025-12-25T11:30:36.3747934Z Establishing network if not established already.
+2025-12-25T11:30:36.3753869Z Mounting volumes.
+2025-12-25T11:30:36.3831701Z Nested mountpoint volatile/logs
+2025-12-25T11:30:36.3939209Z Nested mountpoint 
+2025-12-25T11:30:36.5735486Z Creating container.
+2025-12-25T11:30:36.5737713Z Creating pipes for streaming container io.
+2025-12-25T11:30:36.5800187Z Creating stdout named pipe at /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stdout_6466ff9c7fcf41d7b34b816275fa1239.
+2025-12-25T11:30:36.6028027Z Successfully created stdout named pipe at: /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stdout_6466ff9c7fcf41d7b34b816275fa1239.
+2025-12-25T11:30:36.6030868Z Opening named pipe /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stdout_6466ff9c7fcf41d7b34b816275fa1239 for reading in non-blocking mode.
+2025-12-25T11:30:36.6036528Z Successfully opened named pipe: /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stdout_6466ff9c7fcf41d7b34b816275fa1239.
+2025-12-25T11:30:36.6322436Z Successfully removed non-blocking flag from /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stdout_6466ff9c7fcf41d7b34b816275fa1239.
+2025-12-25T11:30:36.6326126Z Creating stderr named pipe at /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stderr_94014e39524a40669abc50a83a64ed88.
+2025-12-25T11:30:36.6331049Z Successfully created stderr named pipe at: /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stderr_94014e39524a40669abc50a83a64ed88.
+2025-12-25T11:30:36.6336710Z Opening named pipe /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stderr_94014e39524a40669abc50a83a64ed88 for reading in non-blocking mode.
+2025-12-25T11:30:36.6603807Z Successfully opened named pipe: /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stderr_94014e39524a40669abc50a83a64ed88.
+2025-12-25T11:30:36.6633808Z Successfully removed non-blocking flag from /podr/container/pipe/93e1e95c63e1_unioneyes-staging-app/stderr_94014e39524a40669abc50a83a64ed88.
+2025-12-25T11:30:36.6739136Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T11:30:37.0386186Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T11:30:37.0387922Z Setting value of PORT variable to 3000
+2025-12-25T11:30:37.0394338Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T11:30:37.7859676Z Starting container: 93e1e95c63e1_unioneyes-staging-app.
+2025-12-25T11:30:37.9158422Z Starting watchers and probes.
+2025-12-25T11:30:37.9330625Z Starting metrics collection.
+2025-12-25T11:30:37.9341476Z Container is running.
+2025-12-25T11:30:39.4765422Z Container start method finished after 3793 ms.
+2025-12-25T11:30:44.0430586Z Container has finished running with exit code: 1.
+2025-12-25T11:30:44.0600196Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T11:30:44.0722958Z Stop and delete container. Retry count = 0
+2025-12-25T11:30:44.0724857Z Stopping container: 93e1e95c63e1_unioneyes-staging-app.
+2025-12-25T11:30:44.1750181Z Deleting container: 93e1e95c63e1_unioneyes-staging-app. Retry count = 0
+2025-12-25T11:30:44.4151420Z Container spec TerminationMessagePolicy  path 
+2025-12-25T11:30:44.4234174Z Container is terminated. Total time elapsed: 356 ms.
+2025-12-25T11:30:44.4260858Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T11:30:44.5136661Z Site startup probe failed after 4.9782641 seconds.
+2025-12-25T11:30:44.7678923Z Failed to start site. Revert by stopping site.
+2025-12-25T11:30:44.7782855Z Site: unioneyes-staging-app stopped.
+2025-12-25T11:30:45.3571769Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 11:34:45
+2025-12-25T11:34:45.3626628Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T12:05:37.0051841Z Container start method called.
+2025-12-25T12:05:37.0055435Z Establishing network.
+2025-12-25T12:05:37.0150470Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T12:05:38.6649427Z Container is starting.
+2025-12-25T12:05:38.6728126Z Establishing user namespace if not established already.
+2025-12-25T12:05:38.6735290Z Establishing network if not established already.
+2025-12-25T12:05:38.6741536Z Mounting volumes.
+2025-12-25T12:05:38.6758823Z Nested mountpoint volatile/logs
+2025-12-25T12:05:38.7044218Z Nested mountpoint 
+2025-12-25T12:05:38.8687992Z Creating container.
+2025-12-25T12:05:38.8694857Z Creating pipes for streaming container io.
+2025-12-25T12:05:38.8700372Z Creating stdout named pipe at /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stdout_a90ce21cd03f40b1ba8ccc6e9cd7747b.
+2025-12-25T12:05:38.8901293Z Successfully created stdout named pipe at: /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stdout_a90ce21cd03f40b1ba8ccc6e9cd7747b.
+2025-12-25T12:05:38.8909862Z Opening named pipe /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stdout_a90ce21cd03f40b1ba8ccc6e9cd7747b for reading in non-blocking mode.
+2025-12-25T12:05:38.8989191Z Successfully opened named pipe: /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stdout_a90ce21cd03f40b1ba8ccc6e9cd7747b.
+2025-12-25T12:05:38.8997351Z Successfully removed non-blocking flag from /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stdout_a90ce21cd03f40b1ba8ccc6e9cd7747b.
+2025-12-25T12:05:38.9100028Z Creating stderr named pipe at /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stderr_cc03d757f24d4b6da0b5be12fd995487.
+2025-12-25T12:05:38.9181217Z Successfully created stderr named pipe at: /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stderr_cc03d757f24d4b6da0b5be12fd995487.
+2025-12-25T12:05:38.9183657Z Opening named pipe /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stderr_cc03d757f24d4b6da0b5be12fd995487 for reading in non-blocking mode.
+2025-12-25T12:05:38.9185093Z Successfully opened named pipe: /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stderr_cc03d757f24d4b6da0b5be12fd995487.
+2025-12-25T12:05:38.9186284Z Successfully removed non-blocking flag from /podr/container/pipe/d64cd6322c33_unioneyes-staging-app/stderr_cc03d757f24d4b6da0b5be12fd995487.
+2025-12-25T12:05:38.9196956Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T12:05:39.0372850Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T12:05:39.0397341Z Setting value of PORT variable to 3000
+2025-12-25T12:05:39.0420585Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T12:05:39.8422504Z Starting container: d64cd6322c33_unioneyes-staging-app.
+2025-12-25T12:05:39.9812134Z Starting watchers and probes.
+2025-12-25T12:05:39.9919627Z Starting metrics collection.
+2025-12-25T12:05:40.0001851Z Container is running.
+2025-12-25T12:05:40.1601719Z Container start method finished after 3154 ms.
+2025-12-25T12:05:46.5059756Z Container has finished running with exit code: 1.
+2025-12-25T12:05:46.5093265Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T12:05:46.5384203Z Stop and delete container. Retry count = 0
+2025-12-25T12:05:46.5388506Z Stopping container: d64cd6322c33_unioneyes-staging-app.
+2025-12-25T12:05:46.6157535Z Deleting container: d64cd6322c33_unioneyes-staging-app. Retry count = 0
+2025-12-25T12:05:46.8557028Z Container spec TerminationMessagePolicy  path 
+2025-12-25T12:05:46.8579814Z Container is terminated. Total time elapsed: 321 ms.
+2025-12-25T12:05:46.8593962Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T12:05:46.9584379Z Site startup probe failed after 6.7075554 seconds.
+2025-12-25T12:05:47.1810450Z Failed to start site. Revert by stopping site.
+2025-12-25T12:05:47.1956032Z Site: unioneyes-staging-app stopped.
+2025-12-25T12:05:47.6941116Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 12:09:47
+2025-12-25T12:09:47.6970571Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T12:40:38.9019737Z Container start method called.
+2025-12-25T12:40:38.9202928Z Establishing network.
+2025-12-25T12:40:38.9206048Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T12:40:40.2480143Z Container is starting.
+2025-12-25T12:40:40.2673164Z Establishing user namespace if not established already.
+2025-12-25T12:40:40.2682826Z Establishing network if not established already.
+2025-12-25T12:40:40.2692066Z Mounting volumes.
+2025-12-25T12:40:40.2780091Z Nested mountpoint volatile/logs
+2025-12-25T12:40:40.3363481Z Nested mountpoint 
+2025-12-25T12:40:40.4235004Z Creating container.
+2025-12-25T12:40:40.4307481Z Creating pipes for streaming container io.
+2025-12-25T12:40:40.4334812Z Creating stdout named pipe at /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stdout_53f48627c7e140dfab8fa688cf872bb3.
+2025-12-25T12:40:40.4709816Z Successfully created stdout named pipe at: /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stdout_53f48627c7e140dfab8fa688cf872bb3.
+2025-12-25T12:40:40.4888865Z Opening named pipe /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stdout_53f48627c7e140dfab8fa688cf872bb3 for reading in non-blocking mode.
+2025-12-25T12:40:40.4908971Z Successfully opened named pipe: /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stdout_53f48627c7e140dfab8fa688cf872bb3.
+2025-12-25T12:40:40.4989788Z Successfully removed non-blocking flag from /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stdout_53f48627c7e140dfab8fa688cf872bb3.
+2025-12-25T12:40:40.4996395Z Creating stderr named pipe at /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stderr_856cb1254ea84256ac906cc4572f0db2.
+2025-12-25T12:40:40.4998316Z Successfully created stderr named pipe at: /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stderr_856cb1254ea84256ac906cc4572f0db2.
+2025-12-25T12:40:40.4999233Z Opening named pipe /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stderr_856cb1254ea84256ac906cc4572f0db2 for reading in non-blocking mode.
+2025-12-25T12:40:40.5000457Z Successfully opened named pipe: /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stderr_856cb1254ea84256ac906cc4572f0db2.
+2025-12-25T12:40:40.5001466Z Successfully removed non-blocking flag from /podr/container/pipe/1f48ca3bfa5d_unioneyes-staging-app/stderr_856cb1254ea84256ac906cc4572f0db2.
+2025-12-25T12:40:40.5002357Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T12:40:40.5773567Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T12:40:40.5822728Z Setting value of PORT variable to 3000
+2025-12-25T12:40:40.5842972Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T12:40:41.7670971Z Starting container: 1f48ca3bfa5d_unioneyes-staging-app.
+2025-12-25T12:40:41.8525946Z Starting watchers and probes.
+2025-12-25T12:40:41.8721496Z Starting metrics collection.
+2025-12-25T12:40:41.9050812Z Container is running.
+2025-12-25T12:40:42.0922346Z Container start method finished after 3182 ms.
+2025-12-25T12:40:48.6758830Z Container has finished running with exit code: 1.
+2025-12-25T12:40:48.6760893Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T12:40:48.6845539Z Stop and delete container. Retry count = 0
+2025-12-25T12:40:48.6860434Z Stopping container: 1f48ca3bfa5d_unioneyes-staging-app.
+2025-12-25T12:40:48.7946327Z Deleting container: 1f48ca3bfa5d_unioneyes-staging-app. Retry count = 0
+2025-12-25T12:40:49.0531990Z Container spec TerminationMessagePolicy  path 
+2025-12-25T12:40:49.0544829Z Container is terminated. Total time elapsed: 377 ms.
+2025-12-25T12:40:49.0551028Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T12:40:49.1044680Z Site startup probe failed after 6.9914864 seconds.
+2025-12-25T12:40:49.3501161Z Failed to start site. Revert by stopping site.
+2025-12-25T12:40:49.3594686Z Site: unioneyes-staging-app stopped.
+2025-12-25T12:40:49.9365448Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 12:44:49
+2025-12-25T12:44:49.9416669Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T13:15:41.2441126Z Container start method called.
+2025-12-25T13:15:41.2467080Z Establishing network.
+2025-12-25T13:15:41.2469283Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T13:15:42.5129887Z Container is starting.
+2025-12-25T13:15:42.5234576Z Establishing user namespace if not established already.
+2025-12-25T13:15:42.5248189Z Establishing network if not established already.
+2025-12-25T13:15:42.5256121Z Mounting volumes.
+2025-12-25T13:15:42.5336341Z Nested mountpoint volatile/logs
+2025-12-25T13:15:42.5424406Z Nested mountpoint 
+2025-12-25T13:15:42.6231079Z Creating container.
+2025-12-25T13:15:42.6233252Z Creating pipes for streaming container io.
+2025-12-25T13:15:42.6234243Z Creating stdout named pipe at /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stdout_33362c6eb07043da907e445e9cfc9713.
+2025-12-25T13:15:42.6337237Z Successfully created stdout named pipe at: /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stdout_33362c6eb07043da907e445e9cfc9713.
+2025-12-25T13:15:42.6911007Z Opening named pipe /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stdout_33362c6eb07043da907e445e9cfc9713 for reading in non-blocking mode.
+2025-12-25T13:15:42.6917237Z Successfully opened named pipe: /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stdout_33362c6eb07043da907e445e9cfc9713.
+2025-12-25T13:15:42.6920716Z Successfully removed non-blocking flag from /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stdout_33362c6eb07043da907e445e9cfc9713.
+2025-12-25T13:15:42.6923896Z Creating stderr named pipe at /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stderr_ff12cb282b8f4213b08dd78a4aafe636.
+2025-12-25T13:15:42.6927610Z Successfully created stderr named pipe at: /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stderr_ff12cb282b8f4213b08dd78a4aafe636.
+2025-12-25T13:15:42.6932686Z Opening named pipe /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stderr_ff12cb282b8f4213b08dd78a4aafe636 for reading in non-blocking mode.
+2025-12-25T13:15:42.6998231Z Successfully opened named pipe: /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stderr_ff12cb282b8f4213b08dd78a4aafe636.
+2025-12-25T13:15:42.7003946Z Successfully removed non-blocking flag from /podr/container/pipe/a6bfa26f79c5_unioneyes-staging-app/stderr_ff12cb282b8f4213b08dd78a4aafe636.
+2025-12-25T13:15:42.7008566Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T13:15:42.8303852Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T13:15:42.8321331Z Setting value of PORT variable to 3000
+2025-12-25T13:15:42.8391474Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T13:15:43.7351801Z Starting container: a6bfa26f79c5_unioneyes-staging-app.
+2025-12-25T13:15:43.8887427Z Starting watchers and probes.
+2025-12-25T13:15:43.9452576Z Starting metrics collection.
+2025-12-25T13:15:43.9804670Z Container is running.
+2025-12-25T13:15:44.2562509Z Container start method finished after 2985 ms.
+2025-12-25T13:15:50.3972217Z Container has finished running with exit code: 1.
+2025-12-25T13:15:50.4075811Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T13:15:50.4185592Z Stop and delete container. Retry count = 0
+2025-12-25T13:15:50.4366054Z Stopping container: a6bfa26f79c5_unioneyes-staging-app.
+2025-12-25T13:15:50.5430706Z Deleting container: a6bfa26f79c5_unioneyes-staging-app. Retry count = 0
+2025-12-25T13:15:50.7906913Z Container spec TerminationMessagePolicy  path 
+2025-12-25T13:15:50.7908834Z Container is terminated. Total time elapsed: 374 ms.
+2025-12-25T13:15:50.7909966Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T13:15:50.8402245Z Site startup probe failed after 6.5539945 seconds.
+2025-12-25T13:15:51.0882548Z Failed to start site. Revert by stopping site.
+2025-12-25T13:15:51.1092996Z Site: unioneyes-staging-app stopped.
+2025-12-25T13:15:51.6207985Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 13:19:51
+2025-12-25T13:19:51.6201548Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T13:50:43.3905493Z Container start method called.
+2025-12-25T13:50:43.3917061Z Establishing network.
+2025-12-25T13:50:43.4096608Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T13:50:44.0725884Z Container is starting.
+2025-12-25T13:50:44.0915091Z Establishing user namespace if not established already.
+2025-12-25T13:50:44.1012236Z Establishing network if not established already.
+2025-12-25T13:50:44.1024013Z Mounting volumes.
+2025-12-25T13:50:44.1115230Z Nested mountpoint volatile/logs
+2025-12-25T13:50:44.1289322Z Nested mountpoint 
+2025-12-25T13:50:44.2712147Z Creating container.
+2025-12-25T13:50:44.2821506Z Creating pipes for streaming container io.
+2025-12-25T13:50:44.2982265Z Creating stdout named pipe at /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stdout_5d3b8c4d909b438994f023cb3709a3f3.
+2025-12-25T13:50:44.3183471Z Successfully created stdout named pipe at: /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stdout_5d3b8c4d909b438994f023cb3709a3f3.
+2025-12-25T13:50:44.3273751Z Opening named pipe /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stdout_5d3b8c4d909b438994f023cb3709a3f3 for reading in non-blocking mode.
+2025-12-25T13:50:44.3294671Z Successfully opened named pipe: /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stdout_5d3b8c4d909b438994f023cb3709a3f3.
+2025-12-25T13:50:44.3355057Z Successfully removed non-blocking flag from /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stdout_5d3b8c4d909b438994f023cb3709a3f3.
+2025-12-25T13:50:44.3367782Z Creating stderr named pipe at /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stderr_df89796db598409190ae5bb801cca53c.
+2025-12-25T13:50:44.3375680Z Successfully created stderr named pipe at: /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stderr_df89796db598409190ae5bb801cca53c.
+2025-12-25T13:50:44.3384655Z Opening named pipe /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stderr_df89796db598409190ae5bb801cca53c for reading in non-blocking mode.
+2025-12-25T13:50:44.3544662Z Successfully opened named pipe: /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stderr_df89796db598409190ae5bb801cca53c.
+2025-12-25T13:50:44.3546380Z Successfully removed non-blocking flag from /podr/container/pipe/4cf74d3cd94b_unioneyes-staging-app/stderr_df89796db598409190ae5bb801cca53c.
+2025-12-25T13:50:44.3554046Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T13:50:44.4203953Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T13:50:44.4215105Z Setting value of PORT variable to 3000
+2025-12-25T13:50:44.4230055Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T13:50:45.2826728Z Starting container: 4cf74d3cd94b_unioneyes-staging-app.
+2025-12-25T13:50:45.4573355Z Starting watchers and probes.
+2025-12-25T13:50:45.4789546Z Starting metrics collection.
+2025-12-25T13:50:45.5159443Z Container is running.
+2025-12-25T13:50:45.6682891Z Container start method finished after 2277 ms.
+2025-12-25T13:50:52.1466008Z Container has finished running with exit code: 1.
+2025-12-25T13:50:52.1537832Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T13:50:52.1629110Z Stop and delete container. Retry count = 0
+2025-12-25T13:50:52.1647758Z Stopping container: 4cf74d3cd94b_unioneyes-staging-app.
+2025-12-25T13:50:52.2458475Z Deleting container: 4cf74d3cd94b_unioneyes-staging-app. Retry count = 0
+2025-12-25T13:50:52.4850686Z Container spec TerminationMessagePolicy  path 
+2025-12-25T13:50:52.4928431Z Container is terminated. Total time elapsed: 337 ms.
+2025-12-25T13:50:52.5009639Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T13:50:52.5912957Z Site startup probe failed after 6.8036528 seconds.
+2025-12-25T13:50:52.9109639Z Failed to start site. Revert by stopping site.
+2025-12-25T13:50:52.9299669Z Site: unioneyes-staging-app stopped.
+2025-12-25T13:50:53.4027981Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 13:54:53
+2025-12-25T13:54:53.4046067Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T14:25:45.9066309Z Container start method called.
+2025-12-25T14:25:45.9244053Z Establishing network.
+2025-12-25T14:25:45.9354570Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T14:25:46.5708231Z Container is starting.
+2025-12-25T14:25:46.5798109Z Establishing user namespace if not established already.
+2025-12-25T14:25:46.5799189Z Establishing network if not established already.
+2025-12-25T14:25:46.5800255Z Mounting volumes.
+2025-12-25T14:25:46.5812166Z Nested mountpoint volatile/logs
+2025-12-25T14:25:46.5908348Z Nested mountpoint 
+2025-12-25T14:25:46.7005294Z Creating container.
+2025-12-25T14:25:46.7080143Z Creating pipes for streaming container io.
+2025-12-25T14:25:46.7178857Z Creating stdout named pipe at /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stdout_39aa747c86e24a0babc862cff70f70e2.
+2025-12-25T14:25:46.7384311Z Successfully created stdout named pipe at: /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stdout_39aa747c86e24a0babc862cff70f70e2.
+2025-12-25T14:25:46.7495460Z Opening named pipe /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stdout_39aa747c86e24a0babc862cff70f70e2 for reading in non-blocking mode.
+2025-12-25T14:25:46.7804063Z Successfully opened named pipe: /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stdout_39aa747c86e24a0babc862cff70f70e2.
+2025-12-25T14:25:46.7818754Z Successfully removed non-blocking flag from /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stdout_39aa747c86e24a0babc862cff70f70e2.
+2025-12-25T14:25:46.7828194Z Creating stderr named pipe at /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stderr_7996cd01bb9f437aacc428e12c0f4dbe.
+2025-12-25T14:25:46.7899460Z Successfully created stderr named pipe at: /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stderr_7996cd01bb9f437aacc428e12c0f4dbe.
+2025-12-25T14:25:46.7972253Z Opening named pipe /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stderr_7996cd01bb9f437aacc428e12c0f4dbe for reading in non-blocking mode.
+2025-12-25T14:25:46.7995625Z Successfully opened named pipe: /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stderr_7996cd01bb9f437aacc428e12c0f4dbe.
+2025-12-25T14:25:46.8009610Z Successfully removed non-blocking flag from /podr/container/pipe/338a000aaaea_unioneyes-staging-app/stderr_7996cd01bb9f437aacc428e12c0f4dbe.
+2025-12-25T14:25:46.8095287Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T14:25:46.9309836Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T14:25:46.9330272Z Setting value of PORT variable to 3000
+2025-12-25T14:25:46.9368803Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T14:25:47.8224285Z Starting container: 338a000aaaea_unioneyes-staging-app.
+2025-12-25T14:25:48.1084295Z Starting watchers and probes.
+2025-12-25T14:25:48.1387914Z Starting metrics collection.
+2025-12-25T14:25:48.1683644Z Container is running.
+2025-12-25T14:25:49.8179429Z Container start method finished after 3881 ms.
+2025-12-25T14:25:53.9352418Z Container has finished running with exit code: 1.
+2025-12-25T14:25:53.9429898Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T14:25:53.9563629Z Stop and delete container. Retry count = 0
+2025-12-25T14:25:53.9567539Z Stopping container: 338a000aaaea_unioneyes-staging-app.
+2025-12-25T14:25:54.0305983Z Deleting container: 338a000aaaea_unioneyes-staging-app. Retry count = 0
+2025-12-25T14:25:54.5272201Z Container spec TerminationMessagePolicy  path 
+2025-12-25T14:25:54.5308857Z Container is terminated. Total time elapsed: 587 ms.
+2025-12-25T14:25:54.5383744Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T14:25:54.6865198Z Site startup probe failed after 4.7818178 seconds.
+2025-12-25T14:25:55.0848051Z Failed to start site. Revert by stopping site.
+2025-12-25T14:25:55.1210940Z Site: unioneyes-staging-app stopped.
+2025-12-25T14:25:56.0816533Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 14:29:56
+2025-12-25T14:29:56.0845801Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T15:00:46.8515903Z Container start method called.
+2025-12-25T15:00:46.8609121Z Establishing network.
+2025-12-25T15:00:46.8799596Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T15:00:47.6064895Z Container is starting.
+2025-12-25T15:00:47.6081445Z Establishing user namespace if not established already.
+2025-12-25T15:00:47.6091608Z Establishing network if not established already.
+2025-12-25T15:00:47.6159455Z Mounting volumes.
+2025-12-25T15:00:47.6194221Z Nested mountpoint volatile/logs
+2025-12-25T15:00:47.6373302Z Nested mountpoint 
+2025-12-25T15:00:47.7904140Z Creating container.
+2025-12-25T15:00:47.7919655Z Creating pipes for streaming container io.
+2025-12-25T15:00:47.7922574Z Creating stdout named pipe at /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stdout_1b67cbcc8eee450aad1ba50991b0a1d8.
+2025-12-25T15:00:47.8100044Z Successfully created stdout named pipe at: /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stdout_1b67cbcc8eee450aad1ba50991b0a1d8.
+2025-12-25T15:00:47.8110318Z Opening named pipe /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stdout_1b67cbcc8eee450aad1ba50991b0a1d8 for reading in non-blocking mode.
+2025-12-25T15:00:47.8201128Z Successfully opened named pipe: /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stdout_1b67cbcc8eee450aad1ba50991b0a1d8.
+2025-12-25T15:00:47.8210616Z Successfully removed non-blocking flag from /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stdout_1b67cbcc8eee450aad1ba50991b0a1d8.
+2025-12-25T15:00:47.8228458Z Creating stderr named pipe at /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stderr_96d40e20c8834b46ac20e8a5bda0b969.
+2025-12-25T15:00:47.8311169Z Successfully created stderr named pipe at: /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stderr_96d40e20c8834b46ac20e8a5bda0b969.
+2025-12-25T15:00:47.8321329Z Opening named pipe /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stderr_96d40e20c8834b46ac20e8a5bda0b969 for reading in non-blocking mode.
+2025-12-25T15:00:47.8410010Z Successfully opened named pipe: /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stderr_96d40e20c8834b46ac20e8a5bda0b969.
+2025-12-25T15:00:47.8415544Z Successfully removed non-blocking flag from /podr/container/pipe/12da0831efe7_unioneyes-staging-app/stderr_96d40e20c8834b46ac20e8a5bda0b969.
+2025-12-25T15:00:47.8430146Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T15:00:48.0204613Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T15:00:48.0272157Z Setting value of PORT variable to 3000
+2025-12-25T15:00:48.0283216Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T15:00:48.9123478Z Starting container: 12da0831efe7_unioneyes-staging-app.
+2025-12-25T15:00:49.0410120Z Starting watchers and probes.
+2025-12-25T15:00:49.0611492Z Starting metrics collection.
+2025-12-25T15:00:49.0774750Z Container is running.
+2025-12-25T15:00:49.2373623Z Container start method finished after 2371 ms.
+2025-12-25T15:00:55.9647520Z Container has finished running with exit code: 1.
+2025-12-25T15:00:55.9750319Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T15:00:55.9868552Z Stop and delete container. Retry count = 0
+2025-12-25T15:00:56.0058354Z Stopping container: 12da0831efe7_unioneyes-staging-app.
+2025-12-25T15:00:56.1349026Z Deleting container: 12da0831efe7_unioneyes-staging-app. Retry count = 0
+2025-12-25T15:00:56.3891549Z Container spec TerminationMessagePolicy  path 
+2025-12-25T15:00:56.3901807Z Container is terminated. Total time elapsed: 412 ms.
+2025-12-25T15:00:56.3909023Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T15:00:56.4986849Z Site startup probe failed after 7.1702874 seconds.
+2025-12-25T15:00:56.7641826Z Failed to start site. Revert by stopping site.
+2025-12-25T15:00:56.7812048Z Site: unioneyes-staging-app stopped.
+2025-12-25T15:00:57.3126706Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 15:04:57
+2025-12-25T15:04:57.3122547Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T15:35:49.0135040Z Container start method called.
+2025-12-25T15:35:49.0226601Z Establishing network.
+2025-12-25T15:35:49.0325345Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T15:35:50.0468454Z Container is starting.
+2025-12-25T15:35:50.0635967Z Establishing user namespace if not established already.
+2025-12-25T15:35:50.0638534Z Establishing network if not established already.
+2025-12-25T15:35:50.0640616Z Mounting volumes.
+2025-12-25T15:35:50.0653240Z Nested mountpoint volatile/logs
+2025-12-25T15:35:50.0922998Z Nested mountpoint 
+2025-12-25T15:35:50.2604645Z Creating container.
+2025-12-25T15:35:50.2919587Z Creating pipes for streaming container io.
+2025-12-25T15:35:50.3116786Z Creating stdout named pipe at /podr/container/pipe/6627256d4253_unioneyes-staging-app/stdout_c8e99dc4aa9e48469d2ac23f3891c439.
+2025-12-25T15:35:50.3201139Z Successfully created stdout named pipe at: /podr/container/pipe/6627256d4253_unioneyes-staging-app/stdout_c8e99dc4aa9e48469d2ac23f3891c439.
+2025-12-25T15:35:50.3202496Z Opening named pipe /podr/container/pipe/6627256d4253_unioneyes-staging-app/stdout_c8e99dc4aa9e48469d2ac23f3891c439 for reading in non-blocking mode.
+2025-12-25T15:35:50.3203715Z Successfully opened named pipe: /podr/container/pipe/6627256d4253_unioneyes-staging-app/stdout_c8e99dc4aa9e48469d2ac23f3891c439.
+2025-12-25T15:35:50.3204693Z Successfully removed non-blocking flag from /podr/container/pipe/6627256d4253_unioneyes-staging-app/stdout_c8e99dc4aa9e48469d2ac23f3891c439.
+2025-12-25T15:35:50.3205694Z Creating stderr named pipe at /podr/container/pipe/6627256d4253_unioneyes-staging-app/stderr_6d83bc40d06749288c767fa826a21ffc.
+2025-12-25T15:35:50.3207169Z Successfully created stderr named pipe at: /podr/container/pipe/6627256d4253_unioneyes-staging-app/stderr_6d83bc40d06749288c767fa826a21ffc.
+2025-12-25T15:35:50.3208080Z Opening named pipe /podr/container/pipe/6627256d4253_unioneyes-staging-app/stderr_6d83bc40d06749288c767fa826a21ffc for reading in non-blocking mode.
+2025-12-25T15:35:50.3209145Z Successfully opened named pipe: /podr/container/pipe/6627256d4253_unioneyes-staging-app/stderr_6d83bc40d06749288c767fa826a21ffc.
+2025-12-25T15:35:50.3209986Z Successfully removed non-blocking flag from /podr/container/pipe/6627256d4253_unioneyes-staging-app/stderr_6d83bc40d06749288c767fa826a21ffc.
+2025-12-25T15:35:50.3210957Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T15:35:50.4589340Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T15:35:50.4681116Z Setting value of PORT variable to 3000
+2025-12-25T15:35:50.4957685Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T15:35:51.1811524Z Starting container: 6627256d4253_unioneyes-staging-app.
+2025-12-25T15:35:51.2633832Z Starting watchers and probes.
+2025-12-25T15:35:51.2708533Z Starting metrics collection.
+2025-12-25T15:35:51.2812448Z Container is running.
+2025-12-25T15:35:51.5074171Z Container start method finished after 2464 ms.
+2025-12-25T15:35:57.2282399Z Container has finished running with exit code: 1.
+2025-12-25T15:35:57.2351232Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T15:35:57.2361873Z Stop and delete container. Retry count = 0
+2025-12-25T15:35:57.2367833Z Stopping container: 6627256d4253_unioneyes-staging-app.
+2025-12-25T15:35:57.3049085Z Deleting container: 6627256d4253_unioneyes-staging-app. Retry count = 0
+2025-12-25T15:35:57.5364479Z Container spec TerminationMessagePolicy  path 
+2025-12-25T15:35:57.5443056Z Container is terminated. Total time elapsed: 308 ms.
+2025-12-25T15:35:57.5455010Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T15:35:57.6267703Z Site startup probe failed after 6.0513993 seconds.
+2025-12-25T15:35:57.9712001Z Failed to start site. Revert by stopping site.
+2025-12-25T15:35:58.0155357Z Site: unioneyes-staging-app stopped.
+2025-12-25T15:35:58.4964318Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 15:39:58
+2025-12-25T15:39:58.4690969Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T16:10:51.7281816Z Container start method called.
+2025-12-25T16:10:51.7324701Z Establishing network.
+2025-12-25T16:10:51.7336151Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T16:10:52.5983695Z Container is starting.
+2025-12-25T16:10:52.5987363Z Establishing user namespace if not established already.
+2025-12-25T16:10:52.6024769Z Establishing network if not established already.
+2025-12-25T16:10:52.6033684Z Mounting volumes.
+2025-12-25T16:10:52.6044899Z Nested mountpoint volatile/logs
+2025-12-25T16:10:52.6232687Z Nested mountpoint 
+2025-12-25T16:10:52.8097885Z Creating container.
+2025-12-25T16:10:52.8100662Z Creating pipes for streaming container io.
+2025-12-25T16:10:52.8162200Z Creating stdout named pipe at /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stdout_c7717aea695f4d8ab04b0623bb5d2459.
+2025-12-25T16:10:52.8288170Z Successfully created stdout named pipe at: /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stdout_c7717aea695f4d8ab04b0623bb5d2459.
+2025-12-25T16:10:52.8363973Z Opening named pipe /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stdout_c7717aea695f4d8ab04b0623bb5d2459 for reading in non-blocking mode.
+2025-12-25T16:10:52.8368216Z Successfully opened named pipe: /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stdout_c7717aea695f4d8ab04b0623bb5d2459.
+2025-12-25T16:10:52.8373869Z Successfully removed non-blocking flag from /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stdout_c7717aea695f4d8ab04b0623bb5d2459.
+2025-12-25T16:10:52.8379719Z Creating stderr named pipe at /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stderr_0cd313b489254ca3bb6959218f21eea6.
+2025-12-25T16:10:52.8386889Z Successfully created stderr named pipe at: /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stderr_0cd313b489254ca3bb6959218f21eea6.
+2025-12-25T16:10:52.8392320Z Opening named pipe /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stderr_0cd313b489254ca3bb6959218f21eea6 for reading in non-blocking mode.
+2025-12-25T16:10:52.8472904Z Successfully opened named pipe: /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stderr_0cd313b489254ca3bb6959218f21eea6.
+2025-12-25T16:10:52.8479875Z Successfully removed non-blocking flag from /podr/container/pipe/37f5c6596949_unioneyes-staging-app/stderr_0cd313b489254ca3bb6959218f21eea6.
+2025-12-25T16:10:52.8486132Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T16:10:52.9620636Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T16:10:52.9626504Z Setting value of PORT variable to 3000
+2025-12-25T16:10:52.9654477Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T16:10:53.7249321Z Starting container: 37f5c6596949_unioneyes-staging-app.
+2025-12-25T16:10:53.8338627Z Starting watchers and probes.
+2025-12-25T16:10:53.8427907Z Starting metrics collection.
+2025-12-25T16:10:53.8469575Z Container is running.
+2025-12-25T16:10:53.9765562Z Container start method finished after 2247 ms.
+2025-12-25T16:11:01.4910672Z Container has finished running with exit code: 1.
+2025-12-25T16:11:01.5177878Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T16:11:01.5267876Z Stop and delete container. Retry count = 0
+2025-12-25T16:11:01.5297851Z Stopping container: 37f5c6596949_unioneyes-staging-app.
+2025-12-25T16:11:01.6089472Z Deleting container: 37f5c6596949_unioneyes-staging-app. Retry count = 0
+2025-12-25T16:11:01.8677199Z Container spec TerminationMessagePolicy  path 
+2025-12-25T16:11:01.8796400Z Container is terminated. Total time elapsed: 359 ms.
+2025-12-25T16:11:01.8881724Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T16:11:02.0123990Z Site startup probe failed after 7.9398035 seconds.
+2025-12-25T16:11:02.6470217Z Failed to start site. Revert by stopping site.
+2025-12-25T16:11:02.7160375Z Site: unioneyes-staging-app stopped.
+2025-12-25T16:11:03.3007620Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 16:15:03
+2025-12-25T16:15:03.2964180Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T16:45:53.5311943Z Container start method called.
+2025-12-25T16:45:53.5335557Z Establishing network.
+2025-12-25T16:45:53.5345725Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T16:45:54.9607693Z Container is starting.
+2025-12-25T16:45:54.9775495Z Establishing user namespace if not established already.
+2025-12-25T16:45:54.9792778Z Establishing network if not established already.
+2025-12-25T16:45:54.9867198Z Mounting volumes.
+2025-12-25T16:45:54.9886583Z Nested mountpoint volatile/logs
+2025-12-25T16:45:55.0058757Z Nested mountpoint 
+2025-12-25T16:45:55.1359272Z Creating container.
+2025-12-25T16:45:55.1360775Z Creating pipes for streaming container io.
+2025-12-25T16:45:55.1362164Z Creating stdout named pipe at /podr/container/pipe/89acec79bace_unioneyes-staging-app/stdout_4874b4bb8fdf4ecf90b8be4214a638c1.
+2025-12-25T16:45:55.1870272Z Successfully created stdout named pipe at: /podr/container/pipe/89acec79bace_unioneyes-staging-app/stdout_4874b4bb8fdf4ecf90b8be4214a638c1.
+2025-12-25T16:45:55.1947581Z Opening named pipe /podr/container/pipe/89acec79bace_unioneyes-staging-app/stdout_4874b4bb8fdf4ecf90b8be4214a638c1 for reading in non-blocking mode.
+2025-12-25T16:45:55.1959954Z Successfully opened named pipe: /podr/container/pipe/89acec79bace_unioneyes-staging-app/stdout_4874b4bb8fdf4ecf90b8be4214a638c1.
+2025-12-25T16:45:55.1970701Z Successfully removed non-blocking flag from /podr/container/pipe/89acec79bace_unioneyes-staging-app/stdout_4874b4bb8fdf4ecf90b8be4214a638c1.
+2025-12-25T16:45:55.1978476Z Creating stderr named pipe at /podr/container/pipe/89acec79bace_unioneyes-staging-app/stderr_f777c675caa7480eadf10bb3706bd5af.
+2025-12-25T16:45:55.2065263Z Successfully created stderr named pipe at: /podr/container/pipe/89acec79bace_unioneyes-staging-app/stderr_f777c675caa7480eadf10bb3706bd5af.
+2025-12-25T16:45:55.2067268Z Opening named pipe /podr/container/pipe/89acec79bace_unioneyes-staging-app/stderr_f777c675caa7480eadf10bb3706bd5af for reading in non-blocking mode.
+2025-12-25T16:45:55.2068719Z Successfully opened named pipe: /podr/container/pipe/89acec79bace_unioneyes-staging-app/stderr_f777c675caa7480eadf10bb3706bd5af.
+2025-12-25T16:45:55.2069976Z Successfully removed non-blocking flag from /podr/container/pipe/89acec79bace_unioneyes-staging-app/stderr_f777c675caa7480eadf10bb3706bd5af.
+2025-12-25T16:45:55.2143608Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T16:45:55.2851100Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T16:45:55.2852322Z Setting value of PORT variable to 3000
+2025-12-25T16:45:55.2853990Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T16:45:56.1343168Z Starting container: 89acec79bace_unioneyes-staging-app.
+2025-12-25T16:45:56.2623503Z Starting watchers and probes.
+2025-12-25T16:45:56.2984483Z Starting metrics collection.
+2025-12-25T16:45:56.3085831Z Container is running.
+2025-12-25T16:45:56.9984369Z Container start method finished after 3467 ms.
+2025-12-25T16:46:02.7478362Z Container has finished running with exit code: 1.
+2025-12-25T16:46:02.7504536Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T16:46:02.7587891Z Stop and delete container. Retry count = 0
+2025-12-25T16:46:02.7597174Z Stopping container: 89acec79bace_unioneyes-staging-app.
+2025-12-25T16:46:03.0636000Z Deleting container: 89acec79bace_unioneyes-staging-app. Retry count = 0
+2025-12-25T16:46:03.6097487Z Container spec TerminationMessagePolicy  path 
+2025-12-25T16:46:03.6207917Z Container is terminated. Total time elapsed: 869 ms.
+2025-12-25T16:46:03.6298727Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T16:46:03.8339608Z Site startup probe failed after 6.7470113 seconds.
+2025-12-25T16:46:04.3192118Z Failed to start site. Revert by stopping site.
+2025-12-25T16:46:04.3645279Z Site: unioneyes-staging-app stopped.
+2025-12-25T16:46:05.0514297Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 16:50:05
+2025-12-25T16:50:05.0554085Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T17:20:56.2423367Z Container start method called.
+2025-12-25T17:20:56.2500173Z Establishing network.
+2025-12-25T17:20:56.2501441Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T17:20:56.8344814Z Container is starting.
+2025-12-25T17:20:56.8425318Z Establishing user namespace if not established already.
+2025-12-25T17:20:56.8426857Z Establishing network if not established already.
+2025-12-25T17:20:56.8441311Z Mounting volumes.
+2025-12-25T17:20:56.8502603Z Nested mountpoint volatile/logs
+2025-12-25T17:20:56.8636041Z Nested mountpoint 
+2025-12-25T17:20:56.9921390Z Creating container.
+2025-12-25T17:20:57.0285282Z Creating pipes for streaming container io.
+2025-12-25T17:20:57.0290262Z Creating stdout named pipe at /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stdout_a738a303287a40b4835cf12a6795ae07.
+2025-12-25T17:20:57.0481193Z Successfully created stdout named pipe at: /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stdout_a738a303287a40b4835cf12a6795ae07.
+2025-12-25T17:20:57.0502875Z Opening named pipe /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stdout_a738a303287a40b4835cf12a6795ae07 for reading in non-blocking mode.
+2025-12-25T17:20:57.0511204Z Successfully opened named pipe: /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stdout_a738a303287a40b4835cf12a6795ae07.
+2025-12-25T17:20:57.0599571Z Successfully removed non-blocking flag from /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stdout_a738a303287a40b4835cf12a6795ae07.
+2025-12-25T17:20:57.0705489Z Creating stderr named pipe at /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stderr_757a542a1b9c43a4af97928a99f4a960.
+2025-12-25T17:20:57.0774938Z Successfully created stderr named pipe at: /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stderr_757a542a1b9c43a4af97928a99f4a960.
+2025-12-25T17:20:57.0792062Z Opening named pipe /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stderr_757a542a1b9c43a4af97928a99f4a960 for reading in non-blocking mode.
+2025-12-25T17:20:57.0874304Z Successfully opened named pipe: /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stderr_757a542a1b9c43a4af97928a99f4a960.
+2025-12-25T17:20:57.0880561Z Successfully removed non-blocking flag from /podr/container/pipe/1729bb28b0dc_unioneyes-staging-app/stderr_757a542a1b9c43a4af97928a99f4a960.
+2025-12-25T17:20:57.0890507Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T17:20:57.1992270Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T17:20:57.2004630Z Setting value of PORT variable to 3000
+2025-12-25T17:20:57.2045704Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T17:20:57.8434531Z Starting container: 1729bb28b0dc_unioneyes-staging-app.
+2025-12-25T17:20:57.9660320Z Starting watchers and probes.
+2025-12-25T17:20:57.9772182Z Starting metrics collection.
+2025-12-25T17:20:57.9867581Z Container is running.
+2025-12-25T17:20:58.9451746Z Container start method finished after 2688 ms.
+2025-12-25T17:21:04.7233554Z Container has finished running with exit code: 1.
+2025-12-25T17:21:04.7234878Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T17:21:04.7447050Z Stop and delete container. Retry count = 0
+2025-12-25T17:21:04.7519250Z Stopping container: 1729bb28b0dc_unioneyes-staging-app.
+2025-12-25T17:21:04.8334962Z Deleting container: 1729bb28b0dc_unioneyes-staging-app. Retry count = 0
+2025-12-25T17:21:05.1240706Z Container spec TerminationMessagePolicy  path 
+2025-12-25T17:21:05.1252559Z Container is terminated. Total time elapsed: 400 ms.
+2025-12-25T17:21:05.1339036Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T17:21:05.2228099Z Site startup probe failed after 6.2290695 seconds.
+2025-12-25T17:21:05.4215681Z Failed to start site. Revert by stopping site.
+2025-12-25T17:21:05.4306531Z Site: unioneyes-staging-app stopped.
+2025-12-25T17:21:05.9079486Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 17:25:05
+2025-12-25T17:25:05.9127539Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T17:55:57.4057852Z Container start method called.
+2025-12-25T17:55:57.4164235Z Establishing network.
+2025-12-25T17:55:57.4240536Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T17:55:58.6902890Z Container is starting.
+2025-12-25T17:55:58.6921542Z Establishing user namespace if not established already.
+2025-12-25T17:55:58.6923496Z Establishing network if not established already.
+2025-12-25T17:55:58.6936669Z Mounting volumes.
+2025-12-25T17:55:58.7018274Z Nested mountpoint volatile/logs
+2025-12-25T17:55:58.7234296Z Nested mountpoint 
+2025-12-25T17:55:58.8317290Z Creating container.
+2025-12-25T17:55:58.8332193Z Creating pipes for streaming container io.
+2025-12-25T17:55:58.8420812Z Creating stdout named pipe at /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stdout_45415ac59ba947cbb9455e6b069ad43d.
+2025-12-25T17:55:58.8597271Z Successfully created stdout named pipe at: /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stdout_45415ac59ba947cbb9455e6b069ad43d.
+2025-12-25T17:55:58.8634222Z Opening named pipe /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stdout_45415ac59ba947cbb9455e6b069ad43d for reading in non-blocking mode.
+2025-12-25T17:55:58.8906173Z Successfully opened named pipe: /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stdout_45415ac59ba947cbb9455e6b069ad43d.
+2025-12-25T17:55:58.8914476Z Successfully removed non-blocking flag from /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stdout_45415ac59ba947cbb9455e6b069ad43d.
+2025-12-25T17:55:58.8922560Z Creating stderr named pipe at /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stderr_c33c94e30d0f4505a649592db8bc810b.
+2025-12-25T17:55:58.8998631Z Successfully created stderr named pipe at: /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stderr_c33c94e30d0f4505a649592db8bc810b.
+2025-12-25T17:55:58.9004891Z Opening named pipe /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stderr_c33c94e30d0f4505a649592db8bc810b for reading in non-blocking mode.
+2025-12-25T17:55:58.9019549Z Successfully opened named pipe: /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stderr_c33c94e30d0f4505a649592db8bc810b.
+2025-12-25T17:55:58.9105062Z Successfully removed non-blocking flag from /podr/container/pipe/17cfb1df9061_unioneyes-staging-app/stderr_c33c94e30d0f4505a649592db8bc810b.
+2025-12-25T17:55:58.9220569Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T17:55:59.0459110Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T17:55:59.0484074Z Setting value of PORT variable to 3000
+2025-12-25T17:55:59.0500158Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T17:56:00.0446795Z Starting container: 17cfb1df9061_unioneyes-staging-app.
+2025-12-25T17:56:00.2207243Z Starting watchers and probes.
+2025-12-25T17:56:00.2412448Z Starting metrics collection.
+2025-12-25T17:56:00.2681820Z Container is running.
+2025-12-25T17:56:00.4651876Z Container start method finished after 3058 ms.
+2025-12-25T17:56:09.2658360Z Container has finished running with exit code: 1.
+2025-12-25T17:56:09.2780462Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T17:56:09.2870936Z Stop and delete container. Retry count = 0
+2025-12-25T17:56:09.2879895Z Stopping container: 17cfb1df9061_unioneyes-staging-app.
+2025-12-25T17:56:09.3653645Z Deleting container: 17cfb1df9061_unioneyes-staging-app. Retry count = 0
+2025-12-25T17:56:09.7504876Z Container spec TerminationMessagePolicy  path 
+2025-12-25T17:56:09.7583501Z Container is terminated. Total time elapsed: 473 ms.
+2025-12-25T17:56:09.7585252Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T17:56:10.0268618Z Site startup probe failed after 9.4588268 seconds.
+2025-12-25T17:56:10.3185870Z Failed to start site. Revert by stopping site.
+2025-12-25T17:56:10.3365292Z Site: unioneyes-staging-app stopped.
+2025-12-25T17:56:11.1462091Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 18:00:11
+2025-12-25T18:00:11.1402436Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T18:30:59.9473791Z Container start method called.
+2025-12-25T18:30:59.9483449Z Establishing network.
+2025-12-25T18:30:59.9496266Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T18:31:01.3009674Z Container is starting.
+2025-12-25T18:31:01.3031271Z Establishing user namespace if not established already.
+2025-12-25T18:31:01.3108671Z Establishing network if not established already.
+2025-12-25T18:31:01.3114621Z Mounting volumes.
+2025-12-25T18:31:01.3196328Z Nested mountpoint volatile/logs
+2025-12-25T18:31:01.3401836Z Nested mountpoint 
+2025-12-25T18:31:02.2140772Z Creating container.
+2025-12-25T18:31:02.2144853Z Creating pipes for streaming container io.
+2025-12-25T18:31:02.2333376Z Creating stdout named pipe at /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stdout_64d7604872ea450c892cacdef18a6a5d.
+2025-12-25T18:31:02.2449213Z Successfully created stdout named pipe at: /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stdout_64d7604872ea450c892cacdef18a6a5d.
+2025-12-25T18:31:02.2458009Z Opening named pipe /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stdout_64d7604872ea450c892cacdef18a6a5d for reading in non-blocking mode.
+2025-12-25T18:31:02.2470354Z Successfully opened named pipe: /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stdout_64d7604872ea450c892cacdef18a6a5d.
+2025-12-25T18:31:02.2504042Z Successfully removed non-blocking flag from /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stdout_64d7604872ea450c892cacdef18a6a5d.
+2025-12-25T18:31:02.2515555Z Creating stderr named pipe at /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stderr_a09e598c9a0841c29fc555411eaa0e37.
+2025-12-25T18:31:02.2522834Z Successfully created stderr named pipe at: /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stderr_a09e598c9a0841c29fc555411eaa0e37.
+2025-12-25T18:31:02.2525454Z Opening named pipe /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stderr_a09e598c9a0841c29fc555411eaa0e37 for reading in non-blocking mode.
+2025-12-25T18:31:02.2600461Z Successfully opened named pipe: /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stderr_a09e598c9a0841c29fc555411eaa0e37.
+2025-12-25T18:31:02.2602666Z Successfully removed non-blocking flag from /podr/container/pipe/56b8e5ce3a97_unioneyes-staging-app/stderr_a09e598c9a0841c29fc555411eaa0e37.
+2025-12-25T18:31:02.2620954Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T18:31:02.3200207Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T18:31:02.3209691Z Setting value of PORT variable to 3000
+2025-12-25T18:31:02.3222316Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T18:31:03.2516418Z Starting container: 56b8e5ce3a97_unioneyes-staging-app.
+2025-12-25T18:31:03.3802402Z Starting watchers and probes.
+2025-12-25T18:31:03.4081148Z Starting metrics collection.
+2025-12-25T18:31:03.4106123Z Container is running.
+2025-12-25T18:31:05.4194068Z Container start method finished after 5471 ms.
+2025-12-25T18:31:10.1641549Z Container has finished running with exit code: 1.
+2025-12-25T18:31:10.1736538Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T18:31:10.1822588Z Stop and delete container. Retry count = 0
+2025-12-25T18:31:10.1835311Z Stopping container: 56b8e5ce3a97_unioneyes-staging-app.
+2025-12-25T18:31:10.2760813Z Deleting container: 56b8e5ce3a97_unioneyes-staging-app. Retry count = 0
+2025-12-25T18:31:10.6583837Z Container spec TerminationMessagePolicy  path 
+2025-12-25T18:31:10.6681016Z Container is terminated. Total time elapsed: 493 ms.
+2025-12-25T18:31:10.6851919Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T18:31:10.7760521Z Site startup probe failed after 5.2567478 seconds.
+2025-12-25T18:31:11.0047217Z Failed to start site. Revert by stopping site.
+2025-12-25T18:31:11.0145541Z Site: unioneyes-staging-app stopped.
+2025-12-25T18:31:11.6095732Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 18:35:11
+2025-12-25T18:35:11.6100784Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T19:06:01.2519447Z Container start method called.
+2025-12-25T19:06:01.2542385Z Establishing network.
+2025-12-25T19:06:01.2545250Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T19:06:02.4774012Z Container is starting.
+2025-12-25T19:06:02.4871457Z Establishing user namespace if not established already.
+2025-12-25T19:06:02.4963131Z Establishing network if not established already.
+2025-12-25T19:06:02.5051099Z Mounting volumes.
+2025-12-25T19:06:02.5163058Z Nested mountpoint volatile/logs
+2025-12-25T19:06:02.6111503Z Nested mountpoint 
+2025-12-25T19:06:02.8396408Z Creating container.
+2025-12-25T19:06:02.8405206Z Creating pipes for streaming container io.
+2025-12-25T19:06:02.8425563Z Creating stdout named pipe at /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stdout_43b9403e85c04dd99ee6f777e92b32e1.
+2025-12-25T19:06:02.9111338Z Successfully created stdout named pipe at: /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stdout_43b9403e85c04dd99ee6f777e92b32e1.
+2025-12-25T19:06:02.9697456Z Opening named pipe /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stdout_43b9403e85c04dd99ee6f777e92b32e1 for reading in non-blocking mode.
+2025-12-25T19:06:02.9987252Z Successfully opened named pipe: /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stdout_43b9403e85c04dd99ee6f777e92b32e1.
+2025-12-25T19:06:03.0068861Z Successfully removed non-blocking flag from /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stdout_43b9403e85c04dd99ee6f777e92b32e1.
+2025-12-25T19:06:03.0182672Z Creating stderr named pipe at /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stderr_2284a25339d24a5e980bd327da0f86f0.
+2025-12-25T19:06:03.0203868Z Successfully created stderr named pipe at: /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stderr_2284a25339d24a5e980bd327da0f86f0.
+2025-12-25T19:06:03.0302366Z Opening named pipe /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stderr_2284a25339d24a5e980bd327da0f86f0 for reading in non-blocking mode.
+2025-12-25T19:06:03.0483145Z Successfully opened named pipe: /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stderr_2284a25339d24a5e980bd327da0f86f0.
+2025-12-25T19:06:03.0485276Z Successfully removed non-blocking flag from /podr/container/pipe/4de71beb12aa_unioneyes-staging-app/stderr_2284a25339d24a5e980bd327da0f86f0.
+2025-12-25T19:06:03.0486495Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T19:06:04.0975776Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T19:06:04.0979858Z Setting value of PORT variable to 3000
+2025-12-25T19:06:04.0982558Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T19:06:05.3976543Z Starting container: 4de71beb12aa_unioneyes-staging-app.
+2025-12-25T19:06:05.5700286Z Starting watchers and probes.
+2025-12-25T19:06:05.6204777Z Starting metrics collection.
+2025-12-25T19:06:05.6325791Z Container is running.
+2025-12-25T19:06:05.9567775Z Container start method finished after 4686 ms.
+2025-12-25T19:06:12.1148505Z Container has finished running with exit code: 1.
+2025-12-25T19:06:12.1167490Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T19:06:12.1253166Z Stop and delete container. Retry count = 0
+2025-12-25T19:06:12.1265757Z Stopping container: 4de71beb12aa_unioneyes-staging-app.
+2025-12-25T19:06:12.1967723Z Deleting container: 4de71beb12aa_unioneyes-staging-app. Retry count = 0
+2025-12-25T19:06:12.4745774Z Container spec TerminationMessagePolicy  path 
+2025-12-25T19:06:12.4819945Z Container is terminated. Total time elapsed: 358 ms.
+2025-12-25T19:06:12.4834212Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T19:06:12.6133902Z Site startup probe failed after 6.6174255 seconds.
+2025-12-25T19:06:12.8660478Z Failed to start site. Revert by stopping site.
+2025-12-25T19:06:12.8979483Z Site: unioneyes-staging-app stopped.
+2025-12-25T19:06:13.3900230Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 19:10:13
+2025-12-25T19:10:13.9523976Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T19:41:04.1611645Z Container start method called.
+2025-12-25T19:41:04.1704921Z Establishing network.
+2025-12-25T19:41:04.1713891Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T19:41:05.1040955Z Container is starting.
+2025-12-25T19:41:05.1131582Z Establishing user namespace if not established already.
+2025-12-25T19:41:05.1140287Z Establishing network if not established already.
+2025-12-25T19:41:05.1155360Z Mounting volumes.
+2025-12-25T19:41:05.1240731Z Nested mountpoint volatile/logs
+2025-12-25T19:41:05.1421940Z Nested mountpoint 
+2025-12-25T19:41:05.2113006Z Creating container.
+2025-12-25T19:41:05.2196396Z Creating pipes for streaming container io.
+2025-12-25T19:41:05.2273725Z Creating stdout named pipe at /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stdout_960cff64eb2b42189e2ceda19375a09c.
+2025-12-25T19:41:05.2873671Z Successfully created stdout named pipe at: /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stdout_960cff64eb2b42189e2ceda19375a09c.
+2025-12-25T19:41:05.3044788Z Opening named pipe /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stdout_960cff64eb2b42189e2ceda19375a09c for reading in non-blocking mode.
+2025-12-25T19:41:05.3063791Z Successfully opened named pipe: /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stdout_960cff64eb2b42189e2ceda19375a09c.
+2025-12-25T19:41:05.3137580Z Successfully removed non-blocking flag from /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stdout_960cff64eb2b42189e2ceda19375a09c.
+2025-12-25T19:41:05.3139028Z Creating stderr named pipe at /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stderr_e1f153719d35420289fb8df1c4e18aa3.
+2025-12-25T19:41:05.3140699Z Successfully created stderr named pipe at: /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stderr_e1f153719d35420289fb8df1c4e18aa3.
+2025-12-25T19:41:05.3141955Z Opening named pipe /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stderr_e1f153719d35420289fb8df1c4e18aa3 for reading in non-blocking mode.
+2025-12-25T19:41:05.3143320Z Successfully opened named pipe: /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stderr_e1f153719d35420289fb8df1c4e18aa3.
+2025-12-25T19:41:05.3144385Z Successfully removed non-blocking flag from /podr/container/pipe/d0d2ca67f2fb_unioneyes-staging-app/stderr_e1f153719d35420289fb8df1c4e18aa3.
+2025-12-25T19:41:05.3159910Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T19:41:05.3786617Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T19:41:05.3794852Z Setting value of PORT variable to 3000
+2025-12-25T19:41:05.3841533Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T19:41:06.0106073Z Starting container: d0d2ca67f2fb_unioneyes-staging-app.
+2025-12-25T19:41:06.1391093Z Starting watchers and probes.
+2025-12-25T19:41:06.1515683Z Starting metrics collection.
+2025-12-25T19:41:06.1804744Z Container is running.
+2025-12-25T19:41:06.2790818Z Container start method finished after 2117 ms.
+2025-12-25T19:41:14.4342837Z Container has finished running with exit code: 1.
+2025-12-25T19:41:14.4547821Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T19:41:14.4568831Z Stop and delete container. Retry count = 0
+2025-12-25T19:41:14.4639688Z Stopping container: d0d2ca67f2fb_unioneyes-staging-app.
+2025-12-25T19:41:14.5749950Z Deleting container: d0d2ca67f2fb_unioneyes-staging-app. Retry count = 0
+2025-12-25T19:41:14.8018053Z Container spec TerminationMessagePolicy  path 
+2025-12-25T19:41:14.8095236Z Container is terminated. Total time elapsed: 348 ms.
+2025-12-25T19:41:14.8104619Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T19:41:14.9704065Z Site startup probe failed after 8.55601 seconds.
+2025-12-25T19:41:15.2146030Z Failed to start site. Revert by stopping site.
+2025-12-25T19:41:15.2323143Z Site: unioneyes-staging-app stopped.
+2025-12-25T19:41:15.6707054Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 19:45:15
+2025-12-25T19:45:15.6770809Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T20:16:05.9514103Z Container start method called.
+2025-12-25T20:16:05.9526677Z Establishing network.
+2025-12-25T20:16:05.9539350Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T20:16:06.6259107Z Container is starting.
+2025-12-25T20:16:06.6343625Z Establishing user namespace if not established already.
+2025-12-25T20:16:06.6421852Z Establishing network if not established already.
+2025-12-25T20:16:06.6431900Z Mounting volumes.
+2025-12-25T20:16:06.6520709Z Nested mountpoint volatile/logs
+2025-12-25T20:16:06.6717635Z Nested mountpoint 
+2025-12-25T20:16:06.7913745Z Creating container.
+2025-12-25T20:16:06.7915039Z Creating pipes for streaming container io.
+2025-12-25T20:16:06.7916376Z Creating stdout named pipe at /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stdout_fe8585f30c714e2f83ec217e4ff51cf7.
+2025-12-25T20:16:06.8479288Z Successfully created stdout named pipe at: /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stdout_fe8585f30c714e2f83ec217e4ff51cf7.
+2025-12-25T20:16:06.8494696Z Opening named pipe /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stdout_fe8585f30c714e2f83ec217e4ff51cf7 for reading in non-blocking mode.
+2025-12-25T20:16:06.8510115Z Successfully opened named pipe: /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stdout_fe8585f30c714e2f83ec217e4ff51cf7.
+2025-12-25T20:16:06.8602199Z Successfully removed non-blocking flag from /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stdout_fe8585f30c714e2f83ec217e4ff51cf7.
+2025-12-25T20:16:06.8669578Z Creating stderr named pipe at /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stderr_40781a191c3a4772804280adcb1e0d49.
+2025-12-25T20:16:06.8675769Z Successfully created stderr named pipe at: /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stderr_40781a191c3a4772804280adcb1e0d49.
+2025-12-25T20:16:06.8677496Z Opening named pipe /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stderr_40781a191c3a4772804280adcb1e0d49 for reading in non-blocking mode.
+2025-12-25T20:16:06.8679398Z Successfully opened named pipe: /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stderr_40781a191c3a4772804280adcb1e0d49.
+2025-12-25T20:16:06.8681686Z Successfully removed non-blocking flag from /podr/container/pipe/216f47f71b23_unioneyes-staging-app/stderr_40781a191c3a4772804280adcb1e0d49.
+2025-12-25T20:16:06.8860720Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T20:16:07.0192740Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T20:16:07.0200557Z Setting value of PORT variable to 3000
+2025-12-25T20:16:07.0216206Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T20:16:07.8270825Z Starting container: 216f47f71b23_unioneyes-staging-app.
+2025-12-25T20:16:07.9929654Z Starting watchers and probes.
+2025-12-25T20:16:08.0015386Z Starting metrics collection.
+2025-12-25T20:16:08.0121513Z Container is running.
+2025-12-25T20:16:11.0135797Z Container start method finished after 5022 ms.
+2025-12-25T20:16:13.8653027Z Container has finished running with exit code: 1.
+2025-12-25T20:16:13.8842993Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T20:16:13.8928016Z Stop and delete container. Retry count = 0
+2025-12-25T20:16:13.8944503Z Stopping container: 216f47f71b23_unioneyes-staging-app.
+2025-12-25T20:16:14.0029268Z Deleting container: 216f47f71b23_unioneyes-staging-app. Retry count = 0
+2025-12-25T20:16:14.3464308Z Container spec TerminationMessagePolicy  path 
+2025-12-25T20:16:14.3529258Z Container is terminated. Total time elapsed: 460 ms.
+2025-12-25T20:16:14.3540433Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T20:16:14.4447653Z Site startup probe failed after 3.3717807 seconds.
+2025-12-25T20:16:14.7201213Z Failed to start site. Revert by stopping site.
+2025-12-25T20:16:14.7248703Z Site: unioneyes-staging-app stopped.
+2025-12-25T20:16:15.3043193Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 20:20:15
+2025-12-25T20:20:15.3052997Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T20:51:06.9317625Z Container start method called.
+2025-12-25T20:51:06.9384306Z Establishing network.
+2025-12-25T20:51:06.9393183Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T20:51:07.5521308Z Container is starting.
+2025-12-25T20:51:07.5599395Z Establishing user namespace if not established already.
+2025-12-25T20:51:07.5627146Z Establishing network if not established already.
+2025-12-25T20:51:07.5704049Z Mounting volumes.
+2025-12-25T20:51:07.5784672Z Nested mountpoint volatile/logs
+2025-12-25T20:51:07.5886720Z Nested mountpoint 
+2025-12-25T20:51:07.7486616Z Creating container.
+2025-12-25T20:51:07.7571174Z Creating pipes for streaming container io.
+2025-12-25T20:51:07.7585883Z Creating stdout named pipe at /podr/container/pipe/1d110f042094_unioneyes-staging-app/stdout_bca2472507dd445f9d47cd6759252142.
+2025-12-25T20:51:07.7790172Z Successfully created stdout named pipe at: /podr/container/pipe/1d110f042094_unioneyes-staging-app/stdout_bca2472507dd445f9d47cd6759252142.
+2025-12-25T20:51:07.7798845Z Opening named pipe /podr/container/pipe/1d110f042094_unioneyes-staging-app/stdout_bca2472507dd445f9d47cd6759252142 for reading in non-blocking mode.
+2025-12-25T20:51:07.7869999Z Successfully opened named pipe: /podr/container/pipe/1d110f042094_unioneyes-staging-app/stdout_bca2472507dd445f9d47cd6759252142.
+2025-12-25T20:51:07.7872369Z Successfully removed non-blocking flag from /podr/container/pipe/1d110f042094_unioneyes-staging-app/stdout_bca2472507dd445f9d47cd6759252142.
+2025-12-25T20:51:07.7881447Z Creating stderr named pipe at /podr/container/pipe/1d110f042094_unioneyes-staging-app/stderr_9dd075c11970457f9b8625866d2a863f.
+2025-12-25T20:51:07.7883235Z Successfully created stderr named pipe at: /podr/container/pipe/1d110f042094_unioneyes-staging-app/stderr_9dd075c11970457f9b8625866d2a863f.
+2025-12-25T20:51:07.7884270Z Opening named pipe /podr/container/pipe/1d110f042094_unioneyes-staging-app/stderr_9dd075c11970457f9b8625866d2a863f for reading in non-blocking mode.
+2025-12-25T20:51:07.7885590Z Successfully opened named pipe: /podr/container/pipe/1d110f042094_unioneyes-staging-app/stderr_9dd075c11970457f9b8625866d2a863f.
+2025-12-25T20:51:07.7886641Z Successfully removed non-blocking flag from /podr/container/pipe/1d110f042094_unioneyes-staging-app/stderr_9dd075c11970457f9b8625866d2a863f.
+2025-12-25T20:51:07.8027713Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T20:51:08.7761897Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T20:51:08.7792959Z Setting value of PORT variable to 3000
+2025-12-25T20:51:08.7804292Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T20:51:09.4058735Z Starting container: 1d110f042094_unioneyes-staging-app.
+2025-12-25T20:51:09.5535611Z Starting watchers and probes.
+2025-12-25T20:51:09.5634508Z Starting metrics collection.
+2025-12-25T20:51:09.5761629Z Container is running.
+2025-12-25T20:51:10.3424184Z Container start method finished after 3382 ms.
+2025-12-25T20:51:16.1084280Z Container has finished running with exit code: 1.
+2025-12-25T20:51:16.1100599Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T20:51:16.1288167Z Stop and delete container. Retry count = 0
+2025-12-25T20:51:16.1303032Z Stopping container: 1d110f042094_unioneyes-staging-app.
+2025-12-25T20:51:16.2681308Z Deleting container: 1d110f042094_unioneyes-staging-app. Retry count = 0
+2025-12-25T20:51:16.7055705Z Container spec TerminationMessagePolicy  path 
+2025-12-25T20:51:16.7132612Z Container is terminated. Total time elapsed: 602 ms.
+2025-12-25T20:51:16.7134566Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T20:51:16.8544626Z Site startup probe failed after 6.4822769 seconds.
+2025-12-25T20:51:17.1980028Z Failed to start site. Revert by stopping site.
+2025-12-25T20:51:17.2157717Z Site: unioneyes-staging-app stopped.
+2025-12-25T20:51:18.0227690Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 20:55:18
+2025-12-25T20:55:18.0242579Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T21:26:09.0401334Z Container start method called.
+2025-12-25T21:26:09.0422634Z Establishing network.
+2025-12-25T21:26:09.0505865Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T21:26:10.5947677Z Container is starting.
+2025-12-25T21:26:10.6023748Z Establishing user namespace if not established already.
+2025-12-25T21:26:10.6026039Z Establishing network if not established already.
+2025-12-25T21:26:10.6027459Z Mounting volumes.
+2025-12-25T21:26:10.6114501Z Nested mountpoint volatile/logs
+2025-12-25T21:26:10.6341403Z Nested mountpoint 
+2025-12-25T21:26:10.8404998Z Creating container.
+2025-12-25T21:26:10.8411228Z Creating pipes for streaming container io.
+2025-12-25T21:26:10.8413238Z Creating stdout named pipe at /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stdout_32073d5cc4a14deea319664310257d17.
+2025-12-25T21:26:10.8506449Z Successfully created stdout named pipe at: /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stdout_32073d5cc4a14deea319664310257d17.
+2025-12-25T21:26:10.8507971Z Opening named pipe /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stdout_32073d5cc4a14deea319664310257d17 for reading in non-blocking mode.
+2025-12-25T21:26:10.8514698Z Successfully opened named pipe: /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stdout_32073d5cc4a14deea319664310257d17.
+2025-12-25T21:26:10.8516065Z Successfully removed non-blocking flag from /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stdout_32073d5cc4a14deea319664310257d17.
+2025-12-25T21:26:10.8517013Z Creating stderr named pipe at /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stderr_8df013e0b8d043768ae076cfcb49f6df.
+2025-12-25T21:26:10.8518568Z Successfully created stderr named pipe at: /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stderr_8df013e0b8d043768ae076cfcb49f6df.
+2025-12-25T21:26:10.8971894Z Opening named pipe /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stderr_8df013e0b8d043768ae076cfcb49f6df for reading in non-blocking mode.
+2025-12-25T21:26:10.9081559Z Successfully opened named pipe: /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stderr_8df013e0b8d043768ae076cfcb49f6df.
+2025-12-25T21:26:10.9084690Z Successfully removed non-blocking flag from /podr/container/pipe/c28fcff7a41c_unioneyes-staging-app/stderr_8df013e0b8d043768ae076cfcb49f6df.
+2025-12-25T21:26:10.9377707Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T21:26:11.0428220Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T21:26:11.0442757Z Setting value of PORT variable to 3000
+2025-12-25T21:26:11.0480224Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T21:26:11.9930790Z Starting container: c28fcff7a41c_unioneyes-staging-app.
+2025-12-25T21:26:12.1714709Z Starting watchers and probes.
+2025-12-25T21:26:12.1979025Z Starting metrics collection.
+2025-12-25T21:26:12.2089263Z Container is running.
+2025-12-25T21:26:12.3469650Z Container start method finished after 3305 ms.
+2025-12-25T21:26:18.4320614Z Container has finished running with exit code: 1.
+2025-12-25T21:26:18.4466901Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T21:26:18.4555340Z Stop and delete container. Retry count = 0
+2025-12-25T21:26:18.4624546Z Stopping container: c28fcff7a41c_unioneyes-staging-app.
+2025-12-25T21:26:18.5712607Z Deleting container: c28fcff7a41c_unioneyes-staging-app. Retry count = 0
+2025-12-25T21:26:18.8385404Z Container spec TerminationMessagePolicy  path 
+2025-12-25T21:26:18.8403443Z Container is terminated. Total time elapsed: 392 ms.
+2025-12-25T21:26:18.8411185Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T21:26:19.0179082Z Site startup probe failed after 6.5497224 seconds.
+2025-12-25T21:26:19.2292054Z Failed to start site. Revert by stopping site.
+2025-12-25T21:26:19.2425843Z Site: unioneyes-staging-app stopped.
+2025-12-25T21:26:19.7991795Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 21:30:19
+2025-12-25T21:30:19.8055374Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T22:01:11.3499421Z Container start method called.
+2025-12-25T22:01:11.3613245Z Establishing network.
+2025-12-25T22:01:11.3684984Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T22:01:12.0833630Z Container is starting.
+2025-12-25T22:01:12.0925454Z Establishing user namespace if not established already.
+2025-12-25T22:01:12.1026336Z Establishing network if not established already.
+2025-12-25T22:01:12.1110826Z Mounting volumes.
+2025-12-25T22:01:12.1232095Z Nested mountpoint volatile/logs
+2025-12-25T22:01:12.2555083Z Nested mountpoint 
+2025-12-25T22:01:12.3680077Z Creating container.
+2025-12-25T22:01:12.3707704Z Creating pipes for streaming container io.
+2025-12-25T22:01:12.3782738Z Creating stdout named pipe at /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stdout_21f12a1aa2bc449294d92acffd35e87c.
+2025-12-25T22:01:12.4092865Z Successfully created stdout named pipe at: /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stdout_21f12a1aa2bc449294d92acffd35e87c.
+2025-12-25T22:01:12.4168221Z Opening named pipe /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stdout_21f12a1aa2bc449294d92acffd35e87c for reading in non-blocking mode.
+2025-12-25T22:01:12.4198078Z Successfully opened named pipe: /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stdout_21f12a1aa2bc449294d92acffd35e87c.
+2025-12-25T22:01:12.4280517Z Successfully removed non-blocking flag from /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stdout_21f12a1aa2bc449294d92acffd35e87c.
+2025-12-25T22:01:12.4285004Z Creating stderr named pipe at /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stderr_68aadc7a6a6d4626b00fc14072c03218.
+2025-12-25T22:01:12.4288772Z Successfully created stderr named pipe at: /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stderr_68aadc7a6a6d4626b00fc14072c03218.
+2025-12-25T22:01:12.4290203Z Opening named pipe /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stderr_68aadc7a6a6d4626b00fc14072c03218 for reading in non-blocking mode.
+2025-12-25T22:01:12.4292169Z Successfully opened named pipe: /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stderr_68aadc7a6a6d4626b00fc14072c03218.
+2025-12-25T22:01:12.4293488Z Successfully removed non-blocking flag from /podr/container/pipe/2ad783e055bb_unioneyes-staging-app/stderr_68aadc7a6a6d4626b00fc14072c03218.
+2025-12-25T22:01:12.4470418Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T22:01:12.5108804Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T22:01:12.5117164Z Setting value of PORT variable to 3000
+2025-12-25T22:01:12.5123435Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T22:01:13.2513481Z Starting container: 2ad783e055bb_unioneyes-staging-app.
+2025-12-25T22:01:13.4000303Z Starting watchers and probes.
+2025-12-25T22:01:13.4264454Z Starting metrics collection.
+2025-12-25T22:01:13.4379942Z Container is running.
+2025-12-25T22:01:14.2853888Z Container start method finished after 2927 ms.
+2025-12-25T22:01:19.6421933Z Container has finished running with exit code: 1.
+2025-12-25T22:01:19.6445683Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T22:01:19.6528115Z Stop and delete container. Retry count = 0
+2025-12-25T22:01:19.6545878Z Stopping container: 2ad783e055bb_unioneyes-staging-app.
+2025-12-25T22:01:19.7346895Z Deleting container: 2ad783e055bb_unioneyes-staging-app. Retry count = 0
+2025-12-25T22:01:20.0009511Z Container spec TerminationMessagePolicy  path 
+2025-12-25T22:01:20.0034166Z Container is terminated. Total time elapsed: 358 ms.
+2025-12-25T22:01:20.0117803Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T22:01:20.1104994Z Site startup probe failed after 5.7269984 seconds.
+2025-12-25T22:01:20.4750485Z Failed to start site. Revert by stopping site.
+2025-12-25T22:01:20.4879733Z Site: unioneyes-staging-app stopped.
+2025-12-25T22:01:21.0984248Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 22:05:21
+2025-12-25T22:05:21.1009494Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T22:36:13.1703353Z Container start method called.
+2025-12-25T22:36:13.1816484Z Establishing network.
+2025-12-25T22:36:13.1823744Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T22:36:14.4469715Z Container is starting.
+2025-12-25T22:36:14.4529745Z Establishing user namespace if not established already.
+2025-12-25T22:36:14.4532908Z Establishing network if not established already.
+2025-12-25T22:36:14.4538346Z Mounting volumes.
+2025-12-25T22:36:14.4540562Z Nested mountpoint volatile/logs
+2025-12-25T22:36:14.4558162Z Nested mountpoint 
+2025-12-25T22:36:14.6551503Z Creating container.
+2025-12-25T22:36:14.6556935Z Creating pipes for streaming container io.
+2025-12-25T22:36:14.6626547Z Creating stdout named pipe at /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stdout_eb07a90ea00c4b2ca22c8e45201c66a7.
+2025-12-25T22:36:14.6649176Z Successfully created stdout named pipe at: /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stdout_eb07a90ea00c4b2ca22c8e45201c66a7.
+2025-12-25T22:36:14.6651220Z Opening named pipe /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stdout_eb07a90ea00c4b2ca22c8e45201c66a7 for reading in non-blocking mode.
+2025-12-25T22:36:14.6652835Z Successfully opened named pipe: /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stdout_eb07a90ea00c4b2ca22c8e45201c66a7.
+2025-12-25T22:36:14.6655735Z Successfully removed non-blocking flag from /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stdout_eb07a90ea00c4b2ca22c8e45201c66a7.
+2025-12-25T22:36:14.6659697Z Creating stderr named pipe at /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stderr_a445add6d44a4f73a9d41d114390f3d0.
+2025-12-25T22:36:14.6661921Z Successfully created stderr named pipe at: /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stderr_a445add6d44a4f73a9d41d114390f3d0.
+2025-12-25T22:36:14.6663309Z Opening named pipe /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stderr_a445add6d44a4f73a9d41d114390f3d0 for reading in non-blocking mode.
+2025-12-25T22:36:14.6737468Z Successfully opened named pipe: /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stderr_a445add6d44a4f73a9d41d114390f3d0.
+2025-12-25T22:36:14.6739369Z Successfully removed non-blocking flag from /podr/container/pipe/f61f3857701c_unioneyes-staging-app/stderr_a445add6d44a4f73a9d41d114390f3d0.
+2025-12-25T22:36:14.6741271Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T22:36:14.8067173Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T22:36:14.8114008Z Setting value of PORT variable to 3000
+2025-12-25T22:36:14.8121072Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T22:36:15.6995653Z Starting container: f61f3857701c_unioneyes-staging-app.
+2025-12-25T22:36:15.8500911Z Starting watchers and probes.
+2025-12-25T22:36:15.8674356Z Starting metrics collection.
+2025-12-25T22:36:15.8687952Z Container is running.
+2025-12-25T22:36:16.0166367Z Container start method finished after 2845 ms.
+2025-12-25T22:36:21.7558296Z Container has finished running with exit code: 1.
+2025-12-25T22:36:21.7634160Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T22:36:21.7675209Z Stop and delete container. Retry count = 0
+2025-12-25T22:36:21.7751588Z Stopping container: f61f3857701c_unioneyes-staging-app.
+2025-12-25T22:36:21.8553156Z Deleting container: f61f3857701c_unioneyes-staging-app. Retry count = 0
+2025-12-25T22:36:22.1316821Z Container spec TerminationMessagePolicy  path 
+2025-12-25T22:36:22.1342472Z Container is terminated. Total time elapsed: 369 ms.
+2025-12-25T22:36:22.1508931Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T22:36:22.2741689Z Site startup probe failed after 6.1962323 seconds.
+2025-12-25T22:36:22.5380861Z Failed to start site. Revert by stopping site.
+2025-12-25T22:36:22.5559566Z Site: unioneyes-staging-app stopped.
+2025-12-25T22:36:23.0435160Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 22:40:23
+2025-12-25T22:40:23.0447593Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T23:11:15.1480696Z Container start method called.
+2025-12-25T23:11:15.1652337Z Establishing network.
+2025-12-25T23:11:15.1654377Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T23:11:18.2418644Z Container is starting.
+2025-12-25T23:11:18.2491564Z Establishing user namespace if not established already.
+2025-12-25T23:11:18.2510928Z Establishing network if not established already.
+2025-12-25T23:11:18.2513169Z Mounting volumes.
+2025-12-25T23:11:18.2606063Z Nested mountpoint volatile/logs
+2025-12-25T23:11:18.2709589Z Nested mountpoint 
+2025-12-25T23:11:18.4262151Z Creating container.
+2025-12-25T23:11:18.4349921Z Creating pipes for streaming container io.
+2025-12-25T23:11:18.4370222Z Creating stdout named pipe at /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stdout_9f557b05b02f485c9b2d7a2339c22eeb.
+2025-12-25T23:11:18.4829701Z Successfully created stdout named pipe at: /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stdout_9f557b05b02f485c9b2d7a2339c22eeb.
+2025-12-25T23:11:18.4855710Z Opening named pipe /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stdout_9f557b05b02f485c9b2d7a2339c22eeb for reading in non-blocking mode.
+2025-12-25T23:11:18.4869628Z Successfully opened named pipe: /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stdout_9f557b05b02f485c9b2d7a2339c22eeb.
+2025-12-25T23:11:18.5023402Z Successfully removed non-blocking flag from /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stdout_9f557b05b02f485c9b2d7a2339c22eeb.
+2025-12-25T23:11:18.5042661Z Creating stderr named pipe at /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stderr_30e74478dcc54954b17d81a2997dce14.
+2025-12-25T23:11:18.5124006Z Successfully created stderr named pipe at: /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stderr_30e74478dcc54954b17d81a2997dce14.
+2025-12-25T23:11:18.5138853Z Opening named pipe /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stderr_30e74478dcc54954b17d81a2997dce14 for reading in non-blocking mode.
+2025-12-25T23:11:18.5153696Z Successfully opened named pipe: /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stderr_30e74478dcc54954b17d81a2997dce14.
+2025-12-25T23:11:18.5227158Z Successfully removed non-blocking flag from /podr/container/pipe/241d61b2ab33_unioneyes-staging-app/stderr_30e74478dcc54954b17d81a2997dce14.
+2025-12-25T23:11:18.5232924Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T23:11:18.6315653Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T23:11:18.6329653Z Setting value of PORT variable to 3000
+2025-12-25T23:11:18.6419226Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T23:11:19.4732271Z Starting container: 241d61b2ab33_unioneyes-staging-app.
+2025-12-25T23:11:19.6089916Z Starting watchers and probes.
+2025-12-25T23:11:19.6202331Z Starting metrics collection.
+2025-12-25T23:11:19.6325013Z Container is running.
+2025-12-25T23:11:19.9293204Z Container start method finished after 4780 ms.
+2025-12-25T23:11:26.6006916Z Container has finished running with exit code: 1.
+2025-12-25T23:11:26.6090902Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T23:11:26.6124033Z Stop and delete container. Retry count = 0
+2025-12-25T23:11:26.6125163Z Stopping container: 241d61b2ab33_unioneyes-staging-app.
+2025-12-25T23:11:26.7147697Z Deleting container: 241d61b2ab33_unioneyes-staging-app. Retry count = 0
+2025-12-25T23:11:26.9824404Z Container spec TerminationMessagePolicy  path 
+2025-12-25T23:11:26.9833424Z Container is terminated. Total time elapsed: 373 ms.
+2025-12-25T23:11:26.9920495Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T23:11:27.0937853Z Site startup probe failed after 7.0374043 seconds.
+2025-12-25T23:11:27.4690512Z Failed to start site. Revert by stopping site.
+2025-12-25T23:11:27.4811205Z Site: unioneyes-staging-app stopped.
+2025-12-25T23:11:28.2757686Z Site: unioneyes-staging-app will be blocked for 4 minutes till 12/25/2025 23:15:28
+2025-12-25T23:15:28.2405116Z Site: unioneyes-staging-app is unblocked.
+2025-12-25T23:46:17.3023079Z Container start method called.
+2025-12-25T23:46:17.3129210Z Establishing network.
+2025-12-25T23:46:17.3312068Z Pulling image: unioneyesstagingacr.azurecr.io/unioneyes:latest.
+2025-12-25T23:46:18.5187159Z Container is starting.
+2025-12-25T23:46:18.5197578Z Establishing user namespace if not established already.
+2025-12-25T23:46:18.5206417Z Establishing network if not established already.
+2025-12-25T23:46:18.5277698Z Mounting volumes.
+2025-12-25T23:46:18.5294016Z Nested mountpoint volatile/logs
+2025-12-25T23:46:18.5473527Z Nested mountpoint 
+2025-12-25T23:46:18.6937651Z Creating container.
+2025-12-25T23:46:18.6950235Z Creating pipes for streaming container io.
+2025-12-25T23:46:18.6956728Z Creating stdout named pipe at /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stdout_69dc6667019e48a1a14f30f44f93cd46.
+2025-12-25T23:46:18.7140520Z Successfully created stdout named pipe at: /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stdout_69dc6667019e48a1a14f30f44f93cd46.
+2025-12-25T23:46:18.7150398Z Opening named pipe /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stdout_69dc6667019e48a1a14f30f44f93cd46 for reading in non-blocking mode.
+2025-12-25T23:46:18.7160479Z Successfully opened named pipe: /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stdout_69dc6667019e48a1a14f30f44f93cd46.
+2025-12-25T23:46:18.7165132Z Successfully removed non-blocking flag from /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stdout_69dc6667019e48a1a14f30f44f93cd46.
+2025-12-25T23:46:18.7168836Z Creating stderr named pipe at /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stderr_2b13686efe08482e8178b00de7719fb3.
+2025-12-25T23:46:18.7358007Z Successfully created stderr named pipe at: /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stderr_2b13686efe08482e8178b00de7719fb3.
+2025-12-25T23:46:18.7429202Z Opening named pipe /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stderr_2b13686efe08482e8178b00de7719fb3 for reading in non-blocking mode.
+2025-12-25T23:46:18.7441232Z Successfully opened named pipe: /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stderr_2b13686efe08482e8178b00de7719fb3.
+2025-12-25T23:46:18.7446937Z Successfully removed non-blocking flag from /podr/container/pipe/3296aa1118e5_unioneyes-staging-app/stderr_2b13686efe08482e8178b00de7719fb3.
+2025-12-25T23:46:18.7535562Z Overriding PORT environment variable with port exposed by container image.
+2025-12-25T23:46:18.8263592Z Container image exposes ports: ContainerExposedPort { Port = 3000, Protocol = TCP }. Sanitized list of ports is: 3000. Resolved main port to 3000.
+2025-12-25T23:46:18.8272375Z Setting value of PORT variable to 3000
+2025-12-25T23:46:18.8301214Z Creating container with image: unioneyesstagingacr.azurecr.io/unioneyes:latest from registry: unioneyesstagingacr.azurecr.io and fully qualified image name: unioneyesstagingacr.azurecr.io/unioneyes:latest
+2025-12-25T23:46:19.6010514Z Starting container: 3296aa1118e5_unioneyes-staging-app.
+2025-12-25T23:46:19.6625995Z Starting watchers and probes.
+2025-12-25T23:46:19.6753344Z Starting metrics collection.
+2025-12-25T23:46:19.6835273Z Container is running.
+2025-12-25T23:46:20.5778266Z Container start method finished after 3273 ms.
+2025-12-25T23:46:26.1621850Z Container has finished running with exit code: 1.
+2025-12-25T23:46:26.1687564Z Container is terminating. Grace period: 5 seconds.
+2025-12-25T23:46:26.1724877Z Stop and delete container. Retry count = 0
+2025-12-25T23:46:26.1804492Z Stopping container: 3296aa1118e5_unioneyes-staging-app.
+2025-12-25T23:46:26.2584494Z Deleting container: 3296aa1118e5_unioneyes-staging-app. Retry count = 0
+2025-12-25T23:46:26.5414710Z Container spec TerminationMessagePolicy  path 
+2025-12-25T23:46:26.5487778Z Container is terminated. Total time elapsed: 379 ms.
+2025-12-25T23:46:26.5492318Z Site container: unioneyes-staging-app terminated during site startup.
+2025-12-25T23:46:26.6968409Z Site startup probe failed after 6.0160116 seconds.
+2025-12-25T23:46:27.0274752Z Failed to start site. Revert by stopping site.
+2025-12-25T23:46:27.0462401Z Site: unioneyes-staging-app stopped.

@@ -16,21 +16,22 @@ export default function AnimatedCTA() {
     >
       <Card className="bg-primary text-primary-foreground">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl">Ready to get started?</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl">Ready to Transform Your Union?</CardTitle>
           <CardDescription className="text-primary-foreground/80">
-            Join thousands of developers building with our template
+            Join progressive unions using UnionEyes to better serve their members
           </CardDescription>
         </CardHeader>
         <CardFooter className="flex flex-col sm:flex-row gap-4">
           <Button variant="secondary" size="lg" asChild>
-            <Link href="/dashboard">Get Started</Link>
+            <Link href="/dashboard">Get Started Free</Link>
           </Button>
           <Button
             variant="outline"
             className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
             size="lg"
+            asChild
           >
-            View Documentation
+            <Link href="#" >Schedule Demo</Link>
           </Button>
           <SignedOut>
             <Link href="/login?redirect_url=/dashboard">

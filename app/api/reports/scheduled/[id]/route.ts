@@ -1,0 +1,166 @@
+/**
+ * Scheduled Reports API - Individual Schedule Operations
+ * 
+ * GET    /api/reports/scheduled/[id] - Get a single scheduled report
+ * PATCH  /api/reports/scheduled/[id] - Update a scheduled report
+ * DELETE /api/reports/scheduled/[id] - Delete a scheduled report
+ * 
+ * Part of: Phase 2.4 - Scheduled Reports System
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import {
+  getScheduledReportById,
+  updateScheduledReport,
+  deleteScheduledReport,
+  pauseSchedule,
+  resumeSchedule,
+  getScheduleExecutionHistory,
+  type UpdateScheduledReportParams,
+} from '@/db/queries/scheduled-reports-queries';
+
+interface RouteParams {
+  id: string;
+}
+
+/**
+ * GET /api/reports/scheduled/[id]
+ * Get a single scheduled report
+ */
+async function getHandler(req: NextRequest, context: TenantContext, params?: RouteParams) {
+  try {
+    const { tenantId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json(
+        { error: 'Schedule ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const schedule = await getScheduledReportById(params.id, tenantId);
+
+    if (!schedule) {
+      return NextResponse.json(
+        { error: 'Scheduled report not found' },
+        { status: 404 }
+      );
+    }
+
+    // Optionally include execution history
+    const { searchParams } = new URL(req.url);
+    const includeHistory = searchParams.get('includeHistory') === 'true';
+
+    if (includeHistory) {
+      const history = await getScheduleExecutionHistory(params.id, tenantId, 20);
+      return NextResponse.json({
+        ...schedule,
+        executionHistory: history,
+      });
+    }
+
+    return NextResponse.json(schedule);
+  } catch (error) {
+    console.error('Error fetching scheduled report:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch scheduled report' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PATCH /api/reports/scheduled/[id]
+ * Update a scheduled report
+ */
+async function patchHandler(req: NextRequest, context: TenantContext, params?: RouteParams) {
+  try {
+    const { tenantId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json(
+        { error: 'Schedule ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const body = await req.json();
+
+    // Handle special actions
+    if (body.action === 'pause') {
+      await pauseSchedule(params.id, tenantId);
+      const schedule = await getScheduledReportById(params.id, tenantId);
+      return NextResponse.json(schedule);
+    }
+
+    if (body.action === 'resume') {
+      await resumeSchedule(params.id, tenantId);
+      const schedule = await getScheduledReportById(params.id, tenantId);
+      return NextResponse.json(schedule);
+    }
+
+    // Regular update
+    const updateParams: UpdateScheduledReportParams = {};
+    
+    if (body.scheduleType !== undefined) {
+      updateParams.scheduleType = body.scheduleType;
+    }
+    if (body.scheduleConfig !== undefined) {
+      updateParams.scheduleConfig = body.scheduleConfig;
+    }
+    if (body.deliveryMethod !== undefined) {
+      updateParams.deliveryMethod = body.deliveryMethod;
+    }
+    if (body.recipients !== undefined) {
+      updateParams.recipients = body.recipients;
+    }
+    if (body.exportFormat !== undefined) {
+      updateParams.exportFormat = body.exportFormat;
+    }
+    if (body.isActive !== undefined) {
+      updateParams.isActive = body.isActive;
+    }
+
+    const schedule = await updateScheduledReport(params.id, tenantId, updateParams);
+
+    return NextResponse.json(schedule);
+  } catch (error) {
+    console.error('Error updating scheduled report:', error);
+    return NextResponse.json(
+      { error: 'Failed to update scheduled report' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/reports/scheduled/[id]
+ * Delete a scheduled report
+ */
+async function deleteHandler(req: NextRequest, context: TenantContext, params?: RouteParams) {
+  try {
+    const { tenantId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json(
+        { error: 'Schedule ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await deleteScheduledReport(params.id, tenantId);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting scheduled report:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete scheduled report' },
+      { status: 500 }
+    );
+  }
+}
+
+export const GET = withTenantAuth(getHandler);
+export const PATCH = withTenantAuth(patchHandler);
+export const DELETE = withTenantAuth(deleteHandler);

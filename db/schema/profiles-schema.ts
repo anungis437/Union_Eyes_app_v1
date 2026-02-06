@@ -73,5 +73,8 @@ export const profilesTable = pgTable("profiles", {
   };
 });
 
+// Export alias for backwards compatibility
+export const profiles = profilesTable;
+
 export type InsertProfile = typeof profilesTable.$inferInsert;
 export type SelectProfile = typeof profilesTable.$inferSelect;
