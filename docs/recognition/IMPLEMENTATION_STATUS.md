@@ -54,11 +54,20 @@
 - [x] Admin components (lists, dialogs)
 - [x] Complete admin translations (EN/FR)
 
+#### Phase 5: Shopify Integration (77de1e04)
+- [x] Shopify service: `lib/services/rewards/shopify-service.ts`
+- [x] Storefront API product catalog
+- [x] Admin API discount codes
+- [x] Checkout URL generation
+- [x] Connection testing
+- [x] Shopify config page
+- [x] Enhanced redemption flow
+
 ---
 
 ## REMAINING WORK
 
-### Phase 5: Shopify Integration (NEXT)
+### Phase 6: Analytics & Reporting (NEXT)
 
 #### Need to Create:
 
@@ -134,15 +143,28 @@ SHOPIFY_WEBHOOK_SECRET=xxx
 
 ---
 
-### Phase 6: Analytics Primitives
+### Phase 6: Analytics & Reporting (NEXT)
 
-**File**: `lib/services/rewards/analytics-service.ts`
-- Emit events to `audit_security.audit_logs`
-- Event types: `award_requested`, `award_approved`, `award_issued`, `redemption_initiated`, etc.
+**Enhancements Needed**:
 
-**Enhancement**:
-- Add `getRewardsSummary()` action (already exists!)
-- Admin dashboard charts
+1. **Event Emission** - Enhance existing services to emit audit events:
+   - award-service.ts: Log `award_requested`, `award_approved`, `award_issued`, `award_revoked`
+   - redemption-service.ts: Log `redemption_initiated`, `redemption_completed`, `redemption_refunded`
+   - Use existing `audit_security.audit_logs` table
+
+2. **Reports Page** (`/dashboard/admin/rewards/reports/page.tsx`):
+   - Total credits issued vs redeemed (line chart)
+   - Top award recipients (leaderboard)
+   - Budget utilization by program (bar chart)
+   - Redemption trends (time series)
+   - Award velocity metrics
+
+3. **Summary Queries** - Add to services:
+   - `getAwardStatsByProgram()` - Breakdown by program
+   - `getRedemptionTrends()` - Time-based aggregation
+   - `getTopRecipients()` - Leaderboard data
+
+**Estimated Work**: 300-400 lines
 
 ---
 
