@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run critical union compliance validators before commit
+echo "🔍 Running critical union compliance validators..."
+
+# Privacy validators (Critical)
+echo "Checking privacy compliance..."
+pnpm run validate:blind-spots --category=privacy
+if [ $? -ne 0 ]; then
+  echo "❌ Privacy compliance check failed. Please fix issues before committing."
+  exit 1
+fi
+
+# Security validators (Critical)
+echo "Checking security compliance..."
+pnpm run validate:blind-spots --category=security
+if [ $? -ne 0 ]; then
+  echo "❌ Security compliance check failed. Please fix issues before committing."
+  exit 1
+fi
+
+# Indigenous rights validators (Critical)
+echo "Checking indigenous rights compliance..."
+pnpm run validate:blind-spots --category=indigenous-rights
+if [ $? -ne 0 ]; then
+  echo "❌ Indigenous rights compliance check failed. Please fix issues before committing."
+  exit 1
+fi
+
+# Taxation validators (Critical)
+echo "Checking taxation compliance..."
+pnpm run validate:blind-spots --category=taxation
+if [ $? -ne 0 ]; then
+  echo "❌ Taxation compliance check failed. Please fix issues before committing."
+  exit 1
+fi
+
+echo "✅ All critical compliance checks passed!"
