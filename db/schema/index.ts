@@ -74,3 +74,14 @@ export * from "./geofence-privacy-schema"; // #5 Geofence Privacy (Location trac
 export * from "./transfer-pricing-schema"; // #12 Transfer Pricing (CAD enforcement, Bank of Canada FX, T106)
 export * from "./founder-conflict-schema"; // #11 Founder Conflict (Blind trust, conflict disclosure, arms-length)
 export * from "./joint-trust-fmv-schema"; // #6 Joint-Trust FMV (Fair market value, CPI escalator, 3-bid procurement)
+// P1 Critical Compliance: Provincial Privacy (Validator #1)
+export * from "./provincial-privacy-schema";
+
+// P1 Critical Compliance: Indigenous Data Sovereignty (Validator #3)
+export * from "./indigenous-data-schema";
+
+// P1 Critical Compliance: Strike Fund Tax (Validator #4)
+export * from "./strike-fund-tax-schema";
+
+// P1 Critical Compliance: Force Majeure & Disaster Recovery (Validator #13)
+export * from "./force-majeure-schema";
