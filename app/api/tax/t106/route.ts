@@ -3,7 +3,7 @@ import {
   checkStrikePaymentTaxability,
   generateT4A,
   generateRL1,
-  getT4AFilingDeadline,
+  getTaxFilingStatus,
 } from '@/lib/services/strike-fund-tax-service';
 import type { T106FilingRequest, T106FilingResponse } from '@/lib/types/compliance-api-types';
 
@@ -38,44 +38,40 @@ export async function POST(request: NextRequest) {
     const totalAmount = strikePayments.reduce((sum, p) => sum + p.amount, 0);
 
     // Check if payments require T106
-    const t106Check = checkStrikePaymentTaxability({
-      paymentYear: taxYear,
-      totalAmount,
-      paymentDates: strikePayments.map(p => new Date(p.date)),
-      isCanadianResident: true,
-    });
+    const t106Check = await checkStrikePaymentTaxability(memberId, totalAmount);
 
     // Generate T4A for all strike payments
-    const t4a = generateT4A(memberId, taxYear, totalAmount);
+    const t4a = await generateT4A(memberId, taxYear);
 
     // Generate RL-1 if Quebec
     let rl1 = null;
     if (province?.toUpperCase() === 'QC') {
-      rl1 = generateRL1(memberId, taxYear, totalAmount);
+      rl1 = await generateRL1(memberId, taxYear);
     }
 
     // Get filing deadline
-    const deadline = getT4AFilingDeadline(taxYear);
+    const status = await getTaxFilingStatus(memberId, taxYear);
+    const deadline = status.deadline.toISOString().split('T')[0];
 
     return NextResponse.json({
       success: true,
-      requiresT106: t106Check.requires,
+      requiresT106: t106Check.requiresT4A,
       filing: {
-        slipNumber: t4a.slipNumber,
+        slipNumber: t4a.slipType,
         taxYear,
         payerName: 'Union Fund',
         recipientName: `Member ${memberId}`,
         amount: totalAmount,
         boxes: {
-          'Box 14': totalAmount, // Strike pay
-          'Box 16': 0, // Taxable amount (same as Box 14 for strike pay)
+          'Box 028': totalAmount, // Strike pay (Box 028: Other Income)
+          'Box 016': totalAmount, // Taxable amount
         },
         filingDeadline: deadline,
         requiresElectronicFiling: true,
       },
       rl1Details: rl1 ? {
         province: 'QC',
-        deadline: rl1.filingDeadline,
+        deadline: deadline,
         slipFormat: 'RL-1',
       } : undefined,
       message: `T4A generated for ${taxYear}. Deadline: ${deadline}`,
@@ -115,7 +111,7 @@ export async function GET(request: NextRequest) {
     }
 
     const taxYear = parseInt(taxYearStr);
-    const deadline = getT4AFilingDeadline(taxYear);
+    const deadline = new Date(`${taxYear + 1}-02-28`).toISOString().split('T')[0];
 
     return NextResponse.json({
       success: true,
@@ -140,7 +136,5 @@ export async function GET(request: NextRequest) {
       } as T106FilingResponse,
       { status: 500 }
     );
-  }
-}
   }
 }

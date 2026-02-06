@@ -31,6 +31,13 @@ export const users = userManagementSchema.table("users", {
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   twoFactorSecret: text("two_factor_secret"),
   twoFactorBackupCodes: text("two_factor_backup_codes").array(),
+  
+  // Encrypted PII fields (added for tax compliance)
+  // Store encrypted using lib/encryption.ts utilities
+  encryptedSin: text("encrypted_sin"), // Social Insurance Number (Canada)
+  encryptedSsn: text("encrypted_ssn"), // Social Security Number (USA)
+  encryptedBankAccount: text("encrypted_bank_account"), // Bank account details
+  
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({

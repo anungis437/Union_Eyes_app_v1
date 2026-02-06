@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import * as Sentry from '@sentry/nextjs';
+import { Redis } from '@upstash/redis';
 
 interface HealthCheckResult {
   name: string;
@@ -99,24 +100,32 @@ async function checkRedis(): Promise<HealthCheckResult> {
   const startTime = Date.now();
   
   try {
-    const redisUrl = process.env.REDIS_URL;
+    const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+    const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
     
-    if (!redisUrl) {
+    if (!upstashUrl || !upstashToken) {
       return {
         name: 'redis',
         status: 'degraded',
         responseTime: Date.now() - startTime,
-        details: { configured: false, optional: true }
+        details: { configured: false, optional: true, message: 'Upstash Redis not configured' }
       };
     }
 
-    // For now, just check if it's configured
-    // In production, you'd want to actually ping Redis
+    // Ping Redis to test connectivity
+    const redis = new Redis({
+      url: upstashUrl,
+      token: upstashToken,
+    });
+    
+    await redis.ping();
+    const responseTime = Date.now() - startTime;
+
     return {
       name: 'redis',
-      status: 'healthy',
-      responseTime: Date.now() - startTime,
-      details: { configured: true }
+      status: responseTime < 200 ? 'healthy' : 'degraded',
+      responseTime,
+      details: { configured: true, provider: 'upstash' }
     };
   } catch (error) {
     return {

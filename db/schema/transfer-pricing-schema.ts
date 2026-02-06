@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, varchar, jsonb, boolean, decimal } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, varchar, jsonb, boolean, decimal, integer } from "drizzle-orm/pg-core";
 
 /**
  * Transfer Pricing & Currency Enforcement Schema
@@ -235,4 +235,60 @@ export const currencyEnforcementAudit = pgTable("currency_enforcement_audit", {
   ipAddress: varchar("ip_address", { length: 45 }),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Exchange rates cache (for audit trail and rate history)
+export const exchangeRates = pgTable("exchange_rates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Currency pair
+  fromCurrency: varchar("from_currency", { length: 3 }).notNull(), // USD, EUR, GBP, etc.
+  toCurrency: varchar("to_currency", { length: 3 }).notNull().default("CAD"),
+  
+  // Rate details
+  exchangeRate: varchar("exchange_rate", { length: 20 }).notNull(), // Stored as string for precision
+  rateSource: varchar("rate_source", { length: 50 }).notNull(), // "BOC", "XE", "OANDA"
+  effectiveDate: timestamp("effective_date").notNull(),
+  rateTimestamp: timestamp("rate_timestamp").notNull(),
+  
+  // Metadata
+  provider: varchar("provider", { length: 100 }),
+  dataQuality: varchar("data_quality", { length: 20 }).default("official"), // "official", "estimated", "manual"
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Cross-border transactions (T106 reporting)
+export const crossBorderTransactions = pgTable("cross_border_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Transaction details
+  transactionDate: timestamp("transaction_date").notNull(),
+  amountCents: integer("amount_cents").notNull(), // Amount in cents for precision
+  originalCurrency: varchar("original_currency", { length: 3 }).default("CAD"),
+  cadEquivalentCents: integer("cad_equivalent_cents").notNull(), // CAD amount in cents
+  
+  // Country information
+  fromCountryCode: varchar("from_country_code", { length: 2 }).notNull().default("CA"),
+  toCountryCode: varchar("to_country_code", { length: 2 }).notNull(),
+  
+  // Party types
+  fromPartyType: varchar("from_party_type", { length: 50 }).notNull(), // "organization", "individual", "external"
+  toPartyType: varchar("to_party_type", { length: 50 }).notNull(), // "organization", "individual", "external"
+  
+  // CRA compliance
+  craReportingStatus: varchar("cra_reporting_status", { length: 50 }).notNull().default("pending"), // "pending", "filed", "not_required", "exempt"
+  requiresT106: boolean("requires_t106").notNull().default(false),
+  
+  // T106 filing status
+  t106Filed: boolean("t106_filed").notNull().default(false),
+  t106FilingDate: timestamp("t106_filing_date"),
+  
+  // Metadata
+  transactionType: varchar("transaction_type", { length: 50 }), // "service", "goods", "royalty", "interest", "dividend"
+  counterpartyName: text("counterparty_name"),
+  description: text("description"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

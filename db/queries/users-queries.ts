@@ -2,7 +2,7 @@
 
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
-import { users } from "@/db/schema/users-schema";
+import { users } from "@/db/schema";
 
 /**
  * Get database user ID by email

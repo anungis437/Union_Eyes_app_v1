@@ -1,11 +1,33 @@
 version: '3.8'
 
+# SECURITY: All sensitive credentials are passed at runtime via environment variables
+# This prevents secrets from being baked into Docker image layers (visible in `docker history`)
+# Set these variables in your deployment platform (Azure, AWS, etc.) or .env file
+
 services:
   app:
     environment:
+      # Application
       NODE_ENV: staging
       NEXT_PUBLIC_APP_URL: ${STAGING_APP_URL}
+      
+      # Database (REQUIRED)
       DATABASE_URL: ${STAGING_DATABASE_URL}
+      
+      # Authentication (REQUIRED)
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${STAGING_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${STAGING_CLERK_SECRET_KEY}
+      
+      # Payments (REQUIRED if using Stripe/Whop)
+      STRIPE_SECRET_KEY: ${STAGING_STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STAGING_STRIPE_WEBHOOK_SECRET}
+      WHOP_WEBHOOK_KEY: ${STAGING_WHOP_WEBHOOK_KEY}
+      
+      # Redis (REQUIRED for distributed caching)
+      REDIS_HOST: ${STAGING_REDIS_HOST}
+      REDIS_PORT: ${STAGING_REDIS_PORT:-6379}
+      UPSTASH_REDIS_REST_URL: ${STAGING_UPSTASH_REDIS_REST_URL}
+      UPSTASH_REDIS_REST_TOKEN: ${STAGING_UPSTASH_REDIS_REST_TOKEN}
       
       # Azure Staging Resources
       AZURE_STORAGE_ACCOUNT_NAME: ${STAGING_AZURE_STORAGE_ACCOUNT_NAME}
@@ -14,3 +36,19 @@ services:
       AZURE_SPEECH_REGION: ${STAGING_AZURE_SPEECH_REGION}
       AZURE_OPENAI_ENDPOINT: ${STAGING_AZURE_OPENAI_ENDPOINT}
       AZURE_OPENAI_KEY: ${STAGING_AZURE_OPENAI_KEY}
+      AZURE_KEY_VAULT_URL: ${STAGING_AZURE_KEY_VAULT_URL}
+      
+      # Email (REQUIRED for notifications)
+      RESEND_API_KEY: ${STAGING_RESEND_API_KEY}
+      EMAIL_FROM: ${STAGING_EMAIL_FROM:-noreply@staging.unioneyes.com}
+      
+      # Supabase (if used)
+      NEXT_PUBLIC_SUPABASE_URL: ${STAGING_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${STAGING_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${STAGING_SUPABASE_SERVICE_ROLE_KEY}
+      
+      # Optional: Monitoring
+      SENTRY_DSN: ${STAGING_SENTRY_DSN}
+      
+    restart: always
+

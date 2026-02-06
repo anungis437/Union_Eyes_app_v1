@@ -7,8 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql } from '@/lib/db';
-import { db } from '@/lib/db';
+import { sql, db } from '@/db';
 
 async function handler(req: NextRequest) {
   try {

@@ -3,7 +3,7 @@
 -- Description: Transform all RLS policies to support CLC hierarchy (view own + descendants)
 -- Phase: 1 - Critical CLC Compliance
 -- Date: 2025-12-03
--- Dependencies: 030_hierarchical_organizations.sql, 044_clc_hierarchy_system_CLEAN.sql
+-- Dependencies: 030_hierarchical_organizations.sql, 044_clc_hierarchy_system.sql
 -- =====================================================================================
 
 -- =====================================================================================

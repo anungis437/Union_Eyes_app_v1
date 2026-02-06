@@ -26,11 +26,32 @@ import { db } from '@/db/db';
 import { notificationHistory, userNotificationPreferences, inAppNotifications } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 
-const connection = new IORedis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  maxRetriesPerRequest: null,
-});
+// Validate Redis configuration (deferred until actual use)
+let connection: IORedis | null = null;
+
+function getRedisConnection(): IORedis {
+  if (connection) return connection;
+  
+  if (!process.env.REDIS_HOST) {
+    throw new Error('REDIS_HOST is not configured. Set environment variable before starting notification worker.');
+  }
+
+  if (!process.env.REDIS_PORT) {
+    throw new Error('REDIS_PORT is not configured. Set environment variable before starting notification worker.');
+  }
+
+  connection = new IORedis({
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT),
+    maxRetriesPerRequest: null,
+    retryStrategy(times) {
+      const delay = Math.min(times * 50, 2000);
+      return delay;
+    },
+  });
+  
+  return connection;
+}
 
 /**
  * Get user's notification preferences
@@ -102,8 +123,27 @@ async function sendInAppNotification(
     createdAt: new Date(),
   });
 
-  // TODO: Send real-time update via WebSocket
-  console.log(`In-app notification sent to user ${userId}`);
+  // Send real-time update via Redis pub/sub (WebSocket server subscribes to this)
+  try {
+    const redis = getRedisConnection();
+    await redis.publish(
+      `notifications:${tenantId || 'default'}:${userId}`,
+      JSON.stringify({
+        type: 'notification',
+        userId,
+        tenantId: tenantId || 'default',
+        title,
+        message,
+        data,
+        timestamp: new Date().toISOString(),
+      })
+    );
+    
+    console.log(`In-app notification sent to user ${userId} with real-time pub/sub`);
+  } catch (error) {
+    console.warn(`Failed to publish real-time notification (Redis not available):`, error);
+    console.log(`In-app notification saved to database for user ${userId}`);
+  }
 }
 
 /**

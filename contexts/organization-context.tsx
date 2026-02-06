@@ -237,43 +237,43 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
 
   /**
    * Switch to a different organization
+   * Now with server-side validation for security
    */
   const switchOrganization = useCallback(async (newOrganizationId: string) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Check if user has access to this organization
-      // Note: Super admins can switch to any organization
-      const hasAccess = userOrganizations.some(org => org.id === newOrganizationId);
-      
-      // If no direct access, check if user is super admin via API
-      if (!hasAccess) {
-        const userResponse = await fetch('/api/users/me', {
-          credentials: 'include',
-        });
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          const isSuperAdmin = userData.role === 'super_admin' || userData.isSuperAdmin;
-          if (!isSuperAdmin) {
-            throw new Error('You do not have access to this organization');
-          }
-          // Super admin can access any organization
-        } else {
-          throw new Error('You do not have access to this organization');
-        }
+      // Call server-side validation endpoint
+      const response = await fetch('/api/organizations/switch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ organizationId: newOrganizationId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to switch organization' }));
+        throw new Error(errorData.error || 'Access denied');
       }
 
-      // Update cookies - set both for compatibility with tenant middleware
-      document.cookie = `selected_organization_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
-      document.cookie = `selected_tenant_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error('Organization switch validation failed');
+      }
+
+      // Server validated the switch, now update cookies
+      document.cookie = `selected_organization_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Strict`; // 1 year
+      document.cookie = `selected_tenant_id=${newOrganizationId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Strict`; // 1 year
 
       // Update state
       setOrganizationId(newOrganizationId);
       
-      const org = userOrganizations.find(o => o.id === newOrganizationId);
-      if (org) {
-        setOrganization(org);
+      if (data.organization) {
+        setOrganization(data.organization);
         await loadOrganizationPath(newOrganizationId);
       }
 
@@ -284,7 +284,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       setError(err instanceof Error ? err.message : 'Failed to switch organization');
       setIsLoading(false);
     }
-  }, [userOrganizations, loadOrganizationPath]);
+  }, [loadOrganizationPath]);
 
   /**
    * Refresh organizations list

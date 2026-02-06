@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
 import { db } from '@/db';
-import { sql } from '@/lib/db';
+import { sql } from '@/db';
 import { updateReportRunStats } from '@/db/queries/analytics-queries';
 
 async function postHandler(

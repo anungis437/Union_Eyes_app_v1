@@ -1,17 +1,21 @@
 /**
  * Analytics Cache Service
  * 
- * Provides caching layer for analytics queries to improve performance
- * Uses in-memory cache with TTL (Time To Live) for frequently accessed metrics
+ * Provides distributed Redis-based caching layer for analytics queries to improve performance
+ * Uses Upstash Redis with TTL (Time To Live) for frequently accessed metrics
  * 
  * Features:
+ * - Distributed caching across server instances
  * - Automatic cache invalidation based on TTL
  * - Tenant-isolated caching
  * - Cache key generation
  * - Cache statistics
  * 
- * Created: November 15, 2025
+ * Updated: February 6, 2026 - Migrated from in-memory to Redis
  */
+
+import { Redis } from '@upstash/redis';
+import { logger } from './logger';
 
 interface CacheEntry<T> {
   data: T;
@@ -27,17 +31,67 @@ interface CacheStats {
   hitRate: number;
 }
 
+// Initialize Redis client
+const redis = (() => {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    // Only warn if we're not in test/build environment
+    if (process.env.NODE_ENV !== 'test' && !process.env.BUILDING) {
+      logger.warn('Redis not configured - analytics cache will fail at runtime', {
+        component: 'analytics-cache',
+        message: 'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN',
+      });
+    }
+    return null;
+  }
+
+  return new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+})();
+
 class AnalyticsCacheService {
-  private cache: Map<string, CacheEntry<any>>;
   private stats: { hits: number; misses: number };
-  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly DEFAULT_TTL = 5 * 60; // 5 minutes in seconds (Redis uses seconds)
+  private readonly STATS_KEY = 'analytics:cache:stats';
+  private statsLoaded: boolean = false;
 
   constructor() {
-    this.cache = new Map();
     this.stats = { hits: 0, misses: 0 };
+    // Load stats asynchronously without blocking constructor
+    this.loadStats().catch(err => {
+      logger.warn('Failed to load initial cache stats', { error: err.message });
+    });
+  }
+
+  /**
+   * Load stats from Redis
+   */
+  private async loadStats(): Promise<void> {
+    if (!redis || this.statsLoaded) return;
     
-    // Cleanup expired entries every minute
-    setInterval(() => this.cleanup(), 60 * 1000);
+    try {
+      const stats = await redis.get<{ hits: number; misses: number }>(this.STATS_KEY);
+      if (stats) {
+        this.stats = stats;
+        this.statsLoaded = true;
+      }
+    } catch (error) {
+      logger.error('Failed to load cache stats from Redis', error as Error);
+    }
+  }
+
+  /**
+   * Save stats to Redis
+   */
+  private async saveStats(): Promise<void> {
+    if (!redis) return;
+    
+    try {
+      await redis.set(this.STATS_KEY, this.stats, { ex: 86400 }); // 24 hours
+    } catch (error) {
+      logger.error('Failed to save cache stats to Redis', error as Error);
+    }
   }
 
   /**
@@ -53,127 +107,182 @@ class AnalyticsCacheService {
       .map(key => `${key}=${params[key]}`)
       .join('&');
     
-    return `${tenantId}:${endpoint}:${sortedParams}`;
-  }
-
-  /**
-   * Check if cache entry is still valid
-   */
-  private isValid(entry: CacheEntry<any>): boolean {
-    return Date.now() - entry.timestamp < entry.ttl;
+    return `analytics:cache:${tenantId}:${endpoint}:${sortedParams}`;
   }
 
   /**
    * Get cached data if available and valid
    */
-  get<T>(
+  async get<T>(
     tenantId: string,
     endpoint: string,
     params: Record<string, any> = {}
-  ): T | null {
+  ): Promise<T | null> {
+    if (!redis) {
+      logger.warn('Redis not configured - cache miss', { component: 'analytics-cache' });
+      this.stats.misses++;
+      return null;
+    }
+    
     const key = this.generateKey(tenantId, endpoint, params);
-    const entry = this.cache.get(key);
+    
+    try {
+      const entry = await redis.get<CacheEntry<T>>(key);
 
-    if (!entry) {
+      if (!entry) {
+        this.stats.misses++;
+        await this.saveStats();
+        return null;
+      }
+
+      // Redis TTL handles expiration automatically, so if we got data, it's valid
+      entry.hits++;
+      this.stats.hits++;
+      
+      // Update hit count in Redis
+      await redis.set(key, entry, { ex: entry.ttl });
+      await this.saveStats();
+      
+      return entry.data as T;
+    } catch (error) {
+      logger.error('Redis cache get failed', error as Error, { key });
       this.stats.misses++;
       return null;
     }
-
-    if (!this.isValid(entry)) {
-      this.cache.delete(key);
-      this.stats.misses++;
-      return null;
-    }
-
-    entry.hits++;
-    this.stats.hits++;
-    return entry.data as T;
   }
 
   /**
-   * Store data in cache
+   * Store data in cache with automatic TTL expiration
    */
-  set<T>(
+  async set<T>(
     tenantId: string,
     endpoint: string,
     data: T,
     params: Record<string, any> = {},
     ttl: number = this.DEFAULT_TTL
-  ): void {
+  ): Promise<void> {
+    if (!redis) {
+      logger.warn('Redis not configured - cache set skipped', { component: 'analytics-cache' });
+      return;
+    }
+    
     const key = this.generateKey(tenantId, endpoint, params);
     
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl,
-      hits: 0,
-    });
+    try {
+      const entry: CacheEntry<T> = {
+        data,
+        timestamp: Date.now(),
+        ttl,
+        hits: 0,
+      };
+      
+      // Set with expiration in seconds
+      await redis.set(key, entry, { ex: ttl });
+    } catch (error) {
+      logger.error('Redis cache set failed', error as Error, { key });
+    }
   }
 
   /**
    * Invalidate cache for specific endpoint or all tenant data
    */
-  invalidate(tenantId: string, endpoint?: string): void {
-    if (endpoint) {
-      // Invalidate specific endpoint
-      const prefix = `${tenantId}:${endpoint}:`;
-      const keys = Array.from(this.cache.keys());
-      for (const key of keys) {
-        if (key.startsWith(prefix)) {
-          this.cache.delete(key);
-        }
-      }
-    } else {
-      // Invalidate all tenant data
-      const prefix = `${tenantId}:`;
-      const keys = Array.from(this.cache.keys());
-      for (const key of keys) {
-        if (key.startsWith(prefix)) {
-          this.cache.delete(key);
-        }
-      }
+  async invalidate(tenantId: string, endpoint?: string): Promise<void> {
+    if (!redis) {
+      logger.warn('Redis not configured - invalidate skipped', { component: 'analytics-cache' });
+      return;
     }
-  }
-
-  /**
-   * Remove expired entries
-   */
-  private cleanup(): void {
-    const now = Date.now();
-    const entries = Array.from(this.cache.entries());
-    for (const [key, entry] of entries) {
-      if (now - entry.timestamp >= entry.ttl) {
-        this.cache.delete(key);
+    
+    try {
+      const pattern = endpoint 
+        ? `analytics:cache:${tenantId}:${endpoint}:*`
+        : `analytics:cache:${tenantId}:*`;
+      
+      // Use SCAN to find and delete matching keys
+      const keys = await redis.keys(pattern);
+      
+      if (keys.length > 0) {
+        await redis.del(...keys);
+        logger.info('Cache invalidated', { tenantId, endpoint, keysDeleted: keys.length });
       }
+    } catch (error) {
+      logger.error('Redis cache invalidation failed', error as Error, { tenantId, endpoint });
     }
   }
 
   /**
    * Get cache statistics
    */
-  getStats(): CacheStats {
-    const totalRequests = this.stats.hits + this.stats.misses;
-    return {
-      hits: this.stats.hits,
-      misses: this.stats.misses,
-      size: this.cache.size,
-      hitRate: totalRequests > 0 ? this.stats.hits / totalRequests : 0,
-    };
+  async getStats(): Promise<CacheStats> {
+    if (!redis) {
+      return {
+        hits: this.stats.hits,
+        misses: this.stats.misses,
+        size: 0,
+        hitRate: 0,
+      };
+    }
+    
+    try {
+      // Get approximate size using DBSIZE (includes all keys, not just analytics)
+      // For accurate count, we'd need to SCAN all analytics:cache:* keys
+      const allKeys = await redis.keys('analytics:cache:*');
+      const size = allKeys.length;
+      
+      const totalRequests = this.stats.hits + this.stats.misses;
+      return {
+        hits: this.stats.hits,
+        misses: this.stats.misses,
+        size,
+        hitRate: totalRequests > 0 ? this.stats.hits / totalRequests : 0,
+      };
+    } catch (error) {
+      logger.error('Failed to get cache stats', error as Error);
+      return {
+        hits: this.stats.hits,
+        misses: this.stats.misses,
+        size: 0,
+        hitRate: 0,
+      };
+    }
   }
 
   /**
-   * Clear all cache
+   * Clear all analytics cache
    */
-  clear(): void {
-    this.cache.clear();
-    this.stats = { hits: 0, misses: 0 };
+  async clear(): Promise<void> {
+    if (!redis) {
+      logger.warn('Redis not configured - clear skipped', { component: 'analytics-cache' });
+      return;
+    }
+    
+    try {
+      const keys = await redis.keys('analytics:cache:*');
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+      this.stats = { hits: 0, misses: 0 };
+      await redis.del(this.STATS_KEY);
+      logger.info('Analytics cache cleared', { keysDeleted: keys.length });
+    } catch (error) {
+      logger.error('Failed to clear cache', error as Error);
+    }
   }
 
   /**
    * Get cache size
    */
-  size(): number {
-    return this.cache.size;
+  async size(): Promise<number> {
+    if (!redis) {
+      return 0;
+    }
+    
+    try {
+      const keys = await redis.keys('analytics:cache:*');
+      return keys.length;
+    } catch (error) {
+      logger.error('Failed to get cache size', error as Error);
+      return 0;
+    }
   }
 }
 
@@ -199,7 +308,7 @@ export async function withCache<T>(
   ttl?: number
 ): Promise<T> {
   // Try to get from cache
-  const cached = analyticsCache.get<T>(tenantId, endpoint, params);
+  const cached = await analyticsCache.get<T>(tenantId, endpoint, params);
   if (cached !== null) {
     return cached;
   }
@@ -208,7 +317,7 @@ export async function withCache<T>(
   const data = await fetchFn();
   
   // Store in cache
-  analyticsCache.set(tenantId, endpoint, data, params, ttl);
+  await analyticsCache.set(tenantId, endpoint, data, params, ttl);
   
   return data;
 }
@@ -217,6 +326,13 @@ export async function withCache<T>(
  * Invalidate analytics cache when data changes
  * Call this after creating/updating/deleting claims
  */
-export function invalidateAnalyticsCache(tenantId: string): void {
-  analyticsCache.invalidate(tenantId);
+export async function invalidateAnalyticsCache(tenantId: string): Promise<void> {
+  await analyticsCache.invalidate(tenantId);
+}
+
+/**
+ * Get analytics cache statistics
+ */
+export async function getAnalyticsCacheStats(): Promise<CacheStats> {
+  return analyticsCache.getStats();
 }

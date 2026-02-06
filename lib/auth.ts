@@ -12,6 +12,20 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
 
+/**
+ * Union Role Hierarchy Levels
+ * Defines permission levels for user roles in descending order of authority
+ */
+export const ROLE_HIERARCHY = {
+  super_admin: 100,
+  admin: 80,
+  steward: 60,
+  member: 40,
+  guest: 20,
+} as const;
+
+export type UserRole = keyof typeof ROLE_HIERARCHY;
+
 // User type for consistent return structure
 export interface AuthUser {
   id: string;
@@ -25,11 +39,6 @@ export interface AuthUser {
   organizationId: string | null;
   metadata: Record<string, unknown>;
 }
-
-export const authOptions = {
-  // Placeholder for next-auth compatibility
-  // This will be replaced with proper Clerk integration
-};
 
 /**
  * Get current authenticated user
@@ -144,21 +153,14 @@ export async function requireAuthWithTenant(): Promise<AuthUserWithTenant> {
 
 /**
  * Check if user has specific role
+ * Uses role hierarchy where higher-level roles inherit permissions of lower-level roles
  */
 export async function hasRole(requiredRole: string): Promise<boolean> {
   const user = await getCurrentUser();
   if (!user) return false;
   
-  const roleHierarchy: Record<string, number> = {
-    'super_admin': 100,
-    'admin': 80,
-    'steward': 60,
-    'member': 40,
-    'guest': 20,
-  };
-  
-  const userRoleLevel = roleHierarchy[user.role || 'guest'] || 0;
-  const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
+  const userRoleLevel = ROLE_HIERARCHY[user.role as UserRole] || 0;
+  const requiredRoleLevel = ROLE_HIERARCHY[requiredRole as UserRole] || 0;
   
   return userRoleLevel >= requiredRoleLevel;
 }

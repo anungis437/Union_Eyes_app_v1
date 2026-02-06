@@ -81,66 +81,6 @@ export const breakGlassSystem = pgTable("break_glass_system", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Break-glass activation log
-export const breakGlassActivations = pgTable("break_glass_activations", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  breakGlassSystemId: uuid("break_glass_system_id").notNull(),
-  
-  // Activation details
-  activationType: varchar("activation_type", { length: 20 }).notNull(), // "real_emergency", "drill", "test"
-  activationReason: text("activation_reason").notNull(),
-  emergencyLevel: varchar("emergency_level", { length: 20 }).notNull(), // "critical", "high", "medium"
-  
-  // Timeline
-  activatedAt: timestamp("activated_at").notNull().defaultNow(),
-  resolvedAt: timestamp("resolved_at"),
-  recoveryDuration: varchar("recovery_duration", { length: 50 }), // "48h 23m"
-  
-  // Multi-signature authorization
-  requiredSignatures: integer("required_signatures").notNull().default(3),
-  signaturesReceived: integer("signatures_received").notNull().default(0),
-  
-  signature1UserId: uuid("signature_1_user_id"),
-  signature1Timestamp: timestamp("signature_1_timestamp"),
-  signature1IpAddress: varchar("signature_1_ip_address", { length: 45 }),
-  
-  signature2UserId: uuid("signature_2_user_id"),
-  signature2Timestamp: timestamp("signature_2_timestamp"),
-  signature2IpAddress: varchar("signature_2_ip_address", { length: 45 }),
-  
-  signature3UserId: uuid("signature_3_user_id"),
-  signature3Timestamp: timestamp("signature_3_timestamp"),
-  signature3IpAddress: varchar("signature_3_ip_address", { length: 45 }),
-  
-  signature4UserId: uuid("signature_4_user_id"),
-  signature4Timestamp: timestamp("signature_4_timestamp"),
-  signature4IpAddress: varchar("signature_4_ip_address", { length: 45 }),
-  
-  signature5UserId: uuid("signature_5_user_id"),
-  signature5Timestamp: timestamp("signature_5_timestamp"),
-  signature5IpAddress: varchar("signature_5_ip_address", { length: 45 }),
-  
-  // Authorization status
-  authorizationComplete: boolean("authorization_complete").notNull().default(false),
-  authorizationCompletedAt: timestamp("authorization_completed_at"),
-  
-  // Recovery actions
-  recoveryActionsLog: jsonb("recovery_actions_log"), // Detailed log of recovery steps
-  swissColdStorageAccessed: boolean("swiss_cold_storage_accessed").notNull().default(false),
-  coldStorageAccessedAt: timestamp("cold_storage_accessed_at"),
-  
-  // Post-incident
-  incidentReportUrl: text("incident_report_url"),
-  lessonsLearnedUrl: text("lessons_learned_url"),
-  systemUpdatesRequired: jsonb("system_updates_required"),
-  
-  // Audit
-  activatedBy: uuid("activated_by").notNull(),
-  
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
 // Disaster recovery drills
 export const disasterRecoveryDrills = pgTable("disaster_recovery_drills", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -251,6 +191,85 @@ export const recoveryTimeObjectives = pgTable("recovery_time_objectives", {
   lastTestedAt: timestamp("last_tested_at"),
   lastTestResult: varchar("last_test_result", { length: 20 }), // "passed", "failed", "partial"
   actualRecoveryTime: integer("actual_recovery_time"), // Actual time in last test (hours)
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Emergency declarations (used by break-glass service)
+export const emergencyDeclarations = pgTable("emergency_declarations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Emergency classification
+  emergencyType: varchar("emergency_type", { length: 50 }).notNull(), // "strike", "lockout", "cyberattack", "natural_disaster", "government_seizure", "infrastructure_failure"
+  severityLevel: varchar("severity_level", { length: 20 }).notNull().default("medium"), // "low", "medium", "high", "critical"
+  
+  // Declaration
+  declaredByUserId: uuid("declared_by_user_id").notNull(),
+  declaredAt: timestamp("declared_at").notNull(),
+  notes: text("notes"),
+  
+  // Impact
+  affectedLocations: jsonb("affected_locations"), // Array of location names
+  affectedMemberCount: integer("affected_member_count").default(0),
+  
+  // Resolution
+  resolvedAt: timestamp("resolved_at"),
+  status: varchar("status", { length: 20 }).notNull().default("active"), // "active", "resolved"
+  
+  // Break-glass activation
+  notificationSent: boolean("notification_sent").notNull().default(false),
+  breakGlassActivated: boolean("break_glass_activated").notNull().default(false),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Break-glass activations (Shamir's Secret Sharing records)
+export const breakGlassActivations = pgTable("break_glass_activations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Emergency reference
+  emergencyId: uuid("emergency_id").notNull().references(() => emergencyDeclarations.id),
+  
+  // Activation details
+  activationInitiatedAt: timestamp("activation_initiated_at").notNull(),
+  activationApprovedAt: timestamp("activation_approved_at"),
+  activationReason: text("activation_reason").notNull(),
+  
+  // Key holders' approvals (3 of 5 required)
+  keyHolderIds: jsonb("key_holder_ids"), // Array of key holder user IDs who approved
+  secretShares: jsonb("secret_shares"), // Array of encrypted secret shares
+  requiredSignatures: integer("required_signatures").notNull().default(3),
+  signaturesReceived: integer("signatures_received").notNull().default(0),
+  
+  // Signature tracking
+  signature1UserId: uuid("signature_1_user_id"),
+  signature1Timestamp: timestamp("signature_1_timestamp"),
+  signature1IpAddress: varchar("signature_1_ip_address", { length: 45 }),
+  
+  signature2UserId: uuid("signature_2_user_id"),
+  signature2Timestamp: timestamp("signature_2_timestamp"),
+  signature2IpAddress: varchar("signature_2_ip_address", { length: 45 }),
+  
+  signature3UserId: uuid("signature_3_user_id"),
+  signature3Timestamp: timestamp("signature_3_timestamp"),
+  signature3IpAddress: varchar("signature_3_ip_address", { length: 45 }),
+  
+  // Recovery log
+  recoveryActionsLog: jsonb("recovery_actions_log"), // Detailed log of recovery steps
+  swissColdStorageAccessed: boolean("swiss_cold_storage_accessed").notNull().default(false),
+  coldStorageAccessedAt: timestamp("cold_storage_accessed_at"),
+  
+  // Post-activation
+  incidentReportUrl: text("incident_report_url"),
+  lessonsLearnedUrl: text("lessons_learned_url"),
+  systemUpdatesRequired: jsonb("system_updates_required"),
+  
+  // Audit
+  auditedAt: timestamp("audited_at"),
+  auditedBy: uuid("audited_by"),
+  auditReport: text("audit_report"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

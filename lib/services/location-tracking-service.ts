@@ -57,24 +57,25 @@ export class LocationTrackingService {
   }> {
     // Check if member already has consent record
     const existingConsent = await db.query.memberLocationConsent.findFirst({
-      where: eq(memberLocationConsent.memberId, request.memberId)
+      where: eq(memberLocationConsent.userId, request.memberId)
     });
 
     if (existingConsent) {
       return {
         success: false,
-        message: `Member already has consent status: ${existingConsent.status}. Use updateConsent() to change.`
+        message: `Member already has consent status: ${existingConsent.consentStatus}. Use updateConsent() to change.`
       };
     }
 
     // Create new consent request (starts as 'never_asked')
     const [consent] = await db.insert(memberLocationConsent).values({
-      memberId: request.memberId,
-      status: 'never_asked',
-      purpose: request.purpose,
+      userId: request.memberId,
+      consentStatus: 'never_asked',
+      consentPurpose: request.purpose,
       purposeDescription: request.purposeDescription,
       canRevokeAnytime: true,
-      requestedAt: request.requestedAt,
+      consentText: request.purpose,
+      consentVersion: '1.0',
     }).returning();
 
     return {
@@ -96,7 +97,7 @@ export class LocationTrackingService {
     optedInAt?: Date;
   }> {
     const consent = await db.query.memberLocationConsent.findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, memberId)
     });
 
     if (!consent) {
@@ -106,7 +107,7 @@ export class LocationTrackingService {
       };
     }
 
-    if (consent.status === 'opted_in') {
+    if (consent.consentStatus === 'opted_in') {
       return {
         success: false,
         message: 'Member already opted in to location tracking.'
@@ -117,11 +118,11 @@ export class LocationTrackingService {
     const optedInAt = new Date();
     await db.update(memberLocationConsent)
       .set({
-        status: 'opted_in',
+        consentStatus: 'opted_in',
         optedInAt,
-        purpose,
+        consentPurpose: purpose,
       })
-      .where(eq(memberLocationConsent.memberId, memberId));
+      .where(eq(memberLocationConsent.userId, memberId));
 
     return {
       success: true,
@@ -140,7 +141,7 @@ export class LocationTrackingService {
     revokedAt?: Date;
   }> {
     const consent = await db.query.memberLocationConsent.findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, memberId)
     });
 
     if (!consent) {
@@ -150,15 +151,15 @@ export class LocationTrackingService {
       };
     }
 
-    const revokedAt = new Date();
+    const optedOutAt = new Date();
     
     // Update consent to opted_out
     await db.update(memberLocationConsent)
       .set({
-        status: 'opted_out',
-        revokedAt,
+        consentStatus: 'opted_out',
+        optedOutAt,
       })
-      .where(eq(memberLocationConsent.memberId, memberId));
+      .where(eq(memberLocationConsent.userId, memberId));
 
     // Immediately delete all location data for this member
     await this.purgeLocationData(memberId);
@@ -166,7 +167,7 @@ export class LocationTrackingService {
     return {
       success: true,
       message: 'Location tracking consent revoked. All location data has been deleted.',
-      revokedAt
+      revokedAt: optedOutAt
     };
   }
 
@@ -176,10 +177,10 @@ export class LocationTrackingService {
    */
   async verifyLocationPermission(memberId: string): Promise<boolean> {
     const consent = await db.query.memberLocationConsent.findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, memberId)
     });
 
-    if (!consent || consent.status !== 'opted_in') {
+    if (!consent || consent.consentStatus !== 'opted_in') {
       throw new Error(
         'Location tracking not permitted. Member must explicitly opt-in first.'
       );
@@ -219,13 +220,13 @@ export class LocationTrackingService {
 
     // Record location with automatic expiration
     const [tracked] = await db.insert(locationTracking).values({
-      memberId,
+      userId: memberId,
       latitude: location.latitude.toString(),
       longitude: location.longitude.toString(),
-      accuracyMeters: location.accuracy || null,
-      geofenceId: geofenceId || null,
+      accuracy: location.accuracy || null,
+      strikeId: geofenceId || null,
       purpose,
-      trackedAt: location.timestamp,
+      recordedAt: location.timestamp,
       expiresAt,
       trackingType: this.TRACKING_TYPE, // Always foreground_only
     }).returning();
@@ -252,11 +253,11 @@ export class LocationTrackingService {
     const now = new Date();
     return await db.query.locationTracking.findMany({
       where: and(
-        eq(locationTracking.memberId, memberId),
+        eq(locationTracking.userId, memberId),
         // Not expired
       ),
       limit,
-      orderBy: (locations, { desc }) => [desc(locations.trackedAt)]
+      orderBy: (locations, { desc }) => [desc(locations.recordedAt)]
     });
   }
 
@@ -288,7 +289,7 @@ export class LocationTrackingService {
     message: string;
   }> {
     const result = await db.delete(locationTracking)
-      .where(eq(locationTracking.memberId, memberId))
+      .where(eq(locationTracking.userId, memberId))
       .returning();
 
     return {
@@ -308,7 +309,7 @@ export class LocationTrackingService {
     canRevoke: boolean;
   }> {
     const consent = await db.query.memberLocationConsent.findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, memberId)
     });
 
     if (!consent) {
@@ -319,10 +320,10 @@ export class LocationTrackingService {
     }
 
     return {
-      status: consent.status as ConsentStatus,
+      status: consent.consentStatus as ConsentStatus,
       optedInAt: consent.optedInAt,
-      revokedAt: consent.revokedAt,
-      purpose: consent.purpose,
+      revokedAt: consent.optedOutAt,
+      purpose: consent.consentPurpose,
       canRevoke: consent.canRevokeAnytime
     };
   }
@@ -332,10 +333,10 @@ export class LocationTrackingService {
    */
   async getMembersWithActiveConsent(): Promise<string[]> {
     const consents = await db.query.memberLocationConsent.findMany({
-      where: eq(memberLocationConsent.status, 'opted_in')
+      where: eq(memberLocationConsent.consentStatus, 'opted_in')
     });
 
-    return consents.map(c => c.memberId);
+    return consents.map(c => c.userId);
   }
 
   /**
@@ -360,9 +361,9 @@ export class LocationTrackingService {
 
     return {
       totalMembers: allConsents.length,
-      optedIn: allConsents.filter(c => c.status === 'opted_in').length,
-      optedOut: allConsents.filter(c => c.status === 'opted_out').length,
-      neverAsked: allConsents.filter(c => c.status === 'never_asked').length,
+      optedIn: allConsents.filter(c => c.consentStatus === 'opted_in').length,
+      optedOut: allConsents.filter(c => c.consentStatus === 'opted_out').length,
+      neverAsked: allConsents.filter(c => c.consentStatus === 'never_asked').length,
       activeLocations: activeLocations.length,
       expiredLocations: expiredLocations.length,
       trackingType: this.TRACKING_TYPE,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { convertUSDToCAD, getExchangeRateHistory } from '@/lib/services/transfer-pricing-service';
+import { convertUSDToCAD, getBankOfCanadaNoonRate } from '@/lib/services/transfer-pricing-service';
 import type { CurrencyConversionResponse } from '@/lib/types/compliance-api-types';
 
 /**
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     const amountUSD = parseFloat(amountStr);
-    const date = dateStr ? new Date(dateStr) : undefined;
+    const date = dateStr ? new Date(dateStr) : new Date();
 
     if (isNaN(amountUSD) || amountUSD <= 0) {
       return NextResponse.json(
@@ -58,9 +58,8 @@ export async function GET(request: NextRequest) {
     // Convert USD to CAD
     const amountCAD = await convertUSDToCAD(amountUSD, date);
 
-    // Get rate history for context
-    const rateHistory = await getExchangeRateHistory(1);
-    const latestRate = rateHistory[0]?.rate || (amountCAD / amountUSD);
+    // Get current exchange rate
+    const latestRate = await getBankOfCanadaNoonRate(date);
 
     return NextResponse.json({
       success: true,
@@ -69,8 +68,8 @@ export async function GET(request: NextRequest) {
       sourceAmount: amountUSD,
       convertedAmount: parseFloat(amountCAD.toFixed(2)),
       exchangeRate: parseFloat(latestRate.toFixed(4)),
-      conversionDate: date?.toISOString() || new Date().toISOString(),
-      source: 'BOC VALET API',
+      conversionDate: date.toISOString(),
+      source: 'BoC VALET API',
     } as CurrencyConversionResponse);
   } catch (error) {
     console.error('Currency conversion error:', error);

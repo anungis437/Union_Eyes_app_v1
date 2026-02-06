@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
-import { sql, db } from '@/lib/db';
+import { sql, db } from '@/db';
 
 interface TrendDataPoint {
   date: string;

@@ -85,6 +85,17 @@ vi.mock('next/navigation', () => ({
 // Mock fetch globally
 global.fetch = vi.fn();
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: vi.fn(() => (key: string) => key),
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => 
+    React.createElement(React.Fragment, null, children),
+  useLocale: vi.fn(() => 'en'),
+  useMessages: vi.fn(() => ({})),
+  useNow: vi.fn(() => new Date()),
+  useTimeZone: vi.fn(() => 'America/Toronto'),
+}));
+
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),

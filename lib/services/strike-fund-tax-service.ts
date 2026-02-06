@@ -6,12 +6,16 @@
  * - RL-1 generation (Quebec-specific, Case O: Other Income)
  * - Year-end processing by Feb 28 deadline
  * - Cumulative annual threshold tracking
+ * 
+ * NOTE: This service uses the strikeFundDisbursements table for payment tracking.
+ * Ensure strike payments are properly recorded in that table.
  */
 
-import { db } from '@/db/client';
-import { eq, and, gte, lte } from 'drizzle-orm';
-
-export interface T4ASlip {
+import { db } from '@/db';
+import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { users, strikeFundDisbursements } from '@/db/schema';
+import { decryptSIN } from '@/lib/encryption';
+import { logger } from '@/lib/logger';
   slipType: 'T4A';
   taxYear: number;
   recipientName: string;
@@ -84,9 +88,9 @@ export async function generateT4A(
   taxYear: number
 ): Promise<T4ASlip> {
   // Get member details
-  const member = await db.query.members
+  const member = await db.query.users
     .findFirst({
-      where: eq(members.id, memberId)
+      where: eq(users.userId, memberId)
     })
     .catch(() => null);
 
@@ -97,11 +101,42 @@ export async function generateT4A(
   // Calculate yearly strike pay
   const strikePay = await getYearlyStrikePay(memberId, taxYear);
 
+  // Decrypt SIN for tax document generation
+  // CRITICAL: SIN is only decrypted for official CRA tax reporting
+  // This operation is audited in encryption.ts logger
+  let recipientSIN = 'NOT PROVIDED';
+  
+  if (member.encryptedSin) {
+    try {
+      recipientSIN = await decryptSIN(member.encryptedSin);
+      
+      // Audit log for compliance (without logging actual SIN)
+      logger.info('SIN decrypted for T4A generation', {
+        memberId,
+        taxYear,
+        action: 't4a_generation',
+        hasEncryptedSin: true,
+      });
+    } catch (error) {
+      logger.error('Failed to decrypt SIN for T4A generation', error as Error, {
+        memberId,
+        taxYear,
+      });
+      throw new Error('Unable to decrypt member SIN for tax document generation');
+    }
+  } else {
+    logger.warn('Member has no encrypted SIN on file', {
+      memberId,
+      taxYear,
+      action: 't4a_generation',
+    });
+  }
+
   return {
     slipType: 'T4A',
     taxYear,
-    recipientName: member.fullName || member.name || 'Unknown',
-    recipientSIN: member.sin || 'NOT PROVIDED', // SIN should be stored
+    recipientName: member.fullName || member.name || member.email || 'Unknown',
+    recipientSIN: recipientSIN, // Encrypted/protected SIN
     recipientAddress: member.address || 'NOT PROVIDED',
     box028_otherIncome: strikePay, // Box 028: Other Income
     issuedDate: new Date(),
@@ -119,27 +154,58 @@ export async function generateRL1(
   memberId: string,
   taxYear: number
 ): Promise<RL1Slip> {
-  const member = await db.query.members
+  const memberResult = await db.query.users
     .findFirst({
-      where: eq(members.id, memberId)
+      where: eq(users.userId, memberId)
     })
     .catch(() => null);
 
-  if (!member) {
+  if (!memberResult) {
     throw new Error(`Member ${memberId} not found`);
   }
 
-  if (member.province !== 'QC') {
-    throw new Error(`RL-1 is only for Quebec residents, member is in ${member.province}`);
+  if (memberResult.province !== 'QC') {
+    throw new Error(`RL-1 is only for Quebec residents, member is in ${memberResult.province}`);
   }
 
   const strikePay = await getYearlyStrikePay(memberId, taxYear);
 
+  // Decrypt SIN/NAS for Quebec tax document generation
+  // CRITICAL: SIN is only decrypted for official Revenu Québec tax reporting
+  // This operation is audited in encryption.ts logger
+  let recipientNAS = 'NOT PROVIDED';
+  
+  if (memberResult.encryptedSin) {
+    try {
+      recipientNAS = await decryptSIN(member.encryptedSin);
+      
+      // Audit log for compliance (without logging actual SIN/NAS)
+      logger.info('SIN decrypted for RL-1 generation', {
+        memberId,
+        taxYear,
+        action: 'rl1_generation',
+        hasEncryptedSin: true,
+      });
+    } catch (error) {
+      logger.error('Failed to decrypt SIN for RL-1 generation', error as Error, {
+        memberId,
+        taxYear,
+      });
+      throw new Error('Unable to decrypt member SIN for Quebec tax document generation');
+    }
+  } else {
+    logger.warn('Member has no encrypted SIN on file', {
+      memberId,
+      taxYear,
+      action: 'rl1_generation',
+    });
+  }
+
   return {
     slipType: 'RL-1',
     taxYear,
-    recipientName: member.fullName || member.name || 'Unknown',
-    recipientNAS: member.sin || 'NOT PROVIDED', // NAS = Number d'assurance social
+    recipientName: member.fullName || member.name || member.email || 'Unknown',
+    recipientNAS: recipientNAS, // NAS = Number d'assurance sociale
     recipientAddress: member.address || 'NOT PROVIDED',
     caseO_autresRevenus: strikePay, // Case O: Autres revenus (Other income)
     issuedDate: new Date(),
@@ -161,36 +227,52 @@ export async function processYearEndTaxSlips(
   rl1Generated: number;
   deadline: Date;
 }> {
-  // Find all members who received strike pay in tax year
-  const strikePayments = await db.query.strikePayments
-    .findMany({
-      where: and(
-        gte(strikePayments.paymentDate, new Date(`${taxYear}-01-01`)),
-        lte(strikePayments.paymentDate, new Date(`${taxYear}-12-31`))
-      )
-    })
-    .catch(() => []);
+  // CRITICAL: This function requires the strikeFundDisbursements table to be populated
+  // with strike payment data. Ensure payments are recorded there before running year-end processing.
+  
+  // Query all members who received strike pay in the tax year
+  const payments = await db.select({
+    userId: strikeFundDisbursements.userId,
+    totalAmount: sql<number>`SUM(${strikeFundDisbursements.paymentAmount})`,
+    province: strikeFundDisbursements.province,
+  })
+  .from(strikeFundDisbursements)
+  .where(
+    eq(strikeFundDisbursements.taxYear, taxYear.toString())
+  )
+  .groupBy(strikeFundDisbursements.userId, strikeFundDisbursements.province)
+  .catch(() => []);
 
-  const uniqueMemberIds = [...new Set(strikePayments.map((p: any) => p.memberId))];
+  if (payments.length === 0) {
+    console.warn(`No strike payments found for tax year ${taxYear}`);
+  }
+
+  const uniqueMembers = payments.filter(p => (p.totalAmount || 0) > 500);
 
   let t4aCount = 0;
   let rl1Count = 0;
 
-  for (const memberId of uniqueMemberIds) {
-    const yearTotal = await getYearlyStrikePay(memberId, taxYear);
+  for (const payment of uniqueMembers) {
+    const memberId = payment.userId;
+    const yearTotal = payment.totalAmount || 0;
 
     // Only generate if above threshold
     if (yearTotal <= 500) continue;
 
-    const member = await db.query.members
+    const member = await db.query.users
       .findFirst({
-        where: eq(members.id, memberId)
+        where: eq(users.userId, memberId)
       })
       .catch(() => null);
 
+    if (!member) {
+      console.error(`Member ${memberId} not found for tax slip generation`);
+      continue;
+    }
+
     // Generate T4A for all provinces
     try {
-      const t4a = await generateT4A(memberId, taxYear);
+      const t4a = await generateT4A(memberId as string, taxYear);
       // Store T4A in database (would need taxSlips table)
       t4aCount++;
     } catch (error) {
@@ -200,7 +282,7 @@ export async function processYearEndTaxSlips(
     // Generate RL-1 for Quebec members
     if (member?.province === 'QC') {
       try {
-        const rl1 = await generateRL1(memberId, taxYear);
+        const rl1 = await generateRL1(memberId as string, taxYear);
         // Store RL-1 in database
         rl1Count++;
       } catch (error) {
@@ -213,7 +295,7 @@ export async function processYearEndTaxSlips(
   const deadline = new Date(`${taxYear + 1}-02-28`);
 
   return {
-    processed: uniqueMemberIds.length,
+    processed: uniqueMembers.length,
     t4aGenerated: t4aCount,
     rl1Generated: rl1Count,
     deadline
@@ -229,17 +311,20 @@ async function getYearlyStrikePay(
 ): Promise<number> {
   const targetYear = year || new Date().getFullYear();
 
-  const payments = await db.query.strikePayments
-    .findMany({
-      where: and(
-        eq(strikePayments.memberId, memberId),
-        gte(strikePayments.paymentDate, new Date(`${targetYear}-01-01`)),
-        lte(strikePayments.paymentDate, new Date(`${targetYear}-12-31`))
-      )
-    })
-    .catch(() => []);
+  // Query from strikeFundDisbursements table (tax compliance tracking)
+  const payments = await db.select({
+    totalAmount: sql<number>`COALESCE(SUM(${strikeFundDisbursements.paymentAmount}), 0)`,
+  })
+  .from(strikeFundDisbursements)
+  .where(
+    and(
+      eq(strikeFundDisbursements.userId, memberId),
+      eq(strikeFundDisbursements.taxYear, targetYear.toString())
+    )
+  )
+  .catch(() => [{ totalAmount: 0 }]);
 
-  return payments.reduce((sum, p: any) => sum + (p.amount || 0), 0);
+  return Number(payments[0]?.totalAmount || 0);
 }
 
 /**
@@ -270,12 +355,13 @@ export async function getTaxFilingStatus(
 }
 
 async function isMemberInQuebec(memberId: string): Promise<boolean> {
-  const member = await db.query.members
+  const memberResult = await db.query.users
     .findFirst({
-      where: eq(members.id, memberId)
+      where: eq(users.userId, memberId)
     })
     .catch(() => null);
 
+  const member = memberResult as any;
   return member?.province === 'QC';
 }
 

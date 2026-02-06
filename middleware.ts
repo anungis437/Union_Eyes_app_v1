@@ -34,10 +34,6 @@ export default clerkMiddleware((auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api') || 
       req.nextUrl.pathname.startsWith('/_next') ||
       req.nextUrl.pathname.includes('.')) {
-    // Skip auth for webhook endpoints
-    if (req.nextUrl.pathname.startsWith('/api/whop/webhooks')) {
-      console.log("Skipping Clerk auth for Whop webhook endpoint");
-    }
     return NextResponse.next();
   }
   

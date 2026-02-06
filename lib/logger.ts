@@ -83,6 +83,18 @@ class Logger {
       'ssn',
       'sin',
       'email', // Partially redact
+      'accessToken',
+      'access_token',
+      'refreshToken',
+      'refresh_token',
+      'privateKey',
+      'private_key',
+      'clientSecret',
+      'client_secret',
+      'sessionToken',
+      'session_token',
+      'bearerToken',
+      'bearer_token',
     ];
 
     const redacted = { ...context };
