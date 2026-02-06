@@ -253,5 +253,87 @@
     "passwordMismatch": "Passwords do not match",
     "fileSize": "File size must be less than {size}MB",
     "fileType": "Invalid file type"
+  },
+  "rewards": {
+    "wallet": {
+      "title": "My Reward Wallet",
+      "description": "View your reward credits and redeem them for products and services",
+      "redeemButton": "Redeem Credits",
+      "balance": {
+        "title": "Available Credits",
+        "subtitle": "credits ready to redeem",
+        "info": "Information about credits",
+        "tooltip": "Credits are earned through recognition awards and can be redeemed for products and services via Shop Moi Ça."
+      },
+      "stats": {
+        "totalEarned": "Total Earned",
+        "totalRedeemed": "Total Redeemed",
+        "lastActivity": "Last Activity",
+        "allTime": "All time",
+        "mostRecent": "Most recent transaction"
+      },
+      "ledger": {
+        "title": "Transaction History",
+        "description": "Complete record of all credit transactions",
+        "empty": "No transactions yet",
+        "columns": {
+          "date": "Date",
+          "description": "Description",
+          "type": "Type",
+          "amount": "Amount",
+          "balance": "Balance"
+        },
+        "types": {
+          "earned": "Award Received",
+          "redeemed": "Credits Redeemed",
+          "refund": "Refund Processed",
+          "adjustment": "Balance Adjustment",
+          "revoked": "Award Revoked"
+        },
+        "badges": {
+          "earned": "Earned",
+          "redeemed": "Redeemed",
+          "refund": "Refund",
+          "adjustment": "Adjustment",
+          "revoked": "Revoked"
+        }
+      }
+    },
+    "redeem": {
+      "title": "Redeem Your Credits",
+      "description": "Convert your reward credits into products and services",
+      "balanceTitle": "Available Balance",
+      "balanceMessage": "You have {balance} credits available to redeem",
+      "shopify": {
+        "title": "Shop Moi Ça Store",
+        "description": "Browse our curated collection of products and redeem your credits"
+      },
+      "manual": {
+        "title": "Request Redemption",
+        "description": "Submit a redemption request and our team will process it"
+      },
+      "howItWorks": {
+        "title": "How It Works",
+        "step1": "Select the amount of credits you want to redeem",
+        "step2": "Credits are deducted from your balance immediately",
+        "step3": "Complete checkout in the Shop Moi Ça store",
+        "step4": "Track your order status in your transaction history"
+      },
+      "form": {
+        "creditsLabel": "Credits to Redeem",
+        "creditsHelper": "Maximum: {balance} credits",
+        "notesLabel": "Notes (Optional)",
+        "notesPlaceholder": "Add any special requests or notes...",
+        "submitShopify": "Continue to Shop Moi Ça",
+        "submitManual": "Submit Redemption Request",
+        "noBalance": "You need credits to redeem",
+        "errors": {
+          "invalidAmount": "Please enter a valid amount",
+          "insufficientBalance": "You do not have enough credits",
+          "failed": "Failed to initiate redemption",
+          "unknown": "An error occurred"
+        }
+      }
+    }
   }
 }
