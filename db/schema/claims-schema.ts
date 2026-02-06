@@ -29,12 +29,16 @@ export const claimTypeEnum = pgEnum("claim_type", [
   "discrimination_gender",
   "discrimination_race",
   "discrimination_disability",
-  "harassment_verbal",
-  "harassment_physical",
+  "discrimination_other",
   "harassment_sexual",
+  "harassment_workplace",
+  "wage_dispute",
   "contract_dispute",
   "retaliation",
-  "other"
+  "wrongful_termination",
+  "other",
+  "harassment_verbal",
+  "harassment_physical"
 ]);
 
 // Claims table

@@ -1,5 +1,5 @@
 {
-  "id": "500318f6-5c3e-4f9b-a126-705f010f30b7",
+  "id": "b544318d-6051-4355-91a1-c268417e891c",
   "prevId": "696e4928-6a9b-4f20-9317-17295eb5edee",
   "version": "7",
   "dialect": "postgresql",
@@ -33508,12 +33508,16 @@
         "discrimination_gender",
         "discrimination_race",
         "discrimination_disability",
-        "harassment_verbal",
-        "harassment_physical",
+        "discrimination_other",
         "harassment_sexual",
+        "harassment_workplace",
+        "wage_dispute",
         "contract_dispute",
         "retaliation",
-        "other"
+        "wrongful_termination",
+        "other",
+        "harassment_verbal",
+        "harassment_physical"
       ]
     },
     "public.decision_type": {

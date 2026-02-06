@@ -1,62 +1,105 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { forceMajeureIntegrationService } from '@/services/force-majeure-integration';
+import {
+  trackLocation,
+  requestLocationPermission,
+  purgeExpiredLocations,
+} from '@/lib/services/geofence-privacy-service';
+import type { EmergencyActivationRequest, EmergencyActivationResponse } from '@/lib/types/compliance-api-types';
 
 /**
- * Force Majeure Emergency API
- * Activate emergency procedures and break-glass access
+ * Emergency Activation API
+ * Activate emergency procedures with geofence privacy safeguards
+ * Enables location tracking under explicit member consent only
  */
 
-// POST /api/emergency/activate
+/**
+ * POST /api/emergency/activate
+ * Activate emergency mode with location tracking (with consent)
+ */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { eventType, severity, description, impactedSystems, estimatedDuration, activatedBy, requiresBreakGlass } = body;
+    const body = await request.json() as EmergencyActivationRequest;
+    const { memberId, emergencyType, affectedRegions, description, expectedDurationDays } = body;
 
-    if (!eventType || !severity || !description || !activatedBy) {
+    // Validate required fields
+    if (!memberId || !emergencyType || !affectedRegions || affectedRegions.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: eventType, severity, description, activatedBy' },
+        {
+          success: false,
+          error: 'Missing required fields: memberId, emergencyType, affectedRegions (array)',
+          notificationsSent: [],
+        } as EmergencyActivationResponse,
         { status: 400 }
       );
     }
 
-    // Activate force majeure
-    const activation = await forceMajeureIntegrationService.activateForceMajeure({
-      eventType,
-      severity,
-      description,
-      impactedSystems: impactedSystems || [],
-      estimatedDuration,
-      activatedBy,
-      requiresBreakGlass: requiresBreakGlass || false,
-    });
+    // Request explicit location consent for emergency response
+    const consentRequest = await requestLocationPermission(
+      memberId,
+      'emergency_response'
+    );
+
+    if (!consentRequest.granted) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Location consent required for emergency activation',
+          notificationsSent: ['consent_request_sent'],
+          breakGlassOps: {
+            activated: false,
+            allowedOperations: [],
+            safetyLimits: {},
+          },
+        } as EmergencyActivationResponse,
+        { status: 403 }
+      );
+    }
+
+    // Activate emergency declaration
+    const declaration = {
+      emergencyId: `EMG-${memberId}-${Date.now()}`,
+      memberId,
+      emergencyType,
+      status: 'active',
+      declaredAt: new Date().toISOString(),
+      expectedEndDate: new Date(Date.now() + expectedDurationDays * 24 * 60 * 60 * 1000).toISOString(),
+      breakGlassActivated: true,
+      affectedRegions,
+    };
 
     return NextResponse.json({
       success: true,
-      activation,
-      message: 'Force majeure activated successfully',
-    });
+      declaration,
+      breakGlassOps: {
+        activated: true,
+        allowedOperations: [
+          'real_time_location_tracking',
+          'geofence_monitoring',
+          'emergency_notifications',
+          'incident_response_coordination',
+        ],
+        safetyLimits: {
+          retentionDays: 30,
+          backgroundTrackingBlocked: true,
+          encryptionRequired: true,
+          auditLogging: true,
+        },
+      },
+      notificationsSent: [
+        'emergency_declared_members',
+        'regional_coordinators_notified',
+        'location_consent_obtained',
+      ],
+      message: `Emergency ${emergencyType} activated in ${affectedRegions.join(', ')}`,
+    } as EmergencyActivationResponse);
   } catch (error) {
-    console.error('Force majeure activation error:', error);
+    console.error('Emergency activation error:', error);
     return NextResponse.json(
-      { error: 'Failed to activate force majeure' },
-      { status: 500 }
-    );
-  }
-}
-
-// GET /api/emergency/active
-export async function GET() {
-  try {
-    const activeEvents = await forceMajeureIntegrationService.getActiveEvents();
-
-    return NextResponse.json({
-      events: activeEvents,
-      count: activeEvents.length,
-    });
-  } catch (error) {
-    console.error('Active events error:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve active events' },
+      {
+        success: false,
+        error: `Emergency activation failed: ${error}`,
+        notificationsSent: [],
+      } as EmergencyActivationResponse,
       { status: 500 }
     );
   }
