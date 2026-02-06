@@ -28,7 +28,8 @@
     "ml:train:workload": "npx tsx scripts/train-workload-forecast-model.ts",
     "validate:blind-spots": "npx tsx scripts/run-validators.ts",
     "validate:blind-spots:privacy": "npx tsx scripts/run-validators.ts --category=privacy",
-    "validate:blind-spots:critical": "npx tsx scripts/run-validators.ts --only=1,2,3,4"
+    "validate:blind-spots:critical": "npx tsx scripts/run-validators.ts --only=1,2,3,4",
+    "prepare": "husky"
   },
   "dependencies": {
     "@azure/identity": "^4.0.0",
@@ -73,6 +74,8 @@
     "@react-email/render": "^2.0.0",
     "@react-pdf/renderer": "^4.3.1",
     "@sentry/nextjs": "^10.30.0",
+    "@stripe/react-stripe-js": "^3.2.0",
+    "@stripe/stripe-js": "^8.6.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
     "@tanstack/react-query": "^5.90.12",
@@ -130,8 +133,6 @@
     "simple-statistics": "^7.8.8",
     "sonner": "^1.5.0",
     "stripe": "^16.9.0",
-    "@stripe/stripe-js": "^8.6.0",
-    "@stripe/react-stripe-js": "^3.2.0",
     "swr": "^2.3.7",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
@@ -158,6 +159,7 @@
     "drizzle-kit": "^0.24.2",
     "eslint": "^8",
     "eslint-config-next": "14.2.7",
+    "husky": "^9.1.7",
     "jsdom": "^27.3.0",
     "postcss": "^8",
     "remotion": "^4.0.387",
