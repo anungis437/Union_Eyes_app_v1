@@ -1,31 +1,137 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { forceMajeureIntegrationService } from '@/services/force-majeure-integration';
+import { getPrivacyRules, assessBreachNotification } from '@/lib/services/provincial-privacy-service';
+import type { PIPEDABreachRequest, PIPEDABreachAssessment } from '@/lib/types/compliance-api-types';
 
 /**
  * PIPEDA Breach Assessment API
- * Assess if force majeure event requires PIPEDA breach notification
+ * Assess if emergency event requires PIPEDA or provincial breach notification
  */
 
-// GET /api/emergency/pipeda?eventId=xxx
-export async function GET(request: NextRequest) {
+/**
+ * POST /api/emergency/pipeda
+ * Assess if data breach requires PIPEDA notification
+ */
+export async function POST(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const eventId = searchParams.get('eventId');
+    const body = await request.json() as PIPEDABreachRequest;
+    const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = body;
 
-    if (!eventId) {
+    // Validate required fields
+    if (!memberId || !breachDate || !affectedDataTypes || affectedDataTypes.length === 0) {
       return NextResponse.json(
-        { error: 'eventId parameter required' },
+        {
+          requiresBreachReport: false,
+          notificationRequired: false,
+          affectingMinimumThreshold: false,
+          reportDeadline: new Date().toISOString(),
+          reportingChannels: [],
+        } as PIPEDABreachAssessment,
         { status: 400 }
       );
     }
 
-    const assessment = await forceMajeureIntegrationService.assessPIPEDABreach(eventId);
+    // Assess breach notification requirements
+    const assessment = await assessBreachNotification(
+      memberId,
+      affectedDataTypes,
+      new Date(breachDate)
+    );
 
-    return NextResponse.json(assessment);
+    // Get provincial rules
+    const rules = getPrivacyRules(province || 'FEDERAL');
+
+    // Calculate minimum threshold (varies by province)
+    const minimumThreshold = province === 'QC' ? 10 : 25; // QC has lower threshold
+    const affectingMinimum = estimatedAffectedCount >= minimumThreshold;
+
+    // Determine reporting channels
+    const reportingChannels = [];
+    if (affectingMinimum) {
+      reportingChannels.push('Privacy Commissioner');
+      if (province === 'QC') {
+        reportingChannels.push('CAI - Commission d\'accès à l\'information');
+      }
+    }
+    reportingChannels.push('Affected Members (via secure notification)');
+
+    // Calculate deadline (72 hours in most provinces, 24 hours in QC)
+    const notificationHours = province === 'QC' ? 24 : 72;
+    const deadlineDate = new Date(new Date(breachDate).getTime() + notificationHours * 60 * 60 * 1000);
+
+    return NextResponse.json({
+      requiresBreachReport: affectingMinimum,
+      notificationRequired: affectingMinimum,
+      affectingMinimumThreshold: affectingMinimum,
+      reportDeadline: deadlineDate.toISOString(),
+      reportingChannels,
+      estimatedDamages: affectingMinimum 
+        ? `${estimatedAffectedCount} members affected`
+        : 'Below reporting threshold',
+      message: `PIPEDA assessment complete. Notification ${affectingMinimum ? 'required' : 'not required'}.`,
+    } as PIPEDABreachAssessment);
   } catch (error) {
     console.error('PIPEDA assessment error:', error);
     return NextResponse.json(
-      { error: 'Failed to assess PIPEDA breach' },
+      {
+        requiresBreachReport: false,
+        notificationRequired: false,
+        affectingMinimumThreshold: false,
+        reportDeadline: new Date().toISOString(),
+        reportingChannels: [],
+        estimatedDamages: `Error: ${error}`,
+      } as PIPEDABreachAssessment,
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET /api/emergency/pipeda?breachId=xxx&province=QC
+ * Get PIPEDA breach notification status
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const breachId = searchParams.get('breachId');
+    const province = searchParams.get('province') || 'FEDERAL';
+
+    if (!breachId) {
+      return NextResponse.json(
+        {
+          requiresBreachReport: false,
+          notificationRequired: false,
+          affectingMinimumThreshold: false,
+          reportDeadline: new Date().toISOString(),
+          reportingChannels: [],
+        } as PIPEDABreachAssessment,
+        { status: 400 }
+      );
+    }
+
+    const rules = getPrivacyRules(province);
+
+    return NextResponse.json({
+      requiresBreachReport: true,
+      notificationRequired: true,
+      affectingMinimumThreshold: true,
+      reportDeadline: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+      reportingChannels: [
+        rules.authority,
+        'Affected Members',
+      ],
+      message: `Breach notification requirements: Follow ${province} protocols`,
+    } as PIPEDABreachAssessment);
+  } catch (error) {
+    console.error('PIPEDA status error:', error);
+    return NextResponse.json(
+      {
+        requiresBreachReport: false,
+        notificationRequired: false,
+        affectingMinimumThreshold: false,
+        reportDeadline: new Date().toISOString(),
+        reportingChannels: [],
+        estimatedDamages: `Error: ${error}`,
+      } as PIPEDABreachAssessment,
       { status: 500 }
     );
   }

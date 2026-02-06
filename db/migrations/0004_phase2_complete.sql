@@ -178,6 +178,14 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'discrimination_other';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'harassment_sexual';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'harassment_workplace';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'wage_dispute';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'contract_dispute';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'retaliation';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'wrongful_termination';--> statement-breakpoint
+ALTER TYPE "claim_type" ADD VALUE 'other';--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "notifications" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,

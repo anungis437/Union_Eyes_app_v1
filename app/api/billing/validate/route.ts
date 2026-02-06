@@ -1,27 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { currencyEnforcementService } from '@/services/currency-enforcement-service';
+import {
+  convertUSDToCAD,
+  checkT106Requirement,
+  validateBillingRequest,
+} from '@/lib/services/transfer-pricing-service';
+import type { BillingValidationRequest, BillingValidationResponse } from '@/lib/types/compliance-api-types';
 
 /**
- * Currency Enforcement API
+ * Billing Validation API
  * Enforces CAD-only billing per CRA transfer pricing rules
+ * Validates T1 General / T106 slip requirements
  */
 
-// POST /api/billing/validate
-// Validate billing request for CAD currency compliance
+/**
+ * POST /api/billing/validate
+ * Validate billing request for CAD currency compliance and T106 requirements
+ */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as BillingValidationRequest;
     const { customerId, amount, currency, description, invoiceDate } = body;
 
+    // Validate required fields
     if (!customerId || !amount || !currency) {
       return NextResponse.json(
-        { error: 'Missing required fields: customerId, amount, currency' },
+        {
+          valid: false,
+          error: 'Missing required fields: customerId, amount, currency',
+          currency: 'CAD',
+        },
         { status: 400 }
       );
     }
 
-    // Enforce CAD currency
-    const validation = await currencyEnforcementService.validateBillingRequest({
+    // Validate billing request
+    const validation = validateBillingRequest({
       customerId,
       amount,
       currency,
@@ -30,9 +43,34 @@ export async function POST(request: NextRequest) {
     });
 
     if (!validation.valid) {
+      // If not CAD, attempt conversion
+      if (currency !== 'CAD') {
+        try {
+          const convertedAmount = await convertUSDToCAD(amount);
+          return NextResponse.json({
+            valid: false,
+            currency: 'CAD',
+            amount: convertedAmount,
+            message: `Currency must be CAD. ${currency} ${amount} = CAD ${convertedAmount.toFixed(2)}`,
+            error: validation.error,
+          } as BillingValidationResponse);
+        } catch (conversionError) {
+          return NextResponse.json(
+            {
+              valid: false,
+              currency: 'CAD',
+              error: `Currency conversion failed: ${conversionError}`,
+              requiredCurrency: 'CAD',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
       return NextResponse.json(
         {
           valid: false,
+          currency: 'CAD',
           error: validation.error,
           requiredCurrency: 'CAD',
         },
@@ -40,16 +78,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check T106 requirements
+    const t106Check = checkT106Requirement(amount, currency);
+
     return NextResponse.json({
       valid: true,
       currency: 'CAD',
       amount,
       message: 'Billing request approved',
-    });
+      requiresT106: t106Check.requires,
+      t106Notes: t106Check.notes,
+    } as BillingValidationResponse);
   } catch (error) {
-    console.error('Currency validation error:', error);
+    console.error('Billing validation error:', error);
     return NextResponse.json(
-      { error: 'Currency validation failed' },
+      {
+        valid: false,
+        error: `Billing validation failed: ${error}`,
+        currency: 'CAD',
+      },
       { status: 500 }
     );
   }
