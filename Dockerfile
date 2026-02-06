@@ -37,17 +37,17 @@ COPY --from=deps /app/packages ./packages
 # Copy application source code
 COPY . .
 
-# Set build-time environment variables
+# Set build-time environment variables (public values only - no secrets)
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ARG DATABASE_URL
-ARG WHOP_WEBHOOK_KEY
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV WHOP_WEBHOOK_KEY=${WHOP_WEBHOOK_KEY}
 
 # Stub environment variables for build-time only (prevent module initialization errors)
+# SECURITY: These are placeholder values only. Real secrets MUST be passed at runtime
+# via docker-compose environment or deployment configuration.
+ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
 ENV NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder_anon_key
 ENV SUPABASE_SERVICE_ROLE_KEY=placeholder_service_role_key
@@ -56,6 +56,7 @@ ENV STRIPE_SECRET_KEY=sk_test_placeholder
 ENV AZURE_SPEECH_KEY=placeholder_speech_key
 ENV AZURE_SPEECH_REGION=canadacentral
 ENV WEBHOOK_KEY=placeholder_webhook_key
+ENV WHOP_WEBHOOK_KEY=placeholder_whop_webhook_key
 
 # Build the application (workspace packages already built in deps stage)
 # Exclude financial-service (standalone service with missing dependencies)

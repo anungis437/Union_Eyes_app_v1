@@ -51,7 +51,7 @@ export * from "./grievance-workflow-schema";
 export * from "./education-training-schema";
 
 // Q1 2025: Advanced Analytics
-export * from "../../database/schema/analytics";
+export * from "./analytics";
 
 // Document Management System
 export * from "./documents-schema";
@@ -66,41 +66,20 @@ export * from "./recognition-rewards-schema";
 // Phase 1: Canada Federal Compliance (Validator Recommendations)
 export * from "./lmbp-immigration-schema"; // LMBP Immigration System (Validator #14)
 export * from "./governance-schema"; // Golden Share Governance (Validator #16)
-// P1: Critical Compliance Validators
-export * from "./provincial-privacy-schema";
-export * from "./indigenous-data-schema";
-export * from "./strike-fund-tax-schema";
-export * from "./force-majeure-schema";
 
-// P2: High-Impact Compliance Validators
-export * from "./geofence-privacy-schema";
-export * from "./transfer-pricing-schema";
-export * from "./founder-conflict-schema";
-export * from "./joint-trust-fmv-schema";
-
-// P3: Documentation & Lower-Priority Compliance Validators
-export * from "./certification-management-schema";
-export * from "./employer-non-interference-schema";
-export * from "./whiplash-prevention-schema";
-// P1 Critical Compliance
+// P1: Critical Compliance Validators (Consolidated - duplicates removed)
 export * from "./provincial-privacy-schema"; // #1 Provincial Privacy (PIPEDA, PIPA, Law 25, PHIPA)
 export * from "./indigenous-data-schema"; // #3 Indigenous Data Sovereignty (OCAP®, BCR consent)
 export * from "./strike-fund-tax-schema"; // #4 Strike Fund Tax (T4A/RL-1, $500/week threshold)
 export * from "./force-majeure-schema"; // #13 Force Majeure (Break-glass, Shamir's Secret Sharing)
 
-// P2 High-Impact Compliance
+// P2: High-Impact Compliance Validators
 export * from "./geofence-privacy-schema"; // #5 Geofence Privacy (Location tracking opt-in, 24-hour retention)
 export * from "./transfer-pricing-schema"; // #12 Transfer Pricing (CAD enforcement, Bank of Canada FX, T106)
 export * from "./founder-conflict-schema"; // #11 Founder Conflict (Blind trust, conflict disclosure, arms-length)
 export * from "./joint-trust-fmv-schema"; // #6 Joint-Trust FMV (Fair market value, CPI escalator, 3-bid procurement)
-// P1 Critical Compliance: Provincial Privacy (Validator #1)
-export * from "./provincial-privacy-schema";
 
-// P1 Critical Compliance: Indigenous Data Sovereignty (Validator #3)
-export * from "./indigenous-data-schema";
-
-// P1 Critical Compliance: Strike Fund Tax (Validator #4)
-export * from "./strike-fund-tax-schema";
-
-// P1 Critical Compliance: Force Majeure & Disaster Recovery (Validator #13)
-export * from "./force-majeure-schema";
+// P3: Documentation & Lower-Priority Compliance Validators
+export * from "./certification-management-schema";
+export * from "./employer-non-interference-schema";
+export * from "./whiplash-prevention-schema";

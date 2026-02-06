@@ -13,8 +13,7 @@
  */
 
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
-import { users } from '@/db/schema/users-schema';
+import { claims, users } from '@/db/schema';
 import { eq, and, gte, sql, count } from 'drizzle-orm';
 
 interface DailyAggregation {

@@ -17,7 +17,7 @@
 
 import { db } from '@/db';
 import { eq, and, gte } from 'drizzle-orm';
-import { crossBorderTransactions, exchangeRates } from '@/db/schema';
+import { crossBorderTransactions, exchangeRates } from '@/db/schema/transfer-pricing-schema';
 
 export type Currency = 'CAD' | 'USD' | 'EUR' | 'GBP' | 'MXN';
 
@@ -288,7 +288,7 @@ export class CurrencyService {
       )
     });
 
-    const t106Transactions: T106Transaction[] = transactions.map(t => ({
+    const t106Transactions: T106Transaction[] = transactions.map((t: typeof crossBorderTransactions.$inferSelect) => ({
       nonResidentName: 'Related Party Name', // TODO: Get from transaction details
       nonResidentCountry: t.toCountryCode || 'US',
       transactionType: 'Service Agreement', // TODO: Get actual type
@@ -406,7 +406,7 @@ export class CurrencyService {
       )
     });
 
-    const totalAmount = transactions.reduce((sum, t) => sum + ((t.cadEquivalentCents || 0) / 100), 0);
+    const totalAmount = transactions.reduce((sum: number, t: typeof crossBorderTransactions.$inferSelect) => sum + ((t.cadEquivalentCents || 0) / 100), 0);
 
     return {
       transactions,

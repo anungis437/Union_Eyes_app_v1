@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
-import { users } from '@/db/schema/users-schema';
+import { claims, users } from '@/db/schema';
 import { eq, and, gte, count, sql } from 'drizzle-orm';
 
 async function handler(req: NextRequest) {

@@ -6,8 +6,7 @@
  */
 
 import { db } from "@/db/db";
-import { claims, organizations, organizationMembers, profiles } from "@/db/schema";
-import { users } from "@/db/schema/users-schema";
+import { claims, organizations, organizationMembers, profiles, users } from "@/db/schema";
 import { v4 as uuidv4 } from 'uuid';
 import { sql } from 'drizzle-orm';
 

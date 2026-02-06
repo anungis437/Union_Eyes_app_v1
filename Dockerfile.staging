@@ -26,14 +26,18 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy application source code (skip workspace packages)
 COPY . .
 
-# Set build-time environment variables
+# Set build-time environment variables (public values only - no secrets)
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ARG DATABASE_URL
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV DOCKER_BUILD=true
+
+# Stub environment variables for build-time only (prevent module initialization errors)
+# SECURITY: These are placeholder values only. Real secrets MUST be passed at runtime
+# via docker-compose environment or deployment configuration.
+ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
 
 # Build Next.js directly (no turbo/workspace)
 RUN pnpm exec next build

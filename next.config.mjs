@@ -5,16 +5,16 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ESLint configuration
+  // ESLint configuration - ENABLED for production safety
   eslint: {
-    // Temporarily ignore ESLint during builds to focus on TypeScript errors
-    ignoreDuringBuilds: true,
+    // ESLint errors will now block builds to prevent shipping broken code
+    ignoreDuringBuilds: false,
   },
   
-  // TypeScript configuration
+  // TypeScript configuration - ENABLED for type safety
   typescript: {
-    // Temporarily ignore TypeScript errors during builds for development
-    ignoreBuildErrors: true,
+    // TypeScript errors will now block builds to prevent type errors in production
+    ignoreBuildErrors: false,
   },
   
   // Build optimizations

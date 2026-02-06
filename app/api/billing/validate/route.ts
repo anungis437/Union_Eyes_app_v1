@@ -19,14 +19,14 @@ import type { BillingValidationRequest, BillingValidationResponse } from '@/lib/
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as BillingValidationRequest;
-    const { customerId, amount, currency, description, invoiceDate } = body;
+    const { amount, currency, invoiceDate } = body;
 
     // Validate required fields
-    if (!customerId || !amount || !currency) {
+    if (!amount || !currency) {
       return NextResponse.json(
         {
           valid: false,
-          error: 'Missing required fields: customerId, amount, currency',
+          error: 'Missing required fields: amount, currency',
           currency: 'CAD',
         },
         { status: 400 }
@@ -34,19 +34,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate billing request
-    const validation = validateBillingRequest({
-      customerId,
+    const validation = await validateBillingRequest({
+      invoiceId: `inv-${Date.now()}`,
       amount,
       currency,
-      description: description || '',
-      invoiceDate: invoiceDate ? new Date(invoiceDate) : new Date(),
+      date: invoiceDate ? new Date(invoiceDate) : new Date(),
     });
 
     if (!validation.valid) {
       // If not CAD, attempt conversion
       if (currency !== 'CAD') {
         try {
-          const convertedAmount = await convertUSDToCAD(amount);
+          const convertedAmount = await convertUSDToCAD(amount, new Date());
           return NextResponse.json({
             valid: false,
             currency: 'CAD',
@@ -79,15 +78,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Check T106 requirements
-    const t106Check = checkT106Requirement(amount, currency);
+    const t106Check = await checkT106Requirement(amount, true);
 
     return NextResponse.json({
       valid: true,
       currency: 'CAD',
       amount,
       message: 'Billing request approved',
-      requiresT106: t106Check.requires,
-      t106Notes: t106Check.notes,
+      requiresT106: t106Check.requiresT106,
+      t106Notes: t106Check.reason,
     } as BillingValidationResponse);
   } catch (error) {
     console.error('Billing validation error:', error);

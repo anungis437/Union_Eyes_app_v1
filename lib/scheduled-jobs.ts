@@ -181,19 +181,26 @@ export function initializeAnalyticsJobs() {
     enabledJobs.map(j => j.name).join(', ')
   );
 
-  // TODO: Integrate with your cron scheduler
-  // Examples:
-  // - node-cron
-  // - bull/bullmq for job queues
-  // - pg_cron for database-level scheduling
-  // - Vercel Cron for serverless
-  
-  // Example with node-cron:
-  // import cron from 'node-cron';
-  // enabledJobs.forEach(job => {
-  //   cron.schedule(job.schedule, job.handler);
-  //   console.log(`Scheduled ${job.name} with pattern ${job.schedule}`);
-  // });
+  // Integrate with node-cron for scheduled job execution
+  if (typeof window === 'undefined') { // Server-side only
+    const cron = require('node-cron');
+    
+    enabledJobs.forEach(job => {
+      const task = cron.schedule(job.schedule, async () => {
+        console.log(`[CRON] Starting job: ${job.name}`);
+        try {
+          await job.handler();
+        } catch (error) {
+          console.error(`[CRON] Job ${job.name} failed:`, error);
+        }
+      }, {
+        scheduled: true,
+        timezone: "America/Toronto" // Adjust based on your requirements
+      });
+      
+      console.log(`✓ Scheduled ${job.name} with pattern ${job.schedule}`);
+    });
+  }
 
   return enabledJobs;
 }

@@ -1,11 +1,33 @@
 version: '3.8'
 
+# SECURITY: All sensitive credentials are passed at runtime via environment variables
+# This prevents secrets from being baked into Docker image layers (visible in `docker history`)
+# Set these variables in your deployment platform (Azure, AWS, etc.) or .env file
+
 services:
   app:
     environment:
+      # Application
       NODE_ENV: production
       NEXT_PUBLIC_APP_URL: ${PROD_APP_URL}
+      
+      # Database (REQUIRED)
       DATABASE_URL: ${PROD_DATABASE_URL}
+      
+      # Authentication (REQUIRED)
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${PROD_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${PROD_CLERK_SECRET_KEY}
+      
+      # Payments (REQUIRED if using Stripe/Whop)
+      STRIPE_SECRET_KEY: ${PROD_STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${PROD_STRIPE_WEBHOOK_SECRET}
+      WHOP_WEBHOOK_KEY: ${PROD_WHOP_WEBHOOK_KEY}
+      
+      # Redis (REQUIRED for distributed caching)
+      REDIS_HOST: ${PROD_REDIS_HOST}
+      REDIS_PORT: ${PROD_REDIS_PORT:-6379}
+      UPSTASH_REDIS_REST_URL: ${PROD_UPSTASH_REDIS_REST_URL}
+      UPSTASH_REDIS_REST_TOKEN: ${PROD_UPSTASH_REDIS_REST_TOKEN}
       
       # Azure Production Resources
       AZURE_STORAGE_ACCOUNT_NAME: ${PROD_AZURE_STORAGE_ACCOUNT_NAME}
@@ -14,4 +36,19 @@ services:
       AZURE_SPEECH_REGION: ${PROD_AZURE_SPEECH_REGION}
       AZURE_OPENAI_ENDPOINT: ${PROD_AZURE_OPENAI_ENDPOINT}
       AZURE_OPENAI_KEY: ${PROD_AZURE_OPENAI_KEY}
+      AZURE_KEY_VAULT_URL: ${PROD_AZURE_KEY_VAULT_URL}
+      
+      # Email (REQUIRED for notifications)
+      RESEND_API_KEY: ${PROD_RESEND_API_KEY}
+      EMAIL_FROM: ${PROD_EMAIL_FROM:-noreply@unioneyes.com}
+      
+      # Supabase (if used)
+      NEXT_PUBLIC_SUPABASE_URL: ${PROD_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${PROD_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${PROD_SUPABASE_SERVICE_ROLE_KEY}
+      
+      # Optional: Monitoring
+      SENTRY_DSN: ${PROD_SENTRY_DSN}
+      
     restart: always
+

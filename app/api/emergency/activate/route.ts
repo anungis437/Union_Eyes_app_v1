@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       'emergency_response'
     );
 
-    if (!consentRequest.granted) {
+    if (consentRequest.requiresUserAction) {
       return NextResponse.json(
         {
           success: false,
@@ -80,9 +80,9 @@ export async function POST(request: NextRequest) {
         ],
         safetyLimits: {
           retentionDays: 30,
-          backgroundTrackingBlocked: true,
-          encryptionRequired: true,
-          auditLogging: true,
+          backgroundTrackingBlocked: 'true',
+          encryptionRequired: 'true',
+          auditLogging: 'true',
         },
       },
       notificationsSent: [

@@ -23,8 +23,8 @@
  */
 
 import { db } from '@/db';
-import { eq, and } from 'drizzle-orm';
-import { emergencyDeclarations } from '@/db/schema';
+import { eq, and, desc, isNull } from 'drizzle-orm';
+import { emergencyDeclarations, breakGlassActivations } from '@/db/schema/force-majeure-schema';
 import { createHash, randomBytes } from 'crypto';
 
 export type EmergencyType = 
@@ -210,7 +210,7 @@ export class BreakGlassService {
     await db.update(emergencyDeclarations)
       .set({
         notificationSent: true,
-        notificationSentAt: new Date(),
+        breakGlassActivated: true,
       })
       .where(eq(emergencyDeclarations.id, emergencyId));
 
@@ -375,11 +375,13 @@ export class BreakGlassService {
       emergencyType: declaration.emergencyType as EmergencyType,
       severity: declaration.severityLevel as 'low' | 'medium' | 'high' | 'critical',
       declaredBy: declaration.declaredByUserId,
-      declaredAt: declaration.declaredAt,
+      declaredAt: declaration.declaredAt || new Date(),
       description: declaration.notes || '',
-      affectedLocations: declaration.affectedLocations || undefined,
+      affectedLocations: (declaration.affectedLocations && Array.isArray(declaration.affectedLocations)) 
+        ? (declaration.affectedLocations as string[]) 
+        : undefined,
       affectedMemberCount: declaration.affectedMemberCount || 0,
-      breakGlassActivated: declaration.notificationSent
+      breakGlassActivated: declaration.breakGlassActivated || false
     };
   }
 
@@ -388,20 +390,26 @@ export class BreakGlassService {
    */
   async getActiveEmergencies(): Promise<EmergencyDeclaration[]> {
     const active = await db.query.emergencyDeclarations.findMany({
-      where: eq(emergencyDeclarations.resolvedAt, null as any),
-      orderBy: (declarations, { desc }) => [desc(declarations.declaredAt)]
+      where: isNull(emergencyDeclarations.resolvedAt),
     });
 
-    return active.map(d => ({
+    // Sort by declaredAt in descending order
+    const sorted = active.sort((a, b) => 
+      (b.declaredAt?.getTime() || 0) - (a.declaredAt?.getTime() || 0)
+    );
+
+    return sorted.map((d) => ({
       id: d.id,
       emergencyType: d.emergencyType as EmergencyType,
       severity: d.severityLevel as 'low' | 'medium' | 'high' | 'critical',
       declaredBy: d.declaredByUserId,
-      declaredAt: d.declaredAt,
+      declaredAt: d.declaredAt || new Date(),
       description: d.notes || '',
-      affectedLocations: d.affectedLocations || undefined,
+      affectedLocations: (d.affectedLocations && Array.isArray(d.affectedLocations)) 
+        ? (d.affectedLocations as string[]) 
+        : undefined,
       affectedMemberCount: d.affectedMemberCount || 0,
-      breakGlassActivated: d.notificationSent
+      breakGlassActivated: d.breakGlassActivated || false
     }));
   }
 

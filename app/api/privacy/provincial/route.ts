@@ -57,9 +57,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { province, breachNotificationHours, consentRequired, dataRetentionDays, contactAuthority } = body;
+    const { province, lawName, breachNotificationHours, consentRequired, dataRetentionDays, explicitOptIn, rightToErasure, rightToPortability, dpoRequired, piaRequired, customRules } = body;
 
-    if (!province) {
+    if (!province || typeof province !== 'string') {
       return NextResponse.json(
         { error: 'Province is required' },
         { status: 400 }
@@ -67,22 +67,42 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert provincial privacy config
+    const lawNameMap: Record<string, string> = {
+      'AB': 'AB PIPA',
+      'BC': 'BC PIPA',
+      'ON': 'ON PHIPA',
+      'QC': 'Law 25',
+    };
+    const defaultLawName = lawNameMap[province.toUpperCase()] || 'PIPEDA';
+
     const config = await db
       .insert(provincialPrivacyConfig)
       .values({
         province,
-        breachNotificationHours: breachNotificationHours || 72,
+        lawName: lawName || defaultLawName,
+        breachNotificationHours: String(breachNotificationHours || 72),
         consentRequired: consentRequired !== false,
-        dataRetentionDays,
-        contactAuthority,
+        dataRetentionDays: String(dataRetentionDays || 365),
+        explicitOptIn: explicitOptIn || false,
+        rightToErasure: rightToErasure !== false,
+        rightToPortability: rightToPortability !== false,
+        dpoRequired: dpoRequired || false,
+        piaRequired: piaRequired || false,
+        customRules,
       })
       .onConflictDoUpdate({
         target: provincialPrivacyConfig.province,
         set: {
-          breachNotificationHours,
-          consentRequired,
-          dataRetentionDays,
-          contactAuthority,
+          lawName: lawName || defaultLawName,
+          breachNotificationHours: String(breachNotificationHours || 72),
+          consentRequired: consentRequired !== false,
+          dataRetentionDays: String(dataRetentionDays || 365),
+          explicitOptIn: explicitOptIn || false,
+          rightToErasure: rightToErasure !== false,
+          rightToPortability: rightToPortability !== false,
+          dpoRequired: dpoRequired || false,
+          piaRequired: piaRequired || false,
+          customRules,
         },
       })
       .returning();

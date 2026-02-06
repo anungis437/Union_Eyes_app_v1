@@ -11,12 +11,25 @@ export default defineConfig({
     include: ['__tests__/**/*.test.ts', '__tests__/**/*.test.tsx'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         '__tests__/',
         '*.config.*',
+        'dist/',
+        '.next/',
+        'build/',
       ],
+      // Coverage thresholds - enforce minimum coverage
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+      // Report uncovered lines
+      reportOnFailure: true,
+      all: true,
     },
   },
   resolve: {
