@@ -488,6 +488,34 @@
         "create": {
           "button": "Create Budget"
         }
+      },
+      "shopify": {
+        "title": "Shopify Configuration",
+        "description": "Configure Shop Moi Ça integration for member redemptions",
+        "backToAdmin": "Back to Admin",
+        "status": {
+          "title": "Connection Status",
+          "description": "Current state of Shopify integration",
+          "connected": "Connected",
+          "error": "Connection Error",
+          "notConfigured": "Not Configured",
+          "checklist": "Configuration Checklist",
+          "configured": "Configured",
+          "missing": "Missing",
+          "test": "Test Connection"
+        },
+        "webhooks": {
+          "title": "Webhook Configuration",
+          "description": "Configure webhooks in your Shopify admin to receive order updates",
+          "instructionsTitle": "Setup Instructions",
+          "step1": "1. Go to Shopify Admin → Settings → Notifications",
+          "step2": "2. Scroll to Webhooks section and add the following:",
+          "copy": "Copy"
+        },
+        "setup": {
+          "title": "Setup Guide",
+          "description": "Add these environment variables to your .env file"
+        }
       }
     }
   }

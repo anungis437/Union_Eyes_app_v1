@@ -349,17 +349,60 @@ export async function initiateRedemption(input: unknown) {
     if (!userId) throw new Error('Unauthorized');
 
     const orgId = await getCurrentUserOrgId();
-    const validated = initiateRedemptionSchema.parse(input);
+    const validated = redemptionInitiateSchema.parse(input);
 
-    const redemption = await rewardsService.initiateRedemption({
-      orgId,
+    // Initiate redemption (deducts credits)
+    const redemption = await rewardsService.initiateRedemption(
+      db,
       userId,
-      ...validated,
-      provider: 'shopify',
-    });
+      orgId,
+      validated
+    );
+
+    // If Shopify is enabled, create discount code and checkout URL
+    let checkoutUrl: string | undefined;
+    if (process.env.SHOPIFY_ENABLED === 'true') {
+      try {
+        const { createDiscountCode, createCheckoutSession } = await import(
+          '@/lib/services/rewards/shopify-service'
+        );
+
+        // Create discount code for the redemption amount
+        const discount = await createDiscountCode(
+          redemption.id,
+          validated.credits_to_redeem,
+          'CAD'
+        );
+
+        // Generate checkout URL with pre-applied discount
+        const session = await createCheckoutSession(discount.code);
+        checkoutUrl = session.checkoutUrl;
+
+        // Update redemption with checkout details
+        await rewardsService.updateRedemptionCheckout(
+          db,
+          redemption.id,
+          discount.code,
+          {
+            discount_code: discount.code,
+            discount_id: discount.discountId,
+            checkout_url: checkoutUrl,
+          }
+        );
+      } catch (shopifyError) {
+        console.error('[Redemption] Shopify integration error:', shopifyError);
+        // Continue without Shopify - redemption is still valid
+      }
+    }
 
     revalidatePath('/[locale]/dashboard/rewards');
-    return { success: true, data: redemption };
+    return { 
+      success: true, 
+      data: { 
+        ...redemption, 
+        checkout_url: checkoutUrl 
+      } 
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
