@@ -223,7 +223,7 @@ export class LocationTrackingService {
       userId: memberId,
       latitude: location.latitude.toString(),
       longitude: location.longitude.toString(),
-      accuracy: location.accuracy || null,
+      accuracy: location.accuracy ? location.accuracy.toString() : null,
       strikeId: geofenceId || null,
       purpose,
       recordedAt: location.timestamp,

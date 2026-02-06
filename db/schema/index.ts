@@ -63,6 +63,9 @@ export * from "./documents-schema";
 // Recognition & Rewards System
 export * from "./recognition-rewards-schema";
 
+// Feature Flags & Architecture
+export * from "./feature-flags-schema";
+
 // Phase 1: Canada Federal Compliance (Validator Recommendations)
 export * from "./lmbp-immigration-schema"; // LMBP Immigration System (Validator #14)
 export * from "./governance-schema"; // Golden Share Governance (Validator #16)
