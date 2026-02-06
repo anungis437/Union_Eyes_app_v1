@@ -86,3 +86,18 @@ export * from "./joint-trust-fmv-schema"; // #6 Joint-Trust FMV (Fair market val
 export * from "./certification-management-schema";
 export * from "./employer-non-interference-schema";
 export * from "./whiplash-prevention-schema";
+
+// GDPR Compliance & Data Privacy
+export * from "./gdpr-compliance-schema";
+
+// E-Signature Integration
+export * from "./e-signature-schema";
+
+// Priority 2: AI Chatbot (Union Rights Q&A with RAG)
+export * from "./ai-chatbot-schema";
+
+// Priority 2: Accessibility Audit (WCAG 2.2 AA Compliance)
+export * from "./accessibility-schema";
+
+// Priority 2: International Address Formats
+export * from "./international-address-schema";

@@ -1,0 +1,805 @@
+openapi: 3.0.3
+info:
+  title: Union Eyes v2 API
+  description: |
+    Comprehensive API for Union Eyes v2 - Labor Union Management Platform
+    
+    This API provides endpoints for:
+    - Claims Management
+    - CBA Intelligence & AI
+    - Member Management
+    - Voting & Elections
+    - Education & Training
+    - Document Management
+    - Calendar & Events
+    - Financial/ERP Integration
+    - Analytics & Reporting
+    
+  version: 2.0.0
+  contact:
+    name: Union Eyes Support
+    email: support@unioneyes.io
+  license:
+    name: Proprietary
+    
+servers:
+  - url: https://api.unioneyes.io/v2
+    description: Production server
+  - url: https://staging-api.unioneyes.io/v2
+    description: Staging server
+  - url: http://localhost:3000/api
+    description: Local development
+
+tags:
+  - name: Claims
+    description: Grievance and claims management
+  - name: CBA Intelligence
+    description: AI-powered CBA analysis and precedent matching
+  - name: Members
+    description: Member profile and data management
+  - name: Voting
+    description: Elections, ballots, and voting sessions
+  - name: Education
+    description: Training courses, quizzes, and certifications
+  - name: Documents
+    description: Document management system with OCR
+  - name: Calendar
+    description: Event scheduling and calendar management
+  - name: Financial
+    description: ERP integration, dues, and financial reporting
+  - name: Analytics
+    description: Reporting and data analytics
+
+paths:
+  # ==========================================================================
+  # CBA INTELLIGENCE & AI
+  # ==========================================================================
+  /ai/extract-clauses:
+    post:
+      tags: [CBA Intelligence]
+      summary: Extract clauses from CBA PDF using GPT-4 Vision
+      operationId: extractClauses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentId]
+              properties:
+                documentId:
+                  type: string
+                  description: PDF document ID
+                pdfUrl:
+                  type: string
+                  format: uri
+                  description: Direct URL to PDF (alternative to documentId)
+      responses:
+        '200':
+          description: Clauses successfully extracted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clauses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExtractedClause'
+                  documentId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /ai/classify:
+    post:
+      tags: [CBA Intelligence]
+      summary: Auto-classify clause type using AI
+      operationId: classifyClause
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  description: Clause text to classify
+                context:
+                  type: string
+                  description: Additional context
+      responses:
+        '200':
+          description: Classification successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clauseType:
+                    type: string
+                    enum: [wages, hours, overtime, seniority, grievance, discipline, vacation, benefits, etc.]
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 1
+
+  /ai/match-precedents:
+    post:
+      tags: [CBA Intelligence]
+      summary: Find precedent matches for clause or case
+      operationId: matchPrecedents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: Search query or clause text
+                filters:
+                  type: object
+                  properties:
+                    jurisdiction:
+                      type: string
+                    industry:
+                      type: string
+                    dateRange:
+                      type: object
+                      properties:
+                        start:
+                          type: string
+                          format: date
+                        end:
+                          type: string
+                          format: date
+      responses:
+        '200':
+          description: Precedents found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrecedentMatch'
+
+  # ==========================================================================
+  # VOTING & ELECTIONS
+  # ==========================================================================
+  /voting/sessions:
+    get:
+      tags: [Voting]
+      summary: List voting sessions
+      operationId: listVotingSessions
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, scheduled, active, completed, cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of voting sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VotingSession'
+
+    post:
+      tags: [Voting]
+      summary: Create new voting session
+      operationId: createVotingSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewVotingSession'
+      responses:
+        '201':
+          description: Voting session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingSession'
+
+  /voting/sessions/{sessionId}/vote:
+    post:
+      tags: [Voting]
+      summary: Cast vote in session
+      operationId: castVote
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [optionId]
+              properties:
+                optionId:
+                  type: string
+                  description: Single choice vote
+                preferences:
+                  type: array
+                  items:
+                    type: string
+                  description: Ranked choice preferences (ordered)
+      responses:
+        '200':
+          description: Vote cast successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  voteId:
+                    type: string
+
+  /voting/sessions/{sessionId}/results:
+    get:
+      tags: [Voting]
+      summary: Get voting results
+      operationId: getVotingResults
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: method
+          in: query
+          schema:
+            type: string
+            enum: [standard, ranked_choice, irv]
+            default: standard
+      responses:
+        '200':
+          description: Voting results
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/StandardVotingResults'
+                  - $ref: '#/components/schemas/RankedChoiceResults'
+
+  # ==========================================================================
+  # EDUCATION & TRAINING
+  # ==========================================================================
+  /education/courses:
+    get:
+      tags: [Education]
+      summary: List training courses
+      operationId: listCourses
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrainingCourse'
+
+  /education/quizzes/{quizId}/submit:
+    post:
+      tags: [Education]
+      summary: Submit quiz answers for auto-grading
+      operationId: submitQuiz
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: object
+                  additionalProperties: true
+                  description: Question ID to answer mapping
+      responses:
+        '200':
+          description: Quiz graded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizResult'
+
+  # ==========================================================================
+  # CALENDAR & EVENTS
+  # ==========================================================================
+  /calendars/{calendarId}/events:
+    get:
+      tags: [Calendar]
+      summary: Get events for calendar
+      operationId: getCalendarEvents
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: expandRecurring
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Generate recurring event instances
+      responses:
+        '200':
+          description: Calendar events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalendarEvent'
+
+  # ==========================================================================
+  # DOCUMENTS
+  # ==========================================================================
+  /documents/{documentId}/ocr:
+    post:
+      tags: [Documents]
+      summary: Process document with OCR
+      operationId: processOCR
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  enum: [tesseract, aws-textract, google-vision, azure]
+                  default: tesseract
+                language:
+                  type: string
+                  default: eng
+      responses:
+        '200':
+          description: OCR processing result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OCRResult'
+
+  # ==========================================================================
+  # FINANCIAL / ERP
+  # ==========================================================================
+  /financial/sync:
+    post:
+      tags: [Financial]
+      summary: Trigger ERP sync (QuickBooks, etc.)
+      operationId: syncERP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [direction]
+              properties:
+                direction:
+                  type: string
+                  enum: [push, pull, bidirectional]
+                entities:
+                  type: array
+                  items:
+                    type: string
+                    enum: [invoices, payments, journal_entries, accounts]
+      responses:
+        '202':
+          description: Sync job started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [pending, in_progress]
+
+  /financial/reports/balance-sheet:
+    get:
+      tags: [Financial]
+      summary: Generate balance sheet
+      operationId: getBalanceSheet
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Balance sheet data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceSheet'
+
+# ==========================================================================
+# COMPONENTS
+# ==========================================================================
+components:
+  schemas:
+    ExtractedClause:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        type:
+          type: string
+        article:
+          type: string
+        section:
+          type: string
+        confidence:
+          type: number
+          format: float
+
+    PrecedentMatch:
+      type: object
+      properties:
+        decisionId:
+          type: string
+        title:
+          type: string
+        similarity:
+          type: number
+          format: float
+        jurisdiction:
+          type: string
+        date:
+          type: string
+          format: date
+        outcome:
+          type: string
+
+    VotingSession:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [simple, ranked_choice, approval]
+        status:
+          type: string
+          enum: [draft, scheduled, active, completed, cancelled]
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              text:
+                type: string
+
+    NewVotingSession:
+      type: object
+      required: [title, type, startTime, endTime]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [simple, ranked_choice, approval]
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        options:
+          type: array
+          items:
+            type: string
+
+    StandardVotingResults:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        totalVotes:
+          type: integer
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              optionId:
+                type: string
+              text:
+                type: string
+              voteCount:
+                type: integer
+              percentage:
+                type: number
+        winner:
+          type: string
+        quorumMet:
+          type: boolean
+
+    RankedChoiceResults:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        rounds:
+          type: array
+          items:
+            type: object
+            properties:
+              round:
+                type: integer
+              votes:
+                type: object
+                additionalProperties:
+                  type: integer
+              eliminated:
+                type: string
+        winner:
+          type: string
+        runnerUp:
+          type: string
+
+    TrainingCourse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        duration:
+          type: integer
+          description: Duration in minutes
+        category:
+          type: string
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+
+    QuizResult:
+      type: object
+      properties:
+        quizId:
+          type: string
+        memberId:
+          type: string
+        score:
+          type: number
+        totalPoints:
+          type: number
+        percentage:
+          type: number
+        passed:
+          type: boolean
+        completedAt:
+          type: string
+          format: date-time
+        answers:
+          type: object
+          additionalProperties: true
+
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        calendarId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        location:
+          type: string
+        recurrenceRule:
+          type: string
+          description: RRULE format (RFC 5545)
+          example: "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE,FR"
+        exceptionDates:
+          type: array
+          items:
+            type: string
+            format: date
+
+    OCRResult:
+      type: object
+      properties:
+        documentId:
+          type: string
+        text:
+          type: string
+        confidence:
+          type: number
+          format: float
+        language:
+          type: string
+        words:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              confidence:
+                type: number
+              bbox:
+                type: object
+                properties:
+                  x0:
+                    type: number
+                  y0:
+                    type: number
+                  x1:
+                    type: number
+                  y1:
+                    type: number
+
+    BalanceSheet:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        assets:
+          type: object
+          properties:
+            current:
+              type: number
+            fixed:
+              type: number
+            total:
+              type: number
+        liabilities:
+          type: object
+          properties:
+            current:
+              type: number
+            longTerm:
+              type: number
+            total:
+              type: number
+        equity:
+          type: object
+          properties:
+            retained:
+              type: number
+            total:
+              type: number
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Unauthorized
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Not Found
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []

@@ -1,0 +1,126 @@
+/**
+ * Cron Job for Rewards Automation
+ * Runs scheduled tasks for automated awards, expiration warnings, etc.
+ * 
+ * This should be triggered by:
+ * - Vercel Cron Jobs (vercel.json)
+ * - External cron service (cron-job.org, etc.)
+ * - Self-hosted cron daemon
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { processAnniversaryAwards, processScheduledAwards } from '@/lib/services/rewards/automation-service';
+import { sendBatchExpirationWarnings } from '@/lib/services/rewards/notification-service';
+
+/**
+ * POST /api/rewards/cron
+ * 
+ * Run scheduled reward system tasks
+ * 
+ * Query Parameters:
+ * - task: 'anniversaries' | 'expirations' | 'scheduled' | 'all'
+ * - secret: Verification token to prevent unauthorized execution
+ * 
+ * Security: Requires CRON_SECRET environment variable
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Verify cron secret
+    const authHeader = request.headers.get('authorization');
+    const secret = authHeader?.replace('Bearer ', '');
+
+    if (secret !== process.env.CRON_SECRET) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // 2. Get task parameter
+    const searchParams = request.nextUrl.searchParams;
+    const task = searchParams.get('task') || 'all';
+
+    const results: any = {
+      timestamp: new Date().toISOString(),
+      task,
+      executed: [],
+    };
+
+    // 3. Get all organizations
+    const organizations = await db.query.organizations.findMany({
+      where: (orgs, { eq }) => eq(orgs.status, 'active'),
+    });
+
+    // 4. Process tasks
+    if (task === 'anniversaries' || task === 'all') {
+      console.log('[Cron] Processing anniversary awards...');
+      const anniversaryResults = await Promise.allSettled(
+        organizations.map((org) => processAnniversaryAwards(org.id))
+      );
+      
+      results.executed.push({
+        task: 'anniversaries',
+        organizations: organizations.length,
+        results: anniversaryResults.map((r, i) => ({
+          orgId: organizations[i].id,
+          status: r.status,
+          data: r.status === 'fulfilled' ? r.value : undefined,
+          error: r.status === 'rejected' ? r.reason : undefined,
+        })),
+      });
+    }
+
+    if (task === 'expirations' || task === 'all') {
+      console.log('[Cron] Processing expiration warnings...');
+      const expirationResult = await sendBatchExpirationWarnings();
+      
+      results.executed.push({
+        task: 'expirations',
+        result: expirationResult,
+      });
+    }
+
+    if (task === 'scheduled' || task === 'all') {
+      console.log('[Cron] Processing scheduled awards...');
+      const scheduledResults = await Promise.allSettled(
+        organizations.map((org) => processScheduledAwards(org.id))
+      );
+      
+      results.executed.push({
+        task: 'scheduled',
+        organizations: organizations.length,
+        results: scheduledResults.map((r, i) => ({
+          orgId: organizations[i].id,
+          status: r.status,
+          data: r.status === 'fulfilled' ? r.value : undefined,
+          error: r.status === 'rejected' ? r.reason : undefined,
+        })),
+      });
+    }
+
+    console.log('[Cron] Completed:', results);
+
+    return NextResponse.json({
+      success: true,
+      data: results,
+    });
+  } catch (error: any) {
+    console.error('[Cron] Error executing scheduled tasks:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to execute scheduled tasks' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET handler - health check
+ */
+export async function GET(request: NextRequest) {
+  return NextResponse.json({
+    status: 'healthy',
+    service: 'rewards-cron',
+    timestamp: new Date().toISOString(),
+  });
+}

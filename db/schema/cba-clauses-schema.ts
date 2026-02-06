@@ -38,9 +38,13 @@ export const entityTypeEnum = pgEnum("entity_type", [
   "other"
 ]);
 
+// Export type for ClauseType
+export type ClauseType = typeof clauseTypeEnum.enumValues[number];
+
 // Main CBA Clauses table
 export const cbaClause = pgTable("cba_clauses", {
   id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").notNull(),
   cbaId: uuid("cba_id").notNull().references(() => collectiveAgreements.id, { onDelete: "cascade" }),
   
   // Clause identification
