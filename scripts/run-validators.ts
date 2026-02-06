@@ -37,22 +37,22 @@ async function main() {
   const runner = new ValidatorRunner();
 
   // Register all 16 validators ✅
-  runner.addValidator(new ProvincialPrivacyValidator());
-  runner.addValidator(new OQLFLanguageValidator());
-  runner.addValidator(new IndigenousDataValidator());
-  runner.addValidator(new StrikeFundTaxValidator());
-  runner.addValidator(new GeofencePrivacyValidator());
-  runner.addValidator(new JointTrustFMVValidator());
-  runner.addValidator(new CyberInsuranceValidator());
-  runner.addValidator(new OpenSourceLicenseValidator());
-  runner.addValidator(new ESGUnionWashingValidator());
-  runner.addValidator(new SkillSuccessionValidator());
-  runner.addValidator(new FounderConflictValidator());
-  runner.addValidator(new TransferPricingValidator());
-  runner.addValidator(new ForceMajeureValidator());
-  runner.addValidator(new LMBPImmigrationValidator());
-  runner.addValidator(new CarbonExposureValidator());
-  runner.addValidator(new GoldenShareValidator());
+  runner.register(new ProvincialPrivacyValidator());
+  runner.register(new OQLFLanguageValidator());
+  runner.register(new IndigenousDataValidator());
+  runner.register(new StrikeFundTaxValidator());
+  runner.register(new GeofencePrivacyValidator());
+  runner.register(new JointTrustFMVValidator());
+  runner.register(new CyberInsuranceValidator());
+  runner.register(new OpenSourceLicenseValidator());
+  runner.register(new ESGUnionWashingValidator());
+  runner.register(new SkillSuccessionValidator());
+  runner.register(new FounderConflictValidator());
+  runner.register(new TransferPricingValidator());
+  runner.register(new ForceMajeureValidator());
+  runner.register(new LMBPImmigrationValidator());
+  runner.register(new CarbonExposureValidator());
+  runner.register(new GoldenShareValidator());
 
   console.log('\n🔍 Union Blind-Spot Validator\n');
   console.log('Checking for union-specific compliance gaps...\n');
