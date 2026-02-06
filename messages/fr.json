@@ -253,5 +253,87 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "fileSize": "La taille du fichier doit être inférieure à {size}Mo",
     "fileType": "Type de fichier invalide"
+  },
+  "rewards": {
+    "wallet": {
+      "title": "Mon Portefeuille de Récompenses",
+      "description": "Consultez vos crédits de récompense et échangez-les contre des produits et services",
+      "redeemButton": "Échanger des Crédits",
+      "balance": {
+        "title": "Crédits Disponibles",
+        "subtitle": "crédits prêts à échanger",
+        "info": "Information sur les crédits",
+        "tooltip": "Les crédits sont gagnés grâce aux prix de reconnaissance et peuvent être échangés contre des produits et services via Shop Moi Ça."
+      },
+      "stats": {
+        "totalEarned": "Total Gagné",
+        "totalRedeemed": "Total Échangé",
+        "lastActivity": "Dernière Activité",
+        "allTime": "Tout le temps",
+        "mostRecent": "Transaction la plus récente"
+      },
+      "ledger": {
+        "title": "Historique des Transactions",
+        "description": "Enregistrement complet de toutes les transactions de crédits",
+        "empty": "Aucune transaction pour le moment",
+        "columns": {
+          "date": "Date",
+          "description": "Description",
+          "type": "Type",
+          "amount": "Montant",
+          "balance": "Solde"
+        },
+        "types": {
+          "earned": "Prix Reçu",
+          "redeemed": "Crédits Échangés",
+          "refund": "Remboursement Traité",
+          "adjustment": "Ajustement du Solde",
+          "revoked": "Prix Révoqué"
+        },
+        "badges": {
+          "earned": "Gagné",
+          "redeemed": "Échangé",
+          "refund": "Remboursement",
+          "adjustment": "Ajustement",
+          "revoked": "Révoqué"
+        }
+      }
+    },
+    "redeem": {
+      "title": "Échangez Vos Crédits",
+      "description": "Convertissez vos crédits de récompense en produits et services",
+      "balanceTitle": "Solde Disponible",
+      "balanceMessage": "Vous avez {balance} crédits disponibles à échanger",
+      "shopify": {
+        "title": "Boutique Shop Moi Ça",
+        "description": "Parcourez notre collection organisée de produits et échangez vos crédits"
+      },
+      "manual": {
+        "title": "Demander un Échange",
+        "description": "Soumettez une demande d'échange et notre équipe la traitera"
+      },
+      "howItWorks": {
+        "title": "Comment Ça Marche",
+        "step1": "Sélectionnez le montant de crédits que vous souhaitez échanger",
+        "step2": "Les crédits sont déduits de votre solde immédiatement",
+        "step3": "Complétez le paiement dans la boutique Shop Moi Ça",
+        "step4": "Suivez l'état de votre commande dans votre historique de transactions"
+      },
+      "form": {
+        "creditsLabel": "Crédits à Échanger",
+        "creditsHelper": "Maximum : {balance} crédits",
+        "notesLabel": "Notes (Optionnel)",
+        "notesPlaceholder": "Ajoutez des demandes ou notes spéciales...",
+        "submitShopify": "Continuer vers Shop Moi Ça",
+        "submitManual": "Soumettre la Demande d'Échange",
+        "noBalance": "Vous avez besoin de crédits pour échanger",
+        "errors": {
+          "invalidAmount": "Veuillez entrer un montant valide",
+          "insufficientBalance": "Vous n'avez pas assez de crédits",
+          "failed": "Échec de l'initiation de l'échange",
+          "unknown": "Une erreur s'est produite"
+        }
+      }
+    }
   }
 }
