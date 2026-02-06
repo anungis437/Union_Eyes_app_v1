@@ -488,6 +488,34 @@
         "create": {
           "button": "Créer un Budget"
         }
+      },
+      "shopify": {
+        "title": "Configuration Shopify",
+        "description": "Configurer l'intégration Shop Moi Ça pour les échanges de membres",
+        "backToAdmin": "Retour à l'Administration",
+        "status": {
+          "title": "État de la Connexion",
+          "description": "État actuel de l'intégration Shopify",
+          "connected": "Connecté",
+          "error": "Erreur de Connexion",
+          "notConfigured": "Non Configuré",
+          "checklist": "Liste de Vérification de Configuration",
+          "configured": "Configuré",
+          "missing": "Manquant",
+          "test": "Tester la Connexion"
+        },
+        "webhooks": {
+          "title": "Configuration des Webhooks",
+          "description": "Configurer les webhooks dans votre admin Shopify pour recevoir les mises à jour de commandes",
+          "instructionsTitle": "Instructions de Configuration",
+          "step1": "1. Allez dans Admin Shopify → Paramètres → Notifications",
+          "step2": "2. Faites défiler jusqu'à la section Webhooks et ajoutez ce qui suit:",
+          "copy": "Copier"
+        },
+        "setup": {
+          "title": "Guide de Configuration",
+          "description": "Ajoutez ces variables d'environnement à votre fichier .env"
+        }
       }
     }
   }
