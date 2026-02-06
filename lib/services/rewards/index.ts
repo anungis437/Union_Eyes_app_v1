@@ -20,3 +20,16 @@ export * from './redemption-service';
 
 // Webhook Processing
 export * from './webhook-service';
+
+// Email Notifications
+export * from './email-service';
+export * from './notification-service';
+
+// CSV Export
+export * from './export-service';
+
+// Automation & Triggers
+export * from './automation-service';
+
+// Award Templates
+export * from './template-service';

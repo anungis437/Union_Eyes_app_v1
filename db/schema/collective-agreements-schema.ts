@@ -59,6 +59,7 @@ export const collectiveAgreements = pgTable("collective_agreements", {
   
   // Scope and coverage
   industrySector: varchar("industry_sector", { length: 200 }).notNull(),
+  sector: varchar("sector", { length: 200 }),
   employeeCoverage: integer("employee_coverage"),
   bargainingUnitDescription: text("bargaining_unit_description"),
   
@@ -81,6 +82,7 @@ export const collectiveAgreements = pgTable("collective_agreements", {
   embedding: text("embedding"), // Vector embedding as text (JSON array) - will convert to vector type if pgvector available
   summaryGenerated: text("summary_generated"),
   keyTerms: jsonb("key_terms").$type<string[]>(),
+  aiProcessed: boolean("ai_processed").default(false),
   
   // Status and tracking
   status: cbaStatusEnum("status").notNull().default("active"),
