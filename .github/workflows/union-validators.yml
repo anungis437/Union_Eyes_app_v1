@@ -1,0 +1,192 @@
+name: Union Compliance Validators
+
+on:
+  pull_request:
+    branches: [staging, phase-1-foundation]
+  push:
+    branches: [staging, feature/**]
+  workflow_dispatch:
+
+jobs:
+  validate-privacy:
+    name: Privacy Validators (Critical)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Privacy Validators
+        run: pnpm run validate:blind-spots --category=privacy
+        continue-on-error: false
+
+  validate-security:
+    name: Security Validators (Critical)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Security Validators
+        run: pnpm run validate:blind-spots --category=security
+        continue-on-error: false
+
+  validate-taxation:
+    name: Taxation Validators (Critical)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Taxation Validators
+        run: pnpm run validate:blind-spots --category=taxation
+        continue-on-error: false
+
+  validate-indigenous-rights:
+    name: Indigenous Rights Validators (Critical)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Indigenous Rights Validators
+        run: pnpm run validate:blind-spots --category=indigenous-rights
+        continue-on-error: false
+
+  validate-all:
+    name: All Union Validators
+    runs-on: ubuntu-latest
+    needs: [validate-privacy, validate-security, validate-taxation, validate-indigenous-rights]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run All Validators
+        run: pnpm run validate:blind-spots
+        continue-on-error: true
+        id: all-validators
+
+      - name: Generate Validator Report
+        if: always()
+        run: |
+          echo "## Union Compliance Validator Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Critical validators passed (privacy, security, taxation, indigenous-rights)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Full Report" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          pnpm run validate:blind-spots 2>&1 | head -100 >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  validate-on-schedule:
+    name: Scheduled Compliance Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run All Validators
+        run: pnpm run validate:blind-spots
+
+      - name: Create Issue on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Union Compliance Validation Failure - ' + new Date().toISOString().split('T')[0],
+              body: 'The scheduled union compliance validation has failed. Please review the workflow run and address any compliance gaps.\n\n[View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})',
+              labels: ['compliance', 'validators', 'automated']
+            })
+
+# Optional: Schedule daily compliance checks
+# Uncomment to enable:
+# on:
+#   schedule:
+#     - cron: '0 9 * * *'  # 9 AM UTC daily

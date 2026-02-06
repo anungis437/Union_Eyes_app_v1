@@ -253,5 +253,270 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "fileSize": "La taille du fichier doit être inférieure à {size}Mo",
     "fileType": "Type de fichier invalide"
+  },
+  "rewards": {
+    "wallet": {
+      "title": "Mon Portefeuille de Récompenses",
+      "description": "Consultez vos crédits de récompense et échangez-les contre des produits et services",
+      "redeemButton": "Échanger des Crédits",
+      "balance": {
+        "title": "Crédits Disponibles",
+        "subtitle": "crédits prêts à échanger",
+        "info": "Information sur les crédits",
+        "tooltip": "Les crédits sont gagnés grâce aux prix de reconnaissance et peuvent être échangés contre des produits et services via Shop Moi Ça."
+      },
+      "stats": {
+        "totalEarned": "Total Gagné",
+        "totalRedeemed": "Total Échangé",
+        "lastActivity": "Dernière Activité",
+        "allTime": "Tout le temps",
+        "mostRecent": "Transaction la plus récente"
+      },
+      "ledger": {
+        "title": "Historique des Transactions",
+        "description": "Enregistrement complet de toutes les transactions de crédits",
+        "empty": "Aucune transaction pour le moment",
+        "columns": {
+          "date": "Date",
+          "description": "Description",
+          "type": "Type",
+          "amount": "Montant",
+          "balance": "Solde"
+        },
+        "types": {
+          "earned": "Prix Reçu",
+          "redeemed": "Crédits Échangés",
+          "refund": "Remboursement Traité",
+          "adjustment": "Ajustement du Solde",
+          "revoked": "Prix Révoqué"
+        },
+        "badges": {
+          "earned": "Gagné",
+          "redeemed": "Échangé",
+          "refund": "Remboursement",
+          "adjustment": "Ajustement",
+          "revoked": "Révoqué"
+        }
+      }
+    },
+    "redeem": {
+      "title": "Échangez Vos Crédits",
+      "description": "Convertissez vos crédits de récompense en produits et services",
+      "balanceTitle": "Solde Disponible",
+      "balanceMessage": "Vous avez {balance} crédits disponibles à échanger",
+      "shopify": {
+        "title": "Boutique Shop Moi Ça",
+        "description": "Parcourez notre collection organisée de produits et échangez vos crédits"
+      },
+      "manual": {
+        "title": "Demander un Échange",
+        "description": "Soumettez une demande d'échange et notre équipe la traitera"
+      },
+      "howItWorks": {
+        "title": "Comment Ça Marche",
+        "step1": "Sélectionnez le montant de crédits que vous souhaitez échanger",
+        "step2": "Les crédits sont déduits de votre solde immédiatement",
+        "step3": "Complétez le paiement dans la boutique Shop Moi Ça",
+        "step4": "Suivez l'état de votre commande dans votre historique de transactions"
+      },
+      "form": {
+        "creditsLabel": "Crédits à Échanger",
+        "creditsHelper": "Maximum : {balance} crédits",
+        "notesLabel": "Notes (Optionnel)",
+        "notesPlaceholder": "Ajoutez des demandes ou notes spéciales...",
+        "submitShopify": "Continuer vers Shop Moi Ça",
+        "submitManual": "Soumettre la Demande d'Échange",
+        "noBalance": "Vous avez besoin de crédits pour échanger",
+        "errors": {
+          "invalidAmount": "Veuillez entrer un montant valide",
+          "insufficientBalance": "Vous n'avez pas assez de crédits",
+          "failed": "Échec de l'initiation de l'échange",
+          "unknown": "Une erreur s'est produite"
+        }
+      }
+    },
+    "admin": {
+      "overview": {
+        "title": "Administration Reconnaissance et Récompenses",
+        "description": "Gérer les programmes de reconnaissance, approuver les prix et suivre les allocations budgétaires",
+        "metrics": {
+          "activePrograms": "Programmes Actifs",
+          "programsSubtext": "Programmes de reconnaissance",
+          "pendingApprovals": "Approbations en Attente",
+          "approvalsSubtext": "Prix en attente de révision",
+          "totalIssued": "Total Émis",
+          "issuedSubtext": "Crédits émis",
+          "totalRedeemed": "Total Échangé",
+          "redeemedSubtext": "Crédits échangés"
+        },
+        "quickActions": {
+          "title": "Actions Rapides",
+          "programs": {
+            "title": "Gérer les Programmes",
+            "description": "Créer et configurer des programmes de reconnaissance"
+          },
+          "awards": {
+            "title": "Réviser les Prix",
+            "description": "Approuver et émettre des prix de reconnaissance"
+          },
+          "budgets": {
+            "title": "Gérer les Budgets",
+            "description": "Allouer et suivre les enveloppes budgétaires"
+          },
+          "shopify": {
+            "title": "Config Shopify",
+            "description": "Configurer l'intégration Shop Moi Ça"
+          },
+          "reports": {
+            "title": "Voir les Rapports",
+            "description": "Tableau de bord analytique et insights"
+          },
+          "members": {
+            "title": "Portefeuilles Membres",
+            "description": "Voir les soldes et l'historique des membres"
+          }
+        },
+        "recentActivity": {
+          "title": "Activité Récente",
+          "description": "Derniers prix et échanges dans l'organisation",
+          "placeholder": "Flux d'activité à venir"
+        }
+      },
+      "programs": {
+        "title": "Programmes de Reconnaissance",
+        "description": "Créer et gérer des programmes de reconnaissance et leurs types de prix",
+        "backToAdmin": "Retour à l'Administration",
+        "list": {
+          "title": "Tous les Programmes",
+          "description": "Configurer les programmes, types de prix et flux d'approbation",
+          "empty": "Aucun programme créé pour le moment",
+          "columns": {
+            "name": "Nom du Programme",
+            "status": "Statut",
+            "created": "Créé",
+            "actions": "Actions"
+          },
+          "actions": {
+            "open": "Ouvrir le menu",
+            "edit": "Modifier",
+            "archive": "Archiver",
+            "activate": "Activer"
+          }
+        },
+        "create": {
+          "button": "Créer un Programme",
+          "title": "Créer un Programme de Reconnaissance",
+          "description": "Configurer un nouveau programme de reconnaissance pour votre organisation",
+          "fields": {
+            "name": "Nom du Programme",
+            "namePlaceholder": "ex., Employé du Mois",
+            "description": "Description",
+            "descriptionPlaceholder": "Décrivez l'objectif et les critères de ce programme...",
+            "status": "Statut",
+            "statusDraft": "Brouillon",
+            "statusActive": "Actif"
+          },
+          "cancel": "Annuler",
+          "submit": "Créer le Programme",
+          "error": "Échec de la création du programme",
+          "errorUnknown": "Une erreur s'est produite"
+        }
+      },
+      "awards": {
+        "title": "Gestion des Prix",
+        "description": "Réviser, approuver et émettre des prix de reconnaissance aux membres",
+        "backToAdmin": "Retour à l'Administration",
+        "tabs": {
+          "pending": "En Attente d'Approbation",
+          "approved": "Approuvés",
+          "issued": "Émis"
+        },
+        "pending": {
+          "title": "Approbations en Attente",
+          "description": "Prix en attente d'approbation de la direction"
+        },
+        "approved": {
+          "title": "Prix Approuvés",
+          "description": "Prix approuvés et prêts à être émis"
+        },
+        "issued": {
+          "title": "Prix Émis",
+          "description": "Prix qui ont été émis aux membres"
+        },
+        "queue": {
+          "empty": "Aucun prix dans ce statut",
+          "columns": {
+            "recipient": "Destinataire",
+            "award": "Type de Prix",
+            "credits": "Crédits",
+            "date": "Date",
+            "actions": "Actions"
+          },
+          "actions": {
+            "approve": "Approuver",
+            "reject": "Rejeter",
+            "issue": "Émettre"
+          }
+        },
+        "create": {
+          "button": "Créer un Prix"
+        }
+      },
+      "budgets": {
+        "title": "Gestion des Budgets",
+        "description": "Allouer des budgets et suivre les dépenses dans les programmes",
+        "backToAdmin": "Retour à l'Administration",
+        "usage": {
+          "ongoing": "En cours",
+          "used": "Utilisé",
+          "utilized": "utilisé",
+          "remaining": "restant"
+        },
+        "list": {
+          "title": "Toutes les Enveloppes Budgétaires",
+          "description": "Configurer les allocations budgétaires pour les programmes de reconnaissance",
+          "empty": "Aucune enveloppe budgétaire créée pour le moment",
+          "ongoing": "En cours",
+          "columns": {
+            "name": "Nom",
+            "allocated": "Alloué",
+            "used": "Utilisé",
+            "remaining": "Restant",
+            "period": "Période"
+          }
+        },
+        "create": {
+          "button": "Créer un Budget"
+        }
+      },
+      "shopify": {
+        "title": "Configuration Shopify",
+        "description": "Configurer l'intégration Shop Moi Ça pour les échanges de membres",
+        "backToAdmin": "Retour à l'Administration",
+        "status": {
+          "title": "État de la Connexion",
+          "description": "État actuel de l'intégration Shopify",
+          "connected": "Connecté",
+          "error": "Erreur de Connexion",
+          "notConfigured": "Non Configuré",
+          "checklist": "Liste de Vérification de Configuration",
+          "configured": "Configuré",
+          "missing": "Manquant",
+          "test": "Tester la Connexion"
+        },
+        "webhooks": {
+          "title": "Configuration des Webhooks",
+          "description": "Configurer les webhooks dans votre admin Shopify pour recevoir les mises à jour de commandes",
+          "instructionsTitle": "Instructions de Configuration",
+          "step1": "1. Allez dans Admin Shopify → Paramètres → Notifications",
+          "step2": "2. Faites défiler jusqu'à la section Webhooks et ajoutez ce qui suit:",
+          "copy": "Copier"
+        },
+        "setup": {
+          "title": "Guide de Configuration",
+          "description": "Ajoutez ces variables d'environnement à votre fichier .env"
+        }
+      }
+    }
   }
 }
