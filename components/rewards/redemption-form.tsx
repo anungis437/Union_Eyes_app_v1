@@ -61,12 +61,11 @@ export function RedemptionForm({ balance, mode, userId, orgId }: RedemptionFormP
       }
 
       // If Shopify mode, redirect to catalog/checkout
-      if (mode === 'shopify') {
-        // TODO: When Shopify service is implemented, redirect to checkout
-        // For now, show success and redirect to wallet
-        router.push('/dashboard/rewards?redemption=success');
+      if (mode === 'shopify' && result.data?.checkout_url) {
+        // Redirect to Shopify checkout with pre-applied discount
+        window.location.href = result.data.checkout_url;
       } else {
-        // Manual mode: redirect to wallet with success message
+        // Manual mode or no checkout URL: redirect to wallet with success message
         router.push('/dashboard/rewards?redemption=success');
       }
     } catch (err: any) {
