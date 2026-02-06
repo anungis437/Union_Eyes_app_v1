@@ -17,9 +17,17 @@ import { OQLFLanguageValidator } from './validators/02-oqlf-language';
 import { IndigenousDataValidator } from './validators/03-indigenous-data';
 import { StrikeFundTaxValidator } from './validators/04-strike-fund-tax';
 import { GeofencePrivacyValidator } from './validators/05-geofence-privacy';
+import { JointTrustFMVValidator } from './validators/06-joint-trust-fmv';
 import { CyberInsuranceValidator } from './validators/07-cyber-insurance';
 import { OpenSourceLicenseValidator } from './validators/08-open-source-license';
+import { ESGUnionWashingValidator } from './validators/09-esg-union-washing';
+import { SkillSuccessionValidator } from './validators/10-skill-succession';
+import { FounderConflictValidator } from './validators/11-founder-conflict';
 import { TransferPricingValidator } from './validators/12-transfer-pricing';
+import { ForceMajeureValidator } from './validators/13-force-majeure';
+import { LMBPImmigrationValidator } from './validators/14-lmbp-immigration';
+import { CarbonExposureValidator } from './validators/15-carbon-exposure';
+import { GoldenShareValidator } from './validators/16-golden-share';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -28,17 +36,23 @@ async function main() {
 
   const runner = new ValidatorRunner();
 
-  // Register all validators (8 of 16 implemented so far)
+  // Register all 16 validators ✅
   runner.addValidator(new ProvincialPrivacyValidator());
   runner.addValidator(new OQLFLanguageValidator());
   runner.addValidator(new IndigenousDataValidator());
   runner.addValidator(new StrikeFundTaxValidator());
   runner.addValidator(new GeofencePrivacyValidator());
+  runner.addValidator(new JointTrustFMVValidator());
   runner.addValidator(new CyberInsuranceValidator());
   runner.addValidator(new OpenSourceLicenseValidator());
+  runner.addValidator(new ESGUnionWashingValidator());
+  runner.addValidator(new SkillSuccessionValidator());
+  runner.addValidator(new FounderConflictValidator());
   runner.addValidator(new TransferPricingValidator());
-  
-  // TODO: Implement remaining validators (6-7, 9-11, 13-16)
+  runner.addValidator(new ForceMajeureValidator());
+  runner.addValidator(new LMBPImmigrationValidator());
+  runner.addValidator(new CarbonExposureValidator());
+  runner.addValidator(new GoldenShareValidator());
 
   console.log('\n🔍 Union Blind-Spot Validator\n');
   console.log('Checking for union-specific compliance gaps...\n');
