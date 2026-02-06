@@ -1,0 +1,11 @@
+packages:
+  - packages/*
+  - services/*
+
+# Ignore build scripts for packages with version conflicts or build issues
+# These dependencies have multiple versions across the workspace and attempting
+# to run their build scripts causes errors during pnpm install
+ignoredBuiltDependencies:
+  - '@clerk/shared'    # Multiple versions (2.9.2, 3.33.0, 3.39.0) from @clerk/backend, @clerk/nextjs, @clerk/themes
+  - esbuild            # Multiple versions (0.18.20, 0.25.0, 0.25.12, 0.27.1) from various build tools (vite, tsx, drizzle-kit, remotion)
+  - unrs-resolver      # Transitive dependency from eslint-import-resolver-typescript, build conflicts in Windows

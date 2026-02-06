@@ -1,13 +1,39 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import createIntlMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from './i18n';
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isProtectedRoute = createRouteMatcher([
+  "/:locale/dashboard(.*)"
+]);
+
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/:locale",
+  "/login(.*)",
+  "/signup(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/:locale/login(.*)",
+  "/:locale/signup(.*)",
+  "/:locale/sign-in(.*)",
+  "/:locale/sign-up(.*)"
+]);
+
+// Create i18n middleware
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always',
+  localeDetection: true
+});
 
 // This handles both payment provider use cases from whop-setup.md and stripe-setup.md
-export default clerkMiddleware(async (auth, req) => {
-  // Skip auth for webhook endpoints
-  if (req.nextUrl.pathname.startsWith('/api/whop/webhooks')) {
-    console.log("Skipping Clerk auth for Whop webhook endpoint");
+export default clerkMiddleware((auth, req) => {
+  // Skip middleware for static files and API routes
+  if (req.nextUrl.pathname.startsWith('/api') || 
+      req.nextUrl.pathname.startsWith('/_next') ||
+      req.nextUrl.pathname.includes('.')) {
     return NextResponse.next();
   }
   
@@ -42,41 +68,18 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(url);
   }
 
-  // Special handling for frictionless payment flow
-  // If a user has just completed signup after payment and is authenticated,
-  // redirect them to the dashboard instead of keeping them on the signup page
-  if (req.nextUrl.pathname.startsWith('/signup') && req.nextUrl.search.includes('payment=success')) {
-    const { userId } = auth();
-    
-    // If user is authenticated and on signup page with payment=success, they should go to dashboard
-    if (userId) {
-      console.log("Frictionless payment user authenticated, redirecting to dashboard");
-      const dashboardUrl = new URL('/dashboard', req.url);
-      dashboardUrl.searchParams.set('payment', 'success');
-      dashboardUrl.searchParams.set('cb', Date.now().toString().slice(-4));
-      return NextResponse.redirect(dashboardUrl);
-    }
-  }
-
-  const { userId, redirectToSignIn } = auth();
-
-  // Standard route protection logic
-  if (!userId && isProtectedRoute(req)) {
-    // Return to dashboard after login instead of /login to avoid redirect loops
-    return redirectToSignIn({ returnBackUrl: req.nextUrl.pathname });
-  }
-
-  if (userId && isProtectedRoute(req)) {
-    return NextResponse.next();
+  // Protect non-public routes
+  if (!isPublicRoute(req)) {
+    auth().protect();
   }
   
-  return NextResponse.next();
+  // For non-API routes, run i18n middleware and return its response
+  return intlMiddleware(req);
 });
 
 export const config = {
   matcher: [
-    // Match all routes except for these:
-    "/((?!api/whop/webhooks|_next/static|_next/image|favicon.ico).*)",
-    "/"
+    // Skip Next.js internals and static files, but match everything else
+    '/((?!_next/static|_next/image|_vercel|favicon.ico|.*\\..*).*)' 
   ]
 };

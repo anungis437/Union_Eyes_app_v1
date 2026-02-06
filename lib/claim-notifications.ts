@@ -1,0 +1,334 @@
+/**
+ * Claim Notification Service
+ * 
+ * Handles sending email notifications for claim status changes
+ * @server-only
+ */
+
+import 'server-only';
+import { sendEmail, EmailRecipient } from './email-service';
+import { render } from '@react-email/render';
+import { ClaimStatusNotificationEmail } from './email-templates';
+import { db } from '../db/db';
+import { claims } from '../db/schema/claims-schema';
+import { eq } from 'drizzle-orm';
+import { ClaimStatus } from './workflow-engine';
+import * as React from 'react';
+import { clerkClient } from '@clerk/nextjs/server';
+
+interface ClaimNotificationData {
+  claimId: string;
+  claimTitle: string;
+  claimType: string;
+  previousStatus?: string;
+  newStatus: string;
+  notes?: string;
+  // deadline?: Date; // Not yet implemented in claims schema
+  // daysRemaining?: number; // Not yet implemented in claims schema
+  memberEmail: string;
+  memberName: string;
+  assignedStewardEmail?: string;
+  assignedStewardName?: string;
+  tenantId: string;
+}
+
+/**
+ * Send notification email when claim status changes
+ */
+export async function sendClaimStatusNotification(
+  claimId: string,
+  previousStatus: string | undefined,
+  newStatus: ClaimStatus,
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get claim details
+    const [claim] = await db
+      .select({
+        claimId: claims.claimId,
+        claimType: claims.claimType,
+        description: claims.description,
+        memberId: claims.memberId,
+        assignedTo: claims.assignedTo,
+        tenantId: claims.organizationId,
+      })
+      .from(claims)
+      .where(eq(claims.claimId, claimId))
+      .limit(1);
+
+    if (!claim) {
+      return { success: false, error: 'Claim not found' };
+    }
+
+    // Get member details from Clerk
+    const member = await clerkClient.users.getUser(claim.memberId);
+
+    if (!member || !member.emailAddresses?.[0]?.emailAddress) {
+      return { success: false, error: 'Member email not found' };
+    }
+    
+    const memberEmail = member.emailAddresses[0].emailAddress;
+    const memberName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Member';
+
+    // Get assigned steward details if assigned
+    let assignedStewardEmail: string | undefined;
+    let assignedStewardName: string | undefined;
+    if (claim.assignedTo) {
+      try {
+        const steward = await clerkClient.users.getUser(claim.assignedTo);
+        if (steward?.emailAddresses?.[0]?.emailAddress) {
+          assignedStewardEmail = steward.emailAddresses[0].emailAddress;
+          assignedStewardName = `${steward.firstName || ''} ${steward.lastName || ''}`.trim() || 'Steward';
+        }
+      } catch (error) {
+        console.error('Failed to fetch assigned steward:', error);
+      }
+    }
+
+    // Build notification data (deadline support not implemented in schema yet)
+    const notificationData: ClaimNotificationData = {
+      claimId: claim.claimId,
+      claimTitle: `${claim.claimType} Claim`,
+      claimType: claim.claimType,
+      previousStatus,
+      newStatus,
+      notes,
+      memberEmail,
+      memberName,
+      assignedStewardEmail,
+      assignedStewardName,
+      tenantId: claim.tenantId,
+    };
+
+    // Send notification
+    return await sendClaimNotificationEmail(notificationData);
+  } catch (error) {
+    console.error('Error sending claim notification:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Send the actual email notification
+ */
+async function sendClaimNotificationEmail(
+  data: ClaimNotificationData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Build claim URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const claimUrl = `${baseUrl}/dashboard/claims/${data.claimId}`;
+
+    // Determine recipients
+    const recipients: EmailRecipient[] = [
+      {
+        email: data.memberEmail,
+        name: data.memberName,
+      },
+    ];
+
+    // Add assigned steward to recipients for certain status changes
+    const stewardNotificationStatuses = [
+      'assigned',
+      'investigation',
+      'pending_documentation',
+      'resolved',
+    ];
+    if (
+      data.assignedStewardEmail &&
+      data.assignedStewardName &&
+      stewardNotificationStatuses.includes(data.newStatus)
+    ) {
+      recipients.push({
+        email: data.assignedStewardEmail,
+        name: data.assignedStewardName,
+      });
+    }
+
+    // Generate email HTML (deadline tracking not yet implemented)
+    const emailHtml = await render(
+      React.createElement(ClaimStatusNotificationEmail, {
+        claimId: data.claimId,
+        claimTitle: data.claimTitle,
+        claimType: data.claimType,
+        previousStatus: data.previousStatus,
+        newStatus: data.newStatus,
+        memberName: data.memberName,
+        notes: data.notes,
+        // deadline: undefined, // Not yet implemented in claims schema
+        // daysRemaining: undefined, // Not yet implemented in claims schema
+        assignedStewardName: data.assignedStewardName,
+        claimUrl,
+      })
+    );
+
+    // Build subject line
+    const subject = getEmailSubject(data.newStatus, data.claimTitle, data.previousStatus);
+
+    // Send email
+    const result = await sendEmail({
+      to: recipients,
+      subject,
+      html: emailHtml,
+    });
+
+    if (result.success) {
+      console.log(`Notification sent for claim ${data.claimId}: ${data.newStatus}`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error sending notification email:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Generate email subject line based on status
+ */
+function getEmailSubject(
+  newStatus: string,
+  claimTitle: string,
+  previousStatus?: string
+): string {
+  const statusNames: Record<string, string> = {
+    submitted: 'Claim Submitted',
+    under_review: 'Claim Under Review',
+    assigned: 'Claim Assigned',
+    investigation: 'Claim Under Investigation',
+    pending_documentation: 'Documentation Required',
+    resolved: 'Claim Resolved',
+    rejected: 'Claim Rejected',
+    closed: 'Claim Closed',
+  };
+
+  const statusName = statusNames[newStatus] || 'Status Update';
+  const isInitial = !previousStatus || previousStatus === 'submitted';
+
+  if (isInitial) {
+    return `${statusName}: ${claimTitle}`;
+  }
+
+  return `${statusName} - ${claimTitle}`;
+}
+
+/**
+ * Send notification for overdue claims
+ * NOTE: Deadline tracking not yet implemented in schema
+ * This function is a placeholder for future implementation
+ */
+export async function sendOverdueClaimNotification(
+  claimId: string
+): Promise<{ success: boolean; error?: string }> {
+  // TODO: Implement once deadline field is added to claims schema
+  return { 
+    success: false, 
+    error: 'Deadline tracking not yet implemented in schema' 
+  };
+  
+  /* IMPLEMENTATION PENDING - Requires deadline field in claims schema
+  try {
+    // Get claim and member details
+    const [claim] = await db
+      .select({
+        claimId: claims.claimId,
+        claimType: claims.claimType,
+        status: claims.status,
+        memberId: claims.memberId,
+        assignedTo: claims.assignedTo,
+        // deadline: claims.deadline, // Field doesn't exist yet
+      })
+      .from(claims)
+      .where(eq(claims.claimId, claimId))
+      .limit(1);
+
+    if (!claim) {
+      return { success: false, error: 'Claim not found' };
+    }
+
+    // Get member from Clerk
+    const member = await clerkClient.users.getUser(claim.memberId);
+    if (!member?.emailAddresses?.[0]?.emailAddress) {
+      return { success: false, error: 'Member email not found' };
+    }
+    
+    const memberEmail = member.emailAddresses[0].emailAddress;
+    const memberName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Member';
+
+    // Get assigned steward if exists
+    let stewardEmail: string | undefined;
+    let stewardName: string | undefined;
+    if (claim.assignedTo) {
+      try {
+        const steward = await clerkClient.users.getUser(claim.assignedTo);
+        if (steward?.emailAddresses?.[0]?.emailAddress) {
+          stewardEmail = steward.emailAddresses[0].emailAddress;
+          stewardName = `${steward.firstName || ''} ${steward.lastName || ''}`.trim() || 'Steward';
+        }
+      } catch (error) {
+        console.error('Failed to fetch assigned steward:', error);
+      }
+    }
+
+    // Send to member and steward
+    const recipients: EmailRecipient[] = [
+      {
+        email: memberEmail,
+        name: memberName,
+      },
+    ];
+
+    if (stewardEmail && stewardName) {
+      recipients.push({
+        email: stewardEmail,
+        name: stewardName,
+      });
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const claimUrl = `${baseUrl}/dashboard/claims/${claim.claimId}`;
+
+    // Simple HTML for overdue notification
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #dc2626; color: white; padding: 20px; text-align: center;">
+          <h1>Claim Overdue</h1>
+        </div>
+        <div style="padding: 32px;">
+          <p>This is a reminder that your claim is now overdue:</p>
+          <div style="background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p><strong>Claim ID:</strong> ${claim.claimId}</p>
+            <p><strong>Type:</strong> ${claim.claimType}</p>
+            <p><strong>Status:</strong> ${claim.status}</p>
+          </div>
+          <p>Please take action on this claim as soon as possible to avoid further delays.</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${claimUrl}" style="background-color: #dc2626; color: white; padding: 12px 32px; text-decoration: none; border-radius: 6px; display: inline-block;">View Claim</a>
+          </div>
+        </div>
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #64748b;">
+          <p>This is an automated notification from the Union Claims Portal.</p>
+        </div>
+      </div>
+    `;
+
+    return await sendEmail({
+      to: recipients,
+      subject: `⚠️ Claim Overdue: ${claim.claimType} Claim`,
+      html,
+    });
+  } catch (error) {
+    console.error('Error sending overdue notification:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+  */
+}

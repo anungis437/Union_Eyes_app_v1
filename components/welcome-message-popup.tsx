@@ -21,7 +21,13 @@ interface WelcomeMessagePopupProps {
 
 export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const confettiShown = useRef(false);
+  
+  // Prevent hydration issues
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // When the popup opens, set it as the active popup
   useEffect(() => {
@@ -169,6 +175,11 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
     ? formatDate(profile.nextCreditRenewal)
     : "in 4 weeks";
   
+  // Don't render anything until mounted to prevent hydration issues
+  if (!isMounted) {
+    return null;
+  }
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {isOpen && <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40" />}
@@ -183,6 +194,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
           {/* Close button */}
           <button
             onClick={handleClose}
+            aria-label="Close welcome message"
             className="absolute top-3 right-3 z-50 rounded-full w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <X size={16} />

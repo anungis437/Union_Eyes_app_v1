@@ -1,0 +1,4 @@
+organizationSlug,name,email,membershipNumber,phone,status,role,joinedDate,department,position,hireDate
+unifor-local-444,Jane Smith,jane.smith@example.com,M-12345,+1-555-0100,active,member,2024-01-15,Assembly Line,Production Worker,2023-06-01
+unifor-local-444,John Doe,john.doe@example.com,M-12346,+1-555-0101,active,steward,2023-08-20,Maintenance,Mechanic,2023-08-01
+unifor-local-444,Alice Johnson,alice.johnson@example.com,M-12347,+1-555-0102,active,member,2024-02-10,Quality Control,Inspector,2024-02-01

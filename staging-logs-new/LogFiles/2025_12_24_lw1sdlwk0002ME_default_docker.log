@@ -1,0 +1,24 @@
+2025-12-24T16:10:15.7118487Z ! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.26.2.tgz
+2025-12-24T16:10:25.3417462Z 
+2025-12-24T16:10:25.3418030Z > prompting-test-project@0.1.0 start /app
+2025-12-24T16:10:25.3418094Z > next start
+2025-12-24T16:10:25.3418124Z 
+2025-12-24T16:10:26.1745143Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-24T16:10:27.6285758Z   ▲ Next.js 14.2.7
+2025-12-24T16:10:27.6304639Z   - Local:        http://localhost:3000
+2025-12-24T16:10:27.6304801Z 
+2025-12-24T16:10:27.6304847Z  ✓ Starting...
+2025-12-24T16:10:31.8249372Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-24T16:10:31.8250048Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-24T16:10:31.8250100Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-24T16:10:31.8250232Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)
+2025-12-24T16:10:32.0513092Z  ELIFECYCLE  Command failed with exit code 1.
+2025-12-24T16:15:17.4095382Z  ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+2025-12-24T16:15:18.8821759Z   ▲ Next.js 14.2.7
+2025-12-24T16:15:18.8857418Z   - Local:        http://localhost:3000
+2025-12-24T16:15:18.9117591Z 
+2025-12-24T16:15:18.9117951Z  ✓ Starting...
+2025-12-24T16:15:22.1874359Z Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+2025-12-24T16:15:22.1875335Z     at setupFsCheck (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-utils/filesystem.js:151:19)
+2025-12-24T16:15:22.1875470Z     at async initialize (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/router-server.js:62:23)
+2025-12-24T16:15:22.1875509Z     at async Server.<anonymous> (/app/node_modules/.pnpm/next@14.2.7_@babel+core@7.28.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/lib/start-server.js:249:36)

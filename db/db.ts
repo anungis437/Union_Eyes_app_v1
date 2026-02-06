@@ -1,15 +1,27 @@
+/**
+ * Database Client - Multi-Database Support
+ * 
+ * This module re-exports the unified database client from the multi-db abstraction layer.
+ * It maintains backward compatibility while supporting PostgreSQL and Azure SQL Server.
+ * 
+ * For direct multi-db operations, import from '@/lib/database/multi-db-client'
+ */
+
+// Load environment variables first (especially for script execution)
+import { config } from 'dotenv';
+import { resolve } from 'path';
+// Only load .env.local if not in production and DATABASE_URL is not already set
+if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'production') {
+  config({ path: resolve(process.cwd(), '.env.local') });
+}
+
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { profilesTable } from "./schema/profiles-schema";
-import { pendingProfilesTable } from "./schema/pending-profiles-schema";
+import * as schema from "./schema";
+import { getDatabase as getUnifiedDatabase, checkDatabaseHealth } from "@/lib/database/multi-db-client";
 
-// Define the schema properly
-const schema = { 
-  profiles: profilesTable,
-  pendingProfiles: pendingProfilesTable
-};
-
-// Add connection options with improved timeout and retry settings for Vercel environment
+// Legacy PostgreSQL client (for backward compatibility)
+// Consider migrating to getUnifiedDatabase() for multi-database support
 const connectionOptions = {
   max: 3,               // Lower max connections to prevent overloading
   idle_timeout: 10,     // Shorter idle timeout
@@ -18,50 +30,43 @@ const connectionOptions = {
   keepalive: true,      // Keep connections alive
   debug: false,         // Disable debug logging in production
   connection: {
-    application_name: "whop-boilerplate" // Identify app in Supabase logs
+    application_name: "union-claims-app" // Identify app in database logs
   }
 };
 
 // Create a postgres client with optimized connection options
+// This is used when DATABASE_TYPE is 'postgresql' or not set
 export const client = postgres(process.env.DATABASE_URL!, connectionOptions);
 
-// Create a drizzle client
+// Create a drizzle client (PostgreSQL only)
 export const db = drizzle(client, { schema });
 
-// Export a function to check the database connection health
+// Export unified database client (supports PostgreSQL and Azure SQL)
+export const getDatabase = getUnifiedDatabase;
+
+/**
+ * Check database connection health
+ * Uses unified health check that supports all database types
+ */
 export async function checkDatabaseConnection(): Promise<{ ok: boolean, message: string }> {
-  try {
-    // Attempt a simple query with a shorter timeout
-    const startTime = Date.now();
-    await Promise.race([
-      client`SELECT 1`,
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Connection timeout")), 2000))
-    ]);
-    const duration = Date.now() - startTime;
-    return { 
-      ok: true, 
-      message: `Database connection successful (${duration}ms)` 
-    };
-  } catch (error) {
-    console.error("Database connection check failed:", error);
-    
-    // Return detailed error information
-    const message = error instanceof Error 
-      ? `Connection error: ${error.message}`
-      : "Unknown connection error";
-      
-    return { ok: false, message };
-  }
+  const health = await checkDatabaseHealth();
+  return {
+    ok: health.ok,
+    message: health.message
+  };
 }
 
-// Function to check and log connection status
+/**
+ * Function to check and log connection status
+ * Supports both PostgreSQL and Azure SQL Server
+ */
 export async function logDatabaseConnectionStatus(): Promise<void> {
   try {
     const status = await checkDatabaseConnection();
     if (status.ok) {
-      console.log(status.message);
+      console.log(`✓ ${status.message}`);
     } else {
-      console.error(status.message);
+      console.error(`✗ ${status.message}`);
     }
   } catch (error) {
     console.error("Failed to check database connection:", error);
