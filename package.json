@@ -25,7 +25,10 @@
     "ml:retrain": "npx tsx scripts/ml-retraining-pipeline.ts",
     "ml:retrain:all": "npx tsx scripts/ml-retraining-pipeline.ts",
     "ml:train:churn": "npx tsx scripts/train-churn-model.ts",
-    "ml:train:workload": "npx tsx scripts/train-workload-forecast-model.ts"
+    "ml:train:workload": "npx tsx scripts/train-workload-forecast-model.ts",
+    "validate:blind-spots": "npx tsx scripts/run-validators.ts",
+    "validate:blind-spots:privacy": "npx tsx scripts/run-validators.ts --category=privacy",
+    "validate:blind-spots:critical": "npx tsx scripts/run-validators.ts --only=1,2,3,4"
   },
   "dependencies": {
     "@azure/identity": "^4.0.0",
