@@ -63,6 +63,22 @@ export * from "./documents-schema";
 // Recognition & Rewards System
 export * from "./recognition-rewards-schema";
 
+// P1: Critical Compliance Validators
+export * from "./provincial-privacy-schema";
+export * from "./indigenous-data-sovereignty-schema";
+export * from "./strike-fund-tax-reporting-schema";
+export * from "./force-majeure-schema";
+
+// P2: High-Impact Compliance Validators
+export * from "./geofence-privacy-schema";
+export * from "./transfer-pricing-schema";
+export * from "./founder-conflict-schema";
+export * from "./joint-trust-fmv-schema";
+
+// P3: Documentation & Lower-Priority Compliance Validators
+export * from "./certification-management-schema";
+export * from "./employer-non-interference-schema";
+export * from "./whiplash-prevention-schema";
 // P1 Critical Compliance
 export * from "./provincial-privacy-schema"; // #1 Provincial Privacy (PIPEDA, PIPA, Law 25, PHIPA)
 export * from "./indigenous-data-schema"; // #3 Indigenous Data Sovereignty (OCAP®, BCR consent)
