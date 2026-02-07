@@ -62,24 +62,24 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Parse state to get user ID and platform
-      const [user.id, platform] = state.split(':');
+      const [stateUserId, platform] = state.split(':');
 
-      if (!user.id || !platform) {
+      if (!stateUserId || !platform) {
         return NextResponse.redirect(
           `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid state format`
         );
       }
 
-      // Verify user with Clerk
-      const { user.id: clerkUserId, orgId } = await auth();
+      // Verify user with context
+      const { userId: clerkUserId, organizationId } = context;
 
-      if (!clerkUserId || clerkUserId !== user.id) {
+      if (!clerkUserId || clerkUserId !== stateUserId) {
         return NextResponse.redirect(
           `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Authentication failed`
         );
       }
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.redirect(
           `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=No organization found`
         );
@@ -95,7 +95,7 @@ export const GET = async (request: NextRequest) => {
               code,
               redirectUri,
               platform,
-              orgId,
+              organizationId,
               clerkUserId,
               supabase
             );
@@ -111,7 +111,7 @@ export const GET = async (request: NextRequest) => {
               code,
               codeVerifier,
               redirectUri,
-              orgId,
+              organizationId,
               clerkUserId,
               supabase
             );
@@ -124,7 +124,7 @@ export const GET = async (request: NextRequest) => {
             await handleLinkedInCallback(
               code,
               redirectUri,
-              orgId,
+              organizationId,
               clerkUserId,
               supabase
             );
@@ -155,8 +155,7 @@ export const GET = async (request: NextRequest) => {
         `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Internal server error`
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 /**

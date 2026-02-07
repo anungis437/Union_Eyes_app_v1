@@ -5,14 +5,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // TODO: Replace with actual financial-service URL from environment
       const financialServiceUrl = process.env.FINANCIAL_SERVICE_URL || 'http://localhost:3001';
       
       // Fetch member's current dues balance from financial-service
-      const response = await fetch(`${financialServiceUrl}/api/dues/transactions?memberId=${user.id}&status=pending`, {
+      const response = await fetch(`${financialServiceUrl}/api/dues/transactions?memberId=${userId}&status=pending`, {
         headers: {
           'Authorization': `Bearer ${process.env.FINANCIAL_SERVICE_API_KEY}`,
           'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export const GET = async () => {
       };
 
       // Fetch payment history (last 12 months)
-      const historyResponse = await fetch(`${financialServiceUrl}/api/dues/transactions?memberId=${user.id}&limit=12`, {
+      const historyResponse = await fetch(`${financialServiceUrl}/api/dues/transactions?memberId=${userId}&limit=12`, {
         headers: {
           'Authorization': `Bearer ${process.env.FINANCIAL_SERVICE_API_KEY}`,
           'Content-Type': 'application/json',
@@ -52,10 +52,9 @@ export const GET = async () => {
       });
     } catch (error) {
       logger.error('Failed to fetch dues balance', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
   });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
   })(request);
 };

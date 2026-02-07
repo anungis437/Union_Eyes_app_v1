@@ -49,20 +49,19 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
 try {
       // Check admin role
-      const isAdmin = await checkAdminRole(user.id);
+      const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/system/settings',
           method: 'GET',
           eventType: 'unauthorized_access',
@@ -79,8 +78,7 @@ try {
       const configs = await getSystemConfigs(category);
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/system/settings',
         method: 'GET',
         eventType: 'success',
@@ -95,8 +93,7 @@ try {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/system/settings',
         method: 'GET',
         eventType: 'auth_failed',
@@ -127,20 +124,19 @@ export const PUT = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
 try {
       // Check admin role
-      const isAdmin = await checkAdminRole(user.id);
+      const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/system/settings',
           method: 'PUT',
           eventType: 'unauthorized_access',
@@ -158,14 +154,13 @@ try {
       await updateSystemConfig(tenantId, category, key, value);
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/system/settings',
         method: 'PUT',
         eventType: 'success',
         severity: 'high',
         details: {
-          adminId: user.id,
+          adminId: userId,
           tenantId,
           category,
           key,
@@ -178,8 +173,7 @@ try {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/system/settings',
         method: 'PUT',
         eventType: 'auth_failed',
@@ -191,3 +185,4 @@ try {
       throw error;
     }
 });
+

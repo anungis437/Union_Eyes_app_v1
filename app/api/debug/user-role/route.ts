@@ -10,23 +10,23 @@ const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Get membership in Default Organization only
       const [membership] = await db
         .select()
         .from(organizationMembers)
-        .where(eq(organizationMembers.user.id, user.id))
+        .where(eq(organizationMembers.userId, userId))
         .where(eq(organizationMembers.organizationId, DEFAULT_ORG_ID))
         .limit(1);
 
       // Get the role using the same function as dashboard
-      const resolvedOrgId = await getOrganizationIdForUser(user.id);
-      const resolvedRole = await getUserRoleInOrganization(user.id, resolvedOrgId);
+      const resolvedOrgId = await getOrganizationIdForUser(userId);
+      const resolvedRole = await getUserRoleInOrganization(userId, resolvedOrgId);
 
       return NextResponse.json({
-        user.id,
+        userId,
         defaultOrganizationId: DEFAULT_ORG_ID,
         membership: membership || null,
         hasMembership: !!membership,
@@ -45,6 +45,5 @@ export const GET = async () => {
         details: error instanceof Error ? error.message : 'Unknown error' 
       }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };

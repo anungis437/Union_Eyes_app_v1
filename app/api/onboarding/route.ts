@@ -17,7 +17,7 @@ export const runtime = 'nodejs';
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const body = await request.json();
@@ -43,14 +43,14 @@ export const POST = async (request: NextRequest) => {
           subscriptionTier: plan,
           hierarchyPath: [],
           hierarchyLevel: 0,
-          createdBy: user.id,
+          createdBy: userId,
         })
         .returning();
 
       // Emit onboarding event
       eventBus.emit(AppEvents.ORG_CREATED, {
         orgId: org[0].id,
-        createdBy: user.id,
+        createdBy: userId,
       });
 
       logger.info('Organization onboarded', {
@@ -70,6 +70,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

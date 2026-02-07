@@ -22,6 +22,8 @@ export async function POST(
       );
     }
 
+    const { id: userId } = user;
+
     // Get organization from cookies
     const cookieStore = await cookies();
     const orgSlug = cookieStore.get('active-organization')?.value;
@@ -70,7 +72,7 @@ export async function POST(
     const extension = await requestDeadlineExtension(
       params.id,
       organizationId,
-      user.id,
+      userId,
       daysRequested,
       reason.trim()
     );

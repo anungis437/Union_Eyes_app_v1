@@ -13,8 +13,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const signatureOrDocumentId = params.id;
       const body = await request.json();
@@ -52,6 +50,5 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

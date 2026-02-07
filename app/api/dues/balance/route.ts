@@ -18,7 +18,7 @@ export const GET = withEnhancedRoleAuth(60, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -38,8 +38,7 @@ try {
       if (!member) {
         // Return default values instead of 404 - member might not be in financial system yet
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/dues/balance',
           method: 'GET',
           eventType: 'success',
@@ -81,8 +80,7 @@ try {
 
       if (!assignment) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/dues/balance',
           method: 'GET',
           eventType: 'success',
@@ -151,8 +149,7 @@ try {
       const isInArrears = overdueAmount > 0;
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/balance',
         method: 'GET',
         eventType: 'success',
@@ -183,8 +180,7 @@ try {
 
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/balance',
         method: 'GET',
         eventType: 'error',
@@ -209,58 +205,4 @@ try {
       });
     }
 });
-        )
-      )
-      .orderBy(duesTransactions.dueDate)
-      .limit(1);
 
-    // Get last completed payment
-    const [lastPayment] = await db
-      .select()
-      .from(duesTransactions)
-      .where(
-        and(
-          eq(duesTransactions.memberId, member.id),
-          eq(duesTransactions.status, 'completed')
-        )
-      )
-      .orderBy(desc(duesTransactions.paidDate))
-      .limit(1);
-
-    const currentBalance = parseFloat(balanceResult.totalOwed.toString());
-    const overdueAmount = parseFloat(balanceResult.overdueAmount.toString());
-    const isInArrears = overdueAmount > 0;
-
-    return NextResponse.json({
-      currentBalance,
-      nextDueDate: nextPayment?.dueDate || null,
-      nextDueAmount: nextPayment?.totalAmount ? parseFloat(nextPayment.totalAmount.toString()) : 0,
-      overdueAmount,
-      lastPaymentDate: lastPayment?.paidDate || null,
-      lastPaymentAmount: lastPayment?.totalAmount ? parseFloat(lastPayment.totalAmount.toString()) : 0,
-      isInArrears,
-      arrearsAmount: overdueAmount,
-      membershipStatus: isInArrears ? 'arrears' : 'good_standing',
-      autoPayEnabled: false, // TODO: Implement autopay settings table
-      paymentMethodLast4: null, // TODO: Get from Stripe customer
-    });
-
-  } catch (error) {
-    console.error('Error fetching dues balance:', error);
-    // Return default values instead of 500 to prevent UI crashes
-    return NextResponse.json({
-      currentBalance: 0,
-      nextDueDate: null,
-      nextDueAmount: 0,
-      overdueAmount: 0,
-      lastPaymentDate: null,
-      lastPaymentAmount: 0,
-      isInArrears: false,
-      arrearsAmount: 0,
-      membershipStatus: 'pending',
-      autoPayEnabled: false,
-      paymentMethodLast4: null,
-      _error: 'Failed to fetch dues balance - financial system may not be initialized',
-    });
-  }
-}

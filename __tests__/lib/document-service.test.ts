@@ -157,34 +157,24 @@ describe('Document Service - Document Operations', () => {
         { id: 'doc-2', name: 'File2.pdf' },
       ];
 
-      const mockSelect = vi.fn().mockReturnThis();
-      const mockFrom = vi.fn().mockReturnThis();
-      const mockWhere = vi.fn().mockReturnThis();
-      const mockOrderBy = vi.fn().mockReturnThis();
-      const mockLimit = vi.fn().mockReturnThis();
-      const mockOffset = vi.fn().mockResolvedValue(mockDocuments);
-
-      (db.select as any) = vi.fn(() => ({
-        from: mockFrom,
-      }));
-
-      mockFrom.mockImplementation((table: any) => {
-        if (table._.name === 'documents') {
-          return {
-            where: mockWhere.mockReturnValue({
-              orderBy: mockOrderBy.mockReturnValue({
-                limit: mockLimit.mockReturnValue({
-                  offset: mockOffset,
+      (db.select as any) = vi
+        .fn()
+        .mockImplementationOnce(() => ({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([{ count: 2 }]),
+          }),
+        }))
+        .mockImplementationOnce(() => ({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockReturnValue({
+                limit: vi.fn().mockReturnValue({
+                  offset: vi.fn().mockResolvedValue(mockDocuments),
                 }),
               }),
             }),
-          };
-        }
-        // For count query
-        return {
-          where: vi.fn().mockResolvedValue([{ count: 2 }]),
-        };
-      });
+          }),
+        }));
 
       const result = await listDocuments({}, { page: 1, limit: 10 });
 
@@ -535,10 +525,16 @@ describe('Document Service - Folder Operations', () => {
     it('should delete folder with contents', async () => {
       const mockSubfolders = [{ id: 'folder-sub-1' }];
 
-      (db.select as any) = vi.fn(() => ({
-        from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue(mockSubfolders),
-      }));
+      (db.select as any) = vi
+        .fn()
+        .mockImplementationOnce(() => ({
+          from: vi.fn().mockReturnThis(),
+          where: vi.fn().mockResolvedValue(mockSubfolders),
+        }))
+        .mockImplementation(() => ({
+          from: vi.fn().mockReturnThis(),
+          where: vi.fn().mockResolvedValue([]),
+        }));
 
       (db.update as any) = vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({

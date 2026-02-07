@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { GdprRequestManager, DataExportService } from "@/lib/gdpr/consent-manager";
 
 /**
@@ -13,8 +13,8 @@ import { GdprRequestManager, DataExportService } from "@/lib/gdpr/consent-manage
  */
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     // Create data access request
     const request = await GdprRequestManager.requestDataAccess({
-      userId: user.id,
+      userId: userId,
       tenantId,
       requestDetails: {
         preferredFormat: preferredFormat || "json",
@@ -42,8 +42,7 @@ export async function POST(req: NextRequest) {
     // Start async export process (in real app, use queue/background job)
     // For now, we'll generate it immediately for small datasets
     try {
-      const exportData = await DataExportService.exportUserData(
-        user.id,
+      const exportData = await DataExportService.exportUserData( userId,
         tenantId,
         preferredFormat || "json"
       );
@@ -98,8 +97,8 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -115,8 +114,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get request status
-    const requests = await GdprRequestManager.getUserRequests(
-      user.id,
+    const requests = await GdprRequestManager.getUserRequests( userId,
       tenantId
     );
     const request = requests.find((r) => r.id === requestId);
@@ -136,15 +134,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Generate fresh export data
-    const exportData = await DataExportService.exportUserData(
-      user.id,
+    const exportData = await DataExportService.exportUserData( userId,
       tenantId,
       request.requestDetails?.preferredFormat || "json"
     );
 
     // Return as downloadable file
     const format = request.requestDetails?.preferredFormat || "json";
-    const filename = `union-eyes-data-export-${user.id}-${Date.now()}.${format}`;
+    const filename = `union-eyes-data-export-${userId}-${Date.now()}.${format}`;
 
     return new NextResponse(JSON.stringify(exportData, null, 2), {
       status: 200,

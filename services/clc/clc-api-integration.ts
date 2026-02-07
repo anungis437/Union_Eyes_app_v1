@@ -307,7 +307,7 @@ export async function createOrganizationFromCLC(
       .insert(organizations)
       .values({
         name: clcOrg.name,
-        legalName: clcOrg.legalName,
+        displayName: clcOrg.legalName, // Map legalName to displayName which exists in schema
         slug: clcOrg.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         organizationType: clcOrg.organizationType as any, // Type assertion for CLC data
         status: clcOrg.status,

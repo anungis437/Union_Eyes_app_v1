@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
       })
       .from(newsletterCampaigns)
       .leftJoin(newsletterTemplates, eq(newsletterCampaigns.templateId, newsletterTemplates.id))
-      .where(eq(newsletterCampaigns.organizationId, user.tenantId))
+      .where(eq(newsletterCampaigns.organizationId, tenantId))
       .$dynamic();
 
     if (status) {
@@ -75,7 +77,9 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { id: userId, tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.organizationId, user.tenantId));
+      .where(eq(newsletterDistributionLists.organizationId, tenantId));
 
     const validListIds = lists.map(l => l.id);
     const invalidListIds = validatedData.distributionListIds.filter(
@@ -108,8 +112,8 @@ export async function POST(request: NextRequest) {
     const [campaign] = await db
       .insert(newsletterCampaigns)
       .values({
-        organizationId: user.tenantId,
-        createdBy: user.id,
+        organizationId: tenantId,
+        createdBy: userId,
         name: validatedData.name,
         subject: validatedData.subject,
         previewText: validatedData.previewText,

@@ -140,6 +140,93 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         );
         break;
 
+
+        /**
+         * Handle subscription deleted
+         * - Cancels payment cycles
+         * - Logs audit event
+         */
+        async function handleSubscriptionDeleted(
+          subscription: Stripe.Subscription
+        ): Promise<void> {
+          try {
+            logger.info("Processing subscription deleted", {
+              subscriptionId: subscription.id,
+            });
+
+            const organizationId = subscription.metadata?.organizationId || "system";
+
+            const existingCycles = await db.query.paymentCycles.findMany({
+              where: and(
+                sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
+              ),
+            }).catch(() => []);
+
+            for (const cycle of existingCycles) {
+              await db.update(paymentCycles)
+                .set({
+                  status: "cancelled" as any,
+                  cancelledAt: new Date(),
+                  updatedAt: new Date(),
+                })
+                .where(eq(paymentCycles.id, cycle.id))
+                .catch((err) => {
+                  logger.error("Failed to update payment cycle on subscription deletion", { error: err, cycleId: cycle.id });
+                });
+            }
+
+            // Create audit log for subscription cancellation
+            await createAuditLog({
+              organizationId,
+              userId: "system",
+              action: "SUBSCRIPTION_DELETED",
+              resourceType: "subscription",
+              resourceId: subscription.id,
+              description: "Stripe subscription deleted",
+              metadata: {
+                subscriptionId: subscription.id,
+                cancelledAt: new Date().toISOString(),
+              },
+            }).catch((err: any) => logger.warn("Failed to create audit log for subscription deletion", { error: err instanceof Error ? err.message : String(err) }));
+
+            logger.info("Subscription deleted processed", {
+              subscriptionId: subscription.id,
+            });
+          } catch (error) {
+            logger.error("Failed to process subscription deleted", { error });
+          }
+        }
+
+        /**
+         * Handle invoice payment succeeded
+         */
+        async function handleInvoicePaymentSucceeded(
+          invoice: Stripe.Invoice
+        ): Promise<void> {
+          try {
+            logger.info("Processing invoice payment succeeded", { invoiceId: invoice.id });
+
+            const organizationId = invoice.metadata?.organizationId || "system";
+
+            await postGLTransaction({
+              organizationId,
+              accountNumber: "1200", // Accounts Receivable (credit)
+              debitAmount: 0,
+              creditAmount: (invoice.amount_paid || 0) / 100,
+              description: `Invoice payment applied - Invoice ${invoice.number || invoice.id}`,
+              sourceSystem: "stripe",
+              sourceRecordId: invoice.id,
+              invoiceNumber: invoice.number || invoice.id,
+              userId: "system",
+            }).catch((err) => {
+              logger.error("Failed to post GL AR transaction", { error: err, invoiceId: invoice.id });
+            });
+
+            logger.info("Invoice payment succeeded processed", { invoiceId: invoice.id });
+          } catch (error) {
+            logger.error("Failed to process invoice payment succeeded", { error });
+          }
+        }
       case "payment_method.detached":
         await handlePaymentMethodDetached(
           event.data.object as Stripe.PaymentMethod
@@ -374,13 +461,11 @@ async function handleSubscriptionUpdated(
       subscriptionId: subscription.id,
     });
 
-    // Update subscription schedule in database
     const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-    
+
     // Note: Payment cycles are managed separately via payment schedule service
     // No direct Stripe metadata tracking in current schema
 
-    // Create audit log for subscription update
     await createAuditLog({
       organizationId: subscription.metadata?.organizationId || 'unknown',
       userId: "system",
@@ -397,19 +482,34 @@ async function handleSubscriptionUpdated(
     }).catch((err: any) => logger.warn("Failed to create audit log for subscription update", { error: err instanceof Error ? err.message : String(err) }));
 
     logger.info("Subscription updated processed", {
-      subscriptionId: subscription.id
+      subscriptionId: subscription.id,
+    });
+  } catch (error) {
+    logger.error("Failed to process subscription updated", { error });
+  }
+}
 
-    // Extract organization ID from subscription metadata
+/**
+ * Handle subscription deleted
+ * - Cancels payment cycles
+ * - Logs audit event
+ */
+async function handleSubscriptionDeleted(
+  subscription: Stripe.Subscription
+): Promise<void> {
+  try {
+    logger.info("Processing subscription deleted", {
+      subscriptionId: subscription.id,
+    });
+
     const organizationId = subscription.metadata?.organizationId || "system";
 
-    // Find payment cycles linked to this subscription and mark as cancelled
     const existingCycles = await db.query.paymentCycles.findMany({
       where: and(
         sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
       ),
     }).catch(() => []);
 
-    // Update cycles with cancelled status
     for (const cycle of existingCycles) {
       await db.update(paymentCycles)
         .set({
@@ -420,17 +520,16 @@ async function handleSubscriptionUpdated(
         .where(eq(paymentCycles.id, cycle.id))
         .catch((err) => {
           logger.error("Failed to update payment cycle on subscription deletion", { error: err, cycleId: cycle.id });
-       Note: Payment cycles are managed separately via payment schedule service
-    // No direct Stripe metadata tracking in current schema
+        });
+    }
 
-    // Create audit log for subscription cancellation
     await createAuditLog({
       organizationId,
       userId: "system",
       action: "SUBSCRIPTION_DELETED",
       resourceType: "subscription",
       resourceId: subscription.id,
-      description: `Stripe subscription deleted`,
+      description: "Stripe subscription deleted",
       metadata: {
         subscriptionId: subscription.id,
         cancelledAt: new Date().toISOString(),
@@ -438,19 +537,37 @@ async function handleSubscriptionUpdated(
     }).catch((err: any) => logger.warn("Failed to create audit log for subscription deletion", { error: err instanceof Error ? err.message : String(err) }));
 
     logger.info("Subscription deleted processed", {
-      subscriptionId: subscription.id
-        accountNumber: "1200", // Accounts Receivable (credit)
-        debitAmount: 0,
-        creditAmount: (invoice.amount_paid || 0) / 100,
-        description: `Invoice payment applied - Invoice ${invoice.number || invoice.id}`,
-        sourceSystem: "stripe",
-        sourceRecordId: invoice.id,
-        invoiceNumber: invoice.number || invoice.id,
-        userId: "system",
-      }).catch((err) => {
-        logger.error("Failed to post GL AR transaction", { error: err, invoiceId: invoice.id });
-      });
-    }
+      subscriptionId: subscription.id,
+    });
+  } catch (error) {
+    logger.error("Failed to process subscription deleted", { error });
+  }
+}
+
+/**
+ * Handle invoice payment succeeded
+ */
+async function handleInvoicePaymentSucceeded(
+  invoice: Stripe.Invoice
+): Promise<void> {
+  try {
+    logger.info("Processing invoice payment succeeded", { invoiceId: invoice.id });
+
+    const organizationId = invoice.metadata?.organizationId || "system";
+
+    await postGLTransaction({
+      organizationId,
+      accountNumber: "1200", // Accounts Receivable (credit)
+      debitAmount: 0,
+      creditAmount: (invoice.amount_paid || 0) / 100,
+      description: `Invoice payment applied - Invoice ${invoice.number || invoice.id}`,
+      sourceSystem: "stripe",
+      sourceRecordId: invoice.id,
+      invoiceNumber: invoice.number || invoice.id,
+      userId: "system",
+    }).catch((err) => {
+      logger.error("Failed to post GL AR transaction", { error: err, invoiceId: invoice.id });
+    });
 
     logger.info("Invoice payment succeeded processed", { invoiceId: invoice.id });
   } catch (error) {

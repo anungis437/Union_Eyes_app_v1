@@ -178,8 +178,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // POST /api/education/programs/[id]/enrollments - Enroll member in program
@@ -286,8 +285,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // PATCH /api/education/programs/[id]/enrollments?enrollmentId={id} - Update enrollment
@@ -418,6 +416,5 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

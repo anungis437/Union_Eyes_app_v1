@@ -13,13 +13,11 @@ import { NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'Organization context required' },
           { status: 400 }
@@ -46,9 +44,8 @@ export const GET = async (request: NextRequest) => {
 
       // 4. List redemptions
       const redemptions = await listUserRedemptions(
-        db,
-        user.id,
-        orgId,
+        db, userId,
+        organizationId,
         {
           status: status as any,
           limit,
@@ -76,19 +73,16 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'Organization context required' },
           { status: 400 }
@@ -116,9 +110,8 @@ export const POST = async (request: NextRequest) => {
 
       // 3. Initiate redemption
       const redemption = await initiateRedemption(
-        db,
-        user.id,
-        orgId,
+        db, userId,
+        organizationId,
         validatedData
       );
 
@@ -147,19 +140,16 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'Organization context required' },
           { status: 400 }
@@ -216,6 +206,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

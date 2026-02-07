@@ -17,7 +17,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
         const searchParams = request.nextUrl.searchParams;
@@ -33,8 +33,7 @@ export const GET = async (request: NextRequest) => {
         const patterns = await analyzePaymentPatterns(remittances, year);
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/analytics/patterns',
           method: 'GET',
           eventType: 'success',
@@ -50,8 +49,7 @@ export const GET = async (request: NextRequest) => {
 
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/analytics/patterns',
           method: 'GET',
           eventType: 'server_error',
@@ -64,5 +62,6 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
+

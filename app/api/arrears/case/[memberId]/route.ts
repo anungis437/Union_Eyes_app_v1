@@ -14,19 +14,18 @@ export const GET = async (
   { params }: { params: { memberId: string } }
 ) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   // Get member to verify tenant
       const [currentMember] = await db
         .select()
         .from(members)
-        .where(eq(members.userId, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!currentMember) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/arrears/case/[memberId]',
           method: 'GET',
           eventType: 'validation_failed',
@@ -35,8 +34,6 @@ export const GET = async (
         });
         return NextResponse.json({ error: 'Member not found' }, { status: 404 });
       }
-
-      try {
 
       try {
         // Get arrears case with member details
@@ -67,8 +64,7 @@ export const GET = async (
 
         if (!result) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/arrears/case/[memberId]',
             method: 'GET',
             eventType: 'validation_failed',
@@ -132,8 +128,7 @@ export const GET = async (
         }
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/arrears/case/[memberId]',
           method: 'GET',
           eventType: 'success',
@@ -158,8 +153,7 @@ export const GET = async (
 
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/arrears/case/[memberId]',
           method: 'GET',
           eventType: 'server_error',

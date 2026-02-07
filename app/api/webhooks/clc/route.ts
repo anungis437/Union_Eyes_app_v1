@@ -106,6 +106,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       logger.warn("CLC config not found for organization", {
         organizationId: payload.organization_id,
       });
+    }
     //   return NextResponse.json(
     //     { error: "Organization not found" },
     //     { status: 404 }

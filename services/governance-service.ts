@@ -246,14 +246,22 @@ export class GovernanceService {
    * Annual independent audit to verify mission compliance (for sunset clause)
    */
   async conductMissionAudit(data: NewMissionAudit) {
+    // Use default thresholds from schema if not provided
+    const unionRevenueThreshold = data.unionRevenueThreshold ?? 90;
+    const memberSatisfactionThreshold = data.memberSatisfactionThreshold ?? 80;
+    const dataViolationsThreshold = data.dataViolationsThreshold ?? 0;
+    
     // Determine pass/fail for each criterion
-    const unionRevenuePass = data.unionRevenuePercent >= data.unionRevenueThreshold;
-    const memberSatisfactionPass = data.memberSatisfactionPercent >= data.memberSatisfactionThreshold;
-    const dataViolationsPass = data.dataViolations <= data.dataViolationsThreshold;
+    const unionRevenuePass = data.unionRevenuePercent >= unionRevenueThreshold;
+    const memberSatisfactionPass = data.memberSatisfactionPercent >= memberSatisfactionThreshold;
+    const dataViolationsPass = data.dataViolations <= dataViolationsThreshold;
     const overallPass = unionRevenuePass && memberSatisfactionPass && dataViolationsPass;
     
     const [audit] = await db.insert(missionAudits).values({
       ...data,
+      unionRevenueThreshold,
+      memberSatisfactionThreshold,
+      dataViolationsThreshold,
       unionRevenuePass,
       memberSatisfactionPass,
       dataViolationsPass,

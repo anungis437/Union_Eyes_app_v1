@@ -28,9 +28,9 @@ export const GET = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -56,7 +56,7 @@ export const GET = async (request: NextRequest) => {
         )
       `
         )
-        .eq('account.organization_id', orgId)
+        .eq('account.organization_id', organizationId)
         .gte('date', startDate)
         .lte('date', endDate);
 
@@ -139,8 +139,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
@@ -148,9 +147,9 @@ export const POST = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -188,7 +187,7 @@ export const POST = async (request: NextRequest) => {
       `,
           { count: 'exact' }
         )
-        .eq('account.organization_id', orgId)
+        .eq('account.organization_id', organizationId)
         .eq('status', 'published')
         .gte('published_at', startDateStr)
         .lte('published_at', endDateStr);
@@ -262,8 +261,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PUT = async (request: NextRequest) => {
@@ -271,7 +269,7 @@ export const PUT = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
       // Get campaign ID from query params
       const searchParams = request.nextUrl.searchParams;
@@ -292,7 +290,7 @@ export const PUT = async (request: NextRequest) => {
         return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
       }
 
-      if (orgId !== campaign.organization_id) {
+      if (organizationId !== campaign.organization_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -448,8 +446,7 @@ export const PUT = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
@@ -457,9 +454,9 @@ export const DELETE = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -494,7 +491,7 @@ export const DELETE = async (request: NextRequest) => {
             campaign:social_campaigns(name)
           `
             )
-            .eq('account.organization_id', orgId)
+            .eq('account.organization_id', organizationId)
             .eq('status', 'published')
             .gte('published_at', startDate)
             .lte('published_at', endDate)
@@ -537,7 +534,7 @@ export const DELETE = async (request: NextRequest) => {
             account:social_accounts(platform, platform_username)
           `
             )
-            .eq('account.organization_id', orgId)
+            .eq('account.organization_id', organizationId)
             .gte('date', startDate)
             .lte('date', endDate)
             .order('date', { ascending: true });
@@ -564,7 +561,7 @@ export const DELETE = async (request: NextRequest) => {
           const { data: campaigns } = await supabase
             .from('social_campaigns')
             .select('*')
-            .eq('organization_id', orgId)
+            .eq('organization_id', organizationId)
             .order('created_at', { ascending: false });
 
           // Fetch metrics for each campaign
@@ -671,6 +668,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

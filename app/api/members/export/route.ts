@@ -21,7 +21,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
@@ -33,8 +33,7 @@ export const GET = async (request: NextRequest) => {
 
         if (!organizationId) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/members/export',
             method: 'GET',
             eventType: 'validation_failed',
@@ -68,8 +67,7 @@ export const GET = async (request: NextRequest) => {
         const { members } = await listMembers(filters, { limit: 10000 });
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/export',
           method: 'GET',
           eventType: 'success',
@@ -141,8 +139,7 @@ export const GET = async (request: NextRequest) => {
         });
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/export',
           method: 'GET',
           eventType: 'server_error',
@@ -155,5 +152,6 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
+

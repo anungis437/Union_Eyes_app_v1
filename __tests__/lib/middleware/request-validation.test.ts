@@ -33,7 +33,7 @@ describe('RequestValidator', () => {
 
     expect(result.isValid).toBe(false);
     if (!result.isValid) {
-      expect(result.errors._body).toContain('Invalid JSON');
+      expect(result.errors._body).toContain('Invalid JSON in request body');
     }
   });
 

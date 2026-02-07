@@ -32,7 +32,7 @@ export const POST = async (
     }
 
     const body = parsed.data;
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
     const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
     if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -43,13 +43,12 @@ export const POST = async (
         const [currentMember] = await db
           .select()
           .from(members)
-          .where(eq(members.userId, user.id))
+          .where(eq(members.userId, userId))
           .limit(1);
 
         if (!currentMember) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/arrears/escalate/[caseId]',
             method: 'POST',
             eventType: 'validation_failed',
@@ -76,8 +75,7 @@ export const POST = async (
 
           if (!arrearsCase) {
             logApiAuditEvent({
-              timestamp: new Date().toISOString(),
-              userId: user.id,
+              timestamp: new Date().toISOString(), userId,
               endpoint: '/api/arrears/escalate/[caseId]',
               method: 'POST',
               eventType: 'validation_failed',
@@ -101,8 +99,7 @@ export const POST = async (
 
           if (newLevel === currentLevel) {
             logApiAuditEvent({
-              timestamp: new Date().toISOString(),
-              userId: user.id,
+              timestamp: new Date().toISOString(), userId,
               endpoint: '/api/arrears/escalate/[caseId]',
               method: 'POST',
               eventType: 'validation_failed',
@@ -137,7 +134,7 @@ export const POST = async (
             toStage: escalationStages[newLevel].name,
             reason: reason || `Escalated to ${escalationStages[newLevel].name}`,
             escalatedAt: new Date().toISOString(),
-            escalatedBy: user.id,
+            escalatedBy: userId,
             escalatedByName: currentMember.name,
           };
 
@@ -183,8 +180,7 @@ export const POST = async (
             .returning();
 
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/arrears/escalate/[caseId]',
             method: 'POST',
             eventType: 'success',
@@ -208,8 +204,7 @@ export const POST = async (
 
         } catch (error) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/arrears/escalate/[caseId]',
             method: 'POST',
             eventType: 'server_error',

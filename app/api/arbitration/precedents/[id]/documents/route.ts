@@ -79,8 +79,7 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const POST = async (request: NextRequest, context: RouteContext) => {
@@ -214,8 +213,7 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, context: RouteContext) => {
@@ -308,6 +306,5 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

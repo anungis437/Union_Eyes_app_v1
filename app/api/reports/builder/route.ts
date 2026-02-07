@@ -17,12 +17,11 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
 
-      if (!user.id || !orgId) {
+      if (!userId || !organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 401 }
@@ -52,7 +51,7 @@ export const POST = async (req: NextRequest) => {
       const [report] = await db
         .insert(reports)
         .values({
-          tenantId: orgId,
+          tenantId: organizationId,
           name: body.name,
           description: body.description || null,
           reportType: 'custom',
@@ -61,7 +60,7 @@ export const POST = async (req: NextRequest) => {
           isPublic: body.isPublic || false,
           isTemplate: body.isTemplate || false,
           templateId: body.templateId || null,
-          createdBy: user.id,
+          createdBy: userId,
         })
         .returning();
 
@@ -83,18 +82,16 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const GET = async (req: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
 
-      if (!user.id || !orgId) {
+      if (!userId || !organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 401 }
@@ -105,7 +102,7 @@ export const GET = async (req: NextRequest) => {
       const customReports = await db
         .select()
         .from(reports)
-        .where(eq(reports.tenantId, orgId))
+        .where(eq(reports.tenantId, organizationId))
         .orderBy(reports.createdAt);
 
       return NextResponse.json({
@@ -129,6 +126,5 @@ export const GET = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

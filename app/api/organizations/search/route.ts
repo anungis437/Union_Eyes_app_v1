@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Search Organizations
  * Search organizations by name, type, or other criteria
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   let userId: string | null = null;
   let query = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

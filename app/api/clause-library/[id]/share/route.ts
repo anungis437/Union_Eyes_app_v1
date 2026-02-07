@@ -17,14 +17,9 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // PATCH /api/clause-library/[id]/share - Update sharing settings
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  let user.id: string | null = null;
-    
     try {
-      const auth_result = await auth();
-      user.id = auth_result.user.id;
-      
       const clauseId = params.id;
 
       // Get user's organization from cookie (set by organization switcher)
@@ -116,7 +111,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
     } catch (error) {
       logger.error('Error updating sharing settings', error as Error, {
         clauseId: params.id,
-        user.id,
+        userId,
         correlationId: request.headers.get('x-correlation-id')
       });
       return NextResponse.json(
@@ -124,6 +119,5 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

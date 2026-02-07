@@ -44,7 +44,7 @@ export const GET = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
@@ -55,8 +55,7 @@ export const GET = async (
         
         if (!document) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: `/api/documents/${params.id}`,
             method: 'GET',
             eventType: 'validation_failed',
@@ -69,8 +68,7 @@ export const GET = async (
         if (versions) {
           const versionHistory = await getDocumentVersions(params.id);
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: `/api/documents/${params.id}`,
             method: 'GET',
             eventType: 'success',
@@ -81,8 +79,7 @@ export const GET = async (
         }
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: `/api/documents/${params.id}`,
           method: 'GET',
           eventType: 'success',
@@ -93,8 +90,7 @@ export const GET = async (
         return NextResponse.json(document);
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: `/api/documents/${params.id}`,
           method: 'GET',
           eventType: 'server_error',
@@ -107,7 +103,7 @@ export const GET = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };
 
 /**
@@ -134,7 +130,7 @@ export const PATCH = async (
     }
 
     const body = parsed.data;
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
     const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
     if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -146,8 +142,7 @@ export const PATCH = async (
           
           if (!updated) {
             logApiAuditEvent({
-              timestamp: new Date().toISOString(),
-              userId: user.id,
+              timestamp: new Date().toISOString(), userId,
               endpoint: `/api/documents/${params.id}`,
               method: 'PATCH',
               eventType: 'validation_failed',
@@ -158,8 +153,7 @@ export const PATCH = async (
           }
 
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: `/api/documents/${params.id}`,
             method: 'PATCH',
             eventType: 'success',
@@ -170,8 +164,7 @@ export const PATCH = async (
           return NextResponse.json(updated);
         } catch (error) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: `/api/documents/${params.id}`,
             method: 'PATCH',
             eventType: 'server_error',
@@ -184,7 +177,7 @@ export const PATCH = async (
             { status: 500 }
           );
         }
-  })(request, { params });
+        })(request, { params });
 };
 
 /**
@@ -199,7 +192,7 @@ export const DELETE = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
@@ -211,8 +204,7 @@ export const DELETE = async (
 
         if (!success) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: `/api/documents/${params.id}`,
             method: 'DELETE',
             eventType: 'validation_failed',
@@ -223,8 +215,7 @@ export const DELETE = async (
         }
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: `/api/documents/${params.id}`,
           method: 'DELETE',
           eventType: 'success',
@@ -235,8 +226,7 @@ export const DELETE = async (
         return NextResponse.json({ success: true, message: "Document deleted successfully" });
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: `/api/documents/${params.id}`,
           method: 'DELETE',
           eventType: 'server_error',
@@ -249,5 +239,6 @@ export const DELETE = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };
+

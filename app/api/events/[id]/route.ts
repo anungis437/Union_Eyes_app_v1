@@ -92,12 +92,12 @@ async function checkEventAccess(eventId: string, userId: string) {
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const eventId = params.id;
 
-      const access = await checkEventAccess(eventId, user.id);
+      const access = await checkEventAccess(eventId, userId);
       if (!access.hasAccess) {
         return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
       }
@@ -124,19 +124,18 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const eventId = params.id;
       const body = await request.json();
 
-      const access = await checkEventAccess(eventId, user.id);
+      const access = await checkEventAccess(eventId, userId);
       if (!access.hasAccess) {
         return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
       }
@@ -226,16 +225,20 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         await db.delete(eventAttendees).where(eq(eventAttendees.eventId, eventId));
 
         if (attendees.length > 0) {
-          const attendeeValues = attendees.map((attendee: any) => ({
-            eventId,
-            tenantId: updatedEvent.tenantId,
-            user.id: attendee.user.id,
-            email: attendee.email,
-            name: attendee.name,
-            status: attendee.status || 'invited',
-            isOptional: attendee.isOptional || false,
-            isOrganizer: attendee.user.id === updatedEvent.organizerId,
-          }));
+          const attendeeValues = attendees.map((attendee: any) => {
+            const attendeeUserId = attendee.userId ?? attendee.user?.id ?? null;
+
+            return {
+              eventId,
+              tenantId: updatedEvent.tenantId,
+              userId: attendeeUserId,
+              email: attendee.email,
+              name: attendee.name,
+              status: attendee.status || 'invited',
+              isOptional: attendee.isOptional || false,
+              isOrganizer: attendeeUserId === updatedEvent.organizerId,
+            };
+          });
 
           await db.insert(eventAttendees).values(attendeeValues);
         }
@@ -252,20 +255,19 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const eventId = params.id;
       const { searchParams } = new URL(request.url);
       const cancellationReason = searchParams.get('reason');
 
-      const access = await checkEventAccess(eventId, user.id);
+      const access = await checkEventAccess(eventId, userId);
       if (!access.hasAccess) {
         return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
       }
@@ -283,7 +285,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .set({
           status: 'cancelled',
           cancelledAt: new Date(),
-          cancelledBy: user.id,
+          cancelledBy: userId,
           cancellationReason,
           updatedAt: new Date(),
         })
@@ -310,6 +312,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

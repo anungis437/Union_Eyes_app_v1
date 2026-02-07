@@ -15,12 +15,12 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const searchParams = request.nextUrl.searchParams;
       const code = searchParams.get('code');
-      const state = searchParams.get('state'); // user.id
+      const state = searchParams.get('state'); // userId
       const error = searchParams.get('error');
 
       if (error) {
@@ -37,7 +37,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Verify state matches current user
-      if (user.id !== state) {
+      if (userId !== state) {
         return NextResponse.json(
           { error: 'Invalid state parameter' },
           { status: 400 }
@@ -48,13 +48,13 @@ export const GET = async (request: NextRequest) => {
       const { accessToken, refreshToken, expiresAt } = await exchangeCodeForTokens(code);
 
       // Get user's email from Google (optional, for providerAccountId)
-      const providerAccountId = `google_${user.id}`;
+      const providerAccountId = `google_${userId}`;
 
       // Store connection
       const [connection] = await db
         .insert(externalCalendarConnections)
         .values({
-          user.id,
+          userId,
           tenantId: 'default', // TODO: Get from user's organization
           provider: 'google',
           providerAccountId,
@@ -84,6 +84,5 @@ export const GET = async (request: NextRequest) => {
         )
       );
     }
-  })
-  })(request);
+    })(request);
 };

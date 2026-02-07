@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Members
  * Get and manage members of an organization
@@ -24,7 +25,7 @@ export async function GET(
   let userId: string | null = null;
   let id = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(
@@ -67,7 +68,7 @@ export async function POST(
   let userId: string | null = null;
   let organizationId = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

@@ -59,7 +59,7 @@ async function logCrossOrgAccess(
 // GET /api/clause-library/[id] - Get single clause
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const clauseId = params.id;
@@ -140,8 +140,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
         // Log cross-org access
         if (hasAccess) {
-          await logCrossOrgAccess(
-            user.id,
+          await logCrossOrgAccess( userId,
             userOrgId,
             "clause",
             clauseId,
@@ -183,14 +182,13 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // PATCH /api/clause-library/[id] - Update clause
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const clauseId = params.id;
@@ -293,14 +291,13 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // DELETE /api/clause-library/[id] - Delete clause
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const clauseId = params.id;
@@ -357,6 +354,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

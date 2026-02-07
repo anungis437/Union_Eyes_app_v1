@@ -40,7 +40,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
     } catch (error) {
       logger.error('Failed to fetch trustee meeting', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         meetingId: params.id,
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -49,7 +49,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     );
   }
-}
   })(request, { params });
 };
 
@@ -90,7 +89,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
     } catch (error) {
       logger.error('Failed to update trustee meeting', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         meetingId: params.id,
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -99,7 +98,6 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       { status: 500 }
     );
   }
-}
   })(request, { params });
 };
 
@@ -127,7 +125,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
 
     } catch (error) {
       logger.error('Failed to delete trustee meeting', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         meetingId: params.id,
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -136,6 +134,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       { status: 500 }
     );
   }
-}
   })(request, { params });
 };

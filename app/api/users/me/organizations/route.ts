@@ -16,17 +16,17 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (req: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      console.log('[API /api/users/me/organizations] Auth user.id:', user.id);
+      console.log('[API /api/users/me/organizations] Auth userId:', userId);
 
       // Get user's memberships
-      console.log('[API /api/users/me/organizations] Fetching memberships for user.id:', user.id);
+      console.log('[API /api/users/me/organizations] Fetching memberships for userId:', userId);
       const memberships = await db
         .select()
         .from(organizationMembers)
-        .where(eq(organizationMembers.user.id, user.id));
+        .where(eq(organizationMembers.userId, userId));
 
       console.log('[API /api/users/me/organizations] Found memberships:', memberships.length);
 
@@ -108,6 +108,5 @@ export const GET = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { SignatureService, AuditTrailService } from "@/lib/signature/signature-service";
 
 export async function GET(
@@ -13,8 +13,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -38,8 +38,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -55,7 +55,7 @@ export async function PATCH(
         );
       }
 
-      await SignatureService.voidDocument(documentId, user.id, reason);
+      await SignatureService.voidDocument(documentId, userId, reason);
 
       return NextResponse.json({
         success: true,

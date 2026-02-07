@@ -13,7 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -25,8 +25,8 @@ export const GET = async (request: NextRequest) => {
       let conditions = and(
         eq(messageThreads.isArchived, false),
         or(
-          eq(messageThreads.memberId, user.id),
-          eq(messageThreads.staffId, user.id)
+          eq(messageThreads.memberId, userId),
+          eq(messageThreads.staffId, userId)
         )
       );
 
@@ -66,7 +66,7 @@ export const GET = async (request: NextRequest) => {
         .where(
           and(
             sql`${messages.threadId} = ANY(${threadIds})`,
-            sql`${messages.senderId} != ${user.id}`,
+            sql`${messages.senderId} != ${userId}`,
             sql`${messages.readAt} IS NULL`
           )
         )
@@ -91,13 +91,12 @@ export const GET = async (request: NextRequest) => {
       logger.error('Failed to fetch message threads', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { subject, staffId, organizationId, category, priority, initialMessage } = await request.json();
@@ -111,7 +110,7 @@ export const POST = async (request: NextRequest) => {
         .insert(messageThreads)
         .values({
           subject,
-          memberId: user.id,
+          memberId: userId,
           staffId: staffId || null,
           organizationId,
           category: category || 'general',
@@ -123,7 +122,7 @@ export const POST = async (request: NextRequest) => {
       // Add creator as participant
       await db.insert(messageParticipants).values({
         threadId: thread.id,
-        user.id,
+        userId,
         role: 'member',
       });
 
@@ -131,7 +130,7 @@ export const POST = async (request: NextRequest) => {
       if (staffId) {
         await db.insert(messageParticipants).values({
           threadId: thread.id,
-          user.id: staffId,
+          userId: staffId,
           role: 'staff',
         });
       }
@@ -140,7 +139,7 @@ export const POST = async (request: NextRequest) => {
       if (initialMessage) {
         await db.insert(messages).values({
           threadId: thread.id,
-          senderId: user.id,
+          senderId: userId,
           senderRole: 'member',
           messageType: 'text',
           content: initialMessage,
@@ -149,7 +148,7 @@ export const POST = async (request: NextRequest) => {
 
       logger.info('Message thread created', {
         threadId: thread.id,
-        memberId: user.id,
+        memberId: userId,
         organizationId,
       });
 
@@ -158,6 +157,5 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to create message thread', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };

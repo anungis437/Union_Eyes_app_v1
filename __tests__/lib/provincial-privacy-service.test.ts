@@ -6,6 +6,24 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+vi.mock('@/db', () => {
+  const createChainableMock = () => {
+    const chain: any = {
+      from: vi.fn(() => chain),
+      where: vi.fn(() => chain),
+      limit: vi.fn(() => chain),
+      then: vi.fn((resolve) => resolve([])),
+    };
+    return chain;
+  };
+
+  return {
+    db: {
+      select: vi.fn(() => createChainableMock()),
+    },
+  };
+});
 import { ProvincialPrivacyService } from '@/services/provincial-privacy-service';
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);

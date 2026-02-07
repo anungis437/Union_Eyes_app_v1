@@ -14,7 +14,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const threadId = params.threadId;
@@ -30,7 +30,7 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
       }
 
       // Verify access
-      if (thread.memberId !== user.id && thread.staffId !== user.id) {
+      if (thread.memberId !== userId && thread.staffId !== userId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
@@ -74,14 +74,14 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
       }
 
       // Determine sender role
-      const senderRole = thread.memberId === user.id ? 'member' : 'staff';
+      const senderRole = thread.memberId === userId ? 'member' : 'staff';
 
       // Create message
       const [message] = await db
         .insert(messages)
         .values({
           threadId,
-          senderId: user.id,
+          senderId: userId,
           senderRole,
           messageType,
           content,
@@ -98,10 +98,10 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
         .where(eq(messageThreads.id, threadId));
 
       // Create notification for recipient
-      const recipientId = thread.memberId === user.id ? thread.staffId : thread.memberId;
+      const recipientId = thread.memberId === userId ? thread.staffId : thread.memberId;
       if (recipientId) {
         await db.insert(messageNotifications).values({
-          user.id: recipientId,
+          userId: recipientId,
           messageId: message.id,
           threadId,
         });
@@ -110,7 +110,7 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
       logger.info('Message sent', {
         threadId,
         messageId: message.id,
-        senderId: user.id,
+        senderId: userId,
         senderRole,
         messageType,
       });
@@ -120,6 +120,5 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
       logger.error('Failed to send message', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

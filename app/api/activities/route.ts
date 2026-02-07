@@ -39,7 +39,7 @@ export const GET = async (request: NextRequest) => {
           title: sql<string>`NULL`,
           status: sql<string>`NULL`,
           priority: sql<string>`NULL`,
-          createdBy: organizationMembers.user.id,
+          createdBy: organizationMembers.userId,
           createdAt: organizationMembers.createdAt,
           description: sql<string>`'Member joined the organization'`,
           email: organizationMembers.email,
@@ -85,6 +85,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

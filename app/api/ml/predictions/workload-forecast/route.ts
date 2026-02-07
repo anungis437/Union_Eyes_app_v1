@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * UC-08: Workload Forecasting API
  * 
@@ -14,7 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
-import { auth } from '@clerk/nextjs/server';
+
 
 interface ForecastPoint {
   date: string;
@@ -41,7 +42,7 @@ interface WorkloadForecastResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const horizon = parseInt(searchParams.get('horizon') || '30'); // 30, 60, or 90 days
     const granularity = searchParams.get('granularity') || 'daily'; // daily or weekly
-    const organizationId = searchParams.get('organizationId') || orgId || userId;
+    const organizationId = searchParams.get('organizationId') || organizationId || userId;
 
     if (![30, 60, 90].includes(horizon)) {
       return NextResponse.json(
@@ -165,7 +166,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -180,7 +181,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const organizationId = requestOrganizationId || orgId || userId;
+    const organizationId = requestOrganizationId || organizationId || userId;
     const start = new Date(startDate);
     const end = new Date(endDate);
     const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));

@@ -31,8 +31,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { id } = params;
 
@@ -97,8 +95,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // =====================================================
@@ -107,7 +104,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
 export const PUT = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // TODO: Add admin role check when profiles/roles are set up
@@ -202,7 +199,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
       // Update organization
       const updatedOrg = await updateOrganization(id, {
         ...body,
-        updatedBy: user.id,
+        updatedBy: userId,
       });
 
       return NextResponse.json({
@@ -216,8 +213,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // =====================================================
@@ -226,8 +222,6 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // TODO: Add admin role check when profiles/roles are set up
       // For now, authenticated users can delete organizations
@@ -303,6 +297,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

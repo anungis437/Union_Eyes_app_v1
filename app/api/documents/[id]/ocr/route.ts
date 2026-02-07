@@ -17,14 +17,13 @@ export const POST = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const result = await processDocumentOCR(params.id);
         
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: `/api/documents/${params.id}/ocr`,
           method: 'POST',
           eventType: 'success',
@@ -35,8 +34,7 @@ export const POST = async (
         return NextResponse.json(result);
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: `/api/documents/${params.id}/ocr`,
           method: 'POST',
           eventType: 'server_error',
@@ -49,5 +47,5 @@ export const POST = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };

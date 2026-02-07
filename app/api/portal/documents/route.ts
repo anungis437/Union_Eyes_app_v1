@@ -8,14 +8,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Fetch member's documents from database
       const documents = await db
         .select()
         .from(memberDocuments)
-        .where(eq(memberDocuments.user.id, user.id))
+        .where(eq(memberDocuments.userId, userId))
         .orderBy(desc(memberDocuments.uploadedAt));
 
       return NextResponse.json({
@@ -31,10 +31,9 @@ export const GET = async () => {
       });
     } catch (error) {
       logger.error('Failed to fetch documents', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
   });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
   })(request);
 };

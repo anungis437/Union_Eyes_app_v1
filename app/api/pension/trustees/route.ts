@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -54,7 +54,7 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch trustees', error as Error, {
-        user.id: (await auth()).user.id,
+        userId,
         trustBoardId: request.nextUrl.searchParams.get('trustBoardId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -63,17 +63,15 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id: userIdAuth } = await auth();
-      if (!userIdAuth) {
+      if (!userId) {
         return NextResponse.json(
           { error: 'Unauthorized - Authentication required' },
           { status: 401 }
@@ -83,7 +81,7 @@ export const POST = async (request: NextRequest) => {
       const body = await request.json();
       const {
         trustBoardId,
-        user.id,
+        userId: trusteeUserId,
         trusteeName,
         trusteeType, // 'employer' | 'union' | 'independent'
         position,
@@ -107,14 +105,14 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Check if user already a trustee on this board (if user.id provided)
-      if (user.id) {
+      if (trusteeUserId) {
         const existing = await db
           .select()
           .from(pensionTrustees)
           .where(
             and(
               eq(pensionTrustees.trusteeBoardId, trustBoardId),
-              eq(pensionTrustees.user.id, user.id),
+              eq(pensionTrustees.userId, trusteeUserId),
               eq(pensionTrustees.isCurrent, true)
             )
           )
@@ -133,7 +131,7 @@ export const POST = async (request: NextRequest) => {
         .insert(pensionTrustees)
         .values({
           trusteeBoardId: trustBoardId,
-          user.id: user.id || null,
+          userId: trusteeUserId || null,
           trusteeName,
           trusteeType,
           position: position || null,
@@ -159,7 +157,7 @@ export const POST = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to appoint trustee', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
     return NextResponse.json(
@@ -167,6 +165,5 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

@@ -21,7 +21,7 @@ export const maxDuration = 30;
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Authenticate user
@@ -51,7 +51,7 @@ export const POST = async (request: NextRequest) => {
       const extension = audioFile.name.split('.').pop() || 'webm';
       const filename = claimId 
         ? `claims/${claimId}/voice_${timestamp}.${extension}`
-        : `temp/${user.id}_${timestamp}.${extension}`;
+        : `temp/${userId}_${timestamp}.${extension}`;
 
       // Convert file to buffer
       const arrayBuffer = await audioFile.arrayBuffer();
@@ -96,13 +96,12 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Authenticate user
@@ -143,6 +142,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

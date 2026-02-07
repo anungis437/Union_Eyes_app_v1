@@ -32,11 +32,11 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
         // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${user.id}`);
+        await db.execute(sql`SET app.current_user_id = ${userId}`);
 
         const { id } = await params;
         const searchParams = request.nextUrl.searchParams;
@@ -48,8 +48,7 @@ export const GET = async (
         const validFormats: RemittanceExportFormat[] = ['csv', 'xml', 'edi', 'statcan', 'excel'];
         if (!validFormats.includes(format)) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/[id]/export',
             method: 'GET',
             eventType: 'validation_failed',
@@ -78,8 +77,7 @@ export const GET = async (
         headers.set('X-Checksum', exportFile.checksum);
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances/[id]/export',
           method: 'GET',
           eventType: 'success',
@@ -106,8 +104,7 @@ export const GET = async (
 
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances/[id]/export',
           method: 'GET',
           eventType: 'server_error',
@@ -127,7 +124,6 @@ export const GET = async (
           { error: 'Failed to export remittance' },
           { status: 500 }
         );
-      }
+    }
   })(request, { params });
 };
-}

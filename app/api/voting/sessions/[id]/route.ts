@@ -28,13 +28,13 @@ const updateSessionSchema = z.object({
 
 export const GET = async (request: NextRequest, { params }: RouteParams) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      if (!user.id) {
+      if (!userId) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          user.id: 'anonymous',
+          userId: 'anonymous',
           endpoint: '/api/voting/sessions/[id]',
           method: 'GET',
           eventType: 'auth_failed',
@@ -53,8 +53,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
       // Check for SQL injection in sessionId
       if (SQLInjectionScanner.scanMethod(sessionId)) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'GET',
           eventType: 'auth_failed',
@@ -76,8 +75,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
 
       if (!session) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'GET',
           eventType: 'auth_failed',
@@ -126,7 +124,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
         .where(
           and(
             eq(votes.sessionId, sessionId),
-            eq(votes.voterId, user.id)
+            eq(votes.voterId, userId)
           )
         )
         .limit(1);
@@ -138,7 +136,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
         .where(
           and(
             eq(voterEligibility.sessionId, sessionId),
-            eq(voterEligibility.memberId, user.id)
+            eq(voterEligibility.memberId, userId)
           )
         )
         .limit(1);
@@ -165,8 +163,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
         : true;
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/voting/sessions/[id]',
         method: 'GET',
         eventType: 'success',
@@ -198,7 +195,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
-        user.id: 'unknown',
+        userId: 'unknown',
         endpoint: '/api/voting/sessions/[id]',
         method: 'GET',
         eventType: 'auth_failed',
@@ -209,19 +206,18 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
       console.error('Error fetching voting session:', error);
       throw error;
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      if (!user.id) {
+      if (!userId) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          user.id: 'anonymous',
+          userId: 'anonymous',
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'auth_failed',
@@ -240,8 +236,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
       // Check for SQL injection in sessionId
       if (SQLInjectionScanner.scanMethod(sessionId)) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'auth_failed',
@@ -263,8 +258,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
 
       if (!session) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'unauthorized_access',
@@ -279,11 +273,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
       }
 
       // Check if user has admin/LRO permissions
-      const hasPermission = await checkAdminPermissions(user.id, session.organizationId);
+      const hasPermission = await checkAdminPermissions(userId, session.organizationId);
       if (!hasPermission) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'unauthorized_access',
@@ -303,8 +296,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
       const validationResult = updateSessionSchema.safeParse(body);
       if (!validationResult.success) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -337,8 +329,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
         const validStatuses = ['draft', 'active', 'paused', 'closed', 'cancelled'];
         if (!validStatuses.includes(status)) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/voting/sessions/[id]',
             method: 'PATCH',
             eventType: 'validation_failed',
@@ -368,8 +359,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
 
       if (Object.keys(updates).length === 1) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -392,8 +382,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
 
       if (!updatedSession) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'PATCH',
           eventType: 'auth_failed',
@@ -408,8 +397,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
       }
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/voting/sessions/[id]',
         method: 'PATCH',
         eventType: 'success',
@@ -424,7 +412,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
-        user.id: 'unknown',
+        userId: 'unknown',
         endpoint: '/api/voting/sessions/[id]',
         method: 'PATCH',
         eventType: 'auth_failed',
@@ -435,19 +423,18 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
       console.error('Error updating voting session:', error);
       throw error;
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      if (!user.id) {
+      if (!userId) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          user.id: 'anonymous',
+          userId: 'anonymous',
           endpoint: '/api/voting/sessions/[id]',
           method: 'DELETE',
           eventType: 'auth_failed',
@@ -466,8 +453,7 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
       // Check for SQL injection in sessionId
       if (SQLInjectionScanner.scanMethod(sessionId)) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'DELETE',
           eventType: 'auth_failed',
@@ -489,8 +475,7 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
 
       if (!session) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'DELETE',
           eventType: 'unauthorized_access',
@@ -505,11 +490,10 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
       }
 
       // Check if user has admin/LRO permissions
-      const hasPermission = await checkAdminPermissions(user.id, session.organizationId);
+      const hasPermission = await checkAdminPermissions(userId, session.organizationId);
       if (!hasPermission) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'DELETE',
           eventType: 'unauthorized_access',
@@ -531,8 +515,7 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
 
       if (voteCount.count > 0) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions/[id]',
           method: 'DELETE',
           eventType: 'unauthorized_access',
@@ -552,8 +535,7 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
         .where(eq(votingSessions.id, sessionId));
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/voting/sessions/[id]',
         method: 'DELETE',
         eventType: 'success',
@@ -567,7 +549,7 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
-        user.id: 'unknown',
+        userId: 'unknown',
         endpoint: '/api/voting/sessions/[id]',
         method: 'DELETE',
         eventType: 'auth_failed',
@@ -578,6 +560,5 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
       console.error('Error deleting voting session:', error);
       throw error;
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

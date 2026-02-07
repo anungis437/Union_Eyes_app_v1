@@ -12,6 +12,10 @@ export async function POST(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await request.json();
     const { province, consentType, consentGiven, consentText, consentLanguage } = body;
@@ -25,7 +29,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get("user-agent") || undefined;
 
     const consent = await ProvincialPrivacyService.recordConsent({
-      userId: session.user.id!,
+      userId,
       province: province as Province,
       consentType,
       consentGiven,
@@ -60,6 +64,10 @@ export async function GET(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { searchParams } = new URL(request.url);
     const province = searchParams.get("province") as Province;
@@ -70,7 +78,7 @@ export async function GET(request: NextRequest) {
     }
 
     const hasConsent = await ProvincialPrivacyService.hasValidConsent(
-      session.user.id!,
+      userId,
       province,
       consentType
     );
@@ -95,6 +103,10 @@ export async function DELETE(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await request.json();
     const { province, consentType } = body;
@@ -104,7 +116,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await ProvincialPrivacyService.revokeConsent(
-      session.user.id!,
+      userId,
       province as Province,
       consentType
     );

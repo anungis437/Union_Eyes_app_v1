@@ -7,13 +7,11 @@ import { NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'Organization context required' },
           { status: 400 }
@@ -29,10 +27,10 @@ export const GET = async (request: NextRequest) => {
       const offset = parseInt(searchParams.get('offset') || '0', 10);
 
       // 3. Get wallet balance
-      const balance = await getBalance(db, user.id, orgId);
+      const balance = await getBalance(db, userId, organizationId);
 
       // 4. Get recent ledger entries
-      const ledger = await listLedger(db, user.id, orgId, {
+      const ledger = await listLedger(db, userId, organizationId, {
         limit,
         offset,
       });
@@ -60,6 +58,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

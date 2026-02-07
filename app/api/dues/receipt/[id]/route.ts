@@ -24,21 +24,21 @@ export const GET = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
-  const transactionId = params.id;
+    const transactionId = params.id;
 
       // Find member
       const [member] = await db
         .select()
         .from(members)
-        .where(eq(members.userId, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!member) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: '/api/dues/receipt/[id]',
           method: 'GET',
           eventType: 'validation_failed',
@@ -47,9 +47,6 @@ export const GET = async (
         });
         return NextResponse.json({ error: 'Member not found' }, { status: 404 });
       }
-
-      try {
-
       try {
         // Get transaction
         const [transaction] = await db
@@ -66,7 +63,7 @@ export const GET = async (
         if (!transaction) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: '/api/dues/receipt/[id]',
             method: 'GET',
             eventType: 'validation_failed',
@@ -82,7 +79,7 @@ export const GET = async (
         if (transaction.status !== 'completed') {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: '/api/dues/receipt/[id]',
             method: 'GET',
             eventType: 'validation_failed',
@@ -154,7 +151,7 @@ export const GET = async (
         if (format === 'json') {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: '/api/dues/receipt/[id]',
             method: 'GET',
             eventType: 'success',
@@ -198,7 +195,7 @@ export const GET = async (
 
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: '/api/dues/receipt/[id]',
             method: 'GET',
             eventType: 'success',
@@ -222,7 +219,7 @@ export const GET = async (
         // Return PDF file directly (format === 'pdf')
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: '/api/dues/receipt/[id]',
           method: 'GET',
           eventType: 'success',
@@ -244,7 +241,7 @@ export const GET = async (
       } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: '/api/dues/receipt/[id]',
           method: 'GET',
           eventType: 'server_error',

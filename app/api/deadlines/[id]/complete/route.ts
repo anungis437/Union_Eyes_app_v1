@@ -19,12 +19,14 @@ export async function POST(
       );
     }
 
+    const { id: userId } = user;
+
     const body = await request.json();
     const { notes } = body;
 
     const result = await completeDeadline(
       params.id,
-      user.id,
+      userId,
       notes
     );
 

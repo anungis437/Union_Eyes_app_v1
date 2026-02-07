@@ -21,7 +21,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // POST /api/clause-library/compare - Compare multiple clauses
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Get user's organization from cookie (set by organization switcher)
@@ -132,7 +132,7 @@ export const POST = async (request: NextRequest) => {
 
       // Log comparison in history
       const comparisonLog: NewClauseComparison = {
-        user.id: user.id!,
+        userId,
         organizationId: userOrgId,
         clauseIds: clauseIds,
         comparisonNotes: comparisonNotes || null,
@@ -192,8 +192,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // Helper: Extract common keywords from clauses

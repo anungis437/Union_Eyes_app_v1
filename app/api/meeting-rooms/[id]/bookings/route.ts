@@ -16,7 +16,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const roomId = params.id;
@@ -141,7 +141,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           roomId,
           eventId,
           tenantId: room.tenantId,
-          bookedBy: user.id,
+          bookedBy: userId,
           bookedFor,
           purpose,
           startTime: start,
@@ -184,14 +184,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const roomId = params.id;
       const { searchParams } = new URL(request.url);
@@ -232,6 +229,5 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

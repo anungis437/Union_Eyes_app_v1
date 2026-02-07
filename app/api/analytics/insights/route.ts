@@ -15,8 +15,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const searchParams = request.nextUrl.searchParams;
       const status = searchParams.get('status');
@@ -55,13 +53,12 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PATCH = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const body = await request.json();
@@ -88,12 +85,12 @@ export const PATCH = async (request: NextRequest) => {
       };
       
       if (status === 'acknowledged') {
-        updateData.acknowledgedBy = user.id;
+        updateData.acknowledgedBy = userId;
         updateData.acknowledgedAt = new Date();
       }
       
       if (status === 'dismissed') {
-        updateData.dismissedBy = user.id;
+        updateData.dismissedBy = userId;
         updateData.dismissedAt = new Date();
         if (dismissalReason) updateData.dismissalReason = dismissalReason;
       }
@@ -123,14 +120,11 @@ export const PATCH = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // This endpoint would be used by the AI system to create new insights
       // For now, it's a placeholder for future implementation
@@ -197,6 +191,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

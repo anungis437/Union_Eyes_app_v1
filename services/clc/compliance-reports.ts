@@ -271,10 +271,10 @@ export async function generateStatCanAnnualReport(fiscalYear: number): Promise<S
   const organizationInfo: StatCanOrganizationInfo = {
     name: clcOrg[0]?.name || 'Canadian Labour Congress',
     charterNumber: clcOrg[0]?.charterNumber || 'CLC-001',
-    businessNumber: clcOrg[0]?.businessNumber || '',
+    businessNumber: '', // Field doesn't exist in organizations schema - placeholder for StatCan reports
     fiscalYearEnd: 'March 31',
     address: typeof clcOrg[0]?.address === 'object' ? JSON.stringify(clcOrg[0]?.address) : '',
-    contactName: clcOrg[0]?.contactName || '',
+    contactName: '', // Field doesn't exist in organizations schema - placeholder for StatCan reports
     contactEmail: clcOrg[0]?.email || '',
     contactPhone: clcOrg[0]?.phone || ''
   };

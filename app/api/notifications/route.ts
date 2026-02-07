@@ -13,8 +13,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // Get query parameters
       const searchParams = request.nextUrl.searchParams;
@@ -23,7 +21,7 @@ export const GET = async (request: NextRequest) => {
       const limit = parseInt(searchParams.get('limit') || '50');
 
       // Build base where conditions
-      const baseConditions = [eq(inAppNotifications.user.id, user.id)];
+      const baseConditions = [eq(inAppNotifications.userId, context.userId)];
       
       // Add tenant filter if provided
       if (tenantId) {
@@ -44,7 +42,7 @@ export const GET = async (request: NextRequest) => {
 
       // Get unread count with tenant filter
       const unreadCountConditions = [
-        eq(inAppNotifications.user.id, user.id),
+        eq(inAppNotifications.userId, context.userId),
         eq(inAppNotifications.read, false),
       ];
       
@@ -68,6 +66,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

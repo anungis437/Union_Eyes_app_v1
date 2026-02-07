@@ -20,8 +20,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const workflowId = params.id;
       const { searchParams } = new URL(request.url);
@@ -59,14 +57,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PUT = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const workflowId = params.id;
 
@@ -90,13 +85,12 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const workflowId = params.id;
@@ -110,7 +104,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         );
       }
 
-      cancelWorkflow(workflowId, user.id, reason);
+      cancelWorkflow(workflowId, userId, reason);
 
       return NextResponse.json({
         success: true,
@@ -124,6 +118,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

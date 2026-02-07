@@ -13,11 +13,11 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      // Generate authorization URL with user.id as state
-      const authUrl = getAuthorizationUrl(user.id);
+      // Generate authorization URL with userId as state
+      const authUrl = getAuthorizationUrl(userId);
 
       // Redirect to Google authorization page
       return NextResponse.redirect(authUrl);
@@ -28,6 +28,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

@@ -12,7 +12,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -67,7 +67,7 @@ export const GET = async (request: NextRequest) => {
         const relevantDecisions = await findRelevantDecisions(claim, limit);
         
         // Create precedent analysis
-        const analysis = await analyzeClaimPrecedents(claimId, claim, relevantDecisions, user.id);
+        const analysis = await analyzeClaimPrecedents(claimId, claim, relevantDecisions, userId);
 
         return NextResponse.json({
           analysis,
@@ -138,8 +138,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 /**

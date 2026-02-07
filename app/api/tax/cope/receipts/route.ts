@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -103,7 +103,7 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch COPE receipts', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         memberId: request.nextUrl.searchParams.get('memberId'),
         taxYear: request.nextUrl.searchParams.get('taxYear'),
         correlationId: request.headers.get('x-correlation-id'),
@@ -113,13 +113,12 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId: contextOrganizationId } = context;
 
   try {
       const body = await request.json();
@@ -138,7 +137,7 @@ export const POST = async (request: NextRequest) => {
         receiptIssuedDate,
         notes,
       } = body;
-  if (organizationId && organizationId !== context.organizationId) {
+  if (organizationId && organizationId !== contextOrganizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -179,7 +178,7 @@ export const POST = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to record COPE contribution', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
     return NextResponse.json(
@@ -187,6 +186,5 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

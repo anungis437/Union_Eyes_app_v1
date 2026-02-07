@@ -17,11 +17,11 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Rate limiting: 20 tax operations per hour per user
-      const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.TAX_OPERATIONS);
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
       if (!rateLimitResult.allowed) {
         logger.warn('Rate limit exceeded for tax slips read', {        limit: rateLimitResult.limit,
           resetIn: rateLimitResult.resetIn,
@@ -90,7 +90,7 @@ export const GET = async (request: NextRequest) => {
     } catch (error) {
       const { searchParams } = new URL(request.url);
       logger.error('Failed to fetch tax slips', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         organizationId: searchParams.get('organizationId'),
         slipType: searchParams.get('slipType'),
         correlationId: request.headers.get('x-correlation-id'),
@@ -100,6 +100,5 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

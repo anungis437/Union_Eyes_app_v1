@@ -55,7 +55,7 @@ async function canAccessPrecedent(
 // GET /api/arbitration/precedents/[id] - Retrieve single precedent
 export const GET = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   const { id } = await context.params;
     
@@ -119,8 +119,7 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
       }
 
       // Check access permission
-      const hasAccess = await canAccessPrecedent(
-        user.id,
+      const hasAccess = await canAccessPrecedent( userId,
         userOrgId,
         userOrgHierarchyPath,
         precedent
@@ -153,14 +152,13 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // PATCH /api/arbitration/precedents/[id] - Update precedent (owner only)
 export const PATCH = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   const { id } = await context.params;
     
@@ -250,7 +248,7 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
 
         // Add new tags
         if (body.tags.length > 0) {
-          const userUuid = await getOrCreateUserUuid(user.id);
+          const userUuid = await getOrCreateUserUuid(userId);
           const tagInserts = body.tags.map((tagName: string) => ({
             precedentId: id,
             tagName: tagName.toLowerCase().trim(),
@@ -287,8 +285,7 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // DELETE /api/arbitration/precedents/[id] - Delete precedent (owner only)
@@ -353,6 +350,5 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

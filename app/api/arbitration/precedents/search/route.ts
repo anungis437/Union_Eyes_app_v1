@@ -46,7 +46,7 @@ async function canAccessPrecedent(
 // POST /api/arbitration/precedents/search - Advanced search
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Get user's organization from cookie
@@ -222,8 +222,7 @@ export const POST = async (request: NextRequest) => {
       // Filter by access permissions
       const accessiblePrecedents = await Promise.all(
         filteredPrecedents.map(async (precedent) => {
-          const hasAccess = await canAccessPrecedent(
-            user.id,
+          const hasAccess = await canAccessPrecedent( userId,
             userOrgId,
             userOrgHierarchyPath,
             precedent
@@ -271,6 +270,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

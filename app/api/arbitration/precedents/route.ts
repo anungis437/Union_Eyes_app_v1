@@ -59,7 +59,7 @@ async function canAccessPrecedent(
 // GET /api/arbitration/precedents - List precedents with filters
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Get user's organization from cookie
@@ -164,8 +164,7 @@ export const GET = async (request: NextRequest) => {
       // Filter by access permissions
       const accessiblePrecedents = await Promise.all(
         precedents.map(async (precedent) => {
-          const hasAccess = await canAccessPrecedent(
-            user.id,
+          const hasAccess = await canAccessPrecedent( userId,
             userOrgId,
             userOrgHierarchyPath,
             precedent
@@ -203,17 +202,16 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // POST /api/arbitration/precedents - Create new precedent
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
-      const userUuid = await getOrCreateUserUuid(user.id);
+      const userUuid = await getOrCreateUserUuid(userId);
 
       // Get user's organization from cookie
       const cookieStore = await cookies();
@@ -325,6 +323,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

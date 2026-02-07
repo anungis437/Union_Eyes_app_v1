@@ -99,8 +99,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // POST /api/education/programs - Create new training program
@@ -194,8 +193,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // PATCH /api/education/programs?id={programId} - Update program
@@ -280,8 +278,7 @@ export const PATCH = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // DELETE /api/education/programs?id={programId} - Deactivate program
@@ -347,6 +344,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

@@ -64,14 +64,14 @@ async function checkCalendarAccess(calendarId: string, userId: string) {
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const calendarId = params.id;
       const { searchParams } = new URL(request.url);
 
       // Check access
-      const access = await checkCalendarAccess(calendarId, user.id);
+      const access = await checkCalendarAccess(calendarId, userId);
       if (!access.hasAccess) {
         return NextResponse.json({ error: access.error }, { status: access.error === 'Calendar not found' ? 404 : 403 });
       }
@@ -130,20 +130,19 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const calendarId = params.id;
       const body = await request.json();
 
       // Check access
-      const access = await checkCalendarAccess(calendarId, user.id);
+      const access = await checkCalendarAccess(calendarId, userId);
       if (!access.hasAccess) {
         return NextResponse.json({ error: access.error }, { status: access.error === 'Calendar not found' ? 404 : 403 });
       }
@@ -231,28 +230,32 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           meetingUrl,
           meetingPassword,
           agenda,
-          organizerId: user.id,
+          organizerId: userId,
           reminders,
           isPrivate,
           visibility,
           metadata,
           attachments,
-          createdBy: user.id,
+          createdBy: userId,
         })
         .returning();
 
       // Add attendees
       if (attendees && attendees.length > 0) {
-        const attendeeValues = attendees.map((attendee: any) => ({
-          eventId: newEvent.id,
-          tenantId,
-          user.id: attendee.user.id,
-          email: attendee.email,
-          name: attendee.name,
-          status: attendee.status || 'invited',
-          isOptional: attendee.isOptional || false,
-          isOrganizer: attendee.email === user.id || attendee.user.id === user.id,
-        }));
+        const attendeeValues = attendees.map((attendee: any) => {
+          const attendeeUserId = attendee.userId ?? attendee.user?.id ?? null;
+
+          return {
+            eventId: newEvent.id,
+            tenantId,
+            userId: attendeeUserId,
+            email: attendee.email,
+            name: attendee.name,
+            status: attendee.status || 'invited',
+            isOptional: attendee.isOptional || false,
+            isOrganizer: attendee.email === userId || attendeeUserId === userId,
+          };
+        });
 
         await db.insert(eventAttendees).values(attendeeValues);
       }
@@ -279,6 +282,5 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

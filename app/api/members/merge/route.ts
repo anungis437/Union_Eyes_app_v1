@@ -66,7 +66,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -77,11 +77,10 @@ try {
       const { primaryMemberId, duplicateMemberId, fieldSelections, notes } = body;
 
       // Get user's organization
-      const orgId = await getUserOrganization(user.id);
+      const orgId = await getUserOrganization(userId);
       if (!orgId) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/merge',
           method: 'POST',
           eventType: 'auth_failed',
@@ -94,8 +93,7 @@ try {
       // Prevent self-merge
       if (primaryMemberId === duplicateMemberId) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/merge',
           method: 'POST',
           eventType: 'validation_failed',
@@ -121,8 +119,7 @@ try {
 
       if (!primaryMember || !duplicateMember) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/merge',
           method: 'POST',
           eventType: 'validation_failed',
@@ -138,8 +135,7 @@ try {
       // Verify both belong to same organization
       if (primaryMember.organizationId !== orgId || duplicateMember.organizationId !== orgId) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/merge',
           method: 'POST',
           eventType: 'auth_failed',
@@ -204,7 +200,7 @@ try {
         .insert(auditLogs)
         .values({
           organizationId: orgId,
-          userId: user.id,
+          userId,
           action: "member_merge",
           resourceType: "member",
           resourceId: primaryMemberId,
@@ -218,8 +214,7 @@ try {
         });
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/members/merge',
         method: 'POST',
         eventType: 'success',
@@ -249,8 +244,7 @@ try {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/members/merge',
         method: 'POST',
         eventType: 'server_error',
@@ -275,15 +269,14 @@ try {
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         // Get user's organization
-        const orgId = await getUserOrganization(user.id);
+        const orgId = await getUserOrganization(userId);
         if (!orgId) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/members/merge',
             method: 'GET',
             eventType: 'auth_failed',
@@ -327,8 +320,7 @@ export const GET = async (request: NextRequest) => {
         });
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/merge',
           method: 'GET',
           eventType: 'success',
@@ -343,8 +335,7 @@ export const GET = async (request: NextRequest) => {
         });
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/merge',
           method: 'GET',
           eventType: 'server_error',
@@ -357,5 +348,6 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
+

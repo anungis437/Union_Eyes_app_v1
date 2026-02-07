@@ -45,6 +45,5 @@ export const GET = async (req: NextRequest, { params }: { params: { jobId: strin
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

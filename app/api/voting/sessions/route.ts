@@ -41,7 +41,7 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -92,7 +92,7 @@ try {
               .where(
                 and(
                   eq(votes.sessionId, session.id),
-                  eq(votes.voterId, user.id)
+                  eq(votes.voterId, userId)
                 )
               )
               .limit(1);
@@ -104,7 +104,7 @@ try {
               .where(
                 and(
                   eq(voterEligibility.sessionId, session.id),
-                  eq(voterEligibility.memberId, user.id)
+                  eq(voterEligibility.memberId, userId)
                 )
               )
               .limit(1);
@@ -121,11 +121,11 @@ try {
                 : 0,
             },
           };
-        });
+        })
+      );
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/voting/sessions',
         method: 'GET',
         eventType: 'success',
@@ -137,8 +137,7 @@ try {
     }
 
     logApiAuditEvent({
-      timestamp: new Date().toISOString(),
-      userId: user.id,
+      timestamp: new Date().toISOString(), userId,
       endpoint: '/api/voting/sessions',
       method: 'GET',
       eventType: 'success',
@@ -149,8 +148,7 @@ try {
     return NextResponse.json({ sessions });
   } catch (error) {
     logApiAuditEvent({
-      timestamp: new Date().toISOString(),
-      userId: user.id,
+      timestamp: new Date().toISOString(), userId,
       endpoint: '/api/voting/sessions',
       method: 'GET',
       eventType: 'auth_failed',
@@ -159,6 +157,7 @@ try {
     });
 
     throw error;
+  }
 });
 
 /**
@@ -179,7 +178,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -206,7 +205,7 @@ try {
       const member = await db.query.organizationMembers.findFirst({
         where: (organizationMembers, { eq, and }) =>
           and(
-            eq(organizationMembers.userId, user.id),
+            eq(organizationMembers.userId, context.userId),
             eq(organizationMembers.organizationId, organizationId)
           ),
       });
@@ -214,8 +213,7 @@ try {
       // Allow admin and officer roles to create voting sessions
       if (!member || !['admin', 'officer', 'super_admin'].includes(member.role)) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/voting/sessions',
           method: 'POST',
           eventType: 'unauthorized_access',
@@ -238,7 +236,7 @@ try {
           type,
           meetingType,
           organizationId,
-          createdBy: user.id,
+          createdBy: userId,
           startTime: startTime ? new Date(startTime) : undefined,
           scheduledEndTime: scheduledEndTime ? new Date(scheduledEndTime) : undefined,
           allowAnonymous,
@@ -261,8 +259,7 @@ try {
       }
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/voting/sessions',
         method: 'POST',
         eventType: 'success',
@@ -281,8 +278,7 @@ try {
       }, { status: 201 });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/voting/sessions',
         method: 'POST',
         eventType: 'auth_failed',
@@ -293,3 +289,4 @@ try {
       throw error;
     }
 });
+

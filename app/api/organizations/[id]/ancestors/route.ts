@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Ancestors
  * Get all ancestors of an organization up to the root
@@ -20,7 +21,7 @@ export async function GET(
   let userId: string | null = null;
   let id = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

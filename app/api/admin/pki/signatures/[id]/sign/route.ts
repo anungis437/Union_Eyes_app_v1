@@ -15,12 +15,10 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
-
-      if (!user.id || !orgId) {
+      if (!userId || !organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized - Organization context required' },
           { status: 401 }
@@ -56,11 +54,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         documentId,
         documentType,
         documentUrl,
-        user.id,
+        userId,
         userName,
         userTitle,
         userEmail,
-        organizationId: orgId,
+        organizationId: organizationId,
         ipAddress,
         userAgent,
       };
@@ -71,7 +69,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       let workflowResult;
       if (workflowId) {
         try {
-          workflowResult = await recordSignature(workflowId, user.id, signature.signatureId);
+          workflowResult = await recordSignature(workflowId, userId, signature.signatureId);
         } catch (error) {
           console.error('Error recording signature in workflow:', error);
           // Continue even if workflow update fails
@@ -92,6 +90,5 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

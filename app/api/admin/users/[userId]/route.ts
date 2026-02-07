@@ -14,14 +14,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { userId: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check admin role
       const adminCheck = await db
         .select({ role: tenantUsers.role })
         .from(tenantUsers)
-        .where(eq(tenantUsers.user.id, user.id))
+        .where(eq(tenantUsers.userId, userId))
         .limit(1);
 
       if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -31,13 +31,13 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
         );
       }
 
-      const targetUserId = params.user.id;
+      const targetUserId = params.userId;
 
       // Get user details across all tenants
       const userDetails = await db
         .select()
         .from(tenantUsers)
-        .where(eq(tenantUsers.user.id, targetUserId));
+        .where(eq(tenantUsers.userId, targetUserId));
 
       if (userDetails.length === 0) {
         return NextResponse.json(
@@ -57,20 +57,19 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PUT = async (request: NextRequest, { params }: { params: { userId: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check admin role
       const adminCheck = await db
         .select({ role: tenantUsers.role })
         .from(tenantUsers)
-        .where(eq(tenantUsers.user.id, user.id))
+        .where(eq(tenantUsers.userId, userId))
         .limit(1);
 
       if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -80,7 +79,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
         );
       }
 
-      const targetUserId = params.user.id;
+      const targetUserId = params.userId;
       const body = await request.json();
       const { tenantId, action, role } = body;
 
@@ -117,20 +116,19 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { userId: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check admin role
       const adminCheck = await db
         .select({ role: tenantUsers.role })
         .from(tenantUsers)
-        .where(eq(tenantUsers.user.id, user.id))
+        .where(eq(tenantUsers.userId, userId))
         .limit(1);
 
       if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -140,7 +138,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
         );
       }
 
-      const targetUserId = params.user.id;
+      const targetUserId = params.userId;
       const searchParams = request.nextUrl.searchParams;
       const tenantId = searchParams.get("tenantId");
 
@@ -164,6 +162,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

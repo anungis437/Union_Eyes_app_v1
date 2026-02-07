@@ -10,8 +10,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: Request) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const body = await request.json();
       const { tenantId } = body;
@@ -43,7 +41,7 @@ export const POST = async (request: Request) => {
         .from(tenantUsers)
         .where(
           and(
-            eq(tenantUsers.user.id, user.id),
+            eq(tenantUsers.userId, context.userId),
             eq(tenantUsers.tenantId, tenantId)
           )
         )
@@ -82,6 +80,5 @@ export const POST = async (request: Request) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

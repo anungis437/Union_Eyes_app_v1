@@ -47,7 +47,7 @@ export const GET = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const memberId = params.id;
@@ -55,7 +55,7 @@ export const GET = async (
         if (!memberId) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'GET',
             eventType: 'validation_failed',
@@ -69,11 +69,11 @@ export const GET = async (
         }
 
         // Get user context
-        const userContext = await getUserContext(user.id);
+        const userContext = await getUserContext(userId);
         if (!userContext) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'GET',
             eventType: 'auth_failed',
@@ -94,7 +94,7 @@ export const GET = async (
         if (!member) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'GET',
             eventType: 'validation_failed',
@@ -111,7 +111,7 @@ export const GET = async (
         if (member.organizationId !== organizationId) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'GET',
             eventType: 'auth_failed',
@@ -126,7 +126,7 @@ export const GET = async (
 
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/members/${memberId}`,
           method: 'GET',
           eventType: 'success',
@@ -141,7 +141,7 @@ export const GET = async (
       } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/members/${params.id}`,
           method: 'GET',
           eventType: 'server_error',
@@ -154,7 +154,7 @@ export const GET = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };
 
 /**
@@ -166,7 +166,7 @@ export const PATCH = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const memberId = params.id;
@@ -174,7 +174,7 @@ export const PATCH = async (
         if (!memberId) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'PATCH',
             eventType: 'validation_failed',
@@ -188,11 +188,11 @@ export const PATCH = async (
         }
 
         // Get user context
-        const userContext = await getUserContext(user.id);
+        const userContext = await getUserContext(userId);
         if (!userContext) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'PATCH',
             eventType: 'auth_failed',
@@ -211,7 +211,7 @@ export const PATCH = async (
         if (!hasMinimumRole(role, 'steward')) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'PATCH',
             eventType: 'auth_failed',
@@ -230,7 +230,7 @@ export const PATCH = async (
         if (!existingMember) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'PATCH',
             eventType: 'validation_failed',
@@ -247,7 +247,7 @@ export const PATCH = async (
         if (existingMember.organizationId !== organizationId) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/members/${memberId}`,
             method: 'PATCH',
             eventType: 'auth_failed',
@@ -264,7 +264,7 @@ export const PATCH = async (
         // For now, return not implemented
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/members/${memberId}`,
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -279,7 +279,7 @@ export const PATCH = async (
       } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/members/${params.id}`,
           method: 'PATCH',
           eventType: 'server_error',
@@ -292,5 +292,5 @@ export const PATCH = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };

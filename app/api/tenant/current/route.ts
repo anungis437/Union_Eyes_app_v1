@@ -9,11 +9,11 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Get current tenant information
-    const tenant = await getTenantInfo(user.id);
+    const tenant = await getTenantInfo(userId);
 
     // Get list of all tenants the user has access to by querying tenant_users
     const userTenants = await db
@@ -28,7 +28,7 @@ export const GET = async () => {
       .innerJoin(tenants, eq(tenantUsers.tenantId, tenants.tenantId))
       .where(
         and(
-          eq(tenantUsers.user.id, user.id),
+          eq(tenantUsers.userId, userId),
           eq(tenants.status, "active")
         )
       );
@@ -57,6 +57,5 @@ export const GET = async () => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

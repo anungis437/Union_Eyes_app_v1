@@ -8,8 +8,6 @@ export const maxDuration = 60; // Maximum duration in seconds
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // Authenticate user
       // Parse form data
@@ -74,6 +72,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

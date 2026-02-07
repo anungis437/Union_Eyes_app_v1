@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+import { requireUser } from '@/lib/auth/unified-auth';
 
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
@@ -14,14 +15,14 @@ export async function GET(
 ) {
   let userId: string | null = null;
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const organizationId = params.id;
-  if (authResult.orgId && organizationId !== authResult.orgId) {
+  if (authResult.organizationId && organizationId !== authResult.organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

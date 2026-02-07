@@ -25,11 +25,11 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
         // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${user.id}`);
+        await db.execute(sql`SET app.current_user_id = ${userId}`);
 
         // Parse query parameters
         const searchParams = request.nextUrl.searchParams;
@@ -40,8 +40,7 @@ export const GET = async (request: NextRequest) => {
         // Validate format
         if (!format || !['csv', 'xml', 'statcan'].includes(format)) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/export',
             method: 'GET',
             eventType: 'validation_failed',
@@ -62,8 +61,7 @@ export const GET = async (request: NextRequest) => {
         // Validate format-specific requirements
         if ((format === 'csv' || format === 'xml') && remittanceIds.length === 0) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/export',
             method: 'GET',
             eventType: 'validation_failed',
@@ -78,8 +76,7 @@ export const GET = async (request: NextRequest) => {
 
         if (format === 'statcan' && !fiscalYearParam) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/export',
             method: 'GET',
             eventType: 'validation_failed',
@@ -102,8 +99,7 @@ export const GET = async (request: NextRequest) => {
         });
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances/export',
           method: 'GET',
           eventType: 'success',
@@ -130,8 +126,7 @@ export const GET = async (request: NextRequest) => {
         return response;
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances/export',
           method: 'GET',
           eventType: 'server_error',
@@ -144,5 +139,6 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
+

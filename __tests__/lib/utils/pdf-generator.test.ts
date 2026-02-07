@@ -1,69 +1,29 @@
 import { describe, it, expect, vi } from 'vitest';
-import { generatePDF, addHeader, addFooter, generatePDF } from '@/lib/utils\pdf-generator';
+import { addFooter, addHeader, generatePDF } from '@/lib/utils/pdf-generator';
 
-describe('pdf-generator', () => {
-
-  describe('generatePDF', () => {
-    it('handles valid input', () => {
-      const result = generatePDF({});
-      expect(result).toBeDefined();
-    });
-
-    it('handles edge cases', () => {
-      expect(() => generatePDF(null as any)).not.toThrow();
-    });
-
-    it('returns expected type', () => {
-      const result = generatePDF({});
-      expect(typeof result).toBe('object');
-    });
+describe('pdf-generator exports', () => {
+  it('exposes generator helpers', () => {
+    expect(generatePDF).toBeDefined();
+    expect(addHeader).toBeDefined();
+    expect(addFooter).toBeDefined();
   });
 
-  describe('addHeader', () => {
-    it('handles valid input', () => {
-      const result = addHeader({});
-      expect(result).toBeDefined();
-    });
+  it('adds header/footer with a mock document', () => {
+    const doc = {
+      fontSize: vi.fn().mockReturnThis(),
+      text: vi.fn().mockReturnThis(),
+      moveDown: vi.fn().mockReturnThis(),
+      page: {
+        margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        width: 612,
+        height: 792,
+      },
+      bufferedPageRange: vi.fn().mockReturnValue({ start: 0, count: 1 }),
+    };
 
-    it('handles edge cases', () => {
-      expect(() => addHeader(null as any)).not.toThrow();
-    });
+    addHeader(doc as any, 'Header');
+    addFooter(doc as any, 'Footer');
 
-    it('returns expected type', () => {
-      const result = addHeader({});
-      expect(typeof result).toBe('object');
-    });
-  });
-
-  describe('addFooter', () => {
-    it('handles valid input', () => {
-      const result = addFooter({});
-      expect(result).toBeDefined();
-    });
-
-    it('handles edge cases', () => {
-      expect(() => addFooter(null as any)).not.toThrow();
-    });
-
-    it('returns expected type', () => {
-      const result = addFooter({});
-      expect(typeof result).toBe('object');
-    });
-  });
-
-  describe('generatePDF', () => {
-    it('handles valid input', () => {
-      const result = generatePDF({});
-      expect(result).toBeDefined();
-    });
-
-    it('handles edge cases', () => {
-      expect(() => generatePDF(null as any)).not.toThrow();
-    });
-
-    it('returns expected type', () => {
-      const result = generatePDF({});
-      expect(typeof result).toBe('object');
-    });
+    expect(doc.text).toHaveBeenCalled();
   });
 });

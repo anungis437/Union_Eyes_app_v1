@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Tree
  * Get the full organization hierarchy tree
@@ -15,7 +16,7 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId } = await requireUser();
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized - Authentication required' },

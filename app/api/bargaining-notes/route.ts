@@ -21,8 +21,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       
@@ -121,13 +119,12 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const body = await request.json();
@@ -147,8 +144,8 @@ export const POST = async (request: NextRequest) => {
         // Add createdBy to all notes
         const notesWithUser = body.map(note => ({
           ...note,
-          createdBy: user.id,
-          lastModifiedBy: user.id
+          createdBy: userId,
+          lastModifiedBy: userId
         }));
 
         const notes = await bulkCreateBargainingNotes(notesWithUser);
@@ -195,8 +192,8 @@ export const POST = async (request: NextRequest) => {
       // Create note
       const note = await createBargainingNote({
         ...body,
-        createdBy: user.id,
-        lastModifiedBy: user.id,
+        createdBy: userId,
+        lastModifiedBy: userId,
       });
 
       return NextResponse.json({ note }, { status: 201 });
@@ -207,6 +204,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

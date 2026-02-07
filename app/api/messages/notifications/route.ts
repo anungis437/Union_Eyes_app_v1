@@ -13,7 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -22,7 +22,7 @@ export const GET = async (request: NextRequest) => {
       const offset = parseInt(searchParams.get('offset') || '0');
 
       // Build query
-      const baseCondition = eq(messageNotifications.user.id, user.id);
+      const baseCondition = eq(messageNotifications.userId, userId);
       const conditions = unreadOnly 
         ? and(baseCondition, eq(messageNotifications.isRead, false))
         : baseCondition;
@@ -57,7 +57,7 @@ export const GET = async (request: NextRequest) => {
         .from(messageNotifications)
         .where(
           and(
-            eq(messageNotifications.user.id, user.id),
+            eq(messageNotifications.userId, userId),
             eq(messageNotifications.isRead, false)
           )
         );
@@ -75,13 +75,12 @@ export const GET = async (request: NextRequest) => {
       logger.error('Failed to fetch notifications', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PATCH = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { notificationIds, markAllAsRead } = await request.json();
@@ -93,12 +92,12 @@ export const PATCH = async (request: NextRequest) => {
           .set({ isRead: true, readAt: new Date() })
           .where(
             and(
-              eq(messageNotifications.user.id, user.id),
+              eq(messageNotifications.userId, userId),
               eq(messageNotifications.isRead, false)
             )
           );
 
-        logger.info('All notifications marked as read', { user.id });
+        logger.info('All notifications marked as read', { userId });
 
         return NextResponse.json({ success: true });
       }
@@ -113,13 +112,13 @@ export const PATCH = async (request: NextRequest) => {
         .set({ isRead: true, readAt: new Date() })
         .where(
           and(
-            eq(messageNotifications.user.id, user.id),
+            eq(messageNotifications.userId, userId),
             sql`${messageNotifications.id} = ANY(${notificationIds})`
           )
         );
 
       logger.info('Notifications marked as read', {
-        user.id,
+        userId,
         count: notificationIds.length,
       });
 
@@ -128,6 +127,5 @@ export const PATCH = async (request: NextRequest) => {
       logger.error('Failed to update notifications', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };

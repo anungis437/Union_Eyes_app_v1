@@ -30,7 +30,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const connectionId = params.id;
@@ -41,7 +41,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .where(
           and(
             eq(externalCalendarConnections.id, connectionId),
-            eq(externalCalendarConnections.user.id, user.id)
+            eq(externalCalendarConnections.userId, userId)
           )
         )
         .limit(1);
@@ -88,13 +88,12 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const connectionId = params.id;
@@ -108,7 +107,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .where(
           and(
             eq(externalCalendarConnections.id, connectionId),
-            eq(externalCalendarConnections.user.id, user.id)
+            eq(externalCalendarConnections.userId, userId)
           )
         )
         .limit(1);
@@ -143,13 +142,12 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const connectionId = params.id;
@@ -161,7 +159,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .where(
           and(
             eq(externalCalendarConnections.id, connectionId),
-            eq(externalCalendarConnections.user.id, user.id)
+            eq(externalCalendarConnections.userId, userId)
           )
         )
         .limit(1);
@@ -188,6 +186,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

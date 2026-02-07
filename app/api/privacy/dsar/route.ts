@@ -27,7 +27,7 @@ async function checkPrivacyPermissions(userId: string): Promise<boolean> {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const body = await request.json();
@@ -43,14 +43,14 @@ export const POST = async (request: NextRequest) => {
       }
 
       const dsar = await ProvincialPrivacyService.createDSAR({
-        user.id,
+        userId,
         requestType,
         province: province as Province,
         requestDescription,
         requestedDataTypes,
       });
 
-      logger.info('DSAR created', { user.id, requestType, province });
+      logger.info('DSAR created', { userId, requestType, province });
 
       return NextResponse.json({
         success: true,
@@ -65,17 +65,16 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check if user has admin/privacy officer role
-      const hasPermission = await checkPrivacyPermissions(user.id);
+      const hasPermission = await checkPrivacyPermissions(userId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - admin or privacy officer role required" },
@@ -85,7 +84,7 @@ export const GET = async (request: NextRequest) => {
 
       const dsars = await ProvincialPrivacyService.getOverdueDSARs();
 
-      logger.info('Retrieved overdue DSARs', { user.id, count: dsars.length });
+      logger.info('Retrieved overdue DSARs', { userId, count: dsars.length });
 
       return NextResponse.json({ dsars, count: dsars.length });
     } catch (error: any) {
@@ -95,8 +94,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 

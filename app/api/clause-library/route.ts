@@ -74,7 +74,7 @@ async function canAccessClause(
 // GET /api/clause-library - List clauses with filters
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Get user's organization from cookie (set by organization switcher)
@@ -159,7 +159,7 @@ export const GET = async (request: NextRequest) => {
       const accessibleClauses = [];
       for (const clause of clauses) {
         const canAccess = await canAccessClause(
-          user.id!,
+          userId,
           userOrgId,
           userOrgHierarchyPath,
           clause
@@ -196,14 +196,13 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // POST /api/clause-library - Create new shared clause
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Get user's organization from cookie (set by organization switcher)
@@ -264,7 +263,7 @@ export const POST = async (request: NextRequest) => {
       const finalSharingLevel = sharingLevel ?? "private";
 
       // Get or create UUID for this Clerk user
-      const userUuid = await getOrCreateUserUuid(user.id);
+      const userUuid = await getOrCreateUserUuid(userId);
 
       // Create clause
       const newClause: NewSharedClause = {
@@ -327,7 +326,6 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 // Trigger rebuild after cache clear

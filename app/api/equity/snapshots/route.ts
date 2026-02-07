@@ -46,7 +46,7 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch equity snapshots', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -55,7 +55,6 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
 
@@ -102,7 +101,7 @@ export const POST = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to generate equity snapshot', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
     return NextResponse.json(
@@ -110,6 +109,5 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
