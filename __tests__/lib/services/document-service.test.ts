@@ -22,9 +22,10 @@ import {
   bulkDeleteDocuments,
   getDocumentStatistics,
 } from '@/lib/services/document-service';
+import { db } from '@/db/db';
 
 // Mock the database
-const mockDb = {
+const mockDb = vi.hoisted(() => ({
   query: {
     documents: {
       findFirst: vi.fn(),
@@ -37,7 +38,7 @@ const mockDb = {
   insert: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
-};
+}));
 
 vi.mock('@/db/db', () => ({
   db: mockDb,
@@ -522,7 +523,6 @@ describe('document-service', () => {
       expect(result.byCategory).toEqual({});
     });
   });
-});
 
   // ============================================================================
   // Document Operations

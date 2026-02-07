@@ -13,19 +13,18 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 const setupIntentSchema = z.object({});
 
 export const POST = withEnhancedRoleAuth(60, async (request, context) => {
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
 // Find member by userId
     const [member] = await db
       .select()
       .from(members)
-      .where(eq(members.userId, user.id))
+      .where(eq(members.userId, userId))
       .limit(1);
 
     if (!member) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/setup-intent',
         method: 'POST',
         eventType: 'validation_failed',
@@ -77,8 +76,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       });
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/setup-intent',
         method: 'POST',
         eventType: 'success',
@@ -97,8 +95,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/setup-intent',
         method: 'POST',
         eventType: 'server_error',
@@ -112,3 +109,4 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       );
     }
 });
+

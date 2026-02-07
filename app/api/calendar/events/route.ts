@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * Calendar Events API Routes
  * 
@@ -11,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+
 import { db } from "@/db";
 import { calendarEvents } from "@/db/schema";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -45,7 +46,7 @@ const eventSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json(
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
 
     // Build query conditions
     const conditions = [
-      eq(calendarEvents.tenantId, orgId || ""),
+      eq(calendarEvents.tenantId, organizationId || ""),
     ];
 
     if (startDate) {
@@ -115,7 +116,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json(
@@ -144,7 +145,7 @@ export async function POST(request: NextRequest) {
     const [newEvent] = await db
       .insert(calendarEvents)
       .values({
-        tenantId: orgId || "",
+        tenantId: organizationId || "",
         calendarId: data.calendarId || "00000000-0000-0000-0000-000000000000", // Default calendar
         title: data.title,
         description: data.description,

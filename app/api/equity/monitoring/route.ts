@@ -130,7 +130,7 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch equity monitoring data', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -139,6 +139,5 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

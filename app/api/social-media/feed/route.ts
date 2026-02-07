@@ -28,9 +28,9 @@ export const GET = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -89,7 +89,7 @@ export const GET = async (request: NextRequest) => {
       `,
           { count: 'exact' }
         )
-        .eq('account.organization_id', orgId);
+        .eq('account.organization_id', organizationId);
 
       // Apply filters
       if (platform) {
@@ -137,8 +137,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
@@ -146,9 +145,9 @@ export const POST = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -159,7 +158,7 @@ export const POST = async (request: NextRequest) => {
       let accountsQuery = supabase
         .from('social_accounts')
         .select('*')
-        .eq('organization_id', orgId)
+        .eq('organization_id', organizationId)
         .eq('status', 'active');
 
       if (account_ids && account_ids.length > 0) {
@@ -233,8 +232,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PUT = async (request: NextRequest) => {
@@ -242,7 +240,7 @@ export const PUT = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
       // Get post ID from query params
       const searchParams = request.nextUrl.searchParams;
@@ -289,7 +287,7 @@ export const PUT = async (request: NextRequest) => {
       }
 
       // Verify user has access to this post
-      if (orgId !== post.account.organization_id) {
+      if (organizationId !== post.account.organization_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -345,7 +343,7 @@ export const PUT = async (request: NextRequest) => {
         )
       `
         )
-        .eq('account.organization_id', orgId)
+        .eq('account.organization_id', organizationId)
         .eq('status', 'published')
         .neq('id', postId)
         .or(
@@ -374,8 +372,7 @@ export const PUT = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
@@ -383,9 +380,9 @@ export const DELETE = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -418,7 +415,7 @@ export const DELETE = async (request: NextRequest) => {
             continue;
           }
 
-          if (post.account.organization_id !== orgId) {
+          if (post.account.organization_id !== organizationId) {
             results.push({
               post_id: postId,
               status: 'error',
@@ -465,6 +462,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

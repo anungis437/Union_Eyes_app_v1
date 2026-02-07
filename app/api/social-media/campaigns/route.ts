@@ -24,12 +24,10 @@ function getSupabaseClient() {
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -58,7 +56,7 @@ export const GET = async (request: NextRequest) => {
       `,
           { count: 'exact' }
         )
-        .eq('organization_id', orgId);
+        .eq('organization_id', organizationId);
 
       // Apply filters
       if (status) {
@@ -142,8 +140,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
@@ -151,9 +148,9 @@ export const POST = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -197,7 +194,7 @@ export const POST = async (request: NextRequest) => {
       const { data: campaign, error } = await supabase
         .from('social_campaigns')
         .insert({
-          organization_id: orgId,
+          organization_id: organizationId,
           name,
           description,
           platforms,
@@ -207,7 +204,7 @@ export const POST = async (request: NextRequest) => {
           hashtags: hashtags || [],
           target_audience,
           status: 'active',
-          created_by: user.id,
+          created_by: userId,
         })
         .select()
         .single();
@@ -228,8 +225,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PUT = async (request: NextRequest) => {
@@ -237,7 +233,7 @@ export const PUT = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
       // Get campaign ID from query params
       const searchParams = request.nextUrl.searchParams;
@@ -258,7 +254,7 @@ export const PUT = async (request: NextRequest) => {
         return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
       }
 
-      if (orgId !== campaign.organization_id) {
+      if (organizationId !== campaign.organization_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -327,8 +323,7 @@ export const PUT = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
@@ -336,7 +331,7 @@ export const DELETE = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
       // Get campaign ID from query params
       const searchParams = request.nextUrl.searchParams;
@@ -357,7 +352,7 @@ export const DELETE = async (request: NextRequest) => {
         return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
       }
 
-      if (orgId !== campaign.organization_id) {
+      if (organizationId !== campaign.organization_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -403,6 +398,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

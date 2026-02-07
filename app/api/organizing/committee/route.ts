@@ -93,8 +93,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
@@ -153,8 +152,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
@@ -206,6 +204,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

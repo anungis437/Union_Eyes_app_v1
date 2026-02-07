@@ -6,24 +6,26 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    try {
+      const authResult = {
+        userId: context.userId,
+        sessionId: null,
+        organizationId: context.organizationId,
+      };
 
-  try {
-      const authResult = await auth();
-      
       console.log('[API /api/test-auth] Full auth result:', {
-        user.id: authResult.user.id,
+        userId: authResult.userId,
         sessionId: authResult.sessionId,
-        orgId: authResult.orgId,
+        orgId: authResult.organizationId,
         hasSession: !!authResult.sessionId,
       });
-      
+
       return NextResponse.json({
         success: true,
-        user.id: authResult.user.id,
+        userId: authResult.userId,
         sessionId: authResult.sessionId,
         hasSession: !!authResult.sessionId,
-        message: authResult.user.id ? 'Authenticated' : 'Not authenticated',
+        message: authResult.userId ? 'Authenticated' : 'Not authenticated',
       });
     } catch (error) {
       console.error('[API /api/test-auth] Error:', error);
@@ -32,6 +34,5 @@ export const GET = async () => {
         error: error instanceof Error ? error.message : 'Unknown error',
       }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };

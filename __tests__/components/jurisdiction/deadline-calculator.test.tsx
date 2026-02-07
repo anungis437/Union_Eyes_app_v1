@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { DeadlineCalculator } from '@/components/jurisdiction/deadline-calculator';
 import { createMockFetchResponse } from '@/__tests__/test-utils';
 
@@ -65,9 +65,11 @@ describe('DeadlineCalculator', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Calculate Deadline' }));
 
-    await waitFor(() => {
-      expect(screen.getByText('Test Rule')).toBeInTheDocument();
+    await act(async () => {
+      await vi.runAllTimersAsync();
     });
+
+    expect(screen.getByText('Test Rule')).toBeInTheDocument();
 
     expect(screen.getByText('calendar Days')).toBeInTheDocument();
     expect(screen.getByText('4 days remaining (URGENT)')).toBeInTheDocument();
@@ -117,9 +119,11 @@ describe('DeadlineCalculator', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Calculate Deadline' }));
 
-    await waitFor(() => {
-      expect(screen.getByText('Past Rule')).toBeInTheDocument();
+    await act(async () => {
+      await vi.runAllTimersAsync();
     });
+
+    expect(screen.getByText('Past Rule')).toBeInTheDocument();
 
     expect(screen.getByText('Deadline passed 5 days ago')).toBeInTheDocument();
     expect(screen.getByText('business Days')).toBeInTheDocument();
@@ -142,8 +146,10 @@ describe('DeadlineCalculator', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Calculate Deadline' }));
 
-    await waitFor(() => {
-      expect(screen.getByText('Calculation failed')).toBeInTheDocument();
+    await act(async () => {
+      await vi.runAllTimersAsync();
     });
+
+    expect(screen.getByText('Calculation failed')).toBeInTheDocument();
   });
 });

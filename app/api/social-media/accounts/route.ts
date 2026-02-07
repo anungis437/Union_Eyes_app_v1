@@ -29,12 +29,10 @@ function getSupabaseClient() {
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -56,7 +54,7 @@ export const GET = async (request: NextRequest) => {
         rate_limit_remaining,
         rate_limit_reset_at
       `)
-        .eq('organization_id', orgId)
+        .eq('organization_id', organizationId)
         .order('connected_at', { ascending: false });
 
       if (error) {
@@ -69,15 +67,13 @@ export const GET = async (request: NextRequest) => {
       console.error('Unexpected error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
+      const { userId, organizationId } = context;
       const body = await request.json();
       const { platform } = body;
 
@@ -86,7 +82,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Generate OAuth state
-      const state = `${user.id}:${platform}:${Date.now()}`;
+      const state = `${userId}:${platform}:${Date.now()}`;
       const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/social-media/accounts/callback`;
 
       let authUrl: string;
@@ -166,8 +162,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
@@ -175,7 +170,7 @@ export const DELETE = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
       // Get account ID from query params
       const searchParams = request.nextUrl.searchParams;
@@ -196,7 +191,7 @@ export const DELETE = async (request: NextRequest) => {
         return NextResponse.json({ error: 'Account not found' }, { status: 404 });
       }
 
-      if (orgId !== account.organization_id) {
+      if (organizationId !== account.organization_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -243,8 +238,7 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PUT = async (request: NextRequest) => {
@@ -252,9 +246,9 @@ export const PUT = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -270,7 +264,7 @@ export const PUT = async (request: NextRequest) => {
         .from('social_accounts')
         .select('*')
         .eq('id', account_id)
-        .eq('organization_id', orgId) // Use orgId from Clerk auth
+        .eq('organization_id', organizationId) // Use organizationId from Clerk auth
         .single();
 
       if (fetchError || !account) {
@@ -373,6 +367,5 @@ export const PUT = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

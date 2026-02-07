@@ -215,7 +215,7 @@ export const GET = async (request: NextRequest) => {
         .select({
           accessType: crossOrgAccessLog.accessType,
           count: sql<number>`count(*)::int`,
-          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.user.id})::int`,
+          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.userId})::int`,
           uniqueOrgs: sql<number>`count(distinct ${crossOrgAccessLog.userOrganizationId})::int`,
         })
         .from(crossOrgAccessLog)
@@ -228,7 +228,7 @@ export const GET = async (request: NextRequest) => {
         .select({
           resourceType: crossOrgAccessLog.resourceType,
           count: sql<number>`count(*)::int`,
-          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.user.id})::int`,
+          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.userId})::int`,
           uniqueOrgs: sql<number>`count(distinct ${crossOrgAccessLog.userOrganizationId})::int`,
           uniqueResources: sql<number>`count(distinct ${crossOrgAccessLog.resourceId})::int`,
         })
@@ -381,7 +381,7 @@ export const GET = async (request: NextRequest) => {
         .select({
           date: sql<string>`date_trunc('day', ${crossOrgAccessLog.createdAt})::date`,
           totalAccesses: sql<number>`count(*)::int`,
-          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.user.id})::int`,
+          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.userId})::int`,
           uniqueOrgs: sql<number>`count(distinct ${crossOrgAccessLog.userOrganizationId})::int`,
           clauseAccesses: sql<number>`sum(case when ${crossOrgAccessLog.resourceType} = 'clause' then 1 else 0 end)::int`,
           precedentAccesses: sql<number>`sum(case when ${crossOrgAccessLog.resourceType} = 'precedent' then 1 else 0 end)::int`,
@@ -395,7 +395,7 @@ export const GET = async (request: NextRequest) => {
       const totalStats = await db
         .select({
           totalAccesses: sql<number>`count(*)::int`,
-          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.user.id})::int`,
+          uniqueUsers: sql<number>`count(distinct ${crossOrgAccessLog.userId})::int`,
           uniqueAccessorOrgs: sql<number>`count(distinct ${crossOrgAccessLog.userOrganizationId})::int`,
           uniqueResourceOwners: sql<number>`count(distinct ${crossOrgAccessLog.resourceOrganizationId})::int`,
           totalCrossOrgAccesses: sql<number>`sum(case when ${crossOrgAccessLog.userOrganizationId} != ${crossOrgAccessLog.resourceOrganizationId} then 1 else 0 end)::int`,
@@ -442,6 +442,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

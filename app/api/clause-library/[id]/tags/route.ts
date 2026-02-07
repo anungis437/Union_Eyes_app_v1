@@ -17,14 +17,9 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // POST /api/clause-library/[id]/tags - Add tag
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  let user.id: string | null = null;
-    
     try {
-      const auth_result = await auth();
-      user.id = auth_result.user.id;
-      
       const clauseId = params.id;
 
       // Get user's organization from cookie (set by organization switcher)
@@ -97,7 +92,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .values({
           clauseId,
           tagName: trimmedTag,
-          createdBy: user.id,
+          createdBy: userId,
         })
         .returning();
 
@@ -112,7 +107,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
     } catch (error) {
       logger.error('Error adding tag', error as Error, {
         clauseId: params.id,
-        user.id,
+        userId,
         correlationId: request.headers.get('x-correlation-id')
       });
       return NextResponse.json(
@@ -120,21 +115,15 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // DELETE /api/clause-library/[id]/tags - Remove tag
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  let user.id: string | null = null;
-    
     try {
-      const auth_result = await auth();
-      user.id = auth_result.user.id;
-      
       const clauseId = params.id;
 
       // Get user's organization from cookie (set by organization switcher)
@@ -203,7 +192,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
     } catch (error) {
       logger.error('Error removing tag', error as Error, {
         clauseId: params.id,
-        user.id,
+        userId,
         correlationId: request.headers.get('x-correlation-id')
       });
       return NextResponse.json(
@@ -211,6 +200,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

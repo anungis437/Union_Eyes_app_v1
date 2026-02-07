@@ -19,7 +19,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const calendarId = params.id;
@@ -35,7 +35,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       }
 
       // Check if user has access
-      const isOwner = calendar.ownerId === user.id;
+      const isOwner = calendar.ownerId === userId;
       const isPublic = calendar.isPublic;
 
       if (!isOwner && !isPublic) {
@@ -46,7 +46,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
           .where(
             and(
               eq(calendarSharing.calendarId, calendarId),
-              eq(calendarSharing.sharedWithUserId, user.id),
+              eq(calendarSharing.sharedWithUserId, userId),
               eq(calendarSharing.isActive, true)
             )
           )
@@ -81,13 +81,12 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const calendarId = params.id;
@@ -104,7 +103,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });
       }
 
-      const isOwner = calendar.ownerId === user.id;
+      const isOwner = calendar.ownerId === userId;
 
       if (!isOwner) {
         // Check edit permission
@@ -114,7 +113,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
           .where(
             and(
               eq(calendarSharing.calendarId, calendarId),
-              eq(calendarSharing.sharedWithUserId, user.id),
+              eq(calendarSharing.sharedWithUserId, userId),
               eq(calendarSharing.isActive, true)
             )
           )
@@ -171,13 +170,12 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const calendarId = params.id;
@@ -193,7 +191,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });
       }
 
-      if (calendar.ownerId !== user.id) {
+      if (calendar.ownerId !== userId) {
         return NextResponse.json({ error: 'Only owner can delete calendar' }, { status: 403 });
       }
 
@@ -213,6 +211,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

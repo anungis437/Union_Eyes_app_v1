@@ -129,7 +129,7 @@ describe('Type Validation Tests', () => {
         paymentMethod: PaymentMethod.CREDIT_CARD,
         paymentDate: new Date('2024-01-20T10:15:00Z'),
         processorId: 'stripe-pi-123abc',
-        processorType: 'stripe',
+        processorType: PaymentProcessorType.STRIPE,
         transactionId: 'txn-456def',
         status: PaymentStatus.COMPLETED,
         createdAt: new Date('2024-01-20T10:15:00Z'),
@@ -188,7 +188,7 @@ describe('Type Validation Tests', () => {
         paymentId: undefined,
         approvedBy: 'lawyer-505',
         approvedAt: new Date('2024-01-15T14:15:00Z'),
-        status: 'approved',
+        status: TrustTransactionStatus.APPROVED,
       };
 
       expect(mockTrustTransaction.id).toBeDefined();

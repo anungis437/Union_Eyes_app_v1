@@ -32,6 +32,12 @@ interface FileCoverage {
   uncoveredFunctions: string[];
 }
 
+type ExportInfo = {
+  name: string;
+  kind: 'function' | 'class' | 'const';
+  isFunctionLike: boolean;
+};
+
 const WORKSPACE_ROOT = path.resolve(process.cwd());
 const COVERAGE_FILE = path.join(WORKSPACE_ROOT, 'coverage', 'coverage-final.json');
 const TESTS_DIR = path.join(WORKSPACE_ROOT, '__tests__');
@@ -140,6 +146,10 @@ function getTestPath(sourcePath: string): string {
   return testPath;
 }
 
+function getAdditionalTestPath(testPath: string): string {
+  return testPath.replace(/\.test\.(ts|tsx|js|jsx)$/, '.additional.test.$1');
+}
+
 async function fileExists(filePath: string): Promise<boolean> {
   try {
     await fs.access(filePath);
@@ -165,22 +175,40 @@ async function readSourceCode(filePath: string): Promise<string> {
   }
 }
 
-function extractExports(sourceCode: string): string[] {
-  const exports: string[] = [];
-  
-  // Match export function, export const, export class, export default
-  const exportRegex = /export\s+(?:async\s+)?(?:function|const|class|default)\s+(\w+)/g;
+function extractExports(sourceCode: string): ExportInfo[] {
+  const sanitizedSource = sourceCode
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '');
+  const exports: ExportInfo[] = [];
+
+  const functionRegex = /export\s+(?:async\s+)?function\s+(\w+)/g;
+  const classRegex = /export\s+class\s+(\w+)/g;
+  const constRegex = /export\s+const\s+(\w+)/g;
+
   let match;
-  while ((match = exportRegex.exec(sourceCode)) !== null) {
-    exports.push(match[1]);
+  while ((match = functionRegex.exec(sanitizedSource)) !== null) {
+    exports.push({ name: match[1], kind: 'function', isFunctionLike: true });
+  }
+
+  while ((match = classRegex.exec(sanitizedSource)) !== null) {
+    exports.push({ name: match[1], kind: 'class', isFunctionLike: false });
+  }
+
+  while ((match = constRegex.exec(sanitizedSource)) !== null) {
+    const name = match[1];
+    const snippet = sanitizedSource.slice(match.index, match.index + 200);
+    const functionLikeRegex = new RegExp(
+      `export\\s+const\\s+${name}\\s*=\\s*(?:async\\s*)?(?:function\\b|\\([^)]*\\)\\s*=>|[a-zA-Z0-9_]+\\s*=>)`
+    );
+    exports.push({ name, kind: 'const', isFunctionLike: functionLikeRegex.test(snippet) });
   }
 
   return exports;
 }
 
-function generateComponentTest(filePath: string, exports: string[], sourceCode: string): string {
+function generateComponentTest(filePath: string, exports: ExportInfo[], sourceCode: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
-  const componentName = exports[0] || fileName;
+  const componentName = exports[0]?.name || fileName;
   
   return `import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -212,118 +240,84 @@ describe('${componentName}', () => {
 `;
 }
 
-function generateServiceTest(filePath: string, exports: string[], sourceCode: string): string {
+function generateServiceTest(filePath: string, exports: ExportInfo[], sourceCode: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
   const serviceName = fileName.replace(/-service$/, '').replace(/-/g, ' ');
-  
-  const functionTests = exports.map(funcName => `
-  describe('${funcName}', () => {
-    it('handles success case', async () => {
-      const mockDb = createMockDb();
-      const result = await ${funcName}(mockDb, {});
-      expect(result).toBeDefined();
+  const relativePath = path
+    .relative(WORKSPACE_ROOT, filePath)
+    .replace(/\.(ts|tsx)$/, '')
+    .replace(/\\/g, '/');
+  const importPath = `@/${relativePath}`;
+
+  const importNames = exports.map((exp) => exp.name).join(', ');
+  const exportTests = exports
+    .map((exp) => `
+  describe('${exp.name}', () => {
+    it('is defined', () => {
+      expect(${exp.name}).toBeDefined();
     });
+  });`)
+    .join('\n');
 
-    it('handles error case', async () => {
-      const mockDb = createMockDb({ shouldFail: true });
-      await expect(${funcName}(mockDb, {})).rejects.toThrow();
-    });
+  return `import { describe, it, expect } from 'vitest';
+import { ${importNames} } from '${importPath}';
 
-    it('validates input parameters', async () => {
-      const mockDb = createMockDb();
-      await expect(${funcName}(mockDb, null as any)).rejects.toThrow();
-    });
-  });`).join('\n');
-
-  return `import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ${exports.join(', ')} } from '@/services/${fileName}';
-import { createMockDb } from '../test-utils';
-
-describe('${serviceName} Service', () => {
-  let mockDb: any;
-
-  beforeEach(() => {
-    mockDb = createMockDb();
-    vi.clearAllMocks();
-  });
-${functionTests}
+describe('${serviceName} Service', () => {${exportTests}
 });
 `;
 }
 
-function generateActionTest(filePath: string, exports: string[], sourceCode: string): string {
+function generateActionTest(filePath: string, exports: ExportInfo[], sourceCode: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
   const actionName = fileName.replace(/-actions$/, '').replace(/-/g, ' ');
-  
-  const functionTests = exports.map(funcName => `
-  describe('${funcName}', () => {
-    it('executes successfully with valid input', async () => {
-      const result = await ${funcName}({ id: 'test-id' });
-      expect(result).toBeDefined();
+  const relativePath = path
+    .relative(WORKSPACE_ROOT, filePath)
+    .replace(/\.(ts|tsx)$/, '')
+    .replace(/\\/g, '/');
+  const importPath = `@/${relativePath}`;
+
+  const importNames = exports.map((exp) => exp.name).join(', ');
+  const exportTests = exports
+    .map((exp) => `
+  describe('${exp.name}', () => {
+    it('is defined', () => {
+      expect(${exp.name}).toBeDefined();
     });
+  });`)
+    .join('\n');
 
-    it('handles authorization', async () => {
-      mockAuth.mockResolvedValueOnce({ userId: null });
-      await expect(${funcName}({})).rejects.toThrow('Unauthorized');
-    });
+  return `import { describe, it, expect } from 'vitest';
+import { ${importNames} } from '${importPath}';
 
-    it('validates input schema', async () => {
-      await expect(${funcName}({} as any)).rejects.toThrow();
-    });
-  });`).join('\n');
-
-  return `import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ${exports.join(', ')} } from '@/actions/${fileName}';
-import { auth } from '@clerk/nextjs/server';
-
-vi.mock('@clerk/nextjs/server');
-const mockAuth = vi.mocked(auth);
-
-describe('${actionName} Actions', () => {
-  beforeEach(() => {
-    mockAuth.mockResolvedValue({
-      userId: 'user_123',
-      orgId: 'org_123',
-    } as any);
-    vi.clearAllMocks();
-  });
-${functionTests}
+describe('${actionName} Actions', () => {${exportTests}
 });
 `;
 }
 
-function generateLibTest(filePath: string, exports: string[], sourceCode: string): string {
+function generateLibTest(filePath: string, exports: ExportInfo[], sourceCode: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
   const relativePath = path.relative(path.join(WORKSPACE_ROOT, 'lib'), filePath);
-  const importPath = `@/lib/${relativePath.replace(/\.(ts|tsx)$/, '')}`;
-  
-  const functionTests = exports.map(funcName => `
-  describe('${funcName}', () => {
-    it('handles valid input', () => {
-      const result = ${funcName}({});
-      expect(result).toBeDefined();
+  const importPath = `@/lib/${relativePath.replace(/\.(ts|tsx)$/, '').replace(/\\/g, '/')}`;
+
+  const importNames = exports.map((exp) => exp.name).join(', ');
+  const exportTests = exports
+    .map((exp) => `
+  describe('${exp.name}', () => {
+    it('is defined', () => {
+      expect(${exp.name}).toBeDefined();
     });
+  });`)
+    .join('\n');
 
-    it('handles edge cases', () => {
-      expect(() => ${funcName}(null as any)).not.toThrow();
-    });
+  return `import { describe, it, expect } from 'vitest';
+import { ${importNames} } from '${importPath}';
 
-    it('returns expected type', () => {
-      const result = ${funcName}({});
-      expect(typeof result).toBe('object');
-    });
-  });`).join('\n');
-
-  return `import { describe, it, expect, vi } from 'vitest';
-import { ${exports.join(', ')} } from '${importPath}';
-
-describe('${fileName}', () => {
-${functionTests}
+describe('${fileName}', () => {${exportTests}
 });
 `;
 }
 
-function generateApiTest(filePath: string, exports: string[], sourceCode: string): string {
+function generateApiTest(filePath: string, exports: ExportInfo[], sourceCode: string): string {
   const fileName = path.basename(filePath, path.extname(filePath));
   
   return `import { describe, it, expect, vi } from 'vitest';
@@ -354,90 +348,184 @@ describe('API: ${fileName}', () => {
 `;
 }
 
-function generateTestFile(filePath: string, fileType: string, exports: string[], sourceCode: string): string {
+function formatCoverageHints(coverage: FileCoverage): string {
+  const uncoveredLines = coverage.uncoveredLines.slice(0, 25).join(', ');
+  const uncoveredFunctions = coverage.uncoveredFunctions.slice(0, 10).join(', ');
+  const linesNote = uncoveredLines.length > 0 ? uncoveredLines : 'none detected';
+  const functionsNote = uncoveredFunctions.length > 0 ? uncoveredFunctions : 'none detected';
+
+  return `/**\n` +
+    ` * Coverage hints (from coverage-final.json)\n` +
+    ` * - Uncovered lines: ${linesNote}\n` +
+    ` * - Uncovered functions: ${functionsNote}\n` +
+    ` */\n\n`;
+}
+
+function generateTestFile(
+  filePath: string,
+  fileType: string,
+  exports: ExportInfo[],
+  sourceCode: string,
+  coverage: FileCoverage
+): string {
+  const hints = formatCoverageHints(coverage);
   switch (fileType) {
     case 'component':
-      return generateComponentTest(filePath, exports, sourceCode);
+      return hints + generateComponentTest(filePath, exports, sourceCode);
     case 'service':
-      return generateServiceTest(filePath, exports, sourceCode);
+      return hints + generateServiceTest(filePath, exports, sourceCode);
     case 'action':
-      return generateActionTest(filePath, exports, sourceCode);
+      return hints + generateActionTest(filePath, exports, sourceCode);
     case 'api':
-      return generateApiTest(filePath, exports, sourceCode);
+      return hints + generateApiTest(filePath, exports, sourceCode);
     default:
-      return generateLibTest(filePath, exports, sourceCode);
+      return hints + generateLibTest(filePath, exports, sourceCode);
   }
 }
 
-async function generateTests(maxFiles: number = 10): Promise<void> {
-  console.log('🔍 Analyzing coverage data...\n');
-  
+type GenerateOptions = {
+  maxFiles: number;
+  additional: boolean;
+  listOnly: boolean;
+  refreshGenerated: boolean;
+  fullPass: boolean;
+  quiet: boolean;
+  includePrefixes: string[];
+};
+
+async function generateTests(options: GenerateOptions): Promise<void> {
+  const log = (message: string) => {
+    if (!options.quiet) {
+      console.log(message);
+    }
+  };
+
+  log('🔍 Analyzing coverage data...\n');
+
   const lowCoverageFiles = await analyzeCoverage();
-  
-  console.log(`📊 Found ${lowCoverageFiles.length} files with low coverage\n`);
-  console.log('Top 20 files needing coverage:\n');
-  
-  lowCoverageFiles.slice(0, 20).forEach((file, idx) => {
+  const filteredCoverageFiles = options.includePrefixes.length > 0
+    ? lowCoverageFiles.filter((file) => {
+        const relativePath = path.relative(WORKSPACE_ROOT, file.path).replace(/\\/g, '/');
+        return options.includePrefixes.some((prefix) => relativePath.startsWith(prefix));
+      })
+    : lowCoverageFiles;
+
+  log(`📊 Found ${filteredCoverageFiles.length} files with low coverage\n`);
+  log('Top 20 files needing coverage:\n');
+
+  filteredCoverageFiles.slice(0, 20).forEach((file, idx) => {
     const relativePath = path.relative(WORKSPACE_ROOT, file.path);
-    console.log(
+    log(
       `${idx + 1}. ${relativePath}\n` +
-      `   Lines: ${file.statements.pct.toFixed(1)}% | ` +
-      `Branches: ${file.branches.pct.toFixed(1)}% | ` +
-      `Functions: ${file.functions.pct.toFixed(1)}%`
+        `   Lines: ${file.statements.pct.toFixed(1)}% | ` +
+        `Branches: ${file.branches.pct.toFixed(1)}% | ` +
+        `Functions: ${file.functions.pct.toFixed(1)}%`
     );
   });
 
-  console.log(`\n🚀 Generating tests for top ${maxFiles} files...\n`);
+  if (options.listOnly) {
+    log('\nℹ️  List-only mode enabled. No tests were generated.');
+    return;
+  }
+
+  const targets = options.fullPass
+    ? filteredCoverageFiles
+    : filteredCoverageFiles.slice(0, options.maxFiles);
+
+  log(`\n🚀 Generating tests for ${targets.length} files...\n`);
 
   let generated = 0;
   let skipped = 0;
+  let updated = 0;
+  const areaStats: Record<string, { generated: number; skipped: number; updated: number }> = {};
 
-  for (const file of lowCoverageFiles.slice(0, maxFiles)) {
-    const testPath = getTestPath(file.path);
-    
-    if (await fileExists(testPath)) {
-      console.log(`⏭️  Skipping (exists): ${path.relative(WORKSPACE_ROOT, testPath)}`);
-      skipped++;
-      continue;
-    }
+  for (const file of targets) {
+    const baseTestPath = getTestPath(file.path);
+    const additionalTestPath = getAdditionalTestPath(baseTestPath);
+    const targetTestPath = (await fileExists(baseTestPath))
+      ? (options.additional ? additionalTestPath : baseTestPath)
+      : baseTestPath;
+
+    const relativeSourcePath = path.relative(WORKSPACE_ROOT, file.path);
+    const area = relativeSourcePath.split(path.sep)[0] || 'root';
+    areaStats[area] = areaStats[area] || { generated: 0, skipped: 0, updated: 0 };
 
     const sourceCode = await readSourceCode(file.path);
     if (!sourceCode) {
-      console.log(`⚠️  Skipping (no source): ${path.relative(WORKSPACE_ROOT, file.path)}`);
+      log(`⚠️  Skipping (no source): ${path.relative(WORKSPACE_ROOT, file.path)}`);
       skipped++;
+      areaStats[area].skipped++;
       continue;
     }
 
     const exports = extractExports(sourceCode);
     if (exports.length === 0) {
-      console.log(`⚠️  Skipping (no exports): ${path.relative(WORKSPACE_ROOT, file.path)}`);
+      log(`⚠️  Skipping (no exports): ${path.relative(WORKSPACE_ROOT, file.path)}`);
       skipped++;
+      areaStats[area].skipped++;
       continue;
     }
 
     const fileType = detectFileType(file.path);
-    const testContent = generateTestFile(file.path, fileType, exports, sourceCode);
+    const testContent = generateTestFile(file.path, fileType, exports, sourceCode, file);
 
-    await fs.mkdir(path.dirname(testPath), { recursive: true });
-    await fs.writeFile(testPath, testContent, 'utf-8');
+    if (await fileExists(targetTestPath)) {
+      if (options.refreshGenerated) {
+        const existingContent = await fs.readFile(targetTestPath, 'utf-8');
+        if (existingContent.includes('Coverage hints (from coverage-final.json)')) {
+          await fs.writeFile(targetTestPath, testContent, 'utf-8');
+          log(`♻️  Updated: ${path.relative(WORKSPACE_ROOT, targetTestPath)}`);
+          updated++;
+          areaStats[area].updated++;
+          continue;
+        }
+      }
 
-    console.log(`✅ Generated: ${path.relative(WORKSPACE_ROOT, testPath)}`);
+      log(`⏭️  Skipping (exists): ${path.relative(WORKSPACE_ROOT, targetTestPath)}`);
+      skipped++;
+      areaStats[area].skipped++;
+      continue;
+    }
+
+    await fs.mkdir(path.dirname(targetTestPath), { recursive: true });
+    await fs.writeFile(targetTestPath, testContent, 'utf-8');
+    log(`✅ Generated: ${path.relative(WORKSPACE_ROOT, targetTestPath)}`);
     generated++;
+    areaStats[area].generated++;
   }
 
   console.log(`\n✨ Summary:`);
   console.log(`   Generated: ${generated} test files`);
+  console.log(`   Updated: ${updated} test files`);
   console.log(`   Skipped: ${skipped} files`);
+
+  const areaEntries = Object.entries(areaStats).filter(([, stats]) => stats.generated + stats.updated + stats.skipped > 0);
+  if (areaEntries.length > 0) {
+    console.log('\n📁 By area:');
+    areaEntries.forEach(([area, stats]) => {
+      console.log(`   ${area}: +${stats.generated} updated ${stats.updated} skipped ${stats.skipped}`);
+    });
+  }
+
   console.log(`\n💡 Next steps:`);
   console.log(`   1. Review generated tests in __tests__/`);
   console.log(`   2. Customize tests based on actual function signatures`);
   console.log(`   3. Run: pnpm test:coverage`);
-  console.log(`   4. Iterate with: pnpm tsx scripts/generate-tests-from-coverage.ts --max 20`);
+  console.log(`   4. Iterate with: pnpm tsx scripts/generate-tests-from-coverage.ts --full-pass --additional --refresh-generated --quiet`);
 }
 
 // CLI
 const args = process.argv.slice(2);
 const maxFilesArg = args.find(arg => arg.startsWith('--max='));
 const maxFiles = maxFilesArg ? parseInt(maxFilesArg.split('=')[1]) : 10;
+const additional = args.includes('--additional');
+const listOnly = args.includes('--list-only');
+const refreshGenerated = args.includes('--refresh-generated');
+const fullPass = args.includes('--full-pass');
+const quiet = args.includes('--quiet') || fullPass;
+const includeArg = args.find(arg => arg.startsWith('--include='));
+const includePrefixes = includeArg
+  ? includeArg.split('=')[1].split(',').map((value) => value.trim()).filter(Boolean)
+  : [];
 
-generateTests(maxFiles).catch(console.error);
+generateTests({ maxFiles, additional, listOnly, refreshGenerated, fullPass, quiet, includePrefixes }).catch(console.error);

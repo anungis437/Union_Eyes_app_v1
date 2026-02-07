@@ -8,8 +8,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { clauseId: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { clauseId } = params;
 
@@ -46,13 +44,12 @@ export const GET = async (request: NextRequest, { params }: { params: { clauseId
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const POST = async (request: NextRequest, { params }: { params: { clauseId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { clauseId } = params;
@@ -90,7 +87,7 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
           context,
           startOffset,
           endOffset,
-          createdBy: user.id,
+          createdBy: userId,
           createdAt: new Date(),
         })
         .returning();
@@ -103,14 +100,11 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { clauseId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const footnoteId = searchParams.get("footnoteId");
@@ -138,6 +132,5 @@ export const PATCH = async (request: NextRequest, { params }: { params: { clause
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

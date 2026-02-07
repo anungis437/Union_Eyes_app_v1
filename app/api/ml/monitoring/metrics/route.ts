@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * GET /api/ml/monitoring/metrics
@@ -32,13 +33,13 @@ import { sql } from 'drizzle-orm';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = orgId || userId;
+    const tenantId = organizationId || userId;
 
     // Query model performance metrics from analytics tables
     // Build on existing analytics_scheduled_reports and benchmark_data tables

@@ -5,9 +5,9 @@
  * Validates tenant access and injects tenant ID into request context.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getTenantIdForUser, validateTenantExists } from "@/lib/tenant-utils";
+import { requireUser } from "@/lib/auth/unified-auth";
 import { cookies } from "next/headers";
 
 export interface TenantContext {
@@ -40,23 +40,15 @@ export function withTenantAuth<T = any>(
     routeContext?: { params: Promise<T> | T }
   ): Promise<NextResponse> => {
     try {
-      // Authenticate user
-      const { userId } = await auth();
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: "Unauthorized - Authentication required" },
-          { status: 401 }
-        );
-      }
+      const user = await requireUser();
 
       // Get tenant ID - getTenantIdForUser handles cookie checking and access verification
-      const tenantId = await getTenantIdForUser(userId);
+      const tenantId = await getTenantIdForUser(user.userId);
 
       // Create tenant context
       const context: TenantContext = {
         tenantId,
-        userId,
+        userId: user.userId,
       };
 
       // Resolve params if they're a Promise
@@ -67,6 +59,19 @@ export function withTenantAuth<T = any>(
       // Call the handler with context
       return await handler(request, context, params);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Internal server error';
+      if (message === 'Unauthorized') {
+        return NextResponse.json(
+          { error: "Unauthorized - Authentication required" },
+          { status: 401 }
+        );
+      }
+      if (message === 'Forbidden') {
+        return NextResponse.json(
+          { error: "Forbidden - User is not a member of this organization" },
+          { status: 403 }
+        );
+      }
       console.error("Tenant middleware error:", error);
       return NextResponse.json(
         { error: "Internal server error" },

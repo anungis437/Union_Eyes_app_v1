@@ -16,11 +16,9 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
-
       const { searchParams } = new URL(request.url);
       const documentId = searchParams.get('documentId');
 
@@ -31,7 +29,7 @@ export const GET = async (request: NextRequest) => {
         );
       }
 
-      const signatures = await getDocumentSignatures(documentId, orgId ?? undefined);
+      const signatures = await getDocumentSignatures(documentId, organizationId ?? undefined);
 
       return NextResponse.json({
         success: true,
@@ -46,18 +44,15 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
-
-      if (!user.id || !orgId) {
+      if (!userId || !organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized - Organization context required' },
           { status: 401 }
@@ -92,8 +87,8 @@ export const POST = async (request: NextRequest) => {
       const workflowParams: WorkflowCreateParams = {
         documentId,
         documentType,
-        organizationId: orgId,
-        createdBy: user.id,
+        organizationId: organizationId,
+        createdBy: userId,
         createdByName,
         name,
         description,
@@ -123,6 +118,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

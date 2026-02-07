@@ -40,16 +40,16 @@ export const POST = async (
     }
 
     const body = parsed.data;
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
     const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-    if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+    if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
   try {
           // Set session context for RLS
-          await db.execute(sql`SET app.current_user_id = ${user.id}`);
+          await db.execute(sql`SET app.current_user_id = ${userId}`);
 
           const remittanceId = params.id;
 
@@ -62,8 +62,7 @@ export const POST = async (
 
           if (!existing) {
             logApiAuditEvent({
-              timestamp: new Date().toISOString(),
-              userId: user.id,
+              timestamp: new Date().toISOString(), userId,
               endpoint: '/api/admin/clc/remittances/[id]/submit',
               method: 'POST',
               eventType: 'validation_failed',
@@ -79,8 +78,7 @@ export const POST = async (
           // Validate current status
           if (existing.status === 'paid') {
             logApiAuditEvent({
-              timestamp: new Date().toISOString(),
-              userId: user.id,
+              timestamp: new Date().toISOString(), userId,
               endpoint: '/api/admin/clc/remittances/[id]/submit',
               method: 'POST',
               eventType: 'validation_failed',
@@ -95,8 +93,7 @@ export const POST = async (
 
           if (existing.status === 'submitted') {
             logApiAuditEvent({
-              timestamp: new Date().toISOString(),
-              userId: user.id,
+              timestamp: new Date().toISOString(), userId,
               endpoint: '/api/admin/clc/remittances/[id]/submit',
               method: 'POST',
               eventType: 'validation_failed',
@@ -122,8 +119,7 @@ export const POST = async (
             .returning();
 
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/[id]/submit',
             method: 'POST',
             eventType: 'success',
@@ -143,8 +139,7 @@ export const POST = async (
           });
         } catch (error) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/[id]/submit',
             method: 'POST',
             eventType: 'server_error',

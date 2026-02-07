@@ -121,8 +121,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // POST /api/education/sessions - Create new session
@@ -242,8 +241,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // PATCH /api/education/sessions?id={sessionId} - Update session
@@ -340,8 +338,7 @@ export const PATCH = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // DELETE /api/education/sessions?id={sessionId} - Cancel session
@@ -392,6 +389,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

@@ -50,15 +50,14 @@ const createClaimSchema = z.object({
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         // Get user's tenant
-        const tenantId = await getUserTenant(user.id);
+        const tenantId = await getUserTenant(userId);
         if (!tenantId) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/claims',
             method: 'GET',
             eventType: 'auth_failed',
@@ -121,8 +120,7 @@ export const GET = async (request: NextRequest) => {
         const total = totalResult[0]?.count || 0;
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/claims',
           method: 'GET',
           eventType: 'success',
@@ -141,8 +139,7 @@ export const GET = async (request: NextRequest) => {
         });
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/claims',
           method: 'GET',
           eventType: 'server_error',
@@ -166,7 +163,7 @@ export const GET = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : "Failed to fetch claims"
         });
       }
-  })(request);
+      })(request);
 };
 
 /**
@@ -188,7 +185,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -197,11 +194,10 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
 
 try {
       // Get user's tenant
-      const tenantId = await getUserTenant(user.id);
+      const tenantId = await getUserTenant(userId);
       if (!tenantId) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/claims',
           method: 'POST',
           eventType: 'auth_failed',
@@ -225,7 +221,7 @@ try {
         .values({
           claimNumber,
           organizationId: tenantId,
-          memberId: user.id,
+          memberId: userId,
           isAnonymous: body.isAnonymous,
           claimType: body.claimType,
           status: "submitted",
@@ -245,8 +241,7 @@ try {
         .returning();
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/claims',
         method: 'POST',
         eventType: 'success',
@@ -263,8 +258,7 @@ try {
       );
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/claims',
         method: 'POST',
         eventType: 'server_error',
@@ -278,3 +272,4 @@ try {
       );
     }
 });
+

@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * Calendar Event by ID API Routes
  * 
@@ -10,7 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+
 import { db } from "@/db";
 import { calendarEvents, eventAttendees } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -38,7 +39,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json(
@@ -53,7 +54,7 @@ export async function GET(
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, orgId || "")
+          eq(calendarEvents.tenantId, organizationId || "")
         )
       );
 
@@ -96,7 +97,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json(
@@ -128,7 +129,7 @@ export async function PATCH(
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, orgId || "")
+          eq(calendarEvents.tenantId, organizationId || "")
         )
       );
 
@@ -192,7 +193,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json(
@@ -208,7 +209,7 @@ export async function DELETE(
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, orgId || "")
+          eq(calendarEvents.tenantId, organizationId || "")
         )
       );
 

@@ -35,8 +35,6 @@ async function checkAdminRole(userId: string, orgId?: string): Promise<boolean> 
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const startTime = searchParams.get('startTime');
@@ -138,17 +136,16 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check if user is admin
-      const isAdmin = await checkAdminRole(user.id);
+      const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
         return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
       }
@@ -231,6 +228,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

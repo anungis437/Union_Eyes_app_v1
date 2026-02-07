@@ -23,7 +23,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId: currentOrgId } = context;
 
   try {
       const body = await req.json();
@@ -40,8 +40,8 @@ export const POST = async (req: NextRequest) => {
         );
       }
 
-      // Get current user details
-      const user = await currentUser();
+      // Get user details from Clerk for logging
+      const clerkUser = await currentUser();
       if (!user) {
         return NextResponse.json(
           { error: 'User not found' },
@@ -56,9 +56,9 @@ export const POST = async (req: NextRequest) => {
 
       if (!targetOrg) {
         logger.warn('Organization switch attempted for non-existent org', {
-          user.id,
+          userId,
           organizationId,
-          userEmail: user.emailAddresses[0]?.emailAddress,
+          userEmail: clerkUser.emailAddresses[0]?.emailAddress,
         });
         
         return NextResponse.json(
@@ -68,16 +68,16 @@ export const POST = async (req: NextRequest) => {
       }
 
       // Check if user is super admin
-      const publicMetadata = user.publicMetadata || {};
-      const privateMetadata = user.privateMetadata || {};
+      const publicMetadata = clerkUser.publicMetadata || {};
+      const privateMetadata = clerkUser.privateMetadata || {};
       const userRole = (publicMetadata.role || privateMetadata.role || 'member') as string;
       const isSuperAdmin = userRole === 'super_admin';
 
       // If super admin, allow access to any organization
       if (isSuperAdmin) {
         logger.info('Super admin switched organization', {
-          user.id,
-          userEmail: user.emailAddresses[0]?.emailAddress,
+          userId,
+          userEmail: clerkUser.emailAddresses[0]?.emailAddress,
           fromOrg: publicMetadata.tenantId,
           toOrg: organizationId,
           orgName: targetOrg.name,
@@ -93,7 +93,7 @@ export const POST = async (req: NextRequest) => {
       // Check if user has membership in target organization
       const membership = await db.query.organizationMembers.findFirst({
         where: and(
-          eq(organizationMembers.user.id, user.id),
+          eq(organizationMembers.userId, userId),
           eq(organizationMembers.organizationId, organizationId)
         ),
       });
@@ -101,7 +101,7 @@ export const POST = async (req: NextRequest) => {
       if (!membership) {
         // Check if user has access through organizational hierarchy (e.g., admin of parent org)
         const userMemberships = await db.query.organizationMembers.findMany({
-          where: eq(organizationMembers.user.id, user.id),
+          where: eq(organizationMembers.userId, userId),
           with: {
             organization: true,
           },
@@ -123,8 +123,8 @@ export const POST = async (req: NextRequest) => {
 
         if (!hasHierarchicalAccess) {
           logger.warn('Unauthorized organization switch attempt', {
-            user.id,
-            userEmail: user.emailAddresses[0]?.emailAddress,
+            userId,
+            userEmail: clerkUser.emailAddresses[0]?.emailAddress,
             organizationId,
             orgName: targetOrg.name,
           });
@@ -136,8 +136,8 @@ export const POST = async (req: NextRequest) => {
         }
 
         logger.info('User switched organization via hierarchical access', {
-          user.id,
-          userEmail: user.emailAddresses[0]?.emailAddress,
+          userId,
+          userEmail: clerkUser.emailAddresses[0]?.emailAddress,
           organizationId,
           orgName: targetOrg.name,
           access: 'hierarchical',
@@ -152,8 +152,8 @@ export const POST = async (req: NextRequest) => {
 
       // User has direct membership
       logger.info('User switched organization', {
-        user.id,
-        userEmail: user.emailAddresses[0]?.emailAddress,
+        userId,
+        userEmail: clerkUser.emailAddresses[0]?.emailAddress,
         organizationId,
         orgName: targetOrg.name,
         role: membership.role,
@@ -181,6 +181,5 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

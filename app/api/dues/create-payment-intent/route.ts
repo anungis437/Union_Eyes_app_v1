@@ -35,7 +35,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -50,15 +50,14 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
 
     if (!rateLimitResult.success) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/create-payment-intent',
         method: 'POST',
         eventType: 'auth_failed',
         severity: 'medium',
         details: { reason: 'Rate limit exceeded' },
       });
-      console.warn('[create-payment-intent] Rate limit exceeded for user:', user.id);
+      console.warn('[create-payment-intent] Rate limit exceeded for user:', userId);
       return createRateLimitResponse(rateLimitResult);
     }
 
@@ -67,10 +66,9 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
 
       // User making request must either be requesting their own payment or be admin
       // For now, allow user to request their own payment
-      if (requestedUserId !== user.id) {
+      if (requestedUserId !== userId) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/dues/create-payment-intent',
           method: 'POST',
           eventType: 'unauthorized_access',
@@ -94,8 +92,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
 
       if (!member) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/dues/create-payment-intent',
           method: 'POST',
           eventType: 'validation_failed',
@@ -147,8 +144,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       });
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/create-payment-intent',
         method: 'POST',
         eventType: 'success',
@@ -172,8 +168,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
 
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/dues/create-payment-intent',
         method: 'POST',
         eventType: 'auth_failed',
@@ -188,3 +183,4 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       );
     }
 });
+

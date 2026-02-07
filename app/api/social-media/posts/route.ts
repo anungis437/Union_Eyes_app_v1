@@ -25,12 +25,10 @@ function getSupabaseClient() {
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -52,7 +50,7 @@ export const GET = async (request: NextRequest) => {
         campaign:social_campaigns(id, name),
         created_by_profile:profiles!created_by(id, first_name, last_name)
       `, { count: 'exact' })
-        .eq('organization_id', orgId)
+        .eq('organization_id', organizationId)
         .order('created_at', { ascending: false });
 
       // Apply filters
@@ -92,18 +90,18 @@ export const GET = async (request: NextRequest) => {
       console.error('Unexpected error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+  try {
+      const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
 
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -154,7 +152,7 @@ export const POST = async (request: NextRequest) => {
 
       // Publish post
       const results = await socialMediaService.publishPost(
-        orgId,
+        organizationId,
         {
           text: content,
           media_urls: media_urls || [],
@@ -166,7 +164,7 @@ export const POST = async (request: NextRequest) => {
           scheduled_for: scheduled_for ? new Date(scheduled_for) : undefined,
           platforms,
         },
-        user.id
+        userId
       );
 
       // Check if any posts succeeded
@@ -199,8 +197,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const DELETE = async (request: NextRequest) => {
@@ -208,9 +205,9 @@ export const DELETE = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!orgId) {
+      if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
       }
 
@@ -233,7 +230,7 @@ export const DELETE = async (request: NextRequest) => {
         return NextResponse.json({ error: 'Post not found' }, { status: 404 });
       }
 
-      if (orgId !== (post.account as any).organization_id) {
+      if (organizationId !== (post.account as any).organization_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -255,6 +252,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

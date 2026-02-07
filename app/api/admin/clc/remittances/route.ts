@@ -65,14 +65,13 @@ const calculateRemittancesSchema = z.object({
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   // Admin check
-      const isAdmin = await checkAdminRole(user.id);
+      const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances',
           method: 'GET',
           eventType: 'auth_failed',
@@ -84,10 +83,10 @@ export const GET = async (request: NextRequest) => {
 
       try {
         // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${user.id}`);
+        await db.execute(sql`SET app.current_user_id = ${userId}`);
 
         // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${user.id}`);
+        await db.execute(sql`SET app.current_user_id = ${userId}`);
 
         // Parse query parameters
         const searchParams = request.nextUrl.searchParams;
@@ -199,8 +198,7 @@ export const GET = async (request: NextRequest) => {
         }));
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances',
           method: 'GET',
           eventType: 'success',
@@ -224,8 +222,7 @@ export const GET = async (request: NextRequest) => {
         });
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances',
           method: 'GET',
           eventType: 'server_error',
@@ -238,7 +235,7 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
 
 // =====================================================================================
@@ -259,19 +256,18 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
 // Admin check
-    const isAdmin = await checkAdminRole(user.id);
+    const isAdmin = await checkAdminRole(userId);
     if (!isAdmin) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/clc/remittances',
         method: 'POST',
         eventType: 'auth_failed',
@@ -283,7 +279,7 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
 
     try {
       // Set session context for RLS
-      await db.execute(sql`SET app.current_user_id = ${user.id}`);
+      await db.execute(sql`SET app.current_user_id = ${userId}`);
 
       const { organizationId, month, year, saveResults } = body;
 
@@ -306,8 +302,7 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
       }
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/clc/remittances',
         method: 'POST',
         eventType: 'success',
@@ -332,8 +327,7 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/clc/remittances',
         method: 'POST',
         eventType: 'server_error',
@@ -347,3 +341,4 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
       );
     }
 });
+

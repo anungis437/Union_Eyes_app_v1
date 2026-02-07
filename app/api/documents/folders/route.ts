@@ -35,7 +35,7 @@ const createFolderSchema = z.object({
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
@@ -43,8 +43,7 @@ export const GET = async (request: NextRequest) => {
         const tenantId = searchParams.get("tenantId");
         if (!tenantId) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents/folders',
             method: 'GET',
             eventType: 'validation_failed',
@@ -59,8 +58,7 @@ export const GET = async (request: NextRequest) => {
         if (tree) {
           const folderTree = await getFolderTree(tenantId);
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents/folders',
             method: 'GET',
             eventType: 'success',
@@ -77,8 +75,7 @@ export const GET = async (request: NextRequest) => {
         );
         
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/documents/folders',
           method: 'GET',
           eventType: 'success',
@@ -89,8 +86,7 @@ export const GET = async (request: NextRequest) => {
         return NextResponse.json({ folders });
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/documents/folders',
           method: 'GET',
           eventType: 'server_error',
@@ -103,7 +99,7 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
 
 /**
@@ -130,7 +126,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -143,12 +139,11 @@ try {
         name: body.name,
         description: body.description || null,
         parentFolderId: body.parentFolderId || null,
-        createdBy: user.id,
+        createdBy: userId,
       });
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/documents/folders',
         method: 'POST',
         eventType: 'success',
@@ -163,8 +158,7 @@ try {
       return NextResponse.json(folder, { status: 201 });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/documents/folders',
         method: 'POST',
         eventType: 'server_error',
@@ -178,3 +172,4 @@ try {
       );
     }
 });
+

@@ -31,7 +31,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -43,13 +43,12 @@ try {
       const [currentMember] = await db
         .select()
         .from(members)
-        .where(eq(members.userId, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!currentMember) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/arrears/create-payment-plan',
           method: 'POST',
           eventType: 'auth_failed',
@@ -75,8 +74,7 @@ try {
 
       if (!arrearsCase) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/arrears/create-payment-plan',
           method: 'POST',
           eventType: 'auth_failed',
@@ -157,8 +155,7 @@ try {
       await db.insert(duesTransactions).values(installmentTransactions);
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/arrears/create-payment-plan',
         method: 'POST',
         eventType: 'success',
@@ -184,8 +181,7 @@ try {
 
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/arrears/create-payment-plan',
         method: 'POST',
         eventType: 'error',
@@ -198,50 +194,4 @@ try {
       );
     }
 });
-        paymentPlanFrequency: frequency,
-        paymentPlanStartDate: new Date(startDate).toISOString().split('T')[0],
-        numberOfInstallments: numberOfInstallments.toString(),
-        paymentSchedule: JSON.stringify(paymentSchedule),
-        status: 'payment_plan',
-        updatedAt: new Date(),
-      })
-      .where(eq(arrearsCases.id, arrearsCase.id))
-      .returning();
 
-    // Create future dues transactions for each installment
-    const installmentTransactions = paymentSchedule.map((installment) => ({
-      tenantId: currentMember.tenantId,
-      memberId,
-      transactionType: 'payment_plan_installment',
-      amount: installment.amount.toString(),
-      duesAmount: installment.amount.toString(),
-      totalAmount: installment.amount.toString(),
-      dueDate: new Date(installment.dueDate).toISOString().split('T')[0],
-      periodStart: new Date(installment.dueDate).toISOString().split('T')[0],
-      periodEnd: new Date(installment.dueDate).toISOString().split('T')[0],
-      status: 'pending',
-      notes: `Payment plan installment ${installment.installmentNumber} of ${numberOfInstallments}`,
-      metadata: JSON.stringify({
-        arrearsId: arrearsCase.id,
-        installmentNumber: installment.installmentNumber,
-      }),
-    }));
-
-    await db.insert(duesTransactions).values(installmentTransactions);
-
-    return NextResponse.json({
-      message: 'Payment plan created successfully',
-      case: updatedCase,
-      paymentSchedule,
-      numberOfInstallments,
-      totalOwed,
-    });
-
-  } catch (error) {
-    console.error('Create payment plan error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create payment plan' },
-      { status: 500 }
-    );
-  }
-}

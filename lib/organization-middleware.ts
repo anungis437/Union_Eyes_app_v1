@@ -5,10 +5,9 @@
  * Validates organization access and injects organization ID into request context.
  */
 
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getOrganizationIdForUser, validateOrganizationExists } from "@/lib/organization-utils";
-import { getMemberByUserId } from "@/db/queries/organization-members-queries";
+import { requireUser, requireUserForOrganization } from "@/lib/auth/unified-auth";
 import { cookies } from "next/headers";
 
 export interface OrganizationContext {
@@ -42,33 +41,17 @@ export function withOrganizationAuth<T = any>(
     routeContext?: { params: Promise<T> | T }
   ): Promise<NextResponse> => {
     try {
-      // Authenticate user
-      const { userId } = await auth();
-
-      if (!userId) {
-        return NextResponse.json(
-          { error: "Unauthorized - Authentication required" },
-          { status: 401 }
-        );
-      }
+      const baseUser = await requireUser();
 
       // Get organization ID - getOrganizationIdForUser handles cookie checking and access verification
-      const organizationId = await getOrganizationIdForUser(userId);
-
-      // Resolve organization member for RBAC context
-      const member = await getMemberByUserId(organizationId, userId);
-      if (!member) {
-        return NextResponse.json(
-          { error: "Forbidden - User is not a member of this organization" },
-          { status: 403 }
-        );
-      }
+      const organizationId = await getOrganizationIdForUser(baseUser.userId);
+      const user = await requireUserForOrganization(organizationId, baseUser.userId);
 
       // Create organization context
       const context: OrganizationContext = {
         organizationId,
-        userId,
-        memberId: member.id,
+        userId: user.userId,
+        memberId: user.memberId || '',
       };
 
       // Resolve params if they're a Promise
@@ -79,6 +62,19 @@ export function withOrganizationAuth<T = any>(
       // Call the handler with context
       return await handler(request, context, params);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Internal server error';
+      if (message === 'Unauthorized') {
+        return NextResponse.json(
+          { error: "Unauthorized - Authentication required" },
+          { status: 401 }
+        );
+      }
+      if (message === 'Forbidden') {
+        return NextResponse.json(
+          { error: "Forbidden - User is not a member of this organization" },
+          { status: 403 }
+        );
+      }
       console.error("Organization middleware error:", error);
       return NextResponse.json(
         { error: "Internal server error" },

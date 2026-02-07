@@ -11,8 +11,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   // Import job-queue functions only at runtime, not at module load time
     // This prevents bundling bullmq during build phase
     const { retryJob } = await import('@/lib/job-queue');
@@ -39,6 +37,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

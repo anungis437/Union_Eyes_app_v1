@@ -8,14 +8,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Check admin role
       const adminCheck = await db
         .select({ role: tenantUsers.role })
         .from(tenantUsers)
-        .where(eq(tenantUsers.user.id, user.id))
+        .where(eq(tenantUsers.userId, userId))
         .limit(1);
 
       if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -29,7 +29,7 @@ export const POST = async (request: NextRequest) => {
       // Note: Full VACUUM requires superuser privileges
       await db.execute(sql`ANALYZE`);
 
-      logger.info("Database optimized", { adminId: user.id });
+      logger.info("Database optimized", { adminId: userId });
 
       return NextResponse.json({
         success: true,
@@ -45,6 +45,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

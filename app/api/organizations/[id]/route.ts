@@ -22,7 +22,7 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   let id = '';
       try {
@@ -34,7 +34,7 @@ export const GET = async (
         if (!organization) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/organizations/${id}`,
             method: 'GET',
             eventType: 'validation_failed',
@@ -49,7 +49,7 @@ export const GET = async (
 
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/organizations/${id}`,
           method: 'GET',
           eventType: 'success',
@@ -64,12 +64,12 @@ export const GET = async (
       } catch (error) {
         logger.error('Error fetching organization', error as Error, {
           organizationId: id,
-          userId: user.id,
+          userId,
           correlationId: request.headers.get('x-correlation-id')
         });
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/organizations/${id}`,
           method: 'GET',
           eventType: 'server_error',
@@ -81,7 +81,7 @@ export const GET = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };
 
 /**
@@ -93,7 +93,7 @@ export const PATCH = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   let id = '';
       try {
@@ -107,7 +107,7 @@ export const PATCH = async (
           if (!slugRegex.test(body.slug)) {
             logApiAuditEvent({
               timestamp: new Date().toISOString(),
-              userId: user.id,
+              userId,
               endpoint: `/api/organizations/${id}`,
               method: 'PATCH',
               eventType: 'validation_failed',
@@ -127,7 +127,7 @@ export const PATCH = async (
           if (!validTypes.includes(body.type)) {
             logApiAuditEvent({
               timestamp: new Date().toISOString(),
-              userId: user.id,
+              userId,
               endpoint: `/api/organizations/${id}`,
               method: 'PATCH',
               eventType: 'validation_failed',
@@ -146,7 +146,7 @@ export const PATCH = async (
         if (!updatedOrganization) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/organizations/${id}`,
             method: 'PATCH',
             eventType: 'validation_failed',
@@ -161,7 +161,7 @@ export const PATCH = async (
 
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/organizations/${id}`,
           method: 'PATCH',
           eventType: 'success',
@@ -177,13 +177,12 @@ export const PATCH = async (
       } catch (error: any) {
         logger.error('Error updating organization', error as Error, {
           organizationId: id,
-          userId: user.id,
+          userId,
           correlationId: request.headers.get('x-correlation-id')
         });
-
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/organizations/${id}`,
           method: 'PATCH',
           eventType: 'server_error',
@@ -212,7 +211,7 @@ export const PATCH = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };
 
 /**
@@ -224,7 +223,7 @@ export const DELETE = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   let id = '';
       try {
@@ -236,7 +235,7 @@ export const DELETE = async (
         if (!result) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(),
-            userId: user.id,
+            userId,
             endpoint: `/api/organizations/${id}`,
             method: 'DELETE',
             eventType: 'validation_failed',
@@ -251,7 +250,7 @@ export const DELETE = async (
 
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/organizations/${id}`,
           method: 'DELETE',
           eventType: 'success',
@@ -266,12 +265,12 @@ export const DELETE = async (
       } catch (error) {
         logger.error('Error deleting organization', error as Error, {
           organizationId: id,
-          userId: user.id,
+          userId,
           correlationId: request.headers.get('x-correlation-id')
         });
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
-          userId: user.id,
+          userId,
           endpoint: `/api/organizations/${id}`,
           method: 'DELETE',
           eventType: 'server_error',
@@ -283,5 +282,5 @@ export const DELETE = async (
           { status: 500 }
         );
       }
-  })(request, { params });
+      })(request, { params });
 };

@@ -42,7 +42,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -60,8 +60,7 @@ try {
       );
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/members/search',
         method: 'POST',
         eventType: 'success',
@@ -72,8 +71,7 @@ try {
       return NextResponse.json(result);
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/members/search',
         method: 'POST',
         eventType: 'server_error',
@@ -94,7 +92,7 @@ try {
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
@@ -102,8 +100,7 @@ export const GET = async (request: NextRequest) => {
 
         if (!organizationId) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/members/search',
             method: 'GET',
             eventType: 'validation_failed',
@@ -116,8 +113,7 @@ export const GET = async (request: NextRequest) => {
         const statistics = await getMemberStatistics(organizationId);
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/search',
           method: 'GET',
           eventType: 'success',
@@ -128,8 +124,7 @@ export const GET = async (request: NextRequest) => {
         return NextResponse.json(statistics);
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/search',
           method: 'GET',
           eventType: 'server_error',
@@ -142,5 +137,6 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
+

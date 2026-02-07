@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId: contextOrganizationId } = context;
 
   try {
       const body = await request.json();
@@ -72,7 +72,7 @@ export const POST = async (request: NextRequest) => {
         allowResearchParticipation = false,
         allowExternalReporting = false,
       } = body;
-  if (organizationId && organizationId !== context.organizationId) {
+  if (organizationId && organizationId !== contextOrganizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -187,7 +187,7 @@ export const POST = async (request: NextRequest) => {
             allowResearchParticipation,
             allowExternalReporting,
             updatedAt: new Date().toISOString(),
-            lastUpdatedBy: user.id,
+            lastUpdatedBy: userId,
           })
           .where(eq(memberDemographics.memberId, memberId))
           .returning();
@@ -238,7 +238,7 @@ export const POST = async (request: NextRequest) => {
             allowAggregateReporting,
             allowResearchParticipation,
             allowExternalReporting,
-            lastUpdatedBy: user.id,
+            lastUpdatedBy: userId,
           })
           .returning();
       }
@@ -251,7 +251,7 @@ export const POST = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to save demographic data', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
     return NextResponse.json(
@@ -259,14 +259,11 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const memberId = searchParams.get('memberId');
@@ -299,7 +296,7 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch demographic data', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         memberId: request.nextUrl.searchParams.get('memberId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -308,7 +305,6 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
 
@@ -352,7 +348,7 @@ export const DELETE = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to withdraw demographic consent', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         memberId: request.nextUrl.searchParams.get('memberId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -361,6 +357,5 @@ export const DELETE = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

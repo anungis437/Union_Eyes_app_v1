@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+
 import { db } from "@/db/db";
 import { claims } from "@/db/schema/claims-schema";
 import { eq } from "drizzle-orm";
 import { getClaimWorkflowStatus } from "@/lib/workflow-engine";
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * GET /api/claims/[id]/workflow
@@ -14,7 +15,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -13,7 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Verify authentication
@@ -29,7 +29,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Assign claim to current user
-      const updatedClaim = await assignClaim(claimId, user.id, user.id);
+      const updatedClaim = await assignClaim(claimId, userId, userId);
 
       return NextResponse.json({
         success: true,
@@ -44,6 +44,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

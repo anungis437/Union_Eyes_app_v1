@@ -1,13 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
+
 import { getProfileByUserId } from "@/db/queries/profiles-queries";
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
+import { requireUser } from '@/lib/auth/unified-auth';
 
 // This API is now only used for occasional status checks
 // The main cancellation flow happens through page revalidation
 export async function GET() {
   try {
-    const { userId } = auth();
+    const { userId } = await requireUser();
     
     if (!userId) {
       return NextResponse.json({ status: null }, { status: 401 });

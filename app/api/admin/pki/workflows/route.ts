@@ -17,7 +17,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -31,10 +31,10 @@ export const GET = async (request: NextRequest) => {
         workflows = getDocumentWorkflows(documentId);
       } else if (filter === 'pending') {
         // Get user's pending workflows (needs signature)
-        workflows = getUserPendingWorkflows(user.id);
+        workflows = getUserPendingWorkflows(userId);
       } else {
         // Get all user's workflows
-        workflows = getUserWorkflows(user.id);
+        workflows = getUserWorkflows(userId);
       }
 
       return NextResponse.json({
@@ -50,6 +50,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

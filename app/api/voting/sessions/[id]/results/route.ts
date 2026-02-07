@@ -13,8 +13,6 @@ interface RouteParams {
 
 export const GET = async (request: NextRequest, { params }: RouteParams) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const sessionId = params.id;
       const { searchParams } = new URL(request.url);
@@ -156,6 +154,5 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

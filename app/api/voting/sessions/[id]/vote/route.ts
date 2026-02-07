@@ -20,7 +20,7 @@ interface RouteParams {
 
 export const POST = async (request: NextRequest, { params }: RouteParams) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const sessionId = params.id;
@@ -88,7 +88,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
         .where(
           and(
             eq(votes.sessionId, sessionId),
-            eq(votes.voterId, user.id)
+            eq(votes.voterId, userId)
           )
         )
         .limit(1);
@@ -107,7 +107,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
         .where(
           and(
             eq(voterEligibility.sessionId, sessionId),
-            eq(voterEligibility.memberId, user.id)
+            eq(voterEligibility.memberId, userId)
           )
         )
         .limit(1);
@@ -134,7 +134,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
           {
             sessionId,
             optionId,
-            memberId: user.id,
+            memberId: userId,
             timestamp,
           },
           sessionKey
@@ -145,7 +145,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
           {
             sessionId,
             optionId,
-            memberId: user.id,
+            memberId: userId,
             isAnonymous,
           },
           voteSignature
@@ -157,7 +157,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
           .values({
             sessionId,
             optionId,
-            voterId: isAnonymous ? 'anonymous' : user.id,
+            voterId: isAnonymous ? 'anonymous' : userId,
             voterHash: voteSignature.voteHash, // Store signature hash
             signature: voteSignature.signature, // Store signature for verification
             isAnonymous,
@@ -170,7 +170,7 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
           .returning();
 
         // Create audit log entry
-        await createVotingAuditLog(sessionId, user.id, receipt, null);
+        await createVotingAuditLog(sessionId, userId, receipt, null);
 
         return NextResponse.json({
           message: 'Vote cast successfully',
@@ -198,6 +198,5 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -46,7 +46,7 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch trustee meetings', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         trustBoardId: request.nextUrl.searchParams.get('trustBoardId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
@@ -55,13 +55,12 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const body = await request.json();
@@ -96,7 +95,7 @@ export const POST = async (request: NextRequest) => {
           meetingLocation: location,
           quorumMet,
           motions: votingRecords,
-          createdBy: user.id,
+          createdBy: userId,
         })
         .returning();
 
@@ -108,7 +107,7 @@ export const POST = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to create trustee meeting', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
     return NextResponse.json(
@@ -116,6 +115,5 @@ export const POST = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

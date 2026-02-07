@@ -25,7 +25,7 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -37,13 +37,12 @@ try {
       const [member] = await db
         .select()
         .from(members)
-        .where(eq(members.userId, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!member) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/arrears/cases',
           method: 'GET',
           eventType: 'auth_failed',
@@ -111,8 +110,7 @@ try {
         .where(and(...whereConditions));
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/arrears/cases',
         method: 'GET',
         eventType: 'success',
@@ -135,8 +133,7 @@ try {
 
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/arrears/cases',
         method: 'GET',
         eventType: 'error',
@@ -149,3 +146,4 @@ try {
       );
     }
 });
+

@@ -86,8 +86,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // POST /api/education/sessions/[id]/attendance - Mark attendance (single or bulk)
@@ -270,8 +269,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // PATCH /api/education/sessions/[id]/attendance - Update attendance record
@@ -357,6 +355,5 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

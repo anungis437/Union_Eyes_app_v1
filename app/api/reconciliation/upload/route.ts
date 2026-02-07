@@ -11,14 +11,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // Upload and parse employer remittance file
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Get member to verify tenant
       const [member] = await db
         .select()
         .from(members)
-        .where(eq(members.user.id, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!member) {
@@ -122,6 +122,5 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

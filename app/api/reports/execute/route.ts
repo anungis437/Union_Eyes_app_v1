@@ -39,12 +39,11 @@ interface ReportConfig {
 
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
-      const { user.id, orgId } = await auth();
 
-      if (!user.id || !orgId) {
+      if (!userId || !organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 401 }
@@ -62,7 +61,7 @@ export const POST = async (req: NextRequest) => {
       }
 
       // Build SQL query dynamically
-      const query = buildSQLQuery(config, orgId);
+      const query = buildSQLQuery(config, organizationId);
 
       // Execute query
       const startTime = Date.now();
@@ -83,8 +82,7 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 /**

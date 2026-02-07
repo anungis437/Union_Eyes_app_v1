@@ -26,8 +26,6 @@ type RouteContext = {
 // GET /api/arbitration/precedents/[id]/citations - List citations for precedent
 export const GET = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   const { id } = await context.params;
     
     try {
@@ -123,19 +121,18 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // POST /api/arbitration/precedents/[id]/citations - Add citation
 export const POST = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   const { id } = await context.params;
     
     try {
-      const userUuid = await getOrCreateUserUuid(user.id);
+      const userUuid = await getOrCreateUserUuid(userId);
 
       // Get user's organization from cookie
       const cookieStore = await cookies();
@@ -253,6 +250,5 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

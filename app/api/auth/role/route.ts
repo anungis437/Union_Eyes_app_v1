@@ -11,27 +11,27 @@ import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
  * Fetch current user's role and permissions
  */
 export const GET = withSecureAPI(async (request, user) => {
+  const { id: userId, email } = user;
+
   try {
     // User is already authenticated via withSecureAPI wrapper
     logApiAuditEvent({
-      timestamp: new Date().toISOString(),
-      userId: user.id,
+      timestamp: new Date().toISOString(), userId,
       endpoint: '/api/auth/role',
       method: 'GET',
       eventType: 'success',
       severity: 'low',
-      details: { userEmail: user.email },
+      details: { userEmail: email },
     });
 
     return NextResponse.json({ 
-      userId: user.id,
-      email: user.email,
+      userId,
+      email,
       success: true 
     });
   } catch (error) {
     logApiAuditEvent({
-      timestamp: new Date().toISOString(),
-      userId: user.id,
+      timestamp: new Date().toISOString(), userId,
       endpoint: '/api/auth/role',
       method: 'GET',
       eventType: 'auth_failed',
@@ -43,3 +43,4 @@ export const GET = withSecureAPI(async (request, user) => {
     throw error;
   }
 });
+

@@ -6,22 +6,22 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (req: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Query notifications table for unread notifications for the current user
-      // Assuming there's a notifications table with user.id, isRead, createdAt columns
+      // Assuming there's a notifications table with userId, isRead, createdAt columns
       try {
         const unreadCount = await db.query.notifications.findMany({
           where: (notifications, { eq, and }) =>
             and(
-              eq(notifications.user.id, user.id),
+              eq(notifications.userId, userId),
               eq(notifications.isRead, false)
             ),
           columns: { id: true },
         });
 
-        logger.info('Retrieved notification count', { user.id, count: unreadCount.length });
+        logger.info('Retrieved notification count', { userId, count: unreadCount.length });
 
         return NextResponse.json(
           { count: unreadCount.length },
@@ -42,6 +42,5 @@ export const GET = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

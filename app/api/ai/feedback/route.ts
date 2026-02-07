@@ -7,11 +7,9 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate with Clerk
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       // 2. Parse and validate request body
       const body = await request.json();
       const validatedFeedback = FeedbackSubmissionSchema.parse(body);
@@ -36,7 +34,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Verify organization access
-      if (orgId && (query as any).organization_id !== orgId) {
+      if (organizationId && (query as any).organization_id !== organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 403 }
@@ -48,8 +46,8 @@ export const POST = async (request: NextRequest) => {
         .from('ai_feedback')
         .insert({
           query_id,
-          organization_id: orgId || (query as any).organization_id,
-          user_id: user.id,
+          organization_id: organizationId || (query as any).organization_id,
+          user_id: userId,
           rating,
           comment: comment || null,
         } as any)
@@ -93,17 +91,14 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate with Clerk
-      const { user.id, orgId } = await auth();
+      const { organizationId } = context;
       // 2. Get query ID from URL params
       const { searchParams } = new URL(request.url);
       const queryId = searchParams.get('query_id');
@@ -123,7 +118,7 @@ export const GET = async (request: NextRequest) => {
         .from('ai_feedback')
         .select('*')
         .eq('query_id', queryId as any)
-        .eq('organization_id', (orgId || '') as any)
+        .eq('organization_id', (organizationId || '') as any)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -149,6 +144,5 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

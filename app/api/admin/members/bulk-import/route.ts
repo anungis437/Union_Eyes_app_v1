@@ -72,11 +72,11 @@ async function checkAdminOrOfficerRole(userId: string): Promise<boolean> {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // Check admin/officer role
-      const hasPermission = await checkAdminOrOfficerRole(user.id);
+      const hasPermission = await checkAdminOrOfficerRole(userId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - Admin or Officer role required" },
@@ -335,7 +335,7 @@ export const POST = async (request: NextRequest) => {
       try {
         const membersToInsert = validRows.map(row => ({
           organizationId: orgSlugToId.get(row.organizationSlug)!,
-          user.id: "", // Will be updated when user claims profile
+          userId: "", // Will be updated when user claims profile
           name: row.name,
           email: row.email,
           phone: row.phone || null,
@@ -383,8 +383,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // =====================================================

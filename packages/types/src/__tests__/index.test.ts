@@ -125,15 +125,15 @@ describe('Types Index Export Tests', () => {
       const paymentStatuses: PaymentStatus[] = ['Pending', 'Completed', 'Failed', 'Refunded'];
       const paymentMethods: PaymentMethod[] = ['Credit Card', 'Bank Transfer', 'Cheque', 'Cash', 'Trust Transfer'];
       const taskCategories: TaskCategory[] = [
-        'Legal Research',
-        'Document Drafting', 
-        'Client Meeting',
-        'Court Appearance',
-        'Case Strategy',
-        'Administrative',
-        'Other'
+        TaskCategory.LEGAL_RESEARCH,
+        TaskCategory.DOCUMENT_DRAFTING, 
+        TaskCategory.CLIENT_MEETING,
+        TaskCategory.COURT_APPEARANCE,
+        TaskCategory.CASE_STRATEGY,
+        TaskCategory.ADMINISTRATIVE,
+        TaskCategory.OTHER
       ];
-      const taxTypes: TaxType[] = ['HST', 'GST', 'PST', 'QST'];
+      const taxTypes: TaxType[] = [TaxType.HST, TaxType.GST, TaxType.PST, TaxType.QST];
 
       expect(invoiceStatuses).toHaveLength(5);
       expect(paymentStatuses).toHaveLength(4);
@@ -163,41 +163,41 @@ describe('Types Index Export Tests', () => {
       // Test that types imported via named import are compatible with wildcard import
       const namedImportEntry: TimeEntry = {
         id: 'named-import-test',
-        matter_id: 'matter-123',
-        user_id: 'user-456',
-        task_category: 'Legal Research',
+        matterId: 'matter-123',
+        userId: 'user-456',
+        taskCategory: TaskCategory.LEGAL_RESEARCH,
         description: 'Named import test',
         hours: 1.0,
-        billable_rate: 300.00,
-        created_at: '2024-01-15T10:30:00Z',
-        updated_at: '2024-01-15T10:30:00Z',
-        is_billable: true,
-        is_billed: false,
+        billableRate: 300.00,
+        createdAt: '2024-01-15T10:30:00Z',
+        updatedAt: '2024-01-15T10:30:00Z',
+        isBillable: true,
+        isBilled: false,
         date: '2024-01-15',
-        client_id: 'client-789',
-        time_tracking_method: 'Manual',
+        clientId: 'client-789',
+        timeTrackingMethod: 'Manual',
         tags: [],
-        billed_amount: 300.00,
-        billing_status: 'Pending',
-        approval_status: 'Approved'
+        billedAmount: 300.00,
+        billingStatus: 'Pending',
+        approvalStatus: 'Approved'
       };
 
       // This would be a TypeScript compile-time validation
       // Runtime we just verify the object was created successfully
       expect(namedImportEntry.id).toBe('named-import-test');
-      expect(namedImportEntry.task_category).toBe('Legal Research');
+      expect(namedImportEntry.taskCategory).toBe(TaskCategory.LEGAL_RESEARCH);
     });
 
     it('should support enum value assignments', () => {
-      const status: InvoiceStatus = 'Draft';
-      const paymentMethod: PaymentMethod = 'Credit Card';
-      const category: TaskCategory = 'Document Drafting';
-      const taxType: TaxType = 'HST';
+      const status: InvoiceStatus = InvoiceStatus.DRAFT;
+      const paymentMethod: PaymentMethod = PaymentMethod.CREDIT_CARD;
+      const category: TaskCategory = TaskCategory.DOCUMENT_DRAFTING;
+      const taxType: TaxType = TaxType.HST;
 
-      expect(status).toBe('Draft');
-      expect(paymentMethod).toBe('Credit Card');
-      expect(category).toBe('Document Drafting');
-      expect(taxType).toBe('HST');
+      expect(status).toBe(InvoiceStatus.DRAFT);
+      expect(paymentMethod).toBe(PaymentMethod.CREDIT_CARD);
+      expect(category).toBe(TaskCategory.DOCUMENT_DRAFTING);
+      expect(taxType).toBe(TaxType.HST);
     });
   });
 
@@ -206,33 +206,33 @@ describe('Types Index Export Tests', () => {
       // Test that the convenience re-exports work
       const invoice: Invoice = {
         id: 'convenience-test',
-        client_id: 'client-123',
-        matter_id: 'matter-456',
-        invoice_number: 'CONV-001',
-        status: 'Draft',
-        issue_date: '2024-01-15',
-        due_date: '2024-02-15',
+        clientId: 'client-123',
+        matterId: 'matter-456',
+        invoiceNumber: 'CONV-001',
+        status: InvoiceStatus.DRAFT,
+        issueDate: '2024-01-15',
+        dueDate: '2024-02-15',
         subtotal: 500.00,
-        tax_amount: 65.00,
-        total_amount: 565.00,
-        created_at: '2024-01-15T10:30:00Z',
-        updated_at: '2024-01-15T10:30:00Z'
+        taxAmount: 65.00,
+        totalAmount: 565.00,
+        createdAt: '2024-01-15T10:30:00Z',
+        updatedAt: '2024-01-15T10:30:00Z'
       };
 
       const knowledge: KnowledgeEntry = {
         id: 'convenience-knowledge',
         title: 'Convenience Test Entry',
         content: 'Testing re-export functionality',
-        entry_type: 'Other',
+        entryType: 'Other',
         tags: ['convenience', 'test'],
-        legal_topics: ['Testing'],
-        source_document_ids: [],
-        source_query_ids: [],
-        created_at: '2024-01-15T10:30:00Z',
-        updated_at: '2024-01-15T10:30:00Z',
+        legalTopics: ['Testing'],
+        sourceDocumentIds: [],
+        sourceQueryIds: [],
+        createdAt: '2024-01-15T10:30:00Z',
+        updatedAt: '2024-01-15T10:30:00Z',
       };
 
-      expect(invoice.invoice_number).toBe('CONV-001');
+      expect(invoice.invoiceNumber).toBe('CONV-001');
       expect(knowledge.title).toBe('Convenience Test Entry');
     });
 
@@ -243,27 +243,27 @@ describe('Types Index Export Tests', () => {
       // Using named imports (already imported at top)
       const timeEntry: TimeEntry = {
         id: 'mixed-usage-test',
-        matter_id: 'matter-999',
-        user_id: 'user-999',
-        task_category: 'Administrative',
+        matterId: 'matter-999',
+        userId: 'user-999',
+        taskCategory: TaskCategory.ADMINISTRATIVE,
         description: 'Mixed import usage test',
         hours: 0.5,
-        billable_rate: 250.00,
-        created_at: '2024-01-15T10:30:00Z',
-        updated_at: '2024-01-15T10:30:00Z',
-        is_billable: true,
-        is_billed: false,
+        billableRate: 250.00,
+        createdAt: '2024-01-15T10:30:00Z',
+        updatedAt: '2024-01-15T10:30:00Z',
+        isBillable: true,
+        isBilled: false,
         date: '2024-01-15',
-        client_id: 'client-999',
-        time_tracking_method: 'Timer',
+        clientId: 'client-999',
+        timeTrackingMethod: 'Timer',
         tags: ['mixed', 'test'],
-        billed_amount: 125.00,
-        billing_status: 'Ready',
-        approval_status: 'Pending'
+        billedAmount: 125.00,
+        billingStatus: 'Ready',
+        approvalStatus: 'Pending'
       };
 
-      expect(timeEntry.task_category).toBe('Administrative');
-      expect(timeEntry.time_tracking_method).toBe('Timer');
+      expect(timeEntry.taskCategory).toBe(TaskCategory.ADMINISTRATIVE);
+      expect(timeEntry.timeTrackingMethod).toBe('Timer');
     });
   });
 });

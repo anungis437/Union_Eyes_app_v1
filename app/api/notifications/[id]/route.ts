@@ -13,7 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { id } = params;
@@ -28,7 +28,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .where(
           and(
             eq(inAppNotifications.id, id),
-            eq(inAppNotifications.user.id, user.id)
+            eq(inAppNotifications.userId, userId)
           )
         )
         .returning();
@@ -48,13 +48,12 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { id } = params;
@@ -65,7 +64,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .where(
           and(
             eq(inAppNotifications.id, id),
-            eq(inAppNotifications.user.id, user.id)
+            eq(inAppNotifications.userId, userId)
           )
         )
         .returning();
@@ -85,6 +84,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

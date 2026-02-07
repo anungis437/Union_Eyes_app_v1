@@ -8,14 +8,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // Resolve reconciliation discrepancies
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Get member to verify tenant
       const [member] = await db
         .select()
         .from(members)
-        .where(eq(members.user.id, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!member) {
@@ -88,7 +88,7 @@ export const POST = async (req: NextRequest) => {
             .values({
               tenantId: member.tenantId,
               organizationId: member.organizationId,
-              user.id: '', // Will be updated when user claims profile
+              userId: '', // Will be updated when user claims profile
               name: actionData.name,
               email: actionData.email || row.row.email || '',
               membershipNumber: row.row.memberNumber || null,
@@ -129,7 +129,7 @@ export const POST = async (req: NextRequest) => {
                 adjusted: true,
                 adjustedFrom: oldAmount,
                 adjustedTo: newAmount,
-                adjustedBy: user.id,
+                adjustedBy: userId,
                 adjustedAt: new Date().toISOString(),
                 adjustmentReason: actionData?.reason || 'Reconciliation adjustment',
               }),
@@ -146,7 +146,7 @@ export const POST = async (req: NextRequest) => {
           // Mark row as manually resolved
           row.matchStatus = 'manually_resolved';
           row.resolution = actionData?.notes || 'Manually resolved';
-          row.resolvedBy = user.id;
+          row.resolvedBy = userId;
           row.resolvedAt = new Date().toISOString();
 
           actionResult = { action: 'mark_resolved', notes: row.resolution };
@@ -191,6 +191,5 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

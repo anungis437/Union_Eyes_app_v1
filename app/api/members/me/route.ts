@@ -32,7 +32,7 @@ export const GET = withSecureAPI(async (request, user) => {
         rejectedClaims: sql<number>`COUNT(CASE WHEN status = 'rejected' THEN 1 END)`,
       })
       .from(claims)
-      .where(eq(claims.memberId, user.id));
+      .where(eq(claims.memberId, user.userId));
 
     // Get recent claims
     const recentClaims = await db
@@ -45,13 +45,12 @@ export const GET = withSecureAPI(async (request, user) => {
         createdAt: claims.createdAt,
       })
       .from(claims)
-      .where(eq(claims.memberId, user.id))
+      .where(eq(claims.memberId, user.userId))
       .orderBy(desc(claims.createdAt))
       .limit(5);
 
     logApiAuditEvent({
-      timestamp: new Date().toISOString(),
-      userId: user.id,
+      timestamp: new Date().toISOString(), userId: user.userId,
       endpoint: '/api/members/me',
       method: 'GET',
       eventType: 'success',
@@ -61,7 +60,7 @@ export const GET = withSecureAPI(async (request, user) => {
 
     return NextResponse.json({
       profile: {
-        userId: user.id,
+        userId: user.userId,
         email: user.email,
         claimsStats: {
           total: claimsStats.totalClaims || 0,
@@ -74,8 +73,7 @@ export const GET = withSecureAPI(async (request, user) => {
     });
   } catch (error) {
     logApiAuditEvent({
-      timestamp: new Date().toISOString(),
-      userId: user.id,
+      timestamp: new Date().toISOString(), userId: user.userId,
       endpoint: '/api/members/me',
       method: 'GET',
       eventType: 'auth_failed',
@@ -106,7 +104,7 @@ export const PATCH = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -125,8 +123,7 @@ try {
 
       if (Object.keys(updates).length === 0) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/me',
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -145,13 +142,12 @@ try {
       const [updatedUser] = await db
         .update(users)
         .set(updates)
-        .where(eq(users.userId, user.id))
+        .where(eq(users.userId, userId))
         .returning();
 
       if (!updatedUser) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/members/me',
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -165,8 +161,7 @@ try {
       }
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/members/me',
         method: 'PATCH',
         eventType: 'success',
@@ -186,8 +181,7 @@ try {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/members/me',
         method: 'PATCH',
         eventType: 'auth_failed',
@@ -199,3 +193,4 @@ try {
       throw error;
     }
 });
+

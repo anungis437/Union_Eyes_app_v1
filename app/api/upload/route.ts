@@ -35,7 +35,7 @@ interface AttachmentMetadata {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Authenticate user
@@ -90,7 +90,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Verify user owns the claim or is assigned to it
-      if (claim.memberId !== user.id && claim.assignedTo !== user.id) {
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
         return NextResponse.json(
           { error: 'Unauthorized to upload files to this claim' },
           { status: 403 }
@@ -115,7 +115,7 @@ export const POST = async (request: NextRequest) => {
         fileSize: file.size,
         fileType: file.type,
         uploadedAt: new Date().toISOString(),
-        uploadedBy: user.id,
+        uploadedBy: userId,
       };
 
       // Get current attachments array
@@ -146,14 +146,13 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // GET endpoint to retrieve attachments for a claim
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -181,7 +180,7 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Verify user has access
-      if (claim.memberId !== user.id && claim.assignedTo !== user.id) {
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 403 }
@@ -200,14 +199,13 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // DELETE endpoint to remove an attachment
 export const DELETE = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -236,7 +234,7 @@ export const DELETE = async (request: NextRequest) => {
       }
 
       // Verify user has access
-      if (claim.memberId !== user.id && claim.assignedTo !== user.id) {
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 403 }
@@ -273,6 +271,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

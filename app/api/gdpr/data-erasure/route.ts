@@ -6,7 +6,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { GdprRequestManager, DataErasureService } from "@/lib/gdpr/consent-manager";
 import { logger } from "@/lib/logger";
@@ -35,8 +35,8 @@ async function checkAdminOrDPORole(userId: string): Promise<boolean> {
  */
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -51,8 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if data can be erased
-    const { canErase, reasons } = await DataErasureService.canEraseData(
-      user.id,
+    const { canErase, reasons } = await DataErasureService.canEraseData( userId,
       tenantId
     );
 
@@ -68,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Create erasure request
     const request = await GdprRequestManager.requestDataErasure({
-      userId: user.id,
+      userId,
       tenantId,
       requestDetails: {
         reason,
@@ -105,11 +104,11 @@ export async function POST(req: NextRequest) {
 
 export const DELETE = async (req: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check if user is admin/DPO
-      const isAdmin = await checkAdminOrDPORole(user.id);
+      const isAdmin = await checkAdminOrDPORole(userId);
 
       if (!isAdmin) {
         return NextResponse.json(
@@ -119,7 +118,7 @@ export const DELETE = async (req: NextRequest) => {
       }
 
       const body = await req.json();
-      const { requestId, user.id: targetUserId, tenantId, confirmation } = body;
+      const { requestId, userId: targetUserId, tenantId, confirmation } = body;
 
       if (!requestId || !targetUserId || !tenantId) {
         return NextResponse.json(
@@ -137,21 +136,21 @@ export const DELETE = async (req: NextRequest) => {
       }
 
       // Log the admin action
-      logger.info('Data erasure initiated', { adminId: user.id, targetUserId, tenantId });
+      logger.info('Data erasure initiated', { adminId: userId, targetUserId, tenantId });
 
       // Execute erasure
       await DataErasureService.eraseUserData(
         targetUserId,
         tenantId,
         requestId,
-        user.id
+        userId
       );
 
       return NextResponse.json({
         success: true,
         message: "User data has been permanently erased",
         executedAt: new Date(),
-        executedBy: user.id,
+        executedBy: userId,
       });
     } catch (error) {
       console.error("Data erasure execution error:", error);
@@ -160,8 +159,7 @@ export const DELETE = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 /**
@@ -169,8 +167,8 @@ export const DELETE = async (req: NextRequest) => {
  */
 export async function GET(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -184,8 +182,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const requests = await GdprRequestManager.getUserRequests(
-      user.id,
+    const requests = await GdprRequestManager.getUserRequests( userId,
       tenantId
     );
 

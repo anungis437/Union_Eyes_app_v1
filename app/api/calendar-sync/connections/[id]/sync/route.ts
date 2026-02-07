@@ -25,7 +25,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const connectionId = params.id;
@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .where(
           and(
             eq(externalCalendarConnections.id, connectionId),
-            eq(externalCalendarConnections.user.id, user.id)
+            eq(externalCalendarConnections.userId, userId)
           )
         )
         .limit(1);
@@ -152,6 +152,5 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

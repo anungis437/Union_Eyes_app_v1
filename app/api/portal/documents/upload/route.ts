@@ -30,7 +30,7 @@ const ALLOWED_TYPES = [
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Authenticate user
@@ -49,7 +49,7 @@ export const POST = async (request: NextRequest) => {
         // Validate file size
         if (file.size > MAX_FILE_SIZE) {
           logger.warn('File size exceeds maximum', {
-            user.id,
+            userId,
             fileName: file.name,
             fileSize: file.size,
           });
@@ -59,7 +59,7 @@ export const POST = async (request: NextRequest) => {
         // Validate file type
         if (!ALLOWED_TYPES.includes(file.type)) {
           logger.warn('File type not allowed', {
-            user.id,
+            userId,
             fileName: file.name,
             fileType: file.type,
           });
@@ -67,7 +67,7 @@ export const POST = async (request: NextRequest) => {
         }
 
         // Upload to Vercel Blob Storage
-        const blob = await put(`portal/${user.id}/${Date.now()}-${file.name}`, file, {
+        const blob = await put(`portal/${userId}/${Date.now()}-${file.name}`, file, {
           access: 'public',
           addRandomSuffix: true,
         });
@@ -76,7 +76,7 @@ export const POST = async (request: NextRequest) => {
         const [document] = await db
           .insert(memberDocuments)
           .values({
-            user.id,
+            userId,
             fileName: file.name,
             fileUrl: blob.url,
             fileSize: file.size,
@@ -97,7 +97,7 @@ export const POST = async (request: NextRequest) => {
         });
 
         logger.info('Document uploaded successfully', {
-          user.id,
+          userId,
           documentId: document.id,
           fileName: file.name,
         });
@@ -110,10 +110,9 @@ export const POST = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error('Failed to upload documents', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
   });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
   })(request);
 };

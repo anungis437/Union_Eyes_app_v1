@@ -10,14 +10,14 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // Process reconciliation file and match with transactions
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Get member to verify tenant
       const [member] = await db
         .select()
         .from(members)
-        .where(eq(members.user.id, user.id))
+        .where(eq(members.userId, userId))
         .limit(1);
 
       if (!member) {
@@ -230,7 +230,7 @@ export const POST = async (req: NextRequest) => {
           status: 'processed',
           reconciliationStatus: 'processed',
           reconciliationDate: new Date(),
-          reconciledBy: user.id,
+          reconciledBy: userId,
           metadata: { results },
           updatedAt: new Date(),
         })
@@ -270,6 +270,5 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * POST /api/ml/predictions/timeline
@@ -29,13 +30,13 @@ import { eq } from 'drizzle-orm';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = orgId || userId;
+    const tenantId = organizationId || userId;
     const { claimId } = await request.json();
     
     if (!claimId) {

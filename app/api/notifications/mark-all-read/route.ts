@@ -13,7 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Mark all unread notifications as read
@@ -25,7 +25,7 @@ export const POST = async (request: NextRequest) => {
         })
         .where(
           and(
-            eq(inAppNotifications.user.id, user.id),
+            eq(inAppNotifications.userId, userId),
             eq(inAppNotifications.read, false)
           )
         );
@@ -38,6 +38,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

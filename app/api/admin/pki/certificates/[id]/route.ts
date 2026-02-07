@@ -17,10 +17,8 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
-      const { user.id, orgId } = await auth();
+      const { organizationId } = context;
 
       const certificateId = params.id;
 
@@ -32,7 +30,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
           and(
             eq(digitalSignatures.id, certificateId),
             eq(digitalSignatures.documentType, 'certificate'),
-            orgId ? eq(digitalSignatures.organizationId, orgId) : undefined
+            organizationId ? eq(digitalSignatures.organizationId, organizationId) : undefined
           )
         )
         .limit(1);
@@ -47,7 +45,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       // Parse certificate info
       const certInfo = {
         id: cert.id,
-        user.id: cert.signerUserId,
+        userId: cert.signerUserId,
         organizationId: cert.organizationId,
         subject: JSON.parse(cert.certificateSubject!),
         issuer: JSON.parse(cert.certificateIssuer!),
@@ -75,16 +73,13 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
-      const { user.id, orgId } = await auth();
+      const { organizationId } = context;
 
       const certificateId = params.id;
       const body = await request.json();
@@ -105,7 +100,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
           and(
             eq(digitalSignatures.id, certificateId),
             eq(digitalSignatures.documentType, 'certificate'),
-            orgId ? eq(digitalSignatures.organizationId, orgId) : undefined
+            organizationId ? eq(digitalSignatures.organizationId, organizationId) : undefined
           )
         )
         .limit(1);
@@ -132,6 +127,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

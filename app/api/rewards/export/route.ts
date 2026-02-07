@@ -12,13 +12,11 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       // 1. Authenticate and check admin role
-      const { user.id, orgId } = await auth();
+      const { userId, organizationId } = context;
       
-      if (!user.id || !orgId) {
+      if (!userId || !organizationId) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 401 }
@@ -29,8 +27,8 @@ export const GET = async (request: NextRequest) => {
       const member = await db.query.organizationMembers.findFirst({
         where: (members, { eq, and }) =>
           and(
-            eq(members.user.id, user.id),
-            eq(members.organizationId, orgId)
+            eq(members.userId, userId),
+            eq(members.organizationId, organizationId)
           ),
       });
 
@@ -57,7 +55,7 @@ export const GET = async (request: NextRequest) => {
 
       switch (type) {
         case 'awards':
-          csv = await exportAwardsToCSV(orgId, {
+          csv = await exportAwardsToCSV(organizationId, {
             startDate: startDate ? new Date(startDate) : undefined,
             endDate: endDate ? new Date(endDate) : undefined,
             status,
@@ -67,17 +65,17 @@ export const GET = async (request: NextRequest) => {
           break;
 
         case 'ledger':
-          csv = await exportLedgerToCSV(orgId, {
+          csv = await exportLedgerToCSV(organizationId, {
             startDate: startDate ? new Date(startDate) : undefined,
             endDate: endDate ? new Date(endDate) : undefined,
-            user.id: userIdFilter || undefined,
+            userId: userIdFilter || undefined,
             eventType,
   });
         filename = `ledger-export-${Date.now()}.csv`;
         break;
 
       case 'budgets':
-        csv = await exportBudgetsToCSV(orgId, {
+        csv = await exportBudgetsToCSV(organizationId, {
           programId: programId || undefined,
           activeOnly: searchParams.get('activeOnly') === 'true',
         });
@@ -85,7 +83,7 @@ export const GET = async (request: NextRequest) => {
         break;
 
       case 'redemptions':
-        csv = await exportRedemptionsToCSV(orgId, {
+        csv = await exportRedemptionsToCSV(organizationId, {
           startDate: startDate ? new Date(startDate) : undefined,
           endDate: endDate ? new Date(endDate) : undefined,
           status,
@@ -101,7 +99,7 @@ export const GET = async (request: NextRequest) => {
           );
         }
         csv = await exportAnalyticsToCSV(
-          orgId,
+          organizationId,
           new Date(startDate),
           new Date(endDate)
         );
@@ -129,6 +127,5 @@ export const GET = async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
   })(request);
 };

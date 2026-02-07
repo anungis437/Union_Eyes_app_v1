@@ -14,7 +14,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { year } = await request.json();
@@ -30,7 +30,7 @@ export const POST = async (request: NextRequest) => {
         SUM(dt.cope_amount) as total_cope,
         SUM(dt.pac_amount) as total_pac
       FROM dues_transactions dt
-      WHERE dt.member_id = ${user.id}
+      WHERE dt.member_id = ${userId}
         AND dt.status = 'paid'
         AND EXTRACT(YEAR FROM dt.paid_date) = ${year}
       GROUP BY dt.member_id
@@ -69,7 +69,7 @@ export const POST = async (request: NextRequest) => {
       doc.setFont('helvetica', 'bold');
       doc.text('B - EMPLOYÉ / BÉNÉFICIAIRE', 20, 90);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Member: ${user.id}`, 20, 98);
+      doc.text(`Member: ${userId}`, 20, 98);
       doc.text(`Address: N/A`, 20, 106);
       doc.text(`NAS: N/A`, 20, 114);
       
@@ -96,14 +96,14 @@ export const POST = async (request: NextRequest) => {
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
       
       // Upload to Vercel Blob
-      const filename = `rl1-${year}-${user.id}-${Date.now()}.pdf`;
-      const blob = await put(`tax-slips/${user.id}/${filename}`, pdfBuffer, {
+      const filename = `rl1-${year}-${userId}-${Date.now()}.pdf`;
+      const blob = await put(`tax-slips/${userId}/${filename}`, pdfBuffer, {
         access: 'public',
         contentType: 'application/pdf',
       });
       
       logger.info('RL-1 tax slip generated successfully', {
-        user.id,
+        userId,
         year,
         totalContributions,
         slipUrl: blob.url,
@@ -119,10 +119,9 @@ export const POST = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error('Failed to generate RL-1 tax slip', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
   });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
   })(request);
 };

@@ -1,12 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-
-vi.mock('@clerk/nextjs/server', () => ({
-  auth: vi.fn(),
-}));
-
 import {
+  AuthenticationService,
   requireAuth,
   requireRole,
   requirePermission,
@@ -18,28 +13,22 @@ import {
   SUPPORTED_ROLES
 } from '@/lib/middleware/auth-middleware';
 
-type MockAuth = ReturnType<typeof vi.fn>;
-
-const mockAuth = auth as unknown as MockAuth;
-
 const createSession = (roles: string[], organizationId = 'org-1') => ({
-  userId: 'user-1',
-  publicMetadata: {
-    roles,
-    organizationId
-  },
-  emailAddresses: [{ emailAddress: 'user@example.com' }],
+  id: 'user-1',
+  roles,
+  organizationId,
+  email: 'user@example.com',
   firstName: 'Test',
-  lastName: 'User'
+  lastName: 'User',
 });
 
 describe('auth-middleware helpers', () => {
   beforeEach(() => {
-    mockAuth.mockReset();
+    vi.restoreAllMocks();
   });
 
   it('returns user for authenticated session', async () => {
-    mockAuth.mockResolvedValue(createSession(['admin']));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['admin']) as any);
 
     const result = await requireAuth();
 
@@ -51,7 +40,7 @@ describe('auth-middleware helpers', () => {
   });
 
   it('returns 401 when no session is present', async () => {
-    mockAuth.mockResolvedValue(null);
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(null);
 
     const result = await requireAuth();
 
@@ -62,7 +51,7 @@ describe('auth-middleware helpers', () => {
   });
 
   it('denies access when role is missing', async () => {
-    mockAuth.mockResolvedValue(createSession(['member']));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['member']) as any);
 
     const result = await requireRole(SUPPORTED_ROLES.ADMIN);
 
@@ -73,7 +62,7 @@ describe('auth-middleware helpers', () => {
   });
 
   it('allows access when permission is present', async () => {
-    mockAuth.mockResolvedValue(createSession(['admin']));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['admin']) as any);
 
     const result = await requirePermission('manage:roles');
 
@@ -81,7 +70,7 @@ describe('auth-middleware helpers', () => {
   });
 
   it('checks organization access for members', async () => {
-    mockAuth.mockResolvedValue(createSession(['member'], 'org-1'));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['member'], 'org-1') as any);
 
     const allowed = await requireOrganizationAccess('org-1');
     expect(allowed.success).toBe(true);
@@ -94,14 +83,14 @@ describe('auth-middleware helpers', () => {
   });
 
   it('allows organization access for admins', async () => {
-    mockAuth.mockResolvedValue(createSession(['admin'], 'org-1'));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['admin'], 'org-1') as any);
 
     const result = await requireOrganizationAccess('org-2');
     expect(result.success).toBe(true);
   });
 
   it('wraps handler with auth requirement', async () => {
-    mockAuth.mockResolvedValue(createSession(['admin']));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['admin']) as any);
 
     const handler = vi.fn(async () => NextResponse.json({ ok: true }));
     const wrapped = withAuth(handler);
@@ -113,7 +102,7 @@ describe('auth-middleware helpers', () => {
   });
 
   it('wraps handler with role requirement', async () => {
-    mockAuth.mockResolvedValue(createSession(['admin']));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['admin']) as any);
 
     const handler = vi.fn(async () => NextResponse.json({ ok: true }));
     const wrapped = withRole(SUPPORTED_ROLES.ADMIN, handler);
@@ -125,7 +114,7 @@ describe('auth-middleware helpers', () => {
   });
 
   it('wraps handler with permission requirement', async () => {
-    mockAuth.mockResolvedValue(createSession(['admin']));
+    vi.spyOn(AuthenticationService, 'getCurrentUser').mockResolvedValue(createSession(['admin']) as any);
 
     const handler = vi.fn(async () => NextResponse.json({ ok: true }));
     const wrapped = withPermission('manage:roles', handler);

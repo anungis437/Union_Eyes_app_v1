@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { SignatureService } from "@/lib/signature/signature-service";
 
 /**
@@ -13,8 +13,8 @@ import { SignatureService } from "@/lib/signature/signature-service";
  */
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       documentType: documentType || "contract",
       file: buffer,
       fileName: file.name,
-      sentBy: user.id,
+      sentBy: userId,
       signers,
       provider: provider || undefined,
       expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -97,8 +97,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const documents = await SignatureService.getUserDocuments(
-      user.id,
+    const documents = await SignatureService.getUserDocuments( userId,
       tenantId
     );
 

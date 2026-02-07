@@ -33,18 +33,17 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         // Rate limiting: 100 requests per minute per user
-        const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.ORG_READ);
+        const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.ORG_READ);
         if (!rateLimitResult.allowed) {
           logger.warn('Rate limit exceeded for organizations read', {        limit: rateLimitResult.limit,
             resetIn: rateLimitResult.resetIn,
           });
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/organizations',
             method: 'GET',
             eventType: 'validation_failed',
@@ -73,7 +72,7 @@ export const GET = async (request: NextRequest) => {
         if (requestedUserId) {
           // Return organizations visible to a specific user
           // Only allow users to query their own organizations (or admins)
-          if (requestedUserId !== user.id) {
+          if (requestedUserId !== userId) {
             // Check if requester is admin in any of the requested user's organizations
             // Get all organizations for requested user
             const requestedUserOrgs = await db
@@ -84,7 +83,7 @@ export const GET = async (request: NextRequest) => {
             // Check if current user is admin in ANY of those organizations
             let isAdmin = false;
             for (const org of requestedUserOrgs) {
-              const role = await getUserRole(user.id, org.tenantId);
+              const role = await getUserRole(userId, org.tenantId);
               if (role === 'admin') {
                 isAdmin = true;
                 break;
@@ -96,8 +95,7 @@ export const GET = async (request: NextRequest) => {
                 correlationId: request.headers.get('x-correlation-id')
               });
               logApiAuditEvent({
-                timestamp: new Date().toISOString(),
-                userId: user.id,
+                timestamp: new Date().toISOString(), userId,
                 endpoint: '/api/organizations',
                 method: 'GET',
                 eventType: 'auth_failed',
@@ -156,8 +154,7 @@ export const GET = async (request: NextRequest) => {
           );
 
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/organizations',
             method: 'GET',
             eventType: 'success',
@@ -173,8 +170,7 @@ export const GET = async (request: NextRequest) => {
         }
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/organizations',
           method: 'GET',
           eventType: 'success',
@@ -191,8 +187,7 @@ export const GET = async (request: NextRequest) => {
         logger.error('Error fetching organizations', error as Error, {      correlationId: request.headers.get('x-correlation-id')
         });
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/organizations',
           method: 'GET',
           eventType: 'server_error',
@@ -204,7 +199,7 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
 
 /**
@@ -214,18 +209,17 @@ export const GET = async (request: NextRequest) => {
  */
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         // Rate limiting: 2 organizations per hour per user (very strict)
-        const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.ORG_CREATE);
+        const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.ORG_CREATE);
         if (!rateLimitResult.allowed) {
           logger.warn('Rate limit exceeded for organization creation', {        limit: rateLimitResult.limit,
             resetIn: rateLimitResult.resetIn,
           });
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/organizations',
             method: 'POST',
             eventType: 'validation_failed',
@@ -287,8 +281,7 @@ export const POST = async (request: NextRequest) => {
         });
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/organizations',
           method: 'POST',
           eventType: 'success',
@@ -312,8 +305,7 @@ export const POST = async (request: NextRequest) => {
         });
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/organizations',
           method: 'POST',
           eventType: 'server_error',
@@ -342,5 +334,6 @@ export const POST = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
+

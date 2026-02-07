@@ -56,7 +56,7 @@ const createDocumentSchema = z.object({
  */
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
@@ -64,8 +64,7 @@ export const GET = async (request: NextRequest) => {
         const tenantId = searchParams.get("tenantId");
         if (!tenantId) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents',
             method: 'GET',
             eventType: 'validation_failed',
@@ -83,8 +82,7 @@ export const GET = async (request: NextRequest) => {
         if (statistics) {
           const stats = await getDocumentStatistics(tenantId);
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents',
             method: 'GET',
             eventType: 'success',
@@ -116,8 +114,7 @@ export const GET = async (request: NextRequest) => {
 
           const results = await searchDocuments(tenantId, searchQuery, filters, { page, limit });
           logApiAuditEvent({
-            timestamp: new Date().toISOString(),
-            userId: user.id,
+            timestamp: new Date().toISOString(), userId,
             endpoint: '/api/documents',
             method: 'GET',
             eventType: 'success',
@@ -157,8 +154,7 @@ export const GET = async (request: NextRequest) => {
         const result = await listDocuments(filters, { page, limit, sortBy, sortOrder });
         
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/documents',
           method: 'GET',
           eventType: 'success',
@@ -169,8 +165,7 @@ export const GET = async (request: NextRequest) => {
         return NextResponse.json(result);
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/documents',
           method: 'GET',
           eventType: 'server_error',
@@ -183,7 +178,7 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-  })(request);
+      })(request);
 };
 
 /**
@@ -219,7 +214,7 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -242,13 +237,12 @@ try {
         contentText: body.contentText || null,
         isConfidential: body.isConfidential,
         accessLevel: body.accessLevel,
-        uploadedBy: user.id,
+        uploadedBy: userId,
         metadata: body.metadata,
       });
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/documents',
         method: 'POST',
         eventType: 'success',
@@ -259,8 +253,7 @@ try {
       return NextResponse.json(document, { status: 201 });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/documents',
         method: 'POST',
         eventType: 'server_error',
@@ -274,3 +267,4 @@ try {
       );
     }
 });
+

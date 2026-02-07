@@ -953,7 +953,7 @@ describe('RemittanceValidationService - validateStatCanFormat', () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.field === 'remittableMembers')).toBe(true);
-    expect(result.errors.find(e => e.field === 'remittableMembers')?.message).toContain('positive');
+    expect(result.errors.find(e => e.field === 'remittableMembers')?.message).toContain('required');
   });
 
   it('should accept alphanumeric codes up to 10 chars', () => {

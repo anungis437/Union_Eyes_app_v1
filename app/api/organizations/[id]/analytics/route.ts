@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Analytics
  * Get analytics and statistics for an organization
@@ -21,7 +22,7 @@ export async function GET(
   let userId: string | null = null;
   let id = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

@@ -16,13 +16,13 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId: contextOrganizationId } = context;
 
   try {
       // Check authentication
       const body = await request.json();
       const { organizationId } = body;
-  if (organizationId && organizationId !== context.organizationId) {
+  if (organizationId && organizationId !== contextOrganizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -39,7 +39,7 @@ export const POST = async (request: NextRequest) => {
       const [userProfile] = await db
         .select()
         .from(profiles)
-        .where(eq(profiles.clerkUserId, user.id))
+        .where(eq(profiles.clerkUserId, userId))
         .limit(1);
 
       if (!userProfile) {
@@ -134,6 +134,5 @@ export const POST = async (request: NextRequest) => {
         details: error instanceof Error ? error.message : String(error)
       }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };

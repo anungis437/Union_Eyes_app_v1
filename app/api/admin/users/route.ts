@@ -33,10 +33,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -45,13 +45,12 @@ try {
       const adminCheck = await db
         .select({ role: tenantUsers.role })
         .from(tenantUsers)
-        .where(eq(tenantUsers.userId, user.id))
+        .where(eq(tenantUsers.userId, userId))
         .limit(1);
 
       if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: "/api/admin/users",
           method: "GET",
           eventType: "unauthorized_access",
@@ -78,8 +77,7 @@ try {
       const users = await getAdminUsers(search, tenantId, role);
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: "/api/admin/users",
         method: "GET",
         eventType: "success",
@@ -98,8 +96,7 @@ try {
     } catch (error) {
       logger.error("Failed to fetch users", error);
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: "/api/admin/users",
         method: "GET",
         eventType: "auth_failed",
@@ -132,10 +129,10 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -147,8 +144,7 @@ try {
       const bodyResult = createUserSchema.safeParse(body);
       if (!bodyResult.success) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: "/api/admin/users",
           method: "POST",
           eventType: "validation_failed",
@@ -168,13 +164,12 @@ try {
       const adminCheck = await db
         .select({ role: tenantUsers.role })
         .from(tenantUsers)
-        .where(eq(tenantUsers.userId, user.id))
+        .where(eq(tenantUsers.userId, userId))
         .limit(1);
 
       if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: "/api/admin/users",
           method: "POST",
           eventType: "unauthorized_access",
@@ -215,14 +210,13 @@ try {
         .returning();
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: "/api/admin/users",
         method: "POST",
         eventType: "success",
         severity: "medium",
         details: {
-          adminId: user.id,
+          adminId: userId,
           newUserId: targetUserId,
           tenantId,
           role,
@@ -230,7 +224,7 @@ try {
       });
 
       logger.info("User added to tenant", {
-        adminId: user.id,
+        adminId: userId,
         newUserId: targetUserId,
         tenantId,
         role,
@@ -243,8 +237,7 @@ try {
     } catch (error) {
       logger.error("Failed to create user", error);
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: "/api/admin/users",
         method: "POST",
         eventType: "auth_failed",
@@ -257,3 +250,4 @@ try {
       );
     }
 });
+

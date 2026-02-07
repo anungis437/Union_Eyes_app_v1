@@ -1,5 +1,67 @@
-import { describe, it, expect } from 'vitest';
-import { generatePDF } from '@/lib/utils/pdf-generator';
+import { describe, it, expect, vi } from 'vitest';
+import { addFooter, addHeader, generatePDF } from '@/lib/utils/pdf-generator';
+
+vi.mock('pdfkit', () => {
+  class MockPDFDocument {
+    page = {
+      margins: { top: 50, bottom: 50, left: 50, right: 50 },
+      width: 612,
+      height: 792,
+    };
+
+    private handlers: Record<string, ((payload?: Buffer) => void)[]> = {};
+
+    on(event: string, handler: (payload?: Buffer) => void) {
+      this.handlers[event] = this.handlers[event] || [];
+      this.handlers[event].push(handler);
+      return this;
+    }
+
+    fontSize() {
+      return this;
+    }
+
+    fillColor() {
+      return this;
+    }
+
+    fillAndStroke() {
+      return this;
+    }
+
+    text() {
+      return this;
+    }
+
+    moveDown() {
+      return this;
+    }
+
+    rect() {
+      return this;
+    }
+
+    stroke() {
+      return this;
+    }
+
+    addPage() {
+      return this;
+    }
+
+    bufferedPageRange() {
+      return { start: 0, count: 1 };
+    }
+
+    end() {
+      const payload = Buffer.from('%PDF-1.4');
+      (this.handlers.data || []).forEach((handler) => handler(payload));
+      (this.handlers.end || []).forEach((handler) => handler());
+    }
+  }
+
+  return { default: MockPDFDocument };
+});
 
 describe('PDF Generator', () => {
   it('should generate a PDF buffer for claims report', async () => {
@@ -54,5 +116,24 @@ describe('PDF Generator', () => {
     });
 
     expect(buffer.byteLength).toBeGreaterThan(0);
+  });
+
+  it('adds header and footer content', () => {
+    const doc = {
+      fontSize: vi.fn().mockReturnThis(),
+      text: vi.fn().mockReturnThis(),
+      moveDown: vi.fn().mockReturnThis(),
+      page: {
+        margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        width: 612,
+        height: 792,
+      },
+      bufferedPageRange: vi.fn().mockReturnValue({ start: 0, count: 1 }),
+    };
+
+    addHeader(doc as any, 'Header Title');
+    addFooter(doc as any, 'Footer Text');
+
+    expect(doc.text).toHaveBeenCalled();
   });
 });

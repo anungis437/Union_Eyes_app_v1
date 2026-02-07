@@ -13,7 +13,7 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   const resolvedParams = await params;
       const claimId = resolvedParams.id;
@@ -38,7 +38,7 @@ export const POST = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   const resolvedParams = await params;
       const claimId = resolvedParams.id;
@@ -59,7 +59,7 @@ export const POST = async (
           claimId,
           updateType: body.updateType,
           message: body.message,
-          createdBy: user.id,
+          createdBy: userId,
           isInternal: body.isInternal || false,
           metadata: body.metadata || {},
         })

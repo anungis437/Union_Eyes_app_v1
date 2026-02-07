@@ -30,11 +30,11 @@ async function checkSecurityPermissions(userId: string): Promise<boolean> {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check if user has admin/security role
-      const hasPermission = await checkSecurityPermissions(user.id);
+      const hasPermission = await checkSecurityPermissions(userId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - admin or security officer role required" },
@@ -72,10 +72,10 @@ export const POST = async (request: NextRequest) => {
         dataTypes: Array.isArray(dataTypes) ? dataTypes : [dataTypes],
         breachDescription,
         discoveredAt: new Date(discoveredAt),
-        reportedBy: user.id,
+        reportedBy: userId,
       });
 
-      logger.info('Privacy breach reported', { user.id, breachType, severity });
+      logger.info('Privacy breach reported', { userId, breachType, severity });
 
       return NextResponse.json({
         success: true,
@@ -90,17 +90,16 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Check if user has admin/security role
-      const hasPermission = await checkSecurityPermissions(user.id);
+      const hasPermission = await checkSecurityPermissions(userId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - admin or security officer role required" },
@@ -110,7 +109,7 @@ export const GET = async (request: NextRequest) => {
 
       const breaches = await ProvincialPrivacyService.getBreachesApproachingDeadline();
 
-      logger.info('Retrieved overdue breaches', { user.id, count: breaches.length });
+      logger.info('Retrieved overdue breaches', { userId, count: breaches.length });
 
       return NextResponse.json({ breaches, count: breaches.length });
     } catch (error: any) {
@@ -120,8 +119,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 

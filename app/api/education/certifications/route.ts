@@ -151,8 +151,7 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // POST /api/education/certifications - Issue new certification
@@ -267,8 +266,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // PATCH /api/education/certifications?id={certificationId} - Update certification
@@ -354,14 +352,13 @@ export const PATCH = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // DELETE /api/education/certifications?id={certificationId} - Revoke certification
 export const DELETE = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -392,7 +389,7 @@ export const DELETE = async (request: NextRequest) => {
       logger.info("Certification revoked", {
         certificationId,
         reason,
-        revokedBy: user.id,
+        revokedBy: userId,
       });
 
       return NextResponse.json({
@@ -406,6 +403,5 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

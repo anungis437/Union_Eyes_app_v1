@@ -14,12 +14,12 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Get user preferences
       const preferences = await db.query.userNotificationPreferences.findFirst({
-        where: eq(userNotificationPreferences.user.id, user.id),
+        where: eq(userNotificationPreferences.userId, userId),
       });
 
       // Return defaults if not found
@@ -48,13 +48,12 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PUT = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const body = await request.json();
@@ -83,7 +82,7 @@ export const PUT = async (request: NextRequest) => {
 
       // Check if preferences exist
       const existing = await db.query.userNotificationPreferences.findFirst({
-        where: eq(userNotificationPreferences.user.id, user.id),
+        where: eq(userNotificationPreferences.userId, userId),
       });
 
       let result;
@@ -109,7 +108,7 @@ export const PUT = async (request: NextRequest) => {
             phone: phone || existing.phone,
             updatedAt: new Date(),
           })
-          .where(eq(userNotificationPreferences.user.id, user.id))
+          .where(eq(userNotificationPreferences.userId, userId))
           .returning();
       } else {
         // Create new preferences
@@ -123,7 +122,7 @@ export const PUT = async (request: NextRequest) => {
         result = await db
           .insert(userNotificationPreferences)
           .values({
-            user.id,
+            userId,
             tenantId,
             email,
             phone: phone || null,
@@ -151,6 +150,5 @@ export const PUT = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

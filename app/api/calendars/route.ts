@@ -16,7 +16,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -28,7 +28,7 @@ export const GET = async (request: NextRequest) => {
         .from(calendars)
         .where(
           and(
-            eq(calendars.ownerId, user.id),
+            eq(calendars.ownerId, userId),
             eq(calendars.isActive, true)
           )
         )
@@ -50,7 +50,7 @@ export const GET = async (request: NextRequest) => {
           .innerJoin(calendars, eq(calendarSharing.calendarId, calendars.id))
           .where(
             and(
-              eq(calendarSharing.sharedWithUserId, user.id),
+              eq(calendarSharing.sharedWithUserId, userId),
               eq(calendarSharing.isActive, true),
               eq(calendars.isActive, true)
             )
@@ -79,13 +79,12 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const body = await request.json();
@@ -124,7 +123,7 @@ export const POST = async (request: NextRequest) => {
           description,
           color,
           icon,
-          ownerId: user.id,
+          ownerId: userId,
           isPersonal,
           isShared,
           isPublic,
@@ -148,6 +147,5 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

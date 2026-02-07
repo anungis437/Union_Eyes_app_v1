@@ -17,10 +17,9 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
-  let user.id: string | null = null;
-    try {
+  try {
       const { id } = params;
 
       const [plan] = await db
@@ -44,7 +43,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
     } catch (error) {
       logger.error('Failed to fetch pension plan', error as Error, {
         planId: params.id,
-        user.id,
+        userId,
         correlationId: request.headers.get('x-correlation-id'),
       });
       return NextResponse.json(
@@ -52,15 +51,14 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
-  let user.id: string | null = null;
+  let userId: string | null = null;
     try {
       const { id } = params;
       const body = await request.json();
@@ -91,7 +89,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
     } catch (error) {
       logger.error('Failed to update pension plan', error as Error, {
         planId: params.id,
-        user.id,
+        userId,
         correlationId: request.headers.get('x-correlation-id'),
       });
       return NextResponse.json(
@@ -99,16 +97,14 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
-  let user.id: string | null = null;
-    try {
+  try {
       const { id } = params;
 
       // Soft delete by setting planStatus = 'closed'
@@ -136,7 +132,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
     } catch (error) {
       logger.error('Failed to delete pension plan', error as Error, {
         planId: params.id,
-        user.id,
+        userId,
         correlationId: request.headers.get('x-correlation-id'),
       });
       return NextResponse.json(
@@ -144,6 +140,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

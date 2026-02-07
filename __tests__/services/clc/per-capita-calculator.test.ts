@@ -5,10 +5,48 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { PerCapitaCalculation, RemittanceStatus, MemberStanding } from '@/services/clc/per-capita-calculator';
-import { createMockDb } from '@/__tests__/test-utils';
 
 // Mock database with proper chaining
-const mockDb = createMockDb();
+const mockDb = vi.hoisted(() => {
+  const createDb = () => ({
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => ({
+          limit: vi.fn(() => Promise.resolve([])),
+          orderBy: vi.fn(() => Promise.resolve([])),
+        })),
+        leftJoin: vi.fn(() => ({
+          where: vi.fn(() => Promise.resolve([])),
+        })),
+        innerJoin: vi.fn(() => ({
+          where: vi.fn(() => Promise.resolve([])),
+        })),
+        orderBy: vi.fn(() => Promise.resolve([])),
+        limit: vi.fn(() => Promise.resolve([])),
+      })),
+    })),
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({
+        returning: vi.fn(() => Promise.resolve([])),
+        onConflictDoUpdate: vi.fn(() => Promise.resolve([])),
+        onConflictDoNothing: vi.fn(() => Promise.resolve([])),
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => Promise.resolve({ changes: 0 })),
+        returning: vi.fn(() => Promise.resolve([])),
+      })),
+    })),
+    delete: vi.fn(() => ({
+      where: vi.fn(() => Promise.resolve({ changes: 0 })),
+    })),
+    execute: vi.fn(() => Promise.resolve([])),
+    transaction: vi.fn((callback: (db: unknown) => unknown) => callback(createDb())),
+  });
+
+  return createDb();
+});
 
 // Setup mocks before imports
 vi.mock('@/db/schema', () => ({
@@ -1290,5 +1328,258 @@ describe('processMonthlyPerCapita', () => {
     );
 
     consoleSpy.mockRestore();
+  });
+});
+
+describe('calculatePerCapita edge cases', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns null when organization has no parent', async () => {
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([
+          { id: 'org-1', name: 'Local 1', parentId: null, settings: { perCapitaRate: '1.00' } },
+        ]),
+      }),
+    });
+
+    const result = await calculatePerCapita('org-1', 1, 2026);
+
+    expect(result).toBeNull();
+  });
+
+  it('returns null when per-capita rate is invalid', async () => {
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([
+          { id: 'org-2', name: 'Local 2', parentId: 'parent-1', settings: { perCapitaRate: '0' } },
+        ]),
+      }),
+    });
+
+    const result = await calculatePerCapita('org-2', 2, 2026);
+
+    expect(result).toBeNull();
+  });
+});
+
+describe('calculateAllPerCapita filtering', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('skips organizations without per-capita rate', async () => {
+    mockDb.select
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([
+            { id: 'org-1', name: 'Local 1', parentId: 'parent-1', status: 'active', settings: { perCapitaRate: '2.00' } },
+            { id: 'org-2', name: 'Local 2', parentId: 'parent-1', status: 'active', settings: {} },
+          ]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([
+            { id: 'org-1', name: 'Local 1', parentId: 'parent-1', settings: { perCapitaRate: '2.00' } },
+          ]),
+        }),
+      });
+
+    mockDb.execute.mockResolvedValue([
+      { total_members: 10, good_standing_members: 10 },
+    ]);
+
+    const results = await calculateAllPerCapita(2, 2026);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].fromOrganizationId).toBe('org-1');
+  });
+});
+
+describe('savePerCapitaRemittances branches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('updates existing remittance', async () => {
+    const calculations: PerCapitaCalculation[] = [
+      {
+        fromOrganizationId: 'org-1',
+        toOrganizationId: 'parent-1',
+        remittanceMonth: 1,
+        remittanceYear: 2026,
+        totalMembers: 10,
+        goodStandingMembers: 8,
+        remittableMembers: 8,
+        perCapitaRate: 1,
+        totalAmount: 8,
+        dueDate: new Date('2026-02-15'),
+        clcAccountCode: 'CLC-001',
+        glAccount: '5200',
+      },
+    ];
+
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ id: 'remit-1' }]),
+      }),
+    });
+
+    mockDb.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(null),
+      }),
+    });
+
+    const result = await savePerCapitaRemittances(calculations);
+
+    expect(result.saved).toBe(1);
+    expect(result.errors).toBe(0);
+    expect(mockDb.update).toHaveBeenCalled();
+  });
+
+  it('inserts new remittance when none exists', async () => {
+    const calculations: PerCapitaCalculation[] = [
+      {
+        fromOrganizationId: 'org-2',
+        toOrganizationId: 'parent-2',
+        remittanceMonth: 3,
+        remittanceYear: 2026,
+        totalMembers: 12,
+        goodStandingMembers: 12,
+        remittableMembers: 12,
+        perCapitaRate: 2,
+        totalAmount: 24,
+        dueDate: new Date('2026-04-15'),
+        clcAccountCode: 'CLC-002',
+        glAccount: '5200',
+      },
+    ];
+
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
+      }),
+    });
+
+    mockDb.insert.mockReturnValue({
+      values: vi.fn().mockResolvedValue(null),
+    });
+
+    const result = await savePerCapitaRemittances(calculations);
+
+    expect(result.saved).toBe(1);
+    expect(result.errors).toBe(0);
+    expect(mockDb.insert).toHaveBeenCalled();
+  });
+
+  it('counts errors when save fails', async () => {
+    const calculations: PerCapitaCalculation[] = [
+      {
+        fromOrganizationId: 'org-3',
+        toOrganizationId: 'parent-3',
+        remittanceMonth: 4,
+        remittanceYear: 2026,
+        totalMembers: 5,
+        goodStandingMembers: 5,
+        remittableMembers: 5,
+        perCapitaRate: 1,
+        totalAmount: 5,
+        dueDate: new Date('2026-05-15'),
+        clcAccountCode: 'CLC-003',
+        glAccount: '5200',
+      },
+    ];
+
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
+      }),
+    });
+
+    mockDb.insert.mockImplementation(() => {
+      throw new Error('Insert failed');
+    });
+
+    const result = await savePerCapitaRemittances(calculations);
+
+    expect(result.saved).toBe(0);
+    expect(result.errors).toBe(1);
+  });
+});
+
+describe('markOverdueRemittances', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns count when updates occur', async () => {
+    mockDb.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ id: 'remit-1' }, { id: 'remit-2' }]),
+      }),
+    });
+
+    const result = await markOverdueRemittances();
+
+    expect(result).toBe(2);
+  });
+
+  it('returns zero when no updates occur', async () => {
+    mockDb.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
+      }),
+    });
+
+    const result = await markOverdueRemittances();
+
+    expect(result).toBe(0);
+  });
+});
+
+describe('remittance status and overdue queries', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('maps remittance status rows', async () => {
+    mockDb.execute.mockResolvedValue([
+      {
+        organization_id: 'org-1',
+        organization_name: 'Local 1',
+        total_due: '100.50',
+        total_paid: '50.25',
+        total_overdue: '25.00',
+        pending_count: '2',
+        overdue_count: '1',
+        last_remittance_date: new Date('2026-01-20'),
+      },
+    ]);
+
+    const result = await getRemittanceStatusForParent('parent-1', 2026);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].organizationId).toBe('org-1');
+    expect(result[0].totalDue).toBe(100.5);
+    expect(result[0].pendingCount).toBe(2);
+  });
+
+  it('returns overdue remittances from query', async () => {
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([
+          { id: 'remit-1', status: 'pending' },
+        ]),
+      }),
+    });
+
+    const result = await getOverdueRemittances();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('remit-1');
   });
 });

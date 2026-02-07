@@ -23,11 +23,10 @@ export const GET = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/clc/remittances/[id]',
         method: 'GET',
         eventType: 'validation_failed',
@@ -52,11 +51,10 @@ export const PUT = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/clc/remittances/[id]',
         method: 'PUT',
         eventType: 'validation_failed',
@@ -81,11 +79,10 @@ export const DELETE = async (
   { params }: { params: { id: string } }
 ) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/clc/remittances/[id]',
         method: 'DELETE',
         eventType: 'validation_failed',

@@ -133,8 +133,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // ============================================================================
@@ -144,7 +143,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const eventId = params.id;
@@ -168,7 +167,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       }
 
       // Check if user is organizer
-      if (parentEvent.organizerId !== user.id) {
+      if (parentEvent.organizerId !== userId) {
         return NextResponse.json(
           { error: 'Only the organizer can generate instances' },
           { status: 403 }
@@ -206,8 +205,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 // ============================================================================
@@ -217,7 +215,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const eventId = params.id;
@@ -241,7 +239,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       }
 
       // Check if user is organizer
-      if (parentEvent.organizerId !== user.id) {
+      if (parentEvent.organizerId !== userId) {
         return NextResponse.json(
           { error: 'Only the organizer can delete occurrences' },
           { status: 403 }
@@ -286,6 +284,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         { status: 500 }
       );
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

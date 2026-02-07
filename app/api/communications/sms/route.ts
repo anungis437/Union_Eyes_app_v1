@@ -45,7 +45,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (req: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(req.url);
@@ -80,8 +80,7 @@ export const GET = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // ============================================================================
@@ -90,7 +89,7 @@ export const GET = async (req: NextRequest) => {
 
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const body = await req.json();
@@ -98,15 +97,15 @@ export const POST = async (req: NextRequest) => {
 
       switch (action) {
         case 'send':
-          return sendSingleSms(user.id, body);
+          return sendSingleSms(userId, body);
         case 'bulk':
-          return sendBulkSmsAction(user.id, body);
+          return sendBulkSmsAction(userId, body);
         case 'create-template':
-          return createTemplate(user.id, body);
+          return createTemplate(userId, body);
         case 'create-campaign':
-          return createCampaign(user.id, body);
+          return createCampaign(userId, body);
         case 'send-campaign':
-          return sendCampaignAction(user.id, body);
+          return sendCampaignAction(userId, body);
         case 'webhook':
           return handleWebhook(body);
         default:
@@ -122,8 +121,7 @@ export const POST = async (req: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // ============================================================================

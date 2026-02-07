@@ -16,7 +16,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   const startTime = Date.now();
     
@@ -46,7 +46,7 @@ export const POST = async (request: NextRequest) => {
       const { data: chunks, error: searchError } = await supabase
         .from('ai_chunks')
         .select('id, document_id, content, metadata')
-        .eq('organization_id', (user.orgId || 'test-tenant-001') as any)
+        .eq('organization_id', (organizationId || 'test-tenant-001') as any)
         .textSearch('content', query, { type: 'websearch', config: 'english' })
         .limit(maxSources * 2);
 
@@ -104,8 +104,8 @@ export const POST = async (request: NextRequest) => {
         // Log query with no results
         await logAiQuery({
           supabase,
-          tenantId: user.orgId || '',
-          userId: user.id,
+          tenantId: organizationId || '',
+          userId,
           queryText: query,
           filters,
           answer: 'No relevant cases found for your query.',
@@ -140,8 +140,8 @@ export const POST = async (request: NextRequest) => {
         const latency = Date.now() - startTime;
         await logAiQuery({
           supabase,
-          tenantId: user.orgId || '',
-          userId: user.id,
+          tenantId: organizationId || '',
+          userId,
           queryText: query,
           filters,
           answer: 'Search results (AI enhancement unavailable)',
@@ -187,8 +187,8 @@ export const POST = async (request: NextRequest) => {
       // 14. Log query for auditing
       await logAiQuery({
         supabase,
-        tenantId: user.orgId || '',
-        userId: user.id,
+        tenantId: organizationId || '',
+        userId,
         queryText: query,
         filters,
         answer: answerText,
@@ -231,8 +231,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 /**

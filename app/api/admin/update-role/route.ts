@@ -49,10 +49,10 @@ export const PATCH = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const body = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -60,11 +60,10 @@ try {
       const { userId: targetUserId, role, organizationId = DEFAULT_ORG_ID } = body;
 
       // Check if calling user is admin
-      const isAdmin = await checkAdminRole(user.id);
+      const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/update-role',
           method: 'PATCH',
           eventType: 'unauthorized_access',
@@ -78,10 +77,9 @@ try {
       }
 
       // Prevent self-demotion (unless going from super_admin to admin)
-      if (user.id === targetUserId && role !== 'super_admin') {
+      if (userId === targetUserId && role !== 'super_admin') {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/update-role',
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -111,8 +109,7 @@ try {
 
       if (!result.length) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/update-role',
           method: 'PATCH',
           eventType: 'validation_failed',
@@ -126,8 +123,7 @@ try {
       }
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/update-role',
         method: 'PATCH',
         eventType: 'success',
@@ -141,8 +137,7 @@ try {
       });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/update-role',
         method: 'PATCH',
         eventType: 'auth_failed',
@@ -156,3 +151,4 @@ try {
       );
     }
 });
+

@@ -123,8 +123,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const GET = async (request: NextRequest) => {
@@ -151,6 +150,5 @@ export const GET = async (request: NextRequest) => {
       console.error('Status check error:', error);
       return NextResponse.json({ error: 'Status check failed' }, { status: 500 });
     }
-  })
-  })(request);
+    })(request);
 };

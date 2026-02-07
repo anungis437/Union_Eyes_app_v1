@@ -9,7 +9,7 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   const resolvedParams = await params;
       const claimNumber = resolvedParams.id;
@@ -39,7 +39,7 @@ export const GET = async (
         .where(eq(profilesTable.userId, claimData.memberId))
         .limit(1);
 
-      const isOwner = member.length > 0 && member[0].userId === user.id;
+      const isOwner = member.length > 0 && member[0].userId === userId;
 
       // Check if user is assigned steward
       let isSteward = false;
@@ -50,7 +50,7 @@ export const GET = async (
           .where(eq(profilesTable.userId, claimData.assignedTo))
           .limit(1);
 
-        isSteward = steward.length > 0 && steward[0].userId === user.id;
+        isSteward = steward.length > 0 && steward[0].userId === userId;
       }
 
       // User must be owner or assigned steward

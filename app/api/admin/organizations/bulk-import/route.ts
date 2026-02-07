@@ -69,7 +69,7 @@ interface ImportResult {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       // TODO: Add admin role check when profiles/roles are set up
@@ -325,7 +325,7 @@ export const POST = async (request: NextRequest) => {
             charterNumber: row.charterNumber || null,
             subscriptionTier: row.subscriptionTier || "basic",
             status: row.status || "active",
-            createdBy: user.id,
+            createdBy: userId,
           });
 
           parentSlugMap.set(row.slug, newOrg.id);
@@ -354,8 +354,7 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 // =====================================================

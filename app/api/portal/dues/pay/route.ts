@@ -23,11 +23,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       // Rate limiting: 10 payment requests per hour per user (strict for financial operations)
-      const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.DUES_PAYMENT);
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.DUES_PAYMENT);
       if (!rateLimitResult.allowed) {
         logger.warn('Rate limit exceeded for dues payment', {
           limit: rateLimitResult.limit,
@@ -57,7 +57,7 @@ export const POST = async (request: NextRequest) => {
         .from(duesTransactions)
         .where(
           and(
-            eq(duesTransactions.memberId, user.id),
+            eq(duesTransactions.memberId, userId),
             eq(duesTransactions.status, 'pending')
           )
         );
@@ -87,7 +87,7 @@ export const POST = async (request: NextRequest) => {
           allow_redirects: 'never',
         },
         metadata: {
-          user.id,
+          userId,
           transactionIds: transactionIds.join(','),
           type: 'dues_payment',
         },
@@ -98,7 +98,7 @@ export const POST = async (request: NextRequest) => {
         const [profile] = await db
           .select()
           .from(profilesTable)
-          .where(eq(profilesTable.user.id, user.id));
+          .where(eq(profilesTable.userId, userId));
         
         // Get tenant/organization from first transaction
         const tenantId = selectedTransactions[0].tenantId;
@@ -114,8 +114,8 @@ export const POST = async (request: NextRequest) => {
           // Generate receipt
           const receiptUrl = await generateReceipt({
             transactionId: transaction.id,
-            memberId: user.id,
-            memberName: profile?.email || user.id,
+            memberId: userId,
+            memberName: profile?.email || userId,
             organizationName: tenant?.tenantName || 'Union',
             duesAmount: Number(transaction.duesAmount),
             copeAmount: Number(transaction.copeAmount),
@@ -146,7 +146,7 @@ export const POST = async (request: NextRequest) => {
         }
 
         logger.info('Dues payment processed successfully', {
-          user.id,
+          userId,
           transactionCount: selectedTransactions.length,
           totalAmount,
           paymentIntentId: paymentIntent.id,
@@ -173,10 +173,9 @@ export const POST = async (request: NextRequest) => {
       }
     } catch (error) {
       logger.error('Failed to process dues payment', error as Error, {
-        user.id: (await auth()).user.id,
+        userId: userId,
   });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
   })(request);
 };

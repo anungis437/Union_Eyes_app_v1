@@ -16,8 +16,6 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const organizationId = searchParams.get('organizationId');
@@ -105,13 +103,12 @@ export const GET = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
   try {
       const body = await request.json();
@@ -188,7 +185,7 @@ export const POST = async (request: NextRequest) => {
         ${certificationName || null}, ${certificationValidYears || null},
         ${clcApproved !== undefined ? clcApproved : false},
         ${minEnrollment || 5}, ${maxEnrollment || 30}, ${true},
-        NOW(), NOW(), ${user.id}
+        NOW(), NOW(), ${userId}
       )
       RETURNING *
     `);
@@ -208,14 +205,11 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };
 
 export const PATCH = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const courseId = searchParams.get('id');
@@ -303,6 +297,5 @@ export const PATCH = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-  })
-  })(request);
+    })(request);
 };

@@ -13,7 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const threadId = params.threadId;
@@ -29,7 +29,7 @@ export const GET = async (request: NextRequest, { params }: { params: { threadId
       }
 
       // Verify access
-      if (thread.memberId !== user.id && thread.staffId !== user.id) {
+      if (thread.memberId !== userId && thread.staffId !== userId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
@@ -47,7 +47,7 @@ export const GET = async (request: NextRequest, { params }: { params: { threadId
         .where(
           and(
             eq(messages.threadId, threadId),
-            eq(messages.senderId, user.id)
+            eq(messages.senderId, userId)
           )
         );
 
@@ -59,13 +59,12 @@ export const GET = async (request: NextRequest, { params }: { params: { threadId
       logger.error('Failed to fetch thread', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const threadId = params.threadId;
@@ -82,7 +81,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
       }
 
       // Verify access
-      if (thread.memberId !== user.id && thread.staffId !== user.id) {
+      if (thread.memberId !== userId && thread.staffId !== userId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
@@ -100,7 +99,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
 
       logger.info('Message thread updated', {
         threadId,
-        user.id,
+        userId,
         updates,
       });
 
@@ -109,13 +108,12 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
       logger.error('Failed to update thread', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   try {
       const threadId = params.threadId;
@@ -131,7 +129,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { threa
       }
 
       // Verify access (only member can delete their threads)
-      if (thread.memberId !== user.id) {
+      if (thread.memberId !== userId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
@@ -143,7 +141,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { threa
 
       logger.info('Message thread archived', {
         threadId,
-        user.id,
+        userId,
       });
 
       return NextResponse.json({ success: true });
@@ -151,6 +149,5 @@ export const DELETE = async (request: NextRequest, { params }: { params: { threa
       logger.error('Failed to archive thread', error as Error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  })
-  })(request, { params });
+    })(request, { params });
 };

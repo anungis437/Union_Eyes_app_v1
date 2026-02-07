@@ -50,10 +50,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
   const query = parsed.data;
-  const user = { id: context.userId, organizationId: context.organizationId };
+  const { userId, organizationId } = context;
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -63,11 +63,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
 
     try {
       // Check if user is admin
-      const isAdmin = await checkAdminRole(user.id);
+      const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/jobs',
           method: 'GET',
           eventType: 'unauthorized_access',
@@ -88,8 +87,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         const failedJobs = await getFailedJobs(queue, 20);
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(),
-          userId: user.id,
+          timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/jobs',
           method: 'GET',
           eventType: 'success',
@@ -118,8 +116,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
       const stats = await getAllQueueStats();
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/jobs',
         method: 'GET',
         eventType: 'success',
@@ -133,8 +130,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
       return NextResponse.json({ stats });
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(),
-        userId: user.id,
+        timestamp: new Date().toISOString(), userId,
         endpoint: '/api/admin/jobs',
         method: 'GET',
         eventType: 'auth_failed',
@@ -146,3 +142,4 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
       throw error;
     }
 });
+
