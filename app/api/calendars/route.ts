@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * GET /api/calendars
  * List calendars for the authenticated user
@@ -7,153 +8,146 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { calendars, calendarSharing } from '@/db/schema/calendar-schema';
 import { eq, and, or, desc } from 'drizzle-orm';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-/**
- * GET /api/calendars
- * List user's calendars (owned + shared)
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const { searchParams } = new URL(request.url);
+      const includeShared = searchParams.get('includeShared') !== 'false';
 
-    const { searchParams } = new URL(request.url);
-    const includeShared = searchParams.get('includeShared') !== 'false';
-
-    // Get owned calendars
-    const ownedCalendars = await db
-      .select()
-      .from(calendars)
-      .where(
-        and(
-          eq(calendars.ownerId, userId),
-          eq(calendars.isActive, true)
-        )
-      )
-      .orderBy(desc(calendars.createdAt));
-
-    let sharedCalendars: any[] = [];
-
-    if (includeShared) {
-      // Get calendars shared with user
-      const sharedPermissions = await db
-        .select({
-          calendar: calendars,
-          permission: calendarSharing.permission,
-          canCreateEvents: calendarSharing.canCreateEvents,
-          canEditEvents: calendarSharing.canEditEvents,
-          canDeleteEvents: calendarSharing.canDeleteEvents,
-        })
-        .from(calendarSharing)
-        .innerJoin(calendars, eq(calendarSharing.calendarId, calendars.id))
+      // Get owned calendars
+      const ownedCalendars = await db
+        .select()
+        .from(calendars)
         .where(
           and(
-            eq(calendarSharing.sharedWithUserId, userId),
-            eq(calendarSharing.isActive, true),
+            eq(calendars.ownerId, user.id),
             eq(calendars.isActive, true)
           )
-        );
+        )
+        .orderBy(desc(calendars.createdAt));
 
-      sharedCalendars = sharedPermissions.map(sp => ({
-        ...sp.calendar,
-        permission: sp.permission,
-        canCreateEvents: sp.canCreateEvents,
-        canEditEvents: sp.canEditEvents,
-        canDeleteEvents: sp.canDeleteEvents,
-        isSharedWithMe: true,
-      }));
-    }
+      let sharedCalendars: any[] = [];
 
-    return NextResponse.json({
-      calendars: [
-        ...ownedCalendars.map(cal => ({ ...cal, isOwned: true })),
-        ...sharedCalendars,
-      ],
-    });
-  } catch (error) {
-    console.error('List calendars error:', error);
-    return NextResponse.json(
-      { error: 'Failed to list calendars' },
-      { status: 500 }
-    );
-  }
-}
+      if (includeShared) {
+        // Get calendars shared with user
+        const sharedPermissions = await db
+          .select({
+            calendar: calendars,
+            permission: calendarSharing.permission,
+            canCreateEvents: calendarSharing.canCreateEvents,
+            canEditEvents: calendarSharing.canEditEvents,
+            canDeleteEvents: calendarSharing.canDeleteEvents,
+          })
+          .from(calendarSharing)
+          .innerJoin(calendars, eq(calendarSharing.calendarId, calendars.id))
+          .where(
+            and(
+              eq(calendarSharing.sharedWithUserId, user.id),
+              eq(calendarSharing.isActive, true),
+              eq(calendars.isActive, true)
+            )
+          );
 
-/**
- * POST /api/calendars
- * Create new calendar
- */
-export async function POST(request: NextRequest) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+        sharedCalendars = sharedPermissions.map(sp => ({
+          ...sp.calendar,
+          permission: sp.permission,
+          canCreateEvents: sp.canCreateEvents,
+          canEditEvents: sp.canEditEvents,
+          canDeleteEvents: sp.canDeleteEvents,
+          isSharedWithMe: true,
+        }));
+      }
 
-    const body = await request.json();
-    const {
-      name,
-      description,
-      color,
-      icon,
-      isPersonal = true,
-      isShared = false,
-      isPublic = false,
-      timezone = 'America/New_York',
-      defaultEventDuration = 60,
-      reminderDefaultMinutes = 15,
-      allowOverlap = true,
-      requireApproval = false,
-      metadata,
-    } = body;
-
-    if (!name) {
+      return NextResponse.json({
+        calendars: [
+          ...ownedCalendars.map(cal => ({ ...cal, isOwned: true })),
+          ...sharedCalendars,
+        ],
+      });
+    } catch (error) {
+      console.error('List calendars error:', error);
       return NextResponse.json(
-        { error: 'Calendar name is required' },
-        { status: 400 }
+        { error: 'Failed to list calendars' },
+        { status: 500 }
       );
     }
+  })
+  })(request);
+};
 
-    // Get tenant ID from user metadata or use default
-    // TODO: Extract from user's organization
-    const tenantId = 'default';
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-    const [newCalendar] = await db
-      .insert(calendars)
-      .values({
-        tenantId,
+  try {
+      const body = await request.json();
+      const {
         name,
         description,
         color,
         icon,
-        ownerId: userId,
-        isPersonal,
-        isShared,
-        isPublic,
-        timezone,
-        defaultEventDuration,
-        reminderDefaultMinutes,
-        allowOverlap,
-        requireApproval,
+        isPersonal = true,
+        isShared = false,
+        isPublic = false,
+        timezone = 'America/New_York',
+        defaultEventDuration = 60,
+        reminderDefaultMinutes = 15,
+        allowOverlap = true,
+        requireApproval = false,
         metadata,
-      })
-      .returning();
+      } = body;
 
-    return NextResponse.json({
-      message: 'Calendar created successfully',
-      calendar: newCalendar,
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Create calendar error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create calendar' },
-      { status: 500 }
-    );
-  }
-}
+      if (!name) {
+        return NextResponse.json(
+          { error: 'Calendar name is required' },
+          { status: 400 }
+        );
+      }
+
+      // Get tenant ID from user metadata or use default
+      // TODO: Extract from user's organization
+      const tenantId = 'default';
+
+      const [newCalendar] = await db
+        .insert(calendars)
+        .values({
+          tenantId,
+          name,
+          description,
+          color,
+          icon,
+          ownerId: user.id,
+          isPersonal,
+          isShared,
+          isPublic,
+          timezone,
+          defaultEventDuration,
+          reminderDefaultMinutes,
+          allowOverlap,
+          requireApproval,
+          metadata,
+        })
+        .returning();
+
+      return NextResponse.json({
+        message: 'Calendar created successfully',
+        calendar: newCalendar,
+      }, { status: 201 });
+    } catch (error) {
+      console.error('Create calendar error:', error);
+      return NextResponse.json(
+        { error: 'Failed to create calendar' },
+        { status: 500 }
+      );
+    }
+  })
+  })(request);
+};

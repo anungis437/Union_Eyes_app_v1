@@ -4,25 +4,42 @@
  */
 
 import { NextResponse } from "next/server";
-import { getUserRole, requireAuth } from "@/lib/auth/rbac-server";
+import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
 
-export async function GET() {
+/**
+ * GET /api/auth/role
+ * Fetch current user's role and permissions
+ */
+export const GET = withSecureAPI(async (request, user) => {
   try {
-    const { userId, role } = await requireAuth();
-    
+    // User is already authenticated via withSecureAPI wrapper
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: user.id,
+      endpoint: '/api/auth/role',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      details: { userEmail: user.email },
+    });
+
     return NextResponse.json({ 
-      userId,
-      role,
+      userId: user.id,
+      email: user.email,
       success: true 
     });
   } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: user.id,
+      endpoint: '/api/auth/role',
+      method: 'GET',
+      eventType: 'auth_failed',
+      severity: 'high',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+
     console.error("Error fetching user role:", error);
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : "Failed to fetch user role",
-        success: false 
-      },
-      { status: 401 }
-    );
+    throw error;
   }
-}
+});

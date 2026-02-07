@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Labour Board Form Generation API
  * Generate fillable PDF forms for provincial labour board certification applications
@@ -5,10 +6,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 interface FormField {
   id: string;
@@ -20,24 +22,22 @@ interface FormField {
   height?: number;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const { campaignId, templateId, formData } = await request.json();
 
-    const { campaignId, templateId, formData } = await request.json();
+      if (!campaignId || !templateId || !formData) {
+        return NextResponse.json(
+          { error: 'Campaign ID, template ID, and form data are required' },
+          { status: 400 }
+        );
+      }
 
-    if (!campaignId || !templateId || !formData) {
-      return NextResponse.json(
-        { error: 'Campaign ID, template ID, and form data are required' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch campaign details
-    const campaignResult = await db.execute(sql`
+      // Fetch campaign details
+      const campaignResult = await db.execute(sql`
       SELECT 
         oc.id,
         oc.campaign_name,
@@ -60,17 +60,17 @@ export async function POST(request: NextRequest) {
         oc.filing_deadline, o.name, o.address
     `);
 
-    if (campaignResult.length === 0) {
-      return NextResponse.json(
-        { error: 'Campaign not found' },
-        { status: 404 }
-      );
-    }
+      if (campaignResult.length === 0) {
+        return NextResponse.json(
+          { error: 'Campaign not found' },
+          { status: 404 }
+        );
+      }
 
-    const campaign = campaignResult[0];
+      const campaign = campaignResult[0];
 
-    // Log certification application
-    await db.execute(sql`
+      // Log certification application
+      await db.execute(sql`
       INSERT INTO certification_applications (
         campaign_id,
         jurisdiction,
@@ -90,25 +90,27 @@ export async function POST(request: NextRequest) {
       )
     `);
 
-    // Generate PDF
-    const pdfBytes = await generateFormPDF(templateId, formData, campaign);
+      // Generate PDF
+      const pdfBytes = await generateFormPDF(templateId, formData, campaign);
 
-    // Return PDF as downloadable file
-    return new NextResponse(Buffer.from(pdfBytes), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${templateId}_${String(campaign.employer_name || 'document').replace(/[^a-zA-Z0-9]/g, '_')}.pdf"`,
-      },
-    });
-  } catch (error) {
-    console.error('Error generating form:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+      // Return PDF as downloadable file
+      return new NextResponse(Buffer.from(pdfBytes), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${templateId}_${String(campaign.employer_name || 'document').replace(/[^a-zA-Z0-9]/g, '_')}.pdf"`,
+        },
+      });
+    } catch (error) {
+      console.error('Error generating form:', error);
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
+  })
+  })(request);
+};
 
 async function generateFormPDF(
   templateId: string,

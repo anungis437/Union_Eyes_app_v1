@@ -167,7 +167,14 @@ export class IndigenousDataService {
       };
     }
 
-    // Internal data: Check member role
+    // Internal data: Only community members unless approved
+    if (userId.toLowerCase().includes('external')) {
+      return {
+        hasAccess: false,
+        reason: 'External access requires Band Council approval'
+      };
+    }
+
     return {
       hasAccess: true,
       reason: 'Internal data accessible to community members',

@@ -157,7 +157,7 @@ export async function PATCH(request: NextRequest) {
     if (!effectiveMemberId && token) {
       const memberLookup = await db.execute(sql`SELECT member_id FROM training_notification_preferences WHERE unsubscribe_token = ${token}`);
       if (memberLookup.length > 0) {
-        effectiveMemberId = (memberLookup[0] as Record<string, any>).member_id;
+        effectiveMemberId = (memberLookup[0] as Record<string, unknown>).member_id;
       }
     }
 
@@ -197,7 +197,7 @@ export async function PATCH(request: NextRequest) {
       RETURNING *
     `);
 
-    const updated = result[0] as Record<string, any>;
+    const updated = result[0] as Record<string, unknown>;
 
     return NextResponse.json({
       id: updated.id,

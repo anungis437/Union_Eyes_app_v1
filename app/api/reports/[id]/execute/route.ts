@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { getReportById, logReportExecution } from '@/db/queries/analytics-queries';
 import { ReportExecutor } from '@/lib/report-executor';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 async function postHandler(
   req: NextRequest,
@@ -20,9 +21,13 @@ async function postHandler(
   // Extract params from context or params argument
   const reportId = params?.id || context?.params?.id;
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const tenantId = context.tenantId;
+    const userId = context.userId;
     const organizationId = req.headers.get('x-organization-id');
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
     
     if (!tenantId || !userId || !organizationId) {
       return NextResponse.json(

@@ -18,13 +18,18 @@ import postgres from 'postgres';
  * Behavioral testing requires complex role switching in Azure PostgreSQL.
  */
 
-const sql = postgres(process.env.DATABASE_URL!);
+const databaseUrl = process.env.DATABASE_URL;
+const hasDatabase = Boolean(databaseUrl);
+const sql = hasDatabase ? postgres(databaseUrl as string) : null;
+const describeIf = hasDatabase ? describe : describe.skip;
 
 afterAll(async () => {
-  await sql.end();
+  if (sql) {
+    await sql.end();
+  }
 });
 
-describe('🔐 RLS Policy Configuration Verification', () => {
+describeIf('🔐 RLS Policy Configuration Verification', () => {
   
   describe('Messages System (12 policies expected)', () => {
     it('should have RLS enabled on messages table', async () => {
@@ -396,7 +401,7 @@ describe('🔐 RLS Policy Configuration Verification', () => {
   });
 });
 
-describe('📋 RLS Policy Verification Summary', () => {
+describeIf('📋 RLS Policy Verification Summary', () => {
   it('should generate comprehensive RLS coverage report', async () => {
     // Get total stats
     const policyCount = await sql`

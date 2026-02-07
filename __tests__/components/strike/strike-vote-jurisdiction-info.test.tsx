@@ -5,27 +5,50 @@ import { StrikeVoteJurisdictionInfo } from '@/components/strike/strike-vote-juri
 // Mock fetch
 global.fetch = vi.fn();
 
+type MockRule = Record<string, unknown>;
+let mockJurisdiction = 'CA-FED';
+let mockRules: MockRule[] = [];
+
+const setMockResponses = (jurisdiction: string, rules: MockRule[]) => {
+  mockJurisdiction = jurisdiction;
+  mockRules = rules;
+};
+
 describe('StrikeVoteJurisdictionInfo', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockJurisdiction = 'CA-FED';
+    mockRules = [];
+    (global.fetch as any).mockImplementation((url: string) => {
+      if (url.startsWith('/api/jurisdiction/tenant/')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ jurisdiction: mockJurisdiction }),
+        });
+      }
+      if (url.startsWith('/api/jurisdiction/rules')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ rules: mockRules }),
+        });
+      }
+      return Promise.resolve({
+        ok: false,
+        json: async () => ({}),
+      });
+    });
   });
 
   describe('Manitoba - 65% Super-Majority', () => {
     it('should show Manitoba requires 65% of votes cast', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-MB',
-              ruleCategory: 'strike_vote',
-              thresholdPercent: 65,
-              legalReference: 'Manitoba Labour Relations Act',
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-MB', [
+        {
+          jurisdiction: 'CA-MB',
+          ruleCategory: 'strike_vote',
+          thresholdPercent: 65,
+          legalReference: 'Manitoba Labour Relations Act',
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -39,24 +62,18 @@ describe('StrikeVoteJurisdictionInfo', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/65%/i)).toBeInTheDocument();
-        expect(screen.getByText(/Manitoba/i)).toBeInTheDocument();
+        const label = screen.getByText(/Manitoba:/i);
+        expect(label.closest('div')?.textContent).toContain('65');
       });
     });
 
     it('should pass vote with 65% or more in favor', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-MB',
-              thresholdPercent: 65,
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-MB', [
+        {
+          jurisdiction: 'CA-MB',
+          thresholdPercent: 65,
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -71,23 +88,17 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/PASSED/i)).toBeInTheDocument();
-        expect(screen.getByText(/65\.0%/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/65\.0\s*%/i).length).toBeGreaterThan(0);
       });
     });
 
     it('should fail vote with less than 65%', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-MB',
-              thresholdPercent: 65,
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-MB', [
+        {
+          jurisdiction: 'CA-MB',
+          thresholdPercent: 65,
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -102,27 +113,21 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/FAILED/i)).toBeInTheDocument();
-        expect(screen.getByText(/60\.0%/i)).toBeInTheDocument(); // Only 60%
+        expect(screen.getAllByText(/60\.0\s*%/i).length).toBeGreaterThan(0); // Only 60%
       });
     });
   });
 
   describe('Saskatchewan - 45% of Eligible Members (Special Rule)', () => {
     it('should calculate based on eligible members, not votes cast', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-SK',
-              thresholdPercent: 45,
-              calculationBase: 'eligible_members',
-              legalReference: 'Saskatchewan Trade Union Act',
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-SK', [
+        {
+          jurisdiction: 'CA-SK',
+          thresholdPercent: 45,
+          calculationBase: 'eligible_members',
+          legalReference: 'Saskatchewan Trade Union Act',
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -136,27 +141,23 @@ describe('StrikeVoteJurisdictionInfo', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/Saskatchewan/i)).toBeInTheDocument();
-        expect(screen.getByText(/45% of eligible members/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Saskatchewan/i).length).toBeGreaterThan(0);
+        const requiredMajority = screen.getByText(/Required Majority/i).parentElement;
+        expect(requiredMajority?.textContent).toContain('45');
+        expect(requiredMajority?.textContent).toContain('eligible members');
         // 450/1000 = 45% of eligible members
-        expect(screen.getByText(/45\.0%/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/45\.0\s*%/i).length).toBeGreaterThan(0);
       });
     });
 
     it('should pass with 45% of eligible members', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-SK',
-              thresholdPercent: 45,
-              calculationBase: 'eligible_members',
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-SK', [
+        {
+          jurisdiction: 'CA-SK',
+          thresholdPercent: 45,
+          calculationBase: 'eligible_members',
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -175,19 +176,13 @@ describe('StrikeVoteJurisdictionInfo', () => {
     });
 
     it('should fail with less than 45% of eligible members', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-SK',
-              thresholdPercent: 45,
-              calculationBase: 'eligible_members',
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-SK', [
+        {
+          jurisdiction: 'CA-SK',
+          thresholdPercent: 45,
+          calculationBase: 'eligible_members',
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -209,18 +204,12 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
   describe('New Brunswick - 60% Threshold', () => {
     it('should show New Brunswick requires 60%', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-NB',
-              thresholdPercent: 60,
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-NB', [
+        {
+          jurisdiction: 'CA-NB',
+          thresholdPercent: 60,
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -234,25 +223,20 @@ describe('StrikeVoteJurisdictionInfo', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/60%/i)).toBeInTheDocument();
+        const label = screen.getByText(/New Brunswick:/i);
+        expect(label.closest('div')?.textContent).toContain('60');
       });
     });
   });
 
   describe('Standard 50%+1 Jurisdictions', () => {
     it('should pass with simple majority (51%)', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-ON',
-              thresholdPercent: 50,
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-ON', [
+        {
+          jurisdiction: 'CA-ON',
+          thresholdPercent: 50,
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -267,23 +251,17 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/PASSED/i)).toBeInTheDocument();
-        expect(screen.getByText(/51\.0%/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/51\.0\s*%/i).length).toBeGreaterThan(0);
       });
     });
 
     it('should fail with exactly 50%', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-ON',
-              thresholdPercent: 50,
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-ON', [
+        {
+          jurisdiction: 'CA-ON',
+          thresholdPercent: 50,
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -305,18 +283,12 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
   describe('Real-Time Vote Status Tracker', () => {
     it('should render progress bars', async () => {
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [
-            {
-              jurisdiction: 'CA-ON',
-              thresholdPercent: 50,
-            },
-          ],
-        }),
-      });
+      setMockResponses('CA-ON', [
+        {
+          jurisdiction: 'CA-ON',
+          thresholdPercent: 50,
+        },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -336,13 +308,9 @@ describe('StrikeVoteJurisdictionInfo', () => {
     });
 
     it('should show votes in favor percentage', async () => {
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [{ jurisdiction: 'CA-ON', thresholdPercent: 50 }],
-        }),
-      });
+      setMockResponses('CA-ON', [
+        { jurisdiction: 'CA-ON', thresholdPercent: 50 },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -356,20 +324,16 @@ describe('StrikeVoteJurisdictionInfo', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/60\.0%/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/60\.0\s*%/i).length).toBeGreaterThan(0);
       });
     });
   });
 
   describe('Vote Breakdown Grid', () => {
     it('should display votes in favor count', async () => {
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [{ jurisdiction: 'CA-FED', thresholdPercent: 50 }],
-        }),
-      });
+      setMockResponses('CA-FED', [
+        { jurisdiction: 'CA-FED', thresholdPercent: 50 },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -388,13 +352,9 @@ describe('StrikeVoteJurisdictionInfo', () => {
     });
 
     it('should display votes against count', async () => {
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [{ jurisdiction: 'CA-FED', thresholdPercent: 50 }],
-        }),
-      });
+      setMockResponses('CA-FED', [
+        { jurisdiction: 'CA-FED', thresholdPercent: 50 },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -413,13 +373,9 @@ describe('StrikeVoteJurisdictionInfo', () => {
     });
 
     it('should display total votes cast', async () => {
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [{ jurisdiction: 'CA-BC', thresholdPercent: 50 }],
-        }),
-      });
+      setMockResponses('CA-BC', [
+        { jurisdiction: 'CA-BC', thresholdPercent: 50 },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -440,13 +396,9 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
   describe('Multi-Jurisdiction Comparison', () => {
     it('should render comparison card', async () => {
-      (global.fetch as any).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rules: [{ jurisdiction: 'CA-ON', thresholdPercent: 50 }],
-        }),
-      });
+      setMockResponses('CA-ON', [
+        { jurisdiction: 'CA-ON', thresholdPercent: 50 },
+      ]);
 
       render(
         <StrikeVoteJurisdictionInfo
@@ -461,7 +413,7 @@ describe('StrikeVoteJurisdictionInfo', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Compare with other jurisdictions/i)
+          screen.getByText(/Strike Vote Requirements Across Canada/i)
         ).toBeInTheDocument();
       });
     });

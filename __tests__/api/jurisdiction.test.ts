@@ -1,8 +1,16 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE =
+  process.env.INTEGRATION_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:3000';
+const hasApiServer =
+  process.env.RUN_INTEGRATION_TESTS === 'true' &&
+  Boolean(process.env.INTEGRATION_API_BASE_URL) &&
+  !(globalThis.fetch as unknown as { mock?: unknown })?.mock;
+const describeIf = hasApiServer ? describe : describe.skip;
 
-describe('Jurisdiction API Endpoints', () => {
+describeIf('Jurisdiction API Endpoints', () => {
   describe('GET /api/jurisdiction/list', () => {
     it('should return list of all 14 Canadian jurisdictions', async () => {
       const response = await fetch(`${API_BASE}/api/jurisdiction/list`);

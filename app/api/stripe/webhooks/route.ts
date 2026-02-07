@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 import { updateProfile, updateProfileByStripeCustomerId } from "@/db/queries/profiles-queries";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 const relevantEvents = new Set<Stripe.Event.Type>([
   "checkout.session.completed", 
@@ -30,11 +31,39 @@ export async function POST(req: Request) {
 
   try {
     if (!sig || !webhookSecret) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: 'webhook:stripe',
+        endpoint: '/api/stripe/webhooks',
+        method: 'POST',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { reason: 'Webhook secret or signature missing' },
+      });
       throw new Error("Webhook secret or signature missing");
     }
 
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: 'webhook:stripe',
+      endpoint: '/api/stripe/webhooks',
+      method: 'POST',
+      eventType: 'success',
+      severity: 'low',
+      details: { eventType: event.type, eventId: event.id },
+    });
   } catch (err: any) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: 'webhook:stripe',
+      endpoint: '/api/stripe/webhooks',
+      method: 'POST',
+      eventType: 'auth_failed',
+      severity: 'high',
+      details: { error: err.message },
+    });
     console.error(`Webhook Error: ${err.message}`);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
@@ -76,7 +105,26 @@ export async function POST(req: Request) {
         default:
           throw new Error("Unhandled relevant event!");
       }
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: 'webhook:stripe',
+        endpoint: '/api/stripe/webhooks',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'medium',
+        details: { eventType: event.type, processed: true },
+      });
     } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: 'webhook:stripe',
+        endpoint: '/api/stripe/webhooks',
+        method: 'POST',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Webhook handler failed' },
+      });
       console.error("Webhook handler failed:", error);
       return new Response("Webhook handler failed. View your nextjs function logs.", {
         status: 400

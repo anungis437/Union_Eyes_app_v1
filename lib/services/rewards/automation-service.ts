@@ -4,7 +4,9 @@
  */
 
 import { db } from '@/db';
+import { automationRules, recognitionAwardTypes } from '@/db/schema/recognition-rewards-schema';
 import { createAwardRequest, issueAward } from './award-service';
+import { eq, and } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
 export interface AutomationRule {
@@ -114,34 +116,33 @@ export async function processMilestoneAwards(
   currentValue: number
 ) {
   try {
-    // TODO: automationRules table not yet defined in schema
-    // Get milestone automation rules
-    // const rules = await db.query.automationRules.findMany({
-    //   where: (rules, { eq, and }) =>
-    //     and(
-    //       eq(rules.orgId, orgId),
-    //       eq(rules.triggerType, 'milestone'),
-    //       eq(rules.isActive, true)
-    //     ),
-    // });
-
-    const rules: any[] = []; // Placeholder until automationRules is implemented
+    // Get milestone automation rules from database
+    const rules = await db
+      .select()
+      .from(automationRules)
+      .where(
+        and(
+          eq(automationRules.orgId, orgId as any),
+          eq(automationRules.triggerType, 'milestone'),
+          eq(automationRules.isActive, true)
+        )
+      );
 
     const triggeredRules = rules.filter((rule: any) => {
-      const conditions = rule.conditions;
-      if (conditions.metric !== milestoneType) return false;
+      const conditions = rule.conditions as any;
+      if (conditions?.metric !== milestoneType) return false;
 
-      switch (conditions.operator) {
+      switch (conditions?.operator) {
         case 'eq':
-          return currentValue === conditions.value;
+          return currentValue === conditions?.value;
         case 'gt':
-          return currentValue > conditions.value;
+          return currentValue > conditions?.value;
         case 'gte':
-          return currentValue >= conditions.value;
+          return currentValue >= conditions?.value;
         case 'lt':
-          return currentValue < conditions.value;
+          return currentValue < conditions?.value;
         case 'lte':
-          return currentValue <= conditions.value;
+          return currentValue <= conditions?.value;
         default:
           return false;
       }
@@ -230,9 +231,17 @@ export async function processMetricAwards(
  */
 export async function processScheduledAwards(orgId: string) {
   try {
-    // TODO: automationRules table not yet implemented
-    // const rules = await db.query.automationRules.findMany({...});
-    const rules: any[] = [];
+    // Get scheduled automation rules from database
+    const rules = await db
+      .select()
+      .from(automationRules)
+      .where(
+        and(
+          eq(automationRules.orgId, orgId as any),
+          eq(automationRules.triggerType, 'scheduled'),
+          eq(automationRules.isActive, true)
+        )
+      );
 
     let processed = 0;
 
@@ -268,24 +277,89 @@ function calculateAnniversaryCredits(years: number): number {
 
 /**
  * Create automation rule
- * TODO: automationRules table not yet implemented
  */
-export async function createAutomationRule(rule: any) {
-  return { success: false, error: 'automationRules table not yet implemented' };
+export async function createAutomationRule(rule: {
+  orgId: string;
+  name: string;
+  description?: string;
+  triggerType: string;
+  conditions?: Record<string, any>;
+  awardTypeId: string;
+  creditAmount?: number;
+  schedule?: string;
+  createdBy?: string;
+}) {
+  try {
+    const [newRule] = await db
+      .insert(automationRules)
+      .values({
+        orgId: rule.orgId as any,
+        name: rule.name,
+        description: rule.description,
+        triggerType: rule.triggerType,
+        conditions: rule.conditions as any,
+        awardTypeId: rule.awardTypeId as any,
+        creditAmount: rule.creditAmount || 0,
+        schedule: rule.schedule,
+        isActive: true,
+        createdBy: rule.createdBy as any,
+      })
+      .returning();
+
+    console.info('[Automation] Rule created successfully', { ruleId: newRule.id, name: rule.name });
+    return { success: true, rule: newRule };
+  } catch (error) {
+    console.error('[Automation] Failed to create automation rule:', error);
+    return { success: false, error };
+  }
 }
 
 /**
  * Update automation rule
- * TODO: automationRules table not yet implemented
  */
-export async function updateAutomationRule(ruleId: string, updates: any) {
-  return { success: false, error: 'automationRules table not yet implemented' };
+export async function updateAutomationRule(ruleId: string, updates: Partial<{
+  name: string;
+  description: string;
+  conditions: Record<string, any>;
+  creditAmount: number;
+  schedule: string;
+  isActive: boolean;
+}>) {
+  try {
+    const [updatedRule] = await db
+      .update(automationRules)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(automationRules.id, ruleId as any))
+      .returning();
+
+    if (!updatedRule) {
+      return { success: false, error: 'Rule not found' };
+    }
+
+    console.info('[Automation] Rule updated successfully', { ruleId });
+    return { success: true, rule: updatedRule };
+  } catch (error) {
+    console.error('[Automation] Failed to update automation rule:', error);
+    return { success: false, error };
+  }
 }
 
 /**
  * Delete automation rule
- * TODO: automationRules table not yet implemented
  */
 export async function deleteAutomationRule(ruleId: string) {
-  return { success: false, error: 'automationRules table not yet implemented' };
+  try {
+    const result = await db
+      .delete(automationRules)
+      .where(eq(automationRules.id, ruleId as any));
+
+    console.info('[Automation] Rule deleted successfully', { ruleId });
+    return { success: true };
+  } catch (error) {
+    console.error('[Automation] Failed to delete automation rule:', error);
+    return { success: false, error };
+  }
 }

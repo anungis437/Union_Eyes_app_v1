@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * OAuth Callback Handler - Phase 10
  * 
@@ -6,13 +7,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { createMetaClient } from '@/lib/social-media/meta-api-client';
 import { createTwitterClient } from '@/lib/social-media/twitter-api-client';
 import { createLinkedInClient } from '@/lib/social-media/linkedin-api-client';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 // Lazy initialization for Supabase client
 let supabase: SupabaseClient | null = null;
@@ -25,138 +26,138 @@ function getSupabaseClient() {
   return supabase;
 }
 
-/**
- * GET /api/social-media/accounts/callback
- * 
- * OAuth callback endpoint for all platforms
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-    const error = searchParams.get('error');
-    const errorDescription = searchParams.get('error_description');
+      const searchParams = request.nextUrl.searchParams;
+      const code = searchParams.get('code');
+      const state = searchParams.get('state');
+      const error = searchParams.get('error');
+      const errorDescription = searchParams.get('error_description');
 
-    // Handle OAuth errors
-    if (error) {
-      console.error('OAuth error:', error, errorDescription);
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=${encodeURIComponent(errorDescription || error)}`
-      );
-    }
-
-    if (!code || !state) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid callback parameters`
-      );
-    }
-
-    // Verify OAuth state
-    const cookieStore = cookies();
-    const storedState = cookieStore.get('oauth_state')?.value;
-
-    if (state !== storedState) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid OAuth state`
-      );
-    }
-
-    // Parse state to get user ID and platform
-    const [userId, platform] = state.split(':');
-
-    if (!userId || !platform) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid state format`
-      );
-    }
-
-    // Verify user with Clerk
-    const { userId: clerkUserId, orgId } = await auth();
-
-    if (!clerkUserId || clerkUserId !== userId) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Authentication failed`
-      );
-    }
-
-    if (!orgId) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=No organization found`
-      );
-    }
-
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/social-media/accounts/callback`;
-
-    try {
-      switch (platform) {
-        case 'facebook':
-        case 'instagram': {
-          await handleMetaCallback(
-            code,
-            redirectUri,
-            platform,
-            orgId,
-            clerkUserId,
-            supabase
-          );
-          break;
-        }
-
-        case 'twitter': {
-          const codeVerifier = cookieStore.get('twitter_code_verifier')?.value;
-          if (!codeVerifier) {
-            throw new Error('Code verifier not found');
-          }
-          await handleTwitterCallback(
-            code,
-            codeVerifier,
-            redirectUri,
-            orgId,
-            clerkUserId,
-            supabase
-          );
-          // Clear code verifier cookie
-          cookieStore.delete('twitter_code_verifier');
-          break;
-        }
-
-        case 'linkedin': {
-          await handleLinkedInCallback(
-            code,
-            redirectUri,
-            orgId,
-            clerkUserId,
-            supabase
-          );
-          break;
-        }
-
-        default:
-          throw new Error('Unsupported platform');
+      // Handle OAuth errors
+      if (error) {
+        console.error('OAuth error:', error, errorDescription);
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=${encodeURIComponent(errorDescription || error)}`
+        );
       }
 
-      // Clear OAuth state cookie
-      cookieStore.delete('oauth_state');
+      if (!code || !state) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid callback parameters`
+        );
+      }
 
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?success=Account connected successfully`
-      );
+      // Verify OAuth state
+      const cookieStore = cookies();
+      const storedState = cookieStore.get('oauth_state')?.value;
+
+      if (state !== storedState) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid OAuth state`
+        );
+      }
+
+      // Parse state to get user ID and platform
+      const [user.id, platform] = state.split(':');
+
+      if (!user.id || !platform) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Invalid state format`
+        );
+      }
+
+      // Verify user with Clerk
+      const { user.id: clerkUserId, orgId } = await auth();
+
+      if (!clerkUserId || clerkUserId !== user.id) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Authentication failed`
+        );
+      }
+
+      if (!orgId) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=No organization found`
+        );
+      }
+
+      const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/social-media/accounts/callback`;
+
+      try {
+        switch (platform) {
+          case 'facebook':
+          case 'instagram': {
+            await handleMetaCallback(
+              code,
+              redirectUri,
+              platform,
+              orgId,
+              clerkUserId,
+              supabase
+            );
+            break;
+          }
+
+          case 'twitter': {
+            const codeVerifier = cookieStore.get('twitter_code_verifier')?.value;
+            if (!codeVerifier) {
+              throw new Error('Code verifier not found');
+            }
+            await handleTwitterCallback(
+              code,
+              codeVerifier,
+              redirectUri,
+              orgId,
+              clerkUserId,
+              supabase
+            );
+            // Clear code verifier cookie
+            cookieStore.delete('twitter_code_verifier');
+            break;
+          }
+
+          case 'linkedin': {
+            await handleLinkedInCallback(
+              code,
+              redirectUri,
+              orgId,
+              clerkUserId,
+              supabase
+            );
+            break;
+          }
+
+          default:
+            throw new Error('Unsupported platform');
+        }
+
+        // Clear OAuth state cookie
+        cookieStore.delete('oauth_state');
+
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?success=Account connected successfully`
+        );
+      } catch (error) {
+        console.error('Callback handling error:', error);
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=${encodeURIComponent(
+            error instanceof Error ? error.message : 'Failed to connect account'
+          )}`
+        );
+      }
     } catch (error) {
-      console.error('Callback handling error:', error);
+      console.error('Unexpected error:', error);
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=${encodeURIComponent(
-          error instanceof Error ? error.message : 'Failed to connect account'
-        )}`
+        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Internal server error`
       );
     }
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Internal server error`
-    );
-  }
-}
+  })
+  })(request);
+};
 
 /**
  * Handle Meta (Facebook/Instagram) OAuth callback

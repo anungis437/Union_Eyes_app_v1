@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Precedents API Routes - Main endpoints for arbitration decisions
  * GET /api/precedents - List precedents with filtering
@@ -5,7 +6,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { 
   listPrecedents, 
   createPrecedent,
@@ -13,261 +13,230 @@ import {
   getMostCitedPrecedents,
   getPrecedentsByIssueType
 } from "@/lib/services/precedent-service";
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-/**
- * GET /api/precedents
- * List precedents with filtering and pagination
- * 
- * Query params:
- * - tribunal: string[] (comma-separated)
- * - decisionType: string[] (comma-separated)
- * - outcome: string[] (comma-separated)
- * - precedentValue: string[] (comma-separated)
- * - arbitrator: string
- * - union: string
- * - employer: string
- * - jurisdiction: string
- * - sector: string
- * - searchQuery: string
- * - dateFrom: string (ISO date)
- * - dateTo: string (ISO date)
- * - page: number
- * - limit: number
- * - sortBy: string (decisionDate, citationCount)
- * - sortOrder: string (asc, desc)
- * - statistics: boolean
- * - mostCited: boolean
- * - issueType: string
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+      const { searchParams } = new URL(request.url);
+      
+      // Check for special modes
+      const statistics = searchParams.get("statistics") === "true";
+      const mostCited = searchParams.get("mostCited") === "true";
+      const issueType = searchParams.get("issueType");
 
-    const { searchParams } = new URL(request.url);
-    
-    // Check for special modes
-    const statistics = searchParams.get("statistics") === "true";
-    const mostCited = searchParams.get("mostCited") === "true";
-    const issueType = searchParams.get("issueType");
+      // Return statistics
+      if (statistics) {
+        const stats = await getPrecedentStatistics();
+        return NextResponse.json(stats);
+      }
 
-    // Return statistics
-    if (statistics) {
-      const stats = await getPrecedentStatistics();
-      return NextResponse.json(stats);
-    }
+      // Return most cited
+      if (mostCited) {
+        const limit = parseInt(searchParams.get("limit") || "10");
+        const precedents = await getMostCitedPrecedents(limit);
+        return NextResponse.json({ precedents });
+      }
 
-    // Return most cited
-    if (mostCited) {
-      const limit = parseInt(searchParams.get("limit") || "10");
-      const precedents = await getMostCitedPrecedents(limit);
-      return NextResponse.json({ precedents });
-    }
+      // Return by issue type
+      if (issueType) {
+        const limit = parseInt(searchParams.get("limit") || "20");
+        const precedents = await getPrecedentsByIssueType(issueType, limit);
+        return NextResponse.json({ precedents, count: precedents.length });
+      }
 
-    // Return by issue type
-    if (issueType) {
+      // Build filters
+      const filters: any = {};
+      
+      const tribunal = searchParams.get("tribunal");
+      if (tribunal) {
+        filters.tribunal = tribunal.split(",");
+      }
+
+      const decisionType = searchParams.get("decisionType");
+      if (decisionType) {
+        filters.decisionType = decisionType.split(",");
+      }
+
+      const outcome = searchParams.get("outcome");
+      if (outcome) {
+        filters.outcome = outcome.split(",");
+      }
+
+      const precedentValue = searchParams.get("precedentValue");
+      if (precedentValue) {
+        filters.precedentValue = precedentValue.split(",");
+      }
+
+      const arbitrator = searchParams.get("arbitrator");
+      if (arbitrator) {
+        filters.arbitrator = arbitrator;
+      }
+
+      const union = searchParams.get("union");
+      if (union) {
+        filters.union = union;
+      }
+
+      const employer = searchParams.get("employer");
+      if (employer) {
+        filters.employer = employer;
+      }
+
+      const jurisdiction = searchParams.get("jurisdiction");
+      if (jurisdiction) {
+        filters.jurisdiction = jurisdiction;
+      }
+
+      const sector = searchParams.get("sector");
+      if (sector) {
+        filters.sector = sector;
+      }
+
+      const searchQuery = searchParams.get("searchQuery");
+      if (searchQuery) {
+        filters.searchQuery = searchQuery;
+      }
+
+      // Date filters
+      const dateFrom = searchParams.get("dateFrom");
+      if (dateFrom) {
+        filters.dateFrom = new Date(dateFrom);
+      }
+
+      const dateTo = searchParams.get("dateTo");
+      if (dateTo) {
+        filters.dateTo = new Date(dateTo);
+      }
+
+      // Pagination
+      const page = parseInt(searchParams.get("page") || "1");
       const limit = parseInt(searchParams.get("limit") || "20");
-      const precedents = await getPrecedentsByIssueType(issueType, limit);
-      return NextResponse.json({ precedents, count: precedents.length });
+      const sortBy = searchParams.get("sortBy") || "decisionDate";
+      const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";
+
+      const result = await listPrecedents(filters, { page, limit, sortBy, sortOrder });
+
+      return NextResponse.json(result);
+    } catch (error) {
+      console.error("Error listing precedents:", error);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      );
     }
+  })
+  })(request);
+};
 
-    // Build filters
-    const filters: any = {};
-    
-    const tribunal = searchParams.get("tribunal");
-    if (tribunal) {
-      filters.tribunal = tribunal.split(",");
-    }
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-    const decisionType = searchParams.get("decisionType");
-    if (decisionType) {
-      filters.decisionType = decisionType.split(",");
-    }
-
-    const outcome = searchParams.get("outcome");
-    if (outcome) {
-      filters.outcome = outcome.split(",");
-    }
-
-    const precedentValue = searchParams.get("precedentValue");
-    if (precedentValue) {
-      filters.precedentValue = precedentValue.split(",");
-    }
-
-    const arbitrator = searchParams.get("arbitrator");
-    if (arbitrator) {
-      filters.arbitrator = arbitrator;
-    }
-
-    const union = searchParams.get("union");
-    if (union) {
-      filters.union = union;
-    }
-
-    const employer = searchParams.get("employer");
-    if (employer) {
-      filters.employer = employer;
-    }
-
-    const jurisdiction = searchParams.get("jurisdiction");
-    if (jurisdiction) {
-      filters.jurisdiction = jurisdiction;
-    }
-
-    const sector = searchParams.get("sector");
-    if (sector) {
-      filters.sector = sector;
-    }
-
-    const searchQuery = searchParams.get("searchQuery");
-    if (searchQuery) {
-      filters.searchQuery = searchQuery;
-    }
-
-    // Date filters
-    const dateFrom = searchParams.get("dateFrom");
-    if (dateFrom) {
-      filters.dateFrom = new Date(dateFrom);
-    }
-
-    const dateTo = searchParams.get("dateTo");
-    if (dateTo) {
-      filters.dateTo = new Date(dateTo);
-    }
-
-    // Pagination
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const sortBy = searchParams.get("sortBy") || "decisionDate";
-    const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";
-
-    const result = await listPrecedents(filters, { page, limit, sortBy, sortOrder });
-
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("Error listing precedents:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * POST /api/precedents
- * Create a new precedent/arbitration decision
- * 
- * Body: NewArbitrationDecision object
- */
-export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+      const body = await request.json();
 
-    const body = await request.json();
+      // Validate required fields
+      if (!body.caseNumber) {
+        return NextResponse.json(
+          { error: "caseNumber is required" },
+          { status: 400 }
+        );
+      }
 
-    // Validate required fields
-    if (!body.caseNumber) {
+      if (!body.caseTitle) {
+        return NextResponse.json(
+          { error: "caseTitle is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.tribunal) {
+        return NextResponse.json(
+          { error: "tribunal is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.decisionType) {
+        return NextResponse.json(
+          { error: "decisionType is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.decisionDate) {
+        return NextResponse.json(
+          { error: "decisionDate is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.arbitrator) {
+        return NextResponse.json(
+          { error: "arbitrator is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.union) {
+        return NextResponse.json(
+          { error: "union is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.employer) {
+        return NextResponse.json(
+          { error: "employer is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.outcome) {
+        return NextResponse.json(
+          { error: "outcome is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.precedentValue) {
+        return NextResponse.json(
+          { error: "precedentValue is required" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.fullText) {
+        return NextResponse.json(
+          { error: "fullText is required" },
+          { status: 400 }
+        );
+      }
+
+      // Create precedent
+      const precedent = await createPrecedent(body);
+
+      return NextResponse.json({ precedent }, { status: 201 });
+    } catch (error) {
+      console.error("Error creating precedent:", error);
+      
+      // Handle unique constraint violations
+      if ((error as any)?.code === "23505") {
+        return NextResponse.json(
+          { error: "Case number already exists" },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json(
-        { error: "caseNumber is required" },
-        { status: 400 }
+        { error: "Internal server error" },
+        { status: 500 }
       );
     }
-
-    if (!body.caseTitle) {
-      return NextResponse.json(
-        { error: "caseTitle is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.tribunal) {
-      return NextResponse.json(
-        { error: "tribunal is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.decisionType) {
-      return NextResponse.json(
-        { error: "decisionType is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.decisionDate) {
-      return NextResponse.json(
-        { error: "decisionDate is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.arbitrator) {
-      return NextResponse.json(
-        { error: "arbitrator is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.union) {
-      return NextResponse.json(
-        { error: "union is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.employer) {
-      return NextResponse.json(
-        { error: "employer is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.outcome) {
-      return NextResponse.json(
-        { error: "outcome is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.precedentValue) {
-      return NextResponse.json(
-        { error: "precedentValue is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.fullText) {
-      return NextResponse.json(
-        { error: "fullText is required" },
-        { status: 400 }
-      );
-    }
-
-    // Create precedent
-    const precedent = await createPrecedent(body);
-
-    return NextResponse.json({ precedent }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating precedent:", error);
-    
-    // Handle unique constraint violations
-    if ((error as any)?.code === "23505") {
-      return NextResponse.json(
-        { error: "Case number already exists" },
-        { status: 409 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};

@@ -11,64 +11,92 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 // =====================================================================================
 // GET - Get remittance details
 // =====================================================================================
 
-export async function GET(
+export const GET = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-  // TODO: Implement when perCapitaRemittances schema is created
-  return NextResponse.json(
-    { error: 'Per-capita remittances schema not yet implemented' },
-    { status: 501 }
-  );
-}
+  logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/admin/clc/remittances/[id]',
+        method: 'GET',
+        eventType: 'validation_failed',
+        severity: 'low',
+        details: { reason: 'Not yet implemented', remittanceId: params.id },
+      });
+      
+      // TODO: Implement when perCapitaRemittances schema is created
+      return NextResponse.json(
+        { error: 'Per-capita remittances schema not yet implemented' },
+        { status: 501 }
+      );
+  })(request, { params });
+};
 
 // =====================================================================================
 // PUT - Update remittance
 // =====================================================================================
 
-export async function PUT(
+export const PUT = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-  // TODO: Implement when perCapitaRemittances schema is created
-  return NextResponse.json(
-    { error: 'Per-capita remittances schema not yet implemented' },
-    { status: 501 }
-  );
-}
+  logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/admin/clc/remittances/[id]',
+        method: 'PUT',
+        eventType: 'validation_failed',
+        severity: 'low',
+        details: { reason: 'Not yet implemented', remittanceId: params.id },
+      });
+      
+      // TODO: Implement when perCapitaRemittances schema is created
+      return NextResponse.json(
+        { error: 'Per-capita remittances schema not yet implemented' },
+        { status: 501 }
+      );
+  })(request, { params });
+};
 
 // =====================================================================================
 // DELETE - Delete remittance
 // =====================================================================================
 
-export async function DELETE(
+export const DELETE = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-  // TODO: Implement when perCapitaRemittances schema is created
-  return NextResponse.json(
-    { error: 'Per-capita remittances schema not yet implemented' },
-    { status: 501 }
-  );
-}
+  logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/admin/clc/remittances/[id]',
+        method: 'DELETE',
+        eventType: 'validation_failed',
+        severity: 'low',
+        details: { reason: 'Not yet implemented', remittanceId: params.id },
+      });
+      
+      // TODO: Implement when perCapitaRemittances schema is created
+      return NextResponse.json(
+        { error: 'Per-capita remittances schema not yet implemented' },
+        { status: 501 }
+      );
+  })(request, { params });
+};

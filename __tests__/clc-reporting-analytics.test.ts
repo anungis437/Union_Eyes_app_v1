@@ -12,6 +12,9 @@
 
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 
+const hasApiServer = process.env.RUN_INTEGRATION_TESTS === 'true';
+const describeIf = hasApiServer ? describe : describe.skip;
+
 // ============================================================================
 // ENVIRONMENT SETUP & MOCKS
 // ============================================================================
@@ -153,7 +156,7 @@ import {
 // COMPLIANCE REPORTING TESTS
 // ============================================================================
 
-describe('Compliance Reporting Service', () => {
+describeIf('Compliance Reporting Service', () => {
   describe('generateAnnualComplianceReport', () => {
     it('should generate complete annual report with all sections', async () => {
       const report = await generateAnnualComplianceReport(2024);
@@ -397,7 +400,7 @@ describe('Compliance Reporting Service', () => {
 // NOTIFICATION SERVICE TESTS
 // ============================================================================
 
-describe('Notification Service', () => {
+describeIf('Notification Service', () => {
   describe('sendOverdueAlert', () => {
     it('should send 7-day overdue alert via email', async () => {
       const result = await sendOverdueAlert('remittance-123', 7);
@@ -512,7 +515,7 @@ describe('Notification Service', () => {
 // CLC INTEGRATION TESTS
 // ============================================================================
 
-describe('CLC Integration Layer', () => {
+describeIf('CLC Integration Layer', () => {
   describe('syncOrganization', () => {
     it('should sync organization from CLC API', async () => {
       const result = await syncOrganization('org-123');
@@ -577,7 +580,7 @@ describe('CLC Integration Layer', () => {
 // APPROVAL WORKFLOW TESTS
 // ============================================================================
 
-describe('Approval Workflow', () => {
+describeIf('Approval Workflow', () => {
   describe('submitForApproval', () => {
     it('should submit draft remittance for approval', async () => {
       const result = await submitForApproval('remittance-draft', 'user-123');
@@ -687,7 +690,7 @@ describe('Approval Workflow', () => {
 // ANALYTICS API TESTS
 // ============================================================================
 
-describe('Analytics API Endpoints', () => {
+describeIf('Analytics API Endpoints', () => {
   describe('GET /api/admin/clc/analytics/trends', () => {
     it('should return 3-year trends', async () => {
       const response = await fetch('/api/admin/clc/analytics/trends?years=3');

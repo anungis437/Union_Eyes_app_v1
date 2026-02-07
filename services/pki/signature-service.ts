@@ -12,9 +12,10 @@
 
 import { db } from '@/db';
 import { digitalSignatures } from '@/db/migrations/schema';
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { eq, and, sql, inArray, lte } from 'drizzle-orm';
 import crypto from 'crypto';
 import { getUserCertificate } from './certificate-manager';
+import { signatureWorkflows, signers } from '@/db/schema/signature-workflows-schema';
 
 // =====================================================================================
 // TYPES
@@ -343,29 +344,63 @@ export async function createSignatureRequest(
   requiredSigners: Omit<SignerRequirement, 'signedAt' | 'signatureId'>[],
   dueDate?: Date
 ): Promise<SignatureRequest> {
-  // Sort signers by order for sequential signing
-  const sortedSigners = [...requiredSigners].sort((a, b) => a.order - b.order);
+  try {
+    // Sort signers by order for sequential signing
+    const sortedSigners = [...requiredSigners].sort((a, b) => a.order - b.order);
 
-  // Store workflow in database (requires workflow table - placeholder for now)
-  // In production, create a separate signature_workflows table
-  
-  const workflow: SignatureRequest = {
-    id: crypto.randomUUID(),
-    documentId,
-    documentType,
-    requesterId,
-    requesterName,
-    organizationId,
-    requiredSigners: sortedSigners,
-    dueDate,
-    status: 'pending',
-    createdAt: new Date(),
-  };
+    // Generate unique workflow ID
+    const workflowId = crypto.randomUUID();
 
-  // TODO: Store in signature_workflows table when created
-  // For now, return in-memory object (would need separate migration)
-  
-  return workflow;
+    // Create workflow in database
+    const newWorkflow = await db.insert(signatureWorkflows).values({
+      id: workflowId,
+      organizationId,
+      documentId: documentId as any,
+      name: `Signature Request - ${documentType}`,
+      description: `Multi-party signature workflow for ${documentType} document`,
+      status: 'draft',
+      provider: 'docusign', // Default provider
+      externalEnvelopeId: `envelope-${workflowId}`,
+      totalSigners: sortedSigners.length,
+      completedSignatures: 0,
+      expiresAt: dueDate,
+      createdBy: requesterId as any,
+      workflowData: {
+        requesterName,
+        signings: sortedSigners,
+        documentType,
+      } as any,
+    }).returning();
+
+    // Create signer records
+    for (const signer of sortedSigners) {
+      await db.insert(signers).values({
+        workflowId,
+        memberId: signer.userId as any,
+        email: `signer-${signer.order}@example.com`, // Placeholder - would normally get from profile
+        name: signer.userName,
+        signerOrder: signer.order,
+        status: 'pending',
+        externalSignerId: `signer-${signer.order}`,
+      });
+    }
+
+    return {
+      id: workflowId,
+      documentId,
+      documentType,
+      requesterId,
+      requesterName,
+      organizationId,
+      requiredSigners: sortedSigners,
+      dueDate,
+      status: 'pending',
+      createdAt: new Date(),
+    };
+  } catch (error) {
+    console.error('Failed to create signature request:', error);
+    throw error;
+  }
 }
 
 /**
@@ -376,9 +411,56 @@ export async function getUserSignatureRequests(
   organizationId?: string,
   status?: 'pending' | 'in_progress' | 'completed' | 'expired'
 ): Promise<SignatureRequest[]> {
-  // TODO: Query from signature_workflows table when created
-  // For now, return empty array (requires workflow table migration)
-  return [];
+  try {
+    // Query workflows where user is a signer
+    let query = db
+      .select({
+        workflow: signatureWorkflows,
+        signer: signers,
+      })
+      .from(signatureWorkflows)
+      .innerJoin(signers, eq(signers.workflowId, signatureWorkflows.id))
+      .where(eq(signers.memberId, userId as any));
+
+    if (organizationId) {
+      query = query.where(eq(signatureWorkflows.organizationId, organizationId as any));
+    }
+
+    if (status) {
+      query = query.where(eq(signatureWorkflows.status, status as any));
+    }
+
+    const results = await query;
+
+    // Group by workflow and reconstruct SignatureRequest objects
+    const workflowMap = new Map<string, SignatureRequest>();
+    
+    for (const result of results) {
+      const workflowId = result.workflow.id;
+      
+      if (!workflowMap.has(workflowId)) {
+        const workflowData = result.workflow.workflowData as any;
+        workflowMap.set(workflowId, {
+          id: workflowId,
+          documentId: result.workflow.documentId,
+          documentType: workflowData?.documentType || 'unknown',
+          requesterId: result.workflow.createdBy || '',
+          requesterName: workflowData?.requesterName || 'Unknown',
+          organizationId: result.workflow.organizationId,
+          requiredSigners: workflowData?.signings || [],
+          dueDate: result.workflow.expiresAt || undefined,
+          status: result.workflow.status as any,
+          createdAt: result.workflow.createdAt,
+          completedAt: result.workflow.completedAt || undefined,
+        });
+      }
+    }
+
+    return Array.from(workflowMap.values());
+  } catch (error) {
+    console.error('Failed to get user signature requests:', error);
+    throw error;
+  }
 }
 
 /**
@@ -390,9 +472,94 @@ export async function completeSignatureRequestStep(
   userId: string,
   signatureId: string
 ): Promise<SignatureRequest> {
-  // TODO: Update signature_workflows table when created
-  // For now, throw not implemented (requires workflow table migration)
-  throw new Error('Workflow table not yet implemented - requires migration 051');
+  try {
+    // Find the signer in this workflow
+    const [signer] = await db
+      .select()
+      .from(signers)
+      .where(
+        and(
+          eq(signers.workflowId, workflowId as any),
+          eq(signers.memberId, userId as any)
+        )
+      );
+
+    if (!signer) {
+      throw new Error(`Signer not found in workflow ${workflowId}`);
+    }
+
+    // Update signer status to signed
+    await db
+      .update(signers)
+      .set({
+        status: 'signed',
+        signedAt: new Date(),
+        externalSignerId: signatureId,
+        updatedAt: new Date(),
+      })
+      .where(eq(signers.id, signer.id));
+
+    // Check if all signers are now signed
+    const pendingSigners = await db
+      .select()
+      .from(signers)
+      .where(
+        and(
+          eq(signers.workflowId, workflowId as any),
+          eq(signers.status, 'pending')
+        )
+      );
+
+    // If no pending signers, mark workflow as completed
+    if (pendingSigners.length === 0) {
+      await db
+        .update(signatureWorkflows)
+        .set({
+          status: 'completed',
+          completedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(signatureWorkflows.id, workflowId as any));
+    }
+
+    // Fetch and return updated workflow
+    const [workflow] = await db
+      .select()
+      .from(signatureWorkflows)
+      .where(eq(signatureWorkflows.id, workflowId as any));
+
+    const workflowSigners = await db
+      .select()
+      .from(signers)
+      .where(eq(signers.workflowId, workflowId as any));
+
+    const workflowData = workflow.workflowData as any;
+
+    return {
+      id: workflowId,
+      documentId: workflow.documentId,
+      documentType: workflowData?.documentType || 'unknown',
+      requesterId: workflow.createdBy || '',
+      requesterName: workflowData?.requesterName || 'Unknown',
+      organizationId: workflow.organizationId,
+      requiredSigners: workflowSigners.map(s => ({
+        userId: s.memberId || '',
+        userName: s.name,
+        order: s.signerOrder,
+        role: 'signer',
+        required: true,
+        signedAt: s.signedAt || undefined,
+        signatureId: s.externalSignerId || undefined,
+      })),
+      dueDate: workflow.expiresAt || undefined,
+      status: workflow.status as any,
+      createdAt: workflow.createdAt,
+      completedAt: workflow.completedAt || undefined,
+    };
+  } catch (error) {
+    console.error('Failed to complete signature request step:', error);
+    throw error;
+  }
 }
 
 /**
@@ -403,8 +570,37 @@ export async function cancelSignatureRequest(
   cancelledBy: string,
   cancellationReason: string
 ): Promise<void> {
-  // TODO: Update signature_workflows table when created
-  throw new Error('Workflow table not yet implemented - requires migration 051');
+  try {
+    await db
+      .update(signatureWorkflows)
+      .set({
+        status: 'cancelled',
+        voidedAt: new Date(),
+        voidedBy: cancelledBy as any,
+        voidReason: cancellationReason,
+        updatedAt: new Date(),
+      })
+      .where(eq(signatureWorkflows.id, workflowId as any));
+
+    // Update all pending signers to skipped status
+    await db
+      .update(signers)
+      .set({
+        status: 'skipped',
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(signers.workflowId, workflowId as any),
+          eq(signers.status, 'pending')
+        )
+      );
+
+    console.info('Signature request cancelled', { workflowId, cancelledBy, reason: cancellationReason });
+  } catch (error) {
+    console.error('Failed to cancel signature request:', error);
+    throw error;
+  }
 }
 
 /**
@@ -412,8 +608,54 @@ export async function cancelSignatureRequest(
  * Should be called by cron job
  */
 export async function expireOverdueSignatureRequests(): Promise<number> {
-  // TODO: Update signature_workflows table when created
-  throw new Error('Workflow table not yet implemented - requires migration 051');
+  try {
+    // Find all workflows that haven't been completed and are past their expiration date
+    const overdueWorkflows = await db
+      .select()
+      .from(signatureWorkflows)
+      .where(
+        and(
+          lte(signatureWorkflows.expiresAt, new Date()),
+          eq(signatureWorkflows.status, 'in_progress' as any)
+        )
+      );
+
+    if (overdueWorkflows.length === 0) {
+      console.info('No overdue signature workflows to expire');
+      return 0;
+    }
+
+    // Update each workflow to expired status
+    for (const workflow of overdueWorkflows) {
+      await db
+        .update(signatureWorkflows)
+        .set({
+          status: 'expired',
+          updatedAt: new Date(),
+        })
+        .where(eq(signatureWorkflows.id, workflow.id));
+
+      // Update pending signers to skipped
+      await db
+        .update(signers)
+        .set({
+          status: 'skipped',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(signers.workflowId, workflow.id),
+            eq(signers.status, 'pending')
+          )
+        );
+    }
+
+    console.info('Expired overdue signature workflows', { count: overdueWorkflows.length });
+    return overdueWorkflows.length;
+  } catch (error) {
+    console.error('Failed to expire overdue signature requests:', error);
+    throw error;
+  }
 }
 
 // =====================================================================================

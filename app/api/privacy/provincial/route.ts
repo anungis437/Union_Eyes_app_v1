@@ -2,26 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { provincialPrivacyConfig, provincialDataHandling } from '@/db/schema/provincial-privacy-schema';
 import { eq } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { z } from 'zod';
 
 /**
  * Provincial Privacy API
  * Handles province-specific privacy rules (AB PIPA, BC PIPA, QC Law 25, ON PHIPA)
  */
 
-// GET /api/privacy/provincial?province=QC
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const province = searchParams.get('province');
+const provinceSchema = z.object({
+  province: z.string().length(2).regex(/^[A-Za-z]{2}$/),
+});
 
-    if (!province) {
+// GET /api/privacy/provincial?province=QC
+export const GET = withEnhancedRoleAuth(50, async (request) => {
+  try {
+    const query = provinceSchema.safeParse(
+      Object.fromEntries(request.nextUrl.searchParams)
+    );
+
+    if (!query.success) {
       return NextResponse.json(
-        { error: 'Province parameter required' },
+        { error: 'Invalid request parameters' },
         { status: 400 }
       );
     }
 
-    // Get provincial privacy rules
+    const province = query.data.province.toUpperCase();
+
     const config = await db
       .select()
       .from(provincialPrivacyConfig)
@@ -30,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     if (config.length === 0) {
       return NextResponse.json(
-        { error: `No privacy configuration found for province: ${province}` },
+        { error: 'Privacy configuration not found' },
         { status: 404 }
       );
     }
@@ -50,39 +58,67 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
+
+const privacyConfigSchema = z.object({
+  province: z.string().length(2).regex(/^[A-Za-z]{2}$/),
+  lawName: z.string().min(1).optional(),
+  breachNotificationHours: z.number().int().positive().max(720).optional(),
+  consentRequired: z.boolean().optional(),
+  dataRetentionDays: z.number().int().positive().max(3650).optional(),
+  explicitOptIn: z.boolean().optional(),
+  rightToErasure: z.boolean().optional(),
+  rightToPortability: z.boolean().optional(),
+  dpoRequired: z.boolean().optional(),
+  piaRequired: z.boolean().optional(),
+  customRules: z.record(z.unknown()).optional(),
+});
 
 // POST /api/privacy/provincial
 // Create or update provincial privacy configuration
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(90, async (request) => {
   try {
     const body = await request.json();
-    const { province, lawName, breachNotificationHours, consentRequired, dataRetentionDays, explicitOptIn, rightToErasure, rightToPortability, dpoRequired, piaRequired, customRules } = body;
+    const parsed = privacyConfigSchema.safeParse(body);
 
-    if (!province || typeof province !== 'string') {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Province is required' },
+        { error: 'Invalid request body' },
         { status: 400 }
       );
     }
 
-    // Upsert provincial privacy config
+    const {
+      province,
+      lawName,
+      breachNotificationHours,
+      consentRequired,
+      dataRetentionDays,
+      explicitOptIn,
+      rightToErasure,
+      rightToPortability,
+      dpoRequired,
+      piaRequired,
+      customRules,
+    } = parsed.data;
+
     const lawNameMap: Record<string, string> = {
-      'AB': 'AB PIPA',
-      'BC': 'BC PIPA',
-      'ON': 'ON PHIPA',
-      'QC': 'Law 25',
+      AB: 'AB PIPA',
+      BC: 'BC PIPA',
+      ON: 'ON PHIPA',
+      QC: 'Law 25',
     };
-    const defaultLawName = lawNameMap[province.toUpperCase()] || 'PIPEDA';
+    const provinceCode = province.toUpperCase();
+    const defaultLawName = lawNameMap[provinceCode] || 'PIPEDA';
 
     const config = await db
       .insert(provincialPrivacyConfig)
       .values({
-        province,
+        province: provinceCode,
         lawName: lawName || defaultLawName,
-        breachNotificationHours: String(breachNotificationHours || 72),
+        breachNotificationHours: String(breachNotificationHours ?? 72),
         consentRequired: consentRequired !== false,
-        dataRetentionDays: String(dataRetentionDays || 365),
+        dataRetentionDays: String(dataRetentionDays ?? 365),
         explicitOptIn: explicitOptIn || false,
         rightToErasure: rightToErasure !== false,
         rightToPortability: rightToPortability !== false,
@@ -94,9 +130,9 @@ export async function POST(request: NextRequest) {
         target: provincialPrivacyConfig.province,
         set: {
           lawName: lawName || defaultLawName,
-          breachNotificationHours: String(breachNotificationHours || 72),
+          breachNotificationHours: String(breachNotificationHours ?? 72),
           consentRequired: consentRequired !== false,
-          dataRetentionDays: String(dataRetentionDays || 365),
+          dataRetentionDays: String(dataRetentionDays ?? 365),
           explicitOptIn: explicitOptIn || false,
           rightToErasure: rightToErasure !== false,
           rightToPortability: rightToPortability !== false,
@@ -118,7 +154,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Get Provincial Privacy Rules

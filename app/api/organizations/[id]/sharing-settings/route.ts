@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { withAuth, withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
 
@@ -20,6 +21,10 @@ export async function GET(
     }
 
     const organizationId = params.id;
+  if (authResult.orgId && organizationId !== authResult.orgId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
     const supabase = await createClient();
 
     // Verify user has admin access to this organization

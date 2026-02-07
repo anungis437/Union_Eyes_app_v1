@@ -9,12 +9,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { organizations } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { remittanceExporter, RemittanceExportFormat } from '@/services/clc/remittance-export';
 import { remittanceValidator } from '@/services/clc/remittance-validation';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 /**
  * GET /api/admin/clc/remittances/[id]/export
@@ -25,77 +27,107 @@ import { remittanceValidator } from '@/services/clc/remittance-validation';
  * - format: Export format ('csv', 'xml', 'edi', 'statcan', 'excel')
  * - validate: Whether to validate before export (default: true)
  */
-export async function GET(
+export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+        // Set session context for RLS
+        await db.execute(sql`SET app.current_user_id = ${user.id}`);
 
-    // Set session context for RLS
-    await db.execute(sql`SET app.current_user_id = ${userId}`);
+        const { id } = await params;
+        const searchParams = request.nextUrl.searchParams;
+        
+        const format = (searchParams.get('format') || 'csv') as RemittanceExportFormat;
+        const shouldValidate = searchParams.get('validate') !== 'false';
 
-    const { id } = await params;
-    const searchParams = request.nextUrl.searchParams;
-    
-    const format = (searchParams.get('format') || 'csv') as RemittanceExportFormat;
-    const shouldValidate = searchParams.get('validate') !== 'false';
+        // Validate format
+        const validFormats: RemittanceExportFormat[] = ['csv', 'xml', 'edi', 'statcan', 'excel'];
+        if (!validFormats.includes(format)) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: '/api/admin/clc/remittances/[id]/export',
+            method: 'GET',
+            eventType: 'validation_failed',
+            severity: 'medium',
+            details: { reason: 'Invalid format', format, remittanceId: id },
+          });
+          return NextResponse.json(
+            { error: `Invalid format. Must be one of: ${validFormats.join(', ')}` },
+            { status: 400 }
+          );
+        }
 
-    // Validate format
-    const validFormats: RemittanceExportFormat[] = ['csv', 'xml', 'edi', 'statcan', 'excel'];
-    if (!validFormats.includes(format)) {
-      return NextResponse.json(
-        { error: `Invalid format. Must be one of: ${validFormats.join(', ')}` },
-        { status: 400 }
-      );
-    }
+        // Export remittance(s)
+        const exportFile = await remittanceExporter.exportRemittances({
+          format,
+          remittanceIds: [id],
+        });
 
-    // Export remittance(s)
-    const exportFile = await remittanceExporter.exportRemittances({
-      format,
-      remittanceIds: [id],
-    });
+        // Set response headers
+        const headers = new Headers();
+        headers.set('Content-Type', exportFile.mimeType);
+        headers.set('Content-Disposition', `attachment; filename="${exportFile.filename}"`);
+        headers.set('Content-Length', exportFile.size.toString());
+        headers.set('X-Record-Count', exportFile.recordCount.toString());
+        headers.set('X-Total-Amount', exportFile.totalAmount);
+        headers.set('X-Checksum', exportFile.checksum);
 
-    // Optional validation
-    if (shouldValidate) {
-      // Note: Validation happens inside exportRemittances, but we could add additional checks here
-    }
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/remittances/[id]/export',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'high',
+          details: {
+            dataType: 'FINANCIAL',
+            remittanceId: id,
+            format,
+            filename: exportFile.filename,
+            recordCount: exportFile.recordCount,
+            totalAmount: exportFile.totalAmount,
+          },
+        });
 
-    // Set response headers
-    const headers = new Headers();
-    headers.set('Content-Type', exportFile.mimeType);
-    headers.set('Content-Disposition', `attachment; filename="${exportFile.filename}"`);
-    headers.set('Content-Length', exportFile.size.toString());
-    headers.set('X-Record-Count', exportFile.recordCount.toString());
-    headers.set('X-Total-Amount', exportFile.totalAmount);
-    headers.set('X-Checksum', exportFile.checksum);
+        // Convert Buffer to Uint8Array if needed
+        const content = typeof exportFile.content === 'string' 
+          ? exportFile.content 
+          : new Uint8Array(exportFile.content);
 
-    // Convert Buffer to Uint8Array if needed
-    const content = typeof exportFile.content === 'string' 
-      ? exportFile.content 
-      : new Uint8Array(exportFile.content);
+        return new NextResponse(content, {
+          status: 200,
+          headers,
+        });
 
-    return new NextResponse(content, {
-      status: 200,
-      headers,
-    });
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/remittances/[id]/export',
+          method: 'GET',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error('Error exporting remittance:', error);
+        
+        if (error instanceof Error && error.message === 'No remittances found for export') {
+          return NextResponse.json(
+            { error: 'Remittance not found' },
+            { status: 404 }
+          );
+        }
 
-  } catch (error) {
-    console.error('Error exporting remittance:', error);
-    
-    if (error instanceof Error && error.message === 'No remittances found for export') {
-      return NextResponse.json(
-        { error: 'Remittance not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to export remittance' },
-      { status: 500 }
-    );
-  }
+        return NextResponse.json(
+          { error: 'Failed to export remittance' },
+          { status: 500 }
+        );
+      }
+  })(request, { params });
+};
 }

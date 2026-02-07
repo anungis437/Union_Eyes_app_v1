@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Comparative Analytics API
  * Q1 2025 - Advanced Analytics
@@ -6,130 +7,135 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { comparativeAnalyses, organizations } from '@/db/migrations/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const searchParams = request.nextUrl.searchParams;
+      const organizationId = searchParams.get('organizationId');
+      const metric = searchParams.get('metric') || 'claims_volume';
+      const timeRange = searchParams.get('timeRange') || '30d';
 
-    const searchParams = request.nextUrl.searchParams;
-    const organizationId = searchParams.get('organizationId');
-    const metric = searchParams.get('metric') || 'claims_volume';
-    const timeRange = searchParams.get('timeRange') || '30d';
+      if (!organizationId) {
+        return NextResponse.json(
+          { error: 'Organization ID is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: 'Organization ID is required' },
-        { status: 400 }
-      );
-    }
+      // Calculate time range
+      const days = parseInt(timeRange.replace('d', '')) || 30;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
 
-    // Calculate time range
-    const days = parseInt(timeRange.replace('d', '')) || 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+      // Fetch comparative analyses
+      const analyses = await db
+        .select()
+        .from(comparativeAnalyses)
+        .where(
+          eq(comparativeAnalyses.organizationId, organizationId)
+        )
+        .orderBy(desc(comparativeAnalyses.createdAt))
+        .limit(1);
 
-    // Fetch comparative analyses
-    const analyses = await db
-      .select()
-      .from(comparativeAnalyses)
-      .where(
-        eq(comparativeAnalyses.organizationId, organizationId)
-      )
-      .orderBy(desc(comparativeAnalyses.createdAt))
-      .limit(1);
+      if (analyses.length === 0) {
+        // Generate sample comparative data if none exists
+        return NextResponse.json({
+          success: true,
+          comparisonData: generateSampleComparison(metric),
+          gapAnalysis: generateSampleGapAnalysis(metric),
+          industryBenchmark: generateSampleBenchmark(metric)
+        });
+      }
 
-    if (analyses.length === 0) {
-      // Generate sample comparative data if none exists
+      const analysis = analyses[0];
+
       return NextResponse.json({
         success: true,
-        comparisonData: generateSampleComparison(metric),
-        gapAnalysis: generateSampleGapAnalysis(metric),
-        industryBenchmark: generateSampleBenchmark(metric)
+        comparisonData: analysis.results || [],
+        gapAnalysis: analysis.gaps || [],
+        industryBenchmark: analysis.benchmarks || null,
+        strengths: analysis.strengths || [],
+        recommendations: analysis.recommendations || []
       });
-    }
-
-    const analysis = analyses[0];
-
-    return NextResponse.json({
-      success: true,
-      comparisonData: analysis.results || [],
-      gapAnalysis: analysis.gaps || [],
-      industryBenchmark: analysis.benchmarks || null,
-      strengths: analysis.strengths || [],
-      recommendations: analysis.recommendations || []
-    });
-  } catch (error) {
-    console.error('Error fetching comparative analysis:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch comparative analysis' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { organizationId, metricType, peerOrganizationIds } = body;
-
-    if (!organizationId || !metricType) {
+    } catch (error) {
+      console.error('Error fetching comparative analysis:', error);
       return NextResponse.json(
-        { error: 'Organization ID and metric type are required' },
-        { status: 400 }
+        { error: 'Failed to fetch comparative analysis' },
+        { status: 500 }
       );
     }
+  })
+  })(request);
+};
 
-    // Generate comparative analysis
-    const comparisonData = await generateComparativeAnalysis(
-      organizationId,
-      metricType,
-      peerOrganizationIds || []
-    );
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-    // Save to database
-    const [result] = await db
-      .insert(comparativeAnalyses)
-      .values({
-        organizationId,
-        analysisName: `${metricType} Comparative Analysis`,
-        comparisonType: peerOrganizationIds && peerOrganizationIds.length > 0 ? 'peer_comparison' : 'industry_benchmark',
-        organizationIds: peerOrganizationIds,
-        metrics: [metricType],
-        timeRange: { days: 30 },
-        results: comparisonData.peerComparison,
-        benchmarks: comparisonData.industryBenchmark,
-        gaps: comparisonData.gapAnalysis,
-        strengths: comparisonData.strengths,
-        recommendations: [],
-        visualizationData: null,
-        createdBy: organizationId // TODO: Get actual user ID
-      })
-      .returning();
-
-    return NextResponse.json({
-      success: true,
-      analysis: result
-    });
-  } catch (error) {
-    console.error('Error creating comparative analysis:', error);
-    return NextResponse.json(
-      { error: 'Failed to create comparative analysis' },
-      { status: 500 }
-    );
+  try {
+      const body = await request.json();
+      const { organizationId, metricType, peerOrganizationIds } = body;
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
-}
+
+
+      if (!organizationId || !metricType) {
+        return NextResponse.json(
+          { error: 'Organization ID and metric type are required' },
+          { status: 400 }
+        );
+      }
+
+      // Generate comparative analysis
+      const comparisonData = await generateComparativeAnalysis(
+        organizationId,
+        metricType,
+        peerOrganizationIds || []
+      );
+
+      // Save to database
+      const [result] = await db
+        .insert(comparativeAnalyses)
+        .values({
+          organizationId,
+          analysisName: `${metricType} Comparative Analysis`,
+          comparisonType: peerOrganizationIds && peerOrganizationIds.length > 0 ? 'peer_comparison' : 'industry_benchmark',
+          organizationIds: peerOrganizationIds,
+          metrics: [metricType],
+          timeRange: { days: 30 },
+          results: comparisonData.peerComparison,
+          benchmarks: comparisonData.industryBenchmark,
+          gaps: comparisonData.gapAnalysis,
+          strengths: comparisonData.strengths,
+          recommendations: [],
+          visualizationData: null,
+          createdBy: organizationId // TODO: Get actual user ID
+        })
+        .returning();
+
+      return NextResponse.json({
+        success: true,
+        analysis: result
+      });
+    } catch (error) {
+      console.error('Error creating comparative analysis:', error);
+      return NextResponse.json(
+        { error: 'Failed to create comparative analysis' },
+        { status: 500 }
+      );
+    }
+  })
+  })(request);
+};
 
 // Helper functions for generating sample data
 function generateSampleComparison(metric: string) {

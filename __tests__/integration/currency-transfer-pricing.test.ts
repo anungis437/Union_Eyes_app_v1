@@ -6,7 +6,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CurrencyService } from '@/lib/services/currency-service';
 
-describe('Currency & Transfer Pricing Service Integration', () => {
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const describeIf = hasDatabase ? describe : describe.skip;
+
+describeIf('Currency & Transfer Pricing Service Integration', () => {
   let service: CurrencyService;
 
   beforeEach(() => {

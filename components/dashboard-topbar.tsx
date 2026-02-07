@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SelectProfile } from "@/db/schema/profiles-schema";
 
 interface DashboardTopbarProps {
@@ -24,7 +24,53 @@ interface DashboardTopbarProps {
 export default function DashboardTopbar({ profile, onMenuClick }: DashboardTopbarProps) {
   const pathname = usePathname();
   const { user } = useUser();
-  const [notificationCount] = useState(3); // TODO: Replace with actual notification count
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Load user role from organizationMembers table
+  useEffect(() => {
+    if (!profile?.userId) return;
+
+    const loadUserRoles = async () => {
+      try {
+        const response = await fetch('/api/profile/roles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: profile.userId }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.role === 'admin' || data.roles?.includes('admin'));
+        }
+      } catch (error) {
+        console.error('Failed to load user roles:', error);
+        setIsAdmin(false);
+      }
+    };
+
+    loadUserRoles();
+
+    // Load actual notification count from API
+    const loadNotifications = async () => {
+      try {
+        const response = await fetch('/api/notifications/count', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setNotificationCount(data.count || 0);
+        }
+      } catch (error) {
+        console.error('Failed to load notification count:', error);
+        setNotificationCount(0);
+      }
+    };
+
+    loadNotifications();
+  }, [profile?.userId]);
 
   // Generate breadcrumbs from pathname
   const generateBreadcrumbs = () => {
@@ -51,8 +97,6 @@ export default function DashboardTopbar({ profile, onMenuClick }: DashboardTopba
   };
 
   const breadcrumbs = generateBreadcrumbs();
-  // TODO: Implement proper admin role checking
-  const isAdmin = false;
 
   return (
     <motion.div

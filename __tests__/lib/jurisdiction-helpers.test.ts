@@ -5,7 +5,7 @@ import {
   requiresBilingualSupport,
   getDeadlineUrgency,
   type CAJurisdiction,
-} from '@/lib/jurisdiction-helpers';
+} from '@/lib/jurisdiction-helpers-client';
 
 describe('jurisdiction-helpers', () => {
   describe('mapJurisdictionValue', () => {

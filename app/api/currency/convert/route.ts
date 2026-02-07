@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { convertUSDToCAD, getBankOfCanadaNoonRate } from '@/lib/services/transfer-pricing-service';
 import type { CurrencyConversionResponse } from '@/lib/types/compliance-api-types';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { z } from 'zod';
 
 /**
  * FX Conversion API
@@ -12,17 +14,22 @@ import type { CurrencyConversionResponse } from '@/lib/types/compliance-api-type
  * GET /api/currency/convert?amount=100&conversionDate=2026-02-06
  * Get current or historical USD to CAD conversion rates
  */
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const amountStr = searchParams.get('amount');
-    const dateStr = searchParams.get('conversionDate');
+const convertQuerySchema = z.object({
+  amount: z.coerce.number().positive(),
+  conversionDate: z.string().optional(),
+});
 
-    if (!amountStr) {
+export const GET = withEnhancedRoleAuth(10, async (request) => {
+  try {
+    const query = convertQuerySchema.safeParse(
+      Object.fromEntries(request.nextUrl.searchParams)
+    );
+
+    if (!query.success) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: 'Amount parameter required (e.g., ?amount=100)',
+          error: 'Invalid request parameters',
           sourceCurrency: 'USD',
           targetCurrency: 'CAD',
           sourceAmount: 0,
@@ -35,17 +42,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const amountUSD = parseFloat(amountStr);
-    const date = dateStr ? new Date(dateStr) : new Date();
+    const { amount, conversionDate } = query.data;
+    const date = conversionDate ? new Date(conversionDate) : new Date();
 
-    if (isNaN(amountUSD) || amountUSD <= 0) {
+    if (Number.isNaN(date.getTime())) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Amount must be a positive number',
+          error: 'Invalid conversion date',
           sourceCurrency: 'USD',
           targetCurrency: 'CAD',
-          sourceAmount: amountUSD,
+          sourceAmount: amount,
           convertedAmount: 0,
           exchangeRate: 0,
           conversionDate: new Date().toISOString(),
@@ -55,17 +62,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Convert USD to CAD
-    const amountCAD = await convertUSDToCAD(amountUSD, date);
-
-    // Get current exchange rate
+    const amountCAD = await convertUSDToCAD(amount, date);
     const latestRate = await getBankOfCanadaNoonRate(date);
 
     return NextResponse.json({
       success: true,
       sourceCurrency: 'USD',
       targetCurrency: 'CAD',
-      sourceAmount: amountUSD,
+      sourceAmount: amount,
       convertedAmount: parseFloat(amountCAD.toFixed(2)),
       exchangeRate: parseFloat(latestRate.toFixed(4)),
       conversionDate: date.toISOString(),
@@ -83,9 +87,9 @@ export async function GET(request: NextRequest) {
         exchangeRate: 0,
         conversionDate: new Date().toISOString(),
         source: 'BOC',
-        error: `Conversion failed: ${error}`,
+        error: 'Conversion failed',
       } as CurrencyConversionResponse,
       { status: 500 }
     );
   }
-}
+});

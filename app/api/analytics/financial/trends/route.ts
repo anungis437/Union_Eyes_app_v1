@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { client } from '@/db/db';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
+    const tenantId = context.tenantId;
     
     if (!tenantId) {
       return NextResponse.json(

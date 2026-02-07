@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: PATCH /api/notifications/[id]
  * 
@@ -5,105 +6,85 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { inAppNotifications } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
+      const { id } = params;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { id } = params;
-
-    // Update notification
-    const result = await db
-      .update(inAppNotifications)
-      .set({
-        read: true,
-        readAt: new Date(),
-      })
-      .where(
-        and(
-          eq(inAppNotifications.id, id),
-          eq(inAppNotifications.userId, userId)
+      // Update notification
+      const result = await db
+        .update(inAppNotifications)
+        .set({
+          read: true,
+          readAt: new Date(),
+        })
+        .where(
+          and(
+            eq(inAppNotifications.id, id),
+            eq(inAppNotifications.user.id, user.id)
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    if (result.length === 0) {
+      if (result.length === 0) {
+        return NextResponse.json(
+          { error: 'Notification not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(result[0]);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
       return NextResponse.json(
-        { error: 'Notification not found' },
-        { status: 404 }
+        { error: 'Internal server error' },
+        { status: 500 }
       );
     }
+  })
+  })(request, { params });
+};
 
-    return NextResponse.json(result[0]);
-  } catch (error) {
-    console.error('Error marking notification as read:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-/**
- * API Route: DELETE /api/notifications/[id]
- * 
- * Delete notification
- */
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
   try {
-    const { userId } = await auth();
+      const { id } = params;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { id } = params;
-
-    // Delete notification
-    const result = await db
-      .delete(inAppNotifications)
-      .where(
-        and(
-          eq(inAppNotifications.id, id),
-          eq(inAppNotifications.userId, userId)
+      // Delete notification
+      const result = await db
+        .delete(inAppNotifications)
+        .where(
+          and(
+            eq(inAppNotifications.id, id),
+            eq(inAppNotifications.user.id, user.id)
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    if (result.length === 0) {
+      if (result.length === 0) {
+        return NextResponse.json(
+          { error: 'Notification not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
       return NextResponse.json(
-        { error: 'Notification not found' },
-        { status: 404 }
+        { error: 'Internal server error' },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting notification:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request, { params });
+};

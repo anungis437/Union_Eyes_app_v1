@@ -8,7 +8,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProvincialPrivacyService } from '@/services/provincial-privacy-service';
 
-describe('ProvincialPrivacyService', () => {
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const describeIf = hasDatabase ? describe : describe.skip;
+
+describeIf('ProvincialPrivacyService', () => {
   describe('getProvinceConfig', () => {
     it('should return Quebec Law 25 configuration', async () => {
       const config = await ProvincialPrivacyService.getProvinceConfig('QC');

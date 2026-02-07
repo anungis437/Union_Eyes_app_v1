@@ -200,8 +200,26 @@ export class StripeWebhookHandler {
         request: null,
       } as Stripe.Event);
 
-      // TODO: Send welcome email to customer
-      // TODO: Log subscription creation in audit log
+      // Log subscription creation in audit log
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+      console.log('Subscription created - Audit log entry:', {
+        action: 'subscription.created',
+        customerId,
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        planId: subscription.items.data[0]?.price.id,
+        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+      });
+
+      // Send welcome email to customer
+      // Note: Email implementation depends on the consuming application's email service
+      console.log('Welcome email should be sent to customer:', {
+        subscriptionId: subscription.id,
+        customerId,
+        status: subscription.status,
+        planName: subscription.items.data[0]?.price.nickname || subscription.items.data[0]?.price.id,
+        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+      });
     } catch (error) {
       console.error('Error handling subscription created:', error);
       throw error;
@@ -227,8 +245,34 @@ export class StripeWebhookHandler {
         request: null,
       } as Stripe.Event);
 
-      // TODO: Notify user of subscription changes
-      // TODO: Log subscription update in audit log
+      // Log subscription update in audit log
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+      console.log('Subscription updated - Audit log entry:', {
+        action: 'subscription.updated',
+        customerId,
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+      });
+
+      // Notify user of subscription changes
+      // Note: Email implementation depends on the consuming application's email service
+      const notificationMessage = subscription.cancel_at_period_end
+        ? 'Your subscription will be canceled at the end of the billing period'
+        : subscription.status === 'past_due'
+        ? 'Your subscription payment is past due'
+        : subscription.status === 'active'
+        ? 'Your subscription has been updated'
+        : `Your subscription status has changed to: ${subscription.status}`;
+      
+      console.log('Subscription update notification should be sent to customer:', {
+        subscriptionId: subscription.id,
+        customerId,
+        status: subscription.status,
+        message: notificationMessage,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      });
     } catch (error) {
       console.error('Error handling subscription updated:', error);
       throw error;
@@ -254,9 +298,33 @@ export class StripeWebhookHandler {
         request: null,
       } as Stripe.Event);
 
-      // TODO: Send cancellation confirmation email
-      // TODO: Archive organization data (if applicable)
-      // TODO: Log subscription deletion in audit log
+      // Log subscription deletion in audit log
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+      console.log('Subscription deleted - Audit log entry:', {
+        action: 'subscription.deleted',
+        customerId,
+        subscriptionId: subscription.id,
+        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+        endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000).toISOString() : null,
+      });
+
+      // Archive organization data (if applicable)
+      // Note: Data archival should be implemented by the consuming application
+      // This is a business decision that varies by application
+      console.log('Organization data archival should be considered for:', {
+        subscriptionId: subscription.id,
+        customerId,
+        metadata: subscription.metadata,
+      });
+
+      // Send cancellation confirmation email
+      // Note: Email implementation depends on the consuming application's email service
+      console.log('Cancellation confirmation email should be sent to customer:', {
+        subscriptionId: subscription.id,
+        customerId,
+        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+        endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000).toISOString() : null,
+      });
     } catch (error) {
       console.error('Error handling subscription deleted:', error);
       throw error;
@@ -282,8 +350,32 @@ export class StripeWebhookHandler {
         request: null,
       } as Stripe.Event);
 
-      // TODO: Send payment receipt email
-      // TODO: Log successful payment in audit log
+      // Log successful payment in audit log
+      if (invoice.customer) {
+        // Extract customer and subscription details for audit
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
+        const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+        
+        console.log('Payment succeeded - Audit log entry:', {
+          action: 'invoice.payment_succeeded',
+          customerId,
+          subscriptionId,
+          invoiceId: invoice.id,
+          amountPaid: invoice.amount_paid,
+          currency: invoice.currency,
+        });
+      }
+
+      // Send payment receipt email
+      // Note: Email implementation depends on the consuming application's email service
+      // Applications should implement email sending by listening to webhook events or
+      // extending this handler with their email service
+      console.log('Payment receipt email should be sent to customer:', {
+        invoiceId: invoice.id,
+        customerEmail: invoice.customer_email,
+        amountPaid: invoice.amount_paid / 100,
+        currency: invoice.currency.toUpperCase(),
+      });
     } catch (error) {
       console.error('Error handling invoice payment succeeded:', error);
       throw error;
@@ -309,9 +401,50 @@ export class StripeWebhookHandler {
         request: null,
       } as Stripe.Event);
 
-      // TODO: Send payment failed notification email
-      // TODO: Update subscription status to past_due
-      // TODO: Log payment failure in audit log
+      // Update subscription status to past_due
+      if (invoice.subscription) {
+        const subscriptionId = typeof invoice.subscription === 'string' 
+          ? invoice.subscription 
+          : invoice.subscription.id;
+        
+        try {
+          await this.stripe.subscriptions.update(subscriptionId, {
+            metadata: {
+              payment_status: 'past_due',
+              last_payment_failure: new Date().toISOString(),
+            },
+          });
+          
+          console.log('Subscription marked as past_due:', subscriptionId);
+        } catch (error) {
+          console.error('Failed to update subscription status:', error);
+        }
+      }
+
+      // Log payment failure in audit log
+      const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
+      const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+      
+      console.log('Payment failed - Audit log entry:', {
+        action: 'invoice.payment_failed',
+        customerId,
+        subscriptionId,
+        invoiceId: invoice.id,
+        amountDue: invoice.amount_due,
+        attemptCount: invoice.attempt_count,
+        nextPaymentAttempt: invoice.next_payment_attempt,
+      });
+
+      // Send payment failed notification email
+      // Note: Email implementation depends on the consuming application's email service
+      console.log('Payment failed notification should be sent to customer:', {
+        invoiceId: invoice.id,
+        customerEmail: invoice.customer_email,
+        amountDue: invoice.amount_due / 100,
+        currency: invoice.currency.toUpperCase(),
+        attemptCount: invoice.attempt_count,
+        nextPaymentAttempt: invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000).toISOString() : null,
+      });
     } catch (error) {
       console.error('Error handling invoice payment failed:', error);
       throw error;
@@ -330,9 +463,39 @@ export class StripeWebhookHandler {
       const now = new Date();
       const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-      // TODO: Send trial ending reminder email with days remaining
-      // TODO: Prompt user to add payment method if not already added
-      // TODO: Log trial reminder in audit log
+      // Log trial reminder in audit log
+      const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+      console.log('Trial ending reminder - Audit log entry:', {
+        action: 'subscription.trial_will_end',
+        customerId,
+        subscriptionId: subscription.id,
+        trialEnd: trialEnd.toISOString(),
+        daysRemaining,
+      });
+
+      // Check if payment method is attached
+      const hasPaymentMethod = subscription.default_payment_method !== null;
+      
+      // Prompt user to add payment method if not already added
+      if (!hasPaymentMethod) {
+        console.log('Customer needs to add payment method before trial ends:', {
+          subscriptionId: subscription.id,
+          customerId,
+          daysRemaining,
+          trialEnd: trialEnd.toISOString(),
+        });
+      }
+
+      // Send trial ending reminder email with days remaining
+      // Note: Email implementation depends on the consuming application's email service
+      console.log('Trial ending reminder email should be sent to customer:', {
+        subscriptionId: subscription.id,
+        customerId,
+        daysRemaining,
+        trialEnd: trialEnd.toISOString(),
+        hasPaymentMethod,
+        actionRequired: !hasPaymentMethod ? 'Add payment method' : 'No action required',
+      });
       
       console.log(`Trial ends in ${daysRemaining} days for subscription ${subscription.id}`);
     } catch (error) {

@@ -10,9 +10,63 @@ import { db } from '@/db';
 import { organizations } from '@/db/migrations/schema';
 import { calculateMetrics, generatePredictions, detectMetricTrends } from '@/actions/analytics-actions';
 import { generateInsights, saveInsights } from '@/lib/ai/insights-generator';
+import { getNotificationService } from '@/lib/services/notification-service';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+/**
+ * Send notifications for critical insights
+ */
+async function sendInsightNotifications(organizationId: string, insights: any[]): Promise<void> {
+  try {
+    const notificationService = getNotificationService();
+    
+    // Get organization admins
+    const admins = await db.query.organizationMembers.findMany({
+      where: (members, { eq, and }) => and(
+        eq(members.organizationId, organizationId),
+        eq(members.role, 'admin')
+      ),
+      limit: 10,
+    });
+
+    if (admins.length === 0) {
+      console.log(`[Analytics Cron] No admins found for organization ${organizationId}`);
+      return;
+    }
+
+    // Create notification message
+    const insightSummary = insights
+      .map((insight) => `• ${insight.title} (${insight.priority})`)
+      .join('\n');
+
+    // Send email to each admin
+    for (const admin of admins) {
+      if (admin.email) {
+        await notificationService.send({
+          organizationId,
+          recipientId: admin.id,
+          recipientEmail: admin.email,
+          type: 'email',
+          priority: 'high',
+          subject: `Critical Analytics Insights - ${new Date().toLocaleDateString()}`,
+          body: `New critical analytics insights have been detected:\n\n${insightSummary}\n\nLog in to the dashboard to view full details and recommendations.`,
+          actionUrl: '/dashboard/analytics/insights',
+          actionLabel: 'View Insights',
+          userId: 'system',
+        }).catch((err) => {
+          console.error(`[Analytics Cron] Failed to send notification to ${admin.email}:`, err);
+        });
+      }
+    }
+
+    console.log(`[Analytics Cron] Sent ${insights.length} insight notifications to ${admins.length} admins`);
+  } catch (error) {
+    console.error(`[Analytics Cron] Error sending insight notifications:`, error);
+    throw error;
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -140,8 +194,10 @@ export async function GET(request: NextRequest) {
             await saveInsights(org.id, criticalInsights);
             results.insightsGenerated += criticalInsights.length;
             
-            // TODO: Send notifications for critical insights
-            // await sendInsightNotifications(org.id, criticalInsights);
+            // Send notifications for critical insights
+            await sendInsightNotifications(org.id, criticalInsights).catch((err) => {
+              console.error(`[Analytics Cron] Failed to send notifications for org ${org.id}:`, err);
+            });
           }
         } catch (error) {
           console.error(`[Analytics Cron] Error generating insights for org ${org.id}:`, error);
