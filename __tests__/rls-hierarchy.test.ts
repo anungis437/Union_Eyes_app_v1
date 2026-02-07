@@ -5,10 +5,18 @@
  * Phase: 1 - Critical CLC Compliance
  */
 
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { db } from '@/db';
 import { organizations, organizationMembers, claims, duesPayments, deadlines } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
+
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+
+if (!hasDatabase) {
+  describe.skip('Hierarchical RLS Policies (DATABASE_URL not set)', () => {
+    test('skipped', () => {});
+  });
+} else {
 
 // =====================================================================================
 // TEST DATA SETUP
@@ -749,3 +757,4 @@ describe('Edge Cases', () => {
     await clearSessionContext();
   });
 });
+}

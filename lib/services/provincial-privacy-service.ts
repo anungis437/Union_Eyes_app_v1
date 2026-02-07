@@ -9,8 +9,8 @@
  * - Federal: PIPEDA for cross-provincial operations
  */
 
-import { db } from '@/db/client';
-import { eq } from 'drizzle-orm';
+import { db } from '@/db';
+import { sql } from 'drizzle-orm';
 
 export interface ProvincialPrivacyRules {
   province: string;
@@ -121,12 +121,25 @@ export async function assessBreachNotification(
   dataTypes: string[],
   breachDate: Date
 ): Promise<BreachNotification> {
-  // Determine member's province (from members table)
-  const member = await db.query.members.findFirst({
-    where: eq(members.id, memberId)
-  }).catch(() => null);
+  let province = 'FEDERAL';
 
-  const province = member?.province || 'FEDERAL';
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const result = await db.execute(sql`
+        SELECT province
+        FROM members
+        WHERE id = ${memberId}
+        LIMIT 1
+      `);
+      const resultRows = (result as { rows?: Array<{ province?: string }> }).rows;
+      const rows = resultRows ?? (result as unknown as Array<{ province?: string }>);
+      if (rows?.[0]?.province) {
+        province = rows[0].province;
+      }
+    } catch (error) {
+      console.error('Error fetching member province:', error);
+    }
+  }
   const rules = getPrivacyRules(province);
 
   // Check if there's a "real risk of harm"

@@ -5,7 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 

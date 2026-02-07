@@ -6,7 +6,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LocationTrackingService } from '@/lib/services/location-tracking-service';
 
-describe('Location Tracking Service Integration', () => {
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const describeIf = hasDatabase ? describe : describe.skip;
+
+describeIf('Location Tracking Service Integration', () => {
   let service: LocationTrackingService;
 
   beforeEach(() => {

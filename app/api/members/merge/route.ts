@@ -10,7 +10,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { z } from "zod";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { db } from "@/db";
 import {
   claims,
@@ -19,8 +20,25 @@ import {
 } from "@/db/schema";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { memberDocuments } from "@/db/schema/member-documents-schema";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
+import { eq, sql } from "drizzle-orm";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+
+/**
+ * Helper function to get user's organization context
+ */
+async function getUserOrganization(userId: string): Promise<string | null> {
+  try {
+    const result = await db.execute(
+      sql`SELECT organization_id FROM tenant_users WHERE user_id = ${userId} LIMIT 1`
+    );
+    if (result.length > 0) {
+      return result[0].organization_id as string;
+    }
+    return null;
+  } catch (_error) {
+    return null;
+  }
+}
 
 const mergeSchema = z.object({
   primaryMemberId: z.string().uuid(),
@@ -34,223 +52,310 @@ const mergeSchema = z.object({
  * 
  * Merge two member records
  */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId, orgId } = auth();
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+  }
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+  const parsed = mergeSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
-    const body = await request.json();
-    
-    // Validate request body
-    const validation = mergeSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        {
-          error: "Validation failed",
-          details: validation.error.errors,
-        },
-        { status: 400 }
-      );
-    }
+  const body = parsed.data;
+  const user = { id: context.userId, organizationId: context.organizationId };
 
-    const { primaryMemberId, duplicateMemberId, fieldSelections, notes } = validation.data;
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-    // Prevent self-merge
-    if (primaryMemberId === duplicateMemberId) {
-      return NextResponse.json(
-        { error: "Cannot merge a member with itself" },
-        { status: 400 }
-      );
-    }
+try {
+      const { primaryMemberId, duplicateMemberId, fieldSelections, notes } = body;
 
-    // Fetch both members
-    const [primaryMember] = await db
-      .select()
-      .from(organizationMembers)
-      .where(eq(organizationMembers.id, primaryMemberId));
+      // Get user's organization
+      const orgId = await getUserOrganization(user.id);
+      if (!orgId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/members/merge',
+          method: 'POST',
+          eventType: 'auth_failed',
+          severity: 'medium',
+          details: { reason: 'User organization not found' },
+        });
+        return NextResponse.json({ error: 'User organization not found' }, { status: 403 });
+      }
 
-    const [duplicateMember] = await db
-      .select()
-      .from(organizationMembers)
-      .where(eq(organizationMembers.id, duplicateMemberId));
+      // Prevent self-merge
+      if (primaryMemberId === duplicateMemberId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/members/merge',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'low',
+          details: { reason: 'Cannot merge member with itself' },
+        });
+        return NextResponse.json(
+          { error: "Cannot merge a member with itself" },
+          { status: 400 }
+        );
+      }
 
-    if (!primaryMember || !duplicateMember) {
-      return NextResponse.json(
-        { error: "One or both members not found" },
-        { status: 404 }
-      );
-    }
+      // Fetch both members
+      const [primaryMember] = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.id, primaryMemberId));
 
-    // Verify both belong to same organization
-    if (primaryMember.organizationId !== orgId || duplicateMember.organizationId !== orgId) {
-      return NextResponse.json(
-        { error: "Members must belong to the same organization" },
-        { status: 403 }
-      );
-    }
+      const [duplicateMember] = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.id, duplicateMemberId));
 
-    // Build merged data based on field selections
-    const mergedData: any = {
-      id: primaryMemberId,
-      organizationId: orgId,
-    };
+      if (!primaryMember || !duplicateMember) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/members/merge',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'low',
+          details: { reason: 'One or both members not found', primaryMemberId, duplicateMemberId },
+        });
+        return NextResponse.json(
+          { error: "One or both members not found" },
+          { status: 404 }
+        );
+      }
 
-    Object.entries(fieldSelections).forEach(([field, source]) => {
-      const sourceMember = source === "primary" ? primaryMember : duplicateMember;
-      mergedData[field] = sourceMember[field as keyof typeof sourceMember];
-    });
+      // Verify both belong to same organization
+      if (primaryMember.organizationId !== orgId || duplicateMember.organizationId !== orgId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/members/merge',
+          method: 'POST',
+          eventType: 'auth_failed',
+          severity: 'high',
+          details: { reason: 'Cross-organization merge attempt', primaryMemberId, duplicateMemberId },
+        });
+        return NextResponse.json(
+          { error: "Members must belong to the same organization" },
+          { status: 403 }
+        );
+      }
 
-    // Update primary member with merged data
-    await db
-      .update(organizationMembers)
-      .set({
-        ...mergedData,
-        updatedAt: new Date(),
-      })
-      .where(eq(organizationMembers.id, primaryMemberId));
+      // Build merged data based on field selections
+      const mergedData: any = {
+        id: primaryMemberId,
+        organizationId: orgId,
+      };
 
-    // Transfer claims
-    await db
-      .update(claims)
-      .set({ memberId: primaryMemberId })
-      .where(eq(claims.memberId, duplicateMemberId));
-
-    // Transfer documents
-    await db
-      .update(memberDocuments)
-      .set({ userId: primaryMemberId })
-      .where(eq(memberDocuments.userId, duplicateMemberId));
-
-    // Transfer event attendance
-    await db
-      .update(eventAttendees)
-      .set({ userId: primaryMemberId })
-      .where(eq(eventAttendees.userId, duplicateMemberId));
-
-    // Archive duplicate member instead of deleting
-    await db
-      .update(organizationMembers)
-      .set({
-        status: "inactive",
-        updatedAt: new Date(),
-      })
-      .where(eq(organizationMembers.id, duplicateMemberId));
-
-    // Create audit log
-    await db
-      .insert(auditLogs)
-      .values({
-        organizationId: orgId || "",
-        userId,
-        action: "member_merge",
-        resourceType: "member",
-        resourceId: primaryMemberId,
-        oldValues: duplicateMember,
-        newValues: mergedData,
-        metadata: {
-          notes,
-          mergedAt: new Date().toISOString(),
-          fieldSelections,
-        },
+      Object.entries(fieldSelections).forEach(([field, source]) => {
+        const sourceMember = source === "primary" ? primaryMember : duplicateMember;
+        mergedData[field] = sourceMember[field as keyof typeof sourceMember];
       });
 
-    // Fetch updated member with consolidated counts
-    const [updatedMember] = await db
-      .select()
-      .from(organizationMembers)
-      .where(eq(organizationMembers.id, primaryMemberId));
+      // Update primary member with merged data
+      await db
+        .update(organizationMembers)
+        .set({
+          ...mergedData,
+          updatedAt: new Date(),
+        })
+        .where(eq(organizationMembers.id, primaryMemberId));
 
-    return NextResponse.json({
-      success: true,
-      data: updatedMember,
-      message: "Members merged successfully",
-      details: {
-        primaryMemberId,
-        duplicateMemberId,
-        transferredRecords: {
-          claims: "transferred",
-          documents: "transferred",
-          eventAttendance: "transferred",
+      // Transfer claims
+      await db
+        .update(claims)
+        .set({ memberId: primaryMemberId })
+        .where(eq(claims.memberId, duplicateMemberId));
+
+      // Transfer documents
+      await db
+        .update(memberDocuments)
+        .set({ userId: primaryMemberId })
+        .where(eq(memberDocuments.userId, duplicateMemberId));
+
+      // Transfer event attendance
+      await db
+        .update(eventAttendees)
+        .set({ userId: primaryMemberId })
+        .where(eq(eventAttendees.userId, duplicateMemberId));
+
+      // Archive duplicate member instead of deleting
+      await db
+        .update(organizationMembers)
+        .set({
+          status: "inactive",
+          updatedAt: new Date(),
+        })
+        .where(eq(organizationMembers.id, duplicateMemberId));
+
+      // Create audit log
+      await db
+        .insert(auditLogs)
+        .values({
+          organizationId: orgId,
+          userId: user.id,
+          action: "member_merge",
+          resourceType: "member",
+          resourceId: primaryMemberId,
+          oldValues: duplicateMember,
+          newValues: mergedData,
+          metadata: {
+            notes,
+            mergedAt: new Date().toISOString(),
+            fieldSelections,
+          },
+        });
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/members/merge',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: { primaryMemberId, duplicateMemberId, orgId, notes },
+      });
+
+      // Fetch updated member with consolidated counts
+      const [updatedMember] = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.id, primaryMemberId));
+
+      return NextResponse.json({
+        success: true,
+        data: updatedMember,
+        message: "Members merged successfully",
+        details: {
+          primaryMemberId,
+          duplicateMemberId,
+          transferredRecords: {
+            claims: "transferred",
+            documents: "transferred",
+            eventAttendance: "transferred",
+          },
         },
-      },
-    });
-  } catch (error) {
-    console.error("Error merging members:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to merge members",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+      });
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/members/merge',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+      console.error("Error merging members:", error);
+      return NextResponse.json(
+        {
+          error: "Failed to merge members",
+          details: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 }
+      );
+    }
+});
 
 /**
  * GET /api/members/merge/candidates
  * 
  * Find potential duplicate members
  */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId, orgId } = auth();
+        // Get user's organization
+        const orgId = await getUserOrganization(user.id);
+        if (!orgId) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: '/api/members/merge',
+            method: 'GET',
+            eventType: 'auth_failed',
+            severity: 'medium',
+            details: { reason: 'User organization not found' },
+          });
+          return NextResponse.json({ error: 'User organization not found' }, { status: 403 });
+        }
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+        // In production, implement sophisticated duplicate detection:
+        // - Fuzzy name matching
+        // - Similar email addresses
+        // - Same SSN/employee ID
+        // - Similar join dates and personal info
+        
+        const allMembers = await db
+          .select()
+          .from(organizationMembers)
+          .where(eq(organizationMembers.organizationId, orgId));
 
-    // In production, implement sophisticated duplicate detection:
-    // - Fuzzy name matching
-    // - Similar email addresses
-    // - Same SSN/employee ID
-    // - Similar join dates and personal info
-    
-    const allMembers = await db
-      .select()
-      .from(organizationMembers)
-      .where(eq(organizationMembers.organizationId, orgId || ""));
-
-    // Simple duplicate detection (expand in production)
-    const candidates: Array<{ primary: any; duplicates: any[] }> = [];
-    
-    // Example: Find members with exact same email
-    const emailMap = new Map<string, any[]>();
-    allMembers.forEach((member) => {
-      if (member.email) {
-        const existing = emailMap.get(member.email) || [];
-        existing.push(member);
-        emailMap.set(member.email, existing);
-      }
-    });
-
-    emailMap.forEach((duplicates) => {
-      if (duplicates.length > 1) {
-        candidates.push({
-          primary: duplicates[0],
-          duplicates: duplicates.slice(1),
+        // Simple duplicate detection (expand in production)
+        const candidates: Array<{ primary: any; duplicates: any[] }> = [];
+        
+        // Example: Find members with exact same email
+        const emailMap = new Map<string, any[]>();
+        allMembers.forEach((member) => {
+          if (member.email) {
+            const existing = emailMap.get(member.email) || [];
+            existing.push(member);
+            emailMap.set(member.email, existing);
+          }
         });
-      }
-    });
 
-    return NextResponse.json({
-      success: true,
-      data: candidates,
-      count: candidates.length,
-    });
-  } catch (error) {
-    console.error("Error finding duplicate candidates:", error);
-    return NextResponse.json(
-      { error: "Failed to find duplicates" },
-      { status: 500 }
-    );
-  }
-}
+        emailMap.forEach((duplicates) => {
+          if (duplicates.length > 1) {
+            candidates.push({
+              primary: duplicates[0],
+              duplicates: duplicates.slice(1),
+            });
+          }
+        });
+
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/members/merge',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'low',
+          details: { orgId, candidatesCount: candidates.length },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: candidates,
+          count: candidates.length,
+        });
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/members/merge',
+          method: 'GET',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error("Error finding duplicate candidates:", error);
+        return NextResponse.json(
+          { error: "Failed to find duplicates" },
+          { status: 500 }
+        );
+      }
+  })(request);
+};

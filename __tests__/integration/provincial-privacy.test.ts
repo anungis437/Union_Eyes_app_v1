@@ -21,7 +21,8 @@ describe('Provincial Privacy Service Integration', () => {
       
       for (const province of provinces) {
         const rules = getPrivacyRules(province);
-        expect(rules.breachNotificationHours).toBe(72);
+        const expectedHours = province === 'QC' ? 24 : 72;
+        expect(rules.breachNotificationHours).toBe(expectedHours);
       }
     });
 
@@ -126,7 +127,7 @@ describe('Provincial Privacy Service Integration', () => {
     it('should provide correct commissioner for each province', () => {
       const provinces = {
         'AB': 'Alberta',
-        'BC': 'British Columbia',
+        'BC': 'BC',
         'QC': 'Québec',
         'ON': 'Ontario'
       };

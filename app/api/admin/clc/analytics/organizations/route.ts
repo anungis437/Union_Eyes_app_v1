@@ -7,30 +7,63 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { analyzeOrganizationPerformance } from '@/services/clc/compliance-reports';
+import { db } from '@/database';
+import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
+import { sql } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
-    const minOrganizations = parseInt(searchParams.get('minOrgs') || '5');
+        const searchParams = request.nextUrl.searchParams;
+        const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
+        const minOrganizations = parseInt(searchParams.get('minOrgs') || '5');
 
-    // TODO: Fetch remittances from perCapitaRemittances table when schema is implemented
-    // For now, return empty array since perCapitaRemittances schema is not yet defined
-    const remittances: any[] = [];
-    const performance = await analyzeOrganizationPerformance(remittances, year);
+        // Fetch remittances from perCapitaRemittances table
+        const remittances = await db
+          .select()
+          .from(perCapitaRemittances)
+          .where(sql`${perCapitaRemittances.remittanceYear} = ${year}`)
+          .orderBy(perCapitaRemittances.fromOrganizationId, perCapitaRemittances.remittanceMonth);
+        
+        const performance = await analyzeOrganizationPerformance(remittances, year);
 
-    return NextResponse.json(performance, {
-      headers: {
-        'Cache-Control': 'public, max-age=1800' // Cache for 30 minutes
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/analytics/organizations',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'low',
+          details: { dataType: 'ANALYTICS', year, remittanceCount: remittances.length },
+        });
+
+        return NextResponse.json(performance, {
+          headers: {
+            'Cache-Control': 'public, max-age=1800' // Cache for 30 minutes
+          }
+        });
+
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/analytics/organizations',
+          method: 'GET',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error('Analytics organizations error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch organization performance data' },
+          { status: 500 }
+        );
       }
-    });
-
-  } catch (error) {
-    console.error('Analytics organizations error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch organization performance data' },
-      { status: 500 }
-    );
-  }
-}
+  })(request);
+};

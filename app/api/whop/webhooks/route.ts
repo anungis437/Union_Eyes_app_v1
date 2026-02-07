@@ -9,10 +9,10 @@ import { handleMembershipChange } from "./utils/membership-handlers";
 // Lazy initialization to avoid module-level env var access during build
 let handleWebhook: ReturnType<typeof makeWebhookHandler> | null = null;
 function getWebhookHandler() {
-  if (!getWebhookHandler()) {
+  if (!handleWebhook) {
     handleWebhook = makeWebhookHandler();
   }
-  return getWebhookHandler();
+  return handleWebhook;
 }
 
 /**

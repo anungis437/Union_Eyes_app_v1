@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Organizing Committee
  * Manage organizing committee members and activities
@@ -5,39 +6,31 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/organizing/committee
- * List organizing committee members for a campaign
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const campaignId = searchParams.get('campaignId');
 
-    const { searchParams } = new URL(request.url);
-    const campaignId = searchParams.get('campaignId');
+      if (!campaignId) {
+        return NextResponse.json(
+          { error: 'Bad Request - campaignId is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!campaignId) {
-      return NextResponse.json(
-        { error: 'Bad Request - campaignId is required' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch committee members
-    const result = await db.execute(sql`
+      // Fetch committee members
+      const result = await db.execute(sql`
       SELECT 
         id,
         contact_number,
@@ -66,8 +59,8 @@ export async function GET(request: NextRequest) {
         department, shift
     `);
 
-    // Get committee summary
-    const summaryResult = await db.execute(sql`
+      // Get committee summary
+      const summaryResult = await db.execute(sql`
       SELECT 
         COUNT(*) as total_committee_members,
         SUM(CASE WHEN card_signed = true THEN 1 ELSE 0 END) as members_with_cards,
@@ -81,58 +74,51 @@ export async function GET(request: NextRequest) {
         AND organizing_committee_member = true
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        members: result,
-        summary: summaryResult[0] || {},
-      },
-      count: result.length,
-    });
+      return NextResponse.json({
+        success: true,
+        data: {
+          members: result,
+          summary: summaryResult[0] || {},
+        },
+        count: result.length,
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch organizing committee', error as Error, {
-      campaignId: request.nextUrl.searchParams.get('campaignId'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to fetch organizing committee', error as Error, {
+        campaignId: request.nextUrl.searchParams.get('campaignId'),
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+  })
+  })(request);
+};
 
-/**
- * POST /api/organizing/committee
- * Add a contact to organizing committee or update their role
- */
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const body = await request.json();
+      const {
+        contactId,
+        organizingCommitteeRole,
+        naturalLeader,
+      } = body;
 
-    const body = await request.json();
-    const {
-      contactId,
-      organizingCommitteeRole,
-      naturalLeader,
-    } = body;
+      // Validate required fields
+      if (!contactId) {
+        return NextResponse.json(
+          { error: 'Bad Request - contactId is required' },
+          { status: 400 }
+        );
+      }
 
-    // Validate required fields
-    if (!contactId) {
-      return NextResponse.json(
-        { error: 'Bad Request - contactId is required' },
-        { status: 400 }
-      );
-    }
-
-    // Update contact to add to committee
-    const result = await db.execute(sql`
+      // Update contact to add to committee
+      const result = await db.execute(sql`
       UPDATE organizing_contacts
       SET 
         organizing_committee_member = true,
@@ -145,56 +131,49 @@ export async function POST(request: NextRequest) {
         organizing_committee_role, natural_leader, support_level
     `);
 
-    if (result.length === 0) {
+      if (result.length === 0) {
+        return NextResponse.json(
+          { error: 'Not Found - Contact not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'Contact added to organizing committee',
+      });
+
+    } catch (error) {
+      logger.error('Failed to add contact to committee', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
       return NextResponse.json(
-        { error: 'Not Found - Contact not found' },
-        { status: 404 }
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
       );
     }
+  })
+  })(request);
+};
 
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'Contact added to organizing committee',
-    });
+export const DELETE = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-  } catch (error) {
-    logger.error('Failed to add contact to committee', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * DELETE /api/organizing/committee?contactId=<contactId>
- * Remove a contact from organizing committee
- */
-export async function DELETE(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const contactId = searchParams.get('contactId');
 
-    const { searchParams } = new URL(request.url);
-    const contactId = searchParams.get('contactId');
+      if (!contactId) {
+        return NextResponse.json(
+          { error: 'Bad Request - contactId parameter is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!contactId) {
-      return NextResponse.json(
-        { error: 'Bad Request - contactId parameter is required' },
-        { status: 400 }
-      );
-    }
-
-    // Update contact to remove from committee
-    const result = await db.execute(sql`
+      // Update contact to remove from committee
+      const result = await db.execute(sql`
       UPDATE organizing_contacts
       SET 
         organizing_committee_member = false,
@@ -204,27 +183,29 @@ export async function DELETE(request: NextRequest) {
       RETURNING id, contact_number
     `);
 
-    if (result.length === 0) {
+      if (result.length === 0) {
+        return NextResponse.json(
+          { error: 'Not Found - Contact not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'Contact removed from organizing committee',
+      });
+
+    } catch (error) {
+      logger.error('Failed to remove contact from committee', error as Error, {
+        contactId: request.nextUrl.searchParams.get('contactId'),
+        correlationId: request.headers.get('x-correlation-id'),
+      });
       return NextResponse.json(
-        { error: 'Not Found - Contact not found' },
-        { status: 404 }
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'Contact removed from organizing committee',
-    });
-
-  } catch (error) {
-    logger.error('Failed to remove contact from committee', error as Error, {
-      contactId: request.nextUrl.searchParams.get('contactId'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};

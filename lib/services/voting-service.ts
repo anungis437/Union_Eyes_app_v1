@@ -21,7 +21,16 @@ import {
 } from "@/db/schema";
 import { eq, and, or, desc, asc, sql, inArray, count, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import { createHash } from "crypto";
+import { createHash, createHmac } from "crypto";
+import { env, validateEnvironment } from "@/lib/config/env-validation";
+import {
+  deriveVotingSessionKey,
+  signVote,
+  verifyVoteSignature,
+  generateVoteReceipt,
+  createVotingAuditLog,
+  verifyElectionIntegrity,
+} from "./voting-crypto-service";
 
 // ============================================================================
 // Types
@@ -392,23 +401,57 @@ export async function updateVoterEligibility(
 // ============================================================================
 
 /**
- * Generate anonymous voter ID
+ * Generate anonymous voter ID using cryptographically secure method
+ * 
+ * Uses HMAC-SHA256 with KDF to ensure:
+ * - Anonymous but verifiable voter identity
+ * - Prevention of double voting
+ * - Proper key derivation per NIST standards
  */
 function generateAnonymousVoterId(
   sessionId: string,
-  memberId: string,
-  secret: string = process.env.VOTING_SECRET || ""
+  memberId: string
 ): { voterId: string; voterHash: string } {
-  const voterId = createHash("sha256")
-    .update(`${sessionId}:${memberId}:${secret}`)
-    .digest("hex")
-    .substring(0, 16);
+  try {
+    // Get validated voting secret from environment
+    const votingSecret = env.VOTING_SECRET;
+    
+    if (!votingSecret) {
+      throw new Error(
+        'VOTING_SECRET not configured. Set VOTING_SECRET environment variable (min 32 characters) for voting to work.'
+      );
+    }
 
-  const voterHash = createHash("sha256")
-    .update(voterId)
-    .digest("hex");
+    // Ensure VOTING_SECRET meets minimum security requirements (32 chars for HMAC-SHA256)
+    if (votingSecret.length < 32) {
+      throw new Error(
+        `VOTING_SECRET too short (${votingSecret.length} chars). Minimum 32 characters required for cryptographic security.`
+      );
+    }
 
-  return { voterId, voterHash };
+    // Derive session key using PBKDF2
+    const sessionKey = deriveVotingSessionKey(
+      sessionId,
+      votingSecret
+    );
+
+    // Create voter hash from memberId+sessionId using HMAC
+    const voterIdContent = `voter:${memberId}:${sessionId}:${Date.now()}`;
+    const voterId = createHmac("sha256", sessionKey)
+      .update(voterIdContent)
+      .digest("hex")
+      .substring(0, 16);
+
+    // Double hash for one-way verification
+    const voterHash = createHash("sha256")
+      .update(voterId)
+      .digest("hex");
+
+    return { voterId, voterHash };
+  } catch (error) {
+    console.error("Failed to generate anonymous voter ID:", error);
+    throw new Error("Voting system initialization failed - VOTING_SECRET not configured or invalid");
+  }
 }
 
 /**

@@ -7,11 +7,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { createExportJob, updateExportJobStatus } from '@/db/queries/analytics-queries';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function postHandler(req: NextRequest) {
+async function postHandler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const tenantId = context.tenantId;
+    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(

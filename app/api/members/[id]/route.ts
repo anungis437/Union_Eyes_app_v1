@@ -1,110 +1,296 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withRoleAuth } from '@/lib/role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { getMemberById } from '@/db/queries/organization-members-queries';
+import { db } from '@/db';
+import { sql } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Helper function to get user's role and organization context
+ */
+async function getUserContext(userId: string): Promise<{ role: string; organizationId: string } | null> {
+  try {
+    const result = await db.execute(
+      sql`SELECT role, organization_id FROM tenant_users WHERE user_id = ${userId} LIMIT 1`
+    );
+    if (result.length > 0) {
+      return {
+        role: result[0].role as string,
+        organizationId: result[0].organization_id as string,
+      };
+    }
+    return null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+/**
+ * Check if user has sufficient role
+ */
+function hasMinimumRole(userRole: string, requiredRole: string): boolean {
+  const roles = ['member', 'steward', 'executive', 'admin'];
+  const userRoleIndex = roles.indexOf(userRole);
+  const requiredRoleIndex = roles.indexOf(requiredRole);
+  return userRoleIndex >= requiredRoleIndex;
+}
 
 /**
  * GET /api/members/[id]
  * Get member profile by ID with tenant isolation
  * All authenticated members can view profiles
  */
-export const GET = withRoleAuth('member', async (
+export const GET = async (
   request: NextRequest,
-  context,
-  params?: { id: string }
+  { params }: { params: { id: string } }
 ) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { organizationId } = context;
-    const memberId = params?.id as string;
+        const memberId = params.id;
 
-    if (!memberId) {
-      return NextResponse.json(
-        { success: false, error: 'Member ID is required' },
-        { status: 400 }
-      );
-    }
+        if (!memberId) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'GET',
+            eventType: 'validation_failed',
+            severity: 'low',
+            details: { reason: 'Member ID is required' },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Member ID is required' },
+            { status: 400 }
+          );
+        }
 
-    // Get member from organization_members table
-    const member = await getMemberById(organizationId, memberId);
+        // Get user context
+        const userContext = await getUserContext(user.id);
+        if (!userContext) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'GET',
+            eventType: 'auth_failed',
+            severity: 'medium',
+            details: { reason: 'User context not found' },
+          });
+          return NextResponse.json(
+            { success: false, error: 'User context not found' },
+            { status: 403 }
+          );
+        }
 
-    if (!member) {
-      return NextResponse.json(
-        { success: false, error: 'Member not found or access denied' },
-        { status: 404 }
-      );
-    }
+        const { organizationId } = userContext;
 
-    // Verify member belongs to current organization
-    if (member.organizationId !== organizationId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied - member belongs to different organization' },
-        { status: 403 }
-      );
-    }
+        // Get member from organization_members table
+        const member = await getMemberById(organizationId, memberId);
 
-    return NextResponse.json({
-      success: true,
-      data: member
-    });
-  } catch (error) {
-    console.error('Error fetching member profile:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-});
+        if (!member) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'GET',
+            eventType: 'validation_failed',
+            severity: 'low',
+            details: { reason: 'Member not found', memberId },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Member not found or access denied' },
+            { status: 404 }
+          );
+        }
+
+        // Verify member belongs to current organization
+        if (member.organizationId !== organizationId) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'GET',
+            eventType: 'auth_failed',
+            severity: 'high',
+            details: { reason: 'Cross-organization access attempt', memberId, memberOrg: member.organizationId, userOrg: organizationId },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Access denied - member belongs to different organization' },
+            { status: 403 }
+          );
+        }
+
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: `/api/members/${memberId}`,
+          method: 'GET',
+          eventType: 'success',
+          severity: 'low',
+          details: { memberId, organizationId },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: member
+        });
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: `/api/members/${params.id}`,
+          method: 'GET',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error('Error fetching member profile:', error);
+        return NextResponse.json(
+          { success: false, error: 'Internal server error' },
+          { status: 500 }
+        );
+      }
+  })(request, { params });
+};
 
 /**
  * PATCH /api/members/[id]
  * Update member profile (steward role or higher required)
  */
-export const PATCH = withRoleAuth('steward', async (
+export const PATCH = async (
   request: NextRequest,
-  context,
-  params?: { id: string }
+  { params }: { params: { id: string } }
 ) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { organizationId } = context;
-    const memberId = params?.id as string;
+        const memberId = params.id;
 
-    if (!memberId) {
-      return NextResponse.json(
-        { success: false, error: 'Member ID is required' },
-        { status: 400 }
-      );
-    }
+        if (!memberId) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'PATCH',
+            eventType: 'validation_failed',
+            severity: 'low',
+            details: { reason: 'Member ID is required' },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Member ID is required' },
+            { status: 400 }
+          );
+        }
 
-    // Get existing member to verify organization
-    const existingMember = await getMemberById(organizationId, memberId);
+        // Get user context
+        const userContext = await getUserContext(user.id);
+        if (!userContext) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'PATCH',
+            eventType: 'auth_failed',
+            severity: 'medium',
+            details: { reason: 'User context not found' },
+          });
+          return NextResponse.json(
+            { success: false, error: 'User context not found' },
+            { status: 403 }
+          );
+        }
 
-    if (!existingMember) {
-      return NextResponse.json(
-        { success: false, error: 'Member not found or access denied' },
-        { status: 404 }
-      );
-    }
+        const { role, organizationId } = userContext;
 
-    // Verify member belongs to current organization
-    if (existingMember.organizationId !== organizationId) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied - member belongs to different organization' },
-        { status: 403 }
-      );
-    }
+        // Check if user has steward role or higher
+        if (!hasMinimumRole(role, 'steward')) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'PATCH',
+            eventType: 'auth_failed',
+            severity: 'medium',
+            details: { reason: 'Insufficient permissions - steward role required', userRole: role },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Insufficient permissions - steward role or higher required' },
+            { status: 403 }
+          );
+        }
 
-    // TODO: Implement updateMember query function and call it here
-    // For now, return not implemented
-    return NextResponse.json(
-      { success: false, error: 'Member update not yet implemented' },
-      { status: 501 }
-    );
-  } catch (error) {
-    console.error('Error updating member profile:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-});
+        // Get existing member to verify organization
+        const existingMember = await getMemberById(organizationId, memberId);
+
+        if (!existingMember) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'PATCH',
+            eventType: 'validation_failed',
+            severity: 'low',
+            details: { reason: 'Member not found', memberId },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Member not found or access denied' },
+            { status: 404 }
+          );
+        }
+
+        // Verify member belongs to current organization
+        if (existingMember.organizationId !== organizationId) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: `/api/members/${memberId}`,
+            method: 'PATCH',
+            eventType: 'auth_failed',
+            severity: 'high',
+            details: { reason: 'Cross-organization access attempt', memberId, memberOrg: existingMember.organizationId, userOrg: organizationId },
+          });
+          return NextResponse.json(
+            { success: false, error: 'Access denied - member belongs to different organization' },
+            { status: 403 }
+          );
+        }
+
+        // TODO: Implement updateMember query function and call it here
+        // For now, return not implemented
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: `/api/members/${memberId}`,
+          method: 'PATCH',
+          eventType: 'validation_failed',
+          severity: 'low',
+          details: { reason: 'Not yet implemented', memberId },
+        });
+
+        return NextResponse.json(
+          { success: false, error: 'Member update not yet implemented' },
+          { status: 501 }
+        );
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: `/api/members/${params.id}`,
+          method: 'PATCH',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error('Error updating member profile:', error);
+        return NextResponse.json(
+          { success: false, error: 'Internal server error' },
+          { status: 500 }
+        );
+      }
+  })(request, { params });
+};

@@ -74,6 +74,10 @@ class EncryptionService {
           
           this.initialized = true;
           logger.info('Encryption service initialized with fallback key');
+        } else if (process.env.NODE_ENV === 'test') {
+          this.encryptionKey = crypto.randomBytes(KEY_LENGTH);
+          this.initialized = true;
+          logger.warn('Encryption service initialized with test-only key');
         } else {
           logger.error('No encryption key configured - encryption will fail');
         }

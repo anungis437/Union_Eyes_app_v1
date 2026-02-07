@@ -8,11 +8,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getOrganizationIdForUser, validateOrganizationExists } from "@/lib/organization-utils";
+import { getMemberByUserId } from "@/db/queries/organization-members-queries";
 import { cookies } from "next/headers";
 
 export interface OrganizationContext {
   organizationId: string;
   userId: string;
+  memberId: string;
 }
 
 /**
@@ -53,10 +55,20 @@ export function withOrganizationAuth<T = any>(
       // Get organization ID - getOrganizationIdForUser handles cookie checking and access verification
       const organizationId = await getOrganizationIdForUser(userId);
 
+      // Resolve organization member for RBAC context
+      const member = await getMemberByUserId(organizationId, userId);
+      if (!member) {
+        return NextResponse.json(
+          { error: "Forbidden - User is not a member of this organization" },
+          { status: 403 }
+        );
+      }
+
       // Create organization context
       const context: OrganizationContext = {
         organizationId,
         userId,
+        memberId: member.id,
       };
 
       // Resolve params if they're a Promise

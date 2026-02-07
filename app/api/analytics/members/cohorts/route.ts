@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { sql, db } from '@/db';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 interface CohortData {
   cohortMonth: string;
@@ -17,9 +18,9 @@ interface CohortData {
   avgLifetimeClaims: number;
 }
 
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
+    const tenantId = context.tenantId;
     
     if (!tenantId) {
       return NextResponse.json(

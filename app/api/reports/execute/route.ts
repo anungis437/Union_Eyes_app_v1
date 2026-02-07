@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Report Execution API
  * 
@@ -9,9 +10,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 interface ReportConfig {
   dataSourceId: string;
@@ -36,50 +37,55 @@ interface ReportConfig {
   limit?: number;
 }
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(50, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId, orgId } = await auth();
+      const { user.id, orgId } = await auth();
 
-    if (!userId || !orgId) {
+      if (!user.id || !orgId) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+
+      const body = await req.json();
+      const config: ReportConfig = body.config;
+
+      if (!config || !config.dataSourceId || !config.fields || config.fields.length === 0) {
+        return NextResponse.json(
+          { error: 'Invalid report configuration' },
+          { status: 400 }
+        );
+      }
+
+      // Build SQL query dynamically
+      const query = buildSQLQuery(config, orgId);
+
+      // Execute query
+      const startTime = Date.now();
+      const results = await db.execute(sql.raw(query));
+      const executionTime = Date.now() - startTime;
+
+      return NextResponse.json({
+        success: true,
+        data: results,
+        rowCount: results.length,
+        executionTime,
+        query: query, // Return for transparency (remove in production)
+      });
+    } catch (error: any) {
+      console.error('Error executing report:', error);
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Failed to execute report', details: error.message },
+        { status: 500 }
       );
     }
-
-    const body = await req.json();
-    const config: ReportConfig = body.config;
-
-    if (!config || !config.dataSourceId || !config.fields || config.fields.length === 0) {
-      return NextResponse.json(
-        { error: 'Invalid report configuration' },
-        { status: 400 }
-      );
-    }
-
-    // Build SQL query dynamically
-    const query = buildSQLQuery(config, orgId);
-
-    // Execute query
-    const startTime = Date.now();
-    const results = await db.execute(sql.raw(query));
-    const executionTime = Date.now() - startTime;
-
-    return NextResponse.json({
-      success: true,
-      data: results,
-      rowCount: results.length,
-      executionTime,
-      query: query, // Return for transparency (remove in production)
-    });
-  } catch (error: any) {
-    console.error('Error executing report:', error);
-    return NextResponse.json(
-      { error: 'Failed to execute report', details: error.message },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};
 
 /**
  * Build SQL query from report configuration

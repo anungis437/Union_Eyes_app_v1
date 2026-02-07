@@ -5,6 +5,9 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+
+const hasApiServer = process.env.RUN_INTEGRATION_TESTS === 'true';
+const describeIf = hasApiServer ? describe : describe.skip;
 import { PerCapitaCalculator } from '@/services/clc/per-capita-calculator';
 import { 
   exportRemittanceToCSV, 
@@ -95,7 +98,7 @@ const mockRemittance = {
   updatedAt: new Date('2024-12-01'),
 };
 
-describe('CLC Per-Capita Integration Suite', () => {
+describeIf('CLC Per-Capita Integration Suite', () => {
   
   // =====================================================================================
   // PER-CAPITA CALCULATOR TESTS

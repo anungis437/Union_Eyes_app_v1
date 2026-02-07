@@ -24,7 +24,6 @@ export type CAJurisdiction =
  */
 export function mapJurisdictionValue(oldValue: string): CAJurisdiction {
   const mapping: Record<string, CAJurisdiction> = {
-    'federal': 'CA-FED',
     'AB': 'CA-AB',
     'BC': 'CA-BC',
     'MB': 'CA-MB',
@@ -37,10 +36,27 @@ export function mapJurisdictionValue(oldValue: string): CAJurisdiction {
     'PE': 'CA-PE',
     'QC': 'CA-QC',
     'SK': 'CA-SK',
-    'YT': 'CA-YT',
+    'YT': 'CA-YT'
   };
-  
-  return mapping[oldValue] || 'CA-FED';
+
+  const normalized = oldValue?.trim();
+  if (!normalized) {
+    return 'CA-FED';
+  }
+
+  const upper = normalized.toUpperCase();
+  if (upper === 'CA-FED' || upper === 'FEDERAL' || upper === 'FED') {
+    return 'CA-FED';
+  }
+
+  if (upper.startsWith('CA-')) {
+    const suffix = upper.slice(3);
+    if (mapping[suffix]) {
+      return mapping[suffix];
+    }
+  }
+
+  return mapping[upper] || 'CA-FED';
 }
 
 /**
@@ -63,8 +79,8 @@ export function getJurisdictionName(jurisdiction: CAJurisdiction): string {
     'CA-SK': 'Saskatchewan',
     'CA-YT': 'Yukon',
   };
-  
-  return names[jurisdiction];
+
+  return names[jurisdiction] ?? 'Unknown';
 }
 
 /**
@@ -92,7 +108,7 @@ export function getDeadlineUrgency(daysRemaining: number): {
     return { level: 'high', color: 'orange', label: 'Urgent' };
   }
   if (daysRemaining <= 7) {
-    return { level: 'medium', color: 'yellow', label: 'Soon' };
+    return { level: 'medium', color: 'yellow', label: 'Upcoming' };
   }
   return { level: 'low', color: 'green', label: 'On Track' };
 }

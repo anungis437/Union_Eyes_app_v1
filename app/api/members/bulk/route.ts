@@ -4,12 +4,47 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { z } from "zod";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { 
   bulkImportMembers,
   bulkUpdateMemberStatus,
   bulkUpdateMemberRole
 } from "@/lib/services/member-service";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+
+/**
+ * Validation schemas
+ */
+const bulkImportSchema = z.object({
+  operation: z.literal('import'),
+  members: z.array(z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    status: z.string().optional(),
+    role: z.string().optional(),
+  })).min(1, 'Must have at least one member'),
+});
+
+const bulkUpdateStatusSchema = z.object({
+  operation: z.literal('updateStatus'),
+  memberIds: z.array(z.string().uuid('Invalid member ID')).min(1, 'Must have at least one member ID'),
+  status: z.string().min(1),
+});
+
+const bulkUpdateRoleSchema = z.object({
+  operation: z.literal('updateRole'),
+  memberIds: z.array(z.string().uuid('Invalid member ID')).min(1, 'Must have at least one member ID'),
+  role: z.string().min(1),
+});
+
+const bulkOperationSchema = z.discriminatedUnion('operation', [
+  bulkImportSchema,
+  bulkUpdateStatusSchema,
+  bulkUpdateRoleSchema,
+]);
 
 /**
  * POST /api/members/bulk
@@ -22,60 +57,101 @@ import {
  * - status: string (for updateStatus operation)
  * - role: string (for updateRole operation)
  */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    
-    if (!body.operation) {
-      return NextResponse.json({ error: "operation is required" }, { status: 400 });
-    }
-
-    let result;
-
-    switch (body.operation) {
-      case "import":
-        if (!body.members || !Array.isArray(body.members) || body.members.length === 0) {
-          return NextResponse.json({ error: "members array is required for import operation" }, { status: 400 });
-        }
-        result = await bulkImportMembers(body.members);
-        break;
-
-      case "updateStatus":
-        if (!body.memberIds || !Array.isArray(body.memberIds) || body.memberIds.length === 0) {
-          return NextResponse.json({ error: "memberIds array is required" }, { status: 400 });
-        }
-        if (!body.status) {
-          return NextResponse.json({ error: "status is required for updateStatus operation" }, { status: 400 });
-        }
-        result = await bulkUpdateMemberStatus(body.memberIds, body.status);
-        break;
-
-      case "updateRole":
-        if (!body.memberIds || !Array.isArray(body.memberIds) || body.memberIds.length === 0) {
-          return NextResponse.json({ error: "memberIds array is required" }, { status: 400 });
-        }
-        if (!body.role) {
-          return NextResponse.json({ error: "role is required for updateRole operation" }, { status: 400 });
-        }
-        result = await bulkUpdateMemberRole(body.memberIds, body.role);
-        break;
-
-      default:
-        return NextResponse.json({ error: "Invalid operation" }, { status: 400 });
-    }
-
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("Error performing bulk member operation:", error);
-    return NextResponse.json(
-      { error: "Failed to perform bulk operation", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
-}
+
+  const parsed = bulkOperationSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const user = { id: context.userId, organizationId: context.organizationId };
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      let result;
+
+      switch (body.operation) {
+        case "import":
+          result = await bulkImportMembers(body.members);
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: '/api/members/bulk',
+            method: 'POST',
+            eventType: 'success',
+            severity: 'medium',
+            details: { 
+              operation: 'import', 
+              memberCount: body.members.length 
+            },
+          });
+          break;
+
+        case "updateStatus":
+          result = await bulkUpdateMemberStatus(body.memberIds, body.status);
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: '/api/members/bulk',
+            method: 'POST',
+            eventType: 'success',
+            severity: 'medium',
+            details: { 
+              operation: 'updateStatus', 
+              memberCount: body.memberIds.length, 
+              newStatus: body.status 
+            },
+          });
+          break;
+
+        case "updateRole":
+          result = await bulkUpdateMemberRole(body.memberIds, body.role);
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId: user.id,
+            endpoint: '/api/members/bulk',
+            method: 'POST',
+            eventType: 'success',
+            severity: 'medium',
+            details: { 
+              operation: 'updateRole', 
+              memberCount: body.memberIds.length, 
+              newRole: body.role 
+            },
+          });
+          break;
+      }
+
+      return NextResponse.json(result);
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/members/bulk',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { 
+          operation: body.operation, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        },
+      });
+      console.error("Error performing bulk member operation:", error);
+      return NextResponse.json(
+        { error: "Failed to perform bulk operation", details: error instanceof Error ? error.message : "Unknown error" },
+        { status: 500 }
+      );
+    }
+});
+

@@ -1,3 +1,5 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
+
 // =====================================================================================
 // PKI Certificates API - List & Upload
 // =====================================================================================
@@ -6,106 +8,102 @@
 // =====================================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { 
   getUserCertificate,
   storeCertificate,
   getExpiringCertificates,
 } from '@/services/pki/certificate-manager';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-/**
- * GET /api/admin/pki/certificates
- * List certificates for current user or all expiring certificates (admin only)
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId, orgId } = await auth();
+      const { user.id, orgId } = await auth();
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const action = searchParams.get('action');
 
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action');
+      // Admin action: Get expiring certificates
+      if (action === 'expiring') {
+        const days = parseInt(searchParams.get('days') ?? '30');
+        const expiringCerts = await getExpiringCertificates(days);
 
-    // Admin action: Get expiring certificates
-    if (action === 'expiring') {
-      const days = parseInt(searchParams.get('days') ?? '30');
-      const expiringCerts = await getExpiringCertificates(days);
+        return NextResponse.json({
+          success: true,
+          certificates: expiringCerts,
+          count: expiringCerts.length,
+        });
+      }
+
+      // Default: Get user's certificate
+      const cert = await getUserCertificate(user.id, orgId ?? undefined);
+
+      if (!cert) {
+        return NextResponse.json({
+          success: true,
+          certificate: null,
+        });
+      }
 
       return NextResponse.json({
         success: true,
-        certificates: expiringCerts,
-        count: expiringCerts.length,
+        certificate: cert,
       });
+
+    } catch (error) {
+      console.error('Error fetching certificates:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch certificates', details: (error as Error).message },
+        { status: 500 }
+      );
     }
+  })
+  })(request);
+};
 
-    // Default: Get user's certificate
-    const cert = await getUserCertificate(userId, orgId ?? undefined);
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-    if (!cert) {
+  try {
+      const { user.id, orgId } = await auth();
+
+      if (!user.id || !orgId) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Organization context required' },
+          { status: 401 }
+        );
+      }
+
+      const body = await request.json();
+      const { certificatePem } = body;
+
+      if (!certificatePem) {
+        return NextResponse.json(
+          { error: 'Certificate PEM required' },
+          { status: 400 }
+        );
+      }
+
+      // Store certificate
+      const storedCert = await storeCertificate(user.id, orgId, certificatePem);
+
       return NextResponse.json({
         success: true,
-        certificate: null,
+        certificate: storedCert,
+        message: 'Certificate uploaded successfully',
       });
-    }
 
-    return NextResponse.json({
-      success: true,
-      certificate: cert,
-    });
-
-  } catch (error) {
-    console.error('Error fetching certificates:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch certificates', details: (error as Error).message },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * POST /api/admin/pki/certificates
- * Upload new certificate
- */
-export async function POST(request: NextRequest) {
-  try {
-    const { userId, orgId } = await auth();
-
-    if (!userId || !orgId) {
+    } catch (error) {
+      console.error('Error uploading certificate:', error);
       return NextResponse.json(
-        { error: 'Unauthorized - Organization context required' },
-        { status: 401 }
+        { error: 'Failed to upload certificate', details: (error as Error).message },
+        { status: 500 }
       );
     }
-
-    const body = await request.json();
-    const { certificatePem } = body;
-
-    if (!certificatePem) {
-      return NextResponse.json(
-        { error: 'Certificate PEM required' },
-        { status: 400 }
-      );
-    }
-
-    // Store certificate
-    const storedCert = await storeCertificate(userId, orgId, certificatePem);
-
-    return NextResponse.json({
-      success: true,
-      certificate: storedCert,
-      message: 'Certificate uploaded successfully',
-    });
-
-  } catch (error) {
-    console.error('Error uploading certificate:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload certificate', details: (error as Error).message },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};

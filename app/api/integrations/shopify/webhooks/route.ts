@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import {
   verifyShopifySignature,
   parseShopifyHeaders,
@@ -10,8 +10,8 @@ import {
   markRedemptionFulfilled,
   processRedemptionRefund,
   getRedemptionByOrderId,
+  getRedemptionByIdInternal,
 } from '@/lib/services/rewards/redemption-service';
-import { db } from '@/db';
 
 /**
  * Shopify Webhook Handler
@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
     
     // 2. Parse Shopify headers
     const headers = parseShopifyHeaders(request.headers);
-    const { topic, webhookId, hmacHeader } = headers;
+    const { topic, webhookId, hmac } = headers || {};
 
-    if (!topic || !webhookId || !hmacHeader) {
+    if (!topic || !webhookId || !hmac) {
       return NextResponse.json(
         { error: 'Missing required Shopify headers' },
         { status: 400 }
@@ -46,10 +46,18 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Verify HMAC signature
-    const isValid = await verifyShopifySignature(
+    const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      return NextResponse.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500 }
+      );
+    }
+
+    const isValid = verifyShopifySignature(
       rawBody,
-      hmacHeader,
-      process.env.SHOPIFY_WEBHOOK_SECRET!
+      hmac,
+      webhookSecret
     );
 
     if (!isValid) {
@@ -73,8 +81,10 @@ export async function POST(request: NextRequest) {
 
     // 5. Route by topic with idempotency
     const result = await processWebhookIdempotent(
+      'shopify',
       webhookId,
       topic,
+      payload,
       async () => {
         switch (topic) {
           case 'orders/paid':
@@ -129,10 +139,15 @@ async function handleOrderPaid(payload: any) {
     return { status: 'ignored', reason: 'no_redemption_discount' };
   }
 
-  // Mark redemption as ordered
+  const redemption = await getRedemptionByIdInternal(redemptionId);
+  if (!redemption) {
+    console.warn('[Webhook] Redemption not found for discount code', { redemptionId });
+    return { status: 'ignored', reason: 'redemption_not_found' };
+  }
+
   await markRedemptionOrdered(
-    db,
     redemptionId,
+    redemption.orgId,
     orderId,
     {
       order_number: orderNumber,
@@ -176,7 +191,7 @@ async function handleOrderFulfilled(payload: any) {
   console.log('[Webhook] orders/fulfilled', { orderId, orderNumber, fulfillments: fulfillments.length });
 
   // Find redemption by order ID
-  const redemption = await getRedemptionByOrderId(db, orderId);
+  const redemption = await getRedemptionByOrderId(orderId);
   
   if (!redemption) {
     console.warn('[Webhook] Redemption not found for order', { orderId });
@@ -196,9 +211,9 @@ async function handleOrderFulfilled(payload: any) {
 
   // Mark redemption as fulfilled
   await markRedemptionFulfilled(
-    db,
     redemption.id,
-    fulfillmentDetails
+    redemption.orgId,
+    fulfillmentDetails || {}
   );
 
   return { 
@@ -222,7 +237,7 @@ async function handleRefundCreated(payload: any) {
   console.log('[Webhook] refunds/create', { refundId, orderId, lineItems: refundLineItems.length });
 
   // Find redemption by order ID
-  const redemption = await getRedemptionByOrderId(db, orderId);
+  const redemption = await getRedemptionByOrderId(orderId);
   
   if (!redemption) {
     console.warn('[Webhook] Redemption not found for refund', { orderId, refundId });
@@ -236,10 +251,10 @@ async function handleRefundCreated(payload: any) {
 
   // Process refund (returns credits to wallet)
   await processRedemptionRefund(
-    db,
     redemption.id,
-    refundId,
+    redemption.orgId,
     {
+      refund_id: refundId,
       refund_amount: totalRefund,
       currency: payload.currency || 'CAD',
       refund_line_items: refundLineItems.map((item: any) => ({
@@ -257,7 +272,7 @@ async function handleRefundCreated(payload: any) {
     status: 'processed', 
     redemption_id: redemption.id,
     refund_id: refundId,
-    credits_refunded: redemption.credits_redeemed 
+    credits_refunded: redemption.creditsSpent 
   };
 }
 

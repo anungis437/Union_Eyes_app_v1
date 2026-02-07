@@ -8,7 +8,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { organizations, perCapitaRemittances } from '@/db/schema';
 import { and, eq, gte, lte, inArray, sql } from 'drizzle-orm';
@@ -18,202 +19,331 @@ import {
   calculateAllPerCapita,
   savePerCapitaRemittances 
 } from '@/services/clc/per-capita-calculator';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+
+/**
+ * Admin role check helper
+ */
+async function checkAdminRole(userId: string): Promise<boolean> {
+  try {
+    const admin = await db.execute(
+      sql`SELECT role FROM tenant_users WHERE user_id = ${userId} AND role = 'admin' LIMIT 1`
+    );
+    return admin.length > 0;
+  } catch (_error) {
+    return false;
+  }
+}
+
+/**
+ * Query schema for listing remittances
+ */
+const listRemittancesSchema = z.object({
+  status: z.string().optional(),
+  organizationId: z.string().uuid().optional(),
+  month: z.string().optional().transform(v => v ? parseInt(v) : null),
+  year: z.string().optional().transform(v => v ? parseInt(v) : null),
+  dueDateFrom: z.string().optional(),
+  dueDateTo: z.string().optional(),
+  page: z.string().default('1').transform(v => parseInt(v)),
+  pageSize: z.string().default('50').transform(v => Math.min(parseInt(v), 100)),
+});
+
+/**
+ * Body schema for calculating remittances
+ */
+const calculateRemittancesSchema = z.object({
+  organizationId: z.string().uuid().optional(),
+  month: z.number().min(1).max(12),
+  year: z.number().min(2000).max(2100),
+  saveResults: z.boolean().optional().default(false),
+});
 
 // =====================================================================================
 // GET - List remittances with filters
 // =====================================================================================
 
-export async function GET(request: NextRequest) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
 
-    // Set session context for RLS
-    await db.execute(sql`SET app.current_user_id = ${userId}`);
+  // Admin check
+      const isAdmin = await checkAdminRole(user.id);
+      if (!isAdmin) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/remittances',
+          method: 'GET',
+          eventType: 'auth_failed',
+          severity: 'high',
+          details: { reason: 'Admin access required' },
+        });
+        return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+      }
 
-    // Parse query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const status = searchParams.get('status');
-    const organizationId = searchParams.get('organizationId');
-    const month = searchParams.get('month') ? parseInt(searchParams.get('month')!) : null;
-    const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : null;
-    const dueDateFrom = searchParams.get('dueDateFrom');
-    const dueDateTo = searchParams.get('dueDateTo');
-    const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '50');
-    const offset = (page - 1) * pageSize;
+      try {
+        // Set session context for RLS
+        await db.execute(sql`SET app.current_user_id = ${user.id}`);
 
-    // Build WHERE conditions
-    const conditions = [];
-    
-    if (status) {
-      conditions.push(eq(perCapitaRemittances.status, status as any));
-    }
-    
-    if (organizationId) {
-      // Filter by either from_organization_id OR to_organization_id
-      conditions.push(
-        sql`(${perCapitaRemittances.fromOrganizationId} = ${organizationId} OR ${perCapitaRemittances.toOrganizationId} = ${organizationId})`
-      );
-    }
-    
-    if (month !== null) {
-      conditions.push(eq(perCapitaRemittances.remittanceMonth, month));
-    }
-    
-    if (year !== null) {
-      conditions.push(eq(perCapitaRemittances.remittanceYear, year));
-    }
-    
-    if (dueDateFrom) {
-      conditions.push(gte(perCapitaRemittances.dueDate, dueDateFrom));
-    }
-    
-    if (dueDateTo) {
-      conditions.push(lte(perCapitaRemittances.dueDate, dueDateTo));
-    }
+        // Set session context for RLS
+        await db.execute(sql`SET app.current_user_id = ${user.id}`);
 
-    // Fetch remittances with organization details
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-    
-    const remittances = await db
-      .select({
-        id: perCapitaRemittances.id,
-        remittanceMonth: perCapitaRemittances.remittanceMonth,
-        remittanceYear: perCapitaRemittances.remittanceYear,
-        fromOrganizationId: perCapitaRemittances.fromOrganizationId,
-        toOrganizationId: perCapitaRemittances.toOrganizationId,
-        totalMembers: perCapitaRemittances.totalMembers,
-        goodStandingMembers: perCapitaRemittances.goodStandingMembers,
-        remittableMembers: perCapitaRemittances.remittableMembers,
-        perCapitaRate: perCapitaRemittances.perCapitaRate,
-        totalAmount: perCapitaRemittances.totalAmount,
-        dueDate: perCapitaRemittances.dueDate,
-        status: perCapitaRemittances.status,
-        submittedDate: perCapitaRemittances.submittedDate,
-        paidDate: perCapitaRemittances.paidDate,
-        clcAccountCode: perCapitaRemittances.clcAccountCode,
-        glAccount: perCapitaRemittances.glAccount,
-        createdAt: perCapitaRemittances.createdAt,
-        updatedAt: perCapitaRemittances.updatedAt,
-      })
-      .from(perCapitaRemittances)
-      .where(whereClause)
-      .orderBy(sql`${perCapitaRemittances.dueDate} DESC, ${perCapitaRemittances.createdAt} DESC`)
-      .limit(pageSize)
-      .offset(offset);
+        // Parse query parameters
+        const searchParams = request.nextUrl.searchParams;
+        const status = searchParams.get('status');
+        const organizationId = searchParams.get('organizationId');
+        const month = searchParams.get('month') ? parseInt(searchParams.get('month')!) : null;
+        const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : null;
+        const dueDateFrom = searchParams.get('dueDateFrom');
+        const dueDateTo = searchParams.get('dueDateTo');
+        const page = parseInt(searchParams.get('page') || '1');
+        const pageSize = parseInt(searchParams.get('pageSize') || '50');
+        const offset = (page - 1) * pageSize;
 
-    // Get total count for pagination
-    const [countResult] = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(perCapitaRemittances)
-      .where(whereClause);
-    
-    const totalCount = Number(countResult.count);
-    const totalPages = Math.ceil(totalCount / pageSize);
+        const offset = (page - 1) * pageSize;
 
-    // Fetch organization details for all remittances
-    const orgIds = new Set<string>();
-    remittances.forEach(r => {
-      orgIds.add(r.fromOrganizationId);
-      orgIds.add(r.toOrganizationId);
-    });
+        // Build WHERE conditions
+        const conditions = [];
+        
+        if (status) {
+          conditions.push(eq(perCapitaRemittances.status, status as any));
+        }
+        
+        if (organizationId) {
+          // Filter by either from_organization_id OR to_organization_id
+          conditions.push(
+            sql`(${perCapitaRemittances.fromOrganizationId} = ${organizationId} OR ${perCapitaRemittances.toOrganizationId} = ${organizationId})`
+          );
+        }
+        
+        if (month !== null) {
+          conditions.push(eq(perCapitaRemittances.remittanceMonth, month));
+        }
+        
+        if (year !== null) {
+          conditions.push(eq(perCapitaRemittances.remittanceYear, year));
+        }
+        
+        if (dueDateFrom) {
+          conditions.push(gte(perCapitaRemittances.dueDate, dueDateFrom));
+        }
+        
+        if (dueDateTo) {
+          conditions.push(lte(perCapitaRemittances.dueDate, dueDateTo));
+        }
 
-    const orgs = await db
-      .select({
-        id: organizations.id,
-        name: organizations.name,
-        slug: organizations.slug,
-        charterNumber: organizations.charterNumber,
-      })
-      .from(organizations)
-      .where(inArray(organizations.id, Array.from(orgIds)));
+        // Fetch remittances with organization details
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+        
+        const remittances = await db
+          .select({
+            id: perCapitaRemittances.id,
+            remittanceMonth: perCapitaRemittances.remittanceMonth,
+            remittanceYear: perCapitaRemittances.remittanceYear,
+            fromOrganizationId: perCapitaRemittances.fromOrganizationId,
+            toOrganizationId: perCapitaRemittances.toOrganizationId,
+            totalMembers: perCapitaRemittances.totalMembers,
+            goodStandingMembers: perCapitaRemittances.goodStandingMembers,
+            remittableMembers: perCapitaRemittances.remittableMembers,
+            perCapitaRate: perCapitaRemittances.perCapitaRate,
+            totalAmount: perCapitaRemittances.totalAmount,
+            dueDate: perCapitaRemittances.dueDate,
+            status: perCapitaRemittances.status,
+            submittedDate: perCapitaRemittances.submittedDate,
+            paidDate: perCapitaRemittances.paidDate,
+            clcAccountCode: perCapitaRemittances.clcAccountCode,
+            glAccount: perCapitaRemittances.glAccount,
+            createdAt: perCapitaRemittances.createdAt,
+            updatedAt: perCapitaRemittances.updatedAt,
+          })
+          .from(perCapitaRemittances)
+          .where(whereClause)
+          .orderBy(sql`${perCapitaRemittances.dueDate} DESC, ${perCapitaRemittances.createdAt} DESC`)
+          .limit(pageSize)
+          .offset(offset);
 
-    const orgMap = new Map(orgs.map(o => [o.id, o]));
+        // Get total count for pagination
+        const [countResult] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(perCapitaRemittances)
+          .where(whereClause);
+        
+        const totalCount = Number(countResult.count);
+        const totalPages = Math.ceil(totalCount / pageSize);
 
-    // Enrich remittances with organization names
-    const enrichedRemittances = remittances.map(r => ({
-      ...r,
-      fromOrganization: orgMap.get(r.fromOrganizationId),
-      toOrganization: orgMap.get(r.toOrganizationId),
-    }));
+        // Fetch organization details for all remittances
+        const orgIds = new Set<string>();
+        remittances.forEach(r => {
+          orgIds.add(r.fromOrganizationId);
+          orgIds.add(r.toOrganizationId);
+        });
 
-    return NextResponse.json({
-      remittances: enrichedRemittances,
-      pagination: {
-        page,
-        pageSize,
-        totalCount,
-        totalPages,
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching remittances:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch remittances' },
-      { status: 500 }
-    );
-  }
-}
+        const orgs = await db
+          .select({
+            id: organizations.id,
+            name: organizations.name,
+            slug: organizations.slug,
+            charterNumber: organizations.charterNumber,
+          })
+          .from(organizations)
+          .where(inArray(organizations.id, Array.from(orgIds)));
+
+        const orgMap = new Map(orgs.map(o => [o.id, o]));
+
+        // Enrich remittances with organization names
+        const enrichedRemittances = remittances.map(r => ({
+          ...r,
+          fromOrganization: orgMap.get(r.fromOrganizationId),
+          toOrganization: orgMap.get(r.toOrganizationId),
+        }));
+
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/remittances',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'medium',
+          details: {
+            dataType: 'FINANCIAL',
+            filters: { status, organizationId, month, year, dueDateFrom, dueDateTo },
+            resultCount: enrichedRemittances.length,
+            totalCount,
+          },
+        });
+
+        return NextResponse.json({
+          remittances: enrichedRemittances,
+          pagination: {
+            page,
+            pageSize,
+            totalCount,
+            totalPages,
+          },
+        });
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          endpoint: '/api/admin/clc/remittances',
+          method: 'GET',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error('Error fetching remittances:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch remittances' },
+          { status: 500 }
+        );
+      }
+  })(request);
+};
 
 // =====================================================================================
 // POST - Calculate remittances
 // =====================================================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+  }
+
+  const parsed = calculateRemittancesSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const user = { id: context.userId, organizationId: context.organizationId };
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+// Admin check
+    const isAdmin = await checkAdminRole(user.id);
+    if (!isAdmin) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/admin/clc/remittances',
+        method: 'POST',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { reason: 'Admin access required' },
+      });
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Set session context for RLS
-    await db.execute(sql`SET app.current_user_id = ${userId}`);
+    try {
+      // Set session context for RLS
+      await db.execute(sql`SET app.current_user_id = ${user.id}`);
 
-    // Parse request body
-    const body = await request.json();
-    const { organizationId, month, year, saveResults = false } = body;
+      const { organizationId, month, year, saveResults } = body;
 
-    // Validate required fields
-    if (!month || !year) {
+      // Calculate remittances
+      let calculations;
+      
+      if (organizationId) {
+        // Calculate for single organization
+        const calculation = await calculatePerCapita(organizationId, month, year);
+        calculations = calculation ? [calculation] : [];
+      } else {
+        // Calculate for all organizations
+        calculations = await calculateAllPerCapita(month, year);
+      }
+
+      // Save to database if requested
+      let saveResult = null;
+      if (saveResults && calculations.length > 0) {
+        saveResult = await savePerCapitaRemittances(calculations);
+      }
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/admin/clc/remittances',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          organizationId,
+          month,
+          year,
+          calculationCount: calculations.length,
+          saveResults,
+          savedCount: saveResult?.length || 0,
+        },
+      });
+
+      return NextResponse.json({
+        calculations,
+        saveResult,
+        message: organizationId
+          ? `Calculated remittance for 1 organization`
+          : `Calculated remittances for ${calculations.length} organizations`,
+      });
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId: user.id,
+        endpoint: '/api/admin/clc/remittances',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+      console.error('Error calculating remittances:', error);
       return NextResponse.json(
-        { error: 'Month and year are required' },
-        { status: 400 }
+        { error: 'Failed to calculate remittances' },
+        { status: 500 }
       );
     }
-
-    // Calculate remittances
-    let calculations;
-    
-    if (organizationId) {
-      // Calculate for single organization
-      const calculation = await calculatePerCapita(organizationId, month, year);
-      calculations = calculation ? [calculation] : [];
-    } else {
-      // Calculate for all organizations
-      calculations = await calculateAllPerCapita(month, year);
-    }
-
-    // Save to database if requested
-    let saveResult = null;
-    if (saveResults && calculations.length > 0) {
-      saveResult = await savePerCapitaRemittances(calculations);
-    }
-
-    return NextResponse.json({
-      calculations,
-      saveResult,
-      message: organizationId
-        ? `Calculated remittance for 1 organization`
-        : `Calculated remittances for ${calculations.length} organizations`,
-    });
-  } catch (error) {
-    console.error('Error calculating remittances:', error);
-    return NextResponse.json(
-      { error: 'Failed to calculate remittances' },
-      { status: 500 }
-    );
-  }
-}
+});

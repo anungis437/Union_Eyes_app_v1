@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import {
   getOrganizationMembers,
   // TODO: Implement addOrganizationMember function for adding existing users to organizations

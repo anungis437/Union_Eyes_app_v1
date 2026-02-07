@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * SMS API Routes (Phase 5 - Week 1)
  * RESTful API for SMS management
@@ -16,7 +17,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { eq, and, desc } from 'drizzle-orm';
 import {
@@ -37,93 +37,94 @@ import {
   type NewSmsTemplate,
   type NewSmsCampaign,
 } from '@/db/schema/sms-communications-schema';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 // ============================================================================
 // GET HANDLER - Routes based on action parameter
 // ============================================================================
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const { searchParams } = new URL(req.url);
+      const action = searchParams.get('action');
+      const tenantId = searchParams.get('tenantId');
+      const campaignId = searchParams.get('campaignId');
 
-    const { searchParams } = new URL(req.url);
-    const action = searchParams.get('action');
-    const tenantId = searchParams.get('tenantId');
-    const campaignId = searchParams.get('campaignId');
+      if (!tenantId) {
+        return NextResponse.json({ error: 'Missing tenantId parameter' }, { status: 400 });
+      }
 
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Missing tenantId parameter' }, { status: 400 });
+      switch (action) {
+        case 'templates':
+          return getTemplates(tenantId);
+        case 'campaigns':
+          return getCampaigns(tenantId);
+        case 'campaign-details':
+          if (!campaignId) {
+            return NextResponse.json({ error: 'Missing campaignId parameter' }, { status: 400 });
+          }
+          return getCampaignDetails(campaignId);
+        default:
+          return NextResponse.json(
+            { error: 'Invalid action. Valid actions: templates, campaigns, campaign-details' },
+            { status: 400 }
+          );
+      }
+    } catch (error: any) {
+      console.error('❌ SMS GET error:', error);
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      );
     }
-
-    switch (action) {
-      case 'templates':
-        return getTemplates(tenantId);
-      case 'campaigns':
-        return getCampaigns(tenantId);
-      case 'campaign-details':
-        if (!campaignId) {
-          return NextResponse.json({ error: 'Missing campaignId parameter' }, { status: 400 });
-        }
-        return getCampaignDetails(campaignId);
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action. Valid actions: templates, campaigns, campaign-details' },
-          { status: 400 }
-        );
-    }
-  } catch (error: any) {
-    console.error('❌ SMS GET error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};
 
 // ============================================================================
 // POST HANDLER - Routes based on action in body
 // ============================================================================
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const body = await req.json();
+      const { action } = body;
 
-    const body = await req.json();
-    const { action } = body;
-
-    switch (action) {
-      case 'send':
-        return sendSingleSms(userId, body);
-      case 'bulk':
-        return sendBulkSmsAction(userId, body);
-      case 'create-template':
-        return createTemplate(userId, body);
-      case 'create-campaign':
-        return createCampaign(userId, body);
-      case 'send-campaign':
-        return sendCampaignAction(userId, body);
-      case 'webhook':
-        return handleWebhook(body);
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook' },
-          { status: 400 }
-        );
+      switch (action) {
+        case 'send':
+          return sendSingleSms(user.id, body);
+        case 'bulk':
+          return sendBulkSmsAction(user.id, body);
+        case 'create-template':
+          return createTemplate(user.id, body);
+        case 'create-campaign':
+          return createCampaign(user.id, body);
+        case 'send-campaign':
+          return sendCampaignAction(user.id, body);
+        case 'webhook':
+          return handleWebhook(body);
+        default:
+          return NextResponse.json(
+            { error: 'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook' },
+            { status: 400 }
+          );
+      }
+    } catch (error: any) {
+      console.error('❌ SMS POST error:', error);
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      );
     }
-  } catch (error: any) {
-    console.error('❌ SMS POST error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};
 
 // ============================================================================
 // INTERNAL HANDLERS

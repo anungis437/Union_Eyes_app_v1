@@ -417,7 +417,12 @@ export class BreakGlassService {
    * Simulate network delay (for demo purposes)
    */
   private async simulateDelay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    const multiplier = process.env.BREAK_GLASS_DELAY_MULTIPLIER
+      ? Number(process.env.BREAK_GLASS_DELAY_MULTIPLIER)
+      : (process.env.NODE_ENV === 'test' ? 0 : 1);
+    const safeMultiplier = Number.isFinite(multiplier) && multiplier >= 0 ? multiplier : 1;
+    const delayMs = Math.max(0, Math.round(ms * safeMultiplier));
+    return new Promise(resolve => setTimeout(resolve, delayMs));
   }
 }
 

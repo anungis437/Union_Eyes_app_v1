@@ -18,7 +18,7 @@ export interface InitiateRedemptionOptions {
   programId: string;
   creditsToSpend: number;
   provider: 'shopify';
-  providerDetails?: Record<string, any>;
+  providerDetails?: Record<string, unknown>;
 }
 
 /**
@@ -99,8 +99,9 @@ export async function updateRedemptionCheckout(
  */
 export async function markRedemptionOrdered(
   redemptionId: string,
+  orgId: string,
   orderId: string,
-  orderPayload: Record<string, any>
+  orderPayload: Record<string, unknown>
 ): Promise<RewardRedemption> {
   const [updated] = await db
     .update(rewardRedemptions)
@@ -110,7 +111,12 @@ export async function markRedemptionOrdered(
       providerPayloadJson: orderPayload,
       updatedAt: new Date(),
     })
-    .where(eq(rewardRedemptions.id, redemptionId))
+    .where(
+      and(
+        eq(rewardRedemptions.id, redemptionId),
+        eq(rewardRedemptions.orgId, orgId)
+      )
+    )
     .returning();
 
   return updated;
@@ -122,7 +128,8 @@ export async function markRedemptionOrdered(
  */
 export async function markRedemptionFulfilled(
   redemptionId: string,
-  fulfillmentPayload: Record<string, any>
+  orgId: string,
+  fulfillmentPayload: Record<string, unknown>
 ): Promise<RewardRedemption> {
   const [updated] = await db
     .update(rewardRedemptions)
@@ -131,7 +138,12 @@ export async function markRedemptionFulfilled(
       providerPayloadJson: fulfillmentPayload,
       updatedAt: new Date(),
     })
-    .where(eq(rewardRedemptions.id, redemptionId))
+    .where(
+      and(
+        eq(rewardRedemptions.id, redemptionId),
+        eq(rewardRedemptions.orgId, orgId)
+      )
+    )
     .returning();
 
   return updated;
@@ -183,7 +195,7 @@ export async function cancelRedemption(
       .set({
         status: 'cancelled',
         providerPayloadJson: {
-          ...(redemption.providerPayloadJson as any),
+          ...((redemption.providerPayloadJson || {}) as Record<string, unknown>),
           cancelledReason: reason,
           cancelledAt: new Date().toISOString(),
         },
@@ -205,7 +217,8 @@ export async function cancelRedemption(
  */
 export async function processRedemptionRefund(
   redemptionId: string,
-  refundPayload: Record<string, any>
+  orgId: string,
+  refundPayload: Record<string, unknown>
 ): Promise<{
   redemption: RewardRedemption;
   newBalance: number;
@@ -213,7 +226,10 @@ export async function processRedemptionRefund(
   return await db.transaction(async (tx) => {
     // Get redemption
     const redemption = await tx.query.rewardRedemptions.findFirst({
-      where: eq(rewardRedemptions.id, redemptionId),
+      where: and(
+        eq(rewardRedemptions.id, redemptionId),
+        eq(rewardRedemptions.orgId, orgId)
+      ),
     });
 
     if (!redemption) {
@@ -245,7 +261,7 @@ export async function processRedemptionRefund(
       .set({
         status: 'refunded',
         providerPayloadJson: {
-          ...(redemption.providerPayloadJson as any),
+          ...((redemption.providerPayloadJson || {}) as Record<string, unknown>),
           refundPayload,
           refundedAt: new Date().toISOString(),
         },
@@ -279,13 +295,32 @@ export async function getRedemptionById(
 }
 
 /**
+ * Internal-only lookup by ID (no org scope)
+ */
+export async function getRedemptionByIdInternal(
+  redemptionId: string
+): Promise<RewardRedemption | null> {
+  const redemption = await db.query.rewardRedemptions.findFirst({
+    where: eq(rewardRedemptions.id, redemptionId),
+  });
+
+  return redemption || null;
+}
+
+/**
  * Get redemption by provider order ID
  */
 export async function getRedemptionByOrderId(
-  orderId: string
+  orderId: string,
+  orgId?: string
 ): Promise<RewardRedemption | null> {
   const redemption = await db.query.rewardRedemptions.findFirst({
-    where: eq(rewardRedemptions.providerOrderId, orderId),
+    where: orgId
+      ? and(
+          eq(rewardRedemptions.providerOrderId, orderId),
+          eq(rewardRedemptions.orgId, orgId)
+        )
+      : eq(rewardRedemptions.providerOrderId, orderId),
   });
 
   return redemption || null;

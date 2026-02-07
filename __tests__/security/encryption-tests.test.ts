@@ -12,12 +12,20 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import postgres from 'postgres';
 
 // Connect to Azure PostgreSQL Staging
-const connectionString = process.env.DATABASE_URL!;
-const sql = postgres(connectionString);
+const connectionString = process.env.DATABASE_URL;
+const hasDatabase = Boolean(connectionString);
+const sql = hasDatabase
+  ? postgres(connectionString as string)
+  : ((() => {
+      throw new Error('DATABASE_URL not configured');
+    }) as unknown as ReturnType<typeof postgres>);
+const describeIf = hasDatabase ? describe : describe.skip;
 
-describe('Column-Level Encryption Tests', () => {
+describeIf('Column-Level Encryption Tests', () => {
   afterAll(async () => {
-    await sql.end();
+    if (hasDatabase) {
+      await sql.end();
+    }
   });
 
   describe('Encryption Functions', () => {

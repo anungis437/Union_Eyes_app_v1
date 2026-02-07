@@ -29,14 +29,14 @@ describe('StrikeFundDashboard - Fund Status Display', () => {
 
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ funds: [mockFund] }),
+      json: async () => ({ success: true, data: [mockFund] }),
     });
 
     render(<StrikeFundDashboard organizationId="org-1" />);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/strike-fund')
+        '/api/strike/funds?organizationId=org-1'
       );
     });
   });

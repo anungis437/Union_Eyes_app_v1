@@ -186,6 +186,173 @@ export type NotificationHistory = typeof notificationHistory.$inferSelect;
 export type NewNotificationHistory = typeof notificationHistory.$inferInsert;
 
 // ============================================
+// Notification Templates
+// ============================================
+
+export const notificationTemplateStatusEnum = pgEnum('notification_template_status', [
+  'active',
+  'inactive',
+  'draft',
+  'archived',
+]);
+
+export const notificationTemplateTypeEnum = pgEnum('notification_template_type', [
+  'payment',
+  'dues',
+  'strike',
+  'voting',
+  'certification',
+  'general',
+  'system',
+]);
+
+export const notificationTemplates = pgTable('notification_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: text('tenant_id').notNull(),
+  
+  // Template identification
+  templateKey: text('template_key').notNull().unique(), // PAYMENT_RECEIVED, DUES_REMINDER, etc
+  name: text('name').notNull(),
+  description: text('description'),
+  type: notificationTemplateTypeEnum('type').notNull(),
+  
+  // Content
+  subject: text('subject'),
+  title: text('title'),
+  bodyTemplate: text('body_template').notNull(),
+  htmlBodyTemplate: text('html_body_template'),
+  
+  // Template variables (JSON array of variable names)
+  variables: jsonb('variables'),
+  defaultVariables: jsonb('default_variables'),
+  
+  // Configuration
+  channels: notificationChannelEnum('channels').array(),
+  status: notificationTemplateStatusEnum('status').notNull().default('active'),
+  isSystem: boolean('is_system').notNull().default(false), // Cannot be deleted
+  
+  // Retry policy
+  maxRetries: text('max_retries').default('3'),
+  retryDelaySeconds: text('retry_delay_seconds').default('300'),
+  
+  // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdBy: text('created_by'),
+  updatedBy: text('updated_by'),
+});
+
+// ============================================
+// Notification Queue (for async processing)
+// ============================================
+
+export const notificationQueueStatusEnum = pgEnum('notification_queue_status', [
+  'pending',
+  'processing',
+  'completed',
+  'failed',
+  'retrying',
+]);
+
+export const notificationPriorityEnum = pgEnum('notification_priority', [
+  'low',
+  'normal',
+  'high',
+  'urgent',
+]);
+
+export const notificationQueue = pgTable('notification_queue', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: text('tenant_id').notNull(),
+  
+  // Queue status
+  status: notificationQueueStatusEnum('status').notNull().default('pending'),
+  priority: notificationPriorityEnum('priority').notNull().default('normal'),
+  
+  // Payload
+  payload: jsonb('payload').notNull(),
+  
+  // Processing
+  attemptCount: text('attempt_count').notNull().default('0'),
+  maxAttempts: text('max_attempts').notNull().default('3'),
+  nextRetryAt: timestamp('next_retry_at'),
+  processedAt: timestamp('processed_at'),
+  completedAt: timestamp('completed_at'),
+  
+  // Results
+  resultNotificationId: uuid('result_notification_id'),
+  errorMessage: text('error_message'),
+  
+  // Audit
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ============================================
+// Notification Delivery Log
+// ============================================
+
+export const notificationDeliveryLog = pgTable('notification_delivery_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: text('tenant_id').notNull(),
+  notificationId: uuid('notification_id').notNull(),
+  
+  // Event details
+  event: text('event').notNull(), // sent, delivered, bounced, complained, opened, clicked
+  eventTimestamp: timestamp('event_timestamp').notNull(),
+  
+  // Provider details
+  providerId: text('provider_id'), // sendgrid, twilio, firebase
+  externalEventId: text('external_event_id'),
+  
+  // Details
+  details: jsonb('details'),
+  statusCode: text('status_code'),
+  errorMessage: text('error_message'),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  
+  // Audit
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ============================================
+// Notification Bounces (suppression list)
+// ============================================
+
+export const notificationBounceTypeEnum = pgEnum('notification_bounce_type', [
+  'permanent',
+  'temporary',
+  'complaint',
+  'manual',
+]);
+
+export const notificationBounces = pgTable('notification_bounces', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: text('tenant_id').notNull(),
+  
+  // Bounce details
+  email: text('email').notNull(),
+  bounceType: notificationBounceTypeEnum('bounce_type').notNull(),
+  bounceSubType: text('bounce_sub_type'),
+  
+  // Timeline
+  firstBouncedAt: timestamp('first_bounced_at').notNull(),
+  lastBouncedAt: timestamp('last_bounced_at').notNull(),
+  bounceCount: text('bounce_count').notNull().default('1'),
+  
+  // Status
+  isActive: boolean('is_active').notNull().default(true),
+  suppressUntil: timestamp('suppress_until'),
+  suppressionReason: text('suppression_reason'),
+  
+  // Audit
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ============================================
 // Indexes
 // ============================================
 
@@ -203,3 +370,12 @@ export type NewNotificationHistory = typeof notificationHistory.$inferInsert;
 // CREATE INDEX idx_notification_history_tenant_id ON notification_history(tenant_id);
 // CREATE INDEX idx_notification_history_sent_at ON notification_history(sent_at DESC);
 // CREATE INDEX idx_notification_history_status ON notification_history(status);
+//
+// CREATE INDEX idx_notification_templates_key ON notification_templates(template_key);
+// CREATE INDEX idx_notification_templates_status ON notification_templates(status);
+//
+// CREATE INDEX idx_notification_queue_status ON notification_queue(status);
+// CREATE INDEX idx_notification_queue_retry ON notification_queue(next_retry_at);
+//
+// CREATE INDEX idx_notification_bounces_email ON notification_bounces(email);
+// CREATE INDEX idx_notification_bounces_active ON notification_bounces(is_active);

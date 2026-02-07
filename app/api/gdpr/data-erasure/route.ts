@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * GDPR Right to be Forgotten API (Article 17)
  * POST /api/gdpr/data-erasure - Request data erasure
@@ -6,7 +7,28 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
+import { db } from "@/db";
 import { GdprRequestManager, DataErasureService } from "@/lib/gdpr/consent-manager";
+import { logger } from "@/lib/logger";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+
+/**
+ * Helper to check if user is admin/DPO
+ */
+async function checkAdminOrDPORole(userId: string): Promise<boolean> {
+  try {
+    const member = await db.query.organizationMembers.findFirst({
+      where: (organizationMembers, { eq }) =>
+        eq(organizationMembers.userId, userId),
+    });
+
+    // Allow admin and super_admin roles to perform data erasure
+    return member ? ['admin', 'super_admin'].includes(member.role) : false;
+  } catch (error) {
+    logger.error('Failed to check admin/DPO role:', { error });
+    return false;
+  }
+}
 
 /**
  * Request data erasure (RTBF)
@@ -81,69 +103,66 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/**
- * Execute data erasure (Admin only)
- * This is a destructive operation!
- */
-export async function DELETE(req: NextRequest) {
+export const DELETE = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+      // Check if user is admin/DPO
+      const isAdmin = await checkAdminOrDPORole(user.id);
 
-    // Check if user is admin/DPO
-    // TODO: Implement proper admin check
-    const isAdmin = user.publicMetadata?.role === "admin" || 
-                    user.publicMetadata?.role === "dpo";
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required" },
+          { status: 403 }
+        );
+      }
 
-    if (!isAdmin) {
+      const body = await req.json();
+      const { requestId, user.id: targetUserId, tenantId, confirmation } = body;
+
+      if (!requestId || !targetUserId || !tenantId) {
+        return NextResponse.json(
+          { error: "Missing required fields" },
+          { status: 400 }
+        );
+      }
+
+      // Require explicit confirmation
+      if (confirmation !== `DELETE_USER_DATA_${targetUserId}`) {
+        return NextResponse.json(
+          { error: "Invalid confirmation code" },
+          { status: 400 }
+        );
+      }
+
+      // Log the admin action
+      logger.info('Data erasure initiated', { adminId: user.id, targetUserId, tenantId });
+
+      // Execute erasure
+      await DataErasureService.eraseUserData(
+        targetUserId,
+        tenantId,
+        requestId,
+        user.id
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: "User data has been permanently erased",
+        executedAt: new Date(),
+        executedBy: user.id,
+      });
+    } catch (error) {
+      console.error("Data erasure execution error:", error);
       return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 }
+        { error: "Failed to execute data erasure" },
+        { status: 500 }
       );
     }
-
-    const body = await req.json();
-    const { requestId, userId, tenantId, confirmation } = body;
-
-    if (!requestId || !userId || !tenantId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Require explicit confirmation
-    if (confirmation !== `DELETE_USER_DATA_${userId}`) {
-      return NextResponse.json(
-        { error: "Invalid confirmation code" },
-        { status: 400 }
-      );
-    }
-
-    // Execute erasure
-    await DataErasureService.eraseUserData(
-      userId,
-      tenantId,
-      requestId,
-      user.id
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: "User data has been permanently erased",
-      executedAt: new Date(),
-      executedBy: user.id,
-    });
-  } catch (error) {
-    console.error("Data erasure execution error:", error);
-    return NextResponse.json(
-      { error: "Failed to execute data erasure" },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};
 
 /**
  * Get erasure request status

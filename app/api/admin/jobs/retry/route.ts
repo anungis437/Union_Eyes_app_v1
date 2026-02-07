@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: POST /api/admin/jobs/retry
  * 
@@ -5,42 +6,39 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   // Import job-queue functions only at runtime, not at module load time
-  // This prevents bundling bullmq during build phase
-  const { retryJob } = await import('@/lib/job-queue');
-  try {
-    const { userId } = await auth();
+    // This prevents bundling bullmq during build phase
+    const { retryJob } = await import('@/lib/job-queue');
+    try {
+      // TODO: Check if user is admin
 
-    if (!userId) {
+      const body = await request.json();
+      const { queue, jobId } = body;
+
+      if (!queue || !jobId) {
+        return NextResponse.json(
+          { error: 'Queue and jobId are required' },
+          { status: 400 }
+        );
+      }
+
+      await retryJob(queue, jobId);
+
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error('Error retrying job:', error);
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Internal server error' },
+        { status: 500 }
       );
     }
-
-    // TODO: Check if user is admin
-
-    const body = await request.json();
-    const { queue, jobId } = body;
-
-    if (!queue || !jobId) {
-      return NextResponse.json(
-        { error: 'Queue and jobId are required' },
-        { status: 400 }
-      );
-    }
-
-    await retryJob(queue, jobId);
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error retrying job:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};

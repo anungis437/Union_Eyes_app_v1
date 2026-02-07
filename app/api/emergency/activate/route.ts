@@ -5,6 +5,8 @@ import {
   purgeExpiredLocations,
 } from '@/lib/services/geofence-privacy-service';
 import type { EmergencyActivationRequest, EmergencyActivationResponse } from '@/lib/types/compliance-api-types';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { z } from 'zod';
 
 /**
  * Emergency Activation API
@@ -16,24 +18,32 @@ import type { EmergencyActivationRequest, EmergencyActivationResponse } from '@/
  * POST /api/emergency/activate
  * Activate emergency mode with location tracking (with consent)
  */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json() as EmergencyActivationRequest;
-    const { memberId, emergencyType, affectedRegions, description, expectedDurationDays } = body;
+const emergencyActivationSchema = z.object({
+  memberId: z.string().uuid(),
+  emergencyType: z.string().min(1),
+  affectedRegions: z.array(z.string().min(1)).min(1),
+  description: z.string().optional(),
+  expectedDurationDays: z.number().int().positive().max(365),
+});
 
-    // Validate required fields
-    if (!memberId || !emergencyType || !affectedRegions || affectedRegions.length === 0) {
+export const POST = withEnhancedRoleAuth(60, async (request) => {
+  try {
+    const body = await request.json();
+    const parsed = emergencyActivationSchema.safeParse(body);
+
+    if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: memberId, emergencyType, affectedRegions (array)',
+          error: 'Invalid request body',
           notificationsSent: [],
         } as EmergencyActivationResponse,
         { status: 400 }
       );
     }
 
-    // Request explicit location consent for emergency response
+    const { memberId, emergencyType, affectedRegions, expectedDurationDays } = parsed.data;
+
     const consentRequest = await requestLocationPermission(
       memberId,
       'emergency_response'
@@ -43,7 +53,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Location consent required for emergency activation',
+          error: 'Location consent required',
           notificationsSent: ['consent_request_sent'],
           breakGlassOps: {
             activated: false,
@@ -55,7 +65,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Activate emergency declaration
     const declaration = {
       emergencyId: `EMG-${memberId}-${Date.now()}`,
       memberId,
@@ -97,10 +106,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: `Emergency activation failed: ${error}`,
+        error: 'Emergency activation failed',
         notificationsSent: [],
       } as EmergencyActivationResponse,
       { status: 500 }
     );
   }
-}
+});

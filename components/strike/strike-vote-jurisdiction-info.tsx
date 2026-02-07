@@ -6,7 +6,7 @@ import { Users, CheckCircle, AlertTriangle, Info, Scale, TrendingUp } from 'luci
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { JurisdictionBadge } from '@/components/jurisdiction/jurisdiction-badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CAJurisdiction, getJurisdictionName } from '@/lib/jurisdiction-helpers';
+import { CAJurisdiction, getJurisdictionName } from '@/lib/jurisdiction-helpers-client';
 import { Progress } from '@/components/ui/progress';
 
 interface StrikeVoteJurisdictionInfoProps {
@@ -166,7 +166,11 @@ export function StrikeVoteJurisdictionInfo({
       voteStatus = favorPercentageOfEligible >= 45 ? 'passed' : 'failed';
     } else {
       // All other jurisdictions: threshold % of votes cast
-      voteStatus = favorPercentageOfCast >= requirements.majorityThreshold ? 'passed' : 'failed';
+      const requiresStrictMajority = requirements.majorityThreshold === 50;
+      const meetsThreshold = requiresStrictMajority
+        ? favorPercentageOfCast > requirements.majorityThreshold
+        : favorPercentageOfCast >= requirements.majorityThreshold;
+      voteStatus = meetsThreshold ? 'passed' : 'failed';
     }
   }
 

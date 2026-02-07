@@ -15,10 +15,12 @@ import {
   duesRules, 
   memberDuesAssignments, 
   duesTransactions,
-  members 
+  members,
+  autopaySettings,
+  paymentMethods,
 } from '@/services/financial-service/src/db/schema';
 import { DuesCalculationEngine } from '@/lib/dues-calculation-engine';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, gt, lte } from 'drizzle-orm';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -127,20 +129,133 @@ async function processAutoPayPayments() {
   console.log('Starting AutoPay payment processing...');
 
   try {
-    // TODO: Get members with AutoPay enabled and pending transactions
-    // This requires autopay_settings table to be created first
+    const today = new Date().toISOString().split('T')[0];
     
-    console.log('AutoPay processing not yet implemented - requires autopay_settings table');
-    
-    // Pseudo-code for future implementation:
-    // 1. Get all members with autopay_enabled = true
-    // 2. Get their pending dues_transactions with dueDate <= today
-    // 3. For each member:
-    //    - Get default payment method from Stripe
-    //    - Create PaymentIntent with amount and payment method
-    //    - Confirm PaymentIntent
-    //    - Update dues_transaction status based on result
-    //    - Send email notification (success or failure)
+    // Get all active AutoPay settings with pending transactions
+    const activeAutoPay = await db
+      .select({
+        autopayId: autopaySettings.id,
+        memberId: autopaySettings.memberId,
+        stripePaymentMethodId: autopaySettings.stripePaymentMethodId,
+        transactionId: duesTransactions.id,
+        transactionAmount: duesTransactions.totalAmount,
+        organizationId: duesTransactions.organizationId,
+        memberEmail: members.email,
+        memberName: members.name,
+      })
+      .from(autopaySettings)
+      .innerJoin(
+        duesTransactions,
+        and(
+          eq(duesTransactions.memberId, autopaySettings.memberId),
+          eq(duesTransactions.status, 'pending' as any),
+          lte(duesTransactions.dueDate, new Date(today))
+        )
+      )
+      .innerJoin(members, eq(members.id, autopaySettings.memberId))
+      .where(eq(autopaySettings.enabled, true));
+
+    console.log(`Found ${activeAutoPay.length} members with pending AutoPay charges`);
+
+    let successCount = 0;
+    let failureCount = 0;
+
+    // Process each AutoPay transaction
+    for (const autopay of activeAutoPay) {
+      try {
+        console.log(`Processing AutoPay for member ${autopay.memberId}...`);
+
+        // Create PaymentIntent with saved payment method
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round((autopay.transactionAmount?.toNumber?.() || 0) * 100), // Convert to cents
+          currency: 'usd',
+          payment_method: autopay.stripePaymentMethodId,
+          confirm: true,
+          customer: autopay.memberId, // Use member ID as Stripe customer ID (should be linked)
+          metadata: {
+            memberId: autopay.memberId,
+            transactionId: autopay.transactionId,
+            organizationId: autopay.organizationId,
+            sourceType: 'autopay',
+          },
+        });
+
+        // Update transaction status based on payment result
+        if (paymentIntent.status === 'succeeded') {
+          await db
+            .update(duesTransactions)
+            .set({
+              status: 'completed' as any,
+              paymentDate: new Date() as any,
+              paymentMethod: 'card' as any,
+              paymentReference: paymentIntent.id as any,
+              updatedAt: new Date() as any,
+            })
+            .where(eq(duesTransactions.id, autopay.transactionId));
+
+          // Reset AutoPay failure count on success
+          await db
+            .update(autopaySettings)
+            .set({
+              lastChargeDate: today as any,
+              lastChargeAmount: autopay.transactionAmount as any,
+              lastChargeStatus: 'completed' as any,
+              failureCount: '0' as any,
+              updatedAt: new Date() as any,
+            })
+            .where(eq(autopaySettings.id, autopay.autopayId));
+
+          console.log(`✅ AutoPay succeeded for member ${autopay.memberId}: ${paymentIntent.id}`);
+          successCount++;
+        } else {
+          throw new Error(`Payment incomplete: ${paymentIntent.status}`);
+        }
+      } catch (error) {
+        failureCount++;
+        console.error(`❌ AutoPay failed for member ${autopay.memberId}:`, error);
+
+        // Update failure count
+        const currentSettings = activeAutoPay.find(a => a.autopayId === autopay.autopayId);
+        if (currentSettings) {
+          const failureCount_ = parseInt(currentSettings.autopayId || '0', 10) + 1;
+
+          await db
+            .update(autopaySettings)
+            .set({
+              lastChargeDate: today as any,
+              lastChargeStatus: 'failed' as any,
+              lastFailureDate: today as any,
+              failureCount: failureCount_.toString() as any,
+              lastErrorMessage: error instanceof Error ? error.message : 'Unknown error' as any,
+              updatedAt: new Date() as any,
+            })
+            .where(eq(autopaySettings.id, autopay.autopayId));
+
+          // Disable AutoPay after 3 consecutive failures
+          if (failureCount_ >= 3) {
+            await db
+              .update(autopaySettings)
+              .set({
+                enabled: false as any,
+              })
+              .where(eq(autopaySettings.id, autopay.autopayId));
+
+            console.log(`🚫 AutoPay disabled for member ${autopay.memberId} after 3 failures`);
+          }
+        }
+
+        // Update transaction status to failed
+        await db
+          .update(duesTransactions)
+          .set({
+            status: 'failed' as any,
+            updatedAt: new Date() as any,
+          })
+          .where(eq(duesTransactions.id, autopay.transactionId));
+      }
+    }
+
+    console.log(`AutoPay processing completed: ${successCount} succeeded, ${failureCount} failed`);
   } catch (error) {
     console.error('Error processing AutoPay payments:', error);
     throw error;
@@ -222,12 +337,57 @@ async function sendPaymentReminders() {
     console.log(`Sending ${sevenDayReminders.length} 7-day reminders`);
     console.log(`Sending ${threeDayReminders.length} 3-day reminders`);
 
-    // TODO: Implement email sending
-    // For each reminder, send email to member.email with:
-    // - Amount due
-    // - Due date
-    // - Link to payment portal
-    // - AutoPay enrollment option
+    // Send 7-day payment reminder emails
+    for (const { transaction, member } of sevenDayReminders) {
+      try {
+        if (member?.email && transaction) {
+          const dueDate = new Date(transaction.dueDate as any).toLocaleDateString();
+          const amount = transaction.totalAmount?.toNumber?.() || 0;
+
+          // Send email notification
+          const { FinancialEmailService } = await import('@/lib/services/financial-email-service');
+          await FinancialEmailService.sendPaymentReminder({
+            to: member.email,
+            memberName: member.name || 'Member',
+            invoiceNumber: transaction.id,
+            amountDue: parseFloat(amount.toFixed(2)),
+            dueDate: dueDate,
+            paymentPortalLink: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://unioneyes.com'}/billing/payment`,
+            autoPay: true,
+          });
+
+          console.log(`Sent 7-day reminder to ${member.email}: $${amount} due on ${dueDate}`);
+        }
+      } catch (error) {
+        console.error(`Failed to send 7-day reminder for transaction ${transaction?.id}:`, error);
+      }
+    }
+
+    // Send 3-day payment reminder emails (urgent)
+    for (const { transaction, member } of threeDayReminders) {
+      try {
+        if (member?.email && transaction) {
+          const dueDate = new Date(transaction.dueDate as any).toLocaleDateString();
+          const amount = transaction.totalAmount?.toNumber?.() || 0;
+
+          // Send urgent email notification
+          const { FinancialEmailService } = await import('@/lib/services/financial-email-service');
+          await FinancialEmailService.sendPaymentReminder({
+            to: member.email,
+            memberName: member.name || 'Member',
+            invoiceNumber: transaction.id,
+            amountDue: parseFloat(amount.toFixed(2)),
+            dueDate: dueDate,
+            paymentPortalLink: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://unioneyes.com'}/billing/payment?urgent=true`,
+            autoPay: true,
+          });
+
+          console.log(`Sent URGENT 3-day reminder to ${member.email}: $${amount} due on ${dueDate}`);
+        }
+      } catch (error) {
+        console.error(`Failed to send 3-day reminder for transaction ${transaction?.id}:`, error);
+      }
+    }
 
     console.log('Payment reminders completed');
   } catch (error) {

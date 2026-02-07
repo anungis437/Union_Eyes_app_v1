@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Get current user's organizations
  * 
@@ -6,112 +7,107 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { organizations, organizationMembers } from '@/db/schema-organizations';
 import { eq } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    
-    console.log('[API /api/users/me/organizations] Auth userId:', userId);
+      console.log('[API /api/users/me/organizations] Auth user.id:', user.id);
 
-    if (!userId) {
-      console.log('[API /api/users/me/organizations] No userId - returning 401');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+      // Get user's memberships
+      console.log('[API /api/users/me/organizations] Fetching memberships for user.id:', user.id);
+      const memberships = await db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.user.id, user.id));
+
+      console.log('[API /api/users/me/organizations] Found memberships:', memberships.length);
+
+      if (memberships.length === 0) {
+        return NextResponse.json({
+          organizations: [],
+          memberships: [],
+        });
+      }
+
+      // Get organization details for each membership
+      // organizationId stores the UUID (as TEXT) matching organizations.id
+      const orgIds = Array.from(new Set(
+        memberships
+          .map(m => m.organizationId) // This is the UUID as text
+          .filter(id => id !== null && id !== undefined)
+      ));
+      
+      console.log('[API /api/users/me/organizations] Organization IDs:', orgIds);
+
+      if (orgIds.length === 0) {
+        console.log('[API /api/users/me/organizations] No valid organization IDs found');
+        return NextResponse.json({
+          organizations: [],
+          memberships,
+        });
+      }
+
+      // Get organizations by ID (organizationId in memberships matches organizations.id)
+      const allOrganizations = await Promise.all(
+        orgIds.map(async (orgId) => {
+          try {
+            const [org] = await db
+              .select({
+                id: organizations.id,
+                name: organizations.name,
+                slug: organizations.slug,
+                type: organizations.organizationType,
+                parentId: organizations.parentId,
+                createdAt: organizations.createdAt,
+                updatedAt: organizations.updatedAt,
+              })
+              .from(organizations)
+              .where(eq(organizations.id, orgId))
+              .limit(1);
+            
+            if (!org) {
+              console.log('[API /api/users/me/organizations] Organization not found for ID:', orgId);
+              console.log('[API /api/users/me/organizations] This membership references a non-existent organization');
+            }
+            return org;
+          } catch (err) {
+            console.error('[API /api/users/me/organizations] Error fetching org:', orgId, err);
+            return undefined;
+          }
+        })
       );
-    }
 
-    // Get user's memberships
-    console.log('[API /api/users/me/organizations] Fetching memberships for userId:', userId);
-    const memberships = await db
-      .select()
-      .from(organizationMembers)
-      .where(eq(organizationMembers.userId, userId));
+      console.log('[API /api/users/me/organizations] Found organizations:', allOrganizations.filter(o => o).length);
+      console.log('[API /api/users/me/organizations] Missing organizations:', allOrganizations.filter(o => !o).length);
 
-    console.log('[API /api/users/me/organizations] Found memberships:', memberships.length);
+      // Filter out any null results
+      const validOrganizations = allOrganizations.filter(org => org !== undefined && org !== null);
 
-    if (memberships.length === 0) {
+      if (validOrganizations.length === 0 && memberships.length > 0) {
+        console.error('[API /api/users/me/organizations] CRITICAL: User has memberships but no valid organizations found!');
+        console.error('[API /api/users/me/organizations] Membership organization IDs:', orgIds);
+        console.error('[API /api/users/me/organizations] This indicates orphaned memberships or database inconsistency');
+      }
+
       return NextResponse.json({
-        organizations: [],
-        memberships: [],
-      });
-    }
-
-    // Get organization details for each membership
-    // organizationId stores the UUID (as TEXT) matching organizations.id
-    const orgIds = Array.from(new Set(
-      memberships
-        .map(m => m.organizationId) // This is the UUID as text
-        .filter(id => id !== null && id !== undefined)
-    ));
-    
-    console.log('[API /api/users/me/organizations] Organization IDs:', orgIds);
-
-    if (orgIds.length === 0) {
-      console.log('[API /api/users/me/organizations] No valid organization IDs found');
-      return NextResponse.json({
-        organizations: [],
+        organizations: validOrganizations,
         memberships,
       });
+    } catch (error) {
+      console.error('Error fetching user organizations:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch organizations' },
+        { status: 500 }
+      );
     }
-
-    // Get organizations by ID (organizationId in memberships matches organizations.id)
-    const allOrganizations = await Promise.all(
-      orgIds.map(async (orgId) => {
-        try {
-          const [org] = await db
-            .select({
-              id: organizations.id,
-              name: organizations.name,
-              slug: organizations.slug,
-              type: organizations.organizationType,
-              parentId: organizations.parentId,
-              createdAt: organizations.createdAt,
-              updatedAt: organizations.updatedAt,
-            })
-            .from(organizations)
-            .where(eq(organizations.id, orgId))
-            .limit(1);
-          
-          if (!org) {
-            console.log('[API /api/users/me/organizations] Organization not found for ID:', orgId);
-            console.log('[API /api/users/me/organizations] This membership references a non-existent organization');
-          }
-          return org;
-        } catch (err) {
-          console.error('[API /api/users/me/organizations] Error fetching org:', orgId, err);
-          return undefined;
-        }
-      })
-    );
-
-    console.log('[API /api/users/me/organizations] Found organizations:', allOrganizations.filter(o => o).length);
-    console.log('[API /api/users/me/organizations] Missing organizations:', allOrganizations.filter(o => !o).length);
-
-    // Filter out any null results
-    const validOrganizations = allOrganizations.filter(org => org !== undefined && org !== null);
-
-    if (validOrganizations.length === 0 && memberships.length > 0) {
-      console.error('[API /api/users/me/organizations] CRITICAL: User has memberships but no valid organizations found!');
-      console.error('[API /api/users/me/organizations] Membership organization IDs:', orgIds);
-      console.error('[API /api/users/me/organizations] This indicates orphaned memberships or database inconsistency');
-    }
-
-    return NextResponse.json({
-      organizations: validOrganizations,
-      memberships,
-    });
-  } catch (error) {
-    console.error('Error fetching user organizations:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch organizations' },
-      { status: 500 }
-    );
-  }
-}
+  })
+  })(request);
+};

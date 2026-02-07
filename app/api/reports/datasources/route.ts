@@ -12,11 +12,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withTenantAuth } from '@/lib/tenant-middleware';
 import { getAllDataSources } from '@/lib/report-executor';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function getHandler(req: NextRequest) {
+async function getHandler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const tenantId = context.tenantId;
+    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(

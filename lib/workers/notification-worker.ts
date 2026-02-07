@@ -281,10 +281,34 @@ async function processNotification(job: any) {
  */
 async function getUserEmail(userId: string): Promise<string | null> {
   try {
-    // TODO: Fetch from Clerk API
+    const { createClerkClient } = await import('@clerk/backend');
+    
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+
+    // Fetch user from Clerk
+    const user = await clerkClient.users.getUser(userId);
+    
+    // Get primary email address
+    const primaryEmail = user.emailAddresses?.find((email: any) => email.id === user.primaryEmailAddressId);
+    
+    if (primaryEmail?.emailAddress) {
+      console.log(`Retrieved email for user ${userId}: ${primaryEmail.emailAddress}`);
+      return primaryEmail.emailAddress;
+    }
+
+    // Fallback to first email if no primary email found
+    const firstEmail = user.emailAddresses?.[0]?.emailAddress;
+    if (firstEmail) {
+      console.log(`Retrieved fallback email for user ${userId}: ${firstEmail}`);
+      return firstEmail;
+    }
+
+    console.warn(`No email found for user ${userId}`);
     return null;
   } catch (error) {
-    console.error('Error fetching user email:', error);
+    console.error('Error fetching user email from Clerk:', error);
     return null;
   }
 }

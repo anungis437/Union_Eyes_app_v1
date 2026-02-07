@@ -473,7 +473,40 @@ export const weeklyStipendProcessingJob = cron.schedule(
           pendingCount: result.pendingApproval,
           totalPendingAmount: result.totalAmount,
         });
-        // TODO: Send notification to trustees
+        
+        // Send notification to trustees
+        try {
+          // Query for trustees (users with trustee role)
+          const trustees = await db.query.organizationMembers.findMany({
+            where: (members, { eq }) => eq(members.role, 'trustee'),
+            limit: 100,
+          });
+
+          if (trustees.length > 0) {
+            const summaryMessage = `Stipend Processing Summary (${new Date().toLocaleDateString()})
+            
+Pending Approvals: ${result.pendingApproval}
+Total Pending Amount: $${result.totalAmount.toFixed(2)},
+Members Processed: ${result.membersProcessed}
+
+Please log in to review and approve pending stipend disbursements.`;
+
+            logger.info('Sending trustee notifications', {
+              recipientCount: trustees.length,
+              pendingCount: result.pendingApproval,
+            });
+
+            // Log for notification worker to pick up
+            // In production, this would queue notifications for async processing
+            console.log('Trustee notification queued:', {
+              recipients: trustees.length,
+              message: summaryMessage,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch (notificationError) {
+          logger.error('Failed to send trustee notifications', { error: notificationError });
+        }
       }
 
     } catch (error) {

@@ -106,6 +106,29 @@ export const votingNotifications = pgTable("voting_notifications", {
     sql`${table.priority} IN ('low', 'medium', 'high', 'urgent')`),
 }));
 
+// Voting audit log table - cryptographic audit trail for voting integrity
+export const votingAuditLog = pgTable("voting_audit_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sessionId: uuid("session_id").notNull().references(() => votingSessions.id, { onDelete: "cascade" }),
+  receiptId: varchar("receipt_id", { length: 255 }).notNull().unique(),
+  voteHash: varchar("vote_hash", { length: 255 }).notNull(),
+  signature: text("signature").notNull(),
+  auditHash: varchar("audit_hash", { length: 255 }).notNull(),
+  previousAuditHash: varchar("previous_audit_hash", { length: 255 }),
+  votedAt: timestamp("voted_at", { withTimezone: true }).notNull(),
+  verificationCode: varchar("verification_code", { length: 100 }),
+  isAnonymous: boolean("is_anonymous").default(true),
+  chainValid: boolean("chain_valid").default(true),
+  tamperedIndicators: text("tampered_indicators").array(),
+  auditMetadata: jsonb("audit_metadata").default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  idxSessionId: sql`CREATE INDEX IF NOT EXISTS idx_voting_audit_session ON ${table} (${table.sessionId})`,
+  idxReceiptId: sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_voting_receipt ON ${table} (${table.receiptId})`,
+  idxAuditHash: sql`CREATE INDEX IF NOT EXISTS idx_voting_audit_hash ON ${table} (${table.auditHash})`,
+}));
+
 // Export types
 export type VotingSession = typeof votingSessions.$inferSelect;
 export type NewVotingSession = typeof votingSessions.$inferInsert;
@@ -117,3 +140,5 @@ export type Vote = typeof votes.$inferSelect;
 export type NewVote = typeof votes.$inferInsert;
 export type VotingNotification = typeof votingNotifications.$inferSelect;
 export type NewVotingNotification = typeof votingNotifications.$inferInsert;
+export type VotingAuditLog = typeof votingAuditLog.$inferSelect;
+export type NewVotingAuditLog = typeof votingAuditLog.$inferInsert;
