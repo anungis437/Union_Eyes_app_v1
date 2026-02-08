@@ -8,6 +8,8 @@ import {
 import type { T106FilingRequest, T106FilingResponse } from '@/lib/types/compliance-api-types';
 import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
 import { z } from 'zod';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 /**
  * T106 Filing API / T4A / RL-1 Generation
@@ -28,8 +30,25 @@ const t106RequestSchema = z.object({
   province: z.string().length(2).regex(/^[A-Za-z]{2}$/).optional(),
 });
 
-export const POST = withEnhancedRoleAuth(60, async (request) => {
+export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+  const { userId } = context;
+
   try {
+    // Rate limiting: 10 tax operations per hour per user
+    const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Too many tax requests.',
+          resetIn: rateLimitResult.resetIn 
+        },
+        { 
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
+      );
+    }
+
     const body = await request.json();
     const parsed = t106RequestSchema.safeParse(body);
 
@@ -65,6 +84,22 @@ export const POST = withEnhancedRoleAuth(60, async (request) => {
     const status = await getTaxFilingStatus(memberId, taxYear);
     const deadline = status.deadline.toISOString().split('T')[0];
 
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: parsed.data.memberId,
+      endpoint: '/api/tax/t106',
+      method: 'POST',
+      eventType: 'success',
+      severity: 'high',
+      details: {
+        dataType: 'FINANCIAL',
+        memberId: parsed.data.memberId,
+        taxYear,
+        totalAmount,
+        requiresT106: t106Check.requiresT4A,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       requiresT106: t106Check.requiresT4A,
@@ -89,6 +124,15 @@ export const POST = withEnhancedRoleAuth(60, async (request) => {
       message: `T4A generated for ${taxYear}. Deadline: ${deadline}`,
     } as T106FilingResponse);
   } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: '',
+      endpoint: '/api/tax/t106',
+      method: 'POST',
+      eventType: 'server_error',
+      severity: 'high',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
     console.error('T106/T4A generation error:', error);
     return NextResponse.json(
       {
@@ -130,6 +174,20 @@ export const GET = withEnhancedRoleAuth(60, async (request) => {
     const { taxYear, memberId } = query.data;
     const deadline = new Date(`${taxYear + 1}-02-28`).toISOString().split('T')[0];
 
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: memberId || '',
+      endpoint: '/api/tax/t106',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      details: {
+        dataType: 'FINANCIAL',
+        taxYear,
+        memberId,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       requiresT106: taxYear >= 2024,
@@ -144,6 +202,15 @@ export const GET = withEnhancedRoleAuth(60, async (request) => {
       ],
     } as T106FilingResponse);
   } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: '',
+      endpoint: '/api/tax/t106',
+      method: 'GET',
+      eventType: 'server_error',
+      severity: 'high',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
     console.error('T106 status error:', error);
     return NextResponse.json(
       {

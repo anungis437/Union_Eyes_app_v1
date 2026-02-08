@@ -48,7 +48,11 @@ export const GET = async (request: NextRequest) => {
             method: 'GET',
             eventType: 'validation_failed',
             severity: 'medium',
-            details: { reason: 'Rate limit exceeded', limit: rateLimitResult.limit },
+            details: { 
+              dataType: 'ORGANIZATION',
+              reason: 'Rate limit exceeded', 
+              limit: rateLimitResult.limit 
+            },
           });
           return NextResponse.json(
             { 
@@ -100,7 +104,11 @@ export const GET = async (request: NextRequest) => {
                 method: 'GET',
                 eventType: 'auth_failed',
                 severity: 'high',
-                details: { reason: 'Insufficient permissions for cross-user access', requestedUserId },
+                details: { 
+                  dataType: 'ORGANIZATION',
+                  reason: 'Insufficient permissions for cross-user access', 
+                  requestedUserId 
+                },
               });
               return NextResponse.json(
                 { error: 'Forbidden - Admin role required to view other users organizations' },
@@ -159,13 +167,13 @@ export const GET = async (request: NextRequest) => {
             method: 'GET',
             eventType: 'success',
             severity: 'low',
-            details: { count: enhancedOrgs.length, includeStats: true, parentId, requestedUserId },
-          });
-
-          return NextResponse.json({
-            success: true,
-            data: enhancedOrgs,
-            count: enhancedOrgs.length,
+          details: { 
+            dataType: 'ORGANIZATION',
+            count: enhancedOrgs.length, 
+            includeStats: true, 
+            parentId, 
+            requestedUserId 
+          },
           });
         }
 
@@ -175,7 +183,13 @@ export const GET = async (request: NextRequest) => {
           method: 'GET',
           eventType: 'success',
           severity: 'low',
-          details: { count: organizations.length, includeStats: false, parentId, requestedUserId },
+          details: { 
+            dataType: 'ORGANIZATION',
+            count: organizations.length, 
+            includeStats: false, 
+            parentId, 
+            requestedUserId 
+          },
         });
 
         return NextResponse.json({
@@ -192,7 +206,10 @@ export const GET = async (request: NextRequest) => {
           method: 'GET',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          details: { 
+            dataType: 'ORGANIZATION',
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          },
         });
         return NextResponse.json(
           { success: false, error: 'Failed to fetch organizations' },
@@ -208,7 +225,7 @@ export const GET = async (request: NextRequest) => {
  * Requires authentication - additional role checks should be added
  */
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -224,7 +241,11 @@ export const POST = async (request: NextRequest) => {
             method: 'POST',
             eventType: 'validation_failed',
             severity: 'medium',
-            details: { reason: 'Rate limit exceeded', limit: rateLimitResult.limit },
+            details: { 
+              dataType: 'ORGANIZATION',
+              reason: 'Rate limit exceeded', 
+              limit: rateLimitResult.limit 
+            },
           });
           return NextResponse.json(
             { 
@@ -287,6 +308,7 @@ export const POST = async (request: NextRequest) => {
           eventType: 'success',
           severity: 'high',
           details: { 
+            dataType: 'ORGANIZATION',
             organizationName: validated.name, 
             slug: validated.slug, 
             type: validated.type,
@@ -310,7 +332,11 @@ export const POST = async (request: NextRequest) => {
           method: 'POST',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error', code: error.code },
+          details: { 
+            dataType: 'ORGANIZATION',
+            error: error instanceof Error ? error.message : 'Unknown error', 
+            code: error.code 
+          },
         });
 
         // Handle unique constraint violations

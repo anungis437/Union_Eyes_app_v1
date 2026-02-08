@@ -8,6 +8,7 @@ import {
 } from '@unioneyes/ai';
 import { z } from 'zod';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 /**
  * POST /api/ai/summarize
@@ -34,7 +35,23 @@ export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
-  const startTime = Date.now();
+    // CRITICAL: Rate limit AI calls (expensive OpenAI API)
+    const rateLimitResult = await checkRateLimit(
+      `ai-completion:${context.userId}`,
+      RATE_LIMITS.AI_COMPLETION
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded for AI operations. Please try again later.' },
+        { 
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    const startTime = Date.now();
 
       try {
         // 1. Parse and validate request body

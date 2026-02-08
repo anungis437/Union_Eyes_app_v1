@@ -1,8 +1,9 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 /**
  * API Route: Equity Monitoring
  * Aggregate equity statistics for officers (requires consent + anonymization)
- * Phase 2: Equity & Demographics
+ * Phase 3: Equity & Demographics - SECURED with PIPEDA compliance
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -14,21 +15,92 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
 
   try {
+      // Rate limiting for equity analytics (sensitive demographic data)
+      const rateLimitResult = await checkRateLimit(
+        `${organizationId}`,
+        RATE_LIMITS.EQUITY_ANALYTICS
+      );
+      
+      if (!rateLimitResult.allowed) {
+        logger.warn('Rate limit exceeded for equity monitoring', {
+          userId,
+          organizationId,
+          limit: rateLimitResult.limit,
+        });
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/monitoring',
+          method: 'GET',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Rate limit exceeded',
+            limit: rateLimitResult.limit,
+          },
+        });
+        return NextResponse.json(
+          {
+            error: 'Rate limit exceeded for equity analytics.',
+            resetIn: rateLimitResult.resetIn,
+          },
+          {
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const { searchParams } = new URL(request.url);
-      const organizationId = searchParams.get('organizationId');
-  if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-
-      if (!organizationId) {
+      const requestedOrgId = searchParams.get('organizationId');
+      
+      if (!requestedOrgId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/monitoring',
+          method: 'GET',
+          eventType: 'validation_failed',
+          severity: 'low',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Missing organizationId parameter',
+          },
+        });
         return NextResponse.json(
           { error: 'Bad Request - organizationId is required' },
           { status: 400 }
+        );
+      }
+
+      // CRITICAL: Verify organization access (PIPEDA compliance)
+      if (requestedOrgId !== organizationId) {
+        logger.warn('Unauthorized equity monitoring access attempt', {
+          userId,
+          requestedOrgId,
+          userOrgId: organizationId,
+        });
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/monitoring',
+          method: 'GET',
+          eventType: 'auth_failed',
+          severity: 'critical',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Cross-organization access denied - PIPEDA violation attempt',
+            requestedOrgId,
+          },
+        });
+        return NextResponse.json(
+          { error: 'Forbidden - Cannot access other organization equity data' },
+          { status: 403 }
         );
       }
 
@@ -51,7 +123,7 @@ export const GET = async (request: NextRequest) => {
         COUNT(*) FILTER (WHERE indigenous_identity = 'inuit') as inuit_count,
         COUNT(*) FILTER (WHERE indigenous_identity = 'metis') as metis_count
       FROM member_demographics
-      WHERE organization_id = ${organizationId}::uuid
+      WHERE organization_id = ${requestedOrgId}::uuid
         AND data_collection_consent = true
         AND allow_aggregate_reporting = true
     `);
@@ -61,6 +133,22 @@ export const GET = async (request: NextRequest) => {
       // Anonymization threshold check
       const totalConsented = parseInt(stats.total_consented || '0');
       if (totalConsented < 10) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/monitoring',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'high',
+          details: {
+            dataType: 'EQUITY_DATA',
+            organizationId: requestedOrgId,
+            insufficientData: true,
+            threshold: 10,
+            current: totalConsented,
+            privacyCompliant: true,
+          },
+        });
         return NextResponse.json({
           success: true,
           data: {
@@ -121,7 +209,21 @@ export const GET = async (request: NextRequest) => {
           avg_intersectionality_score: parseFloat(stats.avg_intersectionality_score || '0').toFixed(2),
         },
       };
-
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/monitoring',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          organizationId: requestedOrgId,
+          totalConsented,
+          privacyCompliant: true,
+          anonymized: true,
+        },
+      });
       return NextResponse.json({
         success: true,
         data: formattedStats,
@@ -130,10 +232,22 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch equity monitoring data', error as Error, {
-        userId: userId,
-        organizationId: request.nextUrl.searchParams.get('organizationId'),
+        userId,
+        organizationId,
         correlationId: request.headers.get('x-correlation-id'),
   });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/monitoring',
+        method: 'GET',
+        eventType: 'server_error',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
     return NextResponse.json(
       { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

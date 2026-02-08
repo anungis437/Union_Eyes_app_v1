@@ -1,4 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 /**
  * OAuth Callback Handler - Phase 10
  * 
@@ -27,8 +28,19 @@ function getSupabaseClient() {
 }
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
   try {
+      // Rate limit check
+      const { userId: clerkUserId, organizationId } = context;
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.SOCIAL_MEDIA_API,
+        `social-callback:${clerkUserId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Rate limit exceeded`
+        );
+      }
       const searchParams = request.nextUrl.searchParams;
       const code = searchParams.get('code');
       const state = searchParams.get('state');

@@ -1,4 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 /**
  * Social Media Accounts API Routes - Phase 10
  * 
@@ -28,12 +29,24 @@ function getSupabaseClient() {
 }
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.SOCIAL_MEDIA_API,
+        `social-accounts:${organizationId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
       }
 
       // Fetch accounts
@@ -62,6 +75,16 @@ export const GET = async (request: NextRequest) => {
         return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
       }
 
+      // Audit log
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'LIST_SOCIAL_ACCOUNTS',
+        dataType: 'SOCIAL_MEDIA',
+        success: true,
+        metadata: { count: accounts?.length || 0 },
+      });
+
       return NextResponse.json({ accounts: accounts || [] });
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -71,7 +94,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
   try {
       const { userId, organizationId } = context;
       const body = await request.json();
@@ -79,6 +102,18 @@ export const POST = async (request: NextRequest) => {
 
       if (!platform) {
         return NextResponse.json({ error: 'Platform is required' }, { status: 400 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.SOCIAL_MEDIA_API,
+        `social-connect:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
       }
 
       // Generate OAuth state
@@ -151,6 +186,16 @@ export const POST = async (request: NextRequest) => {
         maxAge: 600, // 10 minutes
       });
 
+      // Audit log
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'INITIATE_SOCIAL_CONNECT',
+        dataType: 'SOCIAL_MEDIA',
+        success: true,
+        metadata: { platform },
+      });
+
       return NextResponse.json({ auth_url: authUrl });
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -166,9 +211,21 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const DELETE = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
   try {
       const { userId, organizationId } = context;
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.SOCIAL_MEDIA_API,
+        `social-disconnect:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
 
       // Get account ID from query params
       const searchParams = request.nextUrl.searchParams;
@@ -221,6 +278,17 @@ export const DELETE = async (request: NextRequest) => {
         console.error('Error deleting account:', deleteError);
         return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
       }
+
+      // Audit log
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'DISCONNECT_SOCIAL_ACCOUNT',
+        dataType: 'SOCIAL_MEDIA',
+        recordId: accountId,
+        success: true,
+        metadata: { platform: account.platform },
+      });
 
       return NextResponse.json({
         message: 'Account disconnected successfully',

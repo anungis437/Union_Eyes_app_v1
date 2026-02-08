@@ -14,12 +14,28 @@ import { db } from '@/database';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
 import { sql } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
   try {
+        // Rate limiting: 50 CLC operations per hour per user
+        const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.CLC_OPERATIONS);
+        if (!rateLimitResult.allowed) {
+          return NextResponse.json(
+            { 
+              error: 'Rate limit exceeded. Too many CLC requests.',
+              resetIn: rateLimitResult.resetIn 
+            },
+            { 
+              status: 429,
+              headers: createRateLimitHeaders(rateLimitResult),
+            }
+          );
+        }
+
         const searchParams = request.nextUrl.searchParams;
         const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
         const minSeverity = searchParams.get('minSeverity') || 'medium';

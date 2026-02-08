@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { withRoleAuth } from '@/lib/role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
   getOrganizationMembers, 
   getMemberCount, 
@@ -15,15 +15,26 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-// GET requires at least member role (all members can view directory)
-export const GET = withRoleAuth('member', async (request: NextRequest, context) => {
-  try {
-    const { organizationId } = context;
+// GET requires at least role level 20
+export const GET = withEnhancedRoleAuth(20, async (request, context) => {
+  const { userId, organizationId } = context;
 
+  try {
     // Fetch members for the current tenant
     const members = await getOrganizationMembers(organizationId);
     const totalCount = await getMemberCount(organizationId);
     const activeCount = await getActiveMemberCount(organizationId);
+
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/organization/members',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      dataType: 'MEMBER_DATA',
+      details: { organizationId, memberCount: members.length },
+    });
 
     return NextResponse.json({
       success: true,
@@ -37,6 +48,16 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context) 
       },
     });
   } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/organization/members',
+      method: 'GET',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'MEMBER_DATA',
+      details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
+    });
     console.error('Error fetching organization members:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch members' },
@@ -48,16 +69,27 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context) 
 /**
  * POST /api/organization/members
  * Create a new member for the current tenant
- * Requires steward role or higher (stewards, officers, admins can add members)
+ * Requires role level 40 (steward or higher)
  */
-export const POST = withRoleAuth('steward', async (request: NextRequest, context) => {
+export const POST = withEnhancedRoleAuth(40, async (request, context) => {
+  const { userId, organizationId } = context;
+
   try {
-    const { organizationId } = context;
     const body = await request.json();
 
     // Validate required fields
     const { name, email, membershipNumber } = body;
     if (!name || !email || !membershipNumber) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/organization/members',
+        method: 'POST',
+        eventType: 'validation_failed',
+        severity: 'low',
+        dataType: 'MEMBER_DATA',
+        details: { reason: 'Name, email, and membership number are required', organizationId },
+      });
       return NextResponse.json(
         { success: false, error: 'Name, email, and membership number are required' },
         { status: 400 }
@@ -82,12 +114,33 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
       metadata: "{}", // Legacy field, keep for backward compatibility
     });
 
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/organization/members',
+      method: 'POST',
+      eventType: 'success',
+      severity: 'medium',
+      dataType: 'MEMBER_DATA',
+      details: { organizationId, memberEmail: email, membershipNumber },
+    });
+
     return NextResponse.json({
       success: true,
       data: newMember,
       message: 'Member created successfully'
     }, { status: 201 });
   } catch (error: any) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/organization/members',
+      method: 'POST',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'MEMBER_DATA',
+      details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
+    });
     console.error('Error creating member:', error);
     
     // Handle unique constraint violations

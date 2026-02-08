@@ -14,7 +14,22 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(40, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit analytics queries
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ANALYTICS_QUERY,
+      `analytics-comparative:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
     try {
       const searchParams = request.nextUrl.searchParams;
       const organizationId = searchParams.get('organizationId');
@@ -55,6 +70,17 @@ export const GET = async (request: NextRequest) => {
 
       const analysis = analyses[0];
 
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'comparative_analytics_fetch',
+        resourceType: 'analytics',
+        resourceId: organizationId,
+        metadata: { metric, timeRange },
+        dataType: 'ANALYTICS',
+      });
+
       return NextResponse.json({
         success: true,
         comparisonData: analysis.results || [],
@@ -74,7 +100,22 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit comparative analytics generation
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ADVANCED_ANALYTICS,
+      `analytics-comparative-generate:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
     try {
       const body = await request.json();
       const { organizationId, metricType, peerOrganizationIds } = body;

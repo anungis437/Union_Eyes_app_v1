@@ -35,14 +35,10 @@ const updateClaimSchema = z.object({
  * GET /api/claims/[id]
  * Fetch a single claim by ID with updates
  */
-export const GET = async (
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+export const GET = withEnhancedRoleAuth(30, async (request, context) => {
+  const { userId, organizationId } = context;
 
-    try {
+  try {
       const claimNumber = params.id;
 
       // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
@@ -54,14 +50,16 @@ export const GET = async (
           .where(eq(claims.claimNumber, claimNumber));
 
         if (!claim) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/claims/${claimNumber}`,
-            method: 'GET',
-            eventType: 'validation_failed',
-            severity: 'low',
-            details: { reason: 'Claim not found', claimNumber },
-          });
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), 
+          userId,
+          endpoint: `/api/claims/${claimNumber}`,
+          method: 'GET',
+          eventType: 'validation_failed',
+          severity: 'low',
+          dataType: 'CLAIMS',
+          details: { reason: 'Claim not found', claimNumber },
+        });
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
         }
 
@@ -73,11 +71,13 @@ export const GET = async (
           .orderBy(desc(claimUpdates.createdAt));
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: `/api/claims/${claimNumber}`,
           method: 'GET',
           eventType: 'success',
           severity: 'low',
+          dataType: 'CLAIMS',
           details: { claimNumber, organizationId, updatesCount: updates.length },
         });
 
@@ -88,12 +88,14 @@ export const GET = async (
       });
     } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: `/api/claims/${params.id}`,
           method: 'GET',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          dataType: 'CLAIMS',
+          details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
         console.error("Error fetching claim:", error);
         return NextResponse.json(
@@ -108,11 +110,8 @@ export const GET = async (
  * PATCH /api/claims/[id]
  * Update a claim
  */
-export const PATCH = async (
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+export const PATCH = withEnhancedRoleAuth(60, async (request, context) => {
+  const { userId, organizationId } = context;
     let rawBody: unknown;
     try {
       rawBody = await request.json();
@@ -126,12 +125,6 @@ export const PATCH = async (
     }
 
     const body = parsed.data;
-    const { userId, organizationId } = context;
-
-    const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-    if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
   try {
       const claimNumber = params.id;
@@ -146,11 +139,13 @@ export const PATCH = async (
 
         if (!existingClaim) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
+            timestamp: new Date().toISOString(), 
+            userId,
             endpoint: `/api/claims/${claimNumber}`,
             method: 'PATCH',
             eventType: 'validation_failed',
             severity: 'low',
+            dataType: 'CLAIMS',
             details: { reason: 'Claim not found', claimNumber },
           });
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
@@ -167,11 +162,13 @@ export const PATCH = async (
           .returning();
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: `/api/claims/${claimNumber}`,
           method: 'PATCH',
           eventType: 'success',
           severity: 'medium',
+          dataType: 'CLAIMS',
           details: { claimNumber, organizationId, updatedFields: Object.keys(body) },
         });
 
@@ -182,12 +179,14 @@ export const PATCH = async (
       });
     } catch (error) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
+            timestamp: new Date().toISOString(), 
+            userId,
             endpoint: `/api/claims/${params.id}`,
             method: 'PATCH',
             eventType: 'server_error',
             severity: 'high',
-            details: { error: error instanceof Error ? error.message : 'Unknown error' },
+            dataType: 'CLAIMS',
+            details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
           });
           console.error("Error updating claim:", error);
           return NextResponse.json(
@@ -195,19 +194,14 @@ export const PATCH = async (
             { status: 500 }
           );
         }
-        })(request, { params });
-};
+}, { params });
 
 /**
  * DELETE /api/claims/[id]
  * Delete a claim (soft delete)
  */
-export const DELETE = async (
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId, organizationId } = context;
+export const DELETE = withEnhancedRoleAuth(60, async (request, context) => {
+  const { userId, organizationId } = context;
 
   try {
       const claimNumber = params.id;
@@ -222,11 +216,13 @@ export const DELETE = async (
 
         if (!existingClaim) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
+            timestamp: new Date().toISOString(), 
+            userId,
             endpoint: `/api/claims/${claimNumber}`,
             method: 'DELETE',
             eventType: 'validation_failed',
             severity: 'low',
+            dataType: 'CLAIMS',
             details: { reason: 'Claim not found', claimNumber },
           });
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
@@ -243,11 +239,13 @@ export const DELETE = async (
           .where(eq(claims.claimId, existingClaim.claimId));
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: `/api/claims/${claimNumber}`,
           method: 'DELETE',
           eventType: 'success',
           severity: 'medium',
+          dataType: 'CLAIMS',
           details: { claimNumber, organizationId },
         });
 
@@ -257,12 +255,14 @@ export const DELETE = async (
       });
     } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: `/api/claims/${params.id}`,
           method: 'DELETE',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          dataType: 'CLAIMS',
+          details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
         console.error("Error deleting claim:", error);
         return NextResponse.json(

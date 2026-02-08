@@ -12,6 +12,8 @@ import {
   getRedemptionByOrderId,
   getRedemptionByIdInternal,
 } from '@/lib/services/rewards/redemption-service';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logger } from '@/lib/logger';
 
 /**
  * Shopify Webhook Handler
@@ -31,6 +33,24 @@ import {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting (using IP address as key for webhooks)
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimitResult = await checkRateLimit(
+      `webhook-shopify:${ip}`,
+      RATE_LIMITS.WEBHOOK_CALLS
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn("Shopify webhook rate limit exceeded", { ip });
+      return NextResponse.json(
+        { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
+      );
+    }
+
     // 1. Extract raw body for signature verification
     const rawBody = await request.text();
     

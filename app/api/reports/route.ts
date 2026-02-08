@@ -6,19 +6,33 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { getReports, createReport } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { getReports, createReport } from '@/db/queries/analytics-queries';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 async function getHandler(req: NextRequest, context) {
+  const { userId, organizationId } = context;
+
+  // Rate limit reports list
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.ANALYTICS_QUERY,
+    `reports-list:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
-    const organizationId = context.organizationId;
     const tenantId = organizationId;
-    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
+        { error: 'Organization ID and User ID required' },
         { status: 400 }
       );
     }
@@ -34,6 +48,17 @@ async function getHandler(req: NextRequest, context) {
 
     const reports = await getReports(tenantId, userId, filters);
 
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'reports_list',
+      resourceType: 'report',
+      resourceId: 'all',
+      metadata: { count: reports.length, filters },
+      dataType: 'ANALYTICS',
+    });
+
     return NextResponse.json({ 
       reports,
       count: reports.length,
@@ -48,14 +73,27 @@ async function getHandler(req: NextRequest, context) {
 }
 
 async function postHandler(req: NextRequest, context) {
+  const { userId, organizationId } = context;
+
+  // Rate limit report creation
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.REPORT_BUILDER,
+    `reports-create:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
-    const organizationId = context.organizationId;
     const tenantId = organizationId;
-    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
+        { error: 'Organization ID and User ID required' },
         { status: 400 }
       );
     }
@@ -81,6 +119,17 @@ async function postHandler(req: NextRequest, context) {
       templateId: body.templateId,
     });
 
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'report_create',
+      resourceType: 'report',
+      resourceId: report.id,
+      metadata: { reportType: body.reportType, category: body.category },
+      dataType: 'ANALYTICS',
+    });
+
     return NextResponse.json({ 
       report,
       message: 'Report created successfully',
@@ -94,5 +143,5 @@ async function postHandler(req: NextRequest, context) {
   }
 }
 
-export const GET = withOrganizationAuth(getHandler);
-export const POST = withOrganizationAuth(postHandler);
+export const GET = withEnhancedRoleAuth(30, getHandler);
+export const POST = withEnhancedRoleAuth(50, postHandler);

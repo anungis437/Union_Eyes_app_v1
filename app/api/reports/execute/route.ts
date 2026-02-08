@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 interface ReportConfig {
   dataSourceId: string;
@@ -40,6 +41,19 @@ interface ReportConfig {
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
+
+    // Rate limit report execution
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.REPORT_EXECUTION,
+      `report-execute-adhoc:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
 
   try {
 

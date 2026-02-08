@@ -16,34 +16,47 @@ import {
   newsletterRecipients 
 } from '@/db/schema';
 import { eq, and, sql, gte } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    try {
+      const { userId, organizationId } = context;
+
+      if (!organizationId) {
+        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.CAMPAIGN_OPERATIONS,
+        `campaign-analytics:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
 
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || 'all';
 
-    // Get campaign
-    const [campaign] = await db
-      .select()
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.organizationId, user.tenantId)
-        )
-      );
+      // Get campaign
+      const [campaign] = await db
+        .select()
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, params.id),
+            eq(newsletterCampaigns.organizationId, organizationId)
+          )
+        );
 
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
@@ -151,6 +164,17 @@ export async function GET(
       spamReportRate: (campaign.totalSpamReports || 0) / (campaign.totalDelivered || 1),
     };
 
+    // Audit log
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'VIEW_CAMPAIGN_ANALYTICS',
+      dataType: 'CAMPAIGNS',
+      recordId: params.id,
+      success: true,
+      metadata: { range },
+    });
+
     return NextResponse.json({
       campaign: {
         ...campaign,
@@ -168,4 +192,5 @@ export async function GET(
       { status: 500 }
     );
   }
+  })(request);
 }

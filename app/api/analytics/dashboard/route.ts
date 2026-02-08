@@ -4,9 +4,25 @@ import { db } from '@/db/db';
 import { claims, claimUpdates } from '@/db/schema/claims-schema';
 import { eq, desc, and, count, sql, gte, lte, between } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(30, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit dashboard analytics
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ANALYTICS_QUERY,
+      `analytics-dashboard:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
     try {
       const { searchParams } = new URL(request.url);
       const timeRange = searchParams.get('timeRange') || '30'; // days
@@ -105,6 +121,17 @@ export const GET = async (request: NextRequest) => {
       const activeRate = overallStats.totalClaims > 0
         ? ((overallStats.activeClaims / overallStats.totalClaims) * 100).toFixed(1)
         : '0.0';
+
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'dashboard_analytics_fetch',
+        resourceType: 'analytics',
+        resourceId: 'claims-dashboard',
+        metadata: { timeRange: parseInt(timeRange), memberId },
+        dataType: 'ANALYTICS',
+      });
 
       return NextResponse.json({
         timeRange: parseInt(timeRange),

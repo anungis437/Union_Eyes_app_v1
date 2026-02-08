@@ -1,11 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
 import { db } from '@/db/db';
 import { claims, users } from '@/db/schema';
 import { eq, and, gte, count, sql } from 'drizzle-orm';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-async function handler(req: NextRequest) {
-  const tenantId = (req as any).tenantId;
+export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // Rate limit operational analytics
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.ANALYTICS_QUERY,
+    `analytics-operational:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
+  const tenantId = organizationId;
   const searchParams = req.nextUrl.searchParams;
   const daysBack = parseInt(searchParams.get('days') || '30');
 
@@ -80,6 +97,17 @@ async function handler(req: NextRequest) {
     ? (prevMetrics.totalOnTime / prevMetrics.totalResolved) * 100
     : 0;
 
+  // Log audit event
+  await logApiAuditEvent({
+    userId,
+    organizationId,
+    action: 'operational_analytics_fetch',
+    resourceType: 'analytics',
+    resourceId: 'operational-metrics',
+    metadata: { daysBack },
+    dataType: 'ANALYTICS',
+  });
+
   return NextResponse.json({
     queueSize: currentMetrics.queueSize,
     avgWaitTime: currentMetrics.avgWaitTime,
@@ -92,6 +120,4 @@ async function handler(req: NextRequest) {
       workloadBalance: 0, // Would need historical data
     },
   });
-}
-
-export const GET = withOrganizationAuth(handler);
+});

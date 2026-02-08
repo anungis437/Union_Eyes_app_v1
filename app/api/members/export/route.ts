@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { listMembers } from "@/lib/services/member-service";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**
  * GET /api/members/export
@@ -19,25 +20,45 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
  * - role: string[] (comma-separated)
  * - department: string
  */
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+export const GET = withEnhancedRoleAuth(20, async (request, context) => {
+  const { userId, organizationId } = context;
+
+  // Check rate limit for export operations
+  const rateLimitResult = await checkRateLimit(
+    `member-export:${userId}`,
+    RATE_LIMITS.MEMBER_EXPORT
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { 
+        error: 'Rate limit exceeded. Please try again later.',
+        resetIn: rateLimitResult.resetIn 
+      },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
 
   try {
         const { searchParams } = new URL(request.url);
-        const organizationId = searchParams.get("organizationId");
-  if (organizationId && organizationId !== context.organizationId) {
+        const orgIdParam = searchParams.get("organizationId");
+  if (orgIdParam && orgIdParam !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
 
-        if (!organizationId) {
+        if (!orgIdParam) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
+            timestamp: new Date().toISOString(), 
+            userId,
             endpoint: '/api/members/export',
             method: 'GET',
             eventType: 'validation_failed',
             severity: 'low',
+            dataType: 'MEMBER_DATA',
             details: { reason: 'organizationId is required' },
           });
           return NextResponse.json({ error: "organizationId is required" }, { status: 400 });
@@ -67,11 +88,13 @@ export const GET = async (request: NextRequest) => {
         const { members } = await listMembers(filters, { limit: 10000 });
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: '/api/members/export',
           method: 'GET',
           eventType: 'success',
           severity: 'medium',
+          dataType: 'MEMBER_DATA',
           details: { organizationId, format, memberCount: members.length, filters },
         });
 
@@ -139,13 +162,13 @@ export const GET = async (request: NextRequest) => {
           },
         });
       } catch (error) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          userId,
           endpoint: '/api/members/export',
           method: 'GET',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          dataType: 'MEMBER_DATA',
+          details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
         console.error("Error exporting members:", error);
         return NextResponse.json(
@@ -153,6 +176,7 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
+})     }
       })(request);
 };
 

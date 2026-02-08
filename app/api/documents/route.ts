@@ -54,134 +54,157 @@ const createDocumentSchema = z.object({
  * - statistics: boolean - returns statistics instead of list
  * - search: boolean - uses advanced search
  */
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+export const GET = withEnhancedRoleAuth(10, async (request, context) => {
+  const { userId, organizationId } = context;
 
   try {
-        const { searchParams } = new URL(request.url);
-        
-        const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
-        
-        const tenantId = organizationId;
-        if (!tenantId) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: '/api/documents',
-            method: 'GET',
-            eventType: 'validation_failed',
-            severity: 'low',
-            details: { reason: 'tenantId is required' },
-          });
-          return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
-        }
+    const { searchParams } = new URL(request.url);
+    
+    const requestOrgId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+    
+    const tenantId = requestOrgId;
+    if (!tenantId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: '/api/documents',
+        method: 'GET',
+        eventType: 'validation_failed',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'tenantId is required' },
+      });
+      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+    }
 
-        // Check for special modes
-        const statistics = searchParams.get("statistics") === "true";
-        const search = searchParams.get("search") === "true";
+    // Verify organization ID matches context
+    if (tenantId !== organizationId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/documents',
+        method: 'GET',
+        eventType: 'authorization_failed',
+        severity: 'high',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Organization ID mismatch' },
+      });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-        // Return statistics
-        if (statistics) {
-          const stats = await getDocumentStatistics(tenantId);
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: '/api/documents',
-            method: 'GET',
-            eventType: 'success',
-            severity: 'low',
-            details: { tenantId, mode: 'statistics' },
-          });
-          return NextResponse.json(stats);
-        }
+    // Check for special modes
+    const statistics = searchParams.get("statistics") === "true";
+    const search = searchParams.get("search") === "true";
 
-        // Advanced search mode
-        if (search) {
-          const searchQuery = searchParams.get("searchQuery") || "";
-          const filters: any = {};
+    // Return statistics
+    if (statistics) {
+      const stats = await getDocumentStatistics(tenantId);
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: '/api/documents',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { tenantId, mode: 'statistics' },
+      });
+      return NextResponse.json(stats);
+    }
 
-          const category = searchParams.get("category");
-          if (category) filters.category = category;
+    // Advanced search mode
+    if (search) {
+      const searchQuery = searchParams.get("searchQuery") || "";
+      const filters: any = {};
 
-          const fileType = searchParams.get("fileType");
-          if (fileType) filters.fileType = fileType;
+      const category = searchParams.get("category");
+      if (category) filters.category = category;
 
-          const uploadedBy = searchParams.get("uploadedBy");
-          if (uploadedBy) filters.uploadedBy = uploadedBy;
+      const fileType = searchParams.get("fileType");
+      if (fileType) filters.fileType = fileType;
 
-          const tags = searchParams.get("tags");
-          if (tags) filters.tags = tags.split(",");
+      const uploadedBy = searchParams.get("uploadedBy");
+      if (uploadedBy) filters.uploadedBy = uploadedBy;
 
-          const page = parseInt(searchParams.get("page") || "1");
-          const limit = parseInt(searchParams.get("limit") || "50");
+      const tags = searchParams.get("tags");
+      if (tags) filters.tags = tags.split(",");
 
-          const results = await searchDocuments(tenantId, searchQuery, filters, { page, limit });
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: '/api/documents',
-            method: 'GET',
-            eventType: 'success',
-            severity: 'low',
-            details: { tenantId, mode: 'search', searchQuery, resultCount: results.documents?.length || 0 },
-          });
-          return NextResponse.json(results);
-        }
+      const page = parseInt(searchParams.get("page") || "1");
+      const limit = parseInt(searchParams.get("limit") || "50");
 
-        // Build filters
-        const filters: any = { tenantId };
-        
-        const folderId = searchParams.get("folderId");
-        if (folderId) filters.folderId = folderId;
+      const results = await searchDocuments(tenantId, searchQuery, filters, { page, limit });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: '/api/documents',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { tenantId, mode: 'search', searchQuery, resultCount: results.documents?.length || 0 },
+      });
+      return NextResponse.json(results);
+    }
 
-        const category = searchParams.get("category");
-        if (category) filters.category = category;
+    // Build filters
+    const filters: any = { tenantId };
+    
+    const folderId = searchParams.get("folderId");
+    if (folderId) filters.folderId = folderId;
 
-        const tags = searchParams.get("tags");
-        if (tags) filters.tags = tags.split(",");
+    const category = searchParams.get("category");
+    if (category) filters.category = category;
 
-        const fileType = searchParams.get("fileType");
-        if (fileType) filters.fileType = fileType;
+    const tags = searchParams.get("tags");
+    if (tags) filters.tags = tags.split(",");
 
-        const uploadedBy = searchParams.get("uploadedBy");
-        if (uploadedBy) filters.uploadedBy = uploadedBy;
+    const fileType = searchParams.get("fileType");
+    if (fileType) filters.fileType = fileType;
 
-        const searchQuery = searchParams.get("searchQuery");
-        if (searchQuery) filters.searchQuery = searchQuery;
+    const uploadedBy = searchParams.get("uploadedBy");
+    if (uploadedBy) filters.uploadedBy = uploadedBy;
 
-        // Pagination
-        const page = parseInt(searchParams.get("page") || "1");
-        const limit = parseInt(searchParams.get("limit") || "50");
-        const sortBy = searchParams.get("sortBy") || "uploadedAt";
-        const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";
+    const searchQuery = searchParams.get("searchQuery");
+    if (searchQuery) filters.searchQuery = searchQuery;
 
-        const result = await listDocuments(filters, { page, limit, sortBy, sortOrder });
-        
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/documents',
-          method: 'GET',
-          eventType: 'success',
-          severity: 'low',
-          details: { tenantId, filters, resultCount: result.documents?.length || 0 },
-        });
+    // Pagination
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const sortBy = searchParams.get("sortBy") || "uploadedAt";
+    const sortOrder = (searchParams.get("sortOrder") || "desc") as "asc" | "desc";
 
-        return NextResponse.json(result);
-      } catch (error) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/documents',
-          method: 'GET',
-          eventType: 'server_error',
-          severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        });
-        console.error("Error listing documents:", error);
-        return NextResponse.json(
-          { error: "Failed to list documents", details: error instanceof Error ? error.message : "Unknown error" },
-          { status: 500 }
-        );
-      }
-      })(request);
-};
+    const result = await listDocuments(filters, { page, limit, sortBy, sortOrder });
+    
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: '/api/documents',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { tenantId, filters, resultCount: result.documents?.length || 0 },
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: '/api/documents',
+      method: 'GET',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error("Error listing documents:", error);
+    return NextResponse.json(
+      { error: "Failed to list documents", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+});
 
 /**
  * POST /api/documents
@@ -202,71 +225,114 @@ export const GET = async (request: NextRequest) => {
  * - accessLevel: string
  * - metadata: object
  */
-export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+export const POST = withEnhancedRoleAuth(40, async (request, context) => {
+  const { userId, organizationId } = context;
+
   let rawBody: unknown;
   try {
     rawBody = await request.json();
   } catch {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/documents',
+      method: 'POST',
+      eventType: 'validation_failed',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { reason: 'Invalid JSON in request body' },
+    });
     return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
 
   const parsed = createDocumentSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/documents',
+      method: 'POST',
+      eventType: 'validation_failed',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { reason: 'Validation failed', errors: parsed.error.errors },
+    });
+    return NextResponse.json({ 
+      error: 'Invalid request body',
+      details: parsed.error.errors
+    }, { status: 400 });
   }
 
   const body = parsed.data;
-  const { userId, organizationId } = context;
 
-  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+  // Verify organization ID matches context
+  if (body.tenantId !== organizationId) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/documents',
+      method: 'POST',
+      eventType: 'authorization_failed',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { reason: 'Organization ID mismatch' },
+    });
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-try {
-      // Create document
-      const document = await createDocument({
-        tenantId: body.tenantId,
-        folderId: body.folderId || null,
-        name: body.name,
-        fileUrl: body.fileUrl,
-        fileSize: body.fileSize || null,
-        fileType: body.fileType,
-        mimeType: body.mimeType || null,
-        description: body.description || null,
-        tags: body.tags || null,
-        category: body.category || null,
-        contentText: body.contentText || null,
-        isConfidential: body.isConfidential,
-        accessLevel: body.accessLevel,
-        uploadedBy: userId,
-        metadata: body.metadata,
-      });
+  try {
+    // Create document
+    const document = await createDocument({
+      tenantId: body.tenantId,
+      folderId: body.folderId || null,
+      name: body.name,
+      fileUrl: body.fileUrl,
+      fileSize: body.fileSize || null,
+      fileType: body.fileType,
+      mimeType: body.mimeType || null,
+      description: body.description || null,
+      tags: body.tags || null,
+      category: body.category || null,
+      contentText: body.contentText || null,
+      isConfidential: body.isConfidential,
+      accessLevel: body.accessLevel,
+      uploadedBy: userId,
+      metadata: body.metadata,
+    });
 
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/documents',
-        method: 'POST',
-        eventType: 'success',
-        severity: 'medium',
-        details: { tenantId: body.tenantId, documentName: body.name, fileType: body.fileType },
-      });
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: '/api/documents',
+      method: 'POST',
+      eventType: 'success',
+      severity: 'medium',
+      dataType: 'DOCUMENTS',
+      details: { 
+        tenantId: body.tenantId, 
+        documentId: document.id,
+        documentName: body.name, 
+        fileType: body.fileType 
+      },
+    });
 
-      return NextResponse.json(document, { status: 201 });
-    } catch (error) {
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/documents',
-        method: 'POST',
-        eventType: 'server_error',
-        severity: 'high',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      });
-      console.error("Error creating document:", error);
-      return NextResponse.json(
-        { error: "Failed to create document", details: error instanceof Error ? error.message : "Unknown error" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(document, { status: 201 });
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: '/api/documents',
+      method: 'POST',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error("Error creating document:", error);
+    return NextResponse.json(
+      { error: "Failed to create document", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
 });
 

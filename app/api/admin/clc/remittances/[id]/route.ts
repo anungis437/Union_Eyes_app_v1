@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // =====================================================================================
 // GET - Get remittance details
@@ -24,6 +25,21 @@ export const GET = async (
 ) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
+
+    // Rate limiting: 50 CLC operations per hour per user
+    const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.CLC_OPERATIONS);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Too many CLC requests.',
+          resetIn: rateLimitResult.resetIn 
+        },
+        { 
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
+      );
+    }
 
     logApiAuditEvent({
       timestamp: new Date().toISOString(), userId,

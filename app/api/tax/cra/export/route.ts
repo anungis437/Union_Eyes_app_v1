@@ -11,6 +11,7 @@ import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,21 @@ export const GET = async (request: NextRequest) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {
+      // Rate limiting: 10 tax operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many tax requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const { searchParams } = new URL(request.url);
       const organizationId = searchParams.get('organizationId');
   if (organizationId && organizationId !== contextOrganizationId) {

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { z } from 'zod';
 import { db } from '@/db';
 import { claims, users, deadlines } from '@/db/schema';
 import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
-import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * GET /api/ml/recommendations?type=steward|deadline|strategy|priority
@@ -28,14 +30,26 @@ import { requireUser } from '@/lib/auth/unified-auth';
  *   }>
  * }
  */
-export async function GET(request: NextRequest) {
-  try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
 
+  // Rate limit ML recommendations
+  const rateLimitResult = await checkRateLimit(
+    `ml-predictions:${userId}`,
+    RATE_LIMITS.ML_PREDICTIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded for ML operations. Please try again later.' },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
+
+  try {
     const organizationScopeId = organizationId || userId;
     const tenantId = organizationScopeId;
     const searchParams = request.nextUrl.searchParams;

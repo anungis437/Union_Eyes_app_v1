@@ -23,6 +23,7 @@ import {
 import { eq, and, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { createHmac } from "crypto";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 // ============================================================================
 // INITIALIZATION
@@ -60,6 +61,24 @@ function verifyWebhookSignature(
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // Rate limiting (using IP address as key for webhooks)
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimitResult = await checkRateLimit(
+      `webhook-stripe:${ip}`,
+      RATE_LIMITS.WEBHOOK_CALLS
+    );
+
+    if (!rateLimitResult.allowed) {
+      logger.warn("Stripe webhook rate limit exceeded", { ip });
+      return NextResponse.json(
+        { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
+      );
+    }
+
     const body = await request.text();
     const signature = request.headers.get("stripe-signature") || "";
 

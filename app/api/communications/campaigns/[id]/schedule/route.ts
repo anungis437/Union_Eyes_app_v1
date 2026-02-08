@@ -17,7 +17,9 @@ import {
   newsletterListSubscribers 
 } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 const scheduleSchema = z.object({
   scheduledAt: z.string().nullable(),
@@ -28,28 +30,39 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    try {
+      const { userId, organizationId } = context;
+
+      if (!organizationId) {
+        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.CAMPAIGN_OPERATIONS,
+        `campaign-schedule:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
 
     const body = await request.json();
     const { scheduledAt, timezone } = scheduleSchema.parse(body);
 
-    // Get campaign
-    const [campaign] = await db
-      .select()
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.organizationId, user.tenantId)
-        )
-      );
+      // Get campaign
+      const [campaign] = await db
+        .select()
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, params.id),
+            eq(newsletterCampaigns.organizationId, organizationId)
+          )
+        );
 
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
@@ -109,6 +122,17 @@ export async function POST(
     // TODO: If sending now, trigger email sending job
     // TODO: If scheduled, add to job queue with delay
 
+    // Audit log
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: scheduledAt ? 'SCHEDULE_CAMPAIGN' : 'SEND_CAMPAIGN',
+      dataType: 'CAMPAIGNS',
+      recordId: params.id,
+      success: true,
+      metadata: { scheduledAt, recipientCount: subscribers.length },
+    });
+
     return NextResponse.json({ 
       campaign: updatedCampaign,
       recipientCount: subscribers.length,
@@ -130,4 +154,5 @@ export async function POST(
       { status: 500 }
     );
   }
+  })(request);
 }

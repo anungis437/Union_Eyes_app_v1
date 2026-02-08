@@ -12,9 +12,25 @@ import { insightRecommendations } from '@/db/migrations/schema';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(30, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit insights queries
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ANALYTICS_QUERY,
+      `analytics-insights:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
   try {
       const searchParams = request.nextUrl.searchParams;
       const status = searchParams.get('status');
@@ -42,6 +58,17 @@ export const GET = async (request: NextRequest) => {
         limit
       });
       
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'insights_fetch',
+        resourceType: 'analytics',
+        resourceId: 'insights',
+        metadata: { status, priority, category, count: insights.length },
+        dataType: 'ANALYTICS',
+      });
+      
       return NextResponse.json({
         success: true,
         insights
@@ -57,8 +84,21 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const PATCH = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+  return withEnhancedRoleAuth(40, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit insights updates
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ANALYTICS_QUERY,
+      `analytics-insights-update:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
 
   try {
       const body = await request.json();
@@ -109,6 +149,17 @@ export const PATCH = async (request: NextRequest) => {
         .where(eq(insightRecommendations.id, insightId))
         .returning();
       
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'insight_update',
+        resourceType: 'analytics',
+        resourceId: insightId,
+        metadata: { status, hasNotes: !!notes },
+        dataType: 'ANALYTICS',
+      });
+      
       return NextResponse.json({
         success: true,
         insight: updated
@@ -124,7 +175,22 @@ export const PATCH = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(50, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit insight creation
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ADVANCED_ANALYTICS,
+      `analytics-insights-create:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
   try {
       // This endpoint would be used by the AI system to create new insights
       // For now, it's a placeholder for future implementation
@@ -179,6 +245,17 @@ export const POST = async (request: NextRequest) => {
         confidenceScore: confidenceScore?.toString(),
         relatedEntities
       }).returning();
+      
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'insight_create',
+        resourceType: 'analytics',
+        resourceId: insight.id,
+        metadata: { insightType, category, priority, actionRequired },
+        dataType: 'ANALYTICS',
+      });
       
       return NextResponse.json({
         success: true,

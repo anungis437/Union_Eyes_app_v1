@@ -1,0 +1,149 @@
+/**
+ * Document Categories API Route
+ * GET /api/documents/categories - Get list of document categories
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { db } from "@/db/db";
+import { documents } from "@/db/schema";
+import { eq, sql } from "drizzle-orm";
+
+/**
+ * Predefined document categories
+ */
+const DEFAULT_CATEGORIES = [
+  "Contracts",
+  "Legal",
+  "Financial",
+  "HR",
+  "Policies",
+  "Reports",
+  "Meetings",
+  "Training",
+  "Compliance",
+  "Marketing",
+  "Operations",
+  "Technical",
+  "Other",
+];
+
+/**
+ * GET /api/documents/categories
+ * Get list of document categories
+ * 
+ * Query params:
+ * - tenantId: string (required) - Filter by organization
+ * - includeDefault: boolean (optional) - Include default categories
+ * - counts: boolean (optional) - Include document counts per category
+ */
+export const GET = withEnhancedRoleAuth(10, async (request, context) => {
+  const { userId, organizationId } = context;
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const tenantId = searchParams.get("tenantId") || organizationId;
+    const includeDefault = searchParams.get("includeDefault") !== "false";
+    const includeCounts = searchParams.get("counts") === "true";
+
+    if (!tenantId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/documents/categories',
+        method: 'GET',
+        eventType: 'validation_failed',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'tenantId is required' },
+      });
+      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+    }
+
+    // Verify organization access
+    if (tenantId !== organizationId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/documents/categories',
+        method: 'GET',
+        eventType: 'authorization_failed',
+        severity: 'high',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Organization ID mismatch' },
+      });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Get categories from existing documents
+    const result = await db
+      .select({
+        category: documents.category,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(documents)
+      .where(eq(documents.tenantId, tenantId))
+      .groupBy(documents.category);
+
+    const usedCategories = result
+      .filter((r) => r.category)
+      .map((r) => ({
+        name: r.category!,
+        count: includeCounts ? r.count : undefined,
+        isDefault: DEFAULT_CATEGORIES.includes(r.category!),
+      }));
+
+    // Add default categories not yet used
+    let categories = [...usedCategories];
+    if (includeDefault) {
+      const usedCategoryNames = new Set(usedCategories.map((c) => c.name));
+      const unusedDefaults = DEFAULT_CATEGORIES.filter(
+        (cat) => !usedCategoryNames.has(cat)
+      ).map((name) => ({
+        name,
+        count: includeCounts ? 0 : undefined,
+        isDefault: true,
+      }));
+      categories = [...categories, ...unusedDefaults];
+    }
+
+    // Sort by name
+    categories.sort((a, b) => a.name.localeCompare(b.name));
+
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/documents/categories',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { 
+        tenantId,
+        categoryCount: categories.length 
+      },
+    });
+
+    return NextResponse.json({
+      categories,
+      total: categories.length,
+    });
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/documents/categories',
+      method: 'GET',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error("Error fetching document categories:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch categories", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+});

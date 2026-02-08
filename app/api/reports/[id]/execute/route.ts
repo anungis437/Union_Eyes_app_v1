@@ -8,10 +8,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 import { getReportById, logReportExecution } from '@/db/queries/analytics-queries';
 import { ReportExecutor } from '@/lib/report-executor';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 async function postHandler(
   req: NextRequest,
@@ -20,6 +21,21 @@ async function postHandler(
 ) {
   // Extract params from context or params argument
   const reportId = params?.id || context?.params?.id;
+  const { userId, organizationId } = context;
+
+  // Rate limit report execution
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.REPORT_EXECUTION,
+    `report-execute:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
     const organizationId = context.organizationId;
     const tenantId = organizationId;
@@ -132,4 +148,4 @@ async function checkReportAccess(
   return shares.length > 0;
 }
 
-export const POST = withOrganizationAuth(postHandler);
+export const POST = withEnhancedRoleAuth(40, postHandler);

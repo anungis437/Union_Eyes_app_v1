@@ -60,22 +60,26 @@ try {
       );
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
+        timestamp: new Date().toISOString(), 
+        userId,
         endpoint: '/api/members/search',
         method: 'POST',
         eventType: 'success',
         severity: 'low',
+        dataType: 'MEMBER_DATA',
         details: { organizationId, searchQuery, resultCount: result.members?.length || 0 },
       });
 
       return NextResponse.json(result);
     } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
+        timestamp: new Date().toISOString(), 
+        userId,
         endpoint: '/api/members/search',
         method: 'POST',
         eventType: 'server_error',
         severity: 'high',
+        dataType: 'MEMBER_DATA',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
       console.error("Error searching members:", error);
@@ -90,45 +94,50 @@ try {
  * GET /api/members/search
  * Get member statistics
  */
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+export const GET = withEnhancedRoleAuth(20, async (request, context) => {
+  const { userId, organizationId } = context;
 
   try {
         const { searchParams } = new URL(request.url);
-        const organizationId = searchParams.get("organizationId");
+        const orgIdParam = searchParams.get("organizationId");
 
-        if (!organizationId) {
+        if (!orgIdParam) {
           logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
+            timestamp: new Date().toISOString(), 
+            userId,
             endpoint: '/api/members/search',
             method: 'GET',
             eventType: 'validation_failed',
             severity: 'low',
+            dataType: 'MEMBER_DATA',
             details: { reason: 'organizationId required' },
           });
           return NextResponse.json({ error: "organizationId is required" }, { status: 400 });
         }
 
-        const statistics = await getMemberStatistics(organizationId);
+        const statistics = await getMemberStatistics(orgIdParam);
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: '/api/members/search',
           method: 'GET',
           eventType: 'success',
           severity: 'low',
-          details: { organizationId },
+          dataType: 'MEMBER_DATA',
+          details: { organizationId: orgIdParam },
         });
 
         return NextResponse.json(statistics);
       } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: '/api/members/search',
           method: 'GET',
           eventType: 'server_error',
           severity: 'high',
+          dataType: 'MEMBER_DATA',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
         console.error("Error fetching member statistics:", error);
@@ -137,6 +146,5 @@ export const GET = async (request: NextRequest) => {
           { status: 500 }
         );
       }
-      })(request);
-};
+});
 

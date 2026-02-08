@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { DuesCalculationEngine } from '@/lib/dues-calculation-engine';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Validation schema for dues calculation
 const calculateDuesSchema = z.object({
@@ -27,6 +28,21 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
 
   const body = parsed.data;
   const { userId, organizationId } = context;
+
+  // Rate limiting: 100 financial read operations per hour per user
+  const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.FINANCIAL_READ);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { 
+        error: 'Rate limit exceeded. Too many financial read requests.',
+        resetIn: rateLimitResult.resetIn 
+      },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult),
+      }
+    );
+  }
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {

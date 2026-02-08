@@ -2,7 +2,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Equity Self-Identification
  * Member-facing demographic data collection with OCAP compliance
- * Phase 2: Equity & Demographics
+ * Phase 3: Equity & Demographics - SECURED with PIPEDA/OCAP compliance
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,7 +16,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 export const dynamic = 'force-dynamic';
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {
@@ -79,14 +79,38 @@ export const POST = async (request: NextRequest) => {
 
       // Validate required fields
       if (!memberId || !organizationId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/self-identify',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'low',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Missing required fields',
+          },
+        });
         return NextResponse.json(
           { error: 'Bad Request - memberId and organizationId are required' },
           { status: 400 }
         );
       }
 
-      // CRITICAL: Consent validation
+      // CRITICAL: Consent validation (PIPEDA requirement)
       if (!dataCollectionConsent) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/self-identify',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'high',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Data collection consent required - PIPEDA compliance',
+          },
+        });
         return NextResponse.json(
           { error: 'Bad Request - Data collection consent is required' },
           { status: 400 }
@@ -94,6 +118,18 @@ export const POST = async (request: NextRequest) => {
       }
 
       if (!consentPurpose) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/self-identify',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'high',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Consent purpose required - PIPEDA compliance',
+          },
+        });
         return NextResponse.json(
           { error: 'Bad Request - Consent purpose must be specified' },
           { status: 400 }
@@ -113,6 +149,19 @@ export const POST = async (request: NextRequest) => {
         .limit(1);
 
       if (!member || member.length === 0) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/self-identify',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'Member not found',
+            memberId,
+          },
+        });
         return NextResponse.json(
           { error: 'Not Found - Member not found' },
           { status: 404 }
@@ -243,6 +292,24 @@ export const POST = async (request: NextRequest) => {
           .returning();
       }
 
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/self-identify',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          memberId,
+          organizationId,
+          consentGiven: dataCollectionConsent,
+          indigenousDataGovernanceConsent,
+          isUpdate: existing && existing.length > 0,
+          privacyCompliant: true,
+        },
+      });
+
       return NextResponse.json({
         success: true,
         data: result[0],
@@ -251,9 +318,21 @@ export const POST = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to save demographic data', error as Error, {
-        userId: userId,
+        userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/self-identify',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
     return NextResponse.json(
       { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
@@ -263,7 +342,9 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
       const { searchParams } = new URL(request.url);
       const memberId = searchParams.get('memberId');
@@ -282,12 +363,39 @@ export const GET = async (request: NextRequest) => {
         .limit(1);
 
       if (!data || data.length === 0) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/self-identify',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'low',
+          details: {
+            dataType: 'EQUITY_DATA',
+            memberId,
+            dataFound: false,
+          },
+        });
         return NextResponse.json({
           success: true,
           data: null,
           message: 'No demographic data found',
         });
       }
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/self-identify',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          memberId,
+          dataFound: true,
+        },
+      });
 
       return NextResponse.json({
         success: true,
@@ -296,10 +404,22 @@ export const GET = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to fetch demographic data', error as Error, {
-        userId: userId,
+        userId,
         memberId: request.nextUrl.searchParams.get('memberId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/self-identify',
+        method: 'GET',
+        eventType: 'server_error',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
     return NextResponse.json(
       { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
@@ -309,8 +429,8 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const DELETE = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -335,11 +455,39 @@ export const DELETE = async (request: NextRequest) => {
         .returning();
 
       if (!result || result.length === 0) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/equity/self-identify',
+          method: 'DELETE',
+          eventType: 'validation_failed',
+          severity: 'low',
+          details: {
+            dataType: 'EQUITY_DATA',
+            reason: 'No demographic data found',
+            memberId,
+          },
+        });
         return NextResponse.json(
           { error: 'Not Found - No demographic data found' },
           { status: 404 }
         );
       }
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/self-identify',
+        method: 'DELETE',
+        eventType: 'success',
+        severity: 'critical',
+        details: {
+          dataType: 'EQUITY_DATA',
+          memberId,
+          action: 'consent_withdrawn',
+          privacyCompliant: true,
+        },
+      });
 
       return NextResponse.json({
         success: true,
@@ -348,10 +496,22 @@ export const DELETE = async (request: NextRequest) => {
 
     } catch (error) {
       logger.error('Failed to withdraw demographic consent', error as Error, {
-        userId: userId,
+        userId,
         memberId: request.nextUrl.searchParams.get('memberId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/equity/self-identify',
+        method: 'DELETE',
+        eventType: 'server_error',
+        severity: 'high',
+        details: {
+          dataType: 'EQUITY_DATA',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
     return NextResponse.json(
       { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

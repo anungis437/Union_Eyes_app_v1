@@ -11,12 +11,28 @@ import { jsPDF } from 'jspdf';
 import { put } from '@vercel/blob';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting: 10 tax operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many tax requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const { year } = await request.json();
 
       if (!year || year < 2020 || year > new Date().getFullYear()) {
@@ -109,6 +125,21 @@ export const POST = async (request: NextRequest) => {
         slipUrl: blob.url,
       });
       
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/tax/rl-1/generate',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          year,
+          totalContributions,
+          slipUrl: blob.url,
+        },
+      });
+      
       return NextResponse.json({
         success: true,
         year,
@@ -118,6 +149,15 @@ export const POST = async (request: NextRequest) => {
         slipUrl: blob.url,
       });
     } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/tax/rl-1/generate',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
       logger.error('Failed to generate RL-1 tax slip', error as Error, {
         userId: userId,
   });

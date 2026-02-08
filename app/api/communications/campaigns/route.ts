@@ -14,8 +14,9 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterCampaigns, newsletterTemplates, newsletterDistributionLists } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
-import { withApiAuth } from '@/lib/api-auth-guard';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 const createCampaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
@@ -31,16 +32,24 @@ const createCampaignSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export const GET = withApiAuth(async (request: NextRequest) => {
+export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { tenantId } = user;
+    const { userId, organizationId } = context;
 
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    if (!organizationId) {
+      return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+    }
+
+    // Rate limit check
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.CAMPAIGN_OPERATIONS,
+      `campaign-read:${userId}`
+    );
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -53,7 +62,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       })
       .from(newsletterCampaigns)
       .leftJoin(newsletterTemplates, eq(newsletterCampaigns.templateId, newsletterTemplates.id))
-      .where(eq(newsletterCampaigns.organizationId, tenantId))
+      .where(eq(newsletterCampaigns.organizationId, organizationId))
       .$dynamic();
 
     if (status) {
@@ -61,6 +70,16 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     }
 
     const campaigns = await query.orderBy(desc(newsletterCampaigns.createdAt));
+
+    // Audit log
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'LIST_CAMPAIGNS',
+      dataType: 'CAMPAIGNS',
+      success: true,
+      metadata: { count: campaigns.length, status },
+    });
 
     return NextResponse.json({ campaigns });
   } catch (error) {
@@ -72,16 +91,24 @@ export const GET = withApiAuth(async (request: NextRequest) => {
   }
 });
 
-export const POST = withApiAuth(async (request: NextRequest) => {
+export const POST = withEnhancedRoleAuth(40, async (request: NextRequest, context) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { id: userId, tenantId } = user;
+    const { userId, organizationId } = context;
 
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    if (!organizationId) {
+      return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+    }
+
+    // Rate limit check
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.CAMPAIGN_OPERATIONS,
+      `campaign-ops:${userId}`
+    );
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();
@@ -91,7 +118,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.organizationId, tenantId));
+      .where(eq(newsletterDistributionLists.organizationId, organizationId));
 
     const validListIds = lists.map(l => l.id);
     const invalidListIds = validatedData.distributionListIds.filter(
@@ -113,7 +140,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const [campaign] = await db
       .insert(newsletterCampaigns)
       .values({
-        organizationId: tenantId,
+        organizationId,
         createdBy: userId,
         name: validatedData.name,
         subject: validatedData.subject,
@@ -129,6 +156,17 @@ export const POST = withApiAuth(async (request: NextRequest) => {
         status: validatedData.scheduledAt ? 'scheduled' : 'draft',
       })
       .returning();
+
+    // Audit log
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'CREATE_CAMPAIGN',
+      dataType: 'CAMPAIGNS',
+      recordId: campaign.id,
+      success: true,
+      metadata: { name: campaign.name, status: campaign.status },
+    });
 
     return NextResponse.json({ campaign }, { status: 201 });
   } catch (error) {

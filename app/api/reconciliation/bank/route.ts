@@ -5,6 +5,7 @@ import { members, duesTransactions } from '@/services/financial-service/src/db/s
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { stripe } from '@/lib/stripe';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Bank reconciliation - compare Stripe payouts with recorded transactions
 export const GET = async (req: NextRequest) => {
@@ -12,6 +13,21 @@ export const GET = async (req: NextRequest) => {
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting: 10 reconciliation operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.RECONCILIATION);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many reconciliation requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       // Get member to verify tenant
       const [member] = await db
         .select()
@@ -110,6 +126,22 @@ export const GET = async (req: NextRequest) => {
       const variance = expectedAmount - totalGross;
       const variancePercentage = expectedAmount > 0 ? (variance / expectedAmount) * 100 : 0;
 
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/reconciliation/bank',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          startDate,
+          endDate,
+          variance: variance.toFixed(2),
+          isReconciled: Math.abs(variance) < 1,
+        },
+      });
+
       return NextResponse.json({
         period: {
           startDate,
@@ -143,6 +175,15 @@ export const GET = async (req: NextRequest) => {
       });
 
     } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/reconciliation/bank',
+        method: 'GET',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
       console.error('Bank reconciliation error:', error);
       return NextResponse.json(
         { error: 'Failed to perform bank reconciliation' },

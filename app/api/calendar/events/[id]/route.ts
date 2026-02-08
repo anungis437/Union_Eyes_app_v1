@@ -1,21 +1,24 @@
-import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * Calendar Event by ID API Routes
  * 
  * Operations for individual events:
- * - GET: Get event details
- * - PATCH: Update event
- * - DELETE: Delete event
+ * - GET: Get event details (Role Level 10)
+ * - PATCH: Update event (Role Level 40)
+ * - DELETE: Delete event (Role Level 40)
+ * 
+ * Security: Phase 4 - Enterprise Role-Based Access + Rate Limiting
  * 
  * @module app/api/calendar/events/[id]/route
  */
 
 import { NextRequest, NextResponse } from "next/server";
-
 import { db } from "@/db";
 import { calendarEvents, eventAttendees } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { logApiAuditEvent } from "@/lib/middleware/request-validation";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 const updateEventSchema = z.object({
   title: z.string().min(1).optional(),
@@ -34,17 +37,27 @@ const updateEventSchema = z.object({
 /**
  * GET /api/calendar/events/[id]
  */
-export async function GET(
+export const GET = withEnhancedRoleAuth(10, async (
   request: NextRequest,
+  context,
   { params }: { params: { id: string } }
-) {
-  try {
-    const { userId, organizationId } = await requireUser();
+) => {
+  const { userId, organizationId } = context;
 
-    if (!userId) {
+  try {
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      `calendar-ops:${userId}`,
+      RATE_LIMITS.CALENDAR_OPERATIONS
+    );
+
+    if (!rateLimitResult.allowed) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
       );
     }
 
@@ -54,7 +67,7 @@ export async function GET(
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, organizationId || "")
+          eq(calendarEvents.tenantId, organizationId)
         )
       );
 
@@ -71,6 +84,22 @@ export async function GET(
       .from(eventAttendees)
       .where(eq(eventAttendees.eventId, params.id));
 
+    // Audit logging
+    await logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      organizationId,
+      endpoint: `/api/calendar/events/${params.id}`,
+      method: "GET",
+      eventType: "calendar_event_view",
+      dataType: "calendar_events",
+      severity: "low",
+      details: {
+        eventId: params.id,
+        title: event.title,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -79,30 +108,55 @@ export async function GET(
         attendeeCount: attendees.length,
         isUserAttending: attendees.some((a) => a.userId === userId),
       },
+    }, {
+      headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
     console.error("Error fetching event:", error);
+    
+    await logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      organizationId,
+      endpoint: `/api/calendar/events/${params.id}`,
+      method: "GET",
+      eventType: "error",
+      dataType: "calendar_events",
+      severity: "high",
+      details: { error: error instanceof Error ? error.message : "Unknown error" },
+    });
+
     return NextResponse.json(
       { error: "Failed to fetch event" },
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PATCH /api/calendar/events/[id]
  */
-export async function PATCH(
+export const PATCH = withEnhancedRoleAuth(40, async (
   request: NextRequest,
+  context,
   { params }: { params: { id: string } }
-) {
-  try {
-    const { userId, organizationId } = await requireUser();
+) => {
+  const { userId, organizationId } = context;
 
-    if (!userId) {
+  try {
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      `calendar-ops:${userId}`,
+      RATE_LIMITS.CALENDAR_OPERATIONS
+    );
+
+    if (!rateLimitResult.allowed) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
       );
     }
 
@@ -129,7 +183,7 @@ export async function PATCH(
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, organizationId || "")
+          eq(calendarEvents.tenantId, organizationId)
         )
       );
 
@@ -139,14 +193,6 @@ export async function PATCH(
         { status: 404 }
       );
     }
-
-    // Only organizer or admin can update
-    // if (existingEvent.organizerId !== userId && !isAdmin) {
-    //   return NextResponse.json(
-    //     { error: "Forbidden" },
-    //     { status: 403 }
-    //   );
-    // }
 
     // Update event
     const updateData: any = {
@@ -168,37 +214,75 @@ export async function PATCH(
       .where(eq(calendarEvents.id, params.id))
       .returning();
 
-    // Notify attendees of changes
-    // await notifyEventUpdate(updatedEvent);
+    // Audit logging
+    await logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      organizationId,
+      endpoint: `/api/calendar/events/${params.id}`,
+      method: "PATCH",
+      eventType: "calendar_event_updated",
+      dataType: "calendar_events",
+      severity: "medium",
+      details: {
+        eventId: params.id,
+        changes: data,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       data: updatedEvent,
       message: "Event updated successfully",
+    }, {
+      headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
     console.error("Error updating event:", error);
+    
+    await logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      organizationId,
+      endpoint: `/api/calendar/events/${params.id}`,
+      method: "PATCH",
+      eventType: "error",
+      dataType: "calendar_events",
+      severity: "high",
+      details: { error: error instanceof Error ? error.message : "Unknown error" },
+    });
+
     return NextResponse.json(
       { error: "Failed to update event" },
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * DELETE /api/calendar/events/[id]
  */
-export async function DELETE(
+export const DELETE = withEnhancedRoleAuth(40, async (
   request: NextRequest,
+  context,
   { params }: { params: { id: string } }
-) {
-  try {
-    const { userId, organizationId } = await requireUser();
+) => {
+  const { userId, organizationId } = context;
 
-    if (!userId) {
+  try {
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      `calendar-ops:${userId}`,
+      RATE_LIMITS.CALENDAR_OPERATIONS
+    );
+
+    if (!rateLimitResult.allowed) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
       );
     }
 
@@ -209,7 +293,7 @@ export async function DELETE(
       .where(
         and(
           eq(calendarEvents.id, params.id),
-          eq(calendarEvents.tenantId, organizationId || "")
+          eq(calendarEvents.tenantId, organizationId)
         )
       );
 
@@ -219,14 +303,6 @@ export async function DELETE(
         { status: 404 }
       );
     }
-
-    // Only organizer or admin can delete
-    // if (existingEvent.organizerId !== userId && !isAdmin) {
-    //   return NextResponse.json(
-    //     { error: "Forbidden" },
-    //     { status: 403 }
-    //   );
-    // }
 
     // Delete attendees first (foreign key constraint)
     await db
@@ -238,18 +314,47 @@ export async function DELETE(
       .delete(calendarEvents)
       .where(eq(calendarEvents.id, params.id));
 
-    // Notify attendees of cancellation
-    // await notifyEventCancellation(existingEvent);
+    // Audit logging
+    await logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      organizationId,
+      endpoint: `/api/calendar/events/${params.id}`,
+      method: "DELETE",
+      eventType: "calendar_event_deleted",
+      dataType: "calendar_events",
+      severity: "high",
+      details: {
+        eventId: params.id,
+        title: existingEvent.title,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: "Event deleted successfully",
+    }, {
+      headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
     console.error("Error deleting event:", error);
+    
+    await logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      organizationId,
+      endpoint: `/api/calendar/events/${params.id}`,
+      method: "DELETE",
+      eventType: "error",
+      dataType: "calendar_events",
+      severity: "high",
+      details: { error: error instanceof Error ? error.message : "Unknown error" },
+    });
+
     return NextResponse.json(
       { error: "Failed to delete event" },
       { status: 500 }
     );
   }
-}
+});
+

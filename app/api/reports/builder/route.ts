@@ -14,10 +14,24 @@ import { db } from '@/db';
 import { reports } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
+
+    // Rate limit report builder operations
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.REPORT_BUILDER,
+      `report-builder-create:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
 
   try {
 
@@ -63,6 +77,17 @@ export const POST = async (req: NextRequest) => {
           createdBy: userId,
         })
         .returning();
+
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'report_create',
+        resourceType: 'report',
+        resourceId: report.id,
+        metadata: { reportType: 'custom', category: body.category },
+        dataType: 'ANALYTICS',
+      });
 
       return NextResponse.json({
         success: true,

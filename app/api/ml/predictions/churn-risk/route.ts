@@ -1,4 +1,7 @@
-import { requireUser } from '@/lib/auth/unified-auth';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { z } from 'zod';
 /**
  * UC-07: Churn Risk Prediction API
  * 
@@ -30,13 +33,26 @@ interface ChurnPrediction {
   predictedAt: Date;
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const { userId, organizationId } = await requireUser();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
 
+  // Rate limit ML predictions
+  const rateLimitResult = await checkRateLimit(
+    `ml-predictions:${userId}`,
+    RATE_LIMITS.ML_PREDICTIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded for ML operations. Please try again later.' },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
+
+  try {
     const searchParams = request.nextUrl.searchParams;
     const riskLevel = searchParams.get('riskLevel'); // 'low', 'medium', 'high'
     const limit = parseInt(searchParams.get('limit') || '50');
@@ -109,6 +125,19 @@ export async function GET(request: NextRequest) {
         : 0
     };
 
+    // Log audit event
+    await logApiAuditEvent({
+      action: 'ml_prediction_read',
+      resourceType: 'AI_ML',
+      organizationId,
+      userId,
+      metadata: {
+        predictionType: 'churn_risk',
+        count: predictions.length,
+        riskLevel: riskLevel || 'all',
+      },
+    });
+
     return NextResponse.json({
       predictions,
       summary,
@@ -122,7 +151,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 export async function POST(request: NextRequest) {
   try {
