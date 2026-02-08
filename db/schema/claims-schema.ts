@@ -46,7 +46,7 @@ export const claims = pgTable("claims", {
   claimId: uuid("claim_id").primaryKey().defaultRandom(),
   claimNumber: varchar("claim_number", { length: 50 }).notNull().unique(),
   organizationId: uuid("organization_id").notNull(),
-  memberId: uuid("member_id").notNull(),
+  memberId: varchar("member_id", { length: 255 }).notNull(),
   isAnonymous: boolean("is_anonymous").default(true),
   
   // Claim details
@@ -67,7 +67,7 @@ export const claims = pgTable("claims", {
   previousReportDetails: text("previous_report_details"),
   
   // Assignment and tracking
-  assignedTo: uuid("assigned_to"),
+  assignedTo: varchar("assigned_to", { length: 255 }),
   assignedAt: timestamp("assigned_at", { withTimezone: true }),
   
   // AI analysis
@@ -112,7 +112,7 @@ export const claimUpdates = pgTable("claim_updates", {
   claimId: uuid("claim_id").notNull().references(() => claims.claimId, { onDelete: "cascade" }),
   updateType: varchar("update_type", { length: 50 }).notNull(),
   message: text("message").notNull(),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   isInternal: boolean("is_internal").default(false),
   metadata: jsonb("metadata").default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

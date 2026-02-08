@@ -59,7 +59,7 @@ export const crossOrgAccessLog = pgTable("cross_org_access_log", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Who accessed
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   userOrganizationId: uuid("user_organization_id")
     .notNull()
     .references(() => organizations.id),
@@ -112,11 +112,11 @@ export const organizationSharingGrants = pgTable("organization_sharing_grants", 
   grantReason: text("grant_reason"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
-  revokedBy: uuid("revoked_by"),
+  revokedBy: varchar("revoked_by", { length: 255 }),
   revokeReason: text("revoke_reason"),
   
   // Audit
-  grantedBy: uuid("granted_by").notNull(),
+  grantedBy: varchar("granted_by", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({

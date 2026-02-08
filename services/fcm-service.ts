@@ -411,7 +411,7 @@ export async function sendToDevices(
 export async function sendToProfile(
   notificationId: string,
   profileId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<BatchSendResult> {
   // Get all enabled devices for the profile
   const devices = await db
@@ -419,7 +419,7 @@ export async function sendToProfile(
     .from(pushDevices)
     .where(
       and(
-        eq(pushDevices.organizationId, tenantId),
+        eq(pushDevices.organizationId, organizationId),
         eq(pushDevices.profileId, profileId),
         eq(pushDevices.enabled, true)
       )
@@ -605,11 +605,13 @@ export async function verifyToken(token: string): Promise<boolean> {
 /**
  * Clean up invalid tokens
  */
-export async function cleanupInvalidTokens(tenantId: string): Promise<number> {
+export async function cleanupInvalidTokens(organizationId: string): Promise<number> {
   const devices = await db
     .select()
     .from(pushDevices)
-    .where(and(eq(pushDevices.organizationId, tenantId), eq(pushDevices.enabled, true)));
+    .where(
+      and(eq(pushDevices.organizationId, organizationId), eq(pushDevices.enabled, true))
+    );
 
   let disabledCount = 0;
 

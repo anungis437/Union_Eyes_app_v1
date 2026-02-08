@@ -17,7 +17,8 @@ import { db } from '../db';
 import { 
   duesTransactions, 
   arrears, 
-  members
+  members,
+  payments
 } from '../db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 
@@ -90,8 +91,19 @@ export async function processPaymentCollection(params: {
             error: 'No outstanding dues transactions found for member',
           });
           
-          // TODO: Mark payment as 'unmatched' for manual review (payments table not yet implemented)
-          // await db.update(payments).set({ status: 'unmatched', ... });
+          // Mark payment as 'unmatched' for manual review
+          await db.update(payments)
+            .set({ 
+              status: 'failed',
+              reconciliationStatus: 'unreconciled',
+              failureReason: 'No outstanding dues transactions found for member',
+              notes: `Payment requires manual review - no matching transactions found for member ${payment.memberId}`,
+              updatedAt: new Date(),
+            } as any)
+            .where(eq(payments.id, payment.paymentId))
+            .catch((err: any) => {
+              logger.error('Failed to mark payment as unmatched', { error: err, paymentId: payment.paymentId });
+            });
           
           continue;
         }
@@ -147,9 +159,25 @@ export async function processPaymentCollection(params: {
           }
         }
 
-        // TODO: Update payment status (payments table not yet implemented)
-        // const finalPaymentStatus = remainingAmount > 0 ? 'partial' : 'completed';
-        // await db.update(payments).set({ status: finalPaymentStatus, ... });
+        // Update payment status based on remaining amount
+        const finalPaymentStatus = remainingAmount > 0 ? 'partial' : 'completed';
+        const paymentNotes = remainingAmount > 0 
+          ? `Partial payment applied: ${parseFloat(payment.amount) - remainingAmount} allocated, ${remainingAmount} remaining`
+          : `Full payment applied to ${updatedTransactionIds.length} transaction(s)`;
+        
+        await db.update(payments)
+          .set({ 
+            status: finalPaymentStatus as any,
+            reconciliationStatus: 'reconciled',
+            reconciliationDate: new Date(),
+            paidDate: new Date(),
+            notes: paymentNotes,
+            updatedAt: new Date(),
+          } as any)
+          .where(eq(payments.id, payment.paymentId))
+          .catch((err: any) => {
+            logger.error('Failed to update payment status', { error: err, paymentId: payment.paymentId });
+          });
 
         paymentsProcessed++;
 
@@ -187,8 +215,19 @@ export async function processPaymentCollection(params: {
           error: paymentError instanceof Error ? paymentError.message : String(paymentError),
         });
 
-        // TODO: Mark payment as 'failed' for retry (payments table not yet implemented)
-        // await db.update(payments).set({ status: 'failed', ... });
+        // Mark payment as 'failed' for retry
+        await db.update(payments)
+          .set({ 
+            status: 'failed',
+            reconciliationStatus: 'unreconciled',
+            failureReason: paymentError instanceof Error ? paymentError.message : String(paymentError),
+            notes: `Payment processing failed - marked for retry. Error: ${paymentError instanceof Error ? paymentError.message : String(paymentError)}`,
+            updatedAt: new Date(),
+          } as any)
+          .where(eq(payments.id, payment.paymentId))
+          .catch((err: any) => {
+            logger.error('Failed to mark payment as failed', { error: err, paymentId: payment.paymentId });
+          });
       }
     }
 

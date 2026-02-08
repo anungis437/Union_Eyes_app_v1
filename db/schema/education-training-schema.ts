@@ -57,7 +57,7 @@ export const trainingCourses = pgTable("training_courses", {
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 },
 (table) => {
   return {
@@ -90,7 +90,7 @@ export const courseSessions = pgTable("course_sessions", {
   roomNumber: varchar("room_number", { length: 50 }),
   virtualMeetingUrl: text("virtual_meeting_url"),
   virtualMeetingAccessCode: varchar("virtual_meeting_access_code", { length: 50 }),
-  leadInstructorId: uuid("lead_instructor_id"),
+  leadInstructorId: varchar("lead_instructor_id", { length: 255 }),
   leadInstructorName: varchar("lead_instructor_name", { length: 200 }),
   coInstructors: jsonb("co_instructors"),
   registrationOpenDate: date("registration_open_date"),
@@ -116,7 +116,7 @@ export const courseSessions = pgTable("course_sessions", {
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 },
 (table) => {
   return {
@@ -143,13 +143,13 @@ export const courseSessions = pgTable("course_sessions", {
 export const courseRegistrations = pgTable("course_registrations", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   organizationId: uuid("organization_id").notNull(),
-  memberId: uuid("member_id").notNull(),
+  memberId: varchar("member_id", { length: 255 }).notNull(),
   courseId: uuid("course_id").notNull(),
   sessionId: uuid("session_id").notNull(),
   registrationDate: timestamp("registration_date", { withTimezone: true, mode: 'string' }).defaultNow(),
   registrationStatus: varchar("registration_status", { length: 50 }).default('registered'),
   requiresApproval: boolean("requires_approval").default(false),
-  approvedBy: uuid("approved_by"),
+  approvedBy: varchar("approved_by", { length: 255 }),
   approvedDate: date("approved_date"),
   approvalNotes: text("approval_notes"),
   attended: boolean("attended").default(false),
@@ -216,7 +216,7 @@ export const courseRegistrations = pgTable("course_registrations", {
 export const memberCertifications = pgTable("member_certifications", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   organizationId: uuid("organization_id").notNull(),
-  memberId: uuid("member_id").notNull(),
+  memberId: varchar("member_id", { length: 255 }).notNull(),
   certificationName: varchar("certification_name", { length: 200 }).notNull(),
   certificationType: varchar("certification_type", { length: 100 }),
   issuedByOrganization: varchar("issued_by_organization", { length: 200 }),
@@ -233,7 +233,7 @@ export const memberCertifications = pgTable("member_certifications", {
   renewalCourseId: uuid("renewal_course_id"),
   verified: boolean("verified").default(true),
   verificationDate: date("verification_date"),
-  verifiedBy: uuid("verified_by"),
+  verifiedBy: varchar("verified_by", { length: 255 }),
   certificateUrl: text("certificate_url"),
   digitalBadgeUrl: text("digital_badge_url"),
   clcRegistered: boolean("clc_registered").default(false),
@@ -301,7 +301,7 @@ export const trainingPrograms = pgTable("training_programs", {
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 },
 (table) => {
   return {
@@ -319,7 +319,7 @@ export const trainingPrograms = pgTable("training_programs", {
 export const programEnrollments = pgTable("program_enrollments", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   organizationId: uuid("organization_id").notNull(),
-  memberId: uuid("member_id").notNull(),
+  memberId: varchar("member_id", { length: 255 }).notNull(),
   programId: uuid("program_id").notNull(),
   enrollmentDate: date("enrollment_date").notNull(),
   enrollmentStatus: varchar("enrollment_status", { length: 50 }).default('enrolled'),

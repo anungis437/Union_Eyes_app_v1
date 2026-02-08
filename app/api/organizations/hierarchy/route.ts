@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * Organization Hierarchy API
  * Get hierarchical organization structure with RLS isolation
@@ -5,13 +6,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId } = await requireUser();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

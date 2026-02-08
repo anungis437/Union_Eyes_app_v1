@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * SMS API Routes (Phase 5 - Week 1)
  * RESTful API for SMS management
@@ -16,7 +17,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { eq, and, desc } from 'drizzle-orm';
 import {
@@ -37,93 +37,93 @@ import {
   type NewSmsTemplate,
   type NewSmsCampaign,
 } from '@/db/schema/sms-communications-schema';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 // ============================================================================
 // GET HANDLER - Routes based on action parameter
 // ============================================================================
 
-export async function GET(req: NextRequest) {
+export const GET = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const { userId, organizationId: contextOrganizationId } = context;
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const { searchParams } = new URL(req.url);
+      const action = searchParams.get('action');
+      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId') ?? contextOrganizationId);
+      const tenantId = organizationId;
+      const campaignId = searchParams.get('campaignId');
 
-    const { searchParams } = new URL(req.url);
-    const action = searchParams.get('action');
-    const tenantId = searchParams.get('tenantId');
-    const campaignId = searchParams.get('campaignId');
+      if (!tenantId) {
+        return NextResponse.json({ error: 'Missing organizationId parameter' }, { status: 400 });
+      }
 
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Missing tenantId parameter' }, { status: 400 });
+      switch (action) {
+        case 'templates':
+          return getTemplates(tenantId);
+        case 'campaigns':
+          return getCampaigns(tenantId);
+        case 'campaign-details':
+          if (!campaignId) {
+            return NextResponse.json({ error: 'Missing campaignId parameter' }, { status: 400 });
+          }
+          return getCampaignDetails(campaignId);
+        default:
+          return NextResponse.json(
+            { error: 'Invalid action. Valid actions: templates, campaigns, campaign-details' },
+            { status: 400 }
+          );
+      }
+    } catch (error: any) {
+      console.error('❌ SMS GET error:', error);
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      );
     }
-
-    switch (action) {
-      case 'templates':
-        return getTemplates(tenantId);
-      case 'campaigns':
-        return getCampaigns(tenantId);
-      case 'campaign-details':
-        if (!campaignId) {
-          return NextResponse.json({ error: 'Missing campaignId parameter' }, { status: 400 });
-        }
-        return getCampaignDetails(campaignId);
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action. Valid actions: templates, campaigns, campaign-details' },
-          { status: 400 }
-        );
-    }
-  } catch (error: any) {
-    console.error('❌ SMS GET error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};
 
 // ============================================================================
 // POST HANDLER - Routes based on action in body
 // ============================================================================
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const body = await req.json();
+      const { action } = body;
 
-    const body = await req.json();
-    const { action } = body;
-
-    switch (action) {
-      case 'send':
-        return sendSingleSms(userId, body);
-      case 'bulk':
-        return sendBulkSmsAction(userId, body);
-      case 'create-template':
-        return createTemplate(userId, body);
-      case 'create-campaign':
-        return createCampaign(userId, body);
-      case 'send-campaign':
-        return sendCampaignAction(userId, body);
-      case 'webhook':
-        return handleWebhook(body);
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook' },
-          { status: 400 }
-        );
+      switch (action) {
+        case 'send':
+          return sendSingleSms(userId, body);
+        case 'bulk':
+          return sendBulkSmsAction(userId, body);
+        case 'create-template':
+          return createTemplate(userId, body);
+        case 'create-campaign':
+          return createCampaign(userId, body);
+        case 'send-campaign':
+          return sendCampaignAction(userId, body);
+        case 'webhook':
+          return handleWebhook(body);
+        default:
+          return NextResponse.json(
+            { error: 'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook' },
+            { status: 400 }
+          );
+      }
+    } catch (error: any) {
+      console.error('❌ SMS POST error:', error);
+      return NextResponse.json(
+        { error: error.message || 'Internal server error' },
+        { status: 500 }
+      );
     }
-  } catch (error: any) {
-    console.error('❌ SMS POST error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};
 
 // ============================================================================
 // INTERNAL HANDLERS
@@ -179,11 +179,13 @@ async function getCampaignDetails(campaignId: string) {
 }
 
 async function sendSingleSms(userId: string, body: any) {
-  const { tenantId, phoneNumber, message, templateId, variables } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, phoneNumber, message, templateId, variables } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !phoneNumber || !message) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, phoneNumber, message' },
+      { error: 'Missing required fields: organizationId, phoneNumber, message' },
       { status: 400 }
     );
   }
@@ -201,7 +203,7 @@ async function sendSingleSms(userId: string, body: any) {
   }
 
   const options: SendSmsOptions = {
-    tenantId,
+    organizationId,
     userId,
     phoneNumber,
     message: finalMessage,
@@ -224,17 +226,19 @@ async function sendSingleSms(userId: string, body: any) {
 }
 
 async function sendBulkSmsAction(userId: string, body: any) {
-  const { tenantId, recipients, message, templateId, campaignId } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, recipients, message, templateId, campaignId } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !recipients || !Array.isArray(recipients) || !message) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, recipients (array), message' },
+      { error: 'Missing required fields: organizationId, recipients (array), message' },
       { status: 400 }
     );
   }
 
   const options: SendBulkSmsOptions = {
-    tenantId,
+    organizationId,
     userId,
     recipients,
     message,
@@ -253,11 +257,13 @@ async function sendBulkSmsAction(userId: string, body: any) {
 }
 
 async function createTemplate(userId: string, body: any) {
-  const { tenantId, name, description, messageTemplate, variables, category } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, messageTemplate, variables, category } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !name || !messageTemplate) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, name, messageTemplate' },
+      { error: 'Missing required fields: organizationId, name, messageTemplate' },
       { status: 400 }
     );
   }
@@ -286,11 +292,13 @@ async function createTemplate(userId: string, body: any) {
 }
 
 async function createCampaign(userId: string, body: any) {
-  const { tenantId, name, description, message, templateId, recipientFilter, scheduledFor } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !name || !message) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, name, message' },
+      { error: 'Missing required fields: organizationId, name, message' },
       { status: 400 }
     );
   }
@@ -353,7 +361,7 @@ async function sendCampaignAction(userId: string, body: any) {
 
   try {
     const result = await sendBulkSms({
-      tenantId: campaign.organizationId,
+      organizationId: campaign.organizationId,
       userId,
       recipients,
       message: campaign.message,

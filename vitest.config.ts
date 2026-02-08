@@ -9,6 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['__tests__/setup.ts'],
     include: ['__tests__/**/*.test.ts', '__tests__/**/*.test.tsx'],
+    exclude: ['**/dist/**', '**/.next/**', '**/node_modules/**', '**/build/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
@@ -17,6 +18,7 @@ export default defineConfig({
         '__tests__/',
         '*.config.*',
         'dist/',
+        '**/dist/**',
         '.next/',
         'build/',
       ],
@@ -36,6 +38,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './'),
       '@/db': path.resolve(__dirname, './db'),
+      '@/database': path.resolve(__dirname, './db'),
       '@/lib': path.resolve(__dirname, './lib'),
       '@/services': path.resolve(__dirname, './services'),
       '@/components': path.resolve(__dirname, './components'),

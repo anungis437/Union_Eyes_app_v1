@@ -16,12 +16,12 @@ import { aggregationService } from './analytics-aggregation';
  */
 export function withAnalyticsCache<T>(
   endpoint: string,
-  handler: (req: NextRequest, tenantId: string, params: any) => Promise<T>,
+  handler: (req: NextRequest, organizationId: string, params: any) => Promise<T>,
   ttl: number = 5 * 60 * 1000 // 5 minutes default
 ) {
   return async (req: NextRequest) => {
-    const tenantId = (req as any).tenantId;
-    if (!tenantId) {
+    const organizationId = (req as any).organizationId ?? (req as any).tenantId;
+    if (!organizationId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -35,10 +35,10 @@ export function withAnalyticsCache<T>(
     try {
       // Try cache first
       const data = await withCache(
-        tenantId,
+        organizationId,
         endpoint,
         params,
-        () => handler(req, tenantId, params),
+        () => handler(req, organizationId, params),
         ttl
       );
 
@@ -57,7 +57,7 @@ export function withAnalyticsCache<T>(
  * Webhook handler to invalidate cache when data changes
  */
 export async function handleDataChange(
-  tenantId: string,
+  organizationId: string,
   changeType: 'claim_created' | 'claim_updated' | 'claim_deleted' | 'member_updated'
 ): Promise<void> {
   // Invalidate relevant caches based on change type
@@ -66,30 +66,30 @@ export async function handleDataChange(
     case 'claim_updated':
     case 'claim_deleted':
       // Invalidate all claims, financial, and operational analytics
-      analyticsCache.invalidate(tenantId, 'claims');
-      analyticsCache.invalidate(tenantId, 'financial');
-      analyticsCache.invalidate(tenantId, 'operational');
+      analyticsCache.invalidate(organizationId, 'claims');
+      analyticsCache.invalidate(organizationId, 'financial');
+      analyticsCache.invalidate(organizationId, 'operational');
       break;
     
     case 'member_updated':
       // Invalidate member analytics
-      analyticsCache.invalidate(tenantId, 'members');
+      analyticsCache.invalidate(organizationId, 'members');
       break;
   }
 
-  console.log(`Cache invalidated for tenant ${tenantId} (${changeType})`);
+  console.log(`Cache invalidated for tenant ${organizationId} (${changeType})`);
 }
 
 /**
  * Get analytics dashboard summary with caching
  */
-export async function getAnalyticsDashboard(tenantId: string) {
+export async function getAnalyticsDashboard(organizationId: string) {
   return await withCache(
-    tenantId,
+    organizationId,
     'dashboard',
     {},
     async () => {
-      return await aggregationService.computeTenantMetrics(tenantId);
+      return await aggregationService.computeTenantMetrics(organizationId);
     },
     2 * 60 * 1000 // 2 minutes TTL for dashboard
   );
@@ -98,19 +98,19 @@ export async function getAnalyticsDashboard(tenantId: string) {
 /**
  * Cache warming utility - pre-populate cache with common queries
  */
-export async function warmAnalyticsCache(tenantId: string): Promise<void> {
-  console.log(`Warming cache for tenant ${tenantId}...`);
+export async function warmAnalyticsCache(organizationId: string): Promise<void> {
+  console.log(`Warming cache for tenant ${organizationId}...`);
 
   const commonTimeRanges = [7, 30, 90];
   
   try {
     // Warm up dashboard cache
-    await getAnalyticsDashboard(tenantId);
+    await getAnalyticsDashboard(organizationId);
 
     // Can add more cache warming for specific endpoints
-    console.log(`Cache warmed for tenant ${tenantId}`);
+    console.log(`Cache warmed for tenant ${organizationId}`);
   } catch (error) {
-    console.error(`Error warming cache for tenant ${tenantId}:`, error);
+    console.error(`Error warming cache for tenant ${organizationId}:`, error);
   }
 }
 
@@ -124,9 +124,9 @@ export function getAnalyticsCacheStats() {
 /**
  * Manual cache clear (for admin purposes)
  */
-export function clearAnalyticsCache(tenantId?: string) {
-  if (tenantId) {
-    analyticsCache.invalidate(tenantId);
+export function clearAnalyticsCache(organizationId?: string) {
+  if (organizationId) {
+    analyticsCache.invalidate(organizationId);
   } else {
     analyticsCache.clear();
   }

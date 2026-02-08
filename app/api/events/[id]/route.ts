@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * GET /api/events/[id]
  * Get event details
@@ -10,10 +11,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { calendarEvents, calendars, eventAttendees, calendarSharing } from '@/db/schema/calendar-schema';
 import { eq, and } from 'drizzle-orm';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 /**
  * Check if user has access to event
@@ -88,244 +90,227 @@ async function checkEventAccess(eventId: string, userId: string) {
   };
 }
 
-/**
- * GET /api/events/[id]
- */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const eventId = params.id;
 
-    const eventId = params.id;
-
-    const access = await checkEventAccess(eventId, userId);
-    if (!access.hasAccess) {
-      return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
-    }
-
-    // Get attendees
-    const attendees = await db
-      .select()
-      .from(eventAttendees)
-      .where(eq(eventAttendees.eventId, eventId));
-
-    return NextResponse.json({
-      event: {
-        ...access.event,
-        attendees,
-        canEdit: access.canEdit,
-        canDelete: access.canDelete,
-        isAttendee: access.isAttendee,
-      },
-    });
-  } catch (error) {
-    console.error('Get event error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get event' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * PATCH /api/events/[id]
- */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const eventId = params.id;
-    const body = await request.json();
-
-    const access = await checkEventAccess(eventId, userId);
-    if (!access.hasAccess) {
-      return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
-    }
-
-    if (!access.canEdit) {
-      return NextResponse.json(
-        { error: 'You do not have permission to edit this event' },
-        { status: 403 }
-      );
-    }
-
-    const {
-      title,
-      description,
-      location,
-      locationUrl,
-      startTime,
-      endTime,
-      timezone,
-      isAllDay,
-      isRecurring,
-      recurrenceRule,
-      recurrenceExceptions,
-      eventType,
-      status,
-      priority,
-      claimId,
-      caseNumber,
-      memberId,
-      meetingRoomId,
-      meetingUrl,
-      meetingPassword,
-      agenda,
-      reminders,
-      isPrivate,
-      visibility,
-      metadata,
-      attachments,
-      attendees,
-    } = body;
-
-    // Validate times if provided
-    if (startTime && endTime && new Date(endTime) <= new Date(startTime)) {
-      return NextResponse.json(
-        { error: 'End time must be after start time' },
-        { status: 400 }
-      );
-    }
-
-    const [updatedEvent] = await db
-      .update(calendarEvents)
-      .set({
-        ...(title !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(location !== undefined && { location }),
-        ...(locationUrl !== undefined && { locationUrl }),
-        ...(startTime !== undefined && { startTime: new Date(startTime) }),
-        ...(endTime !== undefined && { endTime: new Date(endTime) }),
-        ...(timezone !== undefined && { timezone }),
-        ...(isAllDay !== undefined && { isAllDay }),
-        ...(isRecurring !== undefined && { isRecurring }),
-        ...(recurrenceRule !== undefined && { recurrenceRule }),
-        ...(recurrenceExceptions !== undefined && { recurrenceExceptions }),
-        ...(eventType !== undefined && { eventType }),
-        ...(status !== undefined && { status }),
-        ...(priority !== undefined && { priority }),
-        ...(claimId !== undefined && { claimId }),
-        ...(caseNumber !== undefined && { caseNumber }),
-        ...(memberId !== undefined && { memberId }),
-        ...(meetingRoomId !== undefined && { meetingRoomId }),
-        ...(meetingUrl !== undefined && { meetingUrl }),
-        ...(meetingPassword !== undefined && { meetingPassword }),
-        ...(agenda !== undefined && { agenda }),
-        ...(reminders !== undefined && { reminders }),
-        ...(isPrivate !== undefined && { isPrivate }),
-        ...(visibility !== undefined && { visibility }),
-        ...(metadata !== undefined && { metadata }),
-        ...(attachments !== undefined && { attachments }),
-        updatedAt: new Date(),
-      })
-      .where(eq(calendarEvents.id, eventId))
-      .returning();
-
-    // Update attendees if provided
-    if (attendees) {
-      // Delete existing attendees and re-add
-      await db.delete(eventAttendees).where(eq(eventAttendees.eventId, eventId));
-
-      if (attendees.length > 0) {
-        const attendeeValues = attendees.map((attendee: any) => ({
-          eventId,
-          tenantId: updatedEvent.tenantId,
-          userId: attendee.userId,
-          email: attendee.email,
-          name: attendee.name,
-          status: attendee.status || 'invited',
-          isOptional: attendee.isOptional || false,
-          isOrganizer: attendee.userId === updatedEvent.organizerId,
-        }));
-
-        await db.insert(eventAttendees).values(attendeeValues);
+      const access = await checkEventAccess(eventId, userId);
+      if (!access.hasAccess) {
+        return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
       }
-    }
 
-    return NextResponse.json({
-      message: 'Event updated successfully',
-      event: updatedEvent,
-    });
-  } catch (error) {
-    console.error('Update event error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update event' },
-      { status: 500 }
-    );
-  }
-}
+      // Get attendees
+      const attendees = await db
+        .select()
+        .from(eventAttendees)
+        .where(eq(eventAttendees.eventId, eventId));
 
-/**
- * DELETE /api/events/[id]
- */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const eventId = params.id;
-    const { searchParams } = new URL(request.url);
-    const cancellationReason = searchParams.get('reason');
-
-    const access = await checkEventAccess(eventId, userId);
-    if (!access.hasAccess) {
-      return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
-    }
-
-    if (!access.canDelete) {
+      return NextResponse.json({
+        event: {
+          ...access.event,
+          attendees,
+          canEdit: access.canEdit,
+          canDelete: access.canDelete,
+          isAttendee: access.isAttendee,
+        },
+      });
+    } catch (error) {
+      console.error('Get event error:', error);
       return NextResponse.json(
-        { error: 'You do not have permission to delete this event' },
-        { status: 403 }
+        { error: 'Failed to get event' },
+        { status: 500 }
       );
     }
+    })(request, { params });
+};
 
-    // Soft delete (mark as cancelled)
-    await db
-      .update(calendarEvents)
-      .set({
-        status: 'cancelled',
-        cancelledAt: new Date(),
-        cancelledBy: userId,
-        cancellationReason,
-        updatedAt: new Date(),
-      })
-      .where(eq(calendarEvents.id, eventId));
+export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const { userId, organizationId } = context;
 
-    // Cancel all pending reminders
-    try {
-      const { cancelEventReminders } = await import('@/lib/calendar-reminder-scheduler');
-      await cancelEventReminders(eventId);
-    } catch (reminderError) {
-      console.error('Failed to cancel reminders:', reminderError);
-      // Don't fail event cancellation if reminder cancellation fails
+  try {
+      const eventId = params.id;
+      const body = await request.json();
+
+      const access = await checkEventAccess(eventId, userId);
+      if (!access.hasAccess) {
+        return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
+      }
+
+      if (!access.canEdit) {
+        return NextResponse.json(
+          { error: 'You do not have permission to edit this event' },
+          { status: 403 }
+        );
+      }
+
+      const {
+        title,
+        description,
+        location,
+        locationUrl,
+        startTime,
+        endTime,
+        timezone,
+        isAllDay,
+        isRecurring,
+        recurrenceRule,
+        recurrenceExceptions,
+        eventType,
+        status,
+        priority,
+        claimId,
+        caseNumber,
+        memberId,
+        meetingRoomId,
+        meetingUrl,
+        meetingPassword,
+        agenda,
+        reminders,
+        isPrivate,
+        visibility,
+        metadata,
+        attachments,
+        attendees,
+      } = body;
+
+      // Validate times if provided
+      if (startTime && endTime && new Date(endTime) <= new Date(startTime)) {
+        return NextResponse.json(
+          { error: 'End time must be after start time' },
+          { status: 400 }
+        );
+      }
+
+      const [updatedEvent] = await db
+        .update(calendarEvents)
+        .set({
+          ...(title !== undefined && { title }),
+          ...(description !== undefined && { description }),
+          ...(location !== undefined && { location }),
+          ...(locationUrl !== undefined && { locationUrl }),
+          ...(startTime !== undefined && { startTime: new Date(startTime) }),
+          ...(endTime !== undefined && { endTime: new Date(endTime) }),
+          ...(timezone !== undefined && { timezone }),
+          ...(isAllDay !== undefined && { isAllDay }),
+          ...(isRecurring !== undefined && { isRecurring }),
+          ...(recurrenceRule !== undefined && { recurrenceRule }),
+          ...(recurrenceExceptions !== undefined && { recurrenceExceptions }),
+          ...(eventType !== undefined && { eventType }),
+          ...(status !== undefined && { status }),
+          ...(priority !== undefined && { priority }),
+          ...(claimId !== undefined && { claimId }),
+          ...(caseNumber !== undefined && { caseNumber }),
+          ...(memberId !== undefined && { memberId }),
+          ...(meetingRoomId !== undefined && { meetingRoomId }),
+          ...(meetingUrl !== undefined && { meetingUrl }),
+          ...(meetingPassword !== undefined && { meetingPassword }),
+          ...(agenda !== undefined && { agenda }),
+          ...(reminders !== undefined && { reminders }),
+          ...(isPrivate !== undefined && { isPrivate }),
+          ...(visibility !== undefined && { visibility }),
+          ...(metadata !== undefined && { metadata }),
+          ...(attachments !== undefined && { attachments }),
+          updatedAt: new Date(),
+        })
+        .where(eq(calendarEvents.id, eventId))
+        .returning();
+
+      // Update attendees if provided
+      if (attendees) {
+        // Delete existing attendees and re-add
+        await db.delete(eventAttendees).where(eq(eventAttendees.eventId, eventId));
+
+        if (attendees.length > 0) {
+          const attendeeValues = attendees.map((attendee: any) => {
+            const attendeeUserId = attendee.userId ?? attendee.user?.id ?? null;
+
+            return {
+              eventId,
+              tenantId: updatedEvent.tenantId,
+              userId: attendeeUserId,
+              email: attendee.email,
+              name: attendee.name,
+              status: attendee.status || 'invited',
+              isOptional: attendee.isOptional || false,
+              isOrganizer: attendeeUserId === updatedEvent.organizerId,
+            };
+          });
+
+          await db.insert(eventAttendees).values(attendeeValues);
+        }
+      }
+
+      return NextResponse.json({
+        message: 'Event updated successfully',
+        event: updatedEvent,
+      });
+    } catch (error) {
+      console.error('Update event error:', error);
+      return NextResponse.json(
+        { error: 'Failed to update event' },
+        { status: 500 }
+      );
     }
+    })(request, { params });
+};
 
-    // TODO: Send cancellation notifications to attendees via email
+export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const { userId, organizationId } = context;
 
-    return NextResponse.json({
-      message: 'Event cancelled successfully',
-    });
-  } catch (error) {
-    console.error('Delete event error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete event' },
-      { status: 500 }
-    );
-  }
-}
+  try {
+      const eventId = params.id;
+      const { searchParams } = new URL(request.url);
+      const cancellationReason = searchParams.get('reason');
+
+      const access = await checkEventAccess(eventId, userId);
+      if (!access.hasAccess) {
+        return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
+      }
+
+      if (!access.canDelete) {
+        return NextResponse.json(
+          { error: 'You do not have permission to delete this event' },
+          { status: 403 }
+        );
+      }
+
+      // Soft delete (mark as cancelled)
+      await db
+        .update(calendarEvents)
+        .set({
+          status: 'cancelled',
+          cancelledAt: new Date(),
+          cancelledBy: userId,
+          cancellationReason,
+          updatedAt: new Date(),
+        })
+        .where(eq(calendarEvents.id, eventId));
+
+      // Cancel all pending reminders
+      try {
+        const { cancelEventReminders } = await import('@/lib/calendar-reminder-scheduler');
+        await cancelEventReminders(eventId);
+      } catch (reminderError) {
+        console.error('Failed to cancel reminders:', reminderError);
+        // Don't fail event cancellation if reminder cancellation fails
+      }
+
+      // TODO: Send cancellation notifications to attendees via email
+
+      return NextResponse.json({
+        message: 'Event cancelled successfully',
+      });
+    } catch (error) {
+      console.error('Delete event error:', error);
+      return NextResponse.json(
+        { error: 'Failed to delete event' },
+        { status: 500 }
+      );
+    }
+    })(request, { params });
+};

@@ -22,24 +22,19 @@ import { ReportJobData } from '../job-queue';
 import { db } from '../../db/db';
 import { claims } from '../../db/schema/claims-schema';
 import { organizationMembers as members } from '../../db/schema/organization-members-schema';
-// TODO: Create grievance schema - currently commented out
-// import { grievances } from '../../db/schema/grievance-schema';
+import { 
+  grievanceWorkflows,
+  grievanceStages,
+  grievanceTransitions,
+  grievanceAssignments,
+  grievanceSettlements 
+} from '../../db/schema/grievance-workflow-schema';
+import { getNotificationService } from '../services/notification-service';
 import { eq, and, between, gte, lte, desc } from 'drizzle-orm';
-// TODO: Create PDF generator module
-// import { generatePDF } from '../pdf-generator';
-// TODO: Create Excel generator module
-// import { generateExcel } from '../excel-generator';
+import { generatePDF } from '../utils/pdf-generator';
+import { generateExcel } from '../utils/excel-generator';
 import fs from 'fs/promises';
 import path from 'path';
-
-// Stub functions until generators are implemented
-async function generatePDF(options: any): Promise<Buffer> {
-  throw new Error('PDF generation not yet implemented');
-}
-
-async function generateExcel(options: any): Promise<Buffer> {
-  throw new Error('Excel generation not yet implemented');
-}
 
 const connection = new IORedis({
   host: process.env.REDIS_HOST || 'localhost',
@@ -167,40 +162,52 @@ async function generateMembersReport(
 
 /**
  * Generate grievances report
- * TODO: Enable when grievance schema is created
  */
-/* async function generateGrievancesReport(
+async function generateGrievancesReport(
   tenantId: string,
   parameters: {
     startDate?: string;
     endDate?: string;
     status?: string;
+    stageType?: string;
     format: 'pdf' | 'excel';
   }
 ) {
   console.log('Generating grievances report', parameters);
 
-  // Build query
-  let query = db
-    .select()
-    .from(grievances)
-    .where(eq(grievances.organizationId, tenantId));
-
-  // Add filters
+  // Build query with combined where conditions
+  const conditions: any[] = [eq(claims.organizationId, tenantId)];
+  
   if (parameters.startDate && parameters.endDate) {
-    query = query.where(
-      between(grievances.createdAt, new Date(parameters.startDate), new Date(parameters.endDate))
+    conditions.push(
+      between(claims.createdAt, new Date(parameters.startDate), new Date(parameters.endDate))
     );
   }
 
   if (parameters.status) {
-    query = query.where(eq(grievances.status, parameters.status));
+    conditions.push(eq(claims.status, parameters.status as any));
   }
 
-  // Execute query
-  const data = await query.orderBy(desc(grievances.createdAt));
+  // Query grievance claims with latest transition info
+  const data = await db
+    .select({
+      id: claims.claimId,
+      claimNumber: claims.claimNumber,
+      subject: claims.subject,
+      description: claims.description,
+      status: claims.status,
+      priority: claims.priority,
+      memberId: claims.memberId,
+      createdAt: claims.createdAt,
+      updatedAt: claims.updatedAt,
+      resolvedAt: claims.resolvedAt,
+      // Could join with transitions/assignments for more info
+    })
+    .from(claims)
+    .where(and(...conditions))
+    .orderBy(desc(claims.createdAt));
 
-  // Generate report
+  // Generate report based on format
   if (parameters.format === 'pdf') {
     return await generatePDF({
       title: 'Grievances Report',
@@ -212,16 +219,17 @@ async function generateMembersReport(
       title: 'Grievances Report',
       data,
       columns: [
-        { header: 'ID', key: 'id' },
-        { header: 'Member', key: 'memberId' },
-        { header: 'Type', key: 'type' },
+        { header: 'Claim #', key: 'claimNumber' },
+        { header: 'Subject', key: 'subject' },
+        { header: 'Member ID', key: 'memberId' },
         { header: 'Status', key: 'status' },
+        { header: 'Priority', key: 'priority' },
         { header: 'Filed', key: 'createdAt' },
         { header: 'Resolved', key: 'resolvedAt' },
       ],
     });
   }
-} */
+}
 
 /**
  * Generate usage analytics report
@@ -236,25 +244,60 @@ async function generateUsageReport(
 ) {
   console.log('Generating usage report', parameters);
 
-  // TODO: Gather usage statistics
+  // Gather usage statistics
+  const claimsData = await db
+    .select()
+    .from(claims)
+    .where(
+      and(
+        eq(claims.organizationId, tenantId),
+        between(claims.createdAt, new Date(parameters.startDate), new Date(parameters.endDate))
+      )
+    );
+
+  const membersData = await db
+    .select()
+    .from(members)
+    .where(eq(members.organizationId, tenantId));
+
+  const newMembers = await db
+    .select()
+    .from(members)
+    .where(
+      and(
+        eq(members.organizationId, tenantId),
+        between(members.createdAt, new Date(parameters.startDate), new Date(parameters.endDate))
+      )
+    );
+
+  // Count grievances (claims with grievance workflows)
+  const grievanceTransitionsData = await db
+    .select()
+    .from(grievanceTransitions)
+    .where(eq(grievanceTransitions.organizationId, tenantId));
+
   const data = {
     period: { start: parameters.startDate, end: parameters.endDate },
     claims: {
-      total: 0,
-      byStatus: {},
-      byPriority: {},
+      total: claimsData.length,
+      byStatus: claimsData.reduce((acc: any, claim) => {
+        acc[claim.status] = (acc[claim.status] || 0) + 1;
+        return acc;
+      }, {}),
+      byPriority: claimsData.reduce((acc: any, claim) => {
+        acc[claim.priority] = (acc[claim.priority] || 0) + 1;
+        return acc;
+      }, {}),
     },
     members: {
-      total: 0,
-      active: 0,
-      new: 0,
+      total: membersData.length,
+      active: membersData.filter((m) => m.status === 'active').length,
+      new: newMembers.length,
     },
-    // TODO: Enable when grievance schema is created
-    // grievances: {
-    //   total: 0,
-    //   byType: {},
-    //   resolved: 0,
-    // },
+    grievances: {
+      total: grievanceTransitionsData.length,
+      resolved: claimsData.filter((c) => c.resolvedAt !== null).length,
+    },
   };
 
   // Generate report
@@ -274,8 +317,8 @@ async function generateUsageReport(
         { header: 'Total Claims', key: 'claims.total' },
         { header: 'Total Members', key: 'members.total' },
         { header: 'Active Members', key: 'members.active' },
-        // TODO: Enable when grievance schema is created
-        // { header: 'Total Grievances', key: 'grievances.total' },
+        { header: 'Total Grievances', key: 'grievances.total' },
+        { header: 'Resolved Grievances', key: 'grievances.resolved' },
       ],
     });
   }
@@ -309,11 +352,10 @@ async function processReportJob(job: any) {
         filename = `members-report-${Date.now()}.${parameters.format}`;
         break;
 
-      // TODO: Enable grievances reports when schema is created
-      // case 'grievances':
-      //   buffer = await generateGrievancesReport(tenantId, parameters);
-      //   filename = `grievances-report-${Date.now()}.${parameters.format}`;
-      //   break;
+      case 'grievances':
+        buffer = await generateGrievancesReport(tenantId, parameters as any);
+        filename = `grievances-report-${Date.now()}.${parameters.format}`;
+        break;
 
       case 'usage':
         buffer = await generateUsageReport(tenantId, parameters as any);
@@ -334,14 +376,35 @@ async function processReportJob(job: any) {
 
     await job.updateProgress(90);
 
-    // TODO: Notify user that report is ready
-    // await addNotificationJob({
-    //   userId,
-    //   title: 'Report Ready',
-    //   message: `Your ${reportType} report is ready for download`,
-    //   channels: ['email', 'in-app'],
-    //   data: { reportUrl: `/api/reports/${filename}` },
-    // });
+    // Notify user that report is ready
+    try {
+      const user = await db.query.profiles.findFirst({
+        where: (profiles, { eq }) => eq(profiles.userId, userId),
+      });
+
+      if (user?.email) {
+        const notificationService = getNotificationService();
+        await notificationService.send({
+          organizationId: 'system',
+          recipientId: userId,
+          recipientEmail: user.email,
+          type: 'email',
+          priority: 'normal',
+          subject: 'Your Report is Ready',
+          body: `Your ${reportType} report has been generated and is ready for download.\n\nClick the link below to download your report.`,
+          actionUrl: `/api/reports/${filename}`,
+          actionLabel: 'Download Report',
+          userId: 'system',
+        }).catch((err) => {
+          console.error('Failed to send report ready notification', { error: err, userId });
+        });
+
+        console.log(`Report ready notification sent to ${user.email}`);
+      }
+    } catch (notificationError) {
+      console.error('Error sending report notification:', notificationError);
+      // Don't fail the job if notification fails
+    }
 
     await job.updateProgress(100);
 

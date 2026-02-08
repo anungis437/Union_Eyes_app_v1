@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
+import { withApiAuth } from "@/lib/api-auth-guard";
 
 /**
  * Location Tracking API
  * POST: Record user location (requires explicit consent)
  */
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest) => {
   try {
     const body = await req.json();
     const { userId, latitude, longitude, accuracy, altitude, purpose, activityType, strikeId, eventId } = body;
@@ -54,4 +55,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

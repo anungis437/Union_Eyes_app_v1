@@ -10,7 +10,7 @@ export const auditSecuritySchema = pgSchema("audit_security");
 export const auditLogs = auditSecuritySchema.table("audit_logs", {
   auditId: uuid("audit_id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id),
-  userId: uuid("user_id").references(() => users.userId),
+  userId: varchar("user_id", { length: 255 }).references(() => users.userId),
   action: varchar("action", { length: 100 }).notNull(),
   resourceType: varchar("resource_type", { length: 50 }).notNull(),
   resourceId: uuid("resource_id"),
@@ -38,7 +38,7 @@ export const auditLogs = auditSecuritySchema.table("audit_logs", {
 export const securityEvents = auditSecuritySchema.table("security_events", {
   eventId: uuid("event_id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id),
-  userId: uuid("user_id").references(() => users.userId),
+  userId: varchar("user_id", { length: 255 }).references(() => users.userId),
   eventType: varchar("event_type", { length: 50 }).notNull(),
   eventCategory: varchar("event_category", { length: 30 }).notNull(),
   severity: varchar("severity", { length: 20 }).notNull(),
@@ -49,7 +49,7 @@ export const securityEvents = auditSecuritySchema.table("security_events", {
   riskScore: integer("risk_score").default(0),
   isResolved: boolean("is_resolved").default(false),
   resolvedAt: timestamp("resolved_at", { withTimezone: true }),
-  resolvedBy: uuid("resolved_by").references(() => users.userId),
+  resolvedBy: varchar("resolved_by", { length: 255 }).references(() => users.userId),
   resolutionNotes: text("resolution_notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({

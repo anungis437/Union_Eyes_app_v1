@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+
 import { getOverdueClaims, getClaimsApproachingDeadline } from "@/lib/workflow-engine";
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * GET /api/workflow/overdue
@@ -8,7 +9,7 @@ import { getOverdueClaims, getClaimsApproachingDeadline } from "@/lib/workflow-e
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

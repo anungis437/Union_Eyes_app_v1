@@ -23,6 +23,14 @@ import {
   type StageCondition,
   type StageAction,
 } from "@/db/schema";
+import { getNotificationService } from "@/lib/services/notification-service";
+import {
+  sendGrievanceStageChangeNotification,
+  sendGrievanceAssignedNotification,
+  sendGrievanceResolvedNotification,
+  sendGrievanceEscalationNotification,
+  sendGrievanceDeadlineReminder,
+} from "@/lib/services/grievance-notifications";
 
 // ============================================================================
 // TYPES
@@ -712,8 +720,54 @@ async function sendStageNotification(
   action: string,
   tenantId: string
 ): Promise<void> {
-  // TODO: Integrate with notification system
-  console.log(`Notification: Claim ${claimId} ${action} stage ${stage.name}`);
+  try {
+    // Get claim details
+    const claim = await db.query.claims.findFirst({
+      where: eq(claims.claimId, claimId),
+    });
+
+    if (!claim) {
+      logger.warn(`Cannot send stage notification: claim ${claimId} not found`);
+      return;
+    }
+
+    // Get assignments for this claim
+    const assignments = await db.query.grievanceAssignments.findMany({
+      where: and(
+        eq(grievanceAssignments.claimId, claimId),
+        or(
+          eq(grievanceAssignments.status, 'assigned'),
+          eq(grievanceAssignments.status, 'in_progress')
+        )
+      ),
+    });
+
+    const notificationService = getNotificationService();
+
+    // Notify assigned officers
+    for (const assignment of assignments) {
+      await notificationService.send({
+        organizationId: tenantId,
+        recipientUserId: assignment.assignedTo,
+        type: 'email',
+        priority: 'normal',
+        title: `Grievance Stage ${action}`,
+        body: `Claim ${claim.claimNumber} has ${action} stage: ${stage.name}`,
+        actionUrl: `/grievances/${claimId}`,
+        actionLabel: 'View Claim',
+        metadata: {
+          type: 'grievance_stage_notification',
+          claimId,
+          stageId: stage.id,
+        },
+        userId: assignment.assignedBy,
+      });
+    }
+
+    logger.info(`Stage notification sent for claim ${claimId}`);
+  } catch (error) {
+    logger.error(`Failed to send stage notification for claim ${claimId}`, { error });
+  }
 }
 
 async function sendActionNotification(
@@ -721,8 +775,38 @@ async function sendActionNotification(
   config: Record<string, any>,
   tenantId: string
 ): Promise<void> {
-  // TODO: Implement notification sending
-  console.log(`Action notification for claim ${claimId}`);
+  try {
+    const notificationService = getNotificationService();
+    
+    const recipientId = config.recipient || config.recipientId;
+    const recipientEmail = config.recipientEmail;
+    
+    if (!recipientId && !recipientEmail) {
+      logger.warn(`No recipient specified for action notification on claim ${claimId}`);
+      return;
+    }
+
+    await notificationService.send({
+      organizationId: tenantId,
+      recipientUserId: recipientId,
+      recipientEmail: recipientEmail,
+      type: config.notificationType || 'email',
+      priority: config.priority || 'normal',
+      title: config.title || 'Grievance Action Notification',
+      body: config.message || 'An action has been triggered on a grievance',
+      actionUrl: config.actionUrl || `/grievances/${claimId}`,
+      actionLabel: config.actionLabel || 'View Details',
+      metadata: {
+        type: 'grievance_action_notification',
+        claimId,
+      },
+      userId: config.userId || 'system',
+    });
+
+    logger.info(`Action notification sent for claim ${claimId}`);
+  } catch (error) {
+    logger.error(`Failed to send action notification for claim ${claimId}`, { error });
+  }
 }
 
 async function autoAssignOfficer(
@@ -757,8 +841,37 @@ async function sendActionEmail(
   config: Record<string, any>,
   tenantId: string
 ): Promise<void> {
-  // TODO: Integrate with email system
-  console.log(`Send email for claim ${claimId}`);
+  try {
+    const notificationService = getNotificationService();
+    
+    const recipientEmail = config.recipientEmail || config.recipient;
+    if (!recipientEmail) {
+      logger.warn(`No recipient email specified for action email on claim ${claimId}`);
+      return;
+    }
+
+    await notificationService.send({
+      organizationId: tenantId,
+      recipientEmail: recipientEmail,
+      type: 'email',
+      priority: config.priority || 'normal',
+      subject: config.subject || 'Grievance Update',
+      title: config.title || 'Grievance Update',
+      body: config.body || config.message || 'You have a new grievance update',
+      htmlBody: config.htmlBody,
+      actionUrl: config.actionUrl,
+      actionLabel: config.actionLabel,
+      metadata: {
+        type: 'grievance_action_email',
+        claimId,
+      },
+      userId: config.userId || 'system',
+    });
+
+    logger.info(`Action email sent for claim ${claimId}`);
+  } catch (error) {
+    logger.error(`Failed to send action email for claim ${claimId}`, { error });
+  }
 }
 
 async function generateActionDocument(
@@ -767,8 +880,20 @@ async function generateActionDocument(
   tenantId: string,
   userId: string
 ): Promise<void> {
-  // TODO: Implement document generation (Week 2)
-  console.log(`Generate document for claim ${claimId}`);
+  // Document generation can use the PDF/Excel generators we created
+  try {
+    const documentType = config.documentType || 'pdf';
+    const templateType = config.template || 'generic';
+    
+    logger.info(`Generating ${documentType} document for claim ${claimId} using template ${templateType}`);
+    
+    // TODO: Implement document generation using pdf-generator/excel-generator
+    // This would fetch claim data and generate a document based on the template
+    // For now, just log that we would generate it
+    logger.info(`Document generation triggered for claim ${claimId}`);
+  } catch (error) {
+    logger.error(`Failed to generate document for claim ${claimId}`, { error });
+  }
 }
 
 async function sendTransitionRejectedNotification(
@@ -777,8 +902,30 @@ async function sendTransitionRejectedNotification(
   reason: string,
   tenantId: string
 ): Promise<void> {
-  // TODO: Integrate with notification system
-  console.log(`Transition rejected for claim ${claimId}: ${reason}`);
+  try {
+    const notificationService = getNotificationService();
+    
+    await notificationService.send({
+      organizationId: tenantId,
+      recipientUserId: requesterId,
+      type: 'email',
+      priority: 'high',
+      title: 'Stage Transition Rejected',
+      body: `Your request to transition claim ${claimId} was rejected. Reason: ${reason}`,
+      actionUrl: `/grievances/${claimId}`,
+      actionLabel: 'View Claim',
+      metadata: {
+        type: 'grievance_transition_rejected',
+        claimId,
+        reason,
+      },
+      userId: 'system',
+    });
+
+    logger.info(`Transition rejected notification sent for claim ${claimId}`);
+  } catch (error) {
+    logger.error(`Failed to send transition rejected notification for claim ${claimId}`, { error });
+  }
 }
 
 // ============================================================================
@@ -809,8 +956,28 @@ export async function processOverdueDeadlines(): Promise<void> {
 
       // Send escalation notification
       if (deadline.escalateTo) {
-        // TODO: Send notification to escalation recipient
-        console.log(`Escalating overdue deadline ${deadline.id} to ${deadline.escalateTo}`);
+        try {
+          const notificationService = getNotificationService();
+          await notificationService.send({
+            organizationId: deadline.organizationId,
+            recipientUserId: deadline.escalateTo,
+            type: 'email',
+            priority: 'urgent',
+            title: 'ESCALATION: Overdue Deadline',
+            body: `Deadline "${deadline.deadlineType}" for claim ${deadline.claimId} is overdue and has been escalated to you.`,
+            actionUrl: `/grievances/${deadline.claimId}`,
+            actionLabel: 'Review Claim',
+            metadata: {
+              type: 'grievance_deadline_escalation',
+              deadlineId: deadline.id,
+              claimId: deadline.claimId,
+            },
+            userId: 'system',
+          });
+          logger.info(`Escalation notification sent for overdue deadline ${deadline.id}`);
+        } catch (error) {
+          logger.error(`Failed to send escalation notification for deadline ${deadline.id}`, { error });
+        }
       }
     }
   } catch (error) {
@@ -840,8 +1007,42 @@ export async function sendDeadlineReminders(): Promise<void> {
 
       // Check if reminder should be sent
       if (deadline.reminderDays?.includes(daysUntilDeadline)) {
-        // TODO: Send reminder notification
-        console.log(`Sending reminder for deadline ${deadline.id}, ${daysUntilDeadline} days remaining`);
+        try {
+          // Get claim details for notification context
+          const claim = await db.query.claims.findFirst({
+            where: eq(claims.claimId, deadline.claimId),
+          });
+
+          if (claim && deadline.assignedTo) {
+            const assignees = Array.isArray(deadline.assignedTo) 
+              ? deadline.assignedTo 
+              : [deadline.assignedTo];
+
+            const notificationService = getNotificationService();
+            for (const assignee of assignees) {
+              await notificationService.send({
+                organizationId: deadline.organizationId,
+                recipientEmail: assignee,
+                type: 'email',
+                priority: daysUntilDeadline <= 1 ? 'urgent' : 'high',
+                title: `Deadline Reminder: ${daysUntilDeadline} Day(s) Remaining`,
+                body: `Reminder: Deadline "${deadline.deadlineType}" for claim ${claim.claimNumber} is due in ${daysUntilDeadline} day(s).`,
+                actionUrl: `/grievances/${deadline.claimId}`,
+                actionLabel: 'View Claim',
+                metadata: {
+                  type: 'grievance_deadline_reminder',
+                  deadlineId: deadline.id,
+                  claimId: deadline.claimId,
+                  daysRemaining: daysUntilDeadline,
+                },
+                userId: 'system',
+              });
+            }
+            logger.info(`Reminder sent for deadline ${deadline.id}, ${daysUntilDeadline} days remaining`);
+          }
+        } catch (error) {
+          logger.error(`Failed to send reminder for deadline ${deadline.id}`, { error });
+        }
 
         // Update last reminder sent timestamp
         await db

@@ -2,7 +2,7 @@
 // Canada Federal Immigration: Foreign worker compliance tracking
 // Global Skills Strategy (GSS) 2-week processing, LMBP letter generation, skills transfer mentorship
 
-import { pgTable, uuid, text, timestamp, jsonb, integer, boolean, decimal } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, jsonb, integer, boolean, decimal, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Foreign Workers Table
@@ -52,7 +52,7 @@ export const foreignWorkers = pgTable("foreign_workers", {
   // Audit trail
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: uuid("created_by"), // Admin/HR user who created the record
+  createdBy: varchar("created_by", { length: 255 }), // Admin/HR user who created the record
 });
 
 /**
@@ -96,7 +96,7 @@ export const lmbpLetters = pgTable("lmbp_letters", {
   // Audit trail
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 });
 
 /**
@@ -142,7 +142,7 @@ export const gssApplications = pgTable("gss_applications", {
   // Audit trail
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 });
 
 /**
@@ -223,7 +223,7 @@ export const lmbpComplianceAlerts = pgTable("lmbp_compliance_alerts", {
   // Alert status
   status: text("status").notNull().default("open"), // 'open' | 'in_progress' | 'resolved' | 'dismissed'
   resolution: text("resolution"),
-  resolvedBy: uuid("resolved_by"), // Admin user who resolved
+  resolvedBy: varchar("resolved_by", { length: 255 }), // Admin user who resolved
   
   // Notification tracking
   emailSent: boolean("email_sent").default(false),
@@ -276,7 +276,7 @@ export const lmbpComplianceReports = pgTable("lmbp_compliance_reports", {
   // Audit trail
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 });
 
 // Type exports for TypeScript

@@ -5,12 +5,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { refreshAnalyticsViews, getViewRefreshStats } from '@/db/queries/analytics-queries';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function postHandler(req: NextRequest) {
+async function postHandler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -42,9 +44,10 @@ async function postHandler(req: NextRequest) {
   }
 }
 
-async function getHandler(req: NextRequest) {
+async function getHandler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -71,5 +74,5 @@ async function getHandler(req: NextRequest) {
   }
 }
 
-export const POST = withTenantAuth(postHandler);
-export const GET = withTenantAuth(getHandler);
+export const POST = withOrganizationAuth(postHandler);
+export const GET = withOrganizationAuth(getHandler);

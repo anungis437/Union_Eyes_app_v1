@@ -1,44 +1,56 @@
 "use server";
 
-import { db } from "@/db/db";
 import { eq, and, desc, sql, sum, gte, lte } from "drizzle-orm";
 import { duesTransactions, type DuesTransaction, type NewDuesTransaction } from "../schema/dues-transactions-schema";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { withRLSContext } from "@/lib/rls-middleware";
 
 /**
  * Get dues balance summary for a member
  */
-export const getDuesBalanceByMember = async (memberId: string) => {
-  try {
-    // Get all transactions for the member
-    const transactions = await db
-      .select()
-      .from(duesTransactions)
-      .where(eq(duesTransactions.memberId, memberId))
-      .orderBy(desc(duesTransactions.dueDate));
+export const getDuesBalanceByMember = async (
+  memberId: string,
+  tx?: NodePgDatabase<any>
+) => {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      // Get all transactions for the member
+      const transactions = await dbOrTx
+        .select()
+        .from(duesTransactions)
+        .where(eq(duesTransactions.memberId, memberId))
+        .orderBy(desc(duesTransactions.dueDate));
 
-    // Calculate totals
-    const pending = transactions.filter(t => t.status === 'pending');
-    const overdue = transactions.filter(t => t.status === 'overdue');
-    const paid = transactions.filter(t => t.status === 'paid');
+      // Calculate totals
+      const pending = transactions.filter(t => t.status === 'pending');
+      const overdue = transactions.filter(t => t.status === 'overdue');
+      const paid = transactions.filter(t => t.status === 'paid');
 
-    const pendingBalance = pending.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
-    const overdueBalance = overdue.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
-    const paidTotal = paid.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const pendingBalance = pending.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const overdueBalance = overdue.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const paidTotal = paid.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
 
-    return {
-      memberId,
-      currentBalance: pendingBalance + overdueBalance,
-      pendingBalance,
-      overdueBalance,
-      paidTotal,
-      pendingTransactions: pending.length,
-      overdueTransactions: overdue.length,
-      lastPaymentDate: paid[0]?.paidDate || null,
-      transactions,
-    };
-  } catch (error) {
-    console.error("Error getting dues balance:", error);
-    throw new Error("Failed to get dues balance");
+      return {
+        memberId,
+        currentBalance: pendingBalance + overdueBalance,
+        pendingBalance,
+        overdueBalance,
+        paidTotal,
+        pendingTransactions: pending.length,
+        overdueTransactions: overdue.length,
+        lastPaymentDate: paid[0]?.paidDate || null,
+        transactions,
+      };
+    } catch (error) {
+      console.error("Error getting dues balance:", error);
+      throw new Error("Failed to get dues balance");
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
 
@@ -52,40 +64,49 @@ export const getDuesTransactionsByMember = async (
     startDate?: Date;
     endDate?: Date;
     limit?: number;
-  }
+  },
+  tx?: NodePgDatabase<any>
 ) => {
-  try {
-    let query = db
-      .select()
-      .from(duesTransactions)
-      .where(eq(duesTransactions.memberId, memberId))
-      .orderBy(desc(duesTransactions.dueDate));
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      let query = dbOrTx
+        .select()
+        .from(duesTransactions)
+        .where(eq(duesTransactions.memberId, memberId))
+        .orderBy(desc(duesTransactions.dueDate));
 
-    if (options?.limit) {
-      query = query.limit(options.limit) as typeof query;
-    }
+      if (options?.limit) {
+        query = query.limit(options.limit) as typeof query;
+      }
 
-    const transactions = await query;
+      const transactions = await query;
 
-    // Apply additional filters in-memory for simplicity
-    let filtered = transactions;
-    
-    if (options?.status) {
-      filtered = filtered.filter(t => t.status === options.status);
-    }
-    
-    if (options?.startDate) {
-      filtered = filtered.filter(t => new Date(t.periodStart) >= options.startDate!);
-    }
-    
-    if (options?.endDate) {
-      filtered = filtered.filter(t => new Date(t.periodEnd) <= options.endDate!);
-    }
+      // Apply additional filters in-memory for simplicity
+      let filtered = transactions;
+      
+      if (options?.status) {
+        filtered = filtered.filter(t => t.status === options.status);
+      }
+      
+      if (options?.startDate) {
+        filtered = filtered.filter(t => new Date(t.periodStart) >= options.startDate!);
+      }
+      
+      if (options?.endDate) {
+        filtered = filtered.filter(t => new Date(t.periodEnd) <= options.endDate!);
+      }
 
-    return filtered;
-  } catch (error) {
-    console.error("Error getting dues transactions:", error);
-    throw new Error("Failed to get dues transactions");
+      return filtered;
+    } catch (error) {
+      console.error("Error getting dues transactions:", error);
+      throw new Error("Failed to get dues transactions");
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
 
@@ -98,50 +119,70 @@ export const getDuesTransactionsByOrganization = async (
     status?: 'pending' | 'paid' | 'overdue' | 'waived' | 'cancelled';
     startDate?: Date;
     endDate?: Date;
-  }
+  },
+  tx?: NodePgDatabase<any>
 ) => {
-  try {
-    const transactions = await db
-      .select()
-      .from(duesTransactions)
-      .where(eq(duesTransactions.tenantId, organizationId))
-      .orderBy(desc(duesTransactions.dueDate));
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      const transactions = await dbOrTx
+        .select()
+        .from(duesTransactions)
+        .where(eq(duesTransactions.tenantId, organizationId))
+        .orderBy(desc(duesTransactions.dueDate));
 
-    let filtered = transactions;
-    
-    if (options?.status) {
-      filtered = filtered.filter(t => t.status === options.status);
-    }
-    
-    if (options?.startDate) {
-      filtered = filtered.filter(t => new Date(t.periodStart) >= options.startDate!);
-    }
-    
-    if (options?.endDate) {
-      filtered = filtered.filter(t => new Date(t.periodEnd) <= options.endDate!);
-    }
+      let filtered = transactions;
+      
+      if (options?.status) {
+        filtered = filtered.filter(t => t.status === options.status);
+      }
+      
+      if (options?.startDate) {
+        filtered = filtered.filter(t => new Date(t.periodStart) >= options.startDate!);
+      }
+      
+      if (options?.endDate) {
+        filtered = filtered.filter(t => new Date(t.periodEnd) <= options.endDate!);
+      }
 
-    return filtered;
-  } catch (error) {
-    console.error("Error getting organization dues:", error);
-    throw new Error("Failed to get organization dues");
+      return filtered;
+    } catch (error) {
+      console.error("Error getting organization dues:", error);
+      throw new Error("Failed to get organization dues");
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
 
 /**
  * Create a new dues transaction
  */
-export const createDuesTransaction = async (data: NewDuesTransaction) => {
-  try {
-    const [transaction] = await db
-      .insert(duesTransactions)
-      .values(data)
-      .returning();
+export const createDuesTransaction = async (
+  data: NewDuesTransaction,
+  tx?: NodePgDatabase<any>
+) => {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      const [transaction] = await dbOrTx
+        .insert(duesTransactions)
+        .values(data)
+        .returning();
 
-    return transaction;
-  } catch (error) {
-    console.error("Error creating dues transaction:", error);
-    throw new Error("Failed to create dues transaction");
+      return transaction;
+    } catch (error) {
+      console.error("Error creating dues transaction:", error);
+      throw new Error("Failed to create dues transaction");
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
 
@@ -155,109 +196,139 @@ export const updateDuesTransactionStatus = async (
     paymentMethod?: string;
     paymentReference?: string;
     receiptUrl?: string;
-  }
+  },
+  tx?: NodePgDatabase<any>
 ) => {
-  try {
-    const updateData: Partial<DuesTransaction> = {
-      status,
-      updatedAt: new Date(),
-    };
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      const updateData: Partial<DuesTransaction> = {
+        status,
+        updatedAt: new Date(),
+      };
 
-    if (status === 'paid') {
-      updateData.paidDate = new Date();
-      if (paymentDetails) {
-        updateData.paymentMethod = paymentDetails.paymentMethod;
-        updateData.paymentReference = paymentDetails.paymentReference;
-        updateData.receiptUrl = paymentDetails.receiptUrl;
+      if (status === 'paid') {
+        updateData.paidDate = new Date();
+        if (paymentDetails) {
+          updateData.paymentMethod = paymentDetails.paymentMethod;
+          updateData.paymentReference = paymentDetails.paymentReference;
+          updateData.receiptUrl = paymentDetails.receiptUrl;
+        }
       }
+
+      const [updated] = await dbOrTx
+        .update(duesTransactions)
+        .set(updateData)
+        .where(eq(duesTransactions.id, transactionId))
+        .returning();
+
+      return updated;
+    } catch (error) {
+      console.error("Error updating dues transaction:", error);
+      throw new Error("Failed to update dues transaction");
     }
+  };
 
-    const [updated] = await db
-      .update(duesTransactions)
-      .set(updateData)
-      .where(eq(duesTransactions.id, transactionId))
-      .returning();
-
-    return updated;
-  } catch (error) {
-    console.error("Error updating dues transaction:", error);
-    throw new Error("Failed to update dues transaction");
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
 
 /**
  * Mark overdue transactions (to be called by a scheduled job)
  */
-export const markOverdueTransactions = async () => {
-  try {
-    const today = new Date();
-    
-    const updated = await db
-      .update(duesTransactions)
-      .set({
-        status: 'overdue',
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(duesTransactions.status, 'pending'),
-          sql`${duesTransactions.dueDate} < ${today.toISOString().split('T')[0]}`
+export const markOverdueTransactions = async (
+  tx?: NodePgDatabase<any>
+) => {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      const today = new Date();
+      
+      const updated = await dbOrTx
+        .update(duesTransactions)
+        .set({
+          status: 'overdue',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(duesTransactions.status, 'pending'),
+            sql`${duesTransactions.dueDate} < ${today.toISOString().split('T')[0]}`
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    return updated.length;
-  } catch (error) {
-    console.error("Error marking overdue transactions:", error);
-    throw new Error("Failed to mark overdue transactions");
+      return updated.length;
+    } catch (error) {
+      console.error("Error marking overdue transactions:", error);
+      throw new Error("Failed to mark overdue transactions");
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
 
 /**
  * Get dues summary for an organization (for admin dashboard)
  */
-export const getOrganizationDuesSummary = async (organizationId: string) => {
-  try {
-    const transactions = await db
-      .select()
-      .from(duesTransactions)
-      .where(eq(duesTransactions.tenantId, organizationId));
+export const getOrganizationDuesSummary = async (
+  organizationId: string,
+  tx?: NodePgDatabase<any>
+) => {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      const transactions = await dbOrTx
+        .select()
+        .from(duesTransactions)
+        .where(eq(duesTransactions.tenantId, organizationId));
 
-    const pending = transactions.filter(t => t.status === 'pending');
-    const overdue = transactions.filter(t => t.status === 'overdue');
-    const paid = transactions.filter(t => t.status === 'paid');
-    const waived = transactions.filter(t => t.status === 'waived');
+      const pending = transactions.filter(t => t.status === 'pending');
+      const overdue = transactions.filter(t => t.status === 'overdue');
+      const paid = transactions.filter(t => t.status === 'paid');
+      const waived = transactions.filter(t => t.status === 'waived');
 
-    const pendingTotal = pending.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
-    const overdueTotal = overdue.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
-    const paidTotal = paid.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
-    const waivedTotal = waived.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const pendingTotal = pending.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const overdueTotal = overdue.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const paidTotal = paid.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
+      const waivedTotal = waived.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
 
-    // Get unique members
-    const uniqueMembers = new Set(transactions.map(t => t.memberId));
-    const membersWithOverdue = new Set(overdue.map(t => t.memberId));
+      // Get unique members
+      const uniqueMembers = new Set(transactions.map(t => t.memberId));
+      const membersWithOverdue = new Set(overdue.map(t => t.memberId));
 
-    return {
-      organizationId,
-      totalCollected: paidTotal,
-      totalPending: pendingTotal,
-      totalOverdue: overdueTotal,
-      totalWaived: waivedTotal,
-      totalOutstanding: pendingTotal + overdueTotal,
-      transactionCount: {
-        pending: pending.length,
-        overdue: overdue.length,
-        paid: paid.length,
-        waived: waived.length,
-        total: transactions.length,
-      },
-      memberCount: {
-        total: uniqueMembers.size,
-        withOverdue: membersWithOverdue.size,
-      },
-    };
-  } catch (error) {
-    console.error("Error getting organization dues summary:", error);
-    throw new Error("Failed to get organization dues summary");
+      return {
+        organizationId,
+        totalCollected: paidTotal,
+        totalPending: pendingTotal,
+        totalOverdue: overdueTotal,
+        totalWaived: waivedTotal,
+        totalOutstanding: pendingTotal + overdueTotal,
+        transactionCount: {
+          pending: pending.length,
+          overdue: overdue.length,
+          paid: paid.length,
+          waived: waived.length,
+          total: transactions.length,
+        },
+        memberCount: {
+          total: uniqueMembers.size,
+          withOverdue: membersWithOverdue.size,
+        },
+      };
+    } catch (error) {
+      console.error("Error getting organization dues summary:", error);
+      throw new Error("Failed to get organization dues summary");
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 };

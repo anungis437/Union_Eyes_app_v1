@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { Menu, X, Bell, Settings, LayoutDashboard, FileText, Vote, BarChart3, Users, MessageSquare, Scale, Library, FileBarChart, Shield, GitCompare, Target, Flag, DollarSign } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { SelectProfile } from "@/db/schema/profiles-schema";
@@ -19,14 +19,43 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const locale = useLocale();
-  const [notificationCount] = useState(3); // TODO: Replace with actual notification count
+  const [notificationCount, setNotificationCount] = useState(3);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCongressStaff, setIsCongressStaff] = useState(false);
+  const [isFederationStaff, setIsFederationStaff] = useState(false);
+  const [isOfficer, setIsOfficer] = useState(false);
+  const [isSteward, setIsSteward] = useState(false);
   
-  // TODO: Implement proper admin role checking from organizationMembers
-  const isAdmin = true; // Temporary: Show all nav items
-  const isCongressStaff = false; // TODO: Implement congress staff role checking
-  const isFederationStaff = false; // TODO: Implement federation staff role checking
-  const isOfficer = true; // Temporary: Show officer items
-  const isSteward = true; // Temporary: Show steward items
+  // Load user role from organizationMembers table
+  useEffect(() => {
+    if (!profile?.userId) return;
+
+    const loadUserRoles = async () => {
+      try {
+        const response = await fetch('/api/profile/roles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: profile.userId }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.role === 'admin' || data.roles?.includes('admin'));
+          setIsCongressStaff(data.role === 'congress_staff' || data.roles?.includes('congress_staff'));
+          setIsFederationStaff(data.role === 'federation_staff' || data.roles?.includes('federation_staff'));
+          setIsOfficer(data.role === 'officer' || data.roles?.includes('officer'));
+          setIsSteward(data.role === 'steward' || data.roles?.includes('steward'));
+        }
+      } catch (error) {
+        console.error('Failed to load user roles:', error);
+        // Default to showing basic features
+        setIsAdmin(false);
+      }
+    };
+
+    loadUserRoles();
+  }, [profile?.userId]);
+  
   const isCrossOrgStaff = isCongressStaff || isFederationStaff;
 
   // Navigation items based on user role

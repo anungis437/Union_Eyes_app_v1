@@ -382,6 +382,53 @@ export const webhookReceipts = pgTable(
   })
 );
 
+/**
+ * Automation Rules
+ * Trigger automated awards based on conditions
+ */
+export const automationRules = pgTable(
+  'automation_rules',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    orgId: uuid('org_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+
+    // Rule definition
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    triggerType: varchar('trigger_type', { length: 50 }).notNull(), // 'anniversary', 'milestone', 'metric', 'scheduled'
+    
+    // Conditions (flexible JSON for different trigger types)
+    conditions: jsonb('conditions'), // e.g., { metric: 'performance', operator: 'gte', value: 90 }
+    
+    // Action (award to create when triggered)
+    awardTypeId: uuid('award_type_id')
+      .notNull()
+      .references(() => recognitionAwardTypes.id, { onDelete: 'cascade' }),
+    creditAmount: integer('credit_amount').notNull().default(0), // Override award type credits if set
+    
+    // Schedule (for scheduled/cron-based triggers)
+    schedule: varchar('schedule', { length: 255 }), // Cron expression or 'monthly', 'quarterly', etc.
+    
+    // Status
+    isActive: boolean('is_active').notNull().default(true),
+    lastTriggeredAt: timestamp('last_triggered_at'),
+    triggerCount: integer('trigger_count').notNull().default(0),
+    
+    // Audit
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
+  },
+  (t) => ({
+    orgIdx: index('automation_rules_org_idx').on(t.orgId),
+    triggerIdx: index('automation_rules_trigger_idx').on(t.triggerType),
+    activeIdx: index('automation_rules_active_idx').on(t.isActive),
+    awardTypeIdx: index('automation_rules_award_type_idx').on(t.awardTypeId),
+  })
+);
+
 // =====================================================
 // RELATIONS
 // =====================================================
@@ -468,6 +515,20 @@ export const shopifyConfigRelations = relations(shopifyConfig, ({ one }) => ({
   }),
 }));
 
+export const automationRulesRelations = relations(
+  automationRules,
+  ({ one }) => ({
+    organization: one(organizations, {
+      fields: [automationRules.orgId],
+      references: [organizations.id],
+    }),
+    awardType: one(recognitionAwardTypes, {
+      fields: [automationRules.awardTypeId],
+      references: [recognitionAwardTypes.id],
+    }),
+  })
+);
+
 // =====================================================
 // TYPE EXPORTS
 // =====================================================
@@ -495,3 +556,6 @@ export type NewShopifyConfig = typeof shopifyConfig.$inferInsert;
 
 export type WebhookReceipt = typeof webhookReceipts.$inferSelect;
 export type NewWebhookReceipt = typeof webhookReceipts.$inferInsert;
+
+export type AutomationRule = typeof automationRules.$inferSelect;
+export type NewAutomationRule = typeof automationRules.$inferInsert;

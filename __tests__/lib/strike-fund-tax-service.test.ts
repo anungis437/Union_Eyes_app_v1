@@ -6,6 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db } from '@/db';
+import { logger } from '@/lib/logger';
 import {
   checkStrikePaymentTaxability,
   generateT4A,
@@ -77,7 +79,7 @@ describe('Strike Fund Tax Service', () => {
         province: 'ON',
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
 
       const t4a = await generateT4A('test-user', 2024);
       
@@ -98,7 +100,7 @@ describe('Strike Fund Tax Service', () => {
         encryptedSin: 'encrypted-sin-data',
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
 
       const t4a = await generateT4A('test-user', 2024);
       
@@ -120,7 +122,7 @@ describe('Strike Fund Tax Service', () => {
     });
 
     it('should handle missing user gracefully', async () => {
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(null);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(null);
 
       await expect(generateT4A('invalid-user', 2024))
         .rejects
@@ -136,7 +138,7 @@ describe('Strike Fund Tax Service', () => {
         encryptedSin: null, // No SIN on file
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
 
       const t4a = await generateT4A('test-user', 2024);
       
@@ -155,7 +157,7 @@ describe('Strike Fund Tax Service', () => {
         province: 'QC',
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
 
       const rl1 = await generateRL1('test-user', 2024);
       
@@ -174,7 +176,7 @@ describe('Strike Fund Tax Service', () => {
         province: 'ON', // Not Quebec
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
 
       await expect(generateRL1('test-user', 2024))
         .rejects
@@ -191,7 +193,7 @@ describe('Strike Fund Tax Service', () => {
         province: 'QC',
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
 
       const rl1 = await generateRL1('test-user', 2024);
       
@@ -218,17 +220,17 @@ describe('Strike Fund Tax Service', () => {
       const taxYear = 2024;
       const deadline = new Date(`${taxYear + 1}-02-28`);
       
-      expect(deadline.getFullYear()).toBe(2025);
-      expect(deadline.getMonth()).toBe(1); // February (0-indexed)
-      expect(deadline.getDate()).toBe(28);
+      expect(deadline.getUTCFullYear()).toBe(2025);
+      expect(deadline.getUTCMonth()).toBe(1); // February (0-indexed)
+      expect(deadline.getUTCDate()).toBe(28);
     });
 
     it('should enforce deadline for year-end processing', async () => {
       const status = await getTaxFilingStatus('test-user', 2024);
       
-      expect(status.deadline.getFullYear()).toBe(2025);
-      expect(status.deadline.getMonth()).toBe(1); // February
-      expect(status.deadline.getDate()).toBe(28);
+      expect(status.deadline.getUTCFullYear()).toBe(2025);
+      expect(status.deadline.getUTCMonth()).toBe(1); // February
+      expect(status.deadline.getUTCDate()).toBe(28);
     });
   });
 
@@ -262,8 +264,8 @@ describe('Strike Fund Tax Service', () => {
         encryptedSin: 'encrypted-sin-data',
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
-      const mockLogger = require('@/lib/logger').logger;
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
+      const mockLogger = vi.mocked(logger);
 
       await generateT4A('test-user', 2024);
       
@@ -287,8 +289,8 @@ describe('Strike Fund Tax Service', () => {
         province: 'QC',
       };
 
-      vi.mocked(require('@/db').db.query.users.findFirst).mockResolvedValue(mockUser);
-      const mockLogger = require('@/lib/logger').logger;
+      vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
+      const mockLogger = vi.mocked(logger);
 
       await generateRL1('test-user', 2024);
       

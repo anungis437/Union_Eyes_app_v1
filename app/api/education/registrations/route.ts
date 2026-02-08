@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Course Registrations
  * Member course enrollments and registration management
@@ -5,60 +6,50 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { sendRegistrationConfirmation } from '@/lib/email/training-notifications';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/education/registrations
- * List course registrations for a member or session
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const memberId = searchParams.get('memberId');
+      const sessionId = searchParams.get('sessionId');
+      const registrationStatus = searchParams.get('registrationStatus');
 
-    const { searchParams } = new URL(request.url);
-    const memberId = searchParams.get('memberId');
-    const sessionId = searchParams.get('sessionId');
-    const registrationStatus = searchParams.get('registrationStatus');
+      if (!memberId && !sessionId) {
+        return NextResponse.json(
+          { error: 'Bad Request - Either memberId or sessionId is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!memberId && !sessionId) {
-      return NextResponse.json(
-        { error: 'Bad Request - Either memberId or sessionId is required' },
-        { status: 400 }
-      );
-    }
+      // Build query with joins to get course and session details
+      const conditions: any[] = [];
 
-    // Build query with joins to get course and session details
-    const conditions: any[] = [];
+      if (memberId) {
+        conditions.push(sql`cr.member_id = ${memberId}`);
+      }
 
-    if (memberId) {
-      conditions.push(sql`cr.member_id = ${memberId}`);
-    }
+      if (sessionId) {
+        conditions.push(sql`cr.session_id = ${sessionId}`);
+      }
 
-    if (sessionId) {
-      conditions.push(sql`cr.session_id = ${sessionId}`);
-    }
+      if (registrationStatus) {
+        conditions.push(sql`cr.registration_status = ${registrationStatus}`);
+      }
 
-    if (registrationStatus) {
-      conditions.push(sql`cr.registration_status = ${registrationStatus}`);
-    }
+      const whereClause = conditions.length > 0 
+        ? sql.join(conditions, sql.raw(' AND '))
+        : sql`1=1`;
 
-    const whereClause = conditions.length > 0 
-      ? sql.join(conditions, sql.raw(' AND '))
-      : sql`1=1`;
-
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       SELECT 
         cr.id,
         cr.member_id,
@@ -93,60 +84,54 @@ export async function GET(request: NextRequest) {
       ORDER BY cr.registration_date DESC
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-      count: result.length,
-    });
+      return NextResponse.json({
+        success: true,
+        data: result,
+        count: result.length,
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch course registrations', error as Error, {
-      memberId: request.nextUrl.searchParams.get('memberId'),
-      sessionId: request.nextUrl.searchParams.get('sessionId'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to fetch course registrations', error as Error, {
+        memberId: request.nextUrl.searchParams.get('memberId'),
+        sessionId: request.nextUrl.searchParams.get('sessionId'),
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};
 
-/**
- * POST /api/education/registrations
- * Register a member for a course session
- */
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const body = await request.json();
+      const {
+        organizationId,
+        memberId,
+        courseId,
+        sessionId,
+        travelRequired,
+        travelSubsidyRequested,
+        accommodationRequired,
+      } = body;
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-    const body = await request.json();
-    const {
-      organizationId,
-      memberId,
-      courseId,
-      sessionId,
-      travelRequired,
-      travelSubsidyRequested,
-      accommodationRequired,
-    } = body;
 
-    // Validate required fields
-    if (!organizationId || !memberId || !courseId || !sessionId) {
-      return NextResponse.json(
-        { error: 'Bad Request - organizationId, memberId, courseId, and sessionId are required' },
-        { status: 400 }
-      );
-    }
+      // Validate required fields
+      if (!organizationId || !memberId || !courseId || !sessionId) {
+        return NextResponse.json(
+          { error: 'Bad Request - organizationId, memberId, courseId, and sessionId are required' },
+          { status: 400 }
+        );
+      }
 
-    // Check session capacity
-    const capacityCheck = await db.execute(sql`
+      // Check session capacity
+      const capacityCheck = await db.execute(sql`
       SELECT 
         cs.max_enrollment,
         cs.registration_count,
@@ -155,39 +140,39 @@ export async function POST(request: NextRequest) {
       WHERE cs.id = ${sessionId}
     `);
 
-    if (capacityCheck.length === 0) {
-      return NextResponse.json(
-        { error: 'Not Found - Session not found' },
-        { status: 404 }
-      );
-    }
+      if (capacityCheck.length === 0) {
+        return NextResponse.json(
+          { error: 'Not Found - Session not found' },
+          { status: 404 }
+        );
+      }
 
-    const session = capacityCheck[0];
-    const isFull = Number(session.registration_count || 0) >= Number(session.max_enrollment || 0);
-    const registrationStatus = isFull ? 'waitlisted' : 'registered';
+      const session = capacityCheck[0];
+      const isFull = Number(session.registration_count || 0) >= Number(session.max_enrollment || 0);
+      const registrationStatus = isFull ? 'waitlisted' : 'registered';
 
-    if (session.session_status === 'cancelled') {
-      return NextResponse.json(
-        { error: 'Bad Request - Cannot register for cancelled session' },
-        { status: 400 }
-      );
-    }
+      if (session.session_status === 'cancelled') {
+        return NextResponse.json(
+          { error: 'Bad Request - Cannot register for cancelled session' },
+          { status: 400 }
+        );
+      }
 
-    // Check for duplicate registration
-    const duplicateCheck = await db.execute(sql`
+      // Check for duplicate registration
+      const duplicateCheck = await db.execute(sql`
       SELECT id FROM course_registrations
       WHERE member_id = ${memberId} AND session_id = ${sessionId}
     `);
 
-    if (duplicateCheck.length > 0) {
-      return NextResponse.json(
-        { error: 'Conflict - Member already registered for this session' },
-        { status: 409 }
-      );
-    }
+      if (duplicateCheck.length > 0) {
+        return NextResponse.json(
+          { error: 'Conflict - Member already registered for this session' },
+          { status: 409 }
+        );
+      }
 
-    // Insert registration
-    const result = await db.execute(sql`
+      // Insert registration
+      const result = await db.execute(sql`
       INSERT INTO course_registrations (
         id,
         organization_id,
@@ -214,24 +199,24 @@ export async function POST(request: NextRequest) {
         id, member_id, course_id, session_id, registration_date, registration_status
     `);
 
-    // Update session registration count
-    if (registrationStatus === 'registered') {
-      await db.execute(sql`
+      // Update session registration count
+      if (registrationStatus === 'registered') {
+        await db.execute(sql`
         UPDATE course_sessions
         SET registration_count = registration_count + 1, updated_at = NOW()
         WHERE id = ${sessionId}
       `);
-    } else {
-      await db.execute(sql`
+      } else {
+        await db.execute(sql`
         UPDATE course_sessions
         SET waitlist_count = waitlist_count + 1, updated_at = NOW()
         WHERE id = ${sessionId}
       `);
-    }
+      }
 
-    // Send registration confirmation email (non-blocking)
-    if (registrationStatus === 'registered') {
-      const emailData = await db.execute(sql`
+      // Send registration confirmation email (non-blocking)
+      if (registrationStatus === 'registered') {
+        const emailData = await db.execute(sql`
         SELECT 
           m.email, m.first_name, m.last_name,
           c.course_name, c.course_code, c.total_hours,
@@ -243,124 +228,115 @@ export async function POST(request: NextRequest) {
         JOIN course_sessions cs ON cs.id = cr.session_id
         LEFT JOIN members i ON i.id = cs.lead_instructor_id
         WHERE cr.id = ${result[0].id}
-      `) as unknown as Record<string, any>[];
+      `) as unknown as Record<string, unknown>[];
 
-      if (emailData.length > 0) {
-        const data = emailData[0] as Record<string, any>;
-        sendRegistrationConfirmation({
-          toEmail: data.email as string,
-          memberName: `${data.first_name} ${data.last_name}`,
-          courseName: data.course_name as string,
-          courseCode: data.course_code as string,
-          registrationDate: new Date().toLocaleDateString(),
-          startDate: data.session_date ? new Date(data.session_date).toLocaleDateString() : undefined,
-          endDate: data.end_date ? new Date(data.end_date).toLocaleDateString() : undefined,
-          instructorName: data.instructor_first_name ? `${data.instructor_first_name} ${data.instructor_last_name}` : undefined,
-          location: data.location as string || undefined,
-          totalHours: data.total_hours as number || undefined,
-        }).catch(err => logger.error('Failed to send registration confirmation email', err));
+        if (emailData.length > 0) {
+          const data = emailData[0] as Record<string, unknown>;
+          sendRegistrationConfirmation({
+            toEmail: data.email as string,
+            memberName: `${data.first_name} ${data.last_name}`,
+            courseName: data.course_name as string,
+            courseCode: data.course_code as string,
+            registrationDate: new Date().toLocaleDateString(),
+            startDate: data.session_date ? new Date(data.session_date).toLocaleDateString() : undefined,
+            endDate: data.end_date ? new Date(data.end_date).toLocaleDateString() : undefined,
+            instructorName: data.instructor_first_name ? `${data.instructor_first_name} ${data.instructor_last_name}` : undefined,
+            location: data.location as string || undefined,
+            totalHours: data.total_hours as number || undefined,
+          }).catch(err => logger.error('Failed to send registration confirmation email', err));
+        }
       }
+
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: isFull ? 'Added to waitlist successfully' : 'Registration successful',
+      }, { status: 201 });
+
+    } catch (error) {
+      logger.error('Failed to register for course', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
     }
+    })(request);
+};
 
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: isFull ? 'Added to waitlist successfully' : 'Registration successful',
-    }, { status: 201 });
-
-  } catch (error) {
-    logger.error('Failed to register for course', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * PATCH /api/education/registrations?id=<registrationId>
- * Update registration status or attendance
- */
-export async function PATCH(request: NextRequest) {
+export const PATCH = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const registrationId = searchParams.get('id');
 
-    const { searchParams } = new URL(request.url);
-    const registrationId = searchParams.get('id');
+      if (!registrationId) {
+        return NextResponse.json(
+          { error: 'Bad Request - id parameter is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!registrationId) {
-      return NextResponse.json(
-        { error: 'Bad Request - id parameter is required' },
-        { status: 400 }
-      );
-    }
+      const body = await request.json();
+      const {
+        registrationStatus,
+        attended,
+        attendanceHours,
+      } = body;
 
-    const body = await request.json();
-    const {
-      registrationStatus,
-      attended,
-      attendanceHours,
-    } = body;
+      // Build update query
+      const updates: any[] = [];
 
-    // Build update query
-    const updates: any[] = [];
+      if (registrationStatus !== undefined) {
+        updates.push(sql`registration_status = ${registrationStatus}`);
+      }
+      if (attended !== undefined) {
+        updates.push(sql`attended = ${attended}`);
+      }
+      if (attendanceHours !== undefined) {
+        updates.push(sql`attendance_hours = ${attendanceHours}`);
+      }
 
-    if (registrationStatus !== undefined) {
-      updates.push(sql`registration_status = ${registrationStatus}`);
-    }
-    if (attended !== undefined) {
-      updates.push(sql`attended = ${attended}`);
-    }
-    if (attendanceHours !== undefined) {
-      updates.push(sql`attendance_hours = ${attendanceHours}`);
-    }
+      if (updates.length === 0) {
+        return NextResponse.json(
+          { error: 'Bad Request - No fields to update' },
+          { status: 400 }
+        );
+      }
 
-    if (updates.length === 0) {
-      return NextResponse.json(
-        { error: 'Bad Request - No fields to update' },
-        { status: 400 }
-      );
-    }
+      updates.push(sql`updated_at = NOW()`);
+      const setClause = sql.join(updates, sql.raw(', '));
 
-    updates.push(sql`updated_at = NOW()`);
-    const setClause = sql.join(updates, sql.raw(', '));
-
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       UPDATE course_registrations
       SET ${setClause}
       WHERE id = ${registrationId}
       RETURNING *
     `);
 
-    if (result.length === 0) {
+      if (result.length === 0) {
+        return NextResponse.json(
+          { error: 'Not Found - Registration not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'Registration updated successfully',
+      });
+
+    } catch (error) {
+      logger.error('Failed to update registration', error as Error, {
+        registrationId: request.nextUrl.searchParams.get('id'),
+        correlationId: request.headers.get('x-correlation-id'),
+      });
       return NextResponse.json(
-        { error: 'Not Found - Registration not found' },
-        { status: 404 }
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'Registration updated successfully',
-    });
-
-  } catch (error) {
-    logger.error('Failed to update registration', error as Error, {
-      registrationId: request.nextUrl.searchParams.get('id'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};

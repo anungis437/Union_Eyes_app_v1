@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * UC-07: Churn Risk Prediction API
  * 
@@ -14,7 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
-import { auth } from '@clerk/nextjs/server';
+
 
 interface ChurnPrediction {
   memberId: string;
@@ -31,7 +32,7 @@ interface ChurnPrediction {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -39,7 +40,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const riskLevel = searchParams.get('riskLevel'); // 'low', 'medium', 'high'
     const limit = parseInt(searchParams.get('limit') || '50');
-    const tenantId = searchParams.get('tenantId') || orgId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId')) || organizationScopeId;
 
     // Get recent predictions
     let riskFilter = '';
@@ -124,13 +126,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { memberId, tenantId = orgId || userId } = body;
+    const { memberId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
+    const organizationScopeId = organizationIdFromBody ?? organizationId ?? userId;
+    const tenantId = tenantIdFromBody ?? organizationScopeId;
 
     if (!memberId) {
       return NextResponse.json(

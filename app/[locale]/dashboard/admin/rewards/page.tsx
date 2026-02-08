@@ -16,16 +16,29 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { getRewardsSummary } from '@/actions/rewards-actions';
+import { db } from '@/db';
 
 export const metadata: Metadata = {
   title: 'Recognition & Rewards Admin | Union Eyes',
   description: 'Manage recognition programs, awards, and budgets',
 };
 
-async function checkAdminRole(userId: string): Promise<boolean> {
-  // TODO: Implement proper role check via organization_members table
-  // For now, assume authenticated users with admin routes are admins
-  return true;
+async function checkAdminRole(userId: string, orgId: string): Promise<boolean> {
+  try {
+    // Query organizationMembers table to check if user has admin role
+    const member = await db.query.organizationMembers.findFirst({
+      where: (organizationMembers, { eq, and }) =>
+        and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, orgId)
+        ),
+    });
+
+    return member?.role === 'admin';
+  } catch (error) {
+    console.error('Failed to check admin role:', error);
+    return false;
+  }
 }
 
 export default async function AdminRewardsPage() {
@@ -35,7 +48,7 @@ export default async function AdminRewardsPage() {
     redirect('/sign-in');
   }
 
-  const isAdmin = await checkAdminRole(userId);
+  const isAdmin = await checkAdminRole(userId, orgId);
   if (!isAdmin) {
     redirect('/dashboard');
   }

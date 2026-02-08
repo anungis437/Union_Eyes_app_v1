@@ -1,0 +1,78 @@
+#!/usr/bin/env pwsh
+# Pre-commit hook to prevent committing secrets
+# Install: Copy to .git/hooks/pre-commit and make executable
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "🔍 Running pre-commit security checks..." -ForegroundColor Cyan
+
+# Check for .env files
+Write-Host "`n1. Checking for .env files..." -ForegroundColor Yellow
+$envFiles = git diff --cached --name-only --diff-filter=ACM | Select-String -Pattern '\.env($|\.)'
+if ($envFiles) {
+    Write-Host "❌ ERROR: Attempting to commit .env files with potential secrets!" -ForegroundColor Red
+    Write-Host "Files:" -ForegroundColor Red
+    $envFiles | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+    Write-Host "`nThese files should NEVER be committed!" -ForegroundColor Red
+    Write-Host "Add them to .gitignore and use .env.example instead." -ForegroundColor Yellow
+    exit 1
+}
+Write-Host "✅ No .env files to commit" -ForegroundColor Green
+
+# Check for node_modules
+Write-Host "`n2. Checking for node_modules..." -ForegroundColor Yellow
+$nodeModules = git diff --cached --name-only --diff-filter=ACM | Select-String -Pattern 'node_modules/'
+if ($nodeModules) {
+    Write-Host "❌ ERROR: Attempting to commit node_modules!" -ForegroundColor Red
+    Write-Host "This bloats the repository. Add node_modules to .gitignore." -ForegroundColor Red
+    exit 1
+}
+Write-Host "✅ No node_modules to commit" -ForegroundColor Green
+
+# Check for credentials in file names
+Write-Host "`n3. Checking for credential files..." -ForegroundColor Yellow
+$credFiles = git diff --cached --name-only --diff-filter=ACM | Select-String -Pattern -iE 'credential|secret|password|apikey' | Where-Object { $_ -notmatch '\.(example|template|md)$' }
+if ($credFiles) {
+    Write-Host "⚠️  WARNING: Files with credential-like names detected:" -ForegroundColor Yellow
+    $credFiles | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+    Write-Host "`nPlease verify these do not contain actual secrets." -ForegroundColor Yellow
+    
+    $response = Read-Host "Continue with commit? (y/N)"
+    if ($response -ne 'y' -and $response -ne 'Y') {
+        Write-Host "❌ Commit aborted" -ForegroundColor Red
+        exit 1
+    }
+}
+Write-Host "✅ No suspicious credential files" -ForegroundColor Green
+
+# Check for common secret patterns in staged content
+Write-Host "`n4. Scanning staged content for secrets..." -ForegroundColor Yellow
+$stagedContent = git diff --cached
+$patterns = @(
+    'AKIA[0-9A-Z]{16}',  # AWS Access Key
+    'password\s*=\s*["\'](?!placeholder|example)[^"\']{8,}',  # Password assignments
+    'api[_-]?key\s*=\s*["\'][^"\']{20,}',  # API keys
+    'secret[_-]?key\s*=\s*["\'][^"\']{20,}',  # Secret keys
+    'private[_-]?key\s*=\s*["\'][^"\']{20,}'  # Private keys
+)
+
+$foundSecrets = $false
+foreach ($pattern in $patterns) {
+    if ($stagedContent -match $pattern) {
+        if (-not $foundSecrets) {
+            Write-Host "❌ ERROR: Potential secrets detected in staged content!" -ForegroundColor Red
+            $foundSecrets = $true
+        }
+        Write-Host "  Pattern matched: $pattern" -ForegroundColor Red
+    }
+}
+
+if ($foundSecrets) {
+    Write-Host "`nReview your changes and remove any actual credentials." -ForegroundColor Yellow
+    Write-Host "Use environment variables or secret management instead." -ForegroundColor Yellow
+    exit 1
+}
+Write-Host "✅ No obvious secrets detected in content" -ForegroundColor Green
+
+Write-Host "`n✅ All pre-commit security checks passed!" -ForegroundColor Green
+exit 0

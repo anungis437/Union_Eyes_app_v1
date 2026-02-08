@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * POST /api/ml/predictions/claim-outcome
@@ -38,13 +39,14 @@ import { eq } from 'drizzle-orm';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = orgId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
     const body = await request.json();
     
     let claimData: any;
@@ -81,6 +83,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.AI_SERVICE_TOKEN}`,
+        'X-Organization-ID': tenantId,
         'X-Tenant-ID': tenantId
       },
       body: JSON.stringify({

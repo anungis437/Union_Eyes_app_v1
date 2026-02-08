@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+
 import { updateClaimStatus, addClaimNote } from "@/lib/workflow-engine";
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * PATCH /api/claims/[id]/status
@@ -11,7 +12,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,7 +62,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * GET /api/ml/monitoring/drift
@@ -26,13 +27,14 @@ import { sql } from 'drizzle-orm';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = orgId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
 
     // Query drift metrics from feature monitoring tables
     // Build on existing benchmark_data structure

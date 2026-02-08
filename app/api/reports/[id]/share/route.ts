@@ -10,9 +10,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db/db';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 /**
  * GET - Get all shares for a report
@@ -24,8 +25,9 @@ async function getHandler(
 ) {
   const reportId = params?.id || context?.params?.id;
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
+    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(
@@ -84,8 +86,9 @@ async function postHandler(
 ) {
   const reportId = params?.id || context?.params?.id;
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
+    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(
@@ -182,8 +185,9 @@ async function deleteHandler(
 ) {
   const reportId = params?.id || context?.params?.id;
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
+    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(
@@ -236,6 +240,6 @@ async function deleteHandler(
   }
 }
 
-export const GET = withTenantAuth(getHandler);
-export const POST = withTenantAuth(postHandler);
-export const DELETE = withTenantAuth(deleteHandler);
+export const GET = withOrganizationAuth(getHandler);
+export const POST = withOrganizationAuth(postHandler);
+export const DELETE = withOrganizationAuth(deleteHandler);

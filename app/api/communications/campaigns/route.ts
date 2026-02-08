@@ -15,6 +15,7 @@ import { db } from '@/db';
 import { newsletterCampaigns, newsletterTemplates, newsletterDistributionLists } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 const createCampaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
@@ -30,13 +31,15 @@ const createCampaignSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
       })
       .from(newsletterCampaigns)
       .leftJoin(newsletterTemplates, eq(newsletterCampaigns.templateId, newsletterTemplates.id))
-      .where(eq(newsletterCampaigns.organizationId, user.tenantId))
+      .where(eq(newsletterCampaigns.organizationId, tenantId))
       .$dynamic();
 
     if (status) {
@@ -67,15 +70,17 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { id: userId, tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -86,7 +91,7 @@ export async function POST(request: NextRequest) {
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.organizationId, user.tenantId));
+      .where(eq(newsletterDistributionLists.organizationId, tenantId));
 
     const validListIds = lists.map(l => l.id);
     const invalidListIds = validatedData.distributionListIds.filter(
@@ -108,8 +113,8 @@ export async function POST(request: NextRequest) {
     const [campaign] = await db
       .insert(newsletterCampaigns)
       .values({
-        organizationId: user.tenantId,
-        createdBy: user.id,
+        organizationId: tenantId,
+        createdBy: userId,
         name: validatedData.name,
         subject: validatedData.subject,
         previewText: validatedData.previewText,
@@ -140,4 +145,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

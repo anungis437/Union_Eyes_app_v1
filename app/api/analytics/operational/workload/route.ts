@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { db } from '@/db/db';
 import { claims, users } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
@@ -45,4 +45,4 @@ async function handler(req: NextRequest) {
   return NextResponse.json(workload);
 }
 
-export const GET = withTenantAuth(handler);
+export const GET = withOrganizationAuth(handler);

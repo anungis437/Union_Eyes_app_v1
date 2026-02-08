@@ -18,6 +18,7 @@ import { db } from '@/db/db';
 import { organizations, perCapitaRemittances } from '@/db/schema';
 import { eq, and, sql, inArray } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { generateRemittanceExcel } from '@/lib/utils/excel-generator';
 
 /**
  * Export format options
@@ -507,17 +508,40 @@ export class RemittanceExportService {
 
   /**
    * Generate Excel format
-   * 
-   * Note: This is a placeholder. Real implementation would use a library like ExcelJS
    */
   private async generateExcel(
     records: RemittanceExportRecord[],
     options: ExportOptions
   ): Promise<Buffer> {
-    // TODO: Implement with ExcelJS or similar library
-    // For now, return CSV as buffer
-    const csv = this.generateCSV(records, options);
-    return Buffer.from(csv, 'utf-8');
+    // Calculate summary
+    const summary = {
+      totalMembers: records.reduce((sum, r) => sum + r.remittableMembers, 0),
+      totalDues: records.reduce((sum, r) => sum + parseFloat(r.totalAmount), 0).toFixed(2),
+      totalPerCapita: records.reduce((sum, r) => sum + parseFloat(r.totalAmount), 0).toFixed(2),
+      period: `${records[0]?.periodStart.toLocaleDateString() || 'N/A'} - ${records[0]?.periodEnd.toLocaleDateString() || 'N/A'}`,
+    };
+
+    // Prepare remittance data
+    const remittances = records.map((r) => ({
+      memberId: r.fromOrgCode,
+      memberName: r.fromOrgName,
+      duesAmount: r.totalAmount,
+      perCapita: r.totalAmount,
+      period: `${r.periodStart.toLocaleDateString()} - ${r.periodEnd.toLocaleDateString()}`,
+      status: r.status,
+    }));
+
+    // Get organization info from first record
+    const organizationInfo = {
+      name: records[0]?.toOrgName || 'CLC',
+      code: records[0]?.toOrgCode || 'CLC',
+    };
+
+    return await generateRemittanceExcel({
+      organizationInfo,
+      remittances,
+      summary,
+    });
   }
 
   /**

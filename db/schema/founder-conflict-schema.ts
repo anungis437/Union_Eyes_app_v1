@@ -29,7 +29,7 @@ export const conflictOfInterestPolicy = pgTable("conflict_of_interest_policy", {
   minimumReviewers: varchar("minimum_reviewers", { length: 2 }).notNull().default("2"),
   
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  updatedBy: uuid("updated_by"),
+  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 // Blind trust registry (founders/execs must divest control)
@@ -37,7 +37,7 @@ export const blindTrustRegistry = pgTable("blind_trust_registry", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Trust holder (founder/exec)
-  userId: uuid("user_id").notNull().unique(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
   fullName: text("full_name").notNull(),
   role: varchar("role", { length: 50 }).notNull(), // "founder", "president", "treasurer", etc.
   
@@ -60,7 +60,7 @@ export const blindTrustRegistry = pgTable("blind_trust_registry", {
   estimatedValue: decimal("estimated_value", { precision: 15, scale: 2 }),
   
   // Verification
-  verifiedBy: uuid("verified_by"),
+  verifiedBy: varchar("verified_by", { length: 255 }),
   verifiedAt: timestamp("verified_at"),
   verificationNotes: text("verification_notes"),
   
@@ -81,7 +81,7 @@ export const conflictDisclosures = pgTable("conflict_disclosures", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Discloser
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   fullName: text("full_name").notNull(),
   role: varchar("role", { length: 50 }).notNull(),
   
@@ -150,7 +150,7 @@ export const armsLengthVerification = pgTable("arms_length_verification", {
   comparableTransactions: jsonb("comparable_transactions"), // Array of similar arms-length transactions
   
   // Review
-  reviewedBy: uuid("reviewed_by"),
+  reviewedBy: varchar("reviewed_by", { length: 255 }),
   reviewedAt: timestamp("reviewed_at"),
   reviewDecision: varchar("review_decision", { length: 20 }), // "approved", "rejected", "conditional_approval"
   reviewNotes: text("review_notes"),
@@ -168,7 +168,7 @@ export const recusalTracking = pgTable("recusal_tracking", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Recusal details
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   fullName: text("full_name").notNull(),
   role: varchar("role", { length: 50 }).notNull(),
   
@@ -185,7 +185,7 @@ export const recusalTracking = pgTable("recusal_tracking", {
   // Recusal documentation
   recusalDocumented: boolean("recusal_documented").notNull().default(false),
   documentationUrl: text("documentation_url"),
-  documentedBy: uuid("documented_by"),
+  documentedBy: varchar("documented_by", { length: 255 }),
   documentedAt: timestamp("documented_at"),
   
   // Recusal period
@@ -193,7 +193,7 @@ export const recusalTracking = pgTable("recusal_tracking", {
   recusalEndDate: timestamp("recusal_end_date"),
   
   // Verification
-  verifiedBy: uuid("verified_by"),
+  verifiedBy: varchar("verified_by", { length: 255 }),
   verifiedAt: timestamp("verified_at"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -204,13 +204,13 @@ export const conflictReviewCommittee = pgTable("conflict_review_committee", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Committee member
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   fullName: text("full_name").notNull(),
   role: varchar("role", { length: 50 }).notNull(),
   
   // Committee role
   committeeRole: varchar("committee_role", { length: 50 }).notNull(), // "chair", "member", "advisor"
-  appointedBy: uuid("appointed_by"),
+  appointedBy: varchar("appointed_by", { length: 255 }),
   appointedAt: timestamp("appointed_at").notNull().defaultNow(),
   
   // Term
@@ -229,7 +229,7 @@ export const conflictTraining = pgTable("conflict_training", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Trainee
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   fullName: text("full_name").notNull(),
   role: varchar("role", { length: 50 }).notNull(),
   
@@ -258,12 +258,12 @@ export const conflictAuditLog = pgTable("conflict_audit_log", {
   actionDescription: text("action_description").notNull(),
   
   // Subject
-  subjectUserId: uuid("subject_user_id"), // User affected by action
+  subjectUserId: varchar("subject_user_id", { length: 255 }), // User affected by action
   relatedDisclosureId: uuid("related_disclosure_id"),
   relatedTransactionId: uuid("related_transaction_id"),
   
   // Actor
-  performedBy: uuid("performed_by").notNull(),
+  performedBy: varchar("performed_by", { length: 255 }).notNull(),
   performedByRole: varchar("performed_by_role", { length: 50 }),
   
   // Compliance impact

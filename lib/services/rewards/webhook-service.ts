@@ -100,7 +100,7 @@ export async function processWebhookIdempotent<T>(
   provider: 'shopify',
   webhookId: string,
   eventType: string,
-  payload: Record<string, any>,
+  payload: Record<string, unknown>,
   handler: () => Promise<T>
 ): Promise<T | 'already_processed'> {
   // Check if already processed

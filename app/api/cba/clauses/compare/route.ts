@@ -1,8 +1,16 @@
+/**
+ * CBA Clauses Compare API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { cbaClause, clauseComparisons, collectiveAgreements } from "@/db/schema";
 import { inArray, eq, and } from "drizzle-orm";
-import { withTenantAuth } from "@/lib/tenant-middleware";
+import { withOrganizationAuth } from "@/lib/organization-middleware";
 
 /**
  * POST /api/cba/clauses/compare
@@ -14,9 +22,10 @@ import { withTenantAuth } from "@/lib/tenant-middleware";
  *   analysisType: 'wages' | 'benefits' | 'working_conditions' | 'general'
  * }
  */
-export const POST = withTenantAuth(async (request: NextRequest, context) => {
+export const POST = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const { tenantId, userId } = context;
+    const { organizationId, userId } = context;
+    const tenantId = organizationId;
 
     const body = await request.json();
     const { clauseIds, analysisType = "general" } = body;
@@ -28,43 +37,45 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
       );
     }
 
-    // Fetch all clauses - ensure they belong to the current tenant
-    const clauses = await db
-      .select()
-      .from(cbaClause)
-      .innerJoin(collectiveAgreements, eq(cbaClause.cbaId, collectiveAgreements.id))
-      .where(
-        and(
-          inArray(cbaClause.id, clauseIds),
-          eq(collectiveAgreements.organizationId, tenantId)
+    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    return withRLSContext(async (tx) => {
+      // Fetch all clauses - RLS ensures they belong to the current tenant
+      const clauses = await tx
+        .select()
+        .from(cbaClause)
+        .innerJoin(collectiveAgreements, eq(cbaClause.cbaId, collectiveAgreements.id))
+        .where(
+          and(
+            inArray(cbaClause.id, clauseIds),
+            eq(collectiveAgreements.organizationId, tenantId)
+          )
+        );
+
+      if (clauses.length !== clauseIds.length) {
+        return NextResponse.json(
+          { error: "Some clauses not found or don't belong to your organization" },
+          { status: 404 }
+        );
+      }
+
+      // Extract just the cbaClause objects
+      const clauseObjects = clauses.map(result => result.cba_clauses);
+
+      // Check if comparison already exists for this tenant
+      const existingComparison = await tx
+        .select()
+        .from(clauseComparisons)
+        .where(
+          and(
+            inArray(clauseComparisons.id, clauseIds),
+            eq(clauseComparisons.organizationId, tenantId)
+          )
         )
-      );
+        .limit(1);
 
-    if (clauses.length !== clauseIds.length) {
-      return NextResponse.json(
-        { error: "Some clauses not found or don't belong to your organization" },
-        { status: 404 }
-      );
-    }
-
-    // Extract just the cbaClause objects
-    const clauseObjects = clauses.map(result => result.cba_clauses);
-
-    // Check if comparison already exists for this tenant
-    const existingComparison = await db
-      .select()
-      .from(clauseComparisons)
-      .where(
-        and(
-          inArray(clauseComparisons.id, clauseIds),
-          eq(clauseComparisons.organizationId, tenantId)
-        )
-      )
-      .limit(1);
-
-    if (existingComparison.length > 0) {
-      return NextResponse.json(existingComparison[0]);
-    }
+      if (existingComparison.length > 0) {
+        return NextResponse.json(existingComparison[0]);
+      }
 
     // Perform comparison analysis
     // In production, this would call OpenAI API for detailed analysis
@@ -92,13 +103,14 @@ export const POST = withTenantAuth(async (request: NextRequest, context) => {
       createdBy: userId,
     };
 
-    // Store comparison for future reference
-    const [savedComparison] = await db
-      .insert(clauseComparisons)
-      .values(comparison)
-      .returning();
+      // Store comparison for future reference
+      const [savedComparison] = await tx
+        .insert(clauseComparisons)
+        .values(comparison)
+        .returning();
 
-    return NextResponse.json(savedComparison);
+      return NextResponse.json(savedComparison);
+    });
   } catch (error) {
     console.error("Error comparing clauses:", error);
     return NextResponse.json(
@@ -171,9 +183,9 @@ function analyzeClauseContent(clauses: any[], analysisType: string) {
  * Retrieve previously saved comparisons for the current tenant
  * Protected by tenant middleware
  */
-export const GET = withTenantAuth(async (request: NextRequest, context) => {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
 
     const { searchParams } = new URL(request.url);
     const clauseIds = searchParams.get("clauseIds")?.split(",") || [];

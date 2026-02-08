@@ -20,6 +20,7 @@ import {
   decimal,
   date,
   bigint,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { organizations } from "../schema-organizations";
@@ -66,7 +67,7 @@ export const analyticsScheduledReports = pgTable("analytics_scheduled_reports", 
   lastRunError: text("last_run_error"),
 
   // Audit fields
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
@@ -143,7 +144,7 @@ export const reportDeliveryHistory = pgTable("report_delivery_history", {
   deliveryTimeMs: integer("delivery_time_ms"),
 
   // Audit fields
-  triggeredBy: uuid("triggered_by"),
+  triggeredBy: varchar("triggered_by", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

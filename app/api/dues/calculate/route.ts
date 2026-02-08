@@ -1,51 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 import { DuesCalculationEngine } from '@/lib/dues-calculation-engine';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-export async function POST(req: NextRequest) {
+// Validation schema for dues calculation
+const calculateDuesSchema = z.object({
+  memberId: z.string().uuid('Invalid member ID format'),
+  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Period start must be in YYYY-MM-DD format'),
+  periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Period end must be in YYYY-MM-DD format'),
+  memberData: z.record(z.any()).optional(),
+});
+
+export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const { memberId, periodStart, periodEnd, memberData } = body;
-
-    if (!memberId || !periodStart || !periodEnd) {
-      return NextResponse.json(
-        { error: 'Missing required fields: memberId, periodStart, periodEnd' },
-        { status: 400 }
-      );
-    }
-
-    // TODO: Get tenantId from user session
-    const tenantId = 'default-tenant';
-
-    const calculation = await DuesCalculationEngine.calculateMemberDues({
-      tenantId,
-      memberId,
-      periodStart: new Date(periodStart),
-      periodEnd: new Date(periodEnd),
-      memberData,
-    });
-
-    if (!calculation) {
-      return NextResponse.json(
-        { error: 'Unable to calculate dues for this member' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      calculation,
-    });
-  } catch (error) {
-    console.error('Error calculating dues:', error);
-    return NextResponse.json(
-      { error: 'Failed to calculate dues' },
-      { status: 500 }
-    );
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
-}
+
+  const parsed = calculateDuesSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const { userId, organizationId } = context;
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      const { memberId, periodStart, periodEnd, memberData } = body;
+
+      // TODO: Get tenantId from user session
+      const tenantId = 'default-tenant';
+
+      const calculation = await DuesCalculationEngine.calculateMemberDues({
+        tenantId,
+        memberId,
+        periodStart: new Date(periodStart),
+        periodEnd: new Date(periodEnd),
+        memberData,
+      });
+
+      if (!calculation) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/dues/calculate',
+          method: 'POST',
+          eventType: 'error',
+          severity: 'medium',
+          details: { reason: 'Unable to calculate dues', memberId },
+        });
+        return NextResponse.json(
+          { error: 'Unable to calculate dues for this member' },
+          { status: 404 }
+        );
+      }
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/dues/calculate',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          memberId,
+          periodStart,
+          periodEnd,
+          calculatedAmount: calculation.duesAmount,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        calculation,
+      });
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/dues/calculate',
+        method: 'POST',
+        eventType: 'error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+      return NextResponse.json(
+        { error: 'Failed to calculate dues' },
+        { status: 500 }
+      );
+    }
+});
+

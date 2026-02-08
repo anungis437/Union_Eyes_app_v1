@@ -5,7 +5,13 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 
-const API_BASE = "http://localhost:3000/api/education";
+const API_BASE =
+  `${process.env.INTEGRATION_API_BASE_URL || "http://localhost:3000"}/api/education`;
+const hasApiServer =
+  process.env.RUN_INTEGRATION_TESTS === "true" &&
+  Boolean(process.env.INTEGRATION_API_BASE_URL) &&
+  !(globalThis.fetch as unknown as { mock?: unknown })?.mock;
+const describeIf = hasApiServer ? describe : describe.skip;
 const TEST_ORGANIZATION_ID = process.env.TEST_ORGANIZATION_ID || "test-org-id";
 const TEST_MEMBER_ID = process.env.TEST_MEMBER_ID || "test-member-id";
 const TEST_COURSE_ID = process.env.TEST_COURSE_ID || "test-course-id";
@@ -16,7 +22,7 @@ let testRegistrationId: string;
 let testCertificationId: string;
 let testCertificateUrl: string;
 
-describe("Certification Management API", () => {
+describeIf("Certification Management API", () => {
   it("should list certifications with filters", async () => {
     const params = new URLSearchParams({
       organizationId: TEST_ORGANIZATION_ID,
@@ -118,7 +124,7 @@ describe("Certification Management API", () => {
   });
 });
 
-describe("Certificate Generation", () => {
+describeIf("Certificate Generation", () => {
   // Create a test session and registration for certificate generation
   beforeAll(async () => {
     // Create test session
@@ -265,7 +271,7 @@ describe("Certificate Generation", () => {
   });
 });
 
-describe("Certification Lifecycle", () => {
+describeIf("Certification Lifecycle", () => {
   it("should revoke certification", async () => {
     const reason = "Test revocation for integration testing";
     const response = await fetch(
@@ -322,7 +328,7 @@ describe("Certification Lifecycle", () => {
   });
 });
 
-describe("Certificate Expiry Tracking", () => {
+describeIf("Certificate Expiry Tracking", () => {
   let expiringCertificationId: string;
 
   it("should create certification expiring soon", async () => {
@@ -390,7 +396,7 @@ describe("Certificate Expiry Tracking", () => {
   });
 });
 
-describe("Error Handling", () => {
+describeIf("Error Handling", () => {
   it("should return 400 for missing required fields when issuing", async () => {
     const invalidData = {
       organizationId: TEST_ORGANIZATION_ID,

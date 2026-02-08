@@ -1,10 +1,12 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Path
  * Get the hierarchical path from root to an organization
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import { getOrganizationAncestors as getOrganizationPath } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
 
@@ -20,7 +22,7 @@ export async function GET(
   let userId: string | null = null;
   let id = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

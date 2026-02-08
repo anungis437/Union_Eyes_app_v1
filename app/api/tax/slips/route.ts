@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Tax Slips
  * Manage tax slips (T4A, RL-1, COPE)
@@ -5,103 +6,99 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { taxSlips } from '@/db/migrations/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/tax/slips
- * List tax slips for an organization
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      // Rate limiting: 20 tax operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
+      if (!rateLimitResult.allowed) {
+        logger.warn('Rate limit exceeded for tax slips read', {        limit: rateLimitResult.limit,
+          resetIn: rateLimitResult.resetIn,
+        });
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
 
-    // Rate limiting: 20 tax operations per hour per user
-    const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
-    if (!rateLimitResult.allowed) {
-      logger.warn('Rate limit exceeded for tax slips read', {        limit: rateLimitResult.limit,
-        resetIn: rateLimitResult.resetIn,
-      });
-      return NextResponse.json(
-        { 
-          error: 'Rate limit exceeded. Too many requests.',
-          resetIn: rateLimitResult.resetIn 
+      const { searchParams } = new URL(request.url);
+      const organizationId = searchParams.get('organizationId');
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+      const taxYear = searchParams.get('taxYear');
+      const slipType = searchParams.get('slipType');
+      const memberId = searchParams.get('memberId');
+
+      if (!organizationId) {
+        return NextResponse.json(
+          { error: 'Bad Request - organizationId is required' },
+          { status: 400 }
+        );
+      }
+
+      // Build query conditions
+      const conditions = [eq(taxSlips.organizationId, organizationId)];
+      
+      if (taxYear) {
+        conditions.push(eq(taxSlips.taxYear, parseInt(taxYear)));
+      }
+      
+      if (slipType) {
+        conditions.push(eq(taxSlips.slipType, slipType as any));
+      }
+      
+      if (memberId) {
+        conditions.push(eq(taxSlips.memberId, memberId));
+      }
+
+      // Fetch tax slips
+      const slips = await db
+        .select()
+        .from(taxSlips)
+        .where(and(...conditions))
+        .orderBy(desc(taxSlips.taxYear), desc(taxSlips.createdAt));
+
+      return NextResponse.json({
+        success: true,
+        data: slips,
+        count: slips.length,
+        filters: {        taxYear: taxYear ? parseInt(taxYear) : null,
+          slipType,
+          memberId,
         },
-        { 
-          status: 429,
-          headers: createRateLimitHeaders(rateLimitResult),
-        }
-      );
-    }
+      });
 
-    const { searchParams } = new URL(request.url);
-    const organizationId = searchParams.get('organizationId');
-    const taxYear = searchParams.get('taxYear');
-    const slipType = searchParams.get('slipType');
-    const memberId = searchParams.get('memberId');
-
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: 'Bad Request - organizationId is required' },
-        { status: 400 }
-      );
-    }
-
-    // Build query conditions
-    const conditions = [eq(taxSlips.organizationId, organizationId)];
-    
-    if (taxYear) {
-      conditions.push(eq(taxSlips.taxYear, parseInt(taxYear)));
-    }
-    
-    if (slipType) {
-      conditions.push(eq(taxSlips.slipType, slipType as any));
-    }
-    
-    if (memberId) {
-      conditions.push(eq(taxSlips.memberId, memberId));
-    }
-
-    // Fetch tax slips
-    const slips = await db
-      .select()
-      .from(taxSlips)
-      .where(and(...conditions))
-      .orderBy(desc(taxSlips.taxYear), desc(taxSlips.createdAt));
-
-    return NextResponse.json({
-      success: true,
-      data: slips,
-      count: slips.length,
-      filters: {        taxYear: taxYear ? parseInt(taxYear) : null,
-        slipType,
-        memberId,
-      },
-    });
-
-  } catch (error) {
-    const { searchParams } = new URL(request.url);
-    logger.error('Failed to fetch tax slips', error as Error, {
-      userId: (await auth()).userId,
-      organizationId: searchParams.get('organizationId'),
-      slipType: searchParams.get('slipType'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
+    } catch (error) {
+      const { searchParams } = new URL(request.url);
+      logger.error('Failed to fetch tax slips', error as Error, {
+        userId: userId,
+        organizationId: searchParams.get('organizationId'),
+        slipType: searchParams.get('slipType'),
+        correlationId: request.headers.get('x-correlation-id'),
+  });
     return NextResponse.json(
       { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
-}
+  })(request);
+};

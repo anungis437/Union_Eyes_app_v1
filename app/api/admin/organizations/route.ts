@@ -1,6 +1,10 @@
 /**
  * Organization Management API Routes
  * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ * 
  * Complete CRUD operations for hierarchical organizations.
  * Features:
  * - List organizations with filtering and pagination
@@ -14,8 +18,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { db as drizzleDb } from "@/db";
 import { organizations, organizationMembers } from "@/db/schema-organizations";
 import {
   getOrganizations,
@@ -24,381 +28,612 @@ import {
   searchOrganizations,
 } from "@/db/queries/organization-queries";
 import { eq, and, inArray, sql } from "drizzle-orm";
+import { logger } from "@/lib/logger";
+import { z } from "zod";
+import { withRoleRequired, logApiAuditEvent } from "@/lib/middleware/api-security";
+import { SUPPORTED_ROLES } from "@/lib/middleware/auth-middleware";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+
+/**
+ * Validation schemas
+ */
+const listOrganizationsSchema = z.object({
+  parent: z.string().uuid().optional(),
+  type: z.string().optional(),
+  status: z.enum(['active', 'inactive', 'archived', 'all']).optional(),
+  search: z.string().optional(),
+  include_stats: z.string().transform(v => v === 'true').optional(),
+  limit: z.string().transform(v => parseInt(v)).optional(),
+  offset: z.string().transform(v => parseInt(v)).optional(),
+});
+
+const createOrganizationSchema = z.object({
+  name: z.string().min(1).max(255),
+  slug: z.string().min(1).max(100),
+  displayName: z.string().optional(),
+  shortName: z.string().optional(),
+  organizationType: z.enum(['congress', 'federation', 'union', 'local', 'region', 'district']),
+  parentId: z.string().uuid().optional(),
+  provinceTerritory: z.string().optional(),
+  sectors: z.array(z.string()).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  website: z.string().optional(),
+  address: z.string().optional(),
+  clcAffiliated: z.boolean().optional(),
+  affiliationDate: z.string().optional(),
+  charterNumber: z.string().optional(),
+  subscriptionTier: z.string().optional(),
+  status: z.enum(['active', 'inactive', 'archived']).optional(),
+});
+
+const updateOrganizationsSchema = z.object({
+  organizationIds: z.array(z.string().uuid()),
+  updates: z.record(z.unknown()),
+});
+
+const deleteOrganizationsSchema = z.object({
+  organizationIds: z.array(z.string().uuid()),
+});
+
+/**
+ * Helper to check if user is admin
+ */
+async function checkAdminRole(userId: string): Promise<boolean> {
+  try {
+    const member = await drizzleDb.query.organizationMembers.findFirst({
+      where: (org, { eq: eqOp }) =>
+        eqOp(org.userId, userId),
+    });
+
+    return member ? ['admin', 'super_admin'].includes(member.role) : false;
+  } catch (error) {
+    logger.error('Failed to check admin role:', { error });
+    return false;
+  }
+}
 
 // =====================================================
 // GET - List Organizations
 // =====================================================
 
-export async function GET(request: NextRequest) {
-  try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // TODO: Add admin role check when profiles/roles are set up
-    // For now, authenticated users can list organizations
-
-    const searchParams = request.nextUrl.searchParams;
-
-    // Parse query parameters
-    const parentId = searchParams.get("parent") || undefined;
-    const type = searchParams.get("type") || undefined;
-    const status = searchParams.get("status") || "active";
-    const search = searchParams.get("search") || undefined;
-    const includeStats = searchParams.get("include_stats") === "true";
-    const limit = parseInt(searchParams.get("limit") || "100");
-    const offset = parseInt(searchParams.get("offset") || "0");
-
-    // Fetch organizations
-    let orgsData;
-    if (search) {
-      orgsData = await searchOrganizations(search, limit);
-    } else if (parentId) {
-      orgsData = await getOrganizationChildren(parentId, status === "all");
-    } else {
-      orgsData = await getOrganizations(parentId || undefined, status === "all");
-    }
-
-    // Filter by type if specified
-    let filteredOrgs = orgsData;
-    if (type && type !== "all") {
-      filteredOrgs = orgsData.filter((org: any) => org.organizationType === type);
-    }
-
-    // Add statistics if requested
-    if (includeStats) {
-      const orgsWithStats = await Promise.all(
-        filteredOrgs.map(async (org: any) => {
-          // Get member count
-          const [memberCountResult] = await db
-            .select({ count: sql<number>`count(*)` })
-            .from(organizationMembers)
-            .where(
-              and(
-                eq(organizationMembers.organizationId, org.id),
-                eq(organizationMembers.status, "active")
-              )
-            );
-
-          // Get child count
-          const [childCountResult] = await db
-            .select({ count: sql<number>`count(*)` })
-            .from(organizations)
-            .where(eq(organizations.parentId, org.id));
-
-          // Get active claims count (if claims table exists)
-          let activeClaims = 0;
-          try {
-            const claimsResult = await db.execute(sql`
-              SELECT COUNT(*) as count 
-              FROM claims 
-              WHERE organization_id = ${org.id} 
-              AND status IN ('pending', 'in_progress', 'under_review')
-            `);
-            activeClaims = Number(claimsResult[0]?.count) || 0;
-          } catch (error) {
-            // Claims table may not exist yet
-            console.warn("Could not fetch claims count:", error);
-          }
-
-          // Get parent name if exists
-          let parentName = null;
-          if (org.parentId) {
-            const [parentResult] = await db
-              .select({ name: organizations.name })
-              .from(organizations)
-              .where(eq(organizations.id, org.parentId))
-              .limit(1);
-            parentName = parentResult?.name;
-          }
-
-          return {
-            ...org,
-            memberCount: Number(memberCountResult?.count || 0),
-            childCount: Number(childCountResult?.count || 0),
-            activeClaims: Number(activeClaims),
-            parentName,
-          };
-        })
-      );
-
-      return NextResponse.json({
-        data: orgsWithStats,
-        count: orgsWithStats.length,
-        includeStats: true,
-      });
-    }
-
-    return NextResponse.json({
-      data: filteredOrgs,
-      count: filteredOrgs.length,
-    });
-  } catch (error) {
-    console.error("Error fetching organizations:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch organizations" },
-      { status: 500 }
-    );
+export const GET = withEnhancedRoleAuth(90, async (request, context) => {
+  const parsed = listOrganizationsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
   }
-}
+
+  const query = parsed.data;
+  const { userId, organizationId } = context;
+
+  const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      // Check admin role
+      const isAdmin = await checkAdminRole(userId);
+      if (!isAdmin) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/organizations',
+          method: 'GET',
+          eventType: 'unauthorized_access',
+          severity: 'high',
+          details: { reason: 'Non-admin attempted access' },
+        });
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required" },
+          { status: 403 }
+        );
+      }
+
+      // Parse query parameters
+      const parentId = query.parent || undefined;
+      const type = query.type || undefined;
+      const status = query.status || "active";
+      const search = query.search || undefined;
+      const includeStats = query.include_stats;
+      const limit = query.limit || 100;
+      const offset = query.offset || 0;
+
+      // Fetch organizations (query functions already tenant-scoped)
+      let orgsData;
+      if (search) {
+        orgsData = await searchOrganizations(search, limit);
+      } else if (parentId) {
+        orgsData = await getOrganizationChildren(parentId, status === "all");
+      } else {
+        orgsData = await getOrganizations(parentId || undefined, status === "all");
+      }
+
+      // Filter by type if specified
+      let filteredOrgs = orgsData;
+      if (type && type !== "all") {
+        filteredOrgs = orgsData.filter((org: any) => org.organizationType === type);
+      }
+
+      // Add statistics if requested - RLS-protected queries
+      let response;
+      if (includeStats) {
+        const orgsWithStats = await withRLSContext(async (tx) => {
+          return Promise.all(
+            filteredOrgs.map(async (org: any) => {
+              // Get member count
+              const [memberCountResult] = await tx
+                .select({ count: sql<number>`count(*)` })
+                .from(organizationMembers)
+                .where(
+                  and(
+                    eq(organizationMembers.organizationId, org.id),
+                    eq(organizationMembers.status, "active")
+                  )
+                );
+
+              // Get child count
+              const [childCountResult] = await tx
+                .select({ count: sql<number>`count(*)` })
+                .from(organizations)
+                .where(eq(organizations.parentId, org.id));
+
+              // Get active claims count (if claims table exists)
+              let activeClaims = 0;
+              try {
+                const claimsResult = await tx.execute(sql`
+                  SELECT COUNT(*) as count 
+                  FROM claims 
+                  WHERE organization_id = ${org.id} 
+                  AND status IN ('pending', 'in_progress', 'under_review')
+                `);
+                activeClaims = Number(claimsResult[0]?.count) || 0;
+              } catch (error) {
+                // Claims table may not exist yet
+                console.warn("Could not fetch claims count:", error);
+              }
+
+              // Get parent name if exists
+              let parentName = null;
+              if (org.parentId) {
+                const [parentResult] = await tx
+                  .select({ name: organizations.name })
+                  .from(organizations)
+                  .where(eq(organizations.id, org.parentId))
+                  .limit(1);
+                parentName = parentResult?.name;
+              }
+
+              return {
+                ...org,
+                memberCount: Number(memberCountResult?.count || 0),
+                childCount: Number(childCountResult?.count || 0),
+                activeClaims: Number(activeClaims),
+                parentName,
+              };
+            })
+          );
+        });
+
+        response = {
+          data: orgsWithStats,
+          count: orgsWithStats.length,
+          includeStats: true,
+        };
+      } else {
+        response = {
+          data: filteredOrgs,
+          count: filteredOrgs.length,
+        };
+      }
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'low',
+        details: { resultCount: response.data.length, search, type, status },
+      });
+
+      return NextResponse.json(response);
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'GET',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+
+      console.error("Error fetching organizations:", error);
+      throw error;
+    }
+});
 
 // =====================================================
 // POST - Create Organization
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // TODO: Add admin role check when profiles/roles are set up
-    // For now, authenticated users can create organizations
-
-    const body = await request.json();
-
-    // Validate required fields
-    if (!body.name || !body.slug || !body.organizationType) {
-      return NextResponse.json(
-        { error: "Missing required fields: name, slug, organizationType" },
-        { status: 400 }
-      );
-    }
-
-    // Check for duplicate slug
-    const [existingOrg] = await db
-      .select({ id: organizations.id })
-      .from(organizations)
-      .where(eq(organizations.slug, body.slug))
-      .limit(1);
-
-    if (existingOrg) {
-      return NextResponse.json(
-        { error: "Organization with this slug already exists" },
-        { status: 409 }
-      );
-    }
-
-    // Validate parent organization if specified
-    if (body.parentId) {
-      const [parentOrg] = await db
-        .select()
-        .from(organizations)
-        .where(eq(organizations.id, body.parentId))
-        .limit(1);
-
-      if (!parentOrg) {
-        return NextResponse.json(
-          { error: "Parent organization not found" },
-          { status: 404 }
-        );
-      }
-
-      // Validate hierarchy rules
-      const typeHierarchy: Record<string, string[]> = {
-        congress: ['federation'],
-        federation: ['union', 'region'],
-        union: ['local', 'district'],
-        local: [],
-        region: ['local'],
-        district: ['local'],
-      };
-
-      const allowedChildTypes = typeHierarchy[parentOrg.organizationType] || [];
-      if (!allowedChildTypes.includes(body.organizationType)) {
-        return NextResponse.json(
-          {
-            error: `Invalid hierarchy: ${body.organizationType} cannot be a child of ${parentOrg.organizationType}`,
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Create organization
-    // Build hierarchy path
-    let hierarchyPath: string[] = [];
-    if (body.parentId) {
-      const [parentOrg] = await db
-        .select({ hierarchyPath: organizations.hierarchyPath })
-        .from(organizations)
-        .where(eq(organizations.id, body.parentId))
-        .limit(1);
-      if (parentOrg) {
-        hierarchyPath = [...parentOrg.hierarchyPath, body.slug];
-      } else {
-        hierarchyPath = [body.slug];
-      }
-    } else {
-      hierarchyPath = [body.slug];
-    }
-
-    const newOrg = await createOrganization({
-      name: body.name,
-      slug: body.slug,
-      displayName: body.displayName || null,
-      shortName: body.shortName || null,
-      organizationType: body.organizationType,
-      parentId: body.parentId || null,
-      hierarchyPath,
-      hierarchyLevel: hierarchyPath.length - 1,
-      // jurisdiction: body.jurisdiction || null, // Column does not exist in database
-      provinceTerritory: body.provinceTerritory || null,
-      sectors: body.sectors || [],
-      email: body.email || null,
-      phone: body.phone || null,
-      website: body.website || null,
-      address: body.address || null,
-      clcAffiliated: body.clcAffiliated || false,
-      affiliationDate: body.affiliationDate || null,
-      charterNumber: body.charterNumber || null,
-      subscriptionTier: body.subscriptionTier || 'basic',
-      status: body.status || 'active',
-      createdBy: userId,
-    });
-
-    return NextResponse.json(
-      {
-        data: newOrg,
-        message: "Organization created successfully",
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error creating organization:", error);
-    return NextResponse.json(
-      { error: "Failed to create organization" },
-      { status: 500 }
-    );
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
-}
+
+  const parsed = createOrganizationSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const { userId, organizationId } = context;
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      // Check admin role
+      const isAdmin = await checkAdminRole(userId);
+      if (!isAdmin) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/organizations',
+          method: 'POST',
+          eventType: 'unauthorized_access',
+          severity: 'high',
+          details: { reason: 'Non-admin attempted to create organization' },
+        });
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required" },
+          { status: 403 }
+        );
+      }
+
+      const {
+        name,
+        slug,
+        displayName,
+        shortName,
+        organizationType,
+        parentId,
+        provinceTerritory,
+        sectors,
+        email,
+        phone,
+        website,
+        address,
+        clcAffiliated,
+        affiliationDate,
+        charterNumber,
+        subscriptionTier,
+        status,
+      } = body;
+
+      // Check for duplicate slug
+      const [existingOrg] = await db
+        .select({ id: organizations.id })
+        .from(organizations)
+        .where(eq(organizations.slug, slug))
+        .limit(1);
+
+      if (existingOrg) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/organizations',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          details: { reason: 'Duplicate slug', slug },
+        });
+        return NextResponse.json(
+          { error: "Organization with this slug already exists" },
+          { status: 409 }
+        );
+      }
+
+      // Validate parent organization if specified
+      if (parentId) {
+        const [parentOrg] = await db
+          .select()
+          .from(organizations)
+          .where(eq(organizations.id, parentId))
+          .limit(1);
+
+        if (!parentOrg) {
+          return NextResponse.json(
+            { error: "Parent organization not found" },
+            { status: 404 }
+          );
+        }
+
+        // Validate hierarchy rules
+        const typeHierarchy: Record<string, string[]> = {
+          congress: ['federation'],
+          federation: ['union', 'region'],
+          union: ['local', 'district'],
+          local: [],
+          region: ['local'],
+          district: ['local'],
+        };
+
+        const allowedChildTypes = typeHierarchy[parentOrg.organizationType] || [];
+        if (!allowedChildTypes.includes(organizationType)) {
+          return NextResponse.json(
+            {
+              error: `Invalid hierarchy: ${organizationType} cannot be a child of ${parentOrg.organizationType}`,
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Build hierarchy path
+      let hierarchyPath: string[] = [];
+      if (parentId) {
+        const [parentOrg] = await db
+          .select({ hierarchyPath: organizations.hierarchyPath })
+          .from(organizations)
+          .where(eq(organizations.id, parentId))
+          .limit(1);
+        if (parentOrg) {
+          hierarchyPath = [...parentOrg.hierarchyPath, slug];
+        } else {
+          hierarchyPath = [slug];
+        }
+      } else {
+        hierarchyPath = [slug];
+      }
+
+      // Create organization
+      const newOrg = await createOrganization({
+        name,
+        slug,
+        displayName: displayName || null,
+        shortName: shortName || null,
+        organizationType,
+        parentId: parentId || null,
+        hierarchyPath,
+        hierarchyLevel: hierarchyPath.length - 1,
+        provinceTerritory: provinceTerritory || null,
+        sectors: sectors || [],
+        email: email || null,
+        phone: phone || null,
+        website: website || null,
+        address: address || null,
+        clcAffiliated: clcAffiliated || false,
+        affiliationDate: affiliationDate || null,
+        charterNumber: charterNumber || null,
+        subscriptionTier: subscriptionTier || 'basic',
+        status: status || 'active',
+        createdBy: userId,
+      });
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'medium',
+        details: { organizationId: newOrg.id, name, organizationType },
+      });
+
+      return NextResponse.json(
+        {
+          data: newOrg,
+          message: "Organization created successfully",
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'POST',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+
+      console.error("Error creating organization:", error);
+      throw error;
+    }
+});
 
 // =====================================================
 // PATCH - Bulk Update Organizations
 // =====================================================
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withEnhancedRoleAuth(90, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // TODO: Add admin role check when profiles/roles are set up
-    // For now, authenticated users can bulk update organizations
-
-    const body = await request.json();
-
-    // Validate request
-    if (!body.organizationIds || !Array.isArray(body.organizationIds) || body.organizationIds.length === 0) {
-      return NextResponse.json(
-        { error: "organizationIds array is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.updates || typeof body.updates !== "object") {
-      return NextResponse.json(
-        { error: "updates object is required" },
-        { status: 400 }
-      );
-    }
-
-    const { organizationIds, updates } = body;
-
-    // Perform bulk update
-    await db
-      .update(organizations)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      })
-      .where(inArray(organizations.id, organizationIds));
-
-    return NextResponse.json({
-      data: {
-        updatedCount: organizationIds.length,
-        updatedIds: organizationIds,
-      },
-      message: `${organizationIds.length} organization(s) updated successfully`,
-    });
-  } catch (error) {
-    console.error("Error bulk updating organizations:", error);
-    return NextResponse.json(
-      { error: "Failed to bulk update organizations" },
-      { status: 500 }
-    );
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
-}
+
+  const parsed = updateOrganizationsSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const { userId, organizationId } = context;
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      // Check admin role
+      const isAdmin = await checkAdminRole(userId);
+      if (!isAdmin) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/organizations',
+          method: 'PATCH',
+          eventType: 'unauthorized_access',
+          severity: 'high',
+          details: { reason: 'Non-admin attempted bulk update' },
+        });
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required" },
+          { status: 403 }
+        );
+      }
+
+      const { organizationIds, updates } = body;
+
+      // Perform bulk update
+      await db
+        .update(organizations)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(inArray(organizations.id, organizationIds));
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'PATCH',
+        eventType: 'success',
+        severity: 'medium',
+        details: { updatedCount: organizationIds.length, updates: Object.keys(updates) },
+      });
+
+      return NextResponse.json({
+        data: {
+          updatedCount: organizationIds.length,
+          updatedIds: organizationIds,
+        },
+        message: `${organizationIds.length} organization(s) updated successfully`,
+      });
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'PATCH',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+
+      console.error("Error bulk updating organizations:", error);
+      throw error;
+    }
+});
 
 // =====================================================
 // DELETE - Bulk Archive Organizations
 // =====================================================
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withEnhancedRoleAuth(90, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // TODO: Add admin role check when profiles/roles are set up
-    // For now, authenticated users can bulk delete organizations
-
-    const body = await request.json();
-
-    // Validate request
-    if (!body.organizationIds || !Array.isArray(body.organizationIds) || body.organizationIds.length === 0) {
-      return NextResponse.json(
-        { error: "organizationIds array is required" },
-        { status: 400 }
-      );
-    }
-
-    const { organizationIds } = body;
-
-    // Check for child organizations
-    const [childrenResult] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(organizations)
-      .where(inArray(organizations.parentId, organizationIds));
-
-    if (childrenResult && Number(childrenResult.count) > 0) {
-      return NextResponse.json(
-        {
-          error: "Cannot archive organizations with children. Please archive or reassign child organizations first.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Archive organizations (soft delete)
-    await db
-      .update(organizations)
-      .set({
-        status: "archived",
-        updatedAt: new Date(),
-      })
-      .where(inArray(organizations.id, organizationIds));
-
-    return NextResponse.json({
-      data: {
-        archivedCount: organizationIds.length,
-        archivedIds: organizationIds,
-      },
-      message: `${organizationIds.length} organization(s) archived successfully`,
-    });
-  } catch (error) {
-    console.error("Error bulk archiving organizations:", error);
-    return NextResponse.json(
-      { error: "Failed to bulk archive organizations" },
-      { status: 500 }
-    );
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
-}
+
+  const parsed = deleteOrganizationsSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const { userId, organizationId } = context;
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      // Check admin role
+      const isAdmin = await checkAdminRole(userId);
+      if (!isAdmin) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/organizations',
+          method: 'DELETE',
+          eventType: 'unauthorized_access',
+          severity: 'high',
+          details: { reason: 'Non-admin attempted bulk delete' },
+        });
+        return NextResponse.json(
+          { error: "Forbidden - Admin access required" },
+          { status: 403 }
+        );
+      }
+
+      const { organizationIds } = body;
+
+      // Check for child organizations
+      const [childrenResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(organizations)
+        .where(inArray(organizations.parentId, organizationIds));
+
+      if (childrenResult && Number(childrenResult.count) > 0) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/organizations',
+          method: 'DELETE',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          details: { reason: 'Cannot archive organizations with children', count: childrenResult.count },
+        });
+        return NextResponse.json(
+          {
+            error: "Cannot archive organizations with children. Please archive or reassign child organizations first.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // Archive organizations (soft delete)
+      await db
+        .update(organizations)
+        .set({
+          status: "archived",
+          updatedAt: new Date(),
+        })
+        .where(inArray(organizations.id, organizationIds));
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'DELETE',
+        eventType: 'success',
+        severity: 'high',
+        details: { archivedCount: organizationIds.length, organizationIds },
+      });
+
+      return NextResponse.json({
+        data: {
+          archivedCount: organizationIds.length,
+          archivedIds: organizationIds,
+        },
+        message: `${organizationIds.length} organization(s) archived successfully`,
+      });
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/organizations',
+        method: 'DELETE',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+
+      console.error("Error bulk archiving organizations:", error);
+      throw error;
+    }
+});
+

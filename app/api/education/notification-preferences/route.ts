@@ -1,7 +1,16 @@
+/**
+ * Training Notification Preferences API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +21,7 @@ export const dynamic = "force-dynamic";
  * 
  * Retrieves notification preferences for a member
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const memberId = searchParams.get("memberId");
@@ -25,52 +34,54 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Query by member ID or unsubscribe token
-    const whereClause = memberId
-      ? sql`member_id = ${memberId}`
-      : sql`unsubscribe_token = ${token}`;
+    // Query by member ID or unsubscribe token using RLS-protected query
+    return withRLSContext(async (tx) => {
+      const whereClause = memberId
+        ? sql`member_id = ${memberId}`
+        : sql`unsubscribe_token = ${token}`;
 
-    const [preferences] = await db.execute(sql`
-      SELECT 
-        id,
-        member_id,
-        registration_confirmations,
-        session_reminders,
-        completion_certificates,
-        certification_expiry,
-        program_milestones,
-        unsubscribe_token,
-        created_at,
-        updated_at
-      FROM training_notification_preferences
-      WHERE ${whereClause}
-    `);
+      const [preferences] = await tx.execute(sql`
+        SELECT 
+          id,
+          member_id,
+          registration_confirmations,
+          session_reminders,
+          completion_certificates,
+          certification_expiry,
+          program_milestones,
+          unsubscribe_token,
+          created_at,
+          updated_at
+        FROM training_notification_preferences
+        WHERE ${whereClause}
+      `);
 
-    // If no preferences exist, return defaults
-    if (!preferences) {
+      // If no preferences exist, return defaults
+      if (!preferences) {
+        return NextResponse.json({
+          memberId,
+          registrationConfirmations: true,
+          sessionReminders: true,
+          completionCertificates: true,
+          certificationExpiry: true,
+          programMilestones: true,
+          isDefault: true,
+        });
+      }
+
       return NextResponse.json({
-        memberId,
-        registrationConfirmations: true,
-        sessionReminders: true,
-        completionCertificates: true,
-        certificationExpiry: true,
-        programMilestones: true,
-        isDefault: true,
+        id: preferences.id,
+        memberId: preferences.member_id,
+        registrationConfirmations: preferences.registration_confirmations,
+        sessionReminders: preferences.session_reminders,
+        completionCertificates: preferences.completion_certificates,
+        certificationExpiry: preferences.certification_expiry,
+        programMilestones: preferences.program_milestones,
+        unsubscribeToken: preferences.unsubscribe_token,
+        createdAt: preferences.created_at,
+        updatedAt: preferences.updated_at,
+        isDefault: false,
       });
-    }
-
-    return NextResponse.json({
-      id: preferences.id,
-      memberId: preferences.member_id,
-      registrationConfirmations: preferences.registration_confirmations,
-      sessionReminders: preferences.session_reminders,
-      completionCertificates: preferences.completion_certificates,
-      certificationExpiry: preferences.certification_expiry,
-      programMilestones: preferences.program_milestones,
-      unsubscribeToken: preferences.unsubscribe_token,
-      createdAt: preferences.created_at,
-      updatedAt: preferences.updated_at,
-      isDefault: false,
     });
   } catch (error) {
     logger.error("Error fetching notification preferences", error as Error);
@@ -79,7 +90,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PATCH /api/education/notification-preferences
@@ -95,7 +106,7 @@ export async function GET(request: NextRequest) {
  *   programMilestones?: boolean
  * }
  */
-export async function PATCH(request: NextRequest) {
+export const PATCH = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const {
@@ -157,7 +168,7 @@ export async function PATCH(request: NextRequest) {
     if (!effectiveMemberId && token) {
       const memberLookup = await db.execute(sql`SELECT member_id FROM training_notification_preferences WHERE unsubscribe_token = ${token}`);
       if (memberLookup.length > 0) {
-        effectiveMemberId = (memberLookup[0] as Record<string, any>).member_id;
+        effectiveMemberId = (memberLookup[0] as Record<string, unknown>).member_id;
       }
     }
 
@@ -197,7 +208,7 @@ export async function PATCH(request: NextRequest) {
       RETURNING *
     `);
 
-    const updated = result[0] as Record<string, any>;
+    const updated = result[0] as Record<string, unknown>;
 
     return NextResponse.json({
       id: updated.id,
@@ -218,7 +229,7 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/education/notification-preferences/unsubscribe
@@ -226,7 +237,7 @@ export async function PATCH(request: NextRequest) {
  * Unsubscribes from all training notifications
  * Body: { token: string }
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { token } = body;
@@ -270,4 +281,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

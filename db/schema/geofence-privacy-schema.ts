@@ -8,7 +8,7 @@ import { pgTable, uuid, text, timestamp, varchar, jsonb, boolean, decimal } from
 // Member location consent (explicit opt-in required)
 export const memberLocationConsent = pgTable("member_location_consent", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().unique(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
   
   // Consent status
   consentStatus: varchar("consent_status", { length: 20 }).notNull().default("never_asked"), // "never_asked", "opted_in", "opted_out", "expired"
@@ -47,7 +47,7 @@ export const memberLocationConsent = pgTable("member_location_consent", {
 // Location tracking data (24-hour retention only)
 export const locationTracking = pgTable("location_tracking", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   
   // Location data
   latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
@@ -115,7 +115,7 @@ export const geofences = pgTable("geofences", {
 // Geofence entries/exits (for safety tracking)
 export const geofenceEvents = pgTable("geofence_events", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   geofenceId: uuid("geofence_id").notNull(),
   
   // Event details
@@ -138,14 +138,14 @@ export const geofenceEvents = pgTable("geofence_events", {
 // Location tracking audit log
 export const locationTrackingAudit = pgTable("location_tracking_audit", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   
   // Action
   actionType: varchar("action_type", { length: 50 }).notNull(), // "consent_granted", "consent_revoked", "data_accessed", "data_deleted"
   actionDescription: text("action_description"),
   
   // Actor
-  performedBy: uuid("performed_by"), // Who performed action (if different from user)
+  performedBy: varchar("performed_by", { length: 255 }), // Who performed action (if different from user)
   performedByRole: varchar("performed_by_role", { length: 50 }), // "admin", "union_steward", "system"
   
   // Context
@@ -172,7 +172,7 @@ export const locationDeletionLog = pgTable("location_deletion_log", {
   newestRecordDate: timestamp("newest_record_date"),
   
   // Who initiated
-  initiatedBy: uuid("initiated_by"), // NULL for automatic deletions
+  initiatedBy: varchar("initiated_by", { length: 255 }), // NULL for automatic deletions
   initiatorRole: varchar("initiator_role", { length: 50 }),
   
   deletedAt: timestamp("deleted_at").notNull().defaultNow(),
@@ -204,5 +204,5 @@ export const locationTrackingConfig = pgTable("location_tracking_config", {
   nextComplianceReviewDue: timestamp("next_compliance_review_due"),
   
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  updatedBy: uuid("updated_by"),
+  updatedBy: varchar("updated_by", { length: 255 }),
 });

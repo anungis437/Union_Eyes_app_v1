@@ -4,14 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { searchMembers } from '@/db/queries/organization-members-queries';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withTenantAuth(async (request: NextRequest, context) => {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
     const searchParams = request.nextUrl.searchParams;
 
     // Get search query and filters

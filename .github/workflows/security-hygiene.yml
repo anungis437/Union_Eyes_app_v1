@@ -1,0 +1,39 @@
+name: Security Hygiene
+
+on:
+  pull_request:
+  push:
+    branches: [main, staging]
+  workflow_dispatch:
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml
+
+  repo-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Block committed node_modules or env files
+        run: |
+          set -euo pipefail
+          bad_env=$(git ls-files | grep -E '^\.env($|\.)' | grep -vE '\.example$|\.template$|\.local\.template$|\.test\.example$' || true)
+          bad_node=$(git ls-files | grep -E '(^|/)node_modules/' || true)
+          if [ -n "$bad_env" ] || [ -n "$bad_node" ]; then
+            echo "Blocked files detected:"
+            [ -n "$bad_env" ] && echo "$bad_env"
+            [ -n "$bad_node" ] && echo "$bad_node"
+            exit 1
+          fi

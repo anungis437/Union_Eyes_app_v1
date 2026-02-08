@@ -14,7 +14,7 @@
 // =====================================================================================
 
 import { db } from '@/db';
-import { digitalSignatures } from '@/db/migrations/schema';
+import { digitalSignatures } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrivacyRules, generateComplianceReport } from '@/lib/services/provincial-privacy-service';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * Emergency Dashboard API
@@ -10,7 +11,7 @@ import { getPrivacyRules, generateComplianceReport } from '@/lib/services/provin
  * GET /api/emergency/dashboard?province=QC
  * Get emergency preparedness status and compliance overview
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const province = searchParams.get('province') || 'FEDERAL';
@@ -65,4 +66,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

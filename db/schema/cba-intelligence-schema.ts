@@ -38,6 +38,11 @@ export const precedentValueEnum = pgEnum("precedent_value", [
   "low"
 ]);
 
+// Export enum types
+export type DecisionTypeEnum = typeof decisionTypeEnum.enumValues[number];
+export type OutcomeEnum = typeof outcomeEnum.enumValues[number];
+export type PrecedentValueEnum = typeof precedentValueEnum.enumValues[number];
+
 // Arbitration Decisions table
 export const arbitrationDecisions = pgTable("arbitration_decisions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -98,6 +103,9 @@ export const arbitrationDecisions = pgTable("arbitration_decisions", {
   fullText: text("full_text").notNull(),
   summary: text("summary"),
   headnote: text("headnote"),
+  precedentSummary: text("precedent_summary"),
+  reasoning: text("reasoning"),
+  keyFacts: text("key_facts"),
   
   // Classification
   sector: varchar("sector", { length: 100 }),
@@ -236,9 +244,9 @@ export const bargainingNotes = pgTable("bargaining_notes", {
   
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  lastModifiedBy: uuid("last_modified_by"),
+  lastModifiedBy: varchar("last_modified_by", { length: 255 }),
 }, (table) => ({
   cbaIdx: index("bargaining_notes_cba_idx").on(table.cbaId),
   organizationIdx: index("bargaining_notes_organization_idx").on(table.organizationId),
@@ -271,7 +279,7 @@ export const cbaFootnotes = pgTable("cba_footnotes", {
   
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
 }, (table) => ({
   sourceIdx: index("cba_footnotes_source_idx").on(table.sourceClauseId),
   targetClauseIdx: index("cba_footnotes_target_clause_idx").on(table.targetClauseId),

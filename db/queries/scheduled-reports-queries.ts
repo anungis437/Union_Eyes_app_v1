@@ -65,13 +65,14 @@ export interface UpdateScheduledReportParams {
  * Get all scheduled reports for a tenant
  */
 export async function getScheduledReports(
-  tenantId: string,
+  organizationId: string,
   filters?: {
     reportId?: string;
     isActive?: boolean;
     scheduleType?: string;
   }
 ): Promise<ScheduledReport[]> {
+  const tenantId = organizationId;
   let conditions = [sql`rs.tenant_id = ${tenantId}`];
 
   if (filters?.reportId) {
@@ -108,8 +109,9 @@ export async function getScheduledReports(
  */
 export async function getScheduledReportById(
   id: string,
-  tenantId: string
+  organizationId: string
 ): Promise<ScheduledReport | null> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT 
       rs.*,
@@ -129,9 +131,10 @@ export async function getScheduledReportById(
  * Create a new scheduled report
  */
 export async function createScheduledReport(
-  tenantId: string,
+  organizationId: string,
   data: CreateScheduledReportParams
 ): Promise<ScheduledReport> {
+  const tenantId = organizationId;
   const nextRunAt = calculateNextRunAt(data.scheduleType, data.scheduleConfig);
   const isActive = data.isActive ?? true;
 
@@ -169,9 +172,10 @@ export async function createScheduledReport(
  */
 export async function updateScheduledReport(
   id: string,
-  tenantId: string,
+  organizationId: string,
   data: UpdateScheduledReportParams
 ): Promise<ScheduledReport> {
+  const tenantId = organizationId;
   // Get existing schedule first
   const existing = await getScheduledReportById(id, tenantId);
   if (!existing) {
@@ -220,8 +224,9 @@ export async function updateScheduledReport(
  */
 export async function deleteScheduledReport(
   id: string,
-  tenantId: string
+  organizationId: string
 ): Promise<void> {
+  const tenantId = organizationId;
   await db.execute(sql`
     DELETE FROM report_schedules
     WHERE id = ${id} AND tenant_id = ${tenantId}
@@ -291,9 +296,10 @@ export async function updateScheduleAfterRun(
  */
 export async function getScheduleExecutionHistory(
   scheduleId: string,
-  tenantId: string,
+  organizationId: string,
   limit = 50
 ): Promise<any[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT *
     FROM export_jobs
@@ -375,8 +381,9 @@ function calculateNextRunAt(
  */
 export async function pauseSchedule(
   id: string,
-  tenantId: string
+  organizationId: string
 ): Promise<void> {
+  const tenantId = organizationId;
   await updateScheduledReport(id, tenantId, { isActive: false });
 }
 
@@ -385,7 +392,8 @@ export async function pauseSchedule(
  */
 export async function resumeSchedule(
   id: string,
-  tenantId: string
+  organizationId: string
 ): Promise<void> {
+  const tenantId = organizationId;
   await updateScheduledReport(id, tenantId, { isActive: true });
 }

@@ -37,7 +37,7 @@ export const staffCertifications = pgTable("staff_certifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Staff member
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   fullName: text("full_name").notNull(),
   role: varchar("role", { length: 100 }).notNull(),
   
@@ -59,7 +59,7 @@ export const staffCertifications = pgTable("staff_certifications", {
   verificationDocument: text("verification_document"),
   
   // Verification
-  verifiedBy: uuid("verified_by"),
+  verifiedBy: varchar("verified_by", { length: 255 }),
   verifiedAt: timestamp("verified_at"),
   verificationNotes: text("verification_notes"),
   
@@ -76,7 +76,7 @@ export const continuingEducation = pgTable("continuing_education", {
   id: uuid("id").primaryKey().defaultRandom(),
   
   // Staff member
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   certificationId: uuid("certification_id").notNull(),
   
   // Course details
@@ -90,7 +90,7 @@ export const continuingEducation = pgTable("continuing_education", {
   
   // Documentation
   certificateOfCompletion: text("certificate_of_completion"),
-  verifiedBy: uuid("verified_by"),
+  verifiedBy: varchar("verified_by", { length: 255 }),
   verifiedAt: timestamp("verified_at"),
   
   // Period
@@ -139,7 +139,7 @@ export const certificationAlerts = pgTable("certification_alerts", {
   
   // Certification
   certificationId: uuid("certification_id").notNull(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   
   // Alert details
   alertType: varchar("alert_type", { length: 50 }).notNull(), // "90_day_warning", "30_day_warning", "expired", "ce_hours_low"
@@ -155,7 +155,7 @@ export const certificationAlerts = pgTable("certification_alerts", {
   // Resolution
   resolved: boolean("resolved").notNull().default(false),
   resolvedAt: timestamp("resolved_at"),
-  resolvedBy: uuid("resolved_by"),
+  resolvedBy: varchar("resolved_by", { length: 255 }),
   resolutionNotes: text("resolution_notes"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -188,7 +188,7 @@ export const certificationComplianceReports = pgTable("certification_compliance_
   upcomingRenewals: jsonb("upcoming_renewals"), // Array of certs expiring in 90 days
   
   // Report metadata
-  generatedBy: uuid("generated_by"),
+  generatedBy: varchar("generated_by", { length: 255 }),
   reportFormat: varchar("report_format", { length: 20 }).default("pdf"), // "pdf", "excel", "json"
   reportUrl: text("report_url"),
   
@@ -205,10 +205,10 @@ export const certificationAuditLog = pgTable("certification_audit_log", {
   
   // Subject
   certificationId: uuid("certification_id"),
-  userId: uuid("user_id"),
+  userId: varchar("user_id", { length: 255 }),
   
   // Actor
-  performedBy: uuid("performed_by").notNull(),
+  performedBy: varchar("performed_by", { length: 255 }).notNull(),
   performedByRole: varchar("performed_by_role", { length: 50 }),
   
   // Compliance impact

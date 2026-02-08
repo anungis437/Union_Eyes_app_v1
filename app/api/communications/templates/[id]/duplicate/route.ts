@@ -23,7 +23,9 @@ export async function POST(
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { id: userId, tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -34,7 +36,7 @@ export async function POST(
       .where(
         and(
           eq(newsletterTemplates.id, params.id),
-          eq(newsletterTemplates.organizationId, user.tenantId)
+          eq(newsletterTemplates.organizationId, tenantId)
         )
       );
 
@@ -46,8 +48,8 @@ export async function POST(
     const [duplicate] = await db
       .insert(newsletterTemplates)
       .values({
-        organizationId: user.tenantId,
-        createdBy: user.id,
+        organizationId: tenantId,
+        createdBy: userId,
         name: `${original.name} (Copy)`,
         description: original.description,
         category: original.category,

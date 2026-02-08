@@ -226,6 +226,7 @@ export async function getMemberRoles(
   memberId: string,
   organizationId: string
 ): Promise<MemberRoleWithDetails[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM v_active_member_roles
     WHERE member_id = ${memberId} 
@@ -242,6 +243,7 @@ export async function getMemberHighestRoleLevel(
   memberId: string,
   organizationId: string
 ): Promise<number> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT COALESCE(MAX(rd.role_level), 0) as max_level
     FROM member_roles mr
@@ -261,6 +263,7 @@ export async function getMemberEffectivePermissions(
   memberId: string,
   organizationId: string
 ): Promise<string[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT DISTINCT jsonb_array_elements_text(rd.permissions) as permission
     FROM member_roles mr
@@ -283,6 +286,7 @@ export async function memberHasRole(
   scopeType?: string,
   scopeValue?: string
 ): Promise<boolean> {
+  const tenantId = organizationId;
   let query = sql`
     SELECT EXISTS(
       SELECT 1 FROM member_roles
@@ -316,6 +320,7 @@ export async function memberHasRoleLevel(
   scopeType?: string,
   scopeValue?: string
 ): Promise<boolean> {
+  const tenantId = organizationId;
   let query = sql`
     SELECT EXISTS(
       SELECT 1 FROM member_roles mr
@@ -365,6 +370,7 @@ export async function assignMemberRole(
     requiresApproval?: boolean;
   } = {}
 ): Promise<MemberRole> {
+  const tenantId = organizationId;
   const startDate = options.startDate || new Date();
   const assignmentType = options.assignmentType || 'appointed';
   const scopeType = options.scopeType || 'global';
@@ -467,6 +473,7 @@ export async function getExpiringRoles(
   organizationId: string,
   daysAhead: number = 90
 ): Promise<MemberRoleWithDetails[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM v_active_member_roles
     WHERE organization_id = ${organizationId}
@@ -485,6 +492,7 @@ export async function getUpcomingElections(
   organizationId: string,
   daysAhead: number = 180
 ): Promise<any[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM v_upcoming_elections
     WHERE organization_id = ${organizationId}
@@ -520,6 +528,7 @@ export async function getMemberPermissionExceptions(
   memberId: string,
   organizationId: string
 ): Promise<PermissionException[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM permission_exceptions
     WHERE member_id = ${memberId}
@@ -543,6 +552,7 @@ export async function memberHasPermissionException(
   resourceType?: string,
   resourceId?: string
 ): Promise<boolean> {
+  const tenantId = organizationId;
   let query = sql`
     SELECT EXISTS(
       SELECT 1 FROM permission_exceptions
@@ -586,6 +596,7 @@ export async function grantPermissionException(
     usageLimit?: number;
   } = {}
 ): Promise<PermissionException> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     INSERT INTO permission_exceptions (
       member_id, organization_id, permission, resource_type, resource_id,
@@ -659,6 +670,7 @@ export async function logPermissionCheck(entry: {
   executionTimeMs?: number;
   isSensitive?: boolean;
 }): Promise<void> {
+  const tenantId = organizationId;
   // Calculate hash for this record
   const recordData = JSON.stringify({
     timestamp: new Date(),
@@ -719,6 +731,7 @@ export async function getMemberAuditLogs(
     deniedOnly?: boolean;
   } = {}
 ): Promise<AuditLogEntry[]> {
+  const tenantId = organizationId;
   const limit = options.limit || 100;
   const offset = options.offset || 0;
   
@@ -755,6 +768,7 @@ export async function getResourceAuditLogs(
   organizationId: string,
   limit: number = 50
 ): Promise<AuditLogEntry[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM rbac_audit_log
     WHERE resource_type = ${resourceType}
@@ -773,6 +787,7 @@ export async function getDeniedAccessAttempts(
   organizationId: string,
   hours: number = 24
 ): Promise<AuditLogEntry[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM rbac_audit_log
     WHERE organization_id = ${organizationId}
@@ -789,6 +804,7 @@ export async function getDeniedAccessAttempts(
 export async function getSensitiveActionsForReview(
   organizationId: string
 ): Promise<AuditLogEntry[]> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     SELECT * FROM rbac_audit_log
     WHERE organization_id = ${organizationId}
@@ -806,7 +822,8 @@ export async function verifyAuditLogIntegrity(
   organizationId: string,
   startDate?: Date,
   endDate?: Date
-): Promise<{ valid: boolean; totalRecords: number; invalidRecords: number }> {
+): Promise<{
+  const tenantId = organizationId; valid: boolean; totalRecords: number; invalidRecords: number }> {
   let query = sql`
     WITH log_chain AS (
       SELECT 

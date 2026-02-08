@@ -8,9 +8,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getReportById, logReportExecution } from '@/db/queries/analytics-queries';
 import { ReportExecutor } from '@/lib/report-executor';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 async function postHandler(
   req: NextRequest,
@@ -20,11 +21,17 @@ async function postHandler(
   // Extract params from context or params argument
   const reportId = params?.id || context?.params?.id;
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
-    const organizationId = req.headers.get('x-organization-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
+    const userId = context.userId;
+    const headerOrganizationId = req.headers.get('x-organization-id');
+    const effectiveOrganizationId = headerOrganizationId ?? organizationId;
+    if (headerOrganizationId && headerOrganizationId !== organizationId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     
-    if (!tenantId || !userId || !organizationId) {
+    if (!tenantId || !userId || !effectiveOrganizationId) {
       return NextResponse.json(
         { error: 'Tenant ID, User ID, and Organization ID required' },
         { status: 400 }
@@ -65,7 +72,7 @@ async function postHandler(
     };
 
     // Execute report
-    const executor = new ReportExecutor(organizationId, tenantId);
+    const executor = new ReportExecutor(effectiveOrganizationId, tenantId);
     const result = await executor.execute(config);
 
     // Log execution
@@ -125,4 +132,4 @@ async function checkReportAccess(
   return shares.length > 0;
 }
 
-export const POST = withTenantAuth(postHandler);
+export const POST = withOrganizationAuth(postHandler);

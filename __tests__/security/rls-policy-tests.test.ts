@@ -12,9 +12,10 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 
-// Test database configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const hasSupabaseEnv = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+const describeIfSupabase = hasSupabaseEnv ? describe : describe.skip;
 
 // Test users for isolation testing
 interface TestUser {
@@ -32,6 +33,19 @@ let testUsers: {
   admin: TestUser;
   crossTenantUser: TestUser;
 } = {} as any;
+
+const setSessionContext = async (client: any, user: TestUser) => {
+  await client.rpc('set_session_context', {
+    user_id: user.id,
+    tenant_id: user.tenantId,
+    organization_id: user.orgId
+  });
+};
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+
+describeIfSupabase('RLS Policy Security Tests', () => {
 
 beforeAll(async () => {
   // Setup test users with different contexts
@@ -79,17 +93,6 @@ afterAll(async () => {
   console.log('🧹 Cleaning up test data...');
   // Cleanup test data
 });
-
-/**
- * Helper function to set session context
- */
-async function setSessionContext(client: any, user: TestUser) {
-  await client.rpc('set_session_context', {
-    user_id: user.id,
-    tenant_id: user.tenantId,
-    organization_id: user.orgId
-  });
-}
 
 // ============================================================================
 // MESSAGES SYSTEM TESTS (17 policies across 5 tables)
@@ -745,7 +748,7 @@ describe('Calendar System RLS Policies', () => {
 // PERFORMANCE TESTS
 // ============================================================================
 
-describe('RLS Performance Tests', () => {
+describeIfSupabase('RLS Performance Tests', () => {
   it('should perform RLS checks within acceptable time (<100ms)', async () => {
     const { user1 } = testUsers;
     
@@ -783,7 +786,7 @@ describe('RLS Performance Tests', () => {
 // COMPLIANCE TESTS
 // ============================================================================
 
-describe('Compliance Verification', () => {
+describeIfSupabase('Compliance Verification', () => {
   it('should enforce GDPR data minimization (Art. 5)', async () => {
     const { user1 } = testUsers;
     
@@ -818,7 +821,7 @@ describe('Compliance Verification', () => {
 // SUMMARY STATISTICS
 // ============================================================================
 
-describe('Test Suite Summary', () => {
+describeIfSupabase('Test Suite Summary', () => {
   it('should have comprehensive coverage across all systems', () => {
     const coverage = {
       messagesSystem: 5,
@@ -845,4 +848,6 @@ describe('Test Suite Summary', () => {
     
     expect(totalTests).toBeGreaterThanOrEqual(25);
   });
+});
+
 });

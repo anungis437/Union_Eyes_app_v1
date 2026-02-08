@@ -87,24 +87,22 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
         return;
       }
 
-      // In a real implementation, this would call a backend API endpoint
-      // that uses the Stripe SDK to list invoices
-      // For now, we'll set empty array as placeholder
-      // TODO: Implement backend API endpoint for listing Stripe invoices
-      
-      // Example of what the backend call would look like:
-      // const response = await fetch('/api/billing/invoices', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     customer_id: subscription.stripe_customer_id,
-      //     limit,
-      //   }),
-      // });
-      // const data = await response.json();
-      // setInvoices(data.invoices);
+      // Fetch invoices from backend API
+      const response = await fetch('/api/billing/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_id: subscription.stripe_customer_id,
+          limit,
+        }),
+      });
 
-      setInvoices([]);
+      if (!response.ok) {
+        throw new Error('Failed to fetch invoices');
+      }
+
+      const data = await response.json();
+      setInvoices(data.invoices || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to load invoices'));
     } finally {

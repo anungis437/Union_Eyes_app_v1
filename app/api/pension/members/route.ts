@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Pension Plan Members
  * Manage member enrollments and hours banks
@@ -5,44 +6,34 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/pension/members
- * List pension plan members with hours and contributions
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const planId = searchParams.get('planId');
+      const memberId = searchParams.get('memberId');
 
-    const { searchParams } = new URL(request.url);
-    const planId = searchParams.get('planId');
-    const memberId = searchParams.get('memberId');
+      if (!planId) {
+        return NextResponse.json(
+          { error: 'Bad Request - planId is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!planId) {
-      return NextResponse.json(
-        { error: 'Bad Request - planId is required' },
-        { status: 400 }
-      );
-    }
+      const conditions = [sql`ppm.pension_plan_id = ${planId}`];
+      if (memberId) {
+        conditions.push(sql`ppm.member_id = ${memberId}`);
+      }
 
-    const conditions = [sql`ppm.pension_plan_id = ${planId}`];
-    if (memberId) {
-      conditions.push(sql`ppm.member_id = ${memberId}`);
-    }
-
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       SELECT 
         ppm.id,
         ppm.pension_plan_id,
@@ -64,54 +55,44 @@ export async function GET(request: NextRequest) {
       ORDER BY m.last_name, m.first_name
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-      count: result.length,
-    });
+      return NextResponse.json({
+        success: true,
+        data: result,
+        count: result.length,
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch pension plan members', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * POST /api/pension/members
- * Enroll a member in a pension plan
- */
-export async function POST(request: NextRequest) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
+    } catch (error) {
+      logger.error('Failed to fetch pension plan members', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
       return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
       );
     }
+    })(request);
+};
 
-    const body = await request.json();
-    const {
-      pensionPlanId,
-      memberId,
-      enrollmentDate,
-      beneficiaryName,
-      beneficiaryRelationship,
-    } = body;
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    try {
+      const body = await request.json();
+      const {
+        pensionPlanId,
+        memberId,
+        enrollmentDate,
+        beneficiaryName,
+        beneficiaryRelationship,
+      } = body;
 
-    if (!pensionPlanId || !memberId || !enrollmentDate) {
-      return NextResponse.json(
-        { error: 'Bad Request - pensionPlanId, memberId, and enrollmentDate are required' },
-        { status: 400 }
-      );
-    }
+      if (!pensionPlanId || !memberId || !enrollmentDate) {
+        return NextResponse.json(
+          { error: 'Bad Request - pensionPlanId, memberId, and enrollmentDate are required' },
+          { status: 400 }
+        );
+      }
 
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       INSERT INTO pension_plan_members (
         id,
         pension_plan_id,
@@ -134,19 +115,20 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'Member enrolled in pension plan successfully',
-    }, { status: 201 });
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'Member enrolled in pension plan successfully',
+      }, { status: 201 });
 
-  } catch (error) {
-    logger.error('Failed to enroll member in pension plan', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to enroll member in pension plan', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};

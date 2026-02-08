@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 // Validation schema for update
 const UpdateSurveySchema = z.object({
@@ -22,13 +23,14 @@ const UpdateSurveySchema = z.object({
 });
 
 // GET /api/communications/surveys/[surveyId] - Get survey by ID
-export async function GET(
+export const GET = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -69,16 +71,17 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 // PUT /api/communications/surveys/[surveyId] - Update survey
-export async function PUT(
+export const PUT = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     const userId = request.headers.get('x-user-id');
     
     if (!tenantId || !userId) {
@@ -197,16 +200,17 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+});
 
 // DELETE /api/communications/surveys/[surveyId] - Delete survey
-export async function DELETE(
+export const DELETE = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -274,4 +278,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+});

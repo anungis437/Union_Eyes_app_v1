@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeAll } from "vitest";
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL =
+  process.env.INTEGRATION_API_BASE_URL || "http://localhost:3000";
+const hasApiServer =
+  process.env.RUN_INTEGRATION_TESTS === "true" &&
+  Boolean(process.env.INTEGRATION_API_BASE_URL) &&
+  !(globalThis.fetch as unknown as { mock?: unknown })?.mock;
+const describeIf = hasApiServer ? describe : describe.skip;
 
 // Test environment variables (set these in your test environment)
 const TEST_ORGANIZATION_ID =
@@ -12,7 +18,7 @@ const TEST_COURSE_ID_2 = process.env.TEST_COURSE_ID_2 || "test-course-2";
 let testProgramId: string;
 let testEnrollmentId: string;
 
-describe("Training Programs API", () => {
+describeIf("Training Programs API", () => {
   describe("Program CRUD Operations", () => {
     it("should create a new training program", async () => {
       const response = await fetch(`${API_BASE_URL}/api/education/programs`, {

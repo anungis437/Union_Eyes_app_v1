@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Equity Monitoring
  * Aggregate equity statistics for officers (requires consent + anonymization)
@@ -5,41 +6,35 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/equity/monitoring?organizationId=xxx
- * Get aggregated equity statistics
- * Only returns data if 10+ members with consent (anonymization threshold)
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const organizationId = searchParams.get('organizationId');
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-    const { searchParams } = new URL(request.url);
-    const organizationId = searchParams.get('organizationId');
 
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: 'Bad Request - organizationId is required' },
-        { status: 400 }
-      );
-    }
+      if (!organizationId) {
+        return NextResponse.json(
+          { error: 'Bad Request - organizationId is required' },
+          { status: 400 }
+        );
+      }
 
-    // Query anonymized equity statistics
-    // Uses v_equity_statistics_anonymized view (10+ member threshold)
-    const result = await db.execute(sql`
+      // Query anonymized equity statistics
+      // Uses v_equity_statistics_anonymized view (10+ member threshold)
+      const result = await db.execute(sql`
       SELECT 
         COUNT(*) FILTER (WHERE data_collection_consent = true) as total_consented,
         COUNT(*) FILTER (WHERE gender_identity = 'woman') as women_count,
@@ -61,87 +56,88 @@ export async function GET(request: NextRequest) {
         AND allow_aggregate_reporting = true
     `);
 
-    const stats = result[0] as any;
+      const stats = result[0] as any;
 
-    // Anonymization threshold check
-    const totalConsented = parseInt(stats.total_consented || '0');
-    if (totalConsented < 10) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          insufficient_data: true,
-          message: 'Fewer than 10 members with consent. Data suppressed for privacy.',
-          threshold: 10,
-          current: totalConsented,
-        },
-      });
-    }
+      // Anonymization threshold check
+      const totalConsented = parseInt(stats.total_consented || '0');
+      if (totalConsented < 10) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            insufficient_data: true,
+            message: 'Fewer than 10 members with consent. Data suppressed for privacy.',
+            threshold: 10,
+            current: totalConsented,
+          },
+        });
+      }
 
-    // Format response with percentages
-    const formattedStats = {
-      total_members_consented: totalConsented,
-      gender_distribution: {
-        women: {
-          count: parseInt(stats.women_count || '0'),
-          percentage: ((parseInt(stats.women_count || '0') / totalConsented) * 100).toFixed(1),
-        },
-        men: {
-          count: parseInt(stats.men_count || '0'),
-          percentage: ((parseInt(stats.men_count || '0') / totalConsented) * 100).toFixed(1),
-        },
-        non_binary: {
-          count: parseInt(stats.non_binary_count || '0'),
-          percentage: ((parseInt(stats.non_binary_count || '0') / totalConsented) * 100).toFixed(1),
-        },
-      },
-      equity_groups: {
-        indigenous: {
-          count: parseInt(stats.indigenous_count || '0'),
-          percentage: ((parseInt(stats.indigenous_count || '0') / totalConsented) * 100).toFixed(1),
-          breakdown: {
-            first_nations: parseInt(stats.first_nations_count || '0'),
-            inuit: parseInt(stats.inuit_count || '0'),
-            metis: parseInt(stats.metis_count || '0'),
+      // Format response with percentages
+      const formattedStats = {
+        total_members_consented: totalConsented,
+        gender_distribution: {
+          women: {
+            count: parseInt(stats.women_count || '0'),
+            percentage: ((parseInt(stats.women_count || '0') / totalConsented) * 100).toFixed(1),
+          },
+          men: {
+            count: parseInt(stats.men_count || '0'),
+            percentage: ((parseInt(stats.men_count || '0') / totalConsented) * 100).toFixed(1),
+          },
+          non_binary: {
+            count: parseInt(stats.non_binary_count || '0'),
+            percentage: ((parseInt(stats.non_binary_count || '0') / totalConsented) * 100).toFixed(1),
           },
         },
-        visible_minority: {
-          count: parseInt(stats.visible_minority_count || '0'),
-          percentage: ((parseInt(stats.visible_minority_count || '0') / totalConsented) * 100).toFixed(1),
+        equity_groups: {
+          indigenous: {
+            count: parseInt(stats.indigenous_count || '0'),
+            percentage: ((parseInt(stats.indigenous_count || '0') / totalConsented) * 100).toFixed(1),
+            breakdown: {
+              first_nations: parseInt(stats.first_nations_count || '0'),
+              inuit: parseInt(stats.inuit_count || '0'),
+              metis: parseInt(stats.metis_count || '0'),
+            },
+          },
+          visible_minority: {
+            count: parseInt(stats.visible_minority_count || '0'),
+            percentage: ((parseInt(stats.visible_minority_count || '0') / totalConsented) * 100).toFixed(1),
+          },
+          persons_with_disabilities: {
+            count: parseInt(stats.disability_count || '0'),
+            percentage: ((parseInt(stats.disability_count || '0') / totalConsented) * 100).toFixed(1),
+          },
+          lgbtq2plus: {
+            count: parseInt(stats.lgbtq2plus_count || '0'),
+            percentage: ((parseInt(stats.lgbtq2plus_count || '0') / totalConsented) * 100).toFixed(1),
+          },
+          newcomer: {
+            count: parseInt(stats.newcomer_count || '0'),
+            percentage: ((parseInt(stats.newcomer_count || '0') / totalConsented) * 100).toFixed(1),
+          },
         },
-        persons_with_disabilities: {
-          count: parseInt(stats.disability_count || '0'),
-          percentage: ((parseInt(stats.disability_count || '0') / totalConsented) * 100).toFixed(1),
+        intersectionality: {
+          multiple_equity_groups_count: parseInt(stats.multiple_equity_groups || '0'),
+          avg_intersectionality_score: parseFloat(stats.avg_intersectionality_score || '0').toFixed(2),
         },
-        lgbtq2plus: {
-          count: parseInt(stats.lgbtq2plus_count || '0'),
-          percentage: ((parseInt(stats.lgbtq2plus_count || '0') / totalConsented) * 100).toFixed(1),
-        },
-        newcomer: {
-          count: parseInt(stats.newcomer_count || '0'),
-          percentage: ((parseInt(stats.newcomer_count || '0') / totalConsented) * 100).toFixed(1),
-        },
-      },
-      intersectionality: {
-        multiple_equity_groups_count: parseInt(stats.multiple_equity_groups || '0'),
-        avg_intersectionality_score: parseFloat(stats.avg_intersectionality_score || '0').toFixed(2),
-      },
-    };
+      };
 
-    return NextResponse.json({
-      success: true,
-      data: formattedStats,
-      privacy_notice: 'Data anonymized. Minimum 10 members with consent required for reporting.',
-    });
+      return NextResponse.json({
+        success: true,
+        data: formattedStats,
+        privacy_notice: 'Data anonymized. Minimum 10 members with consent required for reporting.',
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch equity monitoring data', error as Error, {
-      userId: (await auth()).userId,
-      organizationId: request.nextUrl.searchParams.get('organizationId'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
+    } catch (error) {
+      logger.error('Failed to fetch equity monitoring data', error as Error, {
+        userId: userId,
+        organizationId: request.nextUrl.searchParams.get('organizationId'),
+        correlationId: request.headers.get('x-correlation-id'),
+  });
     return NextResponse.json(
       { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
-}
+  })(request);
+};

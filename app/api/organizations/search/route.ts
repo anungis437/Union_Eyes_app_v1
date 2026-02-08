@@ -1,10 +1,12 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Search Organizations
  * Search organizations by name, type, or other criteria
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import { searchOrganizations } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
 
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
   let userId: string | null = null;
   let query = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

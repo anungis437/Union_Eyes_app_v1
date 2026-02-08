@@ -23,6 +23,8 @@ export async function PATCH(
     // For now, assume the user making this request has permission if authenticated
     // Permission check would require fetching user's role from organization
 
+    const { id: userId } = user;
+
     const body = await request.json();
     const { action, daysGranted, notes, reason } = body;
 
@@ -36,7 +38,7 @@ export async function PATCH(
 
       const extension = await approveDeadlineExtension(
         params.id,
-        user.id,
+        userId,
         daysGranted,
         notes
       );
@@ -56,7 +58,7 @@ export async function PATCH(
 
       const extension = await denyDeadlineExtension(
         params.id,
-        user.id,
+        userId,
         reason.trim()
       );
 

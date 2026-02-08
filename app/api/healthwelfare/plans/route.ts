@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Health & Welfare Plans
  * Manage H&W benefit plans and member eligibility
@@ -5,38 +6,30 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/healthwelfare/plans
- * List H&W plans for an organization
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const organizationId = searchParams.get('organizationId');
 
-    const { searchParams } = new URL(request.url);
-    const organizationId = searchParams.get('organizationId');
+      if (!organizationId) {
+        return NextResponse.json(
+          { error: 'Bad Request - organizationId is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: 'Bad Request - organizationId is required' },
-        { status: 400 }
-      );
-    }
-
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       SELECT 
         id,
         organization_id,
@@ -64,56 +57,52 @@ export async function GET(request: NextRequest) {
       ORDER BY plan_name ASC
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-      count: result.length,
-    });
+      return NextResponse.json({
+        success: true,
+        data: result,
+        count: result.length,
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch H&W plans', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to fetch H&W plans', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};
 
-/**
- * POST /api/healthwelfare/plans
- * Create a new H&W plan
- */
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const body = await request.json();
+      const {
+        organizationId,
+        planName,
+        planType,
+        insuranceCarrier,
+        coverageStartDate,
+        monthlyPremiumSingle,
+        monthlyPremiumFamily,
+      } = body;
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-    const body = await request.json();
-    const {
-      organizationId,
-      planName,
-      planType,
-      insuranceCarrier,
-      coverageStartDate,
-      monthlyPremiumSingle,
-      monthlyPremiumFamily,
-    } = body;
 
-    if (!organizationId || !planName || !planType || !coverageStartDate) {
-      return NextResponse.json(
-        { error: 'Bad Request - organizationId, planName, planType, and coverageStartDate are required' },
-        { status: 400 }
-      );
-    }
+      if (!organizationId || !planName || !planType || !coverageStartDate) {
+        return NextResponse.json(
+          { error: 'Bad Request - organizationId, planName, planType, and coverageStartDate are required' },
+          { status: 400 }
+        );
+      }
 
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       INSERT INTO hw_plans (
         id,
         organization_id,
@@ -136,19 +125,20 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'H&W plan created successfully',
-    }, { status: 201 });
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'H&W plan created successfully',
+      }, { status: 201 });
 
-  } catch (error) {
-    logger.error('Failed to create H&W plan', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to create H&W plan', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};

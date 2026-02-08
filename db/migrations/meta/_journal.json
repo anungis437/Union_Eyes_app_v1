@@ -43,6 +43,13 @@
       "when": 1770371778360,
       "tag": "0005_lazy_kate_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770537031000,
+      "tag": "0006_flat_stepford_cuckoos",
+      "breakpoints": true
     }
   ]
 }

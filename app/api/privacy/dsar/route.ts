@@ -1,76 +1,100 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
 import { ProvincialPrivacyService, type Province } from "@/services/provincial-privacy-service";
-import { getServerSession } from "next-auth";
+import { logger } from "@/lib/logger";
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 /**
- * POST /api/privacy/dsar
- * Create Data Subject Access Request (DSAR)
- * User can request: access, rectification, erasure, portability, restriction
+ * Helper to check if user has admin/privacy officer role
  */
-export async function POST(request: NextRequest) {
+async function checkPrivacyPermissions(userId: string): Promise<boolean> {
   try {
-    const session = await getServerSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { requestType, province, requestDescription, requestedDataTypes } = body;
-
-    if (!requestType || !province) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    const validTypes = ["access", "rectification", "erasure", "portability", "restriction"];
-    if (!validTypes.includes(requestType)) {
-      return NextResponse.json({ error: "Invalid request type" }, { status: 400 });
-    }
-
-    const dsar = await ProvincialPrivacyService.createDSAR({
-      userId: session.user.id!,
-      requestType,
-      province: province as Province,
-      requestDescription,
-      requestedDataTypes,
+    // Check for admin roles that can manage privacy requests
+    const member = await db.query.organizationMembers.findFirst({
+      where: (organizationMembers, { eq }) =>
+        eq(organizationMembers.userId, userId),
     });
 
-    return NextResponse.json({
-      success: true,
-      dsar,
-      message: "Data subject access request created successfully",
-      responseDeadline: dsar.responseDeadline,
-    });
-  } catch (error: any) {
-    console.error("DSAR creation error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create DSAR" },
-      { status: 500 }
-    );
+    // Allow admin and super_admin roles to access privacy officer functions
+    return member ? ['admin', 'super_admin'].includes(member.role) : false;
+  } catch (error) {
+    logger.error('Failed to check privacy permissions:', { error });
+    return false;
   }
 }
 
-/**
- * GET /api/privacy/dsar/overdue
- * Get overdue DSARs (approaching 30-day deadline)
- * Admin-only endpoint
- */
-export async function GET(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    const session = await getServerSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const body = await request.json();
+      const { requestType, province, requestDescription, requestedDataTypes } = body;
+
+      if (!requestType || !province) {
+        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      }
+
+      const validTypes = ["access", "rectification", "erasure", "portability", "restriction"];
+      if (!validTypes.includes(requestType)) {
+        return NextResponse.json({ error: "Invalid request type" }, { status: 400 });
+      }
+
+      const dsar = await ProvincialPrivacyService.createDSAR({
+        userId,
+        requestType,
+        province: province as Province,
+        requestDescription,
+        requestedDataTypes,
+      });
+
+      logger.info('DSAR created', { userId, requestType, province });
+
+      return NextResponse.json({
+        success: true,
+        dsar,
+        message: "Data subject access request created successfully",
+        responseDeadline: dsar.responseDeadline,
+      });
+    } catch (error: any) {
+      logger.error("DSAR creation error:", { error });
+      return NextResponse.json(
+        { error: error.message || "Failed to create DSAR" },
+        { status: 500 }
+      );
     }
+    })(request);
+};
 
-    // TODO: Check if user has admin/privacy officer role
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const { userId, organizationId } = context;
 
-    const dsars = await ProvincialPrivacyService.getOverdueDSARs();
+  try {
+      // Check if user has admin/privacy officer role
+      const hasPermission = await checkPrivacyPermissions(userId);
+      if (!hasPermission) {
+        return NextResponse.json(
+          { error: "Forbidden - admin or privacy officer role required" },
+          { status: 403 }
+        );
+      }
 
-    return NextResponse.json({ dsars, count: dsars.length });
-  } catch (error: any) {
-    console.error("DSAR retrieval error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to retrieve DSARs" },
-      { status: 500 }
-    );
-  }
-}
+      const dsars = await ProvincialPrivacyService.getOverdueDSARs();
+
+      logger.info('Retrieved overdue DSARs', { userId, count: dsars.length });
+
+      return NextResponse.json({ dsars, count: dsars.length });
+    } catch (error: any) {
+      logger.error("DSAR retrieval error:", { error });
+      return NextResponse.json(
+        { error: error.message || "Failed to retrieve DSARs" },
+        { status: 500 }
+      );
+    }
+    })(request);
+};
+
+

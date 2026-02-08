@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purgeExpiredLocations } from '@/lib/services/geofence-privacy-service';
 import type { EmergencyRecoveryRequest, EmergencyRecoveryResponse } from '@/lib/types/compliance-api-types';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * 48-Hour Recovery Status API
@@ -11,7 +12,7 @@ import type { EmergencyRecoveryRequest, EmergencyRecoveryResponse } from '@/lib/
  * POST /api/emergency/recovery
  * End emergency mode and cleanup location data within 48 hours
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json() as EmergencyRecoveryRequest;
     const { emergencyId, memberId } = body;
@@ -122,4 +123,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

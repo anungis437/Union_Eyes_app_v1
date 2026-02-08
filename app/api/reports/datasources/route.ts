@@ -10,13 +10,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getAllDataSources } from '@/lib/report-executor';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function getHandler(req: NextRequest) {
+async function getHandler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
-    const userId = req.headers.get('x-user-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
+    const userId = context.userId;
     
     if (!tenantId || !userId) {
       return NextResponse.json(
@@ -75,4 +77,4 @@ function getIconForDataSource(dataSourceId: string): string {
   return iconMap[dataSourceId] || 'Table';
 }
 
-export const GET = withTenantAuth(getHandler);
+export const GET = withOrganizationAuth(getHandler);

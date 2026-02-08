@@ -26,7 +26,7 @@ export const currencyEnforcementPolicy = pgTable("currency_enforcement_policy", 
   t106ThresholdCAD: decimal("t106_threshold_cad", { precision: 15, scale: 2 }).notNull().default("1000000.00"),
   
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  updatedBy: uuid("updated_by"),
+  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 // Bank of Canada daily FX rates
@@ -48,7 +48,7 @@ export const bankOfCanadaRates = pgTable("bank_of_canada_rates", {
   
   // Audit
   importedAt: timestamp("imported_at").notNull().defaultNow(),
-  importedBy: uuid("imported_by"),
+  importedBy: varchar("imported_by", { length: 255 }),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -76,7 +76,7 @@ export const transactionCurrencyConversions = pgTable("transaction_currency_conv
   // Exception tracking
   exceptionApproved: boolean("exception_approved").notNull().default(false),
   exceptionReason: text("exception_reason"),
-  approvedBy: uuid("approved_by"),
+  approvedBy: varchar("approved_by", { length: 255 }),
   approvedAt: timestamp("approved_at"),
   
   // Conversion metadata
@@ -99,13 +99,13 @@ export const currencyEnforcementViolations = pgTable("currency_enforcement_viola
   attemptedAmount: decimal("attempted_amount", { precision: 15, scale: 2 }),
   
   // User who attempted
-  attemptedBy: uuid("attempted_by").notNull(),
+  attemptedBy: varchar("attempted_by", { length: 255 }).notNull(),
   attemptedAt: timestamp("attempted_at").notNull().defaultNow(),
   
   // Resolution
   status: varchar("status", { length: 20 }).notNull().default("pending"), // "pending", "resolved", "exception_granted"
   resolution: text("resolution"),
-  resolvedBy: uuid("resolved_by"),
+  resolvedBy: varchar("resolved_by", { length: 255 }),
   resolvedAt: timestamp("resolved_at"),
   
   // Audit
@@ -141,9 +141,9 @@ export const t106FilingTracking = pgTable("t106_filing_tracking", {
   confirmationNumber: varchar("confirmation_number", { length: 50 }),
   
   // Responsible parties
-  preparedBy: uuid("prepared_by"),
-  reviewedBy: uuid("reviewed_by"),
-  filedBy: uuid("filed_by"),
+  preparedBy: varchar("prepared_by", { length: 255 }),
+  reviewedBy: varchar("reviewed_by", { length: 255 }),
+  filedBy: varchar("filed_by", { length: 255 }),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -173,12 +173,12 @@ export const transferPricingDocumentation = pgTable("transfer_pricing_documentat
   
   // Documentation
   supportingDocuments: jsonb("supporting_documents"), // Array of document URLs/IDs
-  documentedBy: uuid("documented_by").notNull(),
+  documentedBy: varchar("documented_by", { length: 255 }).notNull(),
   documentedAt: timestamp("documented_at").notNull().defaultNow(),
   
   // Review
   reviewRequired: boolean("review_required").notNull().default(true),
-  reviewedBy: uuid("reviewed_by"),
+  reviewedBy: varchar("reviewed_by", { length: 255 }),
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),
   
@@ -201,7 +201,7 @@ export const fxRateAuditLog = pgTable("fx_rate_audit_log", {
   newRate: decimal("new_rate", { precision: 15, scale: 8 }),
   
   // Actor
-  performedBy: uuid("performed_by"),
+  performedBy: varchar("performed_by", { length: 255 }),
   performedByRole: varchar("performed_by_role", { length: 50 }),
   
   // Metadata
@@ -224,7 +224,7 @@ export const currencyEnforcementAudit = pgTable("currency_enforcement_audit", {
   affectedAmount: decimal("affected_amount", { precision: 15, scale: 2 }),
   
   // Actor
-  performedBy: uuid("performed_by").notNull(),
+  performedBy: varchar("performed_by", { length: 255 }).notNull(),
   performedByRole: varchar("performed_by_role", { length: 50 }),
   
   // Compliance

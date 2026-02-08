@@ -9,7 +9,7 @@ interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'unhealthy';
   responseTime?: number;
   error?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 interface HealthResponse {

@@ -26,7 +26,7 @@ export const provincialPrivacyConfig = pgTable("provincial_privacy_config", {
 // User consent tracking per province
 export const provincialConsent = pgTable("provincial_consent", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   province: varchar("province", { length: 2 }).notNull(),
   consentType: varchar("consent_type", { length: 50 }).notNull(), // "data_collection", "marketing", "sharing", etc.
   consentGiven: boolean("consent_given").notNull(),
@@ -69,7 +69,7 @@ export const privacyBreaches = pgTable("privacy_breaches", {
   
   // Documentation
   incidentReport: text("incident_report"),
-  reportedBy: uuid("reported_by").notNull(),
+  reportedBy: varchar("reported_by", { length: 255 }).notNull(),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -78,7 +78,7 @@ export const privacyBreaches = pgTable("privacy_breaches", {
 // Provincial data handling logs (audit trail)
 export const provincialDataHandling = pgTable("provincial_data_handling", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   province: varchar("province", { length: 2 }).notNull(),
   actionType: varchar("action_type", { length: 50 }).notNull(), // "access", "modify", "delete", "export", "share"
   dataCategory: varchar("data_category", { length: 50 }).notNull(), // "personal", "sensitive", "health", "biometric"
@@ -89,7 +89,7 @@ export const provincialDataHandling = pgTable("provincial_data_handling", {
   sharedWith: text("shared_with"), // Organization name if shared
   sharingAgreementId: uuid("sharing_agreement_id"), // DPA reference
   
-  performedBy: uuid("performed_by").notNull(),
+  performedBy: varchar("performed_by", { length: 255 }).notNull(),
   ipAddress: varchar("ip_address", { length: 45 }),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -98,7 +98,7 @@ export const provincialDataHandling = pgTable("provincial_data_handling", {
 // Data Subject Access Requests (DSAR)
 export const dataSubjectAccessRequests = pgTable("data_subject_access_requests", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   requestType: varchar("request_type", { length: 50 }).notNull(), // "access", "rectification", "erasure", "portability", "restriction"
   province: varchar("province", { length: 2 }).notNull(),
   
@@ -113,7 +113,7 @@ export const dataSubjectAccessRequests = pgTable("data_subject_access_requests",
   
   // Processing
   status: varchar("status", { length: 20 }).notNull().default("pending"), // "pending", "in_progress", "completed", "denied"
-  assignedTo: uuid("assigned_to"),
+  assignedTo: varchar("assigned_to", { length: 255 }),
   
   // Response (30-day deadline in most provinces)
   responseDeadline: timestamp("response_deadline").notNull(), // requestedAt + 30 days

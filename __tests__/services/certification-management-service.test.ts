@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CertificationManagementService } from '@/services/certification-management-service';
 
 // Mock database
-const mockDb = {
+const mockDb = vi.hoisted(() => ({
   select: vi.fn(() => ({
     from: vi.fn(() => ({
       where: vi.fn(() => ({
@@ -46,7 +46,7 @@ const mockDb = {
       where: vi.fn(() => Promise.resolve([])),
     })),
   })),
-};
+}));
 
 vi.mock('@/db', () => ({
   db: mockDb,
@@ -254,8 +254,8 @@ describe('CertificationManagementService - Renewal Processing', () => {
     const renewalDueDate = new Date(issuedDate);
     renewalDueDate.setMonth(renewalDueDate.getMonth() + renewalFrequencyMonths);
 
-    expect(renewalDueDate.getFullYear()).toBe(2028);
-    expect(renewalDueDate.getMonth()).toBe(1); // February (0-indexed)
+    expect(renewalDueDate.getUTCFullYear()).toBe(2028);
+    expect(renewalDueDate.getUTCMonth()).toBe(1); // February (0-indexed)
   });
 
   it('should handle certifications with no renewal requirement', () => {

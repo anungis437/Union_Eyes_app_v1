@@ -1,4 +1,6 @@
 import { pgTable, text, timestamp, uuid, varchar, pgEnum } from "drizzle-orm/pg-core";
+import { organizations } from "../schema-organizations";
+import { users } from "./user-management-schema";
 import { sql } from "drizzle-orm";
 
 // Enums
@@ -8,8 +10,8 @@ export const memberStatusEnum = pgEnum("member_status", ["active", "inactive", "
 // Organization Members table
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").notNull(), // Clerk user ID
-  organizationId: uuid("organization_id").notNull(), // FK to organizations table
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.userId),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id),
   
   // Basic Info
   name: text("name").notNull(),

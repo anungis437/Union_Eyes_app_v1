@@ -1,13 +1,20 @@
 /**
  * Workflow Engine for Claims Management
  * 
+ * MIGRATION STATUS: ✅ Refactored to support RLS
+ * - Functions accept optional transaction parameter for RLS context
+ * - When no transaction provided, automatically wraps in withRLSContext()
+ * - Maintains backward compatibility with existing callers
+ * 
  * Handles status transitions, validation, and deadline tracking
  */
 
 import { db } from "../db/db";
+import { withRLSContext } from "./db/with-rls-context";
 import { claims, claimUpdates } from "../db/schema/claims-schema";
 import { eq } from "drizzle-orm";
 import { sendClaimStatusNotification } from "./claim-notifications";
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 // Define valid status transitions
 export const STATUS_TRANSITIONS = {
@@ -109,16 +116,30 @@ export function getDaysUntilDeadline(
 
 /**
  * Update claim status with validation and audit trail
+ * 
+ * @param claimNumber - Claim number to update
+ * @param newStatus - New status to transition to
+ * @param userId - User making the change
+ * @param notes - Optional notes about the status change
+ * @param tx - Optional transaction for RLS context (auto-created if not provided)
  */
 export async function updateClaimStatus(
   claimNumber: string,
   newStatus: ClaimStatus,
   userId: string,
-  notes?: string
+  notes?: string,
+  tx?: NodePgDatabase<any>
 ): Promise<{ success: boolean; error?: string; claim?: any }> {
+  // If no transaction provided, wrap in withRLSContext
+  if (!tx) {
+    return withRLSContext(async (transaction) => {
+      return updateClaimStatus(claimNumber, newStatus, userId, notes, transaction);
+    });
+  }
+
   try {
-    // Get current claim
-    const [claim] = await db
+    // Get current claim using provided transaction
+    const [claim] = await tx
       .select()
       .from(claims)
       .where(eq(claims.claimNumber, claimNumber))
@@ -162,15 +183,15 @@ export async function updateClaimStatus(
     };
     updateData.progress = progressMap[newStatus];
 
-    // Perform the update
-    const [updatedClaim] = await db
+    // Perform the update using provided transaction
+    const [updatedClaim] = await tx
       .update(claims)
       .set(updateData)
       .where(eq(claims.claimId, claim.claimId))
       .returning();
 
     // Create audit trail entry
-    await db.insert(claimUpdates).values({
+    await tx.insert(claimUpdates).values({
       claimId: claim.claimId,
       updateType: "status_change",
       message: notes || `Status changed from '${currentStatus}' to '${newStatus}'`,
@@ -317,16 +338,30 @@ export async function getClaimsApproachingDeadline(): Promise<any[]> {
 
 /**
  * Add internal note to claim
+ * 
+ * @param claimNumber - Claim number to add note to
+ * @param message - Note message content
+ * @param userId - User adding the note
+ * @param isInternal - Whether note is internal only (default true)
+ * @param tx - Optional transaction for RLS context (auto-created if not provided)
  */
 export async function addClaimNote(
   claimNumber: string,
   message: string,
   userId: string,
-  isInternal: boolean = true
+  isInternal: boolean = true,
+  tx?: NodePgDatabase<any>
 ): Promise<{ success: boolean; error?: string }> {
+  // If no transaction provided, wrap in withRLSContext
+  if (!tx) {
+    return withRLSContext(async (transaction) => {
+      return addClaimNote(claimNumber, message, userId, isInternal, transaction);
+    });
+  }
+
   try {
-    // Get claim to get UUID
-    const [claim] = await db
+    // Get claim to get UUID using provided transaction
+    const [claim] = await tx
       .select()
       .from(claims)
       .where(eq(claims.claimNumber, claimNumber))
@@ -337,7 +372,7 @@ export async function addClaimNote(
     }
 
     // Create note entry
-    await db.insert(claimUpdates).values({
+    await tx.insert(claimUpdates).values({
       claimId: claim.claimId,
       updateType: "note",
       message,
@@ -347,7 +382,7 @@ export async function addClaimNote(
     });
 
     // Update last activity timestamp
-    await db
+    await tx
       .update(claims)
       .set({
         updatedAt: new Date(),

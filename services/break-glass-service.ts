@@ -451,12 +451,80 @@ export class BreakGlassService {
     activationId: string,
     emergencyLevel: string
   ) {
-    // TODO: Integrate with notification system (SMS, email, phone call)
-    console.log(`EMERGENCY NOTIFICATION: Break-glass system activated`);
-    console.log(`System ID: ${systemId}`);
-    console.log(`Activation ID: ${activationId}`);
-    console.log(`Emergency Level: ${emergencyLevel}`);
-    console.log(`Required Signatures: ${this.REQUIRED_SIGNATURES} of ${this.TOTAL_KEY_HOLDERS}`);
+    try {
+      // Fetch all active key holders with contact information
+      const activeKeyHolders = await db
+        .select()
+        .from(keyHolderRegistry)
+        .where(eq(keyHolderRegistry.status, "active"));
+
+      if (activeKeyHolders.length === 0) {
+        console.warn(`No active key holders found for system ${systemId}`);
+        return;
+      }
+
+      // Import notification service dynamically to avoid circular dependencies
+      const { NotificationService } = await import('@/lib/services/notification-service');
+      const notificationService = new NotificationService();
+
+      // Build emergency message
+      const emergencyMessage = `
+EMERGENCY: Break-Glass System Activated
+System ID: ${systemId}
+Activation ID: ${activationId}
+Emergency Level: ${emergencyLevel}
+Required Signatures: ${this.REQUIRED_SIGNATURES} of ${this.TOTAL_KEY_HOLDERS}
+Action Required: Log in to UnionEyes immediately to authorize emergency access.
+      `.trim();
+
+      // Send notifications to each key holder
+      const notificationPromises = activeKeyHolders.map(holder => {
+        const notifications = [];
+
+        // Send SMS if phone available
+        if (holder.emergencyPhone) {
+          notifications.push(
+            notificationService.send({
+              type: 'sms',
+              recipientPhone: holder.emergencyPhone,
+              body: emergencyMessage,
+              subject: 'EMERGENCY: Break-Glass Activation',
+              priority: 'critical',
+            }).catch(err => {
+              console.error(`Failed to send SMS to ${holder.emergencyPhone}:`, err);
+            })
+          );
+        }
+
+        // Send email if email available
+        if (holder.emergencyEmail) {
+          notifications.push(
+            notificationService.send({
+              type: 'email',
+              recipientEmail: holder.emergencyEmail,
+              subject: 'EMERGENCY: Break-Glass System Activated',
+              body: emergencyMessage,
+              priority: 'critical',
+            }).catch(err => {
+              console.error(`Failed to send email to ${holder.emergencyEmail}:`, err);
+            })
+          );
+        }
+
+        return Promise.allSettled(notifications);
+      });
+
+      await Promise.allSettled(notificationPromises);
+
+      console.info(`Break-glass notifications sent to ${activeKeyHolders.length} key holders`, {
+        systemId,
+        activationId,
+        emergencyLevel,
+      });
+    } catch (error) {
+      console.error('Failed to notify key holders:', error);
+      // Continue even if notifications fail - activation should proceed
+    }
   }
 
   /**

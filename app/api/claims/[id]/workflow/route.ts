@@ -1,9 +1,17 @@
+/**
+ * Claims Workflow API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/db/db";
 import { claims } from "@/db/schema/claims-schema";
 import { eq } from "drizzle-orm";
 import { getClaimWorkflowStatus } from "@/lib/workflow-engine";
+import { requireUser } from '@/lib/auth/unified-auth';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * GET /api/claims/[id]/workflow
@@ -14,7 +22,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await requireUser();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,34 +30,37 @@ export async function GET(
 
     const claimNumber = params.id;
 
-    // Get claim
-    const [claim] = await db
-      .select()
-      .from(claims)
-      .where(eq(claims.claimNumber, claimNumber))
-      .limit(1);
+    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    return withRLSContext(async (tx) => {
+      // Get claim - RLS policies automatically enforce tenant filtering
+      const [claim] = await tx
+        .select()
+        .from(claims)
+        .where(eq(claims.claimNumber, claimNumber))
+        .limit(1);
 
-    if (!claim) {
-      return NextResponse.json(
-        { error: "Claim not found" },
-        { status: 404 }
-      );
-    }
+      if (!claim) {
+        return NextResponse.json(
+          { error: "Claim not found" },
+          { status: 404 }
+        );
+      }
 
-    // Check if user has access (claim owner or assigned steward)
-    if (claim.memberId !== userId && claim.assignedTo !== userId) {
-      return NextResponse.json(
-        { error: "Unauthorized to view this claim" },
-        { status: 403 }
-      );
-    }
+      // Check if user has access (claim owner or assigned steward)
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
+        return NextResponse.json(
+          { error: "Unauthorized to view this claim" },
+          { status: 403 }
+        );
+      }
 
-    // Get workflow status
-    const workflowStatus = getClaimWorkflowStatus(claim);
+      // Get workflow status
+      const workflowStatus = getClaimWorkflowStatus(claim);
 
-    return NextResponse.json({
-      success: true,
-      workflow: workflowStatus,
+      return NextResponse.json({
+        success: true,
+        workflow: workflowStatus,
+      });
     });
   } catch (error) {
     console.error("Error getting workflow status:", error);

@@ -22,7 +22,7 @@ export const swissColdStorage = pgTable("swiss_cold_storage", {
   
   // Encryption
   encryptionAlgorithm: varchar("encryption_algorithm", { length: 50 }).notNull().default("AES-256-GCM"),
-  encryptedBy: uuid("encrypted_by").notNull(),
+  encryptedBy: varchar("encrypted_by", { length: 255 }).notNull(),
   
   // Access control
   accessRequiresMultiSig: boolean("access_requires_multi_sig").notNull().default(true),
@@ -31,7 +31,7 @@ export const swissColdStorage = pgTable("swiss_cold_storage", {
   
   // Audit
   lastAccessedAt: timestamp("last_accessed_at"),
-  lastAccessedBy: uuid("last_accessed_by"),
+  lastAccessedBy: varchar("last_accessed_by", { length: 255 }),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -54,11 +54,11 @@ export const breakGlassSystem = pgTable("break_glass_system", {
   shamirTotalShares: integer("shamir_total_shares").notNull().default(5),
   
   // Key holders (Board members, trusted officers)
-  keyHolderId1: uuid("key_holder_id_1"),
-  keyHolderId2: uuid("key_holder_id_2"),
-  keyHolderId3: uuid("key_holder_id_3"),
-  keyHolderId4: uuid("key_holder_id_4"),
-  keyHolderId5: uuid("key_holder_id_5"),
+  keyHolderId1: varchar("key_holder_id_1", { length: 255 }),
+  keyHolderId2: varchar("key_holder_id_2", { length: 255 }),
+  keyHolderId3: varchar("key_holder_id_3", { length: 255 }),
+  keyHolderId4: varchar("key_holder_id_4", { length: 255 }),
+  keyHolderId5: varchar("key_holder_id_5", { length: 255 }),
   
   // Emergency contacts
   emergencyContact1Name: text("emergency_contact_1_name"),
@@ -123,8 +123,8 @@ export const disasterRecoveryDrills = pgTable("disaster_recovery_drills", {
   videoRecordingUrl: text("video_recording_url"),
   
   // Audit
-  conductedBy: uuid("conducted_by").notNull(),
-  approvedBy: uuid("approved_by"),
+  conductedBy: varchar("conducted_by", { length: 255 }).notNull(),
+  approvedBy: varchar("approved_by", { length: 255 }),
   approvedAt: timestamp("approved_at"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -134,7 +134,7 @@ export const disasterRecoveryDrills = pgTable("disaster_recovery_drills", {
 // Key holder registry (for Shamir's Secret Sharing)
 export const keyHolderRegistry = pgTable("key_holder_registry", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().unique(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
   
   // Key holder details
   role: varchar("role", { length: 50 }).notNull(), // "board_chair", "secretary_treasurer", "president", "vp", "trustee"
@@ -205,7 +205,7 @@ export const emergencyDeclarations = pgTable("emergency_declarations", {
   severityLevel: varchar("severity_level", { length: 20 }).notNull().default("medium"), // "low", "medium", "high", "critical"
   
   // Declaration
-  declaredByUserId: uuid("declared_by_user_id").notNull(),
+  declaredByUserId: varchar("declared_by_user_id", { length: 255 }).notNull(),
   declaredAt: timestamp("declared_at").notNull(),
   notes: text("notes"),
   
@@ -244,15 +244,15 @@ export const breakGlassActivations = pgTable("break_glass_activations", {
   signaturesReceived: integer("signatures_received").notNull().default(0),
   
   // Signature tracking
-  signature1UserId: uuid("signature_1_user_id"),
+  signature1UserId: varchar("signature_1_user_id", { length: 255 }),
   signature1Timestamp: timestamp("signature_1_timestamp"),
   signature1IpAddress: varchar("signature_1_ip_address", { length: 45 }),
   
-  signature2UserId: uuid("signature_2_user_id"),
+  signature2UserId: varchar("signature_2_user_id", { length: 255 }),
   signature2Timestamp: timestamp("signature_2_timestamp"),
   signature2IpAddress: varchar("signature_2_ip_address", { length: 45 }),
   
-  signature3UserId: uuid("signature_3_user_id"),
+  signature3UserId: varchar("signature_3_user_id", { length: 255 }),
   signature3Timestamp: timestamp("signature_3_timestamp"),
   signature3IpAddress: varchar("signature_3_ip_address", { length: 45 }),
   
@@ -268,7 +268,7 @@ export const breakGlassActivations = pgTable("break_glass_activations", {
   
   // Audit
   auditedAt: timestamp("audited_at"),
-  auditedBy: uuid("audited_by"),
+  auditedBy: varchar("audited_by", { length: 255 }),
   auditReport: text("audit_report"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),

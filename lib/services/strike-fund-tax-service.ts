@@ -16,6 +16,8 @@ import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { users, strikeFundDisbursements } from '@/db/schema';
 import { decryptSIN } from '@/lib/encryption';
 import { logger } from '@/lib/logger';
+
+export interface T4ASlip {
   slipType: 'T4A';
   taxYear: number;
   recipientName: string;
@@ -164,8 +166,10 @@ export async function generateRL1(
     throw new Error(`Member ${memberId} not found`);
   }
 
-  if (memberResult.province !== 'QC') {
-    throw new Error(`RL-1 is only for Quebec residents, member is in ${memberResult.province}`);
+  const member = memberResult as typeof memberResult;
+
+  if (member.province !== 'QC') {
+    throw new Error(`RL-1 is only for Quebec residents, member is in ${member.province}`);
   }
 
   const strikePay = await getYearlyStrikePay(memberId, taxYear);
@@ -175,7 +179,7 @@ export async function generateRL1(
   // This operation is audited in encryption.ts logger
   let recipientNAS = 'NOT PROVIDED';
   
-  if (memberResult.encryptedSin) {
+  if (member.encryptedSin) {
     try {
       recipientNAS = await decryptSIN(member.encryptedSin);
       

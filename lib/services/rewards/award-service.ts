@@ -12,7 +12,7 @@ import {
 } from '@/db/schema';
 import { eq, and, inArray, desc } from 'drizzle-orm';
 import { applyLedgerEntry } from './wallet-service';
-import { applyBudgetUsage, checkBudgetAvailability } from './budget-service';
+import { applyBudgetUsage, applyBudgetUsageChecked } from './budget-service';
 
 export interface CreateAwardOptions {
   orgId: string;
@@ -165,17 +165,6 @@ export async function issueAward(
 
     const creditAmount = award.awardType.defaultCreditAmount;
 
-    // Check budget availability
-    const budgetAvailable = await checkBudgetAvailability(
-      tx,
-      award.programId,
-      creditAmount
-    );
-
-    if (!budgetAvailable) {
-      throw new Error('Insufficient budget to issue award');
-    }
-
     // Apply ledger entry (earn credits)
     const ledgerEntry = await applyLedgerEntry(tx, {
       orgId: award.orgId,
@@ -187,8 +176,16 @@ export async function issueAward(
       memo: `Award: ${award.awardType.name}`,
     });
 
-    // Apply budget usage
-    await applyBudgetUsage(tx, award.programId, creditAmount);
+    // Apply budget usage with limit enforcement
+    const budgetApplied = await applyBudgetUsageChecked(
+      tx,
+      award.programId,
+      creditAmount
+    );
+
+    if (!budgetApplied) {
+      throw new Error('Insufficient budget to issue award');
+    }
 
     // Update award status
     const [updatedAward] = await tx
@@ -263,7 +260,7 @@ export async function revokeAward(
         status: 'revoked',
         updatedAt: new Date(),
         metadataJson: {
-          ...(award.metadataJson as any),
+          ...((award.metadataJson || {}) as Record<string, unknown>),
           revokedBy: revokedByUserId,
           revokedReason: reason,
           revokedAt: new Date().toISOString(),

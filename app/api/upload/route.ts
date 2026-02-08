@@ -1,9 +1,10 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { put } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/claims-schema';
 import { eq } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 // Maximum file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -32,258 +33,243 @@ interface AttachmentMetadata {
   uploadedBy: string;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    // Authenticate user
-    const { userId } = await auth();
-    
-    if (!userId) {
+      // Authenticate user
+      // Parse form data
+      const formData = await request.formData();
+      const file = formData.get('file') as File;
+      const claimId = formData.get('claimId') as string;
+
+      // Validate inputs
+      if (!file) {
+        return NextResponse.json(
+          { error: 'No file provided' },
+          { status: 400 }
+        );
+      }
+
+      if (!claimId) {
+        return NextResponse.json(
+          { error: 'claimId is required' },
+          { status: 400 }
+        );
+      }
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: `File size exceeds maximum of ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+          { status: 400 }
+        );
+      }
+
+      // Validate file type
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json(
+          { error: 'File type not allowed' },
+          { status: 400 }
+        );
+      }
+
+      // Verify claim exists and user has access
+      const [claim] = await db
+        .select()
+        .from(claims)
+        .where(eq(claims.claimId, claimId))
+        .limit(1);
+
+      if (!claim) {
+        return NextResponse.json(
+          { error: 'Claim not found' },
+          { status: 404 }
+        );
+      }
+
+      // Verify user owns the claim or is assigned to it
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
+        return NextResponse.json(
+          { error: 'Unauthorized to upload files to this claim' },
+          { status: 403 }
+        );
+      }
+
+      // Generate unique filename with timestamp
+      const timestamp = Date.now();
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const uniqueFileName = `claims/${claimId}/${timestamp}-${sanitizedFileName}`;
+
+      // Upload to Vercel Blob
+      const blob = await put(uniqueFileName, file, {
+        access: 'public',
+        addRandomSuffix: false,
+      });
+
+      // Create attachment metadata
+      const attachment: AttachmentMetadata = {
+        url: blob.url,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: userId,
+      };
+
+      // Get current attachments array
+      const currentAttachments = (claim.attachments as AttachmentMetadata[]) || [];
+      
+      // Add new attachment
+      const updatedAttachments = [...currentAttachments, attachment];
+
+      // Update claim with new attachments array
+      await db
+        .update(claims)
+        .set({
+          attachments: updatedAttachments,
+          updatedAt: new Date(),
+        })
+        .where(eq(claims.claimId, claimId));
+
+      return NextResponse.json({
+        success: true,
+        attachment,
+        message: 'File uploaded successfully',
+      });
+
+    } catch (error) {
+      console.error('Upload error:', error);
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Failed to upload file' },
+        { status: 500 }
       );
     }
-
-    // Parse form data
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const claimId = formData.get('claimId') as string;
-
-    // Validate inputs
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
-    }
-
-    if (!claimId) {
-      return NextResponse.json(
-        { error: 'claimId is required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: `File size exceeds maximum of ${MAX_FILE_SIZE / 1024 / 1024}MB` },
-        { status: 400 }
-      );
-    }
-
-    // Validate file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'File type not allowed' },
-        { status: 400 }
-      );
-    }
-
-    // Verify claim exists and user has access
-    const [claim] = await db
-      .select()
-      .from(claims)
-      .where(eq(claims.claimId, claimId))
-      .limit(1);
-
-    if (!claim) {
-      return NextResponse.json(
-        { error: 'Claim not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify user owns the claim or is assigned to it
-    if (claim.memberId !== userId && claim.assignedTo !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized to upload files to this claim' },
-        { status: 403 }
-      );
-    }
-
-    // Generate unique filename with timestamp
-    const timestamp = Date.now();
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const uniqueFileName = `claims/${claimId}/${timestamp}-${sanitizedFileName}`;
-
-    // Upload to Vercel Blob
-    const blob = await put(uniqueFileName, file, {
-      access: 'public',
-      addRandomSuffix: false,
-    });
-
-    // Create attachment metadata
-    const attachment: AttachmentMetadata = {
-      url: blob.url,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      uploadedAt: new Date().toISOString(),
-      uploadedBy: userId,
-    };
-
-    // Get current attachments array
-    const currentAttachments = (claim.attachments as AttachmentMetadata[]) || [];
-    
-    // Add new attachment
-    const updatedAttachments = [...currentAttachments, attachment];
-
-    // Update claim with new attachments array
-    await db
-      .update(claims)
-      .set({
-        attachments: updatedAttachments,
-        updatedAt: new Date(),
-      })
-      .where(eq(claims.claimId, claimId));
-
-    return NextResponse.json({
-      success: true,
-      attachment,
-      message: 'File uploaded successfully',
-    });
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload file' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};
 
 // GET endpoint to retrieve attachments for a claim
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
+      const { searchParams } = new URL(request.url);
+      const claimId = searchParams.get('claimId');
+
+      if (!claimId) {
+        return NextResponse.json(
+          { error: 'claimId is required' },
+          { status: 400 }
+        );
+      }
+
+      // Fetch claim
+      const [claim] = await db
+        .select()
+        .from(claims)
+        .where(eq(claims.claimId, claimId))
+        .limit(1);
+
+      if (!claim) {
+        return NextResponse.json(
+          { error: 'Claim not found' },
+          { status: 404 }
+        );
+      }
+
+      // Verify user has access
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 403 }
+        );
+      }
+
+      return NextResponse.json({
+        attachments: claim.attachments || [],
+        claimId,
+      });
+
+    } catch (error) {
+      console.error('Fetch attachments error:', error);
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Failed to fetch attachments' },
+        { status: 500 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const claimId = searchParams.get('claimId');
-
-    if (!claimId) {
-      return NextResponse.json(
-        { error: 'claimId is required' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch claim
-    const [claim] = await db
-      .select()
-      .from(claims)
-      .where(eq(claims.claimId, claimId))
-      .limit(1);
-
-    if (!claim) {
-      return NextResponse.json(
-        { error: 'Claim not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify user has access
-    if (claim.memberId !== userId && claim.assignedTo !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.json({
-      attachments: claim.attachments || [],
-      claimId,
-    });
-
-  } catch (error) {
-    console.error('Fetch attachments error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch attachments' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};
 
 // DELETE endpoint to remove an attachment
-export async function DELETE(request: NextRequest) {
+export const DELETE = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const { userId, organizationId } = context;
+
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
+      const { searchParams } = new URL(request.url);
+      const claimId = searchParams.get('claimId');
+      const fileUrl = searchParams.get('fileUrl');
+
+      if (!claimId || !fileUrl) {
+        return NextResponse.json(
+          { error: 'claimId and fileUrl are required' },
+          { status: 400 }
+        );
+      }
+
+      // Fetch claim
+      const [claim] = await db
+        .select()
+        .from(claims)
+        .where(eq(claims.claimId, claimId))
+        .limit(1);
+
+      if (!claim) {
+        return NextResponse.json(
+          { error: 'Claim not found' },
+          { status: 404 }
+        );
+      }
+
+      // Verify user has access
+      if (claim.memberId !== userId && claim.assignedTo !== userId) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 403 }
+        );
+      }
+
+      // Remove attachment from array
+      const currentAttachments = (claim.attachments as AttachmentMetadata[]) || [];
+      const updatedAttachments = currentAttachments.filter(
+        (att) => att.url !== fileUrl
+      );
+
+      // Update claim
+      await db
+        .update(claims)
+        .set({
+          attachments: updatedAttachments,
+          updatedAt: new Date(),
+        })
+        .where(eq(claims.claimId, claimId));
+
+      // Note: We don't delete from Vercel Blob to maintain audit trail
+      // Files can be manually cleaned up if needed
+
+      return NextResponse.json({
+        success: true,
+        message: 'Attachment removed from claim',
+      });
+
+    } catch (error) {
+      console.error('Delete attachment error:', error);
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Failed to delete attachment' },
+        { status: 500 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const claimId = searchParams.get('claimId');
-    const fileUrl = searchParams.get('fileUrl');
-
-    if (!claimId || !fileUrl) {
-      return NextResponse.json(
-        { error: 'claimId and fileUrl are required' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch claim
-    const [claim] = await db
-      .select()
-      .from(claims)
-      .where(eq(claims.claimId, claimId))
-      .limit(1);
-
-    if (!claim) {
-      return NextResponse.json(
-        { error: 'Claim not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify user has access
-    if (claim.memberId !== userId && claim.assignedTo !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
-    // Remove attachment from array
-    const currentAttachments = (claim.attachments as AttachmentMetadata[]) || [];
-    const updatedAttachments = currentAttachments.filter(
-      (att) => att.url !== fileUrl
-    );
-
-    // Update claim
-    await db
-      .update(claims)
-      .set({
-        attachments: updatedAttachments,
-        updatedAt: new Date(),
-      })
-      .where(eq(claims.claimId, claimId));
-
-    // Note: We don't delete from Vercel Blob to maintain audit trail
-    // Files can be manually cleaned up if needed
-
-    return NextResponse.json({
-      success: true,
-      message: 'Attachment removed from claim',
-    });
-
-  } catch (error) {
-    console.error('Delete attachment error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete attachment' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};

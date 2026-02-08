@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { AzureInfrastructureMonitoring } from '@/lib/types/compliance-api-types';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * Carbon Infrastructure Monitoring API
@@ -10,7 +11,7 @@ import type { AzureInfrastructureMonitoring } from '@/lib/types/compliance-api-t
  * GET /api/carbon/infrastructure?region=eastus&resourceType=compute
  * Monitor Azure infrastructure carbon footprint by region and type
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const region = searchParams.get('region') || 'all';
@@ -103,4 +104,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

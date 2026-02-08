@@ -7,38 +7,70 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { detectAnomalies } from '@/services/clc/compliance-reports';
+import { db } from '@/database';
+import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
+import { sql } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    const { userId } = context;
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
-    const minSeverity = searchParams.get('minSeverity') || 'medium';
+        const searchParams = request.nextUrl.searchParams;
+        const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
+        const minSeverity = searchParams.get('minSeverity') || 'medium';
 
-    // TODO: Fetch remittances from perCapitaRemittances table when schema is implemented
-    // For now, return empty array since perCapitaRemittances schema is not yet defined
-    const remittances: any[] = [];
-    const anomalies = await detectAnomalies(remittances, year);
+        // Fetch remittances from perCapitaRemittances table
+        const remittances = await db
+          .select()
+          .from(perCapitaRemittances)
+          .where(sql`${perCapitaRemittances.remittanceYear} = ${year}`)
+          .orderBy(perCapitaRemittances.remittanceMonth);
+        
+        const anomalies = await detectAnomalies(remittances, year);
 
-    // Filter by minimum severity if specified
-    const filteredAnomalies = minSeverity !== 'low'
-      ? anomalies.filter(a => {
-          const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
-          return severityOrder[a.severity] >= severityOrder[minSeverity as keyof typeof severityOrder];
-        })
-      : anomalies;
+        // Filter by minimum severity if specified
+        const filteredAnomalies = minSeverity !== 'low'
+          ? anomalies.filter(a => {
+              const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
+              return severityOrder[a.severity] >= severityOrder[minSeverity as keyof typeof severityOrder];
+            })
+          : anomalies;
 
-    return NextResponse.json(filteredAnomalies, {
-      headers: {
-        'Cache-Control': 'public, max-age=900' // Cache for 15 minutes (anomalies change frequently)
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/clc/analytics/anomalies',
+          method: 'GET',
+          eventType: 'success',
+          severity: 'medium',
+          details: { dataType: 'ANALYTICS', year, anomalyCount: filteredAnomalies.length, minSeverity },
+        });
+
+        return NextResponse.json(filteredAnomalies, {
+          headers: {
+            'Cache-Control': 'public, max-age=900' // Cache for 15 minutes (anomalies change frequently)
+          }
+        });
+
+      } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/clc/analytics/anomalies',
+          method: 'GET',
+          eventType: 'server_error',
+          severity: 'high',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        });
+        console.error('Analytics anomalies error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch anomaly data' },
+          { status: 500 }
+        );
       }
-    });
+      })(request);
+};
 
-  } catch (error) {
-    console.error('Analytics anomalies error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch anomaly data' },
-      { status: 500 }
-    );
-  }
-}

@@ -1,10 +1,12 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Members
  * Get and manage members of an organization
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import {
   getOrganizationMembers,
   // TODO: Implement addOrganizationMember function for adding existing users to organizations
@@ -23,7 +25,7 @@ export async function GET(
   let userId: string | null = null;
   let id = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(
@@ -66,7 +68,7 @@ export async function POST(
   let userId: string | null = null;
   let organizationId = '';
   try {
-    const authResult = await auth();
+    const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
       return NextResponse.json(

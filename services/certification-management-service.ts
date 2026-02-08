@@ -111,7 +111,7 @@ export class CertificationManagementService {
         certificationId: ce.certificationId,
         courseTitle: ce.courseTitle,
         courseProvider: ce.courseProvider,
-        courseDate: ce.courseDate,
+        courseDate: typeof ce.courseDate === 'string' ? ce.courseDate : ce.courseDate.toISOString().split('T')[0],
         ceHoursEarned: ce.ceHoursEarned.toString(),
         ceCategory: ce.ceCategory,
         verifiedBy,
@@ -261,11 +261,12 @@ export class CertificationManagementService {
     const renewalRecord = renewal[0];
 
     // Update renewal status
+    const today = new Date().toISOString().split('T')[0];
     await db
       .update(licenseRenewals)
       .set({
         renewalStatus: "approved",
-        renewalApprovedDate: new Date(),
+        renewalApprovedDate: today,
         updatedAt: new Date(),
       })
       .where(eq(licenseRenewals.id, renewalId));
@@ -291,13 +292,14 @@ export class CertificationManagementService {
         nextRenewalDue.setMonth(nextRenewalDue.getMonth() + parseInt(certType[0].renewalFrequencyMonths));
       }
 
+      const todayDate = new Date().toISOString().split('T')[0];
       await db
         .update(staffCertifications)
         .set({
           status: "active",
-          expiryDate: newExpiryDate,
-          lastRenewalDate: new Date(),
-          nextRenewalDue,
+          expiryDate: typeof newExpiryDate === 'string' ? newExpiryDate : newExpiryDate.toISOString().split('T')[0],
+          lastRenewalDate: todayDate,
+          nextRenewalDue: nextRenewalDue ? (typeof nextRenewalDue === 'string' ? nextRenewalDue : nextRenewalDue.toISOString().split('T')[0]) : undefined,
           compliant: true,
           updatedAt: new Date(),
         })
@@ -330,12 +332,13 @@ export class CertificationManagementService {
     const daysUntilExpiry = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     // 90-day alert
+    const expiryDateStr = typeof expiryDate === 'string' ? expiryDate : expiryDate.toISOString().split('T')[0];
     if (daysUntilExpiry <= this.ALERT_DAYS_90 && daysUntilExpiry > this.ALERT_DAYS_30) {
       await db.insert(certificationAlerts).values({
         certificationId,
         userId,
         alertType: "90_day_warning",
-        expiryDate,
+        expiryDate: expiryDateStr,
         daysUntilExpiry: daysUntilExpiry.toString(),
         notificationSent: false,
       });
@@ -347,7 +350,7 @@ export class CertificationManagementService {
         certificationId,
         userId,
         alertType: "30_day_warning",
-        expiryDate,
+        expiryDate: expiryDateStr,
         daysUntilExpiry: daysUntilExpiry.toString(),
         notificationSent: false,
       });
@@ -359,7 +362,7 @@ export class CertificationManagementService {
         certificationId,
         userId,
         alertType: "expired",
-        expiryDate,
+        expiryDate: expiryDateStr,
         daysUntilExpiry: "0",
         notificationSent: false,
       });
@@ -428,10 +431,11 @@ export class CertificationManagementService {
 
     const upcomingRenewals = await this.getExpiringSoon();
 
+    const reportDate = new Date().toISOString().split('T')[0];
     const [report] = await db
       .insert(certificationComplianceReports)
       .values({
-        reportDate: new Date(),
+        reportDate,
         reportPeriod,
         totalStaff: totalStaff.toString(),
         totalCertificationsRequired: totalCertificationsRequired.toString(),

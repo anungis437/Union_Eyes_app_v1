@@ -6,6 +6,8 @@ import {
   getTaxFilingStatus,
 } from '@/lib/services/strike-fund-tax-service';
 import type { T106FilingRequest, T106FilingResponse } from '@/lib/types/compliance-api-types';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { z } from 'zod';
 
 /**
  * T106 Filing API / T4A / RL-1 Generation
@@ -17,22 +19,32 @@ import type { T106FilingRequest, T106FilingResponse } from '@/lib/types/complian
  * POST /api/tax/t106
  * Check if strike payment requires T106 filing and generate tax slips
  */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json() as T106FilingRequest;
-    const { memberId, taxYear, strikePayments, province } = body;
+const t106RequestSchema = z.object({
+  memberId: z.string().uuid(),
+  taxYear: z.number().int().min(2000).max(2100),
+  strikePayments: z.array(z.object({
+    amount: z.number().positive(),
+  })).min(1),
+  province: z.string().length(2).regex(/^[A-Za-z]{2}$/).optional(),
+});
 
-    // Validate required fields
-    if (!memberId || !taxYear || !strikePayments || strikePayments.length === 0) {
+export const POST = withEnhancedRoleAuth(60, async (request) => {
+  try {
+    const body = await request.json();
+    const parsed = t106RequestSchema.safeParse(body);
+
+    if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
           requiresT106: false,
-          error: 'Missing required fields: memberId, taxYear, strikePayments (array)',
+          error: 'Invalid request body',
         } as T106FilingResponse,
         { status: 400 }
       );
     }
+
+    const { memberId, taxYear, strikePayments, province } = parsed.data;
 
     // Calculate total strike payments
     const totalAmount = strikePayments.reduce((sum, p) => sum + p.amount, 0);
@@ -82,40 +94,45 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         requiresT106: false,
-        error: `T106/T4A generation failed: ${error}`,
+        error: 'T106/T4A generation failed',
       } as T106FilingResponse,
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/tax/t106?taxYear=2025&memberId=123
  * Get T106 filing status and details
  */
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const taxYearStr = searchParams.get('taxYear');
-    const memberId = searchParams.get('memberId');
+const t106QuerySchema = z.object({
+  taxYear: z.coerce.number().int().min(2000).max(2100),
+  memberId: z.string().uuid().optional(),
+});
 
-    if (!taxYearStr) {
+export const GET = withEnhancedRoleAuth(60, async (request) => {
+  try {
+    const query = t106QuerySchema.safeParse(
+      Object.fromEntries(request.nextUrl.searchParams)
+    );
+
+    if (!query.success) {
       return NextResponse.json(
         {
           success: false,
           requiresT106: false,
-          error: 'taxYear parameter required',
+          error: 'Invalid request parameters',
         } as T106FilingResponse,
         { status: 400 }
       );
     }
 
-    const taxYear = parseInt(taxYearStr);
+    const { taxYear, memberId } = query.data;
     const deadline = new Date(`${taxYear + 1}-02-28`).toISOString().split('T')[0];
 
     return NextResponse.json({
       success: true,
-      requiresT106: taxYear >= 2024, // T4A required from 2024 onwards for strike payments
+      requiresT106: taxYear >= 2024,
       message: `T4A filing status for tax year ${taxYear}`,
       filingDeadline: deadline,
       requiredSlips: memberId ? ['T4A'] : ['T4A', 'RL-1 (Quebec)'],
@@ -132,9 +149,9 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         requiresT106: false,
-        error: `Failed to get T106 status: ${error}`,
+        error: 'Failed to get T106 status',
       } as T106FilingResponse,
       { status: 500 }
     );
   }
-}
+});

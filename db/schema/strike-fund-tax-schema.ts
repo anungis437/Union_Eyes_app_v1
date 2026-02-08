@@ -10,7 +10,7 @@ import { pgTable, uuid, text, timestamp, varchar, jsonb, boolean, decimal } from
 // Strike fund disbursements tracking
 export const strikeFundDisbursements = pgTable("strike_fund_disbursements", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   
   // Strike details
   strikeId: uuid("strike_id"),
@@ -51,7 +51,7 @@ export const strikeFundDisbursements = pgTable("strike_fund_disbursements", {
 // T4A tax slips (Federal)
 export const t4aTaxSlips = pgTable("t4a_tax_slips", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   taxYear: varchar("tax_year", { length: 4 }).notNull(),
   
   // Payer information (Union)
@@ -76,7 +76,7 @@ export const t4aTaxSlips = pgTable("t4a_tax_slips", {
   
   // Generation details
   generatedAt: timestamp("generated_at").notNull().defaultNow(),
-  generatedBy: uuid("generated_by").notNull(),
+  generatedBy: varchar("generated_by", { length: 255 }).notNull(),
   
   // Filing status
   filedWithCRA: boolean("filed_with_cra").notNull().default(false),
@@ -104,7 +104,7 @@ export const t4aTaxSlips = pgTable("t4a_tax_slips", {
 // RL-1 tax slips (Quebec)
 export const rl1TaxSlips = pgTable("rl1_tax_slips", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   taxYear: varchar("tax_year", { length: 4 }).notNull(),
   
   // Payer information (Union)
@@ -127,7 +127,7 @@ export const rl1TaxSlips = pgTable("rl1_tax_slips", {
   
   // Generation details
   generatedAt: timestamp("generated_at").notNull().defaultNow(),
-  generatedBy: uuid("generated_by").notNull(),
+  generatedBy: varchar("generated_by", { length: 255 }).notNull(),
   
   // Filing status (Revenu Québec)
   filedWithRevenuQuebec: boolean("filed_with_revenu_quebec").notNull().default(false),
@@ -185,7 +185,7 @@ export const taxYearEndProcessing = pgTable("tax_year_end_processing", {
   deadlineMissed: boolean("deadline_missed").notNull().default(false),
   
   // Audit trail
-  processedBy: uuid("processed_by"),
+  processedBy: varchar("processed_by", { length: 255 }),
   notes: text("notes"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -195,7 +195,7 @@ export const taxYearEndProcessing = pgTable("tax_year_end_processing", {
 // Weekly threshold tracking (for $500/week monitoring)
 export const weeklyThresholdTracking = pgTable("weekly_threshold_tracking", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   taxYear: varchar("tax_year", { length: 4 }).notNull(),
   weekNumber: varchar("week_number", { length: 10 }).notNull(), // "2025-W01"
   

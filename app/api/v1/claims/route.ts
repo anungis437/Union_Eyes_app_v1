@@ -15,6 +15,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withVersioning } from '@/lib/api-versioning/version-middleware';
+import { withApiAuth } from '@/lib/api-auth-guard';
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 
@@ -60,9 +61,11 @@ async function handleV2(request: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * Export with versioning wrapper
+ * Export with versioning wrapper and authentication
  */
-export const GET = withVersioning({
+const versionedHandler = withVersioning({
   v1: handleV1,
   v2: handleV2,
 });
+
+export const GET = withApiAuth(versionedHandler);

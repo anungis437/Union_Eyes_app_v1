@@ -5,7 +5,7 @@
  */
 
 import { db } from '@/db';
-import { digitalSignatures, organizations } from '@/db/migrations/schema';
+import { digitalSignatures, organizations } from '@/db/schema';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 

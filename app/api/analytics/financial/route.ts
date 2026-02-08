@@ -6,14 +6,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/claims-schema';
 import { sql, gte, and, eq } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -105,4 +107,4 @@ async function handler(req: NextRequest) {
   }
 }
 
-export const GET = withTenantAuth(handler);
+export const GET = withOrganizationAuth(handler);

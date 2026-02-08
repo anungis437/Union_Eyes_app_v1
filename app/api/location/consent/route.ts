@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * Location Tracking Consent API
@@ -8,7 +9,7 @@ import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
  * DELETE: Revoke consent
  */
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest) => {
   try {
     const body = await req.json();
     const { userId, purpose, purposeDescription, consentText, allowedDuringStrike, allowedDuringEvents } = body;
@@ -49,9 +50,9 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
@@ -74,9 +75,9 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req: NextRequest) {
+export const DELETE = withApiAuth(async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
@@ -98,4 +99,4 @@ export async function DELETE(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -6,7 +6,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BreakGlassService } from '@/lib/services/break-glass-service';
 
-describe('Break-Glass Emergency Access Integration', () => {
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const describeIf = hasDatabase ? describe : describe.skip;
+
+describeIf('Break-Glass Emergency Access Integration', () => {
   let service: BreakGlassService;
 
   beforeEach(() => {

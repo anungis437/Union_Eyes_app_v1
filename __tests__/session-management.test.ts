@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
-describe("Phase 1: Session Management & Attendance Tracking", () => {
+const hasApiServer =
+  process.env.RUN_INTEGRATION_TESTS === "true" &&
+  Boolean(process.env.INTEGRATION_API_BASE_URL) &&
+  !(globalThis.fetch as unknown as { mock?: unknown })?.mock;
+const apiBaseUrl = process.env.INTEGRATION_API_BASE_URL || "http://localhost:3000";
+const describeIf = hasApiServer ? describe : describe.skip;
+
+describeIf("Phase 1: Session Management & Attendance Tracking", () => {
   let organizationId: string;
   let courseId: string;
   let sessionId: string;
@@ -18,7 +25,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
   describe("Session Scheduling API", () => {
     it("should create a new course session", async () => {
-      const response = await fetch("http://localhost:3000/api/education/sessions", {
+      const response = await fetch(`${apiBaseUrl}/api/education/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +58,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should list sessions with filters", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?organizationId=${organizationId}&sessionStatus=scheduled`
+        `${apiBaseUrl}/api/education/sessions?organizationId=${organizationId}&sessionStatus=scheduled`
       );
 
       expect(response.status).toBe(200);
@@ -63,7 +70,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should update session details", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?id=${sessionId}`,
+        `${apiBaseUrl}/api/education/sessions?id=${sessionId}`,
         {
           method: "PATCH",
           headers: {
@@ -83,7 +90,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should list sessions by course", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?organizationId=${organizationId}&courseId=${courseId}`
+        `${apiBaseUrl}/api/education/sessions?organizationId=${organizationId}&courseId=${courseId}`
       );
 
       expect(response.status).toBe(200);
@@ -95,7 +102,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
   describe("Course Registration Integration", () => {
     it("should register member for session", async () => {
-      const response = await fetch("http://localhost:3000/api/education/registrations", {
+      const response = await fetch(`${apiBaseUrl}/api/education/registrations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,7 +126,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should increment enrolled count after registration", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?organizationId=${organizationId}&courseId=${courseId}`
+        `${apiBaseUrl}/api/education/sessions?organizationId=${organizationId}&courseId=${courseId}`
       );
 
       expect(response.status).toBe(200);
@@ -133,7 +140,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
   describe("Attendance Tracking API", () => {
     it("should get attendance records for session", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions/${sessionId}/attendance`
+        `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`
       );
 
       expect(response.status).toBe(200);
@@ -148,7 +155,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should mark single member attendance", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions/${sessionId}/attendance`,
+        `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`,
         {
           method: "POST",
           headers: {
@@ -170,7 +177,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should update session attended count", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions/${sessionId}/attendance`
+        `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`
       );
 
       expect(response.status).toBe(200);
@@ -182,7 +189,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
     it("should mark bulk attendance", async () => {
       // This test assumes multiple registrations exist
       const getResponse = await fetch(
-        `http://localhost:3000/api/education/sessions/${sessionId}/attendance`
+        `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`
       );
       const getData = await getResponse.json();
       const registrationIds = getData.registrations
@@ -192,7 +199,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
       if (registrationIds.length > 0) {
         const response = await fetch(
-          `http://localhost:3000/api/education/sessions/${sessionId}/attendance`,
+          `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`,
           {
             method: "POST",
             headers: {
@@ -214,7 +221,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should update attendance record", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions/${sessionId}/attendance`,
+        `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`,
         {
           method: "PATCH",
           headers: {
@@ -236,7 +243,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
   describe("Session Status Workflow", () => {
     it("should update session to in_progress", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?id=${sessionId}`,
+        `${apiBaseUrl}/api/education/sessions?id=${sessionId}`,
         {
           method: "PATCH",
           headers: {
@@ -255,7 +262,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should update session to completed", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?id=${sessionId}`,
+        `${apiBaseUrl}/api/education/sessions?id=${sessionId}`,
         {
           method: "PATCH",
           headers: {
@@ -276,7 +283,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
   describe("Session Cancellation", () => {
     it("should cancel a session", async () => {
       // Create a new session to cancel
-      const createResponse = await fetch("http://localhost:3000/api/education/sessions", {
+      const createResponse = await fetch(`${apiBaseUrl}/api/education/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -296,7 +303,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
       const cancelSessionId = createData.session.id;
 
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions?id=${cancelSessionId}&reason=${encodeURIComponent("Instructor unavailable")}`,
+        `${apiBaseUrl}/api/education/sessions?id=${cancelSessionId}&reason=${encodeURIComponent("Instructor unavailable")}`,
         {
           method: "DELETE",
         }
@@ -312,7 +319,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
   describe("Error Handling", () => {
     it("should return 400 for missing required fields", async () => {
-      const response = await fetch("http://localhost:3000/api/education/sessions", {
+      const response = await fetch(`${apiBaseUrl}/api/education/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -330,7 +337,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should return 404 for non-existent session", async () => {
       const response = await fetch(
-        "http://localhost:3000/api/education/sessions/non-existent-id/attendance"
+        `${apiBaseUrl}/api/education/sessions/non-existent-id/attendance`
       );
 
       expect(response.status).toBe(404);
@@ -338,7 +345,7 @@ describe("Phase 1: Session Management & Attendance Tracking", () => {
 
     it("should return 400 for invalid attendance data", async () => {
       const response = await fetch(
-        `http://localhost:3000/api/education/sessions/${sessionId}/attendance`,
+        `${apiBaseUrl}/api/education/sessions/${sessionId}/attendance`,
         {
           method: "POST",
           headers: {

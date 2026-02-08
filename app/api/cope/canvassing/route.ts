@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Canvassing Activities
  * Track door-knocking, phone banking, and canvassing for political campaigns
@@ -5,58 +6,50 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/cope/canvassing
- * Get canvassing activities for a campaign
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const campaignId = searchParams.get('campaignId');
+      const activityType = searchParams.get('activityType'); // door_knock, phone_call, petition_signature
+      const startDate = searchParams.get('startDate');
+      const endDate = searchParams.get('endDate');
 
-    const { searchParams } = new URL(request.url);
-    const campaignId = searchParams.get('campaignId');
-    const activityType = searchParams.get('activityType'); // door_knock, phone_call, petition_signature
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+      if (!campaignId) {
+        return NextResponse.json(
+          { error: 'Bad Request - campaignId is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!campaignId) {
-      return NextResponse.json(
-        { error: 'Bad Request - campaignId is required' },
-        { status: 400 }
-      );
-    }
+      // Build query
+      const conditions = [sql`campaign_id = ${campaignId}`];
 
-    // Build query
-    const conditions = [sql`campaign_id = ${campaignId}`];
+      if (activityType) {
+        conditions.push(sql`activity_type = ${activityType}`);
+      }
 
-    if (activityType) {
-      conditions.push(sql`activity_type = ${activityType}`);
-    }
+      if (startDate) {
+        conditions.push(sql`activity_date >= ${startDate}`);
+      }
 
-    if (startDate) {
-      conditions.push(sql`activity_date >= ${startDate}`);
-    }
+      if (endDate) {
+        conditions.push(sql`activity_date <= ${endDate}`);
+      }
 
-    if (endDate) {
-      conditions.push(sql`activity_date <= ${endDate}`);
-    }
+      const whereClause = sql.join(conditions, sql.raw(' AND '));
 
-    const whereClause = sql.join(conditions, sql.raw(' AND '));
-
-    const result = await db.execute(sql`
+      const result = await db.execute(sql`
       SELECT 
         id,
         campaign_id,
@@ -81,8 +74,8 @@ export async function GET(request: NextRequest) {
       LIMIT 1000
     `);
 
-    // Get summary statistics
-    const summaryResult = await db.execute(sql`
+      // Get summary statistics
+      const summaryResult = await db.execute(sql`
       SELECT 
         activity_type,
         COUNT(*) as total_activities,
@@ -99,71 +92,67 @@ export async function GET(request: NextRequest) {
       GROUP BY activity_type
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        activities: result,
-        summary: summaryResult,
-      },
-      count: result.length,
-    });
+      return NextResponse.json({
+        success: true,
+        data: {
+          activities: result,
+          summary: summaryResult,
+        },
+        count: result.length,
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch canvassing activities', error as Error, {
-      campaignId: request.nextUrl.searchParams.get('campaignId'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to fetch canvassing activities', error as Error, {
+        campaignId: request.nextUrl.searchParams.get('campaignId'),
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};
 
-/**
- * POST /api/cope/canvassing
- * Log a new canvassing activity
- */
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    const user = { id: context.userId, organizationId: context.organizationId };
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const body = await request.json();
+      const {
+        campaignId,
+        organizationId,
+        activityType,
+        activityDate,
+        volunteerMemberId,
+        volunteerName,
+        contactName,
+        contactAddress,
+        contactPhone,
+        contactEmail,
+        responseType,
+        supportLevel,
+        issuesDiscussed,
+        followUpRequired,
+        followUpNotes,
+        durationMinutes,
+      } = body;
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-    const body = await request.json();
-    const {
-      campaignId,
-      organizationId,
-      activityType,
-      activityDate,
-      volunteerMemberId,
-      volunteerName,
-      contactName,
-      contactAddress,
-      contactPhone,
-      contactEmail,
-      responseType,
-      supportLevel,
-      issuesDiscussed,
-      followUpRequired,
-      followUpNotes,
-      durationMinutes,
-    } = body;
 
-    // Validate required fields
-    if (!campaignId || !organizationId || !activityType) {
-      return NextResponse.json(
-        { error: 'Bad Request - campaignId, organizationId, and activityType are required' },
-        { status: 400 }
-      );
-    }
+      // Validate required fields
+      if (!campaignId || !organizationId || !activityType) {
+        return NextResponse.json(
+          { error: 'Bad Request - campaignId, organizationId, and activityType are required' },
+          { status: 400 }
+        );
+      }
 
-    // Insert activity
-    const result = await db.execute(sql`
+      // Insert activity
+      const result = await db.execute(sql`
       INSERT INTO canvassing_activities (
         id,
         campaign_id,
@@ -202,40 +191,41 @@ export async function POST(request: NextRequest) {
         response_type, support_level, duration_minutes
     `);
 
-    // Update campaign progress counters
-    if (activityType === 'door_knock') {
-      await db.execute(sql`
+      // Update campaign progress counters
+      if (activityType === 'door_knock') {
+        await db.execute(sql`
         UPDATE political_campaigns
         SET doors_knocked = doors_knocked + 1, updated_at = NOW()
         WHERE id = ${campaignId}
       `);
-    } else if (activityType === 'phone_call') {
-      await db.execute(sql`
+      } else if (activityType === 'phone_call') {
+        await db.execute(sql`
         UPDATE political_campaigns
         SET phone_calls_made = phone_calls_made + 1, updated_at = NOW()
         WHERE id = ${campaignId}
       `);
-    } else if (activityType === 'petition_signature') {
-      await db.execute(sql`
+      } else if (activityType === 'petition_signature') {
+        await db.execute(sql`
         UPDATE political_campaigns
         SET petition_signatures_collected = petition_signatures_collected + 1, updated_at = NOW()
         WHERE id = ${campaignId}
       `);
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'Canvassing activity logged successfully',
+      }, { status: 201 });
+
+    } catch (error) {
+      logger.error('Failed to log canvassing activity', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
     }
-
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'Canvassing activity logged successfully',
-    }, { status: 201 });
-
-  } catch (error) {
-    logger.error('Failed to log canvassing activity', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    })(request);
+};

@@ -2,7 +2,7 @@
 // Class B Special Voting Share for mission protection
 // Reserved Matters veto rights and 5-year sunset clause
 
-import { pgTable, uuid, text, timestamp, jsonb, integer, boolean, date } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, jsonb, integer, boolean, date, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Golden Shares Table
@@ -61,7 +61,7 @@ export const reservedMatterVotes = pgTable("reserved_matter_votes", {
   description: text("description").notNull(),
   
   // Proposal details
-  proposedBy: uuid("proposed_by").notNull(), // Board member/shareholder who proposed
+  proposedBy: varchar("proposed_by", { length: 255 }).notNull(), // Board member/shareholder who proposed
   proposedDate: timestamp("proposed_date").notNull(),
   votingDeadline: timestamp("voting_deadline").notNull(),
   
@@ -190,7 +190,7 @@ export const governanceEvents = pgTable("governance_events", {
   
   // Audit trail
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  createdBy: uuid("created_by"),
+  createdBy: varchar("created_by", { length: 255 }),
 });
 
 /**

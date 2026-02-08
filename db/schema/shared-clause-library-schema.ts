@@ -68,7 +68,7 @@ export const sharedClauseLibrary = pgTable("shared_clause_library", {
     .references((): any => sharedClauseLibrary.id),
   
   // Audit
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
@@ -86,7 +86,7 @@ export const clauseLibraryTags = pgTable("clause_library_tags", {
     .notNull()
     .references(() => sharedClauseLibrary.id, { onDelete: "cascade" }),
   tagName: varchar("tag_name", { length: 100 }).notNull(),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   clauseIdx: index("idx_clause_tags_clause").on(table.clauseId),
@@ -96,7 +96,7 @@ export const clauseLibraryTags = pgTable("clause_library_tags", {
 // Comparison history
 export const clauseComparisonsHistory = pgTable("clause_comparisons_history", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   organizationId: uuid("organization_id")
     .notNull()
     .references(() => organizations.id),

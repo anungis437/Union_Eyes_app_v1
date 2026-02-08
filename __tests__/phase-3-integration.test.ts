@@ -5,11 +5,19 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE =
+  process.env.INTEGRATION_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:3000';
+const hasApiServer =
+  process.env.RUN_INTEGRATION_TESTS === 'true' &&
+  Boolean(process.env.INTEGRATION_API_BASE_URL) &&
+  !(globalThis.fetch as unknown as { mock?: unknown })?.mock;
+const describeIf = hasApiServer ? describe : describe.skip;
 const TEST_ORG_ID = 'test-org-123';
 const TEST_MEMBER_ID = 'test-member-456';
 
-describe('Phase 3: Organizing Module Workflow', () => {
+describeIf('Phase 3: Organizing Module Workflow', () => {
   let campaignId: string;
   let workplaceId: string;
   let labourBoardId: string;
@@ -88,7 +96,7 @@ describe('Phase 3: Organizing Module Workflow', () => {
   });
 });
 
-describe('Phase 3: COPE Political Action Workflow', () => {
+describeIf('Phase 3: COPE Political Action Workflow', () => {
   let politicalCampaignId: string;
   let officialId: string;
 
@@ -176,7 +184,7 @@ describe('Phase 3: COPE Political Action Workflow', () => {
   });
 });
 
-describe('Phase 3: Education & Training Workflow', () => {
+describeIf('Phase 3: Education & Training Workflow', () => {
   let courseId: string;
   let registrationId: string;
   let completionId: string;
@@ -267,7 +275,7 @@ describe('Phase 3: Education & Training Workflow', () => {
   });
 });
 
-describe('Phase 3: Cross-Module Integration', () => {
+describeIf('Phase 3: Cross-Module Integration', () => {
   it('should link political campaigns to organizing campaigns', async () => {
     // Test that COPE campaigns can reference organizing campaigns
     const response = await fetch(`${API_BASE}/api/cope/campaigns?organizationId=${TEST_ORG_ID}`);

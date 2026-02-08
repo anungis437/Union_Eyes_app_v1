@@ -4,88 +4,158 @@
  * 
  * Endpoint:
  * - POST /api/admin/clc/remittances/[id]/submit - Submit remittance
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - Removed manual SET app.current_user_id command
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - Transaction ensures atomic status update
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { db } from '@/db';
+import { z } from 'zod';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { perCapitaRemittances } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
+
+const submitRemittanceSchema = z.object({
+  notes: z.string().optional(),
+});
 
 // =====================================================================================
 // POST - Submit remittance
 // =====================================================================================
 
-export async function POST(
+export const POST = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
+    let rawBody: unknown;
+    try {
+      rawBody = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
+
+    const parsed = submitRemittanceSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const body = parsed.data;
+    const { userId, organizationId } = context;
+
+    const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+    if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      const remittanceId = params.id;
 
-    // Set session context for RLS
-    await db.execute(sql`SET app.current_user_id = ${userId}`);
+      // All database operations wrapped in withRLSContext for automatic context setting
+      return withRLSContext(async (tx) => {
+        // Validate remittance exists
+        const [existing] = await tx
+          .select()
+          .from(perCapitaRemittances)
+          .where(eq(perCapitaRemittances.id, remittanceId))
+          .limit(1);
 
-    const remittanceId = params.id;
-    const body = await request.json();
+          if (!existing) {
+            logApiAuditEvent({
+              timestamp: new Date().toISOString(), userId,
+              endpoint: '/api/admin/clc/remittances/[id]/submit',
+              method: 'POST',
+              eventType: 'validation_failed',
+              severity: 'medium',
+              details: { reason: 'Remittance not found', remittanceId },
+            });
+            return NextResponse.json(
+              { error: 'Remittance not found' },
+              { status: 404 }
+            );
+          }
 
-    // Validate remittance exists
-    const [existing] = await db
-      .select()
-      .from(perCapitaRemittances)
-      .where(eq(perCapitaRemittances.id, remittanceId))
-      .limit(1);
+          // Validate current status
+          if (existing.status === 'paid') {
+            logApiAuditEvent({
+              timestamp: new Date().toISOString(), userId,
+              endpoint: '/api/admin/clc/remittances/[id]/submit',
+              method: 'POST',
+              eventType: 'validation_failed',
+              severity: 'medium',
+              details: { reason: 'Already paid', remittanceId, status: existing.status },
+            });
+            return NextResponse.json(
+              { error: 'Remittance already paid' },
+              { status: 400 }
+            );
+          }
 
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Remittance not found' },
-        { status: 404 }
-      );
-    }
+          if (existing.status === 'submitted') {
+            logApiAuditEvent({
+              timestamp: new Date().toISOString(), userId,
+              endpoint: '/api/admin/clc/remittances/[id]/submit',
+              method: 'POST',
+              eventType: 'validation_failed',
+              severity: 'medium',
+              details: { reason: 'Already submitted', remittanceId, status: existing.status },
+            });
+            return NextResponse.json(
+              { error: 'Remittance already submitted' },
+              { status: 400 }
+            );
+          }
 
-    // Validate current status
-    if (existing.status === 'paid') {
-      return NextResponse.json(
-        { error: 'Remittance already paid' },
-        { status: 400 }
-      );
-    }
+        // Update remittance status to submitted
+        const [updated] = await tx
+          .update(perCapitaRemittances)
+          .set({
+            status: 'submitted',
+            submittedDate: new Date().toISOString(),
+            notes: body.notes || existing.notes,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(perCapitaRemittances.id, remittanceId))
+          .returning();
 
-    if (existing.status === 'submitted') {
-      return NextResponse.json(
-        { error: 'Remittance already submitted' },
-        { status: 400 }
-      );
-    }
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(), userId,
+            endpoint: '/api/admin/clc/remittances/[id]/submit',
+            method: 'POST',
+            eventType: 'success',
+            severity: 'high',
+            details: {
+              dataType: 'FINANCIAL',
+              remittanceId,
+              amount: existing.totalAmount,
+              fromStatus: existing.status,
+              toStatus: 'submitted',
+            },
+          });
 
-    // Update remittance status to submitted
-    const [updated] = await db
-      .update(perCapitaRemittances)
-      .set({
-        status: 'submitted',
-        submittedDate: new Date().toISOString(),
-        notes: body.notes || existing.notes,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(perCapitaRemittances.id, remittanceId))
-      .returning();
-
-    // TODO: If file upload is included in body, save to storage
-    // This would integrate with your file storage system (S3, Azure Blob, etc.)
-    // For now, we'll just store metadata in notes field
-
-    return NextResponse.json({
-      ...updated,
-      message: 'Remittance submitted successfully',
-    });
-  } catch (error) {
-    console.error('Error submitting remittance:', error);
-    return NextResponse.json(
-      { error: 'Failed to submit remittance' },
-      { status: 500 }
-    );
-  }
-}
+        return NextResponse.json({
+          ...updated,
+          message: 'Remittance submitted successfully',
+        });
+      });
+    } catch (error) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(), userId,
+            endpoint: '/api/admin/clc/remittances/[id]/submit',
+            method: 'POST',
+            eventType: 'server_error',
+            severity: 'high',
+            details: { error: error instanceof Error ? error.message : 'Unknown error', remittanceId: params.id },
+          });
+          console.error('Error submitting remittance:', error);
+          return NextResponse.json(
+            { error: 'Failed to submit remittance' },
+            { status: 500 }
+          );
+        }
+  })(request, { params });
+};

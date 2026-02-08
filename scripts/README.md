@@ -25,8 +25,12 @@ Database inspection, validation, and schema management scripts:
 ### `/migration`
 Database migration and data transformation scripts:
 - `apply-cba-migration.ps1` - CBA migration application
+- `fix-security.ts` - API security migration codemod
 - `fix-relations.ps1` - Relationship fixes
 - `fix-rls-policies.ts` - Row-level security policy fixes
+- `migrate-all.ps1` - Batch route migration runner
+- `migrate-routes-ast.ts` - AST-based route migration tool
+- `migrate-routes.ts` - Regex-based route migration tool
 - `run-full-migration.ts` - Full migration runner
 - `run-jurisdiction-migrations.ts` - Jurisdiction-specific migrations
 - `run-migrations.ts` - Standard migration runner
@@ -47,6 +51,7 @@ Testing utilities and verification scripts:
 - `test-partial-047.ts` - Partial migration test
 - `test-phase-5a-api.ts` - Phase 5A API testing
 - `test-rls-isolation.js` - RLS isolation testing
+- `validator-markdown-report.ts` - Generate validation markdown reports
 - `verify-user-access.js` - User access verification
 
 ### `/setup`

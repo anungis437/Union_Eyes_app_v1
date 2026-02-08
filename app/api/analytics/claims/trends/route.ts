@@ -6,8 +6,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 interface TrendDataPoint {
   date: string;
@@ -17,9 +18,10 @@ interface TrendDataPoint {
   forecast?: number;
 }
 
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, context) {
   try {
-    const tenantId = req.headers.get('x-tenant-id');
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -150,4 +152,4 @@ function simpleLinearForecast(data: number[], periods: number): number[] {
   return forecasts;
 }
 
-export const GET = withTenantAuth(handler);
+export const GET = withOrganizationAuth(handler);

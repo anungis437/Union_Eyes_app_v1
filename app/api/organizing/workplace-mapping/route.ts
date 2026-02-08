@@ -1,3 +1,4 @@
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Workplace Mapping
  * Map workplace contacts and support levels for organizing campaigns
@@ -5,44 +6,34 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { z } from "zod";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const dynamic = 'force-dynamic';
 
-/**
- * GET /api/organizing/workplace-mapping
- * Get workplace map data (contacts aggregated by department/shift/support level)
- */
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(10, async (request, context) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const { searchParams } = new URL(request.url);
+      const campaignId = searchParams.get('campaignId');
+      const viewType = searchParams.get('viewType') || 'department'; // department, shift, support_level
 
-    const { searchParams } = new URL(request.url);
-    const campaignId = searchParams.get('campaignId');
-    const viewType = searchParams.get('viewType') || 'department'; // department, shift, support_level
+      if (!campaignId) {
+        return NextResponse.json(
+          { error: 'Bad Request - campaignId is required' },
+          { status: 400 }
+        );
+      }
 
-    if (!campaignId) {
-      return NextResponse.json(
-        { error: 'Bad Request - campaignId is required' },
-        { status: 400 }
-      );
-    }
+      // Aggregate contacts by viewType
+      let groupByField = 'department';
+      if (viewType === 'shift') groupByField = 'shift';
+      if (viewType === 'support_level') groupByField = 'support_level';
 
-    // Aggregate contacts by viewType
-    let groupByField = 'department';
-    if (viewType === 'shift') groupByField = 'shift';
-    if (viewType === 'support_level') groupByField = 'support_level';
-
-    const result = await db.execute(sql.raw(`
+      const result = await db.execute(sql.raw(`
       SELECT 
         ${groupByField} as group_name,
         COUNT(*) as total_contacts,
@@ -64,8 +55,8 @@ export async function GET(request: NextRequest) {
       ORDER BY ${groupByField}
     `));
 
-    // Get campaign overall stats
-    const statsResult = await db.execute(sql`
+      // Get campaign overall stats
+      const statsResult = await db.execute(sql`
       SELECT 
         COUNT(*) as total_contacts,
         SUM(CASE WHEN card_signed = true THEN 1 ELSE 0 END) as total_cards_signed,
@@ -81,80 +72,74 @@ export async function GET(request: NextRequest) {
       GROUP BY oc.id
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        groupBy: viewType,
-        groups: result,
-        summary: statsResult[0] || {},
-      },
-    });
+      return NextResponse.json({
+        success: true,
+        data: {
+          groupBy: viewType,
+          groups: result,
+          summary: statsResult[0] || {},
+        },
+      });
 
-  } catch (error) {
-    logger.error('Failed to fetch workplace mapping data', error as Error, {
-      campaignId: request.nextUrl.searchParams.get('campaignId'),
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to fetch workplace mapping data', error as Error, {
+        campaignId: request.nextUrl.searchParams.get('campaignId'),
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};
 
-/**
- * POST /api/organizing/workplace-mapping
- * Add a new contact to the workplace map
- */
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
-    }
+      const body = await request.json();
+      const {
+        campaignId,
+        organizationId,
+        jobTitle,
+        department,
+        shift,
+        supportLevel,
+        cardSigned,
+        cardSignedDate,
+        organizingCommitteeMember,
+        primaryIssues,
+        notes,
+      } = body;
+  if (organizationId && organizationId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-    const body = await request.json();
-    const {
-      campaignId,
-      organizationId,
-      jobTitle,
-      department,
-      shift,
-      supportLevel,
-      cardSigned,
-      cardSignedDate,
-      organizingCommitteeMember,
-      primaryIssues,
-      notes,
-    } = body;
 
-    // Validate required fields
-    if (!campaignId || !organizationId) {
-      return NextResponse.json(
-        { error: 'Bad Request - campaignId and organizationId are required' },
-        { status: 400 }
-      );
-    }
+      // Validate required fields
+      if (!campaignId || !organizationId) {
+        return NextResponse.json(
+          { error: 'Bad Request - campaignId and organizationId are required' },
+          { status: 400 }
+        );
+      }
 
-    // Generate anonymous contact number
-    const contactCount = await db.execute(sql`
+      // Generate anonymous contact number
+      const contactCount = await db.execute(sql`
       SELECT COUNT(*) as count 
       FROM organizing_contacts 
       WHERE campaign_id = ${campaignId}
     `);
-    const nextNumber = (parseInt(String(contactCount[0]?.count || '0')) + 1).toString().padStart(4, '0');
-    const campaignCode = await db.execute(sql`
+      const nextNumber = (parseInt(String(contactCount[0]?.count || '0')) + 1).toString().padStart(4, '0');
+      const campaignCode = await db.execute(sql`
       SELECT campaign_code 
       FROM organizing_campaigns 
       WHERE id = ${campaignId}
     `);
-    const contactNumber = `${campaignCode[0]?.campaign_code || 'CONTACT'}-${nextNumber}`;
+      const contactNumber = `${campaignCode[0]?.campaign_code || 'CONTACT'}-${nextNumber}`;
 
-    // Insert contact
-    const result = await db.execute(sql`
+      // Insert contact
+      const result = await db.execute(sql`
       INSERT INTO organizing_contacts (
         id,
         campaign_id,
@@ -184,19 +169,20 @@ export async function POST(request: NextRequest) {
       RETURNING id, contact_number, job_title, department, shift, support_level, card_signed, organizing_committee_member
     `);
 
-    return NextResponse.json({
-      success: true,
-      data: result[0],
-      message: 'Workplace contact added successfully',
-    }, { status: 201 });
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: 'Workplace contact added successfully',
+      }, { status: 201 });
 
-  } catch (error) {
-    logger.error('Failed to add workplace contact', error as Error, {
-      correlationId: request.headers.get('x-correlation-id'),
-    });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
+    } catch (error) {
+      logger.error('Failed to add workplace contact', error as Error, {
+        correlationId: request.headers.get('x-correlation-id'),
+      });
+      return NextResponse.json(
+        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    })(request);
+};

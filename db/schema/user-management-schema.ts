@@ -7,7 +7,7 @@ export const userManagementSchema = pgSchema("user_management");
 
 // Users table - core user authentication and profile
 export const users = userManagementSchema.table("users", {
-  userId: uuid("user_id").primaryKey().defaultRandom(),
+  userId: varchar("user_id", { length: 255 }).primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: boolean("email_verified").default(false),
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
@@ -58,7 +58,7 @@ export const tenantUsers = userManagementSchema.table("tenant_users", {
   permissions: jsonb("permissions").default(sql`'[]'::jsonb`),
   isActive: boolean("is_active").default(true),
   isPrimary: boolean("is_primary").default(false), // Indicates if this is the user's primary organization
-  invitedBy: uuid("invited_by").references(() => users.userId),
+  invitedBy: varchar("invited_by", { length: 255 }).references(() => users.userId),
   invitedAt: timestamp("invited_at", { withTimezone: true }),
   joinedAt: timestamp("joined_at", { withTimezone: true }),
   lastAccessAt: timestamp("last_access_at", { withTimezone: true }),
@@ -69,7 +69,7 @@ export const tenantUsers = userManagementSchema.table("tenant_users", {
 // User sessions table - authentication session management
 export const userSessions = userManagementSchema.table("user_sessions", {
   sessionId: uuid("session_id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => users.userId, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.userId, { onDelete: "cascade" }),
   organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
   sessionToken: text("session_token").notNull().unique(),
   refreshToken: text("refresh_token").unique(),
@@ -88,7 +88,7 @@ export const userSessions = userManagementSchema.table("user_sessions", {
 // OAuth providers table - external authentication integration
 export const oauthProviders = userManagementSchema.table("oauth_providers", {
   providerId: uuid("provider_id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => users.userId, { onDelete: "cascade" }),
+  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.userId, { onDelete: "cascade" }),
   providerName: varchar("provider_name", { length: 50 }).notNull(),
   providerUserId: varchar("provider_user_id", { length: 255 }).notNull(),
   providerData: jsonb("provider_data").default(sql`'{}'::jsonb`),

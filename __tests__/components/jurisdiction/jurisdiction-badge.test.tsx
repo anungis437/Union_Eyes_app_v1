@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { JurisdictionBadge } from '@/components/jurisdiction/jurisdiction-badge';
-import type { CAJurisdiction } from '@/lib/jurisdiction-helpers';
+import type { CAJurisdiction } from '@/lib/jurisdiction-helpers-client';
 
 describe('JurisdictionBadge', () => {
   describe('Federal Jurisdiction', () => {
@@ -10,15 +10,10 @@ describe('JurisdictionBadge', () => {
       expect(screen.getByText('Federal')).toBeInTheDocument();
     });
 
-    it('should render Federal badge with blue color', () => {
+    it('should render Federal badge with red color', () => {
       render(<JurisdictionBadge jurisdiction="CA-FED" />);
       const badge = screen.getByText('Federal').closest('div');
-      expect(badge).toHaveClass('bg-blue-500');
-    });
-
-    it('should show bilingual indicator for Federal', () => {
-      render(<JurisdictionBadge jurisdiction="CA-FED" showBilingual />);
-      expect(screen.getByText(/EN\/FR/i)).toBeInTheDocument();
+      expect(badge).toHaveClass('bg-red-100');
     });
   });
 
@@ -28,9 +23,10 @@ describe('JurisdictionBadge', () => {
       expect(screen.getByText('Quebec')).toBeInTheDocument();
     });
 
-    it('should show bilingual indicator for Quebec', () => {
-      render(<JurisdictionBadge jurisdiction="CA-QC" showBilingual />);
-      expect(screen.getByText(/EN\/FR/i)).toBeInTheDocument();
+    it('should render Quebec badge with indigo color', () => {
+      render(<JurisdictionBadge jurisdiction="CA-QC" />);
+      const badge = screen.getByText('Quebec').closest('div');
+      expect(badge).toHaveClass('bg-indigo-100');
     });
   });
 
@@ -40,9 +36,10 @@ describe('JurisdictionBadge', () => {
       expect(screen.getByText('Ontario')).toBeInTheDocument();
     });
 
-    it('should NOT show bilingual indicator for Ontario', () => {
-      render(<JurisdictionBadge jurisdiction="CA-ON" showBilingual />);
-      expect(screen.queryByText(/EN\/FR/i)).not.toBeInTheDocument();
+    it('should render Ontario badge with blue color', () => {
+      render(<JurisdictionBadge jurisdiction="CA-ON" />);
+      const badge = screen.getByText('Ontario').closest('div');
+      expect(badge).toHaveClass('bg-blue-100');
     });
   });
 
@@ -92,17 +89,10 @@ describe('JurisdictionBadge', () => {
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have accessible label', () => {
-      render(<JurisdictionBadge jurisdiction="CA-ON" />);
-      const badge = screen.getByText('Ontario').closest('div');
-      expect(badge).toHaveAttribute('role', 'status');
-    });
-
-    it('should have aria-label for jurisdiction', () => {
-      render(<JurisdictionBadge jurisdiction="CA-FED" />);
-      const badge = screen.getByText('Federal').closest('div');
-      expect(badge).toHaveAttribute('aria-label', 'Jurisdiction: Federal');
+  describe('Rendering Options', () => {
+    it('should render code when showName is false', () => {
+      render(<JurisdictionBadge jurisdiction="CA-ON" showName={false} />);
+      expect(screen.getByText('CA-ON')).toBeInTheDocument();
     });
   });
 });

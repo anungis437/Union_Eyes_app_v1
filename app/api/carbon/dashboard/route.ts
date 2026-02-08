@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { CarbonDashboardRequest, CarbonDashboardResponse } from '@/lib/types/compliance-api-types';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * Carbon Accounting API
@@ -10,7 +11,7 @@ import type { CarbonDashboardRequest, CarbonDashboardResponse } from '@/lib/type
  * GET /api/carbon/dashboard?organizationId=org-123&startDate=2025-01-01&endDate=2025-02-06
  * Get carbon emissions dashboard
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const organizationId = searchParams.get('organizationId') || 'union-eyes';
@@ -64,4 +65,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

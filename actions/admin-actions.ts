@@ -1,7 +1,16 @@
 "use server";
 
+/**
+ * Admin Actions
+ * 
+ * MIGRATION STATUS: ✅ Refactored to accept tx parameter from RLS-protected routes
+ * - Functions now accept NodePgDatabase tx parameter
+ * - Removed internal requireAdmin() checks (routes handle this)
+ * - All queries use provided transaction for RLS enforcement
+ */
+
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/db/db";
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { tenantUsers, users } from "@/db/schema/user-management-schema";
 import { tenants, tenantConfigurations, tenantUsage } from "@/db/schema/tenant-management-schema";
 import { eq, and, desc, sql, count, like, or, isNull } from "drizzle-orm";
@@ -52,52 +61,26 @@ interface SystemConfig {
   description: string | null;
 }
 
-// Authorization check
-async function requireAdmin() {
-  const { userId } = await auth();
-  
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
-  // Check if user is admin in any tenant
-  const adminRole = await db
-    .select({ role: tenantUsers.role })
-    .from(tenantUsers)
-    .where(and(
-      eq(tenantUsers.userId, userId),
-      eq(tenantUsers.role, "admin")
-    ))
-    .limit(1);
-
-  if (adminRole.length === 0) {
-    throw new Error("Admin access required");
-  }
-
-  return userId;
-}
-
 /**
  * Get system-wide statistics
+ * @param tx - Database transaction from RLS-protected route
  */
-export async function getSystemStats(): Promise<SystemStats> {
+export async function getSystemStats(tx: NodePgDatabase<any>): Promise<SystemStats> {
   try {
-    await requireAdmin();
-
     // Total unique users across all tenants
-    const totalMembersResult = await db
+    const totalMembersResult = await tx
       .select({ count: count() })
       .from(tenantUsers)
       .where(eq(tenantUsers.isActive, true));
 
     // Total tenants
-    const totalTenantsResult = await db
+    const totalTenantsResult = await tx
       .select({ count: count() })
       .from(tenants)
       .where(isNull(tenants.deletedAt));
 
     // Active tenants
-    const activeTenantsResult = await db
+    const activeTenantsResult = await tx
       .select({ count: count() })
       .from(tenants)
       .where(and(
@@ -106,7 +89,7 @@ export async function getSystemStats(): Promise<SystemStats> {
       ));
 
     // Total storage used (sum from tenant_usage)
-    const storageResult = await db
+    const storageResult = await tx
       .select({ 
         total: sql<string>`COALESCE(SUM(${tenantUsage.storageUsedGb}), 0)` 
       })
@@ -114,7 +97,7 @@ export async function getSystemStats(): Promise<SystemStats> {
 
     // Users active in last 24 hours
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const activeTodayResult = await db
+    const activeTodayResult = await tx
       .select({ count: count() })
       .from(tenantUsers)
       .where(and(
@@ -137,15 +120,15 @@ export async function getSystemStats(): Promise<SystemStats> {
 
 /**
  * Get all users across tenants with filtering
+ * @param tx - Database transaction from RLS-protected route
  */
 export async function getAdminUsers(
+  tx: NodePgDatabase<any>,
   searchQuery?: string,
   tenantId?: string,
   role?: UserRole
 ): Promise<AdminUser[]> {
   try {
-    await requireAdmin();
-
     // Build filter conditions
     const conditions = [isNull(tenants.deletedAt)];
     
@@ -166,7 +149,7 @@ export async function getAdminUsers(
       );
     }
 
-    const results = await db
+    const results = await tx
       .select({
         userId: tenantUsers.userId,
         role: tenantUsers.role,
@@ -274,16 +257,16 @@ export async function getAdminTenants(searchQuery?: string): Promise<TenantWithS
 
 /**
  * Update user role
+ * @param tx - Database transaction from RLS-protected route
  */
 export async function updateUserRole(
+  tx: NodePgDatabase<any>,
   userId: string,
   tenantId: string,
   newRole: UserRole
 ): Promise<void> {
   try {
-    const adminId = await requireAdmin();
-
-    await db
+    await tx
       .update(tenantUsers)
       .set({ 
         role: newRole,
@@ -295,7 +278,6 @@ export async function updateUserRole(
       ));
 
     logger.info("User role updated", {
-      adminId,
       userId,
       tenantId,
       newRole,
@@ -310,15 +292,15 @@ export async function updateUserRole(
 
 /**
  * Toggle user active status
+ * @param tx - Database transaction from RLS-protected route
  */
 export async function toggleUserStatus(
+  tx: NodePgDatabase<any>,
   userId: string,
   tenantId: string
 ): Promise<void> {
   try {
-    const adminId = await requireAdmin();
-
-    const [user] = await db
+    const [user] = await tx
       .select({ isActive: tenantUsers.isActive })
       .from(tenantUsers)
       .where(and(
@@ -331,7 +313,7 @@ export async function toggleUserStatus(
       throw new Error("User not found");
     }
 
-    await db
+    await tx
       .update(tenantUsers)
       .set({ 
         isActive: !user.isActive,
@@ -343,7 +325,6 @@ export async function toggleUserStatus(
       ));
 
     logger.info("User status toggled", {
-      adminId,
       userId,
       tenantId,
       newStatus: !user.isActive,
@@ -358,15 +339,15 @@ export async function toggleUserStatus(
 
 /**
  * Delete user from tenant
+ * @param tx - Database transaction from RLS-protected route
  */
 export async function deleteUserFromTenant(
+  tx: NodePgDatabase<any>,
   userId: string,
   tenantId: string
 ): Promise<void> {
   try {
-    const adminId = await requireAdmin();
-
-    await db
+    await tx
       .delete(tenantUsers)
       .where(and(
         eq(tenantUsers.userId, userId),
@@ -374,7 +355,6 @@ export async function deleteUserFromTenant(
       ));
 
     logger.info("User removed from tenant", {
-      adminId,
       userId,
       tenantId,
     });
@@ -457,11 +437,10 @@ export async function createTenant(data: {
 
 /**
  * Get system configurations
+ * @param tx - Database transaction from RLS-protected route
  */
-export async function getSystemConfigs(category?: string): Promise<SystemConfig[]> {
+export async function getSystemConfigs(tx: NodePgDatabase<any>, category?: string): Promise<SystemConfig[]> {
   try {
-    await requireAdmin();
-
     // Build where conditions
     const whereConditions = category
       ? and(
@@ -470,7 +449,7 @@ export async function getSystemConfigs(category?: string): Promise<SystemConfig[
         )
       : eq(tenantConfigurations.isEncrypted, false);
 
-    const configs = await db
+    const configs = await tx
       .select({
         category: tenantConfigurations.category,
         key: tenantConfigurations.key,
@@ -494,18 +473,18 @@ export async function getSystemConfigs(category?: string): Promise<SystemConfig[
 
 /**
  * Update system configuration
+ * @param tx - Database transaction from RLS-protected route
  */
 export async function updateSystemConfig(
+  tx: NodePgDatabase<any>,
   tenantId: string,
   category: string,
   key: string,
   value: any
 ): Promise<void> {
   try {
-    const adminId = await requireAdmin();
-
     // Check if config exists
-    const [existing] = await db
+    const [existing] = await tx
       .select()
       .from(tenantConfigurations)
       .where(and(
@@ -517,7 +496,7 @@ export async function updateSystemConfig(
 
     if (existing) {
       // Update existing
-      await db
+      await tx
         .update(tenantConfigurations)
         .set({ 
           value,
@@ -526,7 +505,7 @@ export async function updateSystemConfig(
         .where(eq(tenantConfigurations.configId, existing.configId));
     } else {
       // Create new
-      await db
+      await tx
         .insert(tenantConfigurations)
         .values({
           tenantId,
@@ -537,7 +516,6 @@ export async function updateSystemConfig(
     }
 
     logger.info("System config updated", {
-      adminId,
       tenantId,
       category,
       key,
@@ -552,13 +530,12 @@ export async function updateSystemConfig(
 
 /**
  * Get recent activity logs (simplified - would need audit log table in production)
+ * @param tx - Database transaction from RLS-protected route
  */
-export async function getRecentActivity(limit: number = 10): Promise<any[]> {
+export async function getRecentActivity(tx: NodePgDatabase<any>, limit: number = 10): Promise<any[]> {
   try {
-    await requireAdmin();
-
     // For now, return recent user joins
-    const recentUsers = await db
+    const recentUsers = await tx
       .select({
         userId: tenantUsers.userId,
         tenantName: tenants.tenantName,

@@ -2,6 +2,10 @@
  * Payment event handlers for webhook processing
  * Handles payment success and failure events
  * 
+ * MIGRATION STATUS: ✅ Migrated to use withSystemContext()
+ * - System-wide webhook operations use withSystemContext() for unrestricted access
+ * - Webhooks process payments across all tenants
+ * 
  * Processes payment events by updating a user's profile with payment details - when a payment succeeds, it upgrades the 
  * user to PRO and gives them credits; when a payment fails, it marks their account with a payment_failed status.
  * 
@@ -14,7 +18,7 @@ import { extractUserId } from "./user-utils";
 import { revalidateAfterPayment } from "./path-utils";
 import { convertTimestampToDate } from "./plan-utils";
 import { eq } from "drizzle-orm";
-import { db } from "@/db/db";
+import { withSystemContext } from '@/lib/db/with-rls-context';
 import { profilesTable } from "@/db/schema/profiles-schema";
 import { isFrictionlessPayment, handleFrictionlessPayment, createOrUpdatePendingProfile } from "./frictionless-payment-handlers";
 

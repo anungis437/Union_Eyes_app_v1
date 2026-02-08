@@ -21,7 +21,8 @@ interface QueryMetric {
   duration: number;
   timestamp: Date;
   cached: boolean;
-  tenantId: string;
+  organizationId: string;
+  tenantId?: string;
 }
 
 interface PerformanceReport {
@@ -46,14 +47,15 @@ class AnalyticsPerformanceMonitor {
     endpoint: string,
     duration: number,
     cached: boolean,
-    tenantId: string
+    organizationId: string
   ): void {
     this.metrics.push({
       endpoint,
       duration,
       timestamp: new Date(),
       cached,
-      tenantId,
+      organizationId,
+      tenantId: organizationId,
     });
 
     // Keep metrics array bounded
@@ -116,8 +118,8 @@ class AnalyticsPerformanceMonitor {
   /**
    * Get metrics for a specific tenant
    */
-  getTenantMetrics(tenantId: string): QueryMetric[] {
-    return this.metrics.filter(m => m.tenantId === tenantId);
+  getTenantMetrics(organizationId: string): QueryMetric[] {
+    return this.metrics.filter(m => m.organizationId === organizationId);
   }
 
   /**
@@ -151,7 +153,7 @@ class AnalyticsPerformanceMonitor {
       cacheHitRate: cachedCount / this.metrics.length,
       slowQueryRate: slowCount / this.metrics.length,
       uniqueEndpoints: new Set(this.metrics.map(m => m.endpoint)).size,
-      uniqueTenants: new Set(this.metrics.map(m => m.tenantId)).size,
+      uniqueTenants: new Set(this.metrics.map(m => m.organizationId)).size,
     };
   }
 
@@ -190,7 +192,7 @@ export const performanceMonitor = new AnalyticsPerformanceMonitor();
  */
 export function withPerformanceTracking<T>(
   endpoint: string,
-  tenantId: string,
+  organizationId: string,
   cached: boolean,
   queryFn: () => Promise<T>
 ): Promise<T> {
@@ -199,12 +201,12 @@ export function withPerformanceTracking<T>(
   return queryFn()
     .then(result => {
       const duration = Date.now() - startTime;
-      performanceMonitor.recordQuery(endpoint, duration, cached, tenantId);
+      performanceMonitor.recordQuery(endpoint, duration, cached, organizationId);
       return result;
     })
     .catch(error => {
       const duration = Date.now() - startTime;
-      performanceMonitor.recordQuery(endpoint, duration, cached, tenantId);
+      performanceMonitor.recordQuery(endpoint, duration, cached, organizationId);
       throw error;
     });
 }

@@ -42,13 +42,15 @@ vi.mock('postgres', () => ({
   })),
 }));
 
-vi.mock('pg', () => ({
-  Pool: vi.fn(() => ({
-    query: vi.fn(),
-    connect: vi.fn(),
-    end: vi.fn(),
-  })),
-}));
+vi.mock('pg', () => {
+  class Pool {
+    query = vi.fn();
+    connect = vi.fn();
+    end = vi.fn();
+  }
+
+  return { Pool };
+});
 
 describe('Multi-DB Client - Configuration', () => {
   const originalEnv = process.env;

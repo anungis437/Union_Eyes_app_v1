@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+
 import { db } from '@/db';
 import { claims, users, deadlines } from '@/db/schema';
 import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
+import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * GET /api/ml/recommendations?type=steward|deadline|strategy|priority
@@ -29,13 +30,14 @@ import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId, orgId } = auth();
+    const { userId, organizationId } = await requireUser();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = orgId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'all';
     const claimId = searchParams.get('claimId');

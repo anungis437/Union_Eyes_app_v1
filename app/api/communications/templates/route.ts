@@ -41,7 +41,9 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
     let query = db
       .select()
       .from(newsletterTemplates)
-      .where(eq(newsletterTemplates.organizationId, user.tenantId))
+      .where(eq(newsletterTemplates.organizationId, tenantId))
       .$dynamic();
 
     if (category && category !== 'all') {
@@ -86,7 +88,9 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { id: userId, tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -96,8 +100,8 @@ export async function POST(request: NextRequest) {
     const [template] = await db
       .insert(newsletterTemplates)
       .values({
-        organizationId: user.tenantId,
-        createdBy: user.id,
+        organizationId: tenantId,
+        createdBy: userId,
         ...validatedData,
       })
       .returning();

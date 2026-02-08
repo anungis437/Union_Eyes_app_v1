@@ -184,6 +184,53 @@ export async function applyBudgetUsage(
 }
 
 /**
+ * Apply budget usage with limit enforcement (transactional)
+ * Returns false if the update would exceed the envelope limit.
+ */
+export async function applyBudgetUsageChecked(
+  tx: DbTransaction | typeof db,
+  programId: string,
+  amount: number
+): Promise<boolean> {
+  if (amount <= 0) {
+    await applyBudgetUsage(tx, programId, amount);
+    return true;
+  }
+
+  const now = new Date();
+
+  const envelope = await tx.query.rewardBudgetEnvelopes.findFirst({
+    where: and(
+      eq(rewardBudgetEnvelopes.programId, programId),
+      eq(rewardBudgetEnvelopes.scopeType, 'org'),
+      lte(rewardBudgetEnvelopes.startsAt, now),
+      gte(rewardBudgetEnvelopes.endsAt, now)
+    ),
+    orderBy: [desc(rewardBudgetEnvelopes.createdAt)],
+  });
+
+  if (!envelope) {
+    return true;
+  }
+
+  const [updated] = await tx
+    .update(rewardBudgetEnvelopes)
+    .set({
+      amountUsed: sql`${rewardBudgetEnvelopes.amountUsed} + ${amount}`,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(rewardBudgetEnvelopes.id, envelope.id),
+        sql`${rewardBudgetEnvelopes.amountUsed} + ${amount} <= ${rewardBudgetEnvelopes.amountLimit}`
+      )
+    )
+    .returning();
+
+  return !!updated;
+}
+
+/**
  * Get budget usage summary
  * Returns aggregated usage stats for reporting
  */

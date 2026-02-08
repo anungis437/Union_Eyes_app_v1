@@ -8,18 +8,19 @@
  * - Easy revocation anytime
  */
 
-import { db } from '@/db/client';
+import { db } from '@/db';
 import { eq, lte } from 'drizzle-orm';
+import { memberLocationConsent, locationTracking } from '@/db/schema/geofence-privacy-schema';
 
 export interface LocationConsentRequest {
-  memberId: string;
+  userId: string;
   purpose: 'strike-line-tracking' | 'safety-check-ins' | 'event-coordination';
   duration: 'temporary' | 'permanent';
   expiresAt?: Date;
 }
 
 export interface LocationData {
-  memberId: string;
+  userId: string;
   latitude: number;
   longitude: number;
   timestamp: Date;
@@ -33,7 +34,7 @@ export interface LocationData {
  * User MUST actively opt-in, not implied by other actions
  */
 export async function requestLocationPermission(
-  memberId: string,
+  userId: string,
   purpose: string,
   duration: 'temporary' | 'permanent' = 'temporary'
 ): Promise<{
@@ -44,7 +45,7 @@ export async function requestLocationPermission(
   // Check if already has permission
   const existingConsent = await db.query.memberLocationConsent
     .findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, userId)
     })
     .catch(() => null);
 
@@ -58,7 +59,7 @@ export async function requestLocationPermission(
 
   // Require explicit opt-in from user
   return {
-    consentId: `pending-${memberId}-${Date.now()}`,
+    consentId: `pending-${userId}-${Date.now()}`,
     requiresUserAction: true,
     message: 'User must explicitly opt-in to location tracking. No implicit consent.'
   };
@@ -69,14 +70,14 @@ export async function requestLocationPermission(
  * CRITICAL: Must verify permission BEFORE storing
  */
 export async function trackLocation(
-  memberId: string,
+  userId: string,
   location: { latitude: number; longitude: number },
   purpose: string
 ): Promise<{ success: boolean; error?: string }> {
   // Verify explicit opt-in consent
   const consent = await db.query.memberLocationConsent
     .findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, userId)
     })
     .catch(() => null);
 
@@ -89,7 +90,7 @@ export async function trackLocation(
 
   // Verify consent hasn't expired
   if (consent.expiresAt && consent.expiresAt < new Date()) {
-    await revokeLocationConsent(memberId);
+    await revokeLocationConsent(userId);
     return {
       success: false,
       error: 'Location tracking consent has expired'
@@ -101,7 +102,7 @@ export async function trackLocation(
 
   try {
     await db.insert(locationTracking).values({
-      memberId,
+      userId,
       latitude: location.latitude,
       longitude: location.longitude,
       timestamp: new Date(),
@@ -148,13 +149,13 @@ export async function purgeExpiredLocations(): Promise<{
  * Revoke location consent anytime (member right)
  */
 export async function revokeLocationConsent(
-  memberId: string
+  userId: string
 ): Promise<{ success: boolean; message: string }> {
   try {
     await db
       .update(memberLocationConsent)
       .set({ status: 'opted_out' })
-      .where(eq(memberLocationConsent.memberId, memberId));
+      .where(eq(memberLocationConsent.userId, userId));
 
     return {
       success: true,
@@ -172,7 +173,7 @@ export async function revokeLocationConsent(
  * Get location consent status for member
  */
 export async function getLocationConsentStatus(
-  memberId: string
+  userId: string
 ): Promise<{
   status: 'opted_in' | 'opted_out' | 'never_asked';
   canRevokeAnytime: boolean;
@@ -182,7 +183,7 @@ export async function getLocationConsentStatus(
 }> {
   const consent = await db.query.memberLocationConsent
     .findFirst({
-      where: eq(memberLocationConsent.memberId, memberId)
+      where: eq(memberLocationConsent.userId, userId)
     })
     .catch(() => null);
 

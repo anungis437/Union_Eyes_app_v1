@@ -1,37 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 import { DuesCalculationEngine } from '@/lib/dues-calculation-engine';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { db } from '@/db';
+import { tenantUsers } from '@/services/financial-service/src/db/schema';
+import { eq } from 'drizzle-orm';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+
+// Validation schema for late fees calculation
+const lateFeeSchema = z.object({
+  lateFeeRate: z.number().min(0).max(1).optional().default(0.02),
+});
+
+// Check if user is admin
+async function checkAdminRole(userId: string): Promise<boolean> {
+  try {
+    const admin = await db
+      .select({ role: tenantUsers.role })
+      .from(tenantUsers)
+      .where(eq(tenantUsers.userId, userId))
+      .limit(1);
+    return admin.length > 0 && admin[0].role === 'admin';
+  } catch (_error) {
+    return false;
+  }
+}
 
 /**
  * Calculate and apply late fees to overdue transactions
  * Admin only endpoint - typically called by cron job
  */
-export async function POST(req: NextRequest) {
+export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+  let rawBody: unknown;
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // TODO: Check if user is admin or if this is a cron job request
-    
-    const body = await req.json();
-    const { lateFeeRate } = body;
-
-    // TODO: Get tenantId from user session
-    const tenantId = 'default-tenant';
-
-    const result = await DuesCalculationEngine.calculateLateFees(
-      tenantId,
-      lateFeeRate || 0.02 // Default 2% late fee
-    );
-
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Error calculating late fees:', error);
-    return NextResponse.json(
-      { error: 'Failed to calculate late fees' },
-      { status: 500 }
-    );
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
-}
+
+  const parsed = lateFeeSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  const body = parsed.data;
+  const { userId, organizationId } = context;
+
+  const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
+  if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+try {
+      // Verify admin role
+      const isAdmin = await checkAdminRole(userId);
+      if (!isAdmin) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/dues/late-fees',
+          method: 'POST',
+          eventType: 'auth_failed',
+          severity: 'high',
+          details: { reason: 'Admin role required' },
+        });
+        return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+      }
+
+      const { lateFeeRate } = body;
+
+      // TODO: Get tenantId from user session
+      const tenantId = 'default-tenant';
+
+      const result = await DuesCalculationEngine.calculateLateFees(
+        tenantId,
+        lateFeeRate
+      );
+
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/dues/late-fees',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          lateFeeRate,
+          processedTransactions: result.transactionsProcessed || 0,
+          totalFeesApplied: result.totalFeesApplied || 0,
+        },
+      });
+
+      return NextResponse.json(result);
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/dues/late-fees',
+        method: 'POST',
+        eventType: 'error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+      return NextResponse.json(
+        { error: 'Failed to calculate late fees' },
+        { status: 500 }
+      );
+    }
+});
+

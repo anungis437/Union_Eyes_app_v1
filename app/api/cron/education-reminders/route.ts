@@ -1,5 +1,13 @@
+/**
+ * Education Reminders Cron Job
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withSystemContext()
+ * - System-wide cron job uses withSystemContext() for unrestricted access
+ * - Runs daily to send session reminders and certification expiry warnings
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withSystemContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import {
@@ -42,36 +50,39 @@ export async function GET(request: NextRequest) {
     // 1. SESSION REMINDERS (7, 3, 1 day before)
     // ========================================
     
-    const sessionReminders = await db.execute(sql`
-      SELECT 
-        m.email,
-        m.first_name,
-        m.last_name,
-        c.course_name,
-        cs.session_date,
-        cs.session_time,
-        cs.location,
-        cs.duration_hours,
-        i.first_name as instructor_first_name,
-        i.last_name as instructor_last_name,
-        EXTRACT(DAY FROM (cs.session_date - CURRENT_DATE))::int as days_until
-      FROM course_registrations cr
-      JOIN members m ON m.id = cr.member_id
-      JOIN training_courses c ON c.id = cr.course_id
-      JOIN course_sessions cs ON cs.id = cr.session_id
-      LEFT JOIN members i ON i.id = cs.lead_instructor_id
-      WHERE 
-        cr.registration_status = 'registered'
-        AND cs.session_status = 'scheduled'
-        AND cs.session_date::date IN (
-          CURRENT_DATE + INTERVAL '7 days',
-          CURRENT_DATE + INTERVAL '3 days',
-          CURRENT_DATE + INTERVAL '1 day'
-        )
-        AND m.email IS NOT NULL
-        AND m.email != ''
-      ORDER BY cs.session_date, m.email
-    `);
+    // Use withSystemContext for system-wide cron job access
+    const sessionReminders = await withSystemContext(async (tx) => {
+      return await tx.execute(sql`
+        SELECT 
+          m.email,
+          m.first_name,
+          m.last_name,
+          c.course_name,
+          cs.session_date,
+          cs.session_time,
+          cs.location,
+          cs.duration_hours,
+          i.first_name as instructor_first_name,
+          i.last_name as instructor_last_name,
+          EXTRACT(DAY FROM (cs.session_date - CURRENT_DATE))::int as days_until
+        FROM course_registrations cr
+        JOIN members m ON m.id = cr.member_id
+        JOIN training_courses c ON c.id = cr.course_id
+        JOIN course_sessions cs ON cs.id = cr.session_id
+        LEFT JOIN members i ON i.id = cs.lead_instructor_id
+        WHERE 
+          cr.registration_status = 'registered'
+          AND cs.session_status = 'scheduled'
+          AND cs.session_date::date IN (
+            CURRENT_DATE + INTERVAL '7 days',
+            CURRENT_DATE + INTERVAL '3 days',
+            CURRENT_DATE + INTERVAL '1 day'
+          )
+          AND m.email IS NOT NULL
+          AND m.email != ''
+        ORDER BY cs.session_date, m.email
+      `);
+    });
 
     if (sessionReminders.length > 0) {
       logger.info("Processing session reminders", {
@@ -111,29 +122,31 @@ export async function GET(request: NextRequest) {
     // 2. CERTIFICATION EXPIRY WARNINGS (90, 30 days)
     // ========================================
     
-    const expiryWarnings = await db.execute(sql`
-      SELECT 
-        m.email,
-        m.first_name,
-        m.last_name,
-        mc.certification_name,
-        mc.certificate_number,
-        mc.expiry_date,
-        EXTRACT(DAY FROM (mc.expiry_date - CURRENT_DATE))::int as days_until_expiry,
-        c.continuing_education_hours
-      FROM member_certifications mc
-      JOIN members m ON m.id = mc.member_id
-      LEFT JOIN training_courses c ON c.provides_certification = mc.certification_name
-      WHERE 
-        mc.certification_status = 'active'
-        AND mc.expiry_date::date IN (
-          CURRENT_DATE + INTERVAL '90 days',
-          CURRENT_DATE + INTERVAL '30 days'
-        )
-        AND m.email IS NOT NULL
-        AND m.email != ''
-      ORDER BY mc.expiry_date, m.email
-    `);
+    const expiryWarnings = await withSystemContext(async (tx) => {
+      return await tx.execute(sql`
+        SELECT 
+          m.email,
+          m.first_name,
+          m.last_name,
+          mc.certification_name,
+          mc.certificate_number,
+          mc.expiry_date,
+          EXTRACT(DAY FROM (mc.expiry_date - CURRENT_DATE))::int as days_until_expiry,
+          c.continuing_education_hours
+        FROM member_certifications mc
+        JOIN members m ON m.id = mc.member_id
+        LEFT JOIN training_courses c ON c.provides_certification = mc.certification_name
+        WHERE 
+          mc.certification_status = 'active'
+          AND mc.expiry_date::date IN (
+            CURRENT_DATE + INTERVAL '90 days',
+            CURRENT_DATE + INTERVAL '30 days'
+          )
+          AND m.email IS NOT NULL
+          AND m.email != ''
+        ORDER BY mc.expiry_date, m.email
+      `);
+    });
 
     if (expiryWarnings.length > 0) {
       logger.info("Processing expiry warnings", {

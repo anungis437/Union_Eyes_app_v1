@@ -39,14 +39,16 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.organizationId, user.tenantId))
+      .where(eq(newsletterDistributionLists.organizationId, tenantId))
       .orderBy(desc(newsletterDistributionLists.createdAt));
 
     return NextResponse.json({ lists });
@@ -65,7 +67,9 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user.tenantId) {
+    const { id: userId, tenantId } = user;
+
+    if (!tenantId) {
       return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
     }
 
@@ -75,8 +79,8 @@ export async function POST(request: NextRequest) {
     const [list] = await db
       .insert(newsletterDistributionLists)
       .values({
-        organizationId: user.tenantId,
-        createdBy: user.id,
+        organizationId: tenantId,
+        createdBy: userId,
         ...validatedData,
       })
       .returning();

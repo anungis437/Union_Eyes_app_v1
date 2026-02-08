@@ -25,8 +25,14 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+const hasApiServer =
+  process.env.RUN_INTEGRATION_TESTS === 'true' &&
+  Boolean(process.env.INTEGRATION_API_BASE_URL) &&
+  !(globalThis.fetch as unknown as { mock?: unknown })?.mock;
+const apiBaseUrl = process.env.INTEGRATION_API_BASE_URL || 'http://localhost:3000';
+const describeIf = hasApiServer ? describe : describe.skip;
 
-describe('Multi-Tenant Admin Integration', () => {
+describeIf('Multi-Tenant Admin Integration', () => {
   it('should fetch organization hierarchy with recursive CTEs', async () => {
     // Test will validate:
     // - Recursive organization tree traversal
@@ -34,7 +40,7 @@ describe('Multi-Tenant Admin Integration', () => {
     // - Member count aggregation
     // - RLS enforcement
     
-    const response = await fetch('http://localhost:3000/api/organizations/hierarchy?rootOrgId=test-org-id', {
+    const response = await fetch(`${apiBaseUrl}/api/organizations/hierarchy?rootOrgId=test-org-id`, {
       headers: {
         'Authorization': 'Bearer test-token'
       }
@@ -51,7 +57,7 @@ describe('Multi-Tenant Admin Integration', () => {
     // - Circular reference detection
     // - Proper error handling
     
-    const response = await fetch('http://localhost:3000/api/organizations/test-org-id', {
+    const response = await fetch(`${apiBaseUrl}/api/organizations/test-org-id`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +74,7 @@ describe('Multi-Tenant Admin Integration', () => {
   });
 });
 
-describe('Strike Fund Management Integration', () => {
+describeIf('Strike Fund Management Integration', () => {
   it('should fetch picket lines with PostGIS coordinates', async () => {
     // Test will validate:
     // - PostGIS ST_X(), ST_Y() coordinate extraction
@@ -125,7 +131,7 @@ describe('Strike Fund Management Integration', () => {
   });
 });
 
-describe('Pension & H&W API Integration', () => {
+describeIf('Pension & H&W API Integration', () => {
   it('should enroll member in pension plan', async () => {
     // Test will validate:
     // - Pension member enrollment
@@ -184,7 +190,7 @@ describe('Pension & H&W API Integration', () => {
   });
 });
 
-describe('Organizing Density Calculation', () => {
+describeIf('Organizing Density Calculation', () => {
   it('should calculate department-level density', async () => {
     // Test will validate:
     // - Card signing percentage calculation
@@ -212,7 +218,7 @@ describe('Organizing Density Calculation', () => {
   });
 });
 
-describe('Labour Board Form Generation', () => {
+describeIf('Labour Board Form Generation', () => {
   it('should generate PDF certification form', async () => {
     // Test will validate:
     // - PDF generation with pdf-lib
@@ -255,7 +261,7 @@ describe('Labour Board Form Generation', () => {
   });
 });
 
-describe('End-to-End Organizing Workflow', () => {
+describeIf('End-to-End Organizing Workflow', () => {
   it('should complete full certification workflow', async () => {
     // Test will validate:
     // 1. Create organizing campaign
@@ -294,7 +300,7 @@ describe('End-to-End Organizing Workflow', () => {
   });
 });
 
-describe('Strike Fund Financial Projections', () => {
+describeIf('Strike Fund Financial Projections', () => {
   it('should calculate fund burn rate and duration', async () => {
     // Test will validate:
     // - Weekly stipend disbursement totals
@@ -313,7 +319,7 @@ describe('Strike Fund Financial Projections', () => {
   });
 });
 
-describe('Multi-Tenant RLS Enforcement', () => {
+describeIf('Multi-Tenant RLS Enforcement', () => {
   it('should enforce tenant isolation for organization hierarchy', async () => {
     // Test will validate:
     // - RLS policies active on hierarchical_organizations

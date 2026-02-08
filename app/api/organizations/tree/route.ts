@@ -1,10 +1,12 @@
+import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * API Route: Organization Tree
  * Get the full organization hierarchy tree
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
+
 import { getOrganizationTree } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
 
@@ -14,7 +16,7 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId } = await requireUser();
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized - Authentication required' },

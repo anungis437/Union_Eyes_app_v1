@@ -9,9 +9,9 @@ export async function register() {
   // Validate environment variables on startup (Node.js runtime only)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     try {
-      // Import and run environment validation
-      const { validateEnv } = await import('./lib/env-validator');
-      const envValidation = validateEnv();
+      // Import and run comprehensive environment validation
+      const { validateEnvironment, printEnvironmentReport } = await import('./lib/config/env-validation');
+      const envValidation = validateEnvironment();
       
       if (!envValidation.isValid) {
         console.error('❌ Environment validation failed:');
@@ -27,6 +27,14 @@ export async function register() {
         }
       } else {
         console.log('✅ Environment validation passed');
+      }
+
+      // Print warnings if any
+      if (envValidation.warnings.length > 0) {
+        console.warn('⚠️ Environment warnings:');
+        envValidation.warnings.forEach(warning => {
+          console.warn(`  - ${warning}`);
+        });
       }
 
       // Run database startup checks (optional, can be disabled with env var)
