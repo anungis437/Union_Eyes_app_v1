@@ -22,8 +22,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // GET /api/education/certifications/generate?registrationId={id} - Generate certificate PDF
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const registrationId = searchParams.get("registrationId");
@@ -251,8 +249,6 @@ export const GET = async (request: NextRequest) => {
 // POST /api/education/certifications/generate - Generate certificate for completed registration
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const body = await request.json();
       const { registrationId, sendEmail = false } = body;

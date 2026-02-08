@@ -1,8 +1,16 @@
+/**
+ * Admin Users Management API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { getAdminUsers } from "@/actions/admin-actions";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { eq } from "drizzle-orm";
@@ -41,57 +49,60 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
   }
 
 try {
-      // Verify admin role
-      const adminCheck = await db
-        .select({ role: tenantUsers.role })
-        .from(tenantUsers)
-        .where(eq(tenantUsers.userId, userId))
-        .limit(1);
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Verify admin role
+        const adminCheck = await tx
+          .select({ role: tenantUsers.role })
+          .from(tenantUsers)
+          .where(eq(tenantUsers.userId, userId))
+          .limit(1);
 
-      if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
+        if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(), userId,
+            endpoint: "/api/admin/users",
+            method: "GET",
+            eventType: "unauthorized_access",
+            severity: "high",
+            details: { reason: "Non-admin attempted access", actualRole: adminCheck[0]?.role },
+          });
+
+          return NextResponse.json(
+            { error: "Admin access required" },
+            { status: 403 }
+          );
+        }
+
+        const { search, tenantId, role, page, limit } = query;
+
+        // Validate pagination
+        if (page < 1 || limit < 1 || limit > 100) {
+          return NextResponse.json(
+            { error: "Invalid pagination parameters" },
+            { status: 400 }
+          );
+        }
+
+        const users = await getAdminUsers(tx, search, tenantId, role);
+
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: "/api/admin/users",
           method: "GET",
-          eventType: "unauthorized_access",
-          severity: "high",
-          details: { reason: "Non-admin attempted access", actualRole: adminCheck[0]?.role },
+          eventType: "success",
+          severity: "low",
+          details: { 
+            resultCount: users.length,
+            filters: { search, tenantId, role },
+          },
         });
 
-        return NextResponse.json(
-          { error: "Admin access required" },
-          { status: 403 }
-        );
-      }
-
-      const { search, tenantId, role, page, limit } = query;
-
-      // Validate pagination
-      if (page < 1 || limit < 1 || limit > 100) {
-        return NextResponse.json(
-          { error: "Invalid pagination parameters" },
-          { status: 400 }
-        );
-      }
-
-      const users = await getAdminUsers(search, tenantId, role);
-
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: "/api/admin/users",
-        method: "GET",
-        eventType: "success",
-        severity: "low",
-        details: { 
-          resultCount: users.length,
-          filters: { search, tenantId, role },
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        data: users,
-        count: users.length,
+        return NextResponse.json({
+          success: true,
+          data: users,
+          count: users.length,
+        });
       });
     } catch (error) {
       logger.error("Failed to fetch users", error);
@@ -160,80 +171,83 @@ try {
 
       const { userId: targetUserId, tenantId, role } = bodyResult.data;
 
-      // Verify admin role
-      const adminCheck = await db
-        .select({ role: tenantUsers.role })
-        .from(tenantUsers)
-        .where(eq(tenantUsers.userId, userId))
-        .limit(1);
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Verify admin role
+        const adminCheck = await tx
+          .select({ role: tenantUsers.role })
+          .from(tenantUsers)
+          .where(eq(tenantUsers.userId, userId))
+          .limit(1);
 
-      if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
+        if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(), userId,
+            endpoint: "/api/admin/users",
+            method: "POST",
+            eventType: "unauthorized_access",
+            severity: "high",
+            details: { reason: "Non-admin attempted user creation" },
+          });
+
+          return NextResponse.json(
+            { error: "Admin access required" },
+            { status: 403 }
+          );
+        }
+
+        // Verify tenant exists
+        const [tenant] = await tx
+          .select()
+          .from(tenants)
+          .where(eq(tenants.tenantId, tenantId))
+          .limit(1);
+
+        if (!tenant) {
+          return NextResponse.json(
+            { error: "Tenant not found" },
+            { status: 404 }
+          );
+        }
+
+        // Add user to tenant
+        const [newUser] = await tx
+          .insert(tenantUsers)
+          .values({
+            userId: targetUserId,
+            tenantId: tenantId,
+            role,
+            isActive: true,
+            joinedAt: new Date(),
+          })
+          .returning();
+
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: "/api/admin/users",
           method: "POST",
-          eventType: "unauthorized_access",
-          severity: "high",
-          details: { reason: "Non-admin attempted user creation" },
+          eventType: "success",
+          severity: "medium",
+          details: {
+            adminId: userId,
+            newUserId: targetUserId,
+            tenantId,
+            role,
+          },
         });
 
-        return NextResponse.json(
-          { error: "Admin access required" },
-          { status: 403 }
-        );
-      }
-
-      // Verify tenant exists
-      const [tenant] = await db
-        .select()
-        .from(tenants)
-        .where(eq(tenants.tenantId, tenantId))
-        .limit(1);
-
-      if (!tenant) {
-        return NextResponse.json(
-          { error: "Tenant not found" },
-          { status: 404 }
-        );
-      }
-
-      // Add user to tenant
-      const [newUser] = await db
-        .insert(tenantUsers)
-        .values({
-          userId: targetUserId,
-          tenantId: tenantId,
-          role,
-          isActive: true,
-          joinedAt: new Date(),
-        })
-        .returning();
-
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: "/api/admin/users",
-        method: "POST",
-        eventType: "success",
-        severity: "medium",
-        details: {
+        logger.info("User added to tenant", {
           adminId: userId,
           newUserId: targetUserId,
           tenantId,
           role,
-        },
-      });
+        });
 
-      logger.info("User added to tenant", {
-        adminId: userId,
-        newUserId: targetUserId,
-        tenantId,
-        role,
+        return NextResponse.json({
+          success: true,
+          data: newUser,
+        }, { status: 201 });
       });
-
-      return NextResponse.json({
-        success: true,
-        data: newUser,
-      }, { status: 201 });
     } catch (error) {
       logger.error("Failed to create user", error);
       logApiAuditEvent({

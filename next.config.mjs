@@ -3,6 +3,42 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
+const ContentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data: https:",
+  // For Clerk and Radix UI components that require inline styles
+  "style-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.com",
+  // For Next.js and Clerk
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
+  "connect-src 'self' https: wss: https://*.clerk.com https://*.clerk.accounts.dev https://*.sentry.io",
+  "frame-src 'self' https://clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
+  "worker-src 'self' blob:",
+  "form-action 'self'",
+  "upgrade-insecure-requests",
+].join('; ');
+
+const securityHeaders = [
+  { key: 'Content-Security-Policy', value: ContentSecurityPolicy },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  // Modern permissions policy
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=(), payment=(), usb=()' },
+  // HSTS with preload (ensures HTTPS)
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  // Additional security headers
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  { key: 'X-Download-Options', value: 'noopen' },
+  { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+  { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // ESLint configuration - ENABLED for production safety
@@ -82,6 +118,15 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
+  },
+
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ];
   },
   
   // Webpack optimizations

@@ -108,6 +108,7 @@ export async function getExecutiveSummary(
   organizationId: string,
   dateRange: DateRange
 ): Promise<ExecutiveSummary> {
+  const tenantId = organizationId;
   const { startDate, endDate } = dateRange;
   
   // Get current period metrics
@@ -185,6 +186,7 @@ export async function getMonthlyTrends(
   organizationId: string,
   monthsBack: number = 12
 ): Promise<TrendData[]> {
+  const tenantId = organizationId;
   const trends = await db.execute(sql`
     SELECT 
       TO_CHAR(month, 'YYYY-MM') AS period,
@@ -215,6 +217,7 @@ export async function getClaimsAnalytics(
   organizationId: string,
   dateRange: DateRange
 ): Promise<ClaimsAnalytics> {
+  const tenantId = organizationId;
   const { startDate, endDate } = dateRange;
 
   // Get aggregate metrics
@@ -315,6 +318,7 @@ export async function getClaimsByDateRange(
     assignedTo?: string;
   }
 ): Promise<any[]> {
+  const tenantId = organizationId;
   const { startDate, endDate } = dateRange;
   
   let query = sql`
@@ -368,6 +372,7 @@ export async function getMemberAnalytics(
   organizationId: string,
   dateRange: DateRange
 ): Promise<MemberAnalytics> {
+  const tenantId = organizationId;
   const { startDate, endDate } = dateRange;
 
   // Get member counts
@@ -467,6 +472,7 @@ export async function getDeadlineAnalytics(
   organizationId: string,
   dateRange: DateRange
 ): Promise<DeadlineAnalytics> {
+  const tenantId = organizationId;
   const { startDate, endDate } = dateRange;
 
   // Get deadline metrics
@@ -541,6 +547,7 @@ export async function getFinancialAnalytics(
   organizationId: string,
   dateRange: DateRange
 ): Promise<FinancialAnalytics> {
+  const tenantId = organizationId;
   const { startDate, endDate } = dateRange;
 
   // Get financial metrics
@@ -624,6 +631,7 @@ export async function getFinancialAnalytics(
  * Get weekly activity heatmap data
  */
 export async function getWeeklyActivityHeatmap(organizationId: string): Promise<HeatmapData[]> {
+  const tenantId = organizationId;
   const heatmapData = await db.execute(sql`
     SELECT 
       day_of_week,
@@ -652,6 +660,7 @@ export async function getWeeklyActivityHeatmap(organizationId: string): Promise<
  * Kept for backwards compatibility if needed
  */
 export async function getReportsLegacy(organizationId: string, userId?: string): Promise<any[]> {
+  const tenantId = organizationId;
   let query = sql`
     SELECT 
       r.id,
@@ -699,6 +708,7 @@ export async function createReportLegacy(
     templateId?: string;
   }
 ): Promise<any> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     INSERT INTO reports (
       organization_id, name, description, report_type, category, config, 
@@ -743,6 +753,7 @@ export async function createExportJob(
     exportType: string;
   }
 ): Promise<any> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     INSERT INTO export_jobs (organization_id, report_id, schedule_id, export_type, created_by)
     VALUES (${organizationId}, ${exportData.reportId || null}, ${exportData.scheduleId || null}, 
@@ -805,6 +816,7 @@ export async function getExportJob(jobId: string): Promise<any> {
  * Get user's export jobs
  */
 export async function getUserExportJobs(organizationId: string, userId: string): Promise<any[]> {
+  const tenantId = organizationId;
   return await db.execute(sql`
     SELECT 
       ej.*,
@@ -853,7 +865,7 @@ export async function getViewRefreshStats(): Promise<any[]> {
  * Get all reports for an organization
  */
 export async function getReports(
-  tenantId: string,
+  organizationId: string,
   userId: string,
   filters?: {
     category?: string;
@@ -862,6 +874,7 @@ export async function getReports(
     search?: string;
   }
 ): Promise<any[]> {
+  const tenantId = organizationId;
   let conditions: any[] = [sql`r.tenant_id = ${tenantId}`];
 
   // Add filters
@@ -906,8 +919,9 @@ export async function getReports(
  */
 export async function getReportById(
   reportId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<any | null> {
+  const tenantId = organizationId;
   const reports = await db.execute(sql`
     SELECT r.*
     FROM reports r
@@ -921,7 +935,7 @@ export async function getReportById(
  * Create new report
  */
 export async function createReport(
-  tenantId: string,
+  organizationId: string,
   userId: string,
   data: {
     name: string;
@@ -934,6 +948,7 @@ export async function createReport(
     templateId?: string;
   }
 ): Promise<any> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     INSERT INTO reports (
       tenant_id, name, description, report_type, category, config,
@@ -954,7 +969,7 @@ export async function createReport(
  */
 export async function updateReport(
   reportId: string,
-  tenantId: string,
+  organizationId: string,
   userId: string,
   data: {
     name?: string;
@@ -963,6 +978,7 @@ export async function updateReport(
     isPublic?: boolean;
   }
 ): Promise<any> {
+  const tenantId = organizationId;
   const updates: string[] = [];
   const values: any[] = [];
 
@@ -1002,8 +1018,9 @@ export async function updateReport(
  */
 export async function deleteReport(
   reportId: string,
-  tenantId: string
+  organizationId: string
 ): Promise<boolean> {
+  const tenantId = organizationId;
   await db.execute(sql`
     DELETE FROM reports
     WHERE id = ${reportId} AND tenant_id = ${tenantId}
@@ -1017,7 +1034,7 @@ export async function deleteReport(
  */
 export async function logReportExecution(
   reportId: string,
-  tenantId: string,
+  organizationId: string,
   userId: string,
   data: {
     format: string;
@@ -1030,6 +1047,7 @@ export async function logReportExecution(
     errorMessage?: string;
   }
 ): Promise<any> {
+  const tenantId = organizationId;
   const result = await db.execute(sql`
     INSERT INTO report_executions (
       report_id, tenant_id, executed_by, format, parameters,
@@ -1060,9 +1078,10 @@ export async function logReportExecution(
  */
 export async function getReportExecutions(
   reportId: string,
-  tenantId: string,
+  organizationId: string,
   limit: number = 50
 ): Promise<any[]> {
+  const tenantId = organizationId;
   const executions = await db.execute(sql`
     SELECT re.*, u.email as executed_by_email
     FROM report_executions re
@@ -1079,7 +1098,7 @@ export async function getReportExecutions(
  * Get report templates
  */
 export async function getReportTemplates(
-  tenantId?: string,
+  organizationId?: string,
   category?: string
 ): Promise<any[]> {
   let conditions: any[] = [sql`rt.is_active = true`];
@@ -1112,10 +1131,11 @@ export async function getReportTemplates(
  */
 export async function createReportFromTemplate(
   templateId: string,
-  tenantId: string,
+  organizationId: string,
   userId: string,
   name: string
 ): Promise<any> {
+  const tenantId = organizationId;
   // Get template
   const template = await db.execute(sql`
     SELECT * FROM report_templates WHERE id = ${templateId}

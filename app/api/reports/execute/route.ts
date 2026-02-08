@@ -179,7 +179,8 @@ function buildSQLQuery(config: ReportConfig, tenantId: string): string {
     limitClause,
   ]
     .filter(clause => clause !== '')
-    .join(' \n');
+    .join(' 
+');
 
   return query;
 }

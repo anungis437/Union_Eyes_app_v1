@@ -16,9 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const { searchParams } = new URL(request.url);
       const planId = searchParams.get('planId');
       const memberId = searchParams.get('memberId');
@@ -77,9 +75,7 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const body = await request.json();
       const {
         pensionPlanId,

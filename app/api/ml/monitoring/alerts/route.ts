@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
 
     // Query active alerts from monitoring tables
     const alertsData = await db.execute(sql`
@@ -190,7 +191,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
     const { alertId } = await request.json();
 
     if (!alertId) {

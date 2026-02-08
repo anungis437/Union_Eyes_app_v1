@@ -5,12 +5,17 @@
  * Endpoints:
  * - GET /api/admin/clc/remittances - List remittances with filters
  * - POST /api/admin/clc/remittances/calculate - Trigger manual calculation
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - Removed manual SET app.current_user_id commands
+ * - Removed redundant checkAdminRole() function (role check via withEnhancedRoleAuth)
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - Transaction-scoped isolation prevents context leakage
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { db } from '@/db';
 import { organizations, perCapitaRemittances } from '@/db/schema';
 import { and, eq, gte, lte, inArray, sql } from 'drizzle-orm';
 import { 
@@ -20,20 +25,7 @@ import {
   savePerCapitaRemittances 
 } from '@/services/clc/per-capita-calculator';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
-
-/**
- * Admin role check helper
- */
-async function checkAdminRole(userId: string): Promise<boolean> {
-  try {
-    const admin = await db.execute(
-      sql`SELECT role FROM tenant_users WHERE user_id = ${userId} AND role = 'admin' LIMIT 1`
-    );
-    return admin.length > 0;
-  } catch (_error) {
-    return false;
-  }
-}
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Query schema for listing remittances
@@ -67,41 +59,21 @@ export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
-  // Admin check
-      const isAdmin = await checkAdminRole(userId);
-      if (!isAdmin) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/admin/clc/remittances',
-          method: 'GET',
-          eventType: 'auth_failed',
-          severity: 'high',
-          details: { reason: 'Admin access required' },
-        });
-        return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-      }
+    try {
+      // Parse query parameters
+      const searchParams = request.nextUrl.searchParams;
+      const status = searchParams.get('status');
+      const organizationId = searchParams.get('organizationId');
+      const month = searchParams.get('month') ? parseInt(searchParams.get('month')!) : null;
+      const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : null;
+      const dueDateFrom = searchParams.get('dueDateFrom');
+      const dueDateTo = searchParams.get('dueDateTo');
+      const page = parseInt(searchParams.get('page') || '1');
+      const pageSize = parseInt(searchParams.get('pageSize') || '50');
+      const offset = (page - 1) * pageSize;
 
-      try {
-        // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${userId}`);
-
-        // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${userId}`);
-
-        // Parse query parameters
-        const searchParams = request.nextUrl.searchParams;
-        const status = searchParams.get('status');
-        const organizationId = searchParams.get('organizationId');
-        const month = searchParams.get('month') ? parseInt(searchParams.get('month')!) : null;
-        const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : null;
-        const dueDateFrom = searchParams.get('dueDateFrom');
-        const dueDateTo = searchParams.get('dueDateTo');
-        const page = parseInt(searchParams.get('page') || '1');
-        const pageSize = parseInt(searchParams.get('pageSize') || '50');
-        const offset = (page - 1) * pageSize;
-
-        const offset = (page - 1) * pageSize;
-
+      // All database operations wrapped in withRLSContext for automatic context setting
+      return withRLSContext(async (tx) => {
         // Build WHERE conditions
         const conditions = [];
         
@@ -135,7 +107,7 @@ export const GET = async (request: NextRequest) => {
         // Fetch remittances with organization details
         const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
         
-        const remittances = await db
+        const remittances = await tx
           .select({
             id: perCapitaRemittances.id,
             remittanceMonth: perCapitaRemittances.remittanceMonth,
@@ -163,7 +135,7 @@ export const GET = async (request: NextRequest) => {
           .offset(offset);
 
         // Get total count for pagination
-        const [countResult] = await db
+        const [countResult] = await tx
           .select({ count: sql<number>`COUNT(*)` })
           .from(perCapitaRemittances)
           .where(whereClause);
@@ -178,7 +150,7 @@ export const GET = async (request: NextRequest) => {
           orgIds.add(r.toOrganizationId);
         });
 
-        const orgs = await db
+        const orgs = await tx
           .select({
             id: organizations.id,
             name: organizations.name,
@@ -220,22 +192,23 @@ export const GET = async (request: NextRequest) => {
             totalPages,
           },
         });
-      } catch (error) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/admin/clc/remittances',
-          method: 'GET',
-          eventType: 'server_error',
-          severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        });
-        console.error('Error fetching remittances:', error);
-        return NextResponse.json(
-          { error: 'Failed to fetch remittances' },
-          { status: 500 }
-        );
-      }
-      })(request);
+      });
+    } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), userId,
+        endpoint: '/api/admin/clc/remittances',
+        method: 'GET',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
+      console.error('Error fetching remittances:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch remittances' },
+        { status: 500 }
+      );
+    }
+  })(request);
 };
 
 // =====================================================================================
@@ -258,29 +231,15 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
   const body = parsed.data;
   const { userId, organizationId } = context;
 
+  // Validate organization ID if provided (can't calculate for different org than user's context)
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-// Admin check
-    const isAdmin = await checkAdminRole(userId);
-    if (!isAdmin) {
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/admin/clc/remittances',
-        method: 'POST',
-        eventType: 'auth_failed',
-        severity: 'high',
-        details: { reason: 'Admin access required' },
-      });
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    try {
-      // Set session context for RLS
-      await db.execute(sql`SET app.current_user_id = ${userId}`);
-
+  try {
+    // All database operations wrapped in withRLSContext for automatic context setting
+    return withRLSContext(async (tx) => {
       const { organizationId, month, year, saveResults } = body;
 
       // Calculate remittances
@@ -325,20 +284,21 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
           ? `Calculated remittance for 1 organization`
           : `Calculated remittances for ${calculations.length} organizations`,
       });
-    } catch (error) {
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/admin/clc/remittances',
-        method: 'POST',
-        eventType: 'server_error',
-        severity: 'high',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      });
-      console.error('Error calculating remittances:', error);
-      return NextResponse.json(
-        { error: 'Failed to calculate remittances' },
-        { status: 500 }
-      );
-    }
+    });
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), userId,
+      endpoint: '/api/admin/clc/remittances',
+      method: 'POST',
+      eventType: 'server_error',
+      severity: 'high',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error('Error calculating remittances:', error);
+    return NextResponse.json(
+      { error: 'Failed to calculate remittances' },
+      { status: 500 }
+    );
+  }
 });
 

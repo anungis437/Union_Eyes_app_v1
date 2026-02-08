@@ -239,32 +239,48 @@ function formatCaseContent(claim: any): string {
   let content = '';
 
   // Basic info
-  content += `MEMBER: ${claim.member?.first_name} ${claim.member?.last_name}\n`;
-  content += `MEMBER NUMBER: ${claim.member?.member_number}\n`;
-  content += `EMPLOYER: ${claim.employer?.name}\n`;
-  content += `ISSUE TYPE: ${claim.issue_type}\n`;
-  content += `STATUS: ${claim.status}\n`;
-  content += `CREATED: ${claim.created_at}\n\n`;
+  content += `MEMBER: ${claim.member?.first_name} ${claim.member?.last_name}
+`;
+  content += `MEMBER NUMBER: ${claim.member?.member_number}
+`;
+  content += `EMPLOYER: ${claim.employer?.name}
+`;
+  content += `ISSUE TYPE: ${claim.issue_type}
+`;
+  content += `STATUS: ${claim.status}
+`;
+  content += `CREATED: ${claim.created_at}
+
+`;
 
   // Description
   if (claim.description) {
-    content += `DESCRIPTION:\n${claim.description}\n\n`;
+    content += `DESCRIPTION:
+${claim.description}
+
+`;
   }
 
   // Activities/Timeline
   if (claim.activities && claim.activities.length > 0) {
-    content += `TIMELINE:\n`;
+    content += `TIMELINE:
+`;
     claim.activities
       .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
       .forEach((activity: any) => {
-        content += `[${activity.created_at}] ${activity.activity_type}: ${activity.description}\n`;
+        content += `[${activity.created_at}] ${activity.activity_type}: ${activity.description}
+`;
       });
-    content += '\n';
+    content += '
+';
   }
 
   // Additional notes
   if (claim.notes) {
-    content += `NOTES:\n${claim.notes}\n\n`;
+    content += `NOTES:
+${claim.notes}
+
+`;
   }
 
   return content;

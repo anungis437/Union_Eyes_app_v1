@@ -3,15 +3,17 @@ import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import ExcelJS from 'exceljs';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 // GET /api/communications/surveys/[surveyId]/export - Export responses
-export async function GET(
+export const GET = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -119,7 +121,8 @@ export async function GET(
         ...rows.map((row) =>
           row.map((cell) => `"${cell.toString().replace(/"/g, '""')}"`).join(',')
         ),
-      ].join('\n');
+      ].join('
+');
 
       return new NextResponse(csvContent, {
         headers: {
@@ -212,4 +215,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});

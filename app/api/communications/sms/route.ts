@@ -45,16 +45,17 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (req: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+    const { userId, organizationId: contextOrganizationId } = context;
 
   try {
       const { searchParams } = new URL(req.url);
       const action = searchParams.get('action');
-      const tenantId = searchParams.get('tenantId');
+      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId') ?? contextOrganizationId);
+      const tenantId = organizationId;
       const campaignId = searchParams.get('campaignId');
 
       if (!tenantId) {
-        return NextResponse.json({ error: 'Missing tenantId parameter' }, { status: 400 });
+        return NextResponse.json({ error: 'Missing organizationId parameter' }, { status: 400 });
       }
 
       switch (action) {
@@ -178,11 +179,13 @@ async function getCampaignDetails(campaignId: string) {
 }
 
 async function sendSingleSms(userId: string, body: any) {
-  const { tenantId, phoneNumber, message, templateId, variables } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, phoneNumber, message, templateId, variables } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !phoneNumber || !message) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, phoneNumber, message' },
+      { error: 'Missing required fields: organizationId, phoneNumber, message' },
       { status: 400 }
     );
   }
@@ -200,7 +203,7 @@ async function sendSingleSms(userId: string, body: any) {
   }
 
   const options: SendSmsOptions = {
-    tenantId,
+    organizationId,
     userId,
     phoneNumber,
     message: finalMessage,
@@ -223,17 +226,19 @@ async function sendSingleSms(userId: string, body: any) {
 }
 
 async function sendBulkSmsAction(userId: string, body: any) {
-  const { tenantId, recipients, message, templateId, campaignId } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, recipients, message, templateId, campaignId } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !recipients || !Array.isArray(recipients) || !message) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, recipients (array), message' },
+      { error: 'Missing required fields: organizationId, recipients (array), message' },
       { status: 400 }
     );
   }
 
   const options: SendBulkSmsOptions = {
-    tenantId,
+    organizationId,
     userId,
     recipients,
     message,
@@ -252,11 +257,13 @@ async function sendBulkSmsAction(userId: string, body: any) {
 }
 
 async function createTemplate(userId: string, body: any) {
-  const { tenantId, name, description, messageTemplate, variables, category } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, messageTemplate, variables, category } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !name || !messageTemplate) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, name, messageTemplate' },
+      { error: 'Missing required fields: organizationId, name, messageTemplate' },
       { status: 400 }
     );
   }
@@ -285,11 +292,13 @@ async function createTemplate(userId: string, body: any) {
 }
 
 async function createCampaign(userId: string, body: any) {
-  const { tenantId, name, description, message, templateId, recipientFilter, scheduledFor } = body;
+  const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const tenantId = organizationId;
 
   if (!tenantId || !name || !message) {
     return NextResponse.json(
-      { error: 'Missing required fields: tenantId, name, message' },
+      { error: 'Missing required fields: organizationId, name, message' },
       { status: 400 }
     );
   }
@@ -352,7 +361,7 @@ async function sendCampaignAction(userId: string, body: any) {
 
   try {
     const result = await sendBulkSms({
-      tenantId: campaign.organizationId,
+      organizationId: campaign.organizationId,
       userId,
       recipients,
       message: campaign.message,

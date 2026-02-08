@@ -11,6 +11,7 @@ import { eq, and, isNull, desc, sql } from "drizzle-orm";
  * Get all active members for an organization
  */
 export async function getOrganizationMembers(organizationId: string): Promise<SelectOrganizationMember[]> {
+  const tenantId = organizationId;
   return await db
     .select()
     .from(organizationMembers)
@@ -27,6 +28,7 @@ export async function getOrganizationMembers(organizationId: string): Promise<Se
  * Get member by ID and organization
  */
 export async function getMemberById(organizationId: string, id: string): Promise<SelectOrganizationMember | undefined> {
+  const tenantId = organizationId;
   const result = await db
     .select()
     .from(organizationMembers)
@@ -49,6 +51,7 @@ export async function getMemberByUserId(
   organizationId: string,
   userId: string
 ): Promise<SelectOrganizationMember | undefined> {
+  const tenantId = organizationId;
   const result = await db
     .select()
     .from(organizationMembers)
@@ -120,6 +123,7 @@ export async function deleteMember(id: string): Promise<boolean> {
  * Get member count for an organization
  */
 export async function getMemberCount(organizationId: string): Promise<number> {
+  const tenantId = organizationId;
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(organizationMembers)
@@ -137,6 +141,7 @@ export async function getMemberCount(organizationId: string): Promise<number> {
  * Get active member count for an organization
  */
 export async function getActiveMemberCount(organizationId: string): Promise<number> {
+  const tenantId = organizationId;
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(organizationMembers)
@@ -158,6 +163,7 @@ export async function getMembersByRole(
   organizationId: string,
   role: "member" | "steward" | "officer" | "admin"
 ): Promise<SelectOrganizationMember[]> {
+  const tenantId = organizationId;
   return await db
     .select()
     .from(organizationMembers)
@@ -178,6 +184,7 @@ export async function getMembersByStatus(
   organizationId: string,
   status: "active" | "inactive" | "on-leave"
 ): Promise<SelectOrganizationMember[]> {
+  const tenantId = organizationId;
   return await db
     .select()
     .from(organizationMembers)
@@ -203,6 +210,7 @@ export async function searchMembers(
     department?: string;
   }
 ): Promise<SelectOrganizationMember[]> {
+  const tenantId = organizationId;
   const conditions = [
     eq(organizationMembers.organizationId, organizationId),
     isNull(organizationMembers.deletedAt),

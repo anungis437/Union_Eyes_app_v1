@@ -419,7 +419,7 @@ export const automationRules = pgTable(
     // Audit
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
-    createdBy: uuid('created_by'),
+    createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   },
   (t) => ({
     orgIdx: index('automation_rules_org_idx').on(t.orgId),

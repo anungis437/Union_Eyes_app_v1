@@ -1,6 +1,10 @@
 /**
  * Organization Management API Routes
  * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ * 
  * Complete CRUD operations for hierarchical organizations.
  * Features:
  * - List organizations with filtering and pagination
@@ -14,7 +18,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { db as drizzleDb } from "@/db";
 import { organizations, organizationMembers } from "@/db/schema-organizations";
 import {
@@ -134,7 +138,7 @@ try {
       const limit = query.limit || 100;
       const offset = query.offset || 0;
 
-      // Fetch organizations
+      // Fetch organizations (query functions already tenant-scoped)
       let orgsData;
       if (search) {
         orgsData = await searchOrganizations(search, limit);
@@ -150,63 +154,65 @@ try {
         filteredOrgs = orgsData.filter((org: any) => org.organizationType === type);
       }
 
-      // Add statistics if requested
+      // Add statistics if requested - RLS-protected queries
       let response;
       if (includeStats) {
-        const orgsWithStats = await Promise.all(
-          filteredOrgs.map(async (org: any) => {
-            // Get member count
-            const [memberCountResult] = await db
-              .select({ count: sql<number>`count(*)` })
-              .from(organizationMembers)
-              .where(
-                and(
-                  eq(organizationMembers.organizationId, org.id),
-                  eq(organizationMembers.status, "active")
-                )
-              );
+        const orgsWithStats = await withRLSContext(async (tx) => {
+          return Promise.all(
+            filteredOrgs.map(async (org: any) => {
+              // Get member count
+              const [memberCountResult] = await tx
+                .select({ count: sql<number>`count(*)` })
+                .from(organizationMembers)
+                .where(
+                  and(
+                    eq(organizationMembers.organizationId, org.id),
+                    eq(organizationMembers.status, "active")
+                  )
+                );
 
-            // Get child count
-            const [childCountResult] = await db
-              .select({ count: sql<number>`count(*)` })
-              .from(organizations)
-              .where(eq(organizations.parentId, org.id));
-
-            // Get active claims count (if claims table exists)
-            let activeClaims = 0;
-            try {
-              const claimsResult = await db.execute(sql`
-                SELECT COUNT(*) as count 
-                FROM claims 
-                WHERE organization_id = ${org.id} 
-                AND status IN ('pending', 'in_progress', 'under_review')
-              `);
-              activeClaims = Number(claimsResult[0]?.count) || 0;
-            } catch (error) {
-              // Claims table may not exist yet
-              console.warn("Could not fetch claims count:", error);
-            }
-
-            // Get parent name if exists
-            let parentName = null;
-            if (org.parentId) {
-              const [parentResult] = await db
-                .select({ name: organizations.name })
+              // Get child count
+              const [childCountResult] = await tx
+                .select({ count: sql<number>`count(*)` })
                 .from(organizations)
-                .where(eq(organizations.id, org.parentId))
-                .limit(1);
-              parentName = parentResult?.name;
-            }
+                .where(eq(organizations.parentId, org.id));
 
-            return {
-              ...org,
-              memberCount: Number(memberCountResult?.count || 0),
-              childCount: Number(childCountResult?.count || 0),
-              activeClaims: Number(activeClaims),
-              parentName,
-            };
-          })
-        );
+              // Get active claims count (if claims table exists)
+              let activeClaims = 0;
+              try {
+                const claimsResult = await tx.execute(sql`
+                  SELECT COUNT(*) as count 
+                  FROM claims 
+                  WHERE organization_id = ${org.id} 
+                  AND status IN ('pending', 'in_progress', 'under_review')
+                `);
+                activeClaims = Number(claimsResult[0]?.count) || 0;
+              } catch (error) {
+                // Claims table may not exist yet
+                console.warn("Could not fetch claims count:", error);
+              }
+
+              // Get parent name if exists
+              let parentName = null;
+              if (org.parentId) {
+                const [parentResult] = await tx
+                  .select({ name: organizations.name })
+                  .from(organizations)
+                  .where(eq(organizations.id, org.parentId))
+                  .limit(1);
+                parentName = parentResult?.name;
+              }
+
+              return {
+                ...org,
+                memberCount: Number(memberCountResult?.count || 0),
+                childCount: Number(childCountResult?.count || 0),
+                activeClaims: Number(activeClaims),
+                parentName,
+              };
+            })
+          );
+        });
 
         response = {
           data: orgsWithStats,

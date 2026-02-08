@@ -13,7 +13,7 @@
  * - analytics:metrics:{endpoint}:{date} - Sorted set of query durations
  * - analytics:slow:{date} - Sorted set of slow queries
  * - analytics:summary:{date} - Hash of daily summaries
- * - analytics:tenant:{tenantId}:{date} - Tenant-specific metrics
+ * - analytics:tenant:{organizationId}:{date} - Tenant-specific metrics
  * 
  * TTL: 30 days (configurable via ANALYTICS_RETENTION_DAYS)
  */
@@ -26,7 +26,8 @@ interface QueryMetric {
   duration: number;
   timestamp: Date;
   cached: boolean;
-  tenantId: string;
+  organizationId: string;
+  tenantId?: string;
 }
 
 interface PerformanceReport {
@@ -95,7 +96,7 @@ class RedisAnalyticsPerformanceMonitor {
     endpoint: string,
     duration: number,
     cached: boolean,
-    tenantId: string
+    organizationId: string
   ): Promise<void> {
     if (!this.enabled || !redis) return;
 
@@ -109,7 +110,8 @@ class RedisAnalyticsPerformanceMonitor {
         duration,
         timestamp: new Date(),
         cached,
-        tenantId,
+        organizationId,
+        tenantId: organizationId,
       };
 
       const pipeline = redis.pipeline();
@@ -136,7 +138,7 @@ class RedisAnalyticsPerformanceMonitor {
           endpoint,
           duration,
           cached,
-          tenantId,
+          organizationId,
         });
       }
 
@@ -156,12 +158,12 @@ class RedisAnalyticsPerformanceMonitor {
       const endpointsKey = `analytics:endpoints:${dateKey}`;
       const tenantsKey = `analytics:tenants:${dateKey}`;
       pipeline.sadd(endpointsKey, endpoint);
-      pipeline.sadd(tenantsKey, tenantId);
+      pipeline.sadd(tenantsKey, organizationId);
       pipeline.expire(endpointsKey, ttl);
       pipeline.expire(tenantsKey, ttl);
 
       // 5. Store tenant-specific metric
-      const tenantKey = `analytics:tenant:${tenantId}:${dateKey}`;
+      const tenantKey = `analytics:tenant:${organizationId}:${dateKey}`;
       pipeline.zadd(tenantKey, { score: now, member: JSON.stringify(metric) });
       pipeline.expire(tenantKey, ttl);
 
@@ -171,7 +173,7 @@ class RedisAnalyticsPerformanceMonitor {
       logger.error('Failed to record analytics metric', error as Error, {
         endpoint,
         duration,
-        tenantId,
+        organizationId,
       });
     }
   }
@@ -292,12 +294,12 @@ class RedisAnalyticsPerformanceMonitor {
   /**
    * Get metrics for a specific tenant
    */
-  async getTenantMetrics(tenantId: string, dateKey?: string): Promise<QueryMetric[]> {
+  async getTenantMetrics(organizationId: string, dateKey?: string): Promise<QueryMetric[]> {
     if (!this.enabled || !redis) return [];
 
     try {
       const date = dateKey || this.getDateKey();
-      const tenantKey = `analytics:tenant:${tenantId}:${date}`;
+      const tenantKey = `analytics:tenant:${organizationId}:${date}`;
 
       const metricsData = await redis.zrange(tenantKey, 0, -1);
       
@@ -314,7 +316,7 @@ class RedisAnalyticsPerformanceMonitor {
       }).filter((m): m is QueryMetric => m !== null);
 
     } catch (error) {
-      logger.error('Failed to get tenant metrics', error as Error, { tenantId, dateKey });
+      logger.error('Failed to get tenant metrics', error as Error, { organizationId, dateKey });
       return [];
     }
   }
@@ -424,7 +426,7 @@ export const performanceMonitor = new RedisAnalyticsPerformanceMonitor();
  */
 export async function withPerformanceTracking<T>(
   endpoint: string,
-  tenantId: string,
+  organizationId: string,
   cached: boolean,
   queryFn: () => Promise<T>
 ): Promise<T> {
@@ -435,8 +437,8 @@ export async function withPerformanceTracking<T>(
     const duration = Date.now() - startTime;
     
     // Record async (don't await to avoid blocking)
-    performanceMonitor.recordQuery(endpoint, duration, cached, tenantId).catch(err => {
-      logger.error('Failed to record performance metric', err, { endpoint, tenantId });
+    performanceMonitor.recordQuery(endpoint, duration, cached, organizationId).catch(err => {
+      logger.error('Failed to record performance metric', err, { endpoint, organizationId });
     });
     
     return result;
@@ -444,8 +446,8 @@ export async function withPerformanceTracking<T>(
     const duration = Date.now() - startTime;
     
     // Record even on error
-    performanceMonitor.recordQuery(endpoint, duration, cached, tenantId).catch(err => {
-      logger.error('Failed to record performance metric', err, { endpoint, tenantId });
+    performanceMonitor.recordQuery(endpoint, duration, cached, organizationId).catch(err => {
+      logger.error('Failed to record performance metric', err, { endpoint, organizationId });
     });
     
     throw error;

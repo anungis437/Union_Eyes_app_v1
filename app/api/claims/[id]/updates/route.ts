@@ -1,8 +1,16 @@
+/**
+ * Claims Updates API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
 import { claimUpdates } from "@/db/schema/claims-schema";
 import { desc, eq } from "drizzle-orm";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * GET /api/claims/[id]/updates
@@ -15,17 +23,20 @@ export const GET = async (
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
-  const resolvedParams = await params;
-      const claimId = resolvedParams.id;
+    const resolvedParams = await params;
+    const claimId = resolvedParams.id;
 
-      // Fetch updates
-      const updates = await db
+    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    return withRLSContext(async (tx) => {
+      // Fetch updates - RLS policies automatically enforce tenant filtering
+      const updates = await tx
         .select()
         .from(claimUpdates)
         .where(eq(claimUpdates.claimId, claimId))
         .orderBy(desc(claimUpdates.createdAt));
 
       return NextResponse.json({ updates });
+    });
   })(request, { params });
 };
 
@@ -40,20 +51,22 @@ export const POST = async (
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
-  const resolvedParams = await params;
-      const claimId = resolvedParams.id;
-      const body = await request.json();
+    const resolvedParams = await params;
+    const claimId = resolvedParams.id;
+    const body = await request.json();
 
-      // Validate required fields
-      if (!body.updateType || !body.message) {
-        return NextResponse.json(
-          { error: "Update type and message are required" },
-          { status: 400 }
-        );
-      }
+    // Validate required fields
+    if (!body.updateType || !body.message) {
+      return NextResponse.json(
+        { error: "Update type and message are required" },
+        { status: 400 }
+      );
+    }
 
-      // Insert new update
-      const [newUpdate] = await db
+    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    return withRLSContext(async (tx) => {
+      // Insert new update - RLS policies enforce tenant isolation
+      const [newUpdate] = await tx
         .insert(claimUpdates)
         .values({
           claimId,
@@ -69,5 +82,6 @@ export const POST = async (
         update: newUpdate,
         message: "Update added successfully",
       }, { status: 201 });
+    });
   })(request, { params });
 };

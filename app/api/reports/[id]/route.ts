@@ -7,13 +7,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
 import { db } from '@/db';
 import { sql } from '@/db';
 
 async function getHandler(
   req: NextRequest,
-  context: TenantContext,
+  context: OrganizationContext,
   params?: { id: string }
 ) {
   try {
@@ -30,7 +30,7 @@ async function getHandler(
         om.first_name || ' ' || om.last_name AS created_by_name
       FROM reports r
       LEFT JOIN organization_members om ON om.id = r.created_by AND om.tenant_id = r.tenant_id
-      WHERE r.id = ${params.id} AND r.tenant_id = ${context.tenantId}
+      WHERE r.id = ${params.id} AND r.tenant_id = ${context.organizationId}
     `);
 
     if (!reportResult || reportResult.length === 0) {
@@ -52,7 +52,7 @@ async function getHandler(
 
 async function putHandler(
   req: NextRequest,
-  context: TenantContext,
+  context: OrganizationContext,
   params?: { id: string }
 ) {
   try {
@@ -68,7 +68,7 @@ async function putHandler(
     // Verify ownership or admin
     const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
     `);
 
     if (!existingResult || existingResult.length === 0) {
@@ -87,7 +87,7 @@ async function putHandler(
           config = ${body.config ? JSON.stringify(body.config) : sql`config`},
           is_public = ${body.isPublic !== undefined ? body.isPublic : sql`is_public`},
           updated_at = NOW()
-      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
       RETURNING *
     `);
 
@@ -103,7 +103,7 @@ async function putHandler(
 
 async function deleteHandler(
   req: NextRequest,
-  context: TenantContext,
+  context: OrganizationContext,
   params?: { id: string }
 ) {
   try {
@@ -117,7 +117,7 @@ async function deleteHandler(
     // Verify ownership or admin
     const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
     `);
 
     if (!existingResult || existingResult.length === 0) {
@@ -130,7 +130,7 @@ async function deleteHandler(
     // Delete report
     await db.execute(sql`
       DELETE FROM reports
-      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
     `);
 
     return NextResponse.json({ success: true });
@@ -143,6 +143,6 @@ async function deleteHandler(
   }
 }
 
-export const GET = withTenantAuth(getHandler);
-export const PUT = withTenantAuth(putHandler);
-export const DELETE = withTenantAuth(deleteHandler);
+export const GET = withOrganizationAuth(getHandler);
+export const PUT = withOrganizationAuth(putHandler);
+export const DELETE = withOrganizationAuth(deleteHandler);

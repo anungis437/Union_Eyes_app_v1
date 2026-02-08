@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
 import { and, eq, gte, sql } from 'drizzle-orm';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 interface QuestionResult {
   questionId: string;
@@ -12,13 +13,14 @@ interface QuestionResult {
 }
 
 // GET /api/communications/surveys/[surveyId]/results - Get aggregated results
-export async function GET(
+export const GET = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -239,4 +241,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});

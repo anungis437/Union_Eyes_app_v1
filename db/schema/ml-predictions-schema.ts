@@ -16,6 +16,7 @@ import {
   index,
   unique
 } from "drizzle-orm/pg-core";
+import { organizations } from "../schema-organizations";
 
 // ============================================================================
 // ML PREDICTIONS
@@ -23,7 +24,7 @@ import {
 
 export const mlPredictions = pgTable("ml_predictions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: text("organization_id").notNull(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   predictionType: varchar("prediction_type", { length: 50 }).notNull(), // 'workload_forecast', 'churn_risk', etc.
   predictionDate: timestamp("prediction_date", { mode: 'date' }).notNull(),
   predictedValue: decimal("predicted_value").notNull(),
@@ -47,7 +48,7 @@ export const mlPredictions = pgTable("ml_predictions", {
 
 export const modelMetadata = pgTable("model_metadata", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: text("organization_id").notNull(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   modelType: varchar("model_type", { length: 50 }).notNull(),
   version: varchar("version", { length: 20 }).notNull(),
   accuracy: decimal("accuracy"),

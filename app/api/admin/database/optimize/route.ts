@@ -1,6 +1,14 @@
+/**
+ * Database Optimize API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -11,29 +19,32 @@ export const POST = async (request: NextRequest) => {
     const { userId } = context;
 
   try {
-      // Check admin role
-      const adminCheck = await db
-        .select({ role: tenantUsers.role })
-        .from(tenantUsers)
-        .where(eq(tenantUsers.userId, userId))
-        .limit(1);
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Check admin role
+        const adminCheck = await tx
+          .select({ role: tenantUsers.role })
+          .from(tenantUsers)
+          .where(eq(tenantUsers.userId, userId))
+          .limit(1);
 
-      if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
-        return NextResponse.json(
-          { error: "Admin access required" },
-          { status: 403 }
-        );
-      }
+        if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
+          return NextResponse.json(
+            { error: "Admin access required" },
+            { status: 403 }
+          );
+        }
 
-      // Run VACUUM ANALYZE (requires special connection settings)
-      // Note: Full VACUUM requires superuser privileges
-      await db.execute(sql`ANALYZE`);
+        // Run VACUUM ANALYZE (requires special connection settings)
+        // Note: Full VACUUM requires superuser privileges
+        await tx.execute(sql`ANALYZE`);
 
-      logger.info("Database optimized", { adminId: userId });
+        logger.info("Database optimized", { adminId: userId });
 
-      return NextResponse.json({
-        success: true,
-        message: "Database optimization completed",
+        return NextResponse.json({
+          success: true,
+          message: "Database optimization completed",
+        });
       });
     } catch (error) {
       logger.error("Failed to optimize database", error);

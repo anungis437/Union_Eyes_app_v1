@@ -60,7 +60,7 @@ export const tenantConfigurations = tenantManagementSchema.table("tenant_configu
   value: jsonb("value").notNull(),
   description: text("description"),
   isEncrypted: boolean("is_encrypted").default(false),
-  updatedBy: uuid("updated_by"),
+  updatedBy: varchar("updated_by", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

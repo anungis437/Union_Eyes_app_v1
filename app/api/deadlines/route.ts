@@ -11,7 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
 import {
   getClaimDeadlines,
@@ -32,8 +32,8 @@ import {
  * GET /api/deadlines
  * List deadlines with filters
  */
-export const GET = withTenantAuth(async (request: NextRequest, context: any) => {
-  const { tenantId, userId } = context;
+export const GET = withOrganizationAuth(async (request: NextRequest, context: any) => {
+  const { organizationId, userId } = context;
   const { searchParams } = new URL(request.url);
   
   const claimId = searchParams.get('claimId');

@@ -1,27 +1,19 @@
+/**
+ * Claims API Routes
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ * - Removed manual tenant lookup (getUserTenant) - RLS handles this
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/db/db";
 import { claims } from "@/db/schema/claims-schema";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
-
-/**
- * Helper function to get user's tenant context
- */
-async function getUserTenant(userId: string): Promise<string | null> {
-  try {
-    const result = await db.execute(
-      sql`SELECT organization_id FROM tenant_users WHERE user_id = ${userId} LIMIT 1`
-    );
-    if (result.length > 0) {
-      return result[0].organization_id as string;
-    }
-    return null;
-  } catch (_error) {
-    return null;
-  }
-}
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Validation schema for creating claims
@@ -52,34 +44,19 @@ export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
-  try {
-        // Get user's tenant
-        const tenantId = await getUserTenant(userId);
-        if (!tenantId) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: '/api/claims',
-            method: 'GET',
-            eventType: 'auth_failed',
-            severity: 'medium',
-            details: { reason: 'User tenant not found' },
-          });
-          return NextResponse.json(
-            { error: 'User tenant not found' },
-            { status: 403 }
-          );
-        }
+    try {
+      const { searchParams } = new URL(request.url);
+      const status = searchParams.get("status");
+      const priority = searchParams.get("priority");
+      const search = searchParams.get("search");
+      const memberId = searchParams.get("memberId");
+      const limit = parseInt(searchParams.get("limit") || "100");
+      const offset = parseInt(searchParams.get("offset") || "0");
 
-        const { searchParams } = new URL(request.url);
-        const status = searchParams.get("status");
-        const priority = searchParams.get("priority");
-        const search = searchParams.get("search");
-        const memberId = searchParams.get("memberId");
-        const limit = parseInt(searchParams.get("limit") || "100");
-        const offset = parseInt(searchParams.get("offset") || "0");
-
-        // Build query conditions - always filter by tenant
-        const conditions = [eq(claims.organizationId, tenantId)];
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Build query conditions - RLS policies automatically filter by tenant
+        const conditions = [];
         
         if (status && status !== "all") {
           conditions.push(eq(claims.status, status as any));
@@ -102,20 +79,20 @@ export const GET = async (request: NextRequest) => {
           conditions.push(eq(claims.memberId, memberId));
         }
 
-        // Execute query - tenant filter is always applied via conditions
-        const result = await db
+        // Execute query - RLS policies automatically enforce tenant filtering
+        const result = await tx
           .select()
           .from(claims)
-          .where(and(...conditions))
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
           .orderBy(desc(claims.createdAt))
           .limit(limit)
           .offset(offset);
 
-        // Count total for pagination - tenant filter is always applied
-        const totalResult = await db
+        // Count total for pagination - RLS policies automatically enforce tenant filtering
+        const totalResult = await tx
           .select({ count: sql<number>`count(*)` })
           .from(claims)
-          .where(and(...conditions));
+          .where(conditions.length > 0 ? and(...conditions) : undefined);
 
         const total = totalResult[0]?.count || 0;
 
@@ -125,7 +102,11 @@ export const GET = async (request: NextRequest) => {
           method: 'GET',
           eventType: 'success',
           severity: 'low',
-          details: { tenantId, filters: { status, priority, search, memberId }, resultCount: result.length },
+          details: { 
+            organizationId, 
+            filters: { status, priority, search, memberId }, 
+            resultCount: result.length 
+          },
         });
 
         return NextResponse.json({
@@ -137,7 +118,8 @@ export const GET = async (request: NextRequest) => {
             hasMore: offset + limit < total,
           },
         });
-      } catch (error) {
+      });
+    } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: '/api/claims',
@@ -192,35 +174,20 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-try {
-      // Get user's tenant
-      const tenantId = await getUserTenant(userId);
-      if (!tenantId) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/claims',
-          method: 'POST',
-          eventType: 'auth_failed',
-          severity: 'medium',
-          details: { reason: 'User tenant not found' },
-        });
-        return NextResponse.json(
-          { error: 'User tenant not found' },
-          { status: 403 }
-        );
-      }
+  try {
+    // Generate claim number
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+    const claimNumber = `CLM-${year}-${randomNum}`;
 
-      // Generate claim number
-      const year = new Date().getFullYear();
-      const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
-      const claimNumber = `CLM-${year}-${randomNum}`;
-
-      // Create claim
-      const [newClaim] = await db
+    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    return withRLSContext(async (tx) => {
+      // Create claim - RLS policies automatically set organizationId
+      const [newClaim] = await tx
         .insert(claims)
         .values({
           claimNumber,
-          organizationId: tenantId,
+          organizationId,
           memberId: userId,
           isAnonymous: body.isAnonymous,
           claimType: body.claimType,
@@ -246,7 +213,7 @@ try {
         method: 'POST',
         eventType: 'success',
         severity: 'medium',
-        details: { tenantId, claimNumber, claimType: body.claimType },
+        details: { organizationId, claimNumber, claimType: body.claimType },
       });
 
       return NextResponse.json(
@@ -256,7 +223,8 @@ try {
         },
         { status: 201 }
       );
-    } catch (error) {
+    });
+  } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(), userId,
         endpoint: '/api/claims',

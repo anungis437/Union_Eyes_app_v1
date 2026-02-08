@@ -5,13 +5,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getUserExportJobs } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 async function getHandler(req: NextRequest, context) {
   try {
-    const tenantId = context.tenantId;
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     const userId = context.userId;
     
     if (!tenantId || !userId) {
@@ -46,4 +47,4 @@ async function getHandler(req: NextRequest, context) {
   }
 }
 
-export const GET = withTenantAuth(getHandler);
+export const GET = withOrganizationAuth(getHandler);

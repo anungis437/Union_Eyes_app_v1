@@ -6,11 +6,12 @@
  * In future phases, this will be enhanced to support multi-tenancy.
  */
 
-import { db } from "@/db/db";
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { withRLSContext } from "@/lib/rls-middleware";
 
 /**
  * Default tenant ID used in Phase 1 for single-tenant operation.
@@ -31,78 +32,90 @@ export const DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001";
  * - Use Clerk organization metadata
  * 
  * @param clerkUserId - The Clerk user ID (from auth())
+ * @param tx - Optional transaction context for RLS enforcement
  * @returns The tenant ID UUID string
  * @throws Error if tenant not found
  */
-export async function getTenantIdForUser(clerkUserId: string): Promise<string> {
-  try {
-    // Check if user has selected a specific tenant via cookie
-    const cookieStore = await cookies();
-    const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
-    
-    console.log('[getTenantIdForUser] Cookie check:', { 
-      userId: clerkUserId, 
-      selectedTenantId,
-      allCookies: cookieStore.getAll().map(c => c.name)
-    });
-    
-    if (selectedTenantId) {
-      // Verify user has access to the selected tenant
-      const userTenant = await db
-        .select({ tenantId: tenantUsers.tenantId })
-        .from(tenantUsers)
-        .where(
-          and(
-            eq(tenantUsers.userId, clerkUserId),
-            eq(tenantUsers.tenantId, selectedTenantId)
-          )
-        )
-        .limit(1);
+export async function getTenantIdForUser(
+  clerkUserId: string,
+  tx?: NodePgDatabase<any>
+): Promise<string> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      // Check if user has selected a specific tenant via cookie
+      const cookieStore = await cookies();
+      const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
       
-      console.log('[getTenantIdForUser] Access check:', {
+      console.log('[getTenantIdForUser] Cookie check:', { 
+        userId: clerkUserId, 
         selectedTenantId,
-        hasAccess: userTenant.length > 0
+        allCookies: cookieStore.getAll().map(c => c.name)
       });
       
-      if (userTenant.length > 0) {
-        console.log('[getTenantIdForUser] ✅ Using selected tenant:', selectedTenantId);
-        return selectedTenantId;
-      } else {
-        console.log('[getTenantIdForUser] ⚠️ User has no access to selected tenant, falling back');
+      if (selectedTenantId) {
+        // Verify user has access to the selected tenant
+        const userTenant = await dbOrTx
+          .select({ tenantId: tenantUsers.tenantId })
+          .from(tenantUsers)
+          .where(
+            and(
+              eq(tenantUsers.userId, clerkUserId),
+              eq(tenantUsers.tenantId, selectedTenantId)
+            )
+          )
+          .limit(1);
+        
+        console.log('[getTenantIdForUser] Access check:', {
+          selectedTenantId,
+          hasAccess: userTenant.length > 0
+        });
+        
+        if (userTenant.length > 0) {
+          console.log('[getTenantIdForUser] ✅ Using selected tenant:', selectedTenantId);
+          return selectedTenantId;
+        } else {
+          console.log('[getTenantIdForUser] ⚠️ User has no access to selected tenant, falling back');
+        }
       }
+      
+      // Fall back to user's first available tenant
+      const userTenants = await dbOrTx
+        .select({ tenantId: tenantUsers.tenantId })
+        .from(tenantUsers)
+        .where(eq(tenantUsers.userId, clerkUserId))
+        .limit(1);
+      
+      if (userTenants.length > 0) {
+        console.log('[getTenantIdForUser] ⚠️ Fallback to first tenant:', userTenants[0].tenantId);
+        return userTenants[0].tenantId;
+      }
+      
+      // Final fallback to default tenant
+      const tenantId = DEFAULT_TENANT_ID;
+      console.log('[getTenantIdForUser] ⚠️ Fallback to DEFAULT_TENANT_ID:', tenantId);
+      
+      // Validate that tenant exists
+      const tenant = await dbOrTx
+        .select({ tenantId: tenants.tenantId })
+        .from(tenants)
+        .where(eq(tenants.tenantId, tenantId))
+        .limit(1);
+      
+      if (tenant.length === 0) {
+        throw new Error(`Tenant ${tenantId} not found. Run database migrations to seed default tenant.`);
+      }
+      
+      return tenantId;
+    } catch (error) {
+      console.error(`Error resolving tenant for user ${clerkUserId}:`, error);
+      throw error;
     }
-    
-    // Fall back to user's first available tenant
-    const userTenants = await db
-      .select({ tenantId: tenantUsers.tenantId })
-      .from(tenantUsers)
-      .where(eq(tenantUsers.userId, clerkUserId))
-      .limit(1);
-    
-    if (userTenants.length > 0) {
-      console.log('[getTenantIdForUser] ⚠️ Fallback to first tenant:', userTenants[0].tenantId);
-      return userTenants[0].tenantId;
-    }
-    
-    // Final fallback to default tenant
-    const tenantId = DEFAULT_TENANT_ID;
-    console.log('[getTenantIdForUser] ⚠️ Fallback to DEFAULT_TENANT_ID:', tenantId);
-    
-    // Validate that tenant exists
-    const tenant = await db
-      .select({ tenantId: tenants.tenantId })
-      .from(tenants)
-      .where(eq(tenants.tenantId, tenantId))
-      .limit(1);
-    
-    if (tenant.length === 0) {
-      throw new Error(`Tenant ${tenantId} not found. Run database migrations to seed default tenant.`);
-    }
-    
-    return tenantId;
-  } catch (error) {
-    console.error(`Error resolving tenant for user ${clerkUserId}:`, error);
-    throw error;
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 }
 
@@ -122,20 +135,32 @@ export function getDefaultTenantId(): string {
  * Validate that a tenant exists in the database.
  * 
  * @param tenantId - The tenant ID to validate
+ * @param tx - Optional transaction context for RLS enforcement
  * @returns True if tenant exists, false otherwise
  */
-export async function validateTenantExists(tenantId: string): Promise<boolean> {
-  try {
-    const result = await db
-      .select({ tenantId: tenants.tenantId })
-      .from(tenants)
-      .where(eq(tenants.tenantId, tenantId))
-      .limit(1);
-    
-    return result.length > 0;
-  } catch (error) {
-    console.error(`Error validating tenant ${tenantId}:`, error);
-    return false;
+export async function validateTenantExists(
+  tenantId: string,
+  tx?: NodePgDatabase<any>
+): Promise<boolean> {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    try {
+      const result = await dbOrTx
+        .select({ tenantId: tenants.tenantId })
+        .from(tenants)
+        .where(eq(tenants.tenantId, tenantId))
+        .limit(1);
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error validating tenant ${tenantId}:`, error);
+      return false;
+    }
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
 }
 
@@ -146,20 +171,32 @@ export async function validateTenantExists(tenantId: string): Promise<boolean> {
  * subscription tier, features, settings, etc.
  * 
  * @param clerkUserId - The Clerk user ID
+ * @param tx - Optional transaction context for RLS enforcement
  * @returns Tenant information
  */
-export async function getTenantInfo(clerkUserId: string) {
-  const tenantId = await getTenantIdForUser(clerkUserId);
-  
-  const result = await db
-    .select()
-    .from(tenants)
-    .where(eq(tenants.tenantId, tenantId))
-    .limit(1);
-  
-  if (result.length === 0) {
-    throw new Error(`Tenant ${tenantId} not found`);
+export async function getTenantInfo(
+  clerkUserId: string,
+  tx?: NodePgDatabase<any>
+) {
+  const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
+    const tenantId = await getTenantIdForUser(clerkUserId, dbOrTx);
+    
+    const result = await dbOrTx
+      .select()
+      .from(tenants)
+      .where(eq(tenants.tenantId, tenantId))
+      .limit(1);
+    
+    if (result.length === 0) {
+      throw new Error(`Tenant ${tenantId} not found`);
+    }
+    
+    return result[0];
+  };
+
+  if (tx) {
+    return executeQuery(tx);
+  } else {
+    return withRLSContext(async (tx) => executeQuery(tx));
   }
-  
-  return result[0];
 }

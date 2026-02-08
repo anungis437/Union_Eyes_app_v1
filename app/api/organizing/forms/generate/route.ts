@@ -24,8 +24,6 @@ interface FormField {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { campaignId, templateId, formData } = await request.json();
 

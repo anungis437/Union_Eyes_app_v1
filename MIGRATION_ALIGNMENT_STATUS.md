@@ -43,7 +43,7 @@ lib/
 
 | Priority | Task | Files Affected | Status | Effort |
 |----------|------|----------------|--------|--------|
-| P0 | Fix user.id → userId property bugs | 50+ routes | 🔴 **INCOMPLETE** | 2 hours |
+| P0 | Fix user.id → userId property bugs | 50+ routes | ✅ **COMPLETE** | 2 hours |
 | P0 | Remove duplicate auth() calls | 50+ routes | 🟡 **PARTIAL** | 4 hours |
 | P1 | Create unified-auth.ts | New file | ✅ **COMPLETE** | 4 hours |
 | P1 | Fix schema field name inconsistencies | 20+ files | 🔴 **INCOMPLETE** | 8 hours |
@@ -54,11 +54,9 @@ lib/
 
 ## 🔍 DETECTED ISSUES
 
-### 🔴 P0: user.id Property Access (Active Bug)
-**Found**: 50+ instances across routes  
-**Sample Files**:
-- `app/api/gdpr/data-export/route.ts` (lines 33, 45, 117, 137, 144)
-- `app/api/documents/[id]/route.ts` (lines 58, 71, 82, 93, 145, 156)
+### ✅ P0: user.id Property Access (Resolved)
+**Found**: 0 runtime usages in `app/api`  
+**Residual**: 2 string/comment hits (query key + comment)
 
 **Pattern**:
 ```typescript
@@ -71,7 +69,7 @@ const context = await getUserContext();
 userId: context.userId,
 ```
 
-**Fix Required**: Replace all `user.id` with `context.userId`
+**Fix Required**: None (runtime usages cleared)
 
 ---
 
@@ -99,23 +97,23 @@ userId: context.userId,
 | Fail hard if Clerk unavailable | ✅ | No graceful degradation in unified-auth |
 | Always validate org membership | 🟡 | `requireUserForOrganization()` implemented, needs adoption |
 | Log auth failures persistently | 🔴 | Currently in-memory - needs DB logging |
-| Use userId consistently | 🔴 | 50+ routes still use `user.id` |
+| Use userId consistently | 🟡 | Legacy user object pattern remains in 121 route blocks |
 
 ---
 
 ## ✅ VALIDATION CHECKLIST
 
-- [ ] **No user.id property access in logs**
-  - Current: 50+ violations detected
-  - Action: Mass replace via migration script
+- [x] **No user.id property access in logs**
+  - Current: 0 runtime usages in `app/api`
+  - Action: N/A
 
 - [ ] **No duplicate auth() calls in routes**
   - Current: Unknown - needs scan
   - Action: Run duplicate detection script
 
 - [ ] **All routes use context.userId from middleware**
-  - Current: ~50-100 routes fixed, 273+ remaining
-  - Action: Standardize via mass migration
+  - Current: 121 route blocks still use legacy `const user = { id: context.userId, ... }`
+  - Action: Standardize remaining routes
 
 - [ ] **Schema field names match code references**
   - Current: Multiple mismatches in tests and types
@@ -146,9 +144,8 @@ userId: context.userId,
 - ✅ Consolidated `lib/tenant-middleware.ts`
 
 ### Phase 2: Route Migration 🔄 IN PROGRESS
-- ✅ ~50-100 routes migrated to unified auth
-- 🔴 273+ routes still using legacy patterns
-- 🔴 50+ routes with `user.id` bugs active
+- ✅ userId runtime bug eliminated in `app/api`
+- 🔴 121 route blocks still use legacy user object pattern
 
 ### Phase 3: Testing & Validation 🔴 NOT STARTED
 - Schema field name standardization
@@ -160,13 +157,13 @@ userId: context.userId,
 
 ## 🎯 NEXT ACTIONS (Priority Order)
 
-### 1. **P0: Fix user.id Bugs** [CRITICAL]
+### 1. **P0: Fix user.id Bugs** [COMPLETE]
 ```bash
 # Run targeted fix script
 pnpm tsx scripts/fix-user-id-bugs.ts --target app/api --apply
 ```
-**Estimated Impact**: Fix 50+ TypeError crashes  
-**Time**: 1-2 hours
+**Estimated Impact**: Fixed runtime crashes tied to `user.id` access  
+**Time**: Complete
 
 ### 2. **P0: Detect & Remove Duplicate auth() Calls**
 ```bash
@@ -181,7 +178,7 @@ pnpm tsx scripts/scan-duplicate-auth.ts --report
 # Apply unified auth to all 373 routes
 pnpm tsx scripts/migrate-routes-ast.ts --apply --dry-run=false
 ```
-**Estimated Impact**: Standardize all authentication patterns  
+**Estimated Impact**: Standardize remaining 121 legacy user object blocks  
 **Time**: 1-2 days (requires careful testing)
 
 ### 4. **P1: Schema Field Name Fixes**

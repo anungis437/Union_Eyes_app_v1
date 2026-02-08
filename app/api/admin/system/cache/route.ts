@@ -1,6 +1,14 @@
+/**
+ * System Cache API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -12,28 +20,30 @@ export const POST = async (request: NextRequest) => {
     const { userId, organizationId } = context;
 
   try {
-      // Check admin role
-      const adminCheck = await db
-        .select({ role: tenantUsers.role })
-        .from(tenantUsers)
-        .where(eq(tenantUsers.userId, userId))
-        .limit(1);
+      // Check admin role using RLS-protected query
+      return withRLSContext(async (tx) => {
+        const adminCheck = await tx
+          .select({ role: tenantUsers.role })
+          .from(tenantUsers)
+          .where(eq(tenantUsers.userId, userId))
+          .limit(1);
 
-      if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
-        return NextResponse.json(
-          { error: "Admin access required" },
-          { status: 403 }
-        );
-      }
+        if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
+          return NextResponse.json(
+            { error: "Admin access required" },
+            { status: 403 }
+          );
+        }
 
-      // Revalidate all paths (Next.js cache)
-      revalidatePath("/", "layout");
+        // Revalidate all paths (Next.js cache)
+        revalidatePath("/", "layout");
 
-      logger.info("Cache cleared", { adminId: userId });
+        logger.info("Cache cleared", { adminId: userId });
 
-      return NextResponse.json({
-        success: true,
-        message: "Cache cleared successfully",
+        return NextResponse.json({
+          success: true,
+          message: "Cache cleared successfully",
+        });
       });
     } catch (error) {
       logger.error("Failed to clear cache", error);

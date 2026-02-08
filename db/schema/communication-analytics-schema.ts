@@ -88,7 +88,7 @@ export const userEngagementScores = pgTable('user_engagement_scores', {
   organizationId: uuid('organization_id')
     .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id')
+  userId: varchar('user_id', { length: 255 }) // User ID - matches users.userId VARCHAR(255)
     .notNull()
     .references(() => profiles.userId, { onDelete: 'cascade' }),
   
@@ -129,7 +129,7 @@ export const communicationPreferences = pgTable('communication_preferences', {
   organizationId: uuid('organization_id')
     .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id')
+  userId: varchar('user_id', { length: 255 }) // User ID - matches users.userId VARCHAR(255)
     .notNull()
     .references(() => profiles.userId, { onDelete: 'cascade' }),
   

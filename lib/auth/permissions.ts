@@ -41,6 +41,13 @@ export function getPermissionsForRoles(roles: UserRole[]): Permission[] {
 }
 
 /**
+ * @deprecated Use withPermission() from lib/enterprise-role-middleware.ts instead
+ * This function is deprecated and will be removed in a future version.
+ * 
+ * MIGRATION GUIDE:
+ * Replace: checkUserPermission({ userId, organizationId, permission: 'MANAGE_MEMBERS' })
+ * With: withPermission('MANAGE_MEMBERS', async (request, context) => { ... })
+ * 
  * Check if a user has required permissions
  * This is a stub - actual implementation should query user's role from database
  */
@@ -49,11 +56,21 @@ export async function checkUserPermission(options: PermissionCheckOptions): Prom
   // 1. Fetch user's role from database
   // 2. Check if role has required permission
   // 3. Consider organization-specific overrides
-  console.warn('checkUserPermission is a stub - implement actual logic');
+  console.warn(
+    'checkUserPermission is deprecated. Use withPermission() from lib/enterprise-role-middleware.ts instead. ' +
+    'This stub always returns false and should not be used in production.'
+  );
   return false;
 }
 
 /**
+ * @deprecated Use withEnhancedRoleAuth() from lib/enterprise-role-middleware.ts instead
+ * This function is deprecated and will be removed in a future version.
+ * 
+ * MIGRATION GUIDE:
+ * Replace: checkUserRole({ userId, organizationId, role: 'admin' })
+ * With: withEnhancedRoleAuth(ROLE_LEVELS.ADMIN, async (request, context) => { ... })
+ * 
  * Check if a user has required role
  * This is a stub - actual implementation should query user's role from database
  */
@@ -62,7 +79,10 @@ export async function checkUserRole(options: RoleCheckOptions): Promise<boolean>
   // 1. Fetch user's role from database
   // 2. Check if user has any of the required roles
   // 3. Consider organization-specific role assignments
-  console.warn('checkUserRole is a stub - implement actual logic');
+  console.warn(
+    'checkUserRole is deprecated. Use withEnhancedRoleAuth() from lib/enterprise-role-middleware.ts instead. ' +
+    'This stub always returns false and should not be used in production.'
+  );
   return false;
 }
 

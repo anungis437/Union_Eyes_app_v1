@@ -4,15 +4,20 @@
  * 
  * Endpoint:
  * - POST /api/admin/clc/remittances/[id]/submit - Submit remittance
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - Removed manual SET app.current_user_id command
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - Transaction ensures atomic status update
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { db } from '@/db';
 import { perCapitaRemittances } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 const submitRemittanceSchema = z.object({
   notes: z.string().optional(),
@@ -48,17 +53,16 @@ export const POST = async (
     }
 
   try {
-          // Set session context for RLS
-          await db.execute(sql`SET app.current_user_id = ${userId}`);
+      const remittanceId = params.id;
 
-          const remittanceId = params.id;
-
-          // Validate remittance exists
-          const [existing] = await db
-            .select()
-            .from(perCapitaRemittances)
-            .where(eq(perCapitaRemittances.id, remittanceId))
-            .limit(1);
+      // All database operations wrapped in withRLSContext for automatic context setting
+      return withRLSContext(async (tx) => {
+        // Validate remittance exists
+        const [existing] = await tx
+          .select()
+          .from(perCapitaRemittances)
+          .where(eq(perCapitaRemittances.id, remittanceId))
+          .limit(1);
 
           if (!existing) {
             logApiAuditEvent({
@@ -106,17 +110,17 @@ export const POST = async (
             );
           }
 
-          // Update remittance status to submitted
-          const [updated] = await db
-            .update(perCapitaRemittances)
-            .set({
-              status: 'submitted',
-              submittedDate: new Date().toISOString(),
-              notes: body.notes || existing.notes,
-              updatedAt: new Date().toISOString(),
-            })
-            .where(eq(perCapitaRemittances.id, remittanceId))
-            .returning();
+        // Update remittance status to submitted
+        const [updated] = await tx
+          .update(perCapitaRemittances)
+          .set({
+            status: 'submitted',
+            submittedDate: new Date().toISOString(),
+            notes: body.notes || existing.notes,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(perCapitaRemittances.id, remittanceId))
+          .returning();
 
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,
@@ -133,11 +137,12 @@ export const POST = async (
             },
           });
 
-          return NextResponse.json({
-            ...updated,
-            message: 'Remittance submitted successfully',
-          });
-        } catch (error) {
+        return NextResponse.json({
+          ...updated,
+          message: 'Remittance submitted successfully',
+        });
+      });
+    } catch (error) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,
             endpoint: '/api/admin/clc/remittances/[id]/submit',

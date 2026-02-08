@@ -17,7 +17,8 @@ import { claims, users } from '@/db/schema';
 import { eq, and, gte, sql, count } from 'drizzle-orm';
 
 interface DailyAggregation {
-  tenantId: string;
+  organizationId: string;
+  tenantId?: string;
   date: Date;
   totalClaims: number;
   newClaims: number;
@@ -30,7 +31,8 @@ interface DailyAggregation {
 }
 
 interface TenantMetrics {
-  tenantId: string;
+  organizationId: string;
+  tenantId?: string;
   metrics: {
     claims: {
       total: number;
@@ -60,7 +62,7 @@ class AnalyticsAggregationService {
    * Compute daily aggregations for a tenant
    */
   async computeDailyAggregation(
-    tenantId: string,
+    organizationId: string,
     date: Date
   ): Promise<DailyAggregation> {
     const startOfDay = new Date(date);
@@ -75,7 +77,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           gte(claims.createdAt, startOfDay),
           sql`${claims.createdAt} <= ${endOfDay.toISOString()}::timestamp`
         )
@@ -90,7 +92,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           sql`${claims.status} = 'resolved'`,
           gte(claims.closedAt, startOfDay),
           sql`${claims.closedAt} <= ${endOfDay.toISOString()}::timestamp`
@@ -106,7 +108,7 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           sql`${claims.createdAt} <= ${endOfDay.toISOString()}::timestamp`
         )
       );
@@ -121,13 +123,14 @@ class AnalyticsAggregationService {
       .from(claims)
       .where(
         and(
-          eq(claims.organizationId, tenantId),
+          eq(claims.organizationId, organizationId),
           sql`${claims.createdAt} <= ${endOfDay.toISOString()}::timestamp`
         )
       );
 
     return {
-      tenantId,
+      organizationId,
+      tenantId: organizationId,
       date,
       totalClaims: totals.total,
       newClaims: newClaims.count,
@@ -143,7 +146,7 @@ class AnalyticsAggregationService {
   /**
    * Compute comprehensive tenant metrics
    */
-  async computeTenantMetrics(tenantId: string): Promise<TenantMetrics> {
+  async computeTenantMetrics(organizationId: string): Promise<TenantMetrics> {
     // Claims metrics
     const [claimsMetrics] = await db
       .select({
@@ -153,7 +156,7 @@ class AnalyticsAggregationService {
         avgResolutionDays: sql<number>`AVG(CASE WHEN ${claims.status} = 'resolved' THEN EXTRACT(EPOCH FROM (${claims.closedAt} - ${claims.createdAt})) / 86400 END)`,
       })
       .from(claims)
-      .where(eq(claims.organizationId, tenantId));
+      .where(eq(claims.organizationId, organizationId));
 
     const resolutionRate = claimsMetrics.total > 0 
       ? (claimsMetrics.resolved / claimsMetrics.total) * 100 
@@ -167,7 +170,7 @@ class AnalyticsAggregationService {
         totalCosts: sql<number>`COALESCE(SUM(legal_costs + COALESCE(court_costs, 0)), 0)`,
       })
       .from(claims)
-      .where(eq(claims.organizationId, tenantId));
+      .where(eq(claims.organizationId, organizationId));
 
     const netValue = financialMetrics.totalSettlements - financialMetrics.totalCosts;
     const roi = financialMetrics.totalCosts > 0 
@@ -183,14 +186,15 @@ class AnalyticsAggregationService {
         resolved: sql<number>`COUNT(CASE WHEN ${claims.status} = 'resolved' THEN 1 END)`,
       })
       .from(claims)
-      .where(eq(claims.organizationId, tenantId));
+      .where(eq(claims.organizationId, organizationId));
 
     const slaCompliance = operationalMetrics.resolved > 0
       ? (operationalMetrics.onTime / operationalMetrics.resolved) * 100
       : 0;
 
     return {
-      tenantId,
+      organizationId,
+      tenantId: organizationId,
       metrics: {
         claims: {
           total: claimsMetrics.total,
@@ -220,7 +224,7 @@ class AnalyticsAggregationService {
    * Compute metrics for date range
    */
   async computeRangeMetrics(
-    tenantId: string,
+    organizationId: string,
     startDate: Date,
     endDate: Date
   ) {
@@ -234,10 +238,11 @@ class AnalyticsAggregationService {
         totalSettlements: sql<number>`COALESCE(SUM(CASE WHEN ${claims.status} = 'resolved' AND resolution_outcome = 'won' AND ${claims.closedAt} BETWEEN ${startDate.toISOString()}::timestamp AND ${endDate.toISOString()}::timestamp THEN settlement_amount ELSE 0 END), 0)`,
       })
       .from(claims)
-      .where(eq(claims.organizationId, tenantId));
+      .where(eq(claims.organizationId, organizationId));
 
     return {
-      tenantId,
+      organizationId,
+      tenantId: organizationId,
       startDate,
       endDate,
       ...metrics,
@@ -253,19 +258,19 @@ class AnalyticsAggregationService {
     
     // Get all unique tenant IDs
     const tenants = await db
-      .selectDistinct({ tenantId: claims.organizationId })
+      .selectDistinct({ organizationId: claims.organizationId })
       .from(claims);
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
     // Compute aggregations for each tenant
-    for (const { tenantId } of tenants) {
+    for (const { organizationId } of tenants) {
       try {
-        await this.computeDailyAggregation(tenantId, yesterday);
-        console.log(`Completed aggregation for tenant ${tenantId}`);
+        await this.computeDailyAggregation(organizationId, yesterday);
+        console.log(`Completed aggregation for tenant ${organizationId}`);
       } catch (error) {
-        console.error(`Error aggregating for tenant ${tenantId}:`, error);
+        console.error(`Error aggregating for tenant ${organizationId}:`, error);
       }
     }
 
@@ -279,6 +284,6 @@ export const aggregationService = new AnalyticsAggregationService();
 /**
  * Helper function to get or compute metrics with caching
  */
-export async function getTenantMetrics(tenantId: string): Promise<TenantMetrics> {
-  return await aggregationService.computeTenantMetrics(tenantId);
+export async function getTenantMetrics(organizationId: string): Promise<TenantMetrics> {
+  return await aggregationService.computeTenantMetrics(organizationId);
 }

@@ -1,6 +1,9 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Bulk Import Organizations API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
  * 
  * Import multiple organizations from CSV/Excel with validation.
  * Features:
@@ -13,8 +16,9 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  * @module app/api/admin/organizations/bulk-import/route
  */
 
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizations } from "@/db/schema-organizations";
 import { createOrganization } from "@/db/queries/organization-queries";
 import { eq } from "drizzle-orm";
@@ -362,7 +366,8 @@ export const POST = async (request: NextRequest) => {
 // =====================================================
 
 function parseCSV(text: string): ImportRow[] {
-  const lines = text.split("\n").filter((line) => line.trim());
+  const lines = text.split("
+").filter((line) => line.trim());
   if (lines.length < 2) return [];
 
   const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));

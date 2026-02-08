@@ -1,6 +1,14 @@
+/**
+ * CBA Detail API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { collectiveAgreements, cbaClause, cbaContacts, cbaVersionHistory } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
@@ -11,42 +19,45 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
   try {
       const { id } = params;
 
-      // Fetch CBA
-      const [cba] = await db
-        .select()
-        .from(collectiveAgreements)
-        .where(eq(collectiveAgreements.id, id))
-        .limit(1);
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Fetch CBA
+        const [cba] = await tx
+          .select()
+          .from(collectiveAgreements)
+          .where(eq(collectiveAgreements.id, id))
+          .limit(1);
 
-      if (!cba) {
-        return NextResponse.json({ error: "CBA not found" }, { status: 404 });
-      }
+        if (!cba) {
+          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+        }
 
-      // Fetch all clauses for this CBA
-      const clauses = await db
-        .select()
-        .from(cbaClause)
-        .where(eq(cbaClause.cbaId, id))
-        .orderBy(cbaClause.orderIndex, desc(cbaClause.clauseNumber));
+        // Fetch all clauses for this CBA
+        const clauses = await tx
+          .select()
+          .from(cbaClause)
+          .where(eq(cbaClause.cbaId, id))
+          .orderBy(cbaClause.orderIndex, desc(cbaClause.clauseNumber));
 
-      // Fetch contacts
-      const contacts = await db
-        .select()
-        .from(cbaContacts)
-        .where(eq(cbaContacts.cbaId, id));
+        // Fetch contacts
+        const contacts = await tx
+          .select()
+          .from(cbaContacts)
+          .where(eq(cbaContacts.cbaId, id));
 
-      // Fetch version history
-      const versionHistory = await db
-        .select()
-        .from(cbaVersionHistory)
-        .where(eq(cbaVersionHistory.cbaId, id))
-        .orderBy(desc(cbaVersionHistory.createdAt));
+        // Fetch version history
+        const versionHistory = await tx
+          .select()
+          .from(cbaVersionHistory)
+          .where(eq(cbaVersionHistory.cbaId, id))
+          .orderBy(desc(cbaVersionHistory.createdAt));
 
-      return NextResponse.json({
-        cba,
-        clauses,
-        contacts,
-        versionHistory,
+        return NextResponse.json({
+          cba,
+          clauses,
+          contacts,
+          versionHistory,
+        });
       });
     } catch (error) {
       console.error("Error fetching CBA:", error);
@@ -66,22 +77,24 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       const { id } = params;
       const body = await request.json();
 
-      // Update CBA
-      const [updatedCba] = await db
-        .update(collectiveAgreements)
-        .set({
-          ...body,
-          updatedAt: new Date(),
-          updatedBy: userId,
-        })
-        .where(eq(collectiveAgreements.id, id))
-        .returning();
+      // Update CBA using RLS-protected transaction
+      return withRLSContext(async (tx) => {
+        const [updatedCba] = await tx
+          .update(collectiveAgreements)
+          .set({
+            ...body,
+            updatedAt: new Date(),
+            updatedBy: userId,
+          })
+          .where(eq(collectiveAgreements.id, id))
+          .returning();
 
-      if (!updatedCba) {
-        return NextResponse.json({ error: "CBA not found" }, { status: 404 });
-      }
+        if (!updatedCba) {
+          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+        }
 
-      return NextResponse.json(updatedCba);
+        return NextResponse.json(updatedCba);
+      });
     } catch (error) {
       console.error("Error updating CBA:", error);
       return NextResponse.json(
@@ -97,17 +110,19 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
   try {
       const { id } = params;
 
-      // Delete CBA (cascade will handle related records)
-      const [deletedCba] = await db
-        .delete(collectiveAgreements)
-        .where(eq(collectiveAgreements.id, id))
-        .returning();
+      // Delete CBA using RLS-protected transaction (cascade will handle related records)
+      return withRLSContext(async (tx) => {
+        const [deletedCba] = await tx
+          .delete(collectiveAgreements)
+          .where(eq(collectiveAgreements.id, id))
+          .returning();
 
-      if (!deletedCba) {
-        return NextResponse.json({ error: "CBA not found" }, { status: 404 });
-      }
+        if (!deletedCba) {
+          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+        }
 
-      return NextResponse.json({ success: true, deletedId: id });
+        return NextResponse.json({ success: true, deletedId: id });
+      });
     } catch (error) {
       console.error("Error deleting CBA:", error);
       return NextResponse.json(

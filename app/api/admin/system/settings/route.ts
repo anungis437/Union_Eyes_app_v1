@@ -1,5 +1,13 @@
+/**
+ * System Settings API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -23,16 +31,18 @@ const updateSettingsSchema = z.object({
 });
 
 /**
- * Helper to check admin role
+ * Helper to check admin role using RLS-protected query
  */
 async function checkAdminRole(userId: string): Promise<boolean> {
   try {
-    const admin = await db
-      .select({ role: tenantUsers.role })
-      .from(tenantUsers)
-      .where(eq(tenantUsers.userId, userId))
-      .limit(1);
-    return admin.length > 0 && admin[0].role === "admin";
+    return withRLSContext(async (tx) => {
+      const admin = await tx
+        .select({ role: tenantUsers.role })
+        .from(tenantUsers)
+        .where(eq(tenantUsers.userId, userId))
+        .limit(1);
+      return admin.length > 0 && admin[0].role === "admin";
+    });
   } catch (_error) {
     return false;
   }
@@ -75,7 +85,7 @@ try {
       }
 
       const category = query.category || undefined;
-      const configs = await getSystemConfigs(category);
+      const configs = await getSystemConfigs(tx, category);
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(), userId,
@@ -149,9 +159,11 @@ try {
         );
       }
 
-      const { tenantId, category, key, value } = body;
+      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, category, key, value } = body;
+      const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+      const tenantId = organizationId;
 
-      await updateSystemConfig(tenantId, category, key, value);
+      await updateSystemConfig(tx, tenantId, category, key, value);
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(), userId,

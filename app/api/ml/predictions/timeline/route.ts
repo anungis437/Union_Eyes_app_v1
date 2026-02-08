@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
     const { claimId } = await request.json();
     
     if (!claimId) {
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.AI_SERVICE_TOKEN}`,
+        'X-Organization-ID': tenantId,
         'X-Tenant-ID': tenantId
       },
       body: JSON.stringify({

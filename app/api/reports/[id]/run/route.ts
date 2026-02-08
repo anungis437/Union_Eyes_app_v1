@@ -5,14 +5,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
 import { db } from '@/db';
 import { sql } from '@/db';
 import { updateReportRunStats } from '@/db/queries/analytics-queries';
 
 async function postHandler(
   req: NextRequest,
-  context: TenantContext,
+  context: OrganizationContext,
   params?: { id: string }
 ) {
   try {
@@ -26,7 +26,7 @@ async function postHandler(
     // Get report config
     const reportResult = await db.execute(sql`
       SELECT * FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${context.tenantId}
+      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
     `);
 
     if (!reportResult || reportResult.length === 0) {
@@ -52,13 +52,13 @@ async function postHandler(
       // Pre-built queries for claims
       queryResult = await db.execute(sql`
         SELECT * FROM claims
-        WHERE tenant_id = ${context.tenantId}
+        WHERE tenant_id = ${context.organizationId}
         LIMIT 1000
       `);
     } else if (reportConfig.dataSource === 'members') {
       queryResult = await db.execute(sql`
         SELECT * FROM organization_members
-        WHERE tenant_id = ${context.tenantId}
+        WHERE tenant_id = ${context.organizationId}
         LIMIT 1000
       `);
     } else {
@@ -86,4 +86,4 @@ async function postHandler(
   }
 }
 
-export const POST = withTenantAuth(postHandler);
+export const POST = withOrganizationAuth(postHandler);

@@ -5,10 +5,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCriticalDeadlines } from '@/db/queries/deadline-queries';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const tenantId = searchParams.get('tenantId');
+  const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
+  const tenantId = organizationId;
   
   if (!tenantId) {
     return NextResponse.json({ error: 'Tenant ID required' }, { status: 400 });
@@ -24,4 +26,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

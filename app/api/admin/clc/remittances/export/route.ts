@@ -9,15 +9,19 @@
  * - format: 'csv' | 'xml' | 'statcan'
  * - remittanceIds: comma-separated list of remittance IDs (for csv/xml)
  * - fiscalYear: year for StatCan export
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - Removed manual SET app.current_user_id command
+ * - All database operations wrapped in withRLSContext() for automatic context setting
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { generateRemittanceFile } from '@/services/clc/remittance-exporter';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // =====================================================================================
 // GET - Export remittances
@@ -27,15 +31,12 @@ export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
-  try {
-        // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${userId}`);
-
-        // Parse query parameters
-        const searchParams = request.nextUrl.searchParams;
-        const format = searchParams.get('format') as 'csv' | 'xml' | 'statcan' | null;
-        const remittanceIdsParam = searchParams.get('remittanceIds');
-        const fiscalYearParam = searchParams.get('fiscalYear');
+    try {
+      // Parse query parameters
+      const searchParams = request.nextUrl.searchParams;
+      const format = searchParams.get('format') as 'csv' | 'xml' | 'statcan' | null;
+      const remittanceIdsParam = searchParams.get('remittanceIds');
+      const fiscalYearParam = searchParams.get('fiscalYear');
 
         // Validate format
         if (!format || !['csv', 'xml', 'statcan'].includes(format)) {
@@ -89,8 +90,10 @@ export const GET = async (request: NextRequest) => {
           );
         }
 
-        const fiscalYear = fiscalYearParam ? parseInt(fiscalYearParam) : undefined;
+      const fiscalYear = fiscalYearParam ? parseInt(fiscalYearParam) : undefined;
 
+      // All database operations wrapped in withRLSContext for automatic context setting
+      return withRLSContext(async (tx) => {
         // Generate file
         const { filename, content, mimeType } = await generateRemittanceFile({
           format,
@@ -124,7 +127,8 @@ export const GET = async (request: NextRequest) => {
         });
 
         return response;
-      } catch (error) {
+      });
+    } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances/export',

@@ -27,7 +27,7 @@ export const fmvPolicy = pgTable("fmv_policy", {
   appraisalThreshold: decimal("appraisal_threshold", { precision: 15, scale: 2 }).notNull().default("50000.00"), // >$50k requires independent appraisal
   
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  updatedBy: uuid("updated_by"),
+  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 // CPI (Consumer Price Index) data from Statistics Canada
@@ -53,7 +53,7 @@ export const cpiData = pgTable("cpi_data", {
   
   // Import metadata
   importedAt: timestamp("imported_at").notNull().defaultNow(),
-  importedBy: uuid("imported_by"),
+  importedBy: varchar("imported_by", { length: 255 }),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -90,7 +90,7 @@ export const fmvBenchmarks = pgTable("fmv_benchmarks", {
   cpiAdjustmentFactor: decimal("cpi_adjustment_factor", { precision: 10, scale: 6 }),
   
   // Review
-  reviewedBy: uuid("reviewed_by"),
+  reviewedBy: varchar("reviewed_by", { length: 255 }),
   reviewedAt: timestamp("reviewed_at"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -107,14 +107,14 @@ export const procurementRequests = pgTable("procurement_requests", {
   requestDescription: text("request_description").notNull(),
   
   // Requester
-  requestedBy: uuid("requested_by").notNull(),
+  requestedBy: varchar("requested_by", { length: 255 }).notNull(),
   requestedByDepartment: varchar("requested_by_department", { length: 100 }),
   requestedAt: timestamp("requested_at").notNull().defaultNow(),
   
   // Budget
   estimatedValue: decimal("estimated_value", { precision: 15, scale: 2 }).notNull(),
   budgetApproved: boolean("budget_approved").notNull().default(false),
-  approvedBy: uuid("approved_by"),
+  approvedBy: varchar("approved_by", { length: 255 }),
   approvedAt: timestamp("approved_at"),
   
   // Procurement type
@@ -130,7 +130,7 @@ export const procurementRequests = pgTable("procurement_requests", {
   status: varchar("status", { length: 20 }).notNull().default("draft"), // "draft", "open_bidding", "evaluating", "awarded", "cancelled"
   
   // Award
-  awardedTo: uuid("awarded_to"),
+  awardedTo: varchar("awarded_to", { length: 255 }),
   awardedAmount: decimal("awarded_amount", { precision: 15, scale: 2 }),
   awardedAt: timestamp("awarded_at"),
   awardJustification: text("award_justification"),
@@ -168,7 +168,7 @@ export const procurementBids = pgTable("procurement_bids", {
   // Evaluation
   evaluationScore: decimal("evaluation_score", { precision: 5, scale: 2 }), // Out of 100
   evaluationNotes: text("evaluation_notes"),
-  evaluatedBy: uuid("evaluated_by"),
+  evaluatedBy: varchar("evaluated_by", { length: 255 }),
   evaluatedAt: timestamp("evaluated_at"),
   
   // Status
@@ -207,7 +207,7 @@ export const independentAppraisals = pgTable("independent_appraisals", {
   appraisalNotes: text("appraisal_notes"),
   
   // Review
-  reviewedBy: uuid("reviewed_by"),
+  reviewedBy: varchar("reviewed_by", { length: 255 }),
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),
   
@@ -239,7 +239,7 @@ export const cpiAdjustedPricing = pgTable("cpi_adjusted_pricing", {
   
   // Review
   adjustmentApproved: boolean("adjustment_approved").notNull().default(false),
-  approvedBy: uuid("approved_by"),
+  approvedBy: varchar("approved_by", { length: 255 }),
   approvedAt: timestamp("approved_at"),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -263,11 +263,11 @@ export const fmvViolations = pgTable("fmv_violations", {
   // Resolution
   status: varchar("status", { length: 20 }).notNull().default("pending"), // "pending", "under_review", "resolved", "exception_granted"
   resolution: text("resolution"),
-  resolvedBy: uuid("resolved_by"),
+  resolvedBy: varchar("resolved_by", { length: 255 }),
   resolvedAt: timestamp("resolved_at"),
   
   // Detected
-  detectedBy: uuid("detected_by"),
+  detectedBy: varchar("detected_by", { length: 255 }),
   detectedAt: timestamp("detected_at").notNull().defaultNow(),
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -287,7 +287,7 @@ export const fmvAuditLog = pgTable("fmv_audit_log", {
   appraisalId: uuid("appraisal_id"),
   
   // Actor
-  performedBy: uuid("performed_by").notNull(),
+  performedBy: varchar("performed_by", { length: 255 }).notNull(),
   performedByRole: varchar("performed_by_role", { length: 50 }),
   
   // Compliance impact

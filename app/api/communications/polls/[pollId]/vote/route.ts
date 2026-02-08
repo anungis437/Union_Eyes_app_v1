@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { polls, pollVotes } from '@/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 // Validation schema
 const VoteSchema = z.object({
@@ -30,13 +31,14 @@ function checkRateLimit(identifier: string, maxVotes: number = 10, windowMs: num
 }
 
 // POST /api/communications/polls/[pollId]/vote - Submit vote
-export async function POST(
+export const POST = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { pollId: string } }
-) {
+) => {
   try {
     const pollId = params.pollId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     const userId = request.headers.get('x-user-id') || null;
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     
@@ -198,4 +200,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+});

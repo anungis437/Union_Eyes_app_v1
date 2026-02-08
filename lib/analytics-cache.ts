@@ -98,7 +98,7 @@ class AnalyticsCacheService {
    * Generate cache key from tenant, endpoint, and parameters
    */
   private generateKey(
-    tenantId: string,
+    organizationId: string,
     endpoint: string,
     params: Record<string, any> = {}
   ): string {
@@ -107,14 +107,14 @@ class AnalyticsCacheService {
       .map(key => `${key}=${params[key]}`)
       .join('&');
     
-    return `analytics:cache:${tenantId}:${endpoint}:${sortedParams}`;
+    return `analytics:cache:${organizationId}:${endpoint}:${sortedParams}`;
   }
 
   /**
    * Get cached data if available and valid
    */
   async get<T>(
-    tenantId: string,
+    organizationId: string,
     endpoint: string,
     params: Record<string, any> = {}
   ): Promise<T | null> {
@@ -124,7 +124,7 @@ class AnalyticsCacheService {
       return null;
     }
     
-    const key = this.generateKey(tenantId, endpoint, params);
+    const key = this.generateKey(organizationId, endpoint, params);
     
     try {
       const entry = await redis.get<CacheEntry<T>>(key);
@@ -155,7 +155,7 @@ class AnalyticsCacheService {
    * Store data in cache with automatic TTL expiration
    */
   async set<T>(
-    tenantId: string,
+    organizationId: string,
     endpoint: string,
     data: T,
     params: Record<string, any> = {},
@@ -166,7 +166,7 @@ class AnalyticsCacheService {
       return;
     }
     
-    const key = this.generateKey(tenantId, endpoint, params);
+    const key = this.generateKey(organizationId, endpoint, params);
     
     try {
       const entry: CacheEntry<T> = {
@@ -186,7 +186,7 @@ class AnalyticsCacheService {
   /**
    * Invalidate cache for specific endpoint or all tenant data
    */
-  async invalidate(tenantId: string, endpoint?: string): Promise<void> {
+  async invalidate(organizationId: string, endpoint?: string): Promise<void> {
     if (!redis) {
       logger.warn('Redis not configured - invalidate skipped', { component: 'analytics-cache' });
       return;
@@ -194,18 +194,18 @@ class AnalyticsCacheService {
     
     try {
       const pattern = endpoint 
-        ? `analytics:cache:${tenantId}:${endpoint}:*`
-        : `analytics:cache:${tenantId}:*`;
+        ? `analytics:cache:${organizationId}:${endpoint}:*`
+        : `analytics:cache:${organizationId}:*`;
       
       // Use SCAN to find and delete matching keys
       const keys = await redis.keys(pattern);
       
       if (keys.length > 0) {
         await redis.del(...keys);
-        logger.info('Cache invalidated', { tenantId, endpoint, keysDeleted: keys.length });
+        logger.info('Cache invalidated', { organizationId, endpoint, keysDeleted: keys.length });
       }
     } catch (error) {
-      logger.error('Redis cache invalidation failed', error as Error, { tenantId, endpoint });
+      logger.error('Redis cache invalidation failed', error as Error, { organizationId, endpoint });
     }
   }
 
@@ -294,21 +294,21 @@ export const analyticsCache = new AnalyticsCacheService();
  * 
  * Usage:
  * const data = await withCache(
- *   tenantId,
+ *   organizationId,
  *   'claims',
  *   { days: 30 },
- *   () => fetchClaimsAnalytics(tenantId, 30)
+ *   () => fetchClaimsAnalytics(organizationId, 30)
  * );
  */
 export async function withCache<T>(
-  tenantId: string,
+  organizationId: string,
   endpoint: string,
   params: Record<string, any>,
   fetchFn: () => Promise<T>,
   ttl?: number
 ): Promise<T> {
   // Try to get from cache
-  const cached = await analyticsCache.get<T>(tenantId, endpoint, params);
+  const cached = await analyticsCache.get<T>(organizationId, endpoint, params);
   if (cached !== null) {
     return cached;
   }
@@ -317,7 +317,7 @@ export async function withCache<T>(
   const data = await fetchFn();
   
   // Store in cache
-  await analyticsCache.set(tenantId, endpoint, data, params, ttl);
+  await analyticsCache.set(organizationId, endpoint, data, params, ttl);
   
   return data;
 }
@@ -326,8 +326,8 @@ export async function withCache<T>(
  * Invalidate analytics cache when data changes
  * Call this after creating/updating/deleting claims
  */
-export async function invalidateAnalyticsCache(tenantId: string): Promise<void> {
-  await analyticsCache.invalidate(tenantId);
+export async function invalidateAnalyticsCache(organizationId: string): Promise<void> {
+  await analyticsCache.invalidate(organizationId);
 }
 
 /**

@@ -59,7 +59,7 @@ export const bandCouncilConsent = pgTable("band_council_consent", {
   revokedAt: timestamp("revoked_at"),
   revocationReason: text("revocation_reason"),
   
-  approvedBy: uuid("approved_by").notNull(), // Band Council admin user
+  approvedBy: varchar("approved_by", { length: 255 }).notNull(), // Band Council admin user
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -67,7 +67,7 @@ export const bandCouncilConsent = pgTable("band_council_consent", {
 // Indigenous member cultural classification
 export const indigenousMemberData = pgTable("indigenous_member_data", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().unique(),
+  userId: varchar("user_id", { length: 255 }).notNull().unique(),
   
   // Identity (OCAP® Ownership)
   indigenousStatus: varchar("indigenous_status", { length: 50 }).notNull(), // "Status Indian", "Non-Status", "Métis", "Inuit"
@@ -95,8 +95,8 @@ export const indigenousMemberData = pgTable("indigenous_member_data", {
 // Indigenous data access logs (OCAP® Access tracking)
 export const indigenousDataAccessLog = pgTable("indigenous_data_access_log", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull(), // Indigenous member whose data was accessed
-  accessedBy: uuid("accessed_by").notNull(), // Who accessed the data
+  userId: varchar("user_id", { length: 255 }).notNull(), // Indigenous member whose data was accessed
+  accessedBy: varchar("accessed_by", { length: 255 }).notNull(), // Who accessed the data
   bandCouncilId: uuid("band_council_id"),
   
   // Access details
@@ -141,7 +141,7 @@ export const indigenousDataSharingAgreements = pgTable("indigenous_data_sharing_
   autoRenewal: boolean("auto_renewal").notNull().default(false),
   
   // Band Council approval
-  approvedBy: uuid("approved_by").notNull(),
+  approvedBy: varchar("approved_by", { length: 255 }).notNull(),
   bcrNumber: varchar("bcr_number", { length: 50 }),
   
   // Status
@@ -169,7 +169,7 @@ export const traditionalKnowledgeRegistry = pgTable("traditional_knowledge_regis
   ageRestricted: boolean("age_restricted").notNull().default(false),
   
   // Knowledge holders
-  primaryKeeperUserId: uuid("primary_keeper_user_id"),
+  primaryKeeperUserId: varchar("primary_keeper_user_id", { length: 255 }),
   secondaryKeepers: jsonb("secondary_keepers"), // Array of user IDs
   
   // Access control

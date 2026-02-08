@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { polls } from '@/db/schema';
 import { and, eq, desc, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 // Validation schemas
 const PollOptionSchema = z.object({
@@ -22,10 +23,11 @@ const CreatePollSchema = z.object({
 });
 
 // GET /api/communications/polls - List polls
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -87,12 +89,13 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 // POST /api/communications/polls - Create poll
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     const userId = request.headers.get('x-user-id');
     
     if (!tenantId || !userId) {
@@ -153,4 +156,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

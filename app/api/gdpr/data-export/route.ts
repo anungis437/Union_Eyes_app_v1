@@ -19,11 +19,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tenantId, preferredFormat, requestDetails } = body;
+      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, preferredFormat, requestDetails } = body;
+      const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+      const tenantId = organizationId;
 
-    if (!tenantId) {
+      if (!organizationId) {
       return NextResponse.json(
-        { error: "Tenant ID required" },
+        { error: "Organization ID required" },
         { status: 400 }
       );
     }
@@ -104,11 +106,12 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const requestId = searchParams.get("requestId");
-    const tenantId = searchParams.get("tenantId");
+      const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+      const tenantId = organizationIdFromQuery;
 
     if (!requestId || !tenantId) {
       return NextResponse.json(
-        { error: "Request ID and Tenant ID required" },
+        { error: "Request ID and Organization ID required" },
         { status: 400 }
       );
     }

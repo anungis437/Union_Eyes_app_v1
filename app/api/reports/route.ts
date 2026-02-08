@@ -6,13 +6,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getReports, createReport } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 async function getHandler(req: NextRequest, context) {
   try {
-    const tenantId = context.tenantId;
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     const userId = context.userId;
     
     if (!tenantId || !userId) {
@@ -48,7 +49,8 @@ async function getHandler(req: NextRequest, context) {
 
 async function postHandler(req: NextRequest, context) {
   try {
-    const tenantId = context.tenantId;
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     const userId = context.userId;
     
     if (!tenantId || !userId) {
@@ -92,5 +94,5 @@ async function postHandler(req: NextRequest, context) {
   }
 }
 
-export const GET = withTenantAuth(getHandler);
-export const POST = withTenantAuth(postHandler);
+export const GET = withOrganizationAuth(getHandler);
+export const POST = withOrganizationAuth(postHandler);

@@ -65,7 +65,8 @@ const SMS_COST_PER_SEGMENT = 0.0075; // Twilio US pricing (~$0.0075 per SMS)
 // ============================================================================
 
 export interface SendSmsOptions {
-  tenantId: string;
+  organizationId?: string;
+  tenantId?: string;
   userId?: string;
   phoneNumber: string;
   message: string;
@@ -74,7 +75,8 @@ export interface SendSmsOptions {
 }
 
 export interface SendBulkSmsOptions {
-  tenantId: string;
+  organizationId?: string;
+  tenantId?: string;
   userId: string;
   recipients: Array<{ phoneNumber: string; userId?: string }>;
   message: string;
@@ -134,14 +136,26 @@ export function calculateSmsCost(message: string): number {
   return segments * SMS_COST_PER_SEGMENT;
 }
 
+function resolveOrganizationId(input: { organizationId?: string; tenantId?: string }): string | null {
+  return input.organizationId ?? input.tenantId ?? null;
+}
+
 /**
  * Check if phone number has opted out
  */
-export async function isPhoneOptedOut(tenantId: string, phoneNumber: string): Promise<boolean> {
+export async function isPhoneOptedOut(
+  organizationId: string,
+  phoneNumber: string
+): Promise<boolean> {
   const optOut = await db
     .select()
     .from(smsOptOuts)
-    .where(and(eq(smsOptOuts.organizationId, tenantId), eq(smsOptOuts.phoneNumber, phoneNumber)))
+    .where(
+      and(
+        eq(smsOptOuts.organizationId, organizationId),
+        eq(smsOptOuts.phoneNumber, phoneNumber)
+      )
+    )
     .limit(1);
 
   return optOut.length > 0;
@@ -150,7 +164,7 @@ export async function isPhoneOptedOut(tenantId: string, phoneNumber: string): Pr
 /**
  * Check rate limit for tenant
  */
-async function checkRateLimit(tenantId: string): Promise<boolean> {
+async function checkRateLimit(organizationId: string): Promise<boolean> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000);
 
@@ -159,7 +173,7 @@ async function checkRateLimit(tenantId: string): Promise<boolean> {
     .from(smsRateLimits)
     .where(
       and(
-        eq(smsRateLimits.organizationId, tenantId),
+        eq(smsRateLimits.organizationId, organizationId),
         sql`${smsRateLimits.windowStart} >= ${windowStart}`
       )
     )
@@ -168,7 +182,7 @@ async function checkRateLimit(tenantId: string): Promise<boolean> {
   if (!rateLimit) {
     // Create new rate limit window
     await db.insert(smsRateLimits).values({
-      organizationId: tenantId,
+      organizationId,
       messagesSent: 0,
       windowStart: now,
       windowEnd: new Date(now.getTime() + RATE_LIMIT_WINDOW_MINUTES * 60 * 1000),
@@ -182,7 +196,7 @@ async function checkRateLimit(tenantId: string): Promise<boolean> {
 /**
  * Increment rate limit counter
  */
-async function incrementRateLimit(tenantId: string): Promise<void> {
+async function incrementRateLimit(organizationId: string): Promise<void> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000);
 
@@ -193,7 +207,7 @@ async function incrementRateLimit(tenantId: string): Promise<void> {
     })
     .where(
       and(
-        eq(smsRateLimits.organizationId, tenantId),
+        eq(smsRateLimits.organizationId, organizationId),
         sql`${smsRateLimits.windowStart} >= ${windowStart}`
       )
     );
@@ -219,7 +233,15 @@ export function renderSmsTemplate(template: string, variables: Record<string, an
  * Send a single SMS message
  */
 export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult> {
-  const { tenantId, userId, phoneNumber, message, templateId, campaignId } = options;
+  const { organizationId: organizationIdInput, tenantId, userId, phoneNumber, message, templateId, campaignId } = options;
+  const organizationId = resolveOrganizationId({ organizationId: organizationIdInput, tenantId });
+
+  if (!organizationId) {
+    return {
+      success: false,
+      error: 'Missing organizationId for SMS sending',
+    };
+  }
 
   try {
     // Validate phone number
@@ -231,7 +253,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     }
 
     // Check opt-out status
-    const isOptedOut = await isPhoneOptedOut(tenantId, phoneNumber);
+    const isOptedOut = await isPhoneOptedOut(organizationId, phoneNumber);
     if (isOptedOut) {
       return {
         success: false,
@@ -240,7 +262,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     }
 
     // Check rate limit
-    const withinRateLimit = await checkRateLimit(tenantId);
+    const withinRateLimit = await checkRateLimit(organizationId);
     if (!withinRateLimit) {
       return {
         success: false,
@@ -256,7 +278,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     const [dbMessage] = await db
       .insert(smsMessages)
       .values({
-        organizationId: tenantId,
+        organizationId,
         userId,
         phoneNumber,
         message,
@@ -289,7 +311,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
       .where(eq(smsMessages.id, dbMessage.id));
 
     // Increment rate limit
-    await incrementRateLimit(tenantId);
+    await incrementRateLimit(organizationId);
 
     console.log(`✅ SMS sent successfully: ${twilioMessage.sid} to ${phoneNumber}`);
 
@@ -306,7 +328,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     // Log error to database
     if (options.phoneNumber) {
       await db.insert(smsMessages).values({
-        organizationId: options.tenantId,
+        organizationId,
         userId: options.userId,
         phoneNumber: options.phoneNumber,
         message: options.message,
@@ -339,7 +361,20 @@ export async function sendBulkSms(options: SendBulkSmsOptions): Promise<{
   failed: number;
   errors: Array<{ phoneNumber: string; error: string }>;
 }> {
-  const { tenantId, userId, recipients, message, templateId, campaignId } = options;
+  const { organizationId: organizationIdInput, tenantId, userId, recipients, message, templateId, campaignId } = options;
+  const organizationId = resolveOrganizationId({ organizationId: organizationIdInput, tenantId });
+
+  if (!organizationId) {
+    return {
+      success: false,
+      sent: 0,
+      failed: recipients?.length ?? 0,
+      errors: recipients?.map((recipient) => ({
+        phoneNumber: recipient.phoneNumber,
+        error: 'Missing organizationId for SMS sending',
+      })) ?? [],
+    };
+  }
 
   const results = {
     success: true,
@@ -350,7 +385,7 @@ export async function sendBulkSms(options: SendBulkSmsOptions): Promise<{
 
   for (const recipient of recipients) {
     const result = await sendSms({
-      tenantId,
+      organizationId,
       userId,
       phoneNumber: recipient.phoneNumber,
       message,
@@ -480,9 +515,9 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
   const { From, To, Body, MessageSid } = data;
 
   try {
-    // Determine tenant from phone number (lookup in database)
-    // For now, we'll need to implement tenant resolution logic
-    // This could be done by looking up which tenant owns the "To" phone number
+    // Determine organization from phone number (lookup in database)
+    // For now, we'll need to implement organization resolution logic
+    // This could be done by looking up which organization owns the "To" phone number
 
     // Check if message is STOP/UNSUBSCRIBE (TCPA compliance)
     const normalizedBody = Body?.toLowerCase().trim() || '';
@@ -500,7 +535,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
 
     // Store inbound message in conversations table
     const conversation: NewSmsConversation = {
-      organizationId: 'REPLACE_WITH_TENANT_ID', // TODO: Implement tenant resolution
+      organizationId: 'REPLACE_WITH_ORGANIZATION_ID', // TODO: Implement organization resolution
       phoneNumber: From,
       direction: 'inbound',
       message: Body || '',
@@ -522,13 +557,13 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
  * Handle SMS opt-out (STOP, UNSUBSCRIBE, etc.)
  */
 export async function handleOptOut(
-  tenantId: string,
+  organizationId: string,
   phoneNumber: string,
   via: string = 'reply_stop'
 ): Promise<void> {
   try {
     // Check if already opted out
-    const existing = await isPhoneOptedOut(tenantId, phoneNumber);
+    const existing = await isPhoneOptedOut(organizationId, phoneNumber);
     if (existing) {
       console.log(`ℹ️  ${phoneNumber} already opted out`);
       return;
@@ -536,7 +571,7 @@ export async function handleOptOut(
 
     // Insert opt-out record
     await db.insert(smsOptOuts).values({
-      organizationId: tenantId,
+      organizationId,
       phoneNumber,
       optedOutVia: via,
       reason: 'User requested opt-out via SMS',
@@ -563,11 +598,16 @@ export async function handleOptOut(
 /**
  * Get SMS template by ID
  */
-export async function getSmsTemplate(templateId: string, tenantId: string) {
+export async function getSmsTemplate(templateId: string, organizationId: string) {
   const [template] = await db
     .select()
     .from(smsTemplates)
-    .where(and(eq(smsTemplates.id, templateId), eq(smsTemplates.organizationId, tenantId)))
+    .where(
+      and(
+        eq(smsTemplates.id, templateId),
+        eq(smsTemplates.organizationId, organizationId)
+      )
+    )
     .limit(1);
 
   return template;
@@ -578,10 +618,10 @@ export async function getSmsTemplate(templateId: string, tenantId: string) {
  */
 export async function renderSmsFromTemplate(
   templateId: string,
-  tenantId: string,
+  organizationId: string,
   variables: Record<string, any>
 ): Promise<string | null> {
-  const template = await getSmsTemplate(templateId, tenantId);
+  const template = await getSmsTemplate(templateId, organizationId);
   if (!template) return null;
 
   return renderSmsTemplate(template.messageTemplate, variables);

@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const riskLevel = searchParams.get('riskLevel'); // 'low', 'medium', 'high'
     const limit = parseInt(searchParams.get('limit') || '50');
-    const tenantId = searchParams.get('tenantId') || organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId')) || organizationScopeId;
 
     // Get recent predictions
     let riskFilter = '';
@@ -131,7 +132,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { memberId, tenantId = organizationId || userId } = body;
+    const { memberId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
+    const organizationScopeId = organizationIdFromBody ?? organizationId ?? userId;
+    const tenantId = tenantIdFromBody ?? organizationScopeId;
 
     if (!memberId) {
       return NextResponse.json(

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { logger } from '@/lib/logger';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest) => {
   try {
     const { userId } = await req.json();
 
@@ -49,4 +50,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

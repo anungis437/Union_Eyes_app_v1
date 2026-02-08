@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
@@ -21,7 +21,8 @@ interface ChurnRiskMember {
 
 async function handler(req: NextRequest, context) {
   try {
-    const tenantId = context.tenantId;
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -112,4 +113,4 @@ async function handler(req: NextRequest, context) {
   }
 }
 
-export const GET = withTenantAuth(handler);
+export const GET = withOrganizationAuth(handler);

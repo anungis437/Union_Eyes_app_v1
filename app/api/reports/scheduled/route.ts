@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
 import {
   getScheduledReports,
   createScheduledReport,
@@ -19,9 +19,9 @@ import {
  * GET /api/reports/scheduled
  * List all scheduled reports for the tenant
  */
-async function getHandler(req: NextRequest, context: TenantContext) {
+async function getHandler(req: NextRequest, context: OrganizationContext) {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
 
     // Parse query parameters
     const { searchParams } = new URL(req.url);
@@ -55,9 +55,9 @@ async function getHandler(req: NextRequest, context: TenantContext) {
  * POST /api/reports/scheduled
  * Create a new scheduled report
  */
-async function postHandler(req: NextRequest, context: TenantContext) {
+async function postHandler(req: NextRequest, context: OrganizationContext) {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
 
     const body = await req.json();
 
@@ -120,5 +120,5 @@ async function postHandler(req: NextRequest, context: TenantContext) {
   }
 }
 
-export const GET = withTenantAuth(getHandler);
-export const POST = withTenantAuth(postHandler);
+export const GET = withOrganizationAuth(getHandler);
+export const POST = withOrganizationAuth(postHandler);

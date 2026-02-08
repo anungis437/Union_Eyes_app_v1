@@ -399,7 +399,11 @@ async function handleEnvelopeDeclined(
             type: 'email',
             priority: 'high',
             subject: 'Signature Request Declined',
-            body: `Signer ${signerEmail} has declined your signature request.\n\nReason: ${declineReason}\n\nPlease review the workflow and take appropriate action.`,
+            body: `Signer ${signerEmail} has declined your signature request.
+
+Reason: ${declineReason}
+
+Please review the workflow and take appropriate action.`,
             actionUrl: `/workflows/signatures/${workflowId}`,
             actionLabel: 'View Workflow',
             userId: 'system',

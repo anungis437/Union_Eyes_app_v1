@@ -18,7 +18,8 @@ export const GET = async (request: NextRequest) => {
   try {
       // Get query parameters
       const searchParams = request.nextUrl.searchParams;
-      const tenantId = searchParams.get('tenantId');
+      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
+      const tenantId = organizationId;
       const limit = parseInt(searchParams.get('limit') || '10');
 
       if (!tenantId) {

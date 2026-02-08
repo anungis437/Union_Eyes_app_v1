@@ -39,7 +39,8 @@ async function sendInsightNotifications(organizationId: string, insights: any[])
     // Create notification message
     const insightSummary = insights
       .map((insight) => `• ${insight.title} (${insight.priority})`)
-      .join('\n');
+      .join('
+');
 
     // Send email to each admin
     for (const admin of admins) {
@@ -51,7 +52,11 @@ async function sendInsightNotifications(organizationId: string, insights: any[])
           type: 'email',
           priority: 'high',
           subject: `Critical Analytics Insights - ${new Date().toLocaleDateString()}`,
-          body: `New critical analytics insights have been detected:\n\n${insightSummary}\n\nLog in to the dashboard to view full details and recommendations.`,
+          body: `New critical analytics insights have been detected:
+
+${insightSummary}
+
+Log in to the dashboard to view full details and recommendations.`,
           actionUrl: '/dashboard/analytics/insights',
           actionLabel: 'View Insights',
           userId: 'system',

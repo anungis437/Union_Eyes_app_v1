@@ -40,7 +40,9 @@ export const GET = async (request: NextRequest) => {
   try {
         const { searchParams } = new URL(request.url);
         
-        const tenantId = searchParams.get("tenantId");
+        const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+        
+        const tenantId = organizationId;
         if (!tenantId) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,

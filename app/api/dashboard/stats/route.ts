@@ -1,7 +1,15 @@
+/**
+ * Dashboard Statistics API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - Database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimStatistics } from "@/db/queries/claims-queries";
-import { withTenantAuth } from "@/lib/tenant-middleware";
-import { db } from "@/db/db";
+import { withOrganizationAuth } from "@/lib/organization-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
 
@@ -10,15 +18,17 @@ const getCachedDashboardStats = unstable_cache(
   async (tenantId: string) => {
     const statistics = await getClaimStatistics(tenantId);
     
-    // Get member count for this organization
-    const memberCountResult = await db.execute(sql`
-      SELECT COUNT(*) as count
-      FROM organization_members
-      WHERE organization_id = ${tenantId}
-      AND deleted_at IS NULL
-    `);
-    
-    const memberCount = Number(memberCountResult[0]?.count || 0);
+    // Get member count using RLS-protected query
+    const memberCount = await withRLSContext(async (tx) => {
+      const memberCountResult = await tx.execute(sql`
+        SELECT COUNT(*) as count
+        FROM organization_members
+        WHERE organization_id = ${tenantId}
+        AND deleted_at IS NULL
+      `);
+      
+      return Number(memberCountResult[0]?.count || 0);
+    });
     
     return {
       ...statistics,
@@ -37,12 +47,12 @@ const getCachedDashboardStats = unstable_cache(
  * Fetch dashboard statistics for the specified tenant
  * Protected by tenant middleware (falls back to query param if cookie not set)
  */
-export const GET = withTenantAuth(async (request: NextRequest, context) => {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
     // Prefer query parameter over middleware tenantId (to avoid cookie timing issues)
     const { searchParams } = new URL(request.url);
-    const queryTenantId = searchParams.get('tenantId');
-    const tenantId = queryTenantId || context.tenantId;
+    const queryTenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
+    const tenantId = queryTenantId || context.organizationId;
     
     console.log('[API /api/dashboard/stats] Fetching stats for tenantId:', tenantId, { fromQuery: !!queryTenantId });
     

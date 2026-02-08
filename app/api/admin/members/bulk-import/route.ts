@@ -1,6 +1,9 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Bulk Import Members API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
  * 
  * Import multiple union members from CSV/Excel with validation.
  * Features:
@@ -12,8 +15,9 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  * @module app/api/admin/members/bulk-import/route
  */
 
+import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { db as drizzleDb } from "@/db";
 import { organizationMembers } from "@/db/schema-organizations";
 import { organizations } from "@/db/schema-organizations";
@@ -128,11 +132,13 @@ export const POST = async (request: NextRequest) => {
       // Get all unique organization slugs from the CSV
       const orgSlugs = Array.from(new Set(rows.map(r => r.organizationSlug).filter(Boolean)));
       
-      // Fetch organization IDs for all slugs
-      const orgList = await db
-        .select({ id: organizations.id, slug: organizations.slug })
-        .from(organizations)
-        .where(inArray(organizations.slug, orgSlugs));
+      // Fetch organization IDs for all slugs using RLS-protected query
+      const orgList = await withRLSContext(async (tx) => {
+        return await tx
+          .select({ id: organizations.id, slug: organizations.slug })
+          .from(organizations)
+          .where(inArray(organizations.slug, orgSlugs));
+      });
       
       const orgSlugToId = new Map(orgList.map(org => [org.slug, org.id]));
 
@@ -391,7 +397,8 @@ export const POST = async (request: NextRequest) => {
 // =====================================================
 
 function parseCSV(text: string): ImportRow[] {
-  const lines = text.split("\n").filter((line) => line.trim());
+  const lines = text.split("
+").filter((line) => line.trim());
   if (lines.length < 2) return [];
 
   const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));

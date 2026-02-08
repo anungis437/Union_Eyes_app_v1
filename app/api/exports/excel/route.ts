@@ -5,13 +5,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { createExportJob, updateExportJobStatus } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 async function postHandler(req: NextRequest, context) {
   try {
-    const tenantId = context.tenantId;
+    const organizationId = context.organizationId;
+    const tenantId = organizationId;
     const userId = context.userId;
     
     if (!tenantId || !userId) {
@@ -53,4 +54,4 @@ async function postHandler(req: NextRequest, context) {
   }
 }
 
-export const POST = withTenantAuth(postHandler);
+export const POST = withOrganizationAuth(postHandler);

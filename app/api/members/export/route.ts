@@ -128,7 +128,8 @@ export const GET = async (request: NextRequest) => {
           ...rows.map((row) =>
             row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
           ),
-        ].join("\n");
+        ].join("
+");
 
         return new NextResponse(csv, {
           status: 200,

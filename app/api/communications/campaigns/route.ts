@@ -15,6 +15,7 @@ import { db } from '@/db';
 import { newsletterCampaigns, newsletterTemplates, newsletterDistributionLists } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 const createCampaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
@@ -30,7 +31,7 @@ const createCampaignSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -69,9 +70,9 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -144,4 +145,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

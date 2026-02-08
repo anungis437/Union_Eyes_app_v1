@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { polls, pollVotes } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 // Validation schema for update
 const UpdatePollSchema = z.object({
@@ -17,13 +18,14 @@ const UpdatePollSchema = z.object({
 });
 
 // GET /api/communications/polls/[pollId] - Get poll by ID
-export async function GET(
+export const GET = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { pollId: string } }
-) {
+) => {
   try {
     const pollId = params.pollId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     const userId = request.headers.get('x-user-id') || null;
     
     if (!tenantId) {
@@ -79,16 +81,17 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 // PUT /api/communications/polls/[pollId] - Update poll
-export async function PUT(
+export const PUT = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { pollId: string } }
-) {
+) => {
   try {
     const pollId = params.pollId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     const userId = request.headers.get('x-user-id');
     
     if (!tenantId || !userId) {
@@ -175,16 +178,17 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+});
 
 // DELETE /api/communications/polls/[pollId] - Delete poll
-export async function DELETE(
+export const DELETE = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { pollId: string } }
-) {
+) => {
   try {
     const pollId = params.pollId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -235,4 +239,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+});

@@ -17,9 +17,9 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  try {
+    try {
       const trustee = await db
         .select()
         .from(pensionTrustees)
@@ -54,9 +54,9 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  try {
+    try {
       const body = await request.json();
       const updates = {
         ...body,
@@ -104,9 +104,9 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId } = context;
 
-  try {
+    try {
       // Soft delete: update status instead of hard delete
       const result = await db
         .update(pensionTrustees)

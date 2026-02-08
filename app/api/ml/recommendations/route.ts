@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'all';
     const claimId = searchParams.get('claimId');

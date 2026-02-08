@@ -10,8 +10,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // GET /api/education/sessions/[id]/attendance - Get attendance records for session
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const sessionId = params.id;
 
@@ -92,8 +90,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 // POST /api/education/sessions/[id]/attendance - Mark attendance (single or bulk)
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const sessionId = params.id;
       const body = await request.json();
@@ -275,8 +271,6 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 // PATCH /api/education/sessions/[id]/attendance - Update attendance record
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const sessionId = params.id;
       const body = await request.json();

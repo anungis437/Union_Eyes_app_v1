@@ -92,8 +92,8 @@ export const erpConnectors = pgTable('erp_connectors', {
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-  createdBy: uuid('created_by'),
-  updatedBy: uuid('updated_by'),
+  createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
+  updatedBy: varchar('updated_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
 }, (table) => ({
   tenantIdx: index('erp_connectors_tenant_idx').on(table.tenantId),
   systemTypeIdx: index('erp_connectors_system_type_idx').on(table.systemType),
@@ -153,8 +153,8 @@ export const glAccountMappings = pgTable('gl_account_mappings', {
   
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-  createdBy: uuid('created_by'),
-  updatedBy: uuid('updated_by'),
+  createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
+  updatedBy: varchar('updated_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
 }, (table) => ({
   tenantIdx: index('gl_mappings_tenant_idx').on(table.tenantId),
   unionAccountIdx: index('gl_mappings_union_account_idx').on(table.unionEyesAccount),
@@ -186,8 +186,8 @@ export const journalEntries = pgTable('journal_entries', {
   isReversed: boolean('is_reversed').default(false).notNull(),
   reversalEntryId: uuid('reversal_entry_id'),
   
-  createdBy: uuid('created_by').notNull(),
-  approvedBy: uuid('approved_by'),
+  createdBy: varchar('created_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
+  approvedBy: varchar('approved_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   approvedAt: timestamp('approved_at', { withTimezone: true }),
   
   metadata: jsonb('metadata'),
@@ -347,9 +347,9 @@ export const bankReconciliations = pgTable('bank_reconciliations', {
   
   status: varchar('status', { length: 50 }).default('in_progress').notNull(),
   
-  reconciledBy: uuid('reconciled_by'),
+  reconciledBy: varchar('reconciled_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   reconciledAt: timestamp('reconciled_at', { withTimezone: true }),
-  approvedBy: uuid('approved_by'),
+  approvedBy: varchar('approved_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   approvedAt: timestamp('approved_at', { withTimezone: true }),
   
   metadata: jsonb('metadata'),
@@ -411,7 +411,7 @@ export const financialAuditLog = pgTable('financial_audit_log', {
   entityId: uuid('entity_id').notNull(),
   action: auditActionEnum('action').notNull(),
   
-  userId: uuid('user_id').notNull(),
+  userId: varchar('user_id', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   userName: varchar('user_name', { length: 255 }).notNull(),
   
   changes: jsonb('changes').$type<Array<{

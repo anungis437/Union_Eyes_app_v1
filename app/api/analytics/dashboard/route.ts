@@ -7,9 +7,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const { searchParams } = new URL(request.url);
       const timeRange = searchParams.get('timeRange') || '30'; // days
       const memberId = searchParams.get('memberId'); // Optional: filter by specific member

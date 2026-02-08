@@ -1,18 +1,18 @@
 /**
- * Tenant Middleware
+ * Tenant Middleware (Legacy)
  * 
- * Middleware to enforce tenant context in API routes.
- * Validates tenant access and injects tenant ID into request context.
+ * Deprecated: organizationId is the primary scope. This wrapper maps tenantId
+ * to organizationId for backward compatibility in older routes.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantIdForUser, validateTenantExists } from "@/lib/tenant-utils";
-import { requireUser } from "@/lib/auth/unified-auth";
-import { cookies } from "next/headers";
+import { withOrganizationAuth, type OrganizationContext } from "@/lib/organization-middleware";
 
 export interface TenantContext {
   tenantId: string;
   userId: string;
+  organizationId: string;
+  memberId: string;
 }
 
 /**
@@ -35,50 +35,16 @@ export function withTenantAuth<T = any>(
     params?: T
   ) => Promise<NextResponse> | NextResponse
 ) {
-  return async (
-    request: NextRequest,
-    routeContext?: { params: Promise<T> | T }
-  ): Promise<NextResponse> => {
-    try {
-      const user = await requireUser();
+  return withOrganizationAuth(async (request: NextRequest, context: OrganizationContext, params?: T) => {
+    const tenantContext: TenantContext = {
+      tenantId: context.organizationId,
+      organizationId: context.organizationId,
+      userId: context.userId,
+      memberId: context.memberId,
+    };
 
-      // Get tenant ID - getTenantIdForUser handles cookie checking and access verification
-      const tenantId = await getTenantIdForUser(user.userId);
-
-      // Create tenant context
-      const context: TenantContext = {
-        tenantId,
-        userId: user.userId,
-      };
-
-      // Resolve params if they're a Promise
-      const params = routeContext?.params 
-        ? await Promise.resolve(routeContext.params)
-        : undefined;
-
-      // Call the handler with context
-      return await handler(request, context, params);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Internal server error';
-      if (message === 'Unauthorized') {
-        return NextResponse.json(
-          { error: "Unauthorized - Authentication required" },
-          { status: 401 }
-        );
-      }
-      if (message === 'Forbidden') {
-        return NextResponse.json(
-          { error: "Forbidden - User is not a member of this organization" },
-          { status: 403 }
-        );
-      }
-      console.error("Tenant middleware error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
-    }
-  };
+    return await handler(request, tenantContext, params);
+  });
 }
 
 /**
@@ -91,19 +57,11 @@ export async function validateTenantAccess(
   userId: string,
   requestedTenantId: string
 ): Promise<boolean> {
-  try {
-    // Phase 1: Allow access to any tenant (single-tenant mode)
-    // Phase 2+: Check tenant_users table for user's tenant memberships
-    const userTenantId = await getTenantIdForUser(userId);
-    
-    // For now, ensure tenant exists
-    const exists = await validateTenantExists(requestedTenantId);
-    
-    return exists;
-  } catch (error) {
-    console.error("Error validating tenant access:", error);
-    return false;
-  }
+  console.warn('validateTenantAccess is deprecated. Use validateOrganizationAccess instead.', {
+    userId,
+    requestedTenantId,
+  });
+  return false;
 }
 
 /**
@@ -118,25 +76,8 @@ export async function getTenantIdFromRequest(
   request: NextRequest,
   userId: string
 ): Promise<string> {
-  // Check header first
-  const headerTenantId = request.headers.get("X-Tenant-ID");
-  if (headerTenantId) {
-    const isValid = await validateTenantExists(headerTenantId);
-    if (isValid) {
-      return headerTenantId;
-    }
-  }
-
-  // Check cookie
-  const cookieStore = await cookies();
-  const cookieTenantId = cookieStore.get("selected_tenant_id")?.value;
-  if (cookieTenantId) {
-    const isValid = await validateTenantExists(cookieTenantId);
-    if (isValid) {
-      return cookieTenantId;
-    }
-  }
-
-  // Fall back to user's default tenant
-  return getTenantIdForUser(userId);
+  console.warn('getTenantIdFromRequest is deprecated. Use getOrganizationIdFromRequest instead.', {
+    userId,
+  });
+  return '';
 }

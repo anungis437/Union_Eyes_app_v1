@@ -1,6 +1,14 @@
+/**
+ * CBA Precedents API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { 
   arbitrationDecisions, 
   arbitratorProfiles, 
@@ -25,59 +33,61 @@ export const GET = async (request: NextRequest) => {
       const limit = parseInt(searchParams.get("limit") || "20");
       const offset = parseInt(searchParams.get("offset") || "0");
 
-      // If claimId provided, check for cached analysis
-      if (claimId) {
-        const cachedAnalysis = await db
-          .select()
-          .from(claimPrecedentAnalysis)
-          .where(eq(claimPrecedentAnalysis.claimId, claimId))
-          .limit(1);
-
-        if (cachedAnalysis.length > 0) {
-          // Return cached analysis with full decision details
-          const analysis = cachedAnalysis[0];
-          const decisionIds = (analysis.precedentMatches as any[]).map((m: any) => m.decisionId);
-          
-          const decisions = await db
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // If claimId provided, check for cached analysis
+        if (claimId) {
+          const cachedAnalysis = await tx
             .select()
-            .from(arbitrationDecisions)
-            .where(inArray(arbitrationDecisions.id, decisionIds))
-            .limit(10);
+            .from(claimPrecedentAnalysis)
+            .where(eq(claimPrecedentAnalysis.claimId, claimId))
+            .limit(1);
+
+          if (cachedAnalysis.length > 0) {
+            // Return cached analysis with full decision details
+            const analysis = cachedAnalysis[0];
+            const decisionIds = (analysis.precedentMatches as any[]).map((m: any) => m.decisionId);
+            
+            const decisions = await tx
+              .select()
+              .from(arbitrationDecisions)
+              .where(inArray(arbitrationDecisions.id, decisionIds))
+              .limit(10);
+
+            return NextResponse.json({
+              analysis,
+              decisions,
+              cached: true,
+            });
+          }
+
+          // If not cached, fetch claim details for analysis
+          const [claim] = await tx
+            .select()
+            .from(claims)
+            .where(eq(claims.claimId, claimId))
+            .limit(1);
+
+          if (!claim) {
+            return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+          }
+
+          // Generate new analysis based on claim
+          // In production, this would use embeddings and AI analysis
+          const relevantDecisions = await findRelevantDecisions(claim, limit);
+          
+          // Create precedent analysis
+          const analysis = await analyzeClaimPrecedents(claimId, claim, relevantDecisions, userId);
 
           return NextResponse.json({
             analysis,
-            decisions,
-            cached: true,
+            decisions: relevantDecisions,
+            cached: false,
           });
         }
 
-        // If not cached, fetch claim details for analysis
-        const [claim] = await db
-          .select()
-          .from(claims)
-          .where(eq(claims.claimId, claimId))
-          .limit(1);
-
-        if (!claim) {
-          return NextResponse.json({ error: "Claim not found" }, { status: 404 });
-        }
-
-        // Generate new analysis based on claim
-        // In production, this would use embeddings and AI analysis
-        const relevantDecisions = await findRelevantDecisions(claim, limit);
-        
-        // Create precedent analysis
-        const analysis = await analyzeClaimPrecedents(claimId, claim, relevantDecisions, userId);
-
-        return NextResponse.json({
-          analysis,
-          decisions: relevantDecisions,
-          cached: false,
-        });
-      }
-
-      // General precedent search without specific claim
-      const conditions = [];
+        // General precedent search without specific claim
+        const conditions = [];
 
       if (issueTypes.length > 0) {
         // Search in issue_types JSONB array

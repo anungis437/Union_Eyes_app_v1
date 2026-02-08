@@ -13,6 +13,7 @@
 import { createYoga } from 'graphql-yoga';
 import { schema } from '@/lib/graphql/schema';
 import { resolvers } from '@/lib/graphql/resolvers';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 const yoga = createYoga({
   schema,
@@ -25,4 +26,5 @@ const yoga = createYoga({
   },
 });
 
-export { yoga as GET, yoga as POST };
+export const GET = withApiAuth(async (request, context) => yoga.fetch(request, context));
+export const POST = withApiAuth(async (request, context) => yoga.fetch(request, context));

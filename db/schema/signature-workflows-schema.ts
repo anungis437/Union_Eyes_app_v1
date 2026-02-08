@@ -19,7 +19,7 @@ import {
   decimal,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "./organization-members-schema";
+import { organizations } from "../schema-organizations";
 import { profiles } from "./profiles-schema";
 import { documents } from "./documents-schema";
 
@@ -102,9 +102,9 @@ export const signatureWorkflows = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
+    createdBy: varchar("created_by", { length: 255 }),
     voidedAt: timestamp("voided_at"),
-    voidedBy: uuid("voided_by"),
+    voidedBy: varchar("voided_by", { length: 255 }),
     voidReason: text("void_reason"),
   },
   (t) => ({
@@ -125,7 +125,7 @@ export const signers = pgTable(
     workflowId: uuid("workflow_id")
       .notNull()
       .references(() => signatureWorkflows.id, { onDelete: "cascade" }),
-    memberId: uuid("member_id").references(() => profiles.userId, { onDelete: "set null" }),
+    memberId: varchar("member_id", { length: 255 }).references(() => profiles.userId, { onDelete: "set null" }),
     
     // Signer info
     email: varchar("email", { length: 255 }).notNull(),
@@ -245,7 +245,7 @@ export const signatureVerification = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     verifiedAt: timestamp("verified_at"),
-    verifiedBy: uuid("verified_by"),
+    verifiedBy: varchar("verified_by", { length: 255 }),
   },
   (t) => ({
     workflowIdx: index("signature_verification_workflow_idx").on(t.workflowId),

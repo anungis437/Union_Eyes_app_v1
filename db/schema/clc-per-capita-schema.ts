@@ -47,9 +47,9 @@ export const perCapitaRemittances = pgTable(
     approvalStatus: varchar('approval_status', { length: 20 }).default('draft'),
     submittedDate: timestamp('submitted_date', { withTimezone: true, mode: 'string' }),
     approvedDate: timestamp('approved_date', { withTimezone: true, mode: 'string' }),
-    approvedBy: uuid('approved_by'),
+    approvedBy: varchar('approved_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
     rejectedDate: timestamp('rejected_date', { withTimezone: true, mode: 'string' }),
-    rejectedBy: uuid('rejected_by'),
+    rejectedBy: varchar('rejected_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
     rejectionReason: text('rejection_reason'),
     paidDate: timestamp('paid_date', { withTimezone: true, mode: 'string' }),
     paymentMethod: varchar('payment_method', { length: 50 }),
@@ -59,7 +59,7 @@ export const perCapitaRemittances = pgTable(
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
-    createdBy: uuid('created_by'),
+    createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   },
   (table) => ({
     idxRemittancesDueDate: index('idx_remittances_due_date').on(table.dueDate),
@@ -142,7 +142,7 @@ export const remittanceApprovals = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     remittanceId: uuid('remittance_id').notNull(),
-    approverUserId: uuid('approver_user_id').notNull(),
+    approverUserId: varchar('approver_user_id', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
     approverRole: varchar('approver_role', { length: 50 }),
     approvalLevel: varchar('approval_level', { length: 20 }), // local, regional, national, clc (nullable for 'submitted' action)
     action: varchar('action', { length: 20 }).notNull(), // submitted, approved, rejected, returned
@@ -228,7 +228,7 @@ export const organizationContacts = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     organizationId: uuid('organization_id').notNull(),
-    userId: uuid('user_id'),
+    userId: varchar('user_id', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
     role: varchar('role', { length: 100 }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     email: varchar('email', { length: 255 }).notNull(),

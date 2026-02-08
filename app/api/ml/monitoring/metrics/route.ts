@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
 
     // Query model performance metrics from analytics tables
     // Build on existing analytics_scheduled_reports and benchmark_data tables

@@ -28,8 +28,6 @@ function getSupabaseClient() {
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const searchParams = request.nextUrl.searchParams;
       const code = searchParams.get('code');

@@ -19,7 +19,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "./organization-members-schema";
+import { organizations } from "../schema-organizations";
 
 // ============================================================================
 // ENUMS
@@ -109,8 +109,8 @@ export const chartOfAccounts = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
-    updatedBy: uuid("updated_by"),
+    createdBy: varchar("created_by", { length: 255 }),
+    updatedBy: varchar("updated_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("chart_of_accounts_org_idx").on(t.organizationId),
@@ -142,7 +142,7 @@ export const costCenters = pgTable(
     parentCostCenterId: uuid("parent_cost_center_id").references(() => costCenters.id),
     
     // Details
-    manager: uuid("manager"), // User ID of manager
+    manager: varchar("manager", { length: 255 }), // User ID of manager
     status: varchar("status", { length: 50 }).notNull().default("active"),
     
     // Budget
@@ -160,8 +160,8 @@ export const costCenters = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
-    updatedBy: uuid("updated_by"),
+    createdBy: varchar("created_by", { length: 255 }),
+    updatedBy: varchar("updated_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("cost_centers_org_idx").on(t.organizationId),
@@ -210,7 +210,7 @@ export const glAccountMappings = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
+    createdBy: varchar("created_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("gl_account_mappings_org_idx").on(t.organizationId),
@@ -256,16 +256,16 @@ export const glTransactionLog = pgTable(
     // Post status
     isPosted: boolean("is_posted").default(false),
     postedAt: timestamp("posted_at"),
-    postedBy: uuid("posted_by"),
+    postedBy: varchar("posted_by", { length: 255 }),
     
     // Reconciliation
     isReconciled: boolean("is_reconciled").default(false),
     reconciledAt: timestamp("reconciled_at"),
-    reconciledBy: uuid("reconciled_by"),
+    reconciledBy: varchar("reconciled_by", { length: 255 }),
     
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
+    createdBy: varchar("created_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("gl_transaction_log_org_idx").on(t.organizationId),
@@ -303,7 +303,7 @@ export const glTrialBalance = pgTable(
     // Status
     isFinalized: boolean("is_finalized").default(false),
     finalizedAt: timestamp("finalized_at"),
-    finalizedBy: uuid("finalized_by"),
+    finalizedBy: varchar("finalized_by", { length: 255 }),
     
     // Verification
     isBalanced: boolean("is_balanced").default(false),
@@ -311,7 +311,7 @@ export const glTrialBalance = pgTable(
     
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
+    createdBy: varchar("created_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("gl_trial_balance_org_idx").on(t.organizationId),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrivacyRules, assessBreachNotification } from '@/lib/services/provincial-privacy-service';
 import type { PIPEDABreachRequest, PIPEDABreachAssessment } from '@/lib/types/compliance-api-types';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * PIPEDA Breach Assessment API
@@ -11,7 +12,7 @@ import type { PIPEDABreachRequest, PIPEDABreachAssessment } from '@/lib/types/co
  * POST /api/emergency/pipeda
  * Assess if data breach requires PIPEDA notification
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json() as PIPEDABreachRequest;
     const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = body;
@@ -135,4 +136,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

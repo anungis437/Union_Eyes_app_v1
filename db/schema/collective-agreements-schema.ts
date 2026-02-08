@@ -92,8 +92,8 @@ export const collectiveAgreements = pgTable("collective_agreements", {
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  createdBy: uuid("created_by"),
-  lastModifiedBy: uuid("last_modified_by"),
+  createdBy: varchar("created_by", { length: 255 }),
+  lastModifiedBy: varchar("last_modified_by", { length: 255 }),
   
   // Version control
   version: integer("version").notNull().default(1),
@@ -123,7 +123,7 @@ export const cbaVersionHistory = pgTable("cba_version_history", {
   newData: jsonb("new_data"),
   
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
 }, (table) => ({
   cbaIdx: index("cba_version_cba_idx").on(table.cbaId),
   versionIdx: index("cba_version_number_idx").on(table.version),

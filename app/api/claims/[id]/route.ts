@@ -1,27 +1,20 @@
+/**
+ * Claims Detail API Routes
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ * - Removed manual tenant lookup (getUserTenant) - RLS handles this
+ * - Removed manual cross-tenant access checks - RLS enforces this
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/db/db";
 import { claims, claimUpdates } from "@/db/schema/claims-schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
-
-/**
- * Helper function to get user's tenant context
- */
-async function getUserTenant(userId: string): Promise<string | null> {
-  try {
-    const result = await db.execute(
-      sql`SELECT organization_id FROM tenant_users WHERE user_id = ${userId} LIMIT 1`
-    );
-    if (result.length > 0) {
-      return result[0].organization_id as string;
-    }
-    return null;
-  } catch (_error) {
-    return null;
-  }
-}
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Validation schema for updating claims
@@ -49,25 +42,13 @@ export const GET = async (
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
-  try {
-        const claimNumber = params.id;
+    try {
+      const claimNumber = params.id;
 
-        // Get user's tenant
-        const tenantId = await getUserTenant(userId);
-        if (!tenantId) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/claims/${claimNumber}`,
-            method: 'GET',
-            eventType: 'auth_failed',
-            severity: 'medium',
-            details: { reason: 'User tenant not found' },
-          });
-          return NextResponse.json({ error: 'User tenant not found' }, { status: 403 });
-        }
-
-        // Fetch claim by claim number
-        const [claim] = await db
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Fetch claim by claim number - RLS policies automatically enforce tenant filtering
+        const [claim] = await tx
           .select()
           .from(claims)
           .where(eq(claims.claimNumber, claimNumber));
@@ -84,21 +65,8 @@ export const GET = async (
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
         }
 
-        // Verify tenant isolation
-        if (claim.organizationId !== tenantId) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/claims/${claimNumber}`,
-            method: 'GET',
-            eventType: 'auth_failed',
-            severity: 'high',
-            details: { reason: 'Cross-tenant access attempt', claimNumber },
-          });
-          return NextResponse.json({ error: "Access denied" }, { status: 403 });
-        }
-
-        // Fetch claim updates using the claim's UUID
-        const updates = await db
+        // Fetch claim updates using the claim's UUID - RLS policies enforce access
+        const updates = await tx
           .select()
           .from(claimUpdates)
           .where(eq(claimUpdates.claimId, claim.claimId))
@@ -110,14 +78,15 @@ export const GET = async (
           method: 'GET',
           eventType: 'success',
           severity: 'low',
-          details: { claimNumber, tenantId, updatesCount: updates.length },
+          details: { claimNumber, organizationId, updatesCount: updates.length },
         });
 
         return NextResponse.json({
           claim,
           updates,
         });
-      } catch (error) {
+      });
+    } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: `/api/claims/${params.id}`,
@@ -165,77 +134,53 @@ export const PATCH = async (
     }
 
   try {
-          const claimNumber = params.id;
+      const claimNumber = params.id;
 
-          // Get user's tenant
-          const tenantId = await getUserTenant(userId);
-          if (!tenantId) {
-            logApiAuditEvent({
-              timestamp: new Date().toISOString(), userId,
-              endpoint: `/api/claims/${claimNumber}`,
-              method: 'PATCH',
-              eventType: 'auth_failed',
-              severity: 'medium',
-              details: { reason: 'User tenant not found' },
-            });
-            return NextResponse.json({ error: 'User tenant not found' }, { status: 403 });
-          }
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Check if claim exists - RLS policies automatically enforce tenant filtering
+        const [existingClaim] = await tx
+          .select()
+          .from(claims)
+          .where(eq(claims.claimNumber, claimNumber));
 
-          // Check if claim exists
-          const [existingClaim] = await db
-            .select()
-            .from(claims)
-            .where(eq(claims.claimNumber, claimNumber));
-
-          if (!existingClaim) {
-            logApiAuditEvent({
-              timestamp: new Date().toISOString(), userId,
-              endpoint: `/api/claims/${claimNumber}`,
-              method: 'PATCH',
-              eventType: 'validation_failed',
-              severity: 'low',
-              details: { reason: 'Claim not found', claimNumber },
-            });
-            return NextResponse.json({ error: "Claim not found" }, { status: 404 });
-          }
-
-          // Verify tenant isolation
-          if (existingClaim.organizationId !== tenantId) {
-            logApiAuditEvent({
-              timestamp: new Date().toISOString(), userId,
-              endpoint: `/api/claims/${claimNumber}`,
-              method: 'PATCH',
-              eventType: 'auth_failed',
-              severity: 'high',
-              details: { reason: 'Cross-tenant access attempt', claimNumber },
-            });
-            return NextResponse.json({ error: "Access denied" }, { status: 403 });
-          }
-
-          // Update claim
-          const [updatedClaim] = await db
-            .update(claims)
-            .set({
-              ...body,
-              updatedAt: new Date(),
-            })
-            .where(eq(claims.claimId, existingClaim.claimId))
-            .returning();
-
+        if (!existingClaim) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,
             endpoint: `/api/claims/${claimNumber}`,
             method: 'PATCH',
-            eventType: 'success',
-            severity: 'medium',
-            details: { claimNumber, tenantId, updatedFields: Object.keys(body) },
+            eventType: 'validation_failed',
+            severity: 'low',
+            details: { reason: 'Claim not found', claimNumber },
           });
+          return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+        }
 
-          return NextResponse.json({
-            claim: updatedClaim,
-            message: "Claim updated successfully",
-          });
-        } catch (error) {
+        // Update claim - RLS policies enforce tenant isolation
+        const [updatedClaim] = await tx
+          .update(claims)
+          .set({
+            ...body,
+            updatedAt: new Date(),
+          })
+          .where(eq(claims.claimId, existingClaim.claimId))
+          .returning();
+
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: `/api/claims/${claimNumber}`,
+          method: 'PATCH',
+          eventType: 'success',
+          severity: 'medium',
+          details: { claimNumber, organizationId, updatedFields: Object.keys(body) },
+        });
+
+        return NextResponse.json({
+          claim: updatedClaim,
+          message: "Claim updated successfully",
+        });
+      });
+    } catch (error) {
           logApiAuditEvent({
             timestamp: new Date().toISOString(), userId,
             endpoint: `/api/claims/${params.id}`,
@@ -265,24 +210,12 @@ export const DELETE = async (
     const { userId, organizationId } = context;
 
   try {
-        const claimNumber = params.id;
+      const claimNumber = params.id;
 
-        // Get user's tenant
-        const tenantId = await getUserTenant(userId);
-        if (!tenantId) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/claims/${claimNumber}`,
-            method: 'DELETE',
-            eventType: 'auth_failed',
-            severity: 'medium',
-            details: { reason: 'User tenant not found' },
-          });
-          return NextResponse.json({ error: 'User tenant not found' }, { status: 403 });
-        }
-
-        // Check if claim exists
-        const [existingClaim] = await db
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Check if claim exists - RLS policies automatically enforce tenant filtering
+        const [existingClaim] = await tx
           .select()
           .from(claims)
           .where(eq(claims.claimNumber, claimNumber));
@@ -299,21 +232,8 @@ export const DELETE = async (
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
         }
 
-        // Verify tenant isolation
-        if (existingClaim.organizationId !== tenantId) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/claims/${claimNumber}`,
-            method: 'DELETE',
-            eventType: 'auth_failed',
-            severity: 'high',
-            details: { reason: 'Cross-tenant access attempt', claimNumber },
-          });
-          return NextResponse.json({ error: "Access denied" }, { status: 403 });
-        }
-
-        // Soft delete by setting closedAt
-        await db
+        // Soft delete by setting closedAt - RLS policies enforce tenant isolation
+        await tx
           .update(claims)
           .set({
             status: "closed",
@@ -328,13 +248,14 @@ export const DELETE = async (
           method: 'DELETE',
           eventType: 'success',
           severity: 'medium',
-          details: { claimNumber, tenantId },
+          details: { claimNumber, organizationId },
         });
 
         return NextResponse.json({
           message: "Claim deleted successfully",
         });
-      } catch (error) {
+      });
+    } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: `/api/claims/${params.id}`,

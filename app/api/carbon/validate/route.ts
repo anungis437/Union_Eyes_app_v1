@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { CarbonValidationRequest, CarbonValidationResponse } from '@/lib/types/compliance-api-types';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * Carbon Neutral Validation API
@@ -10,7 +11,7 @@ import type { CarbonValidationRequest, CarbonValidationResponse } from '@/lib/ty
  * POST /api/carbon/validate
  * Validate carbon neutrality or sustainability claims
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json() as CarbonValidationRequest;
     const { claimType, dataPoints } = body;
@@ -172,4 +173,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});

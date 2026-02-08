@@ -16,8 +16,6 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const campaignId = searchParams.get('campaignId');
@@ -98,8 +96,6 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const body = await request.json();
       const {
@@ -157,8 +153,6 @@ export const POST = async (request: NextRequest) => {
 
 export const DELETE = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const contactId = searchParams.get('contactId');

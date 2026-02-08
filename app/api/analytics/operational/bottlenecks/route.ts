@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/claims-schema';
 import { eq, and, gte, sql } from 'drizzle-orm';
@@ -44,4 +44,4 @@ async function handler(req: NextRequest) {
   return NextResponse.json(bottlenecks);
 }
 
-export const GET = withTenantAuth(handler);
+export const GET = withOrganizationAuth(handler);

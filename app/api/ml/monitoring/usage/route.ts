@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tenantId = organizationId || userId;
+    const organizationScopeId = organizationId || userId;
+    const tenantId = organizationScopeId;
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');
 

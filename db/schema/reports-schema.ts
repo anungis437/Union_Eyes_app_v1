@@ -65,8 +65,8 @@ export const reports = pgTable('reports', {
   isPublic: boolean('is_public').notNull().default(false),
   isTemplate: boolean('is_template').notNull().default(false),
   templateId: uuid('template_id'), // If created from a template
-  createdBy: uuid('created_by').notNull(),
-  updatedBy: uuid('updated_by'),
+  createdBy: varchar('created_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
+  updatedBy: varchar('updated_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   lastRunAt: timestamp('last_run_at'),
   runCount: integer('run_count').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -88,7 +88,7 @@ export const reportTemplates = pgTable('report_templates', {
   isActive: boolean('is_active').notNull().default(true),
   thumbnail: varchar('thumbnail', { length: 500 }),
   tags: jsonb('tags'), // Array of tags for filtering
-  createdBy: uuid('created_by'),
+  createdBy: varchar('created_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -101,7 +101,7 @@ export const reportExecutions = pgTable('report_executions', {
   id: uuid('id').defaultRandom().primaryKey(),
   reportId: uuid('report_id').notNull(),
   tenantId: varchar('tenant_id', { length: 255 }).notNull(),
-  executedBy: uuid('executed_by').notNull(),
+  executedBy: varchar('executed_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   executedAt: timestamp('executed_at').notNull().defaultNow(),
   format: reportFormatEnum('format').notNull().default('pdf'),
   parameters: jsonb('parameters'), // Runtime parameters used
@@ -134,7 +134,7 @@ export const scheduledReports = pgTable('scheduled_reports', {
   isActive: boolean('is_active').notNull().default(true),
   lastExecutedAt: timestamp('last_executed_at'),
   nextExecutionAt: timestamp('next_execution_at'),
-  createdBy: uuid('created_by').notNull(),
+  createdBy: varchar('created_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -147,8 +147,8 @@ export const reportShares = pgTable('report_shares', {
   id: uuid('id').defaultRandom().primaryKey(),
   reportId: uuid('report_id').notNull(),
   tenantId: varchar('tenant_id', { length: 255 }).notNull(),
-  sharedBy: uuid('shared_by').notNull(),
-  sharedWith: uuid('shared_with'), // User ID or null for public
+  sharedBy: varchar('shared_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
+  sharedWith: varchar('shared_with', { length: 255 }), // User ID or null for public - matches users.userId VARCHAR(255)
   canEdit: boolean('can_edit').notNull().default(false),
   canExecute: boolean('can_execute').notNull().default(true),
   expiresAt: timestamp('expires_at'),

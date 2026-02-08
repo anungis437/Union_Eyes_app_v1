@@ -23,14 +23,14 @@ export async function POST(req: NextRequest) {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const documentType = formData.get("documentType") as string;
-    const tenantId = formData.get("tenantId") as string;
+    const organizationId = (formData.get("organizationId") ?? formData.get("tenantId")) as string;
     const signersJson = formData.get("signers") as string;
     const provider = formData.get("provider") as any;
     const expirationDays = formData.get("expirationDays") as string;
     const requireAuthentication = formData.get("requireAuthentication") as string;
     const sequentialSigning = formData.get("sequentialSigning") as string;
 
-    if (!file || !title || !tenantId || !signersJson) {
+    if (!file || !title || !organizationId || !signersJson) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     // Create signature request
     const document = await SignatureService.createSignatureRequest({
-      tenantId,
+      tenantId: organizationId,
       title,
       description,
       documentType: documentType || "contract",
@@ -88,17 +88,17 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get("tenantId");
+    const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
 
-    if (!tenantId) {
+    if (!organizationId) {
       return NextResponse.json(
-        { error: "Tenant ID required" },
+        { error: "Organization ID required" },
         { status: 400 }
       );
     }
 
     const documents = await SignatureService.getUserDocuments( userId,
-      tenantId
+      organizationId
     );
 
     return NextResponse.json(documents);

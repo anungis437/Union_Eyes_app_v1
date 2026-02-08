@@ -1,6 +1,10 @@
 /**
  * Frictionless Payment Handlers
  * 
+ * MIGRATION STATUS: ✅ Migrated to use withSystemContext()
+ * - System-wide webhook operations use withSystemContext() for unrestricted access
+ * - Webhooks process payments across all tenants
+ * 
  * This file contains handlers specifically for the "Pay First, Create Account Later" flow.
  * These functions are used when a user makes a purchase with just their email address
  * without having a Clerk account yet.
@@ -13,7 +17,7 @@ import { determinePlanType } from "./plan-utils";
 import { convertTimestampToDate } from "./plan-utils";
 import { revalidateAfterPayment } from "./path-utils";
 import { eq } from "drizzle-orm";
-import { db } from "@/db/db";
+import { withSystemContext } from '@/lib/db/with-rls-context';
 import { profilesTable } from "@/db/schema/profiles-schema";
 import { pendingProfilesTable } from "@/db/schema/pending-profiles-schema";
 import { v4 as uuidv4 } from "uuid";
@@ -239,11 +243,13 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
     
     // If there's an existing pending profile, update it, otherwise create a new one
     if (existingPendingProfile) {
-      // Update existing pending profile
-      await db.update(pendingProfilesTable)
-        .set(pendingProfileData)
-        .where(eq(pendingProfilesTable.email, email))
-        .returning();
+      // Update existing pending profile using system context
+      await withSystemContext(async (tx) => {
+        await tx.update(pendingProfilesTable)
+          .set(pendingProfileData)
+          .where(eq(pendingProfilesTable.email, email))
+          .returning();
+      });
       console.log(`${logPrefix} Updated existing pending profile for email: ${email}`);
     } else {
       // Create a new pending profile
@@ -267,7 +273,9 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
  * @param data The webhook data
  */
 async function updateProfile(userId: string, data: any) {
-  await db.update(profilesTable).set(data).where(eq(profilesTable.userId, userId)).returning();
+  await withSystemContext(async (tx) => {
+    await tx.update(profilesTable).set(data).where(eq(profilesTable.userId, userId)).returning();
+  });
 }
 
 /**

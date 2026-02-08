@@ -29,6 +29,8 @@ export const GET = async (
         const resolvedParams = await params;
         id = resolvedParams.id;
         
+        // Query function now has auto-wrap, so this will work
+        // But if we want to add more queries, wrap in withRLSContext
         const organization = await getOrganizationById(id);
 
         if (!organization) {

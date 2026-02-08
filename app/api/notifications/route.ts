@@ -17,7 +17,8 @@ export const GET = async (request: NextRequest) => {
       // Get query parameters
       const searchParams = request.nextUrl.searchParams;
       const unreadOnly = searchParams.get('unreadOnly') === 'true';
-      const tenantId = searchParams.get('tenantId'); // Add tenantId filter
+      const organizationId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
+      const tenantId = organizationId; // Add tenantId filter
       const limit = parseInt(searchParams.get('limit') || '50');
 
       // Build base where conditions

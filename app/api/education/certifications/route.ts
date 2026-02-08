@@ -10,8 +10,6 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // GET /api/education/certifications - List certifications with filters
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const organizationId = searchParams.get("organizationId");
@@ -157,8 +155,6 @@ export const GET = async (request: NextRequest) => {
 // POST /api/education/certifications - Issue new certification
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const body = await request.json();
       const {
@@ -272,8 +268,6 @@ export const POST = async (request: NextRequest) => {
 // PATCH /api/education/certifications?id={certificationId} - Update certification
 export const PATCH = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
   try {
       const { searchParams } = new URL(request.url);
       const certificationId = searchParams.get("id");

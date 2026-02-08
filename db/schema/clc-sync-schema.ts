@@ -18,7 +18,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "./organization-members-schema";
+import { organizations } from "../schema-organizations";
 
 // ============================================================================
 // ENUMS
@@ -94,12 +94,12 @@ export const clcSyncLog = pgTable(
     verificationNotes: text("verification_notes"),
     isVerified: boolean("is_verified").default(false),
     verifiedAt: timestamp("verified_at"),
-    verifiedBy: uuid("verified_by"),
+    verifiedBy: varchar("verified_by", { length: 255 }),
     
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    initiatedBy: uuid("initiated_by"),
+    initiatedBy: varchar("initiated_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("clc_sync_log_org_idx").on(t.organizationId),
@@ -151,7 +151,7 @@ export const clcWebhookLog = pgTable(
     requiresManualReview: boolean("requires_manual_review").default(false),
     reviewNotes: text("review_notes"),
     reviewedAt: timestamp("reviewed_at"),
-    reviewedBy: uuid("reviewed_by"),
+    reviewedBy: varchar("reviewed_by", { length: 255 }),
     
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -194,7 +194,7 @@ export const clcRemittanceMapping = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     verifiedAt: timestamp("verified_at"),
-    verifiedBy: uuid("verified_by"),
+    verifiedBy: varchar("verified_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("clc_remittance_mapping_org_idx").on(t.organizationId),
@@ -237,7 +237,7 @@ export const clcApiConfig = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    configuredBy: uuid("configured_by"),
+    configuredBy: varchar("configured_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("clc_api_config_org_idx").on(t.organizationId),

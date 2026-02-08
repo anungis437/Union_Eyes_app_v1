@@ -164,7 +164,7 @@ export const grievanceWorkflows = pgTable("grievance_workflows", {
   
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
@@ -235,12 +235,12 @@ export const grievanceTransitions = pgTable("grievance_transitions", {
   // Transition metadata
   reason: text("reason"),
   notes: text("notes"),
-  transitionedBy: uuid("transitioned_by").notNull(),
+  transitionedBy: varchar("transitioned_by", { length: 255 }).notNull(),
   transitionedAt: timestamp("transitioned_at", { withTimezone: true }).defaultNow(),
   
   // Approval tracking
   requiresApproval: boolean("requires_approval").default(false),
-  approvedBy: uuid("approved_by"),
+  approvedBy: varchar("approved_by", { length: 255 }),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
   
   // Duration tracking
@@ -266,12 +266,12 @@ export const grievanceAssignments = pgTable("grievance_assignments", {
   claimId: uuid("claim_id").notNull().references(() => claims.claimId),
   
   // Assignment details
-  assignedTo: uuid("assigned_to").notNull(),
+  assignedTo: varchar("assigned_to", { length: 255 }).notNull(),
   role: assignmentRoleEnum("role").notNull(),
   status: assignmentStatusEnum("status").default("assigned"),
   
   // Assignment metadata
-  assignedBy: uuid("assigned_by").notNull(),
+  assignedBy: varchar("assigned_by", { length: 255 }).notNull(),
   assignedAt: timestamp("assigned_at", { withTimezone: true }).defaultNow(),
   acceptedAt: timestamp("accepted_at", { withTimezone: true }),
   completedAt: timestamp("completed_at", { withTimezone: true }),
@@ -328,7 +328,7 @@ export const grievanceDocuments = pgTable("grievance_documents", {
   // E-signature tracking
   requiresSignature: boolean("requires_signature").default(false),
   signatureStatus: varchar("signature_status", { length: 50 }),
-  signedBy: uuid("signed_by"),
+  signedBy: varchar("signed_by", { length: 255 }),
   signedAt: timestamp("signed_at", { withTimezone: true }),
   signatureData: jsonb("signature_data").$type<SignatureData>(),
   
@@ -337,9 +337,9 @@ export const grievanceDocuments = pgTable("grievance_documents", {
   indexed: boolean("indexed").default(false),
   
   // Audit trail
-  uploadedBy: uuid("uploaded_by").notNull(),
+  uploadedBy: varchar("uploaded_by", { length: 255 }).notNull(),
   uploadedAt: timestamp("uploaded_at", { withTimezone: true }).defaultNow(),
-  reviewedBy: uuid("reviewed_by"),
+  reviewedBy: varchar("reviewed_by", { length: 255 }),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   
   // Retention policy
@@ -444,12 +444,12 @@ export const grievanceSettlements = pgTable("grievance_settlements", {
   
   // Proposal tracking
   proposedBy: varchar("proposed_by", { length: 50 }).notNull(),
-  proposedByUser: uuid("proposed_by_user"),
+  proposedByUser: varchar("proposed_by_user", { length: 255 }),
   proposedAt: timestamp("proposed_at", { withTimezone: true }).defaultNow(),
   
   // Response tracking
   respondedBy: varchar("responded_by", { length: 50 }),
-  respondedByUser: uuid("responded_by_user"),
+  respondedByUser: varchar("responded_by_user", { length: 255 }),
   respondedAt: timestamp("responded_at", { withTimezone: true }),
   responseNotes: text("response_notes"),
   
@@ -460,17 +460,17 @@ export const grievanceSettlements = pgTable("grievance_settlements", {
   
   requiresUnionApproval: boolean("requires_union_approval").default(true),
   unionApproved: boolean("union_approved"),
-  unionApprovedBy: uuid("union_approved_by"),
+  unionApprovedBy: varchar("union_approved_by", { length: 255 }),
   unionApprovedAt: timestamp("union_approved_at", { withTimezone: true }),
   
   requiresManagementApproval: boolean("requires_management_approval").default(true),
   managementApproved: boolean("management_approved"),
-  managementApprovedBy: uuid("management_approved_by"),
+  managementApprovedBy: varchar("management_approved_by", { length: 255 }),
   managementApprovedAt: timestamp("management_approved_at", { withTimezone: true }),
   
   // Finalization
   finalizedAt: timestamp("finalized_at", { withTimezone: true }),
-  finalizedBy: uuid("finalized_by"),
+  finalizedBy: varchar("finalized_by", { length: 255 }),
   
   // Document references
   settlementDocumentId: uuid("settlement_document_id"),
@@ -507,9 +507,9 @@ export const grievanceCommunications = pgTable("grievance_communications", {
   direction: varchar("direction", { length: 20 }).notNull(),
   
   // Parties involved
-  fromUserId: uuid("from_user_id"),
+  fromUserId: varchar("from_user_id", { length: 255 }),
   fromExternal: varchar("from_external", { length: 255 }),
-  toUserIds: uuid("to_user_ids").array(),
+  toUserIds: varchar("to_user_ids", { length: 255 }).array(),
   toExternal: varchar("to_external", { length: 255 }).array(),
   
   // Content
@@ -536,7 +536,7 @@ export const grievanceCommunications = pgTable("grievance_communications", {
   followupCompleted: boolean("followup_completed").default(false),
   
   // Metadata
-  recordedBy: uuid("recorded_by").notNull(),
+  recordedBy: varchar("recorded_by", { length: 255 }).notNull(),
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({

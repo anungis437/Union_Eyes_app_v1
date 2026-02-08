@@ -5,18 +5,22 @@
  * 
  * Export a remittance in various formats (CSV, XML, EDI, StatCan)
  * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - Removed manual SET app.current_user_id command
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * 
  * @route /api/admin/clc/remittances/[id]/export
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { db } from '@/db';
 import { organizations } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { remittanceExporter, RemittanceExportFormat } from '@/services/clc/remittance-export';
 import { remittanceValidator } from '@/services/clc/remittance-validation';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * GET /api/admin/clc/remittances/[id]/export
@@ -34,33 +38,32 @@ export const GET = async (
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
-  try {
-        // Set session context for RLS
-        await db.execute(sql`SET app.current_user_id = ${userId}`);
+    try {
+      const { id } = await params;
+      const searchParams = request.nextUrl.searchParams;
+      
+      const format = (searchParams.get('format') || 'csv') as RemittanceExportFormat;
+      const shouldValidate = searchParams.get('validate') !== 'false';
 
-        const { id } = await params;
-        const searchParams = request.nextUrl.searchParams;
-        
-        const format = (searchParams.get('format') || 'csv') as RemittanceExportFormat;
-        const shouldValidate = searchParams.get('validate') !== 'false';
+      // Validate format
+      const validFormats: RemittanceExportFormat[] = ['csv', 'xml', 'edi', 'statcan', 'excel'];
+      if (!validFormats.includes(format)) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(), userId,
+          endpoint: '/api/admin/clc/remittances/[id]/export',
+          method: 'GET',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          details: { reason: 'Invalid format', format, remittanceId: id },
+        });
+        return NextResponse.json(
+          { error: `Invalid format. Must be one of: ${validFormats.join(', ')}` },
+          { status: 400 }
+        );
+      }
 
-        // Validate format
-        const validFormats: RemittanceExportFormat[] = ['csv', 'xml', 'edi', 'statcan', 'excel'];
-        if (!validFormats.includes(format)) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: '/api/admin/clc/remittances/[id]/export',
-            method: 'GET',
-            eventType: 'validation_failed',
-            severity: 'medium',
-            details: { reason: 'Invalid format', format, remittanceId: id },
-          });
-          return NextResponse.json(
-            { error: `Invalid format. Must be one of: ${validFormats.join(', ')}` },
-            { status: 400 }
-          );
-        }
-
+      // All database operations wrapped in withRLSContext for automatic context setting
+      return withRLSContext(async (tx) => {
         // Export remittance(s)
         const exportFile = await remittanceExporter.exportRemittances({
           format,
@@ -101,8 +104,8 @@ export const GET = async (
           status: 200,
           headers,
         });
-
-      } catch (error) {
+      });
+    } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(), userId,
           endpoint: '/api/admin/clc/remittances/[id]/export',

@@ -85,7 +85,7 @@ export const arbitrationPrecedents = pgTable("arbitration_precedents", {
   downloadCount: integer("download_count").default(0),
   
   // Audit
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
@@ -132,7 +132,7 @@ export const precedentCitations = pgTable("precedent_citations", {
   citationType: varchar("citation_type", { length: 50 }),
   
   // Audit
-  citedBy: uuid("cited_by").notNull(),
+  citedBy: varchar("cited_by", { length: 255 }).notNull(),
   citedAt: timestamp("cited_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   precedentIdx: index("idx_citations_precedent").on(table.precedentId),

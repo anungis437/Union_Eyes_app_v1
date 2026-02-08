@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, jsonb, integer, numeric, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, jsonb, integer, numeric, boolean, index, varchar } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { organizations } from '../../db/schema-organizations';
 import { users } from '../../db/schema/user-management-schema';
@@ -36,7 +36,7 @@ export const analyticsMetrics = pgTable('analytics_metrics', {
 export const kpiConfigurations = pgTable('kpi_configurations', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
-  createdBy: uuid('created_by').notNull().references(() => users.userId),
+  createdBy: varchar('created_by', { length: 255 }).notNull().references(() => users.userId),
   name: text('name').notNull(),
   description: text('description'),
   metricType: text('metric_type').notNull(), // Links to analyticsMetrics.metricType
@@ -136,9 +136,9 @@ export const insightRecommendations = pgTable('insight_recommendations', {
   confidenceScore: numeric('confidence_score'), // 0-1, AI confidence in this insight
   relatedEntities: jsonb('related_entities'), // Links to specific claims, members, etc.
   status: text('status').default('new'), // 'new', 'acknowledged', 'in_progress', 'completed', 'dismissed'
-  acknowledgedBy: uuid('acknowledged_by').references(() => users.userId),
+  acknowledgedBy: varchar('acknowledged_by', { length: 255 }).references(() => users.userId),
   acknowledgedAt: timestamp('acknowledged_at'),
-  dismissedBy: uuid('dismissed_by').references(() => users.userId),
+  dismissedBy: varchar('dismissed_by', { length: 255 }).references(() => users.userId),
   dismissedAt: timestamp('dismissed_at'),
   dismissalReason: text('dismissal_reason'),
   completedAt: timestamp('completed_at'),
@@ -172,7 +172,7 @@ export const comparativeAnalyses = pgTable('comparative_analyses', {
   recommendations: jsonb('recommendations'),
   visualizationData: jsonb('visualization_data'),
   isPublic: boolean('is_public').default(false), // Allow sharing with other orgs
-  createdBy: uuid('created_by').notNull().references(() => users.userId),
+  createdBy: varchar('created_by', { length: 255 }).notNull().references(() => users.userId),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   orgIdx: index('comparative_analyses_org_idx').on(table.organizationId),

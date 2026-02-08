@@ -1,5 +1,7 @@
 import { pgTable, uuid, varchar, boolean, timestamp, text, jsonb, integer, decimal, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { organizations } from "../schema-organizations";
+import { organizationMembers } from "./organization-members-schema";
 
 // Voting sessions table - convention and ratification voting
 export const votingSessions = pgTable("voting_sessions", {
@@ -9,8 +11,8 @@ export const votingSessions = pgTable("voting_sessions", {
   type: varchar("type", { length: 50 }).notNull(),
   status: varchar("status", { length: 50 }).notNull().default("draft"),
   meetingType: varchar("meeting_type", { length: 50 }).notNull(),
-  organizationId: uuid("organization_id").notNull(),
-  createdBy: uuid("created_by").notNull(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   startTime: timestamp("start_time", { withTimezone: true }),
@@ -53,7 +55,7 @@ export const votingOptions = pgTable("voting_options", {
 export const voterEligibility = pgTable("voter_eligibility", {
   id: uuid("id").primaryKey().defaultRandom(),
   sessionId: uuid("session_id").notNull().references(() => votingSessions.id, { onDelete: "cascade" }),
-  memberId: uuid("member_id").notNull(),
+  memberId: uuid("member_id").notNull().references(() => organizationMembers.id, { onDelete: "cascade" }),
   isEligible: boolean("is_eligible").default(true),
   eligibilityReason: text("eligibility_reason"),
   votingWeight: decimal("voting_weight", { precision: 5, scale: 2 }).default("1.0"),

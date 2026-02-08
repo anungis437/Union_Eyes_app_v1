@@ -1,6 +1,14 @@
+/**
+ * CBA Search API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { collectiveAgreements, cbaClause } from "@/db/schema";
 import { eq, desc, and, or, like, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -14,20 +22,22 @@ export const POST = async (request: NextRequest) => {
       const body = await request.json();
       const { query, filters = {}, limit = 20, offset = 0 } = body;
 
-      // Build query conditions
-      const conditions = [];
-      
-      // Text search across title, employer, union
-      if (query) {
-        conditions.push(
-          or(
-            like(collectiveAgreements.title, `%${query}%`),
-            like(collectiveAgreements.employerName, `%${query}%`),
-            like(collectiveAgreements.unionName, `%${query}%`),
-            like(collectiveAgreements.cbaNumber, `%${query}%`)
-          )
-        );
-      }
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Build query conditions
+        const conditions = [];
+        
+        // Text search across title, employer, union
+        if (query) {
+          conditions.push(
+            or(
+              like(collectiveAgreements.title, `%${query}%`),
+              like(collectiveAgreements.employerName, `%${query}%`),
+              like(collectiveAgreements.unionName, `%${query}%`),
+              like(collectiveAgreements.cbaNumber, `%${query}%`)
+            )
+          );
+        }
 
       // Filter by jurisdiction
       if (filters.jurisdiction && filters.jurisdiction.length > 0) {
@@ -68,7 +78,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Execute query
-      const results = await db
+      const results = await tx
         .select({
           id: collectiveAgreements.id,
           cbaNumber: collectiveAgreements.cbaNumber,
@@ -94,7 +104,7 @@ export const POST = async (request: NextRequest) => {
         .offset(offset);
 
       // Count total for pagination
-      const [countResult] = await db
+      const [countResult] = await tx
         .select({ count: sql<number>`count(*)` })
         .from(collectiveAgreements)
         .where(conditions.length > 0 ? and(...conditions) : undefined);

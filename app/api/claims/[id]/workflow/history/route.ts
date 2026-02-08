@@ -1,8 +1,16 @@
+/**
+ * Claims Workflow History API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
 import { claimUpdates, claims, profilesTable } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (
   request: NextRequest,
@@ -11,11 +19,13 @@ export const GET = async (
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
-  const resolvedParams = await params;
-      const claimNumber = resolvedParams.id;
+    const resolvedParams = await params;
+    const claimNumber = resolvedParams.id;
 
-      // Get claim with member info
-      const claim = await db
+    // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+    return withRLSContext(async (tx) => {
+      // Get claim with member info - RLS policies automatically enforce tenant filtering
+      const claim = await tx
         .select({
           id: claims.claimId,
           tenantId: claims.organizationId,
@@ -32,8 +42,8 @@ export const GET = async (
 
       const claimData = claim[0];
 
-      // Get member info to check ownership
-      const member = await db
+      // Get member info to check ownership - RLS policies enforce access
+      const member = await tx
         .select({ userId: profilesTable.userId })
         .from(profilesTable)
         .where(eq(profilesTable.userId, claimData.memberId))
@@ -44,7 +54,7 @@ export const GET = async (
       // Check if user is assigned steward
       let isSteward = false;
       if (claimData.assignedTo) {
-        const steward = await db
+        const steward = await tx
           .select({ userId: profilesTable.userId })
           .from(profilesTable)
           .where(eq(profilesTable.userId, claimData.assignedTo))
@@ -58,8 +68,8 @@ export const GET = async (
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
-      // Get workflow history with user emails
-      const historyRecords = await db
+      // Get workflow history with user emails - RLS policies enforce tenant isolation
+      const historyRecords = await tx
         .select({
           id: claimUpdates.updateId,
           updateType: claimUpdates.updateType,
@@ -89,5 +99,6 @@ export const GET = async (
         history,
         totalEvents: history.length,
       });
+    });
   })(request, { params });
 };

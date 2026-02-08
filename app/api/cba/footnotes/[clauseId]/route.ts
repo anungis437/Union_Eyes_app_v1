@@ -1,6 +1,14 @@
+/**
+ * CBA Footnotes API
+ * 
+ * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * - All database operations wrapped in withRLSContext() for automatic context setting
+ * - RLS policies enforce tenant isolation at database level
+ */
+
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/db";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { cbaFootnotes, cbaClause, arbitrationDecisions } from "@/db/schema";
 import { eq, or, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -11,31 +19,34 @@ export const GET = async (request: NextRequest, { params }: { params: { clauseId
   try {
       const { clauseId } = params;
 
-      // Get outgoing footnotes (this clause references others)
-      const outgoingFootnotes = await db
-        .select({
-          footnote: cbaFootnotes,
-          targetClause: cbaClause,
-          targetDecision: arbitrationDecisions,
-        })
-        .from(cbaFootnotes)
-        .leftJoin(cbaClause, eq(cbaFootnotes.targetClauseId, cbaClause.id))
-        .leftJoin(arbitrationDecisions, eq(cbaFootnotes.targetDecisionId, arbitrationDecisions.id))
-        .where(eq(cbaFootnotes.sourceClauseId, clauseId));
+      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+      return withRLSContext(async (tx) => {
+        // Get outgoing footnotes (this clause references others)
+        const outgoingFootnotes = await tx
+          .select({
+            footnote: cbaFootnotes,
+            targetClause: cbaClause,
+            targetDecision: arbitrationDecisions,
+          })
+          .from(cbaFootnotes)
+          .leftJoin(cbaClause, eq(cbaFootnotes.targetClauseId, cbaClause.id))
+          .leftJoin(arbitrationDecisions, eq(cbaFootnotes.targetDecisionId, arbitrationDecisions.id))
+          .where(eq(cbaFootnotes.sourceClauseId, clauseId));
 
-      // Get incoming footnotes (other clauses reference this one)
-      const incomingFootnotes = await db
-        .select({
-          footnote: cbaFootnotes,
-          sourceClause: cbaClause,
-        })
-        .from(cbaFootnotes)
-        .leftJoin(cbaClause, eq(cbaFootnotes.sourceClauseId, cbaClause.id))
-        .where(eq(cbaFootnotes.targetClauseId, clauseId));
+        // Get incoming footnotes (other clauses reference this one)
+        const incomingFootnotes = await tx
+          .select({
+            footnote: cbaFootnotes,
+            sourceClause: cbaClause,
+          })
+          .from(cbaFootnotes)
+          .leftJoin(cbaClause, eq(cbaFootnotes.sourceClauseId, cbaClause.id))
+          .where(eq(cbaFootnotes.targetClauseId, clauseId));
 
-      return NextResponse.json({
-        outgoing: outgoingFootnotes,
-        incoming: incomingFootnotes,
+        return NextResponse.json({
+          outgoing: outgoingFootnotes,
+          incoming: incomingFootnotes,
+        });
       });
     } catch (error) {
       console.error("Error fetching footnotes:", error);
@@ -61,7 +72,7 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
         footnoteText, 
         linkType,
         footnoteNumber,
-        context,
+        context: noteContext,
         startOffset,
         endOffset,
       } = body;
@@ -74,25 +85,27 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
         );
       }
 
-      // Create footnote
-      const [footnote] = await db
-        .insert(cbaFootnotes)
-        .values({
-          sourceClauseId: clauseId,
-          targetClauseId,
-          targetDecisionId,
-          footnoteText,
-          linkType,
-          footnoteNumber,
-          context,
-          startOffset,
-          endOffset,
-          createdBy: userId,
-          createdAt: new Date(),
-        })
-        .returning();
+      // Create footnote using RLS-protected transaction
+      return withRLSContext(async (tx) => {
+        const [footnote] = await tx
+          .insert(cbaFootnotes)
+          .values({
+            sourceClauseId: clauseId,
+            targetClauseId,
+            targetDecisionId,
+            footnoteText,
+            linkType,
+            footnoteNumber,
+            context: noteContext,
+            startOffset,
+            endOffset,
+            createdBy: userId,
+            createdAt: new Date(),
+          })
+          .returning();
 
-      return NextResponse.json(footnote);
+        return NextResponse.json(footnote);
+      });
     } catch (error) {
       console.error("Error creating footnote:", error);
       return NextResponse.json(

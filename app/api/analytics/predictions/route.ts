@@ -13,9 +13,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const body = await request.json();
       const { predictionType, periodsAhead, modelName } = body;
       
@@ -77,9 +75,7 @@ export const POST = async (request: NextRequest) => {
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const searchParams = request.nextUrl.searchParams;
       const predictionType = searchParams.get('predictionType');
       const limit = parseInt(searchParams.get('limit') || '30');

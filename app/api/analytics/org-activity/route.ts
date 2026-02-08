@@ -15,9 +15,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const searchParams = request.nextUrl.searchParams;
       const fromDate = searchParams.get("fromDate") || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const toDate = searchParams.get("toDate") || new Date().toISOString();

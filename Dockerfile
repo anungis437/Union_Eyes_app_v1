@@ -63,10 +63,6 @@ ENV WHOP_WEBHOOK_KEY=placeholder_whop_webhook_key
 # Build workspace packages
 RUN pnpm build --filter='!financial-service'
 
-# Copy pre-built .next directory from local build
-# This avoids build-time environment variable issues with module-level initializations
-COPY .next ./.next
-
 # Stage 3: Runner
 FROM node:20-alpine AS runner
 WORKDIR /app

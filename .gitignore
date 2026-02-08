@@ -1,12 +1,16 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# dependencies - STRICT: never commit dependencies
 /node_modules
 **/node_modules
+**/.ignored/
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 .pnpm-cache/
+# Additional safeguards
+packages/*/node_modules/
+packages/**/node_modules/
 
 # testing
 /coverage
@@ -27,8 +31,27 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# local env files - STRICT: never commit credentials
+.env
+.env.local
+.env.*.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.staging
+.env.staging.local
+.env.10-10-excellence
+**/.env
+**/services/**/.env
+# Only allow example/template files
+!.env.example
+!.env.*.example
+!.env.*.template
+!.env.local.template
+!.env.test.example
 
 # vercel
 .vercel
@@ -52,3 +75,15 @@ azure-credentials-output.txt
 .claude/
 *.swp
 *.swo
+
+# Sensitive documentation - never commit credentials
+docs/archive/AZURE_CREDENTIALS.md
+docs/archive/*CREDENTIALS*
+docs/archive/*credentials*
+docs/archive/*SECRETS*
+docs/archive/*secrets*
+**/CREDENTIALS.md
+**/credentials.md
+
+# Validation temporary files
+_validation*.txt

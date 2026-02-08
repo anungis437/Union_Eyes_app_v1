@@ -16,9 +16,7 @@ export const dynamic = 'force-dynamic';
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
+    try {
       const body = await request.json();
       const { pensionPlanId, memberId, checkDate } = body;
 

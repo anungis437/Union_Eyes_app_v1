@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth } from '@/lib/tenant-middleware';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getExportJob } from '@/db/queries/analytics-queries';
 
 async function getHandler(
@@ -23,7 +23,7 @@ async function getHandler(
 
     const job = await getExportJob(params.id);
 
-    if (!job || job.tenant_id !== context.tenantId) {
+    if (!job || job.tenant_id !== context.organizationId) {
       return NextResponse.json(
         { error: 'Export job not found' },
         { status: 404 }
@@ -54,4 +54,4 @@ async function getHandler(
   }
 }
 
-export const GET = withTenantAuth(getHandler);
+export const GET = withOrganizationAuth(getHandler);

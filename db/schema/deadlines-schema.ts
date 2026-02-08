@@ -110,13 +110,13 @@ export const deadlines = pgTable('claim_deadlines', {
   totalExtensionDays: integer('total_extension_days').notNull().default(0),
   lastExtensionDate: timestamp('last_extension_date'),
   lastExtensionReason: text('last_extension_reason'),
-  completedBy: uuid('completed_by'),
+  completedBy: varchar('completed_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   completionNotes: text('completion_notes'),
   isOverdue: boolean('is_overdue').notNull().default(false),
   daysUntilDue: integer('days_until_due'),
   daysOverdue: integer('days_overdue').notNull().default(0),
   escalatedAt: timestamp('escalated_at'),
-  escalatedTo: uuid('escalated_to'),
+  escalatedTo: varchar('escalated_to', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   alertCount: integer('alert_count').notNull().default(0),
   lastAlertSent: timestamp('last_alert_sent'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -131,13 +131,13 @@ export const deadlineExtensions = pgTable('deadline_extensions', {
   id: uuid('id').defaultRandom().primaryKey(),
   deadlineId: uuid('deadline_id').notNull(),
   tenantId: varchar('tenant_id', { length: 255 }).notNull(),
-  requestedBy: uuid('requested_by').notNull(),
+  requestedBy: varchar('requested_by', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   requestedAt: timestamp('requested_at').notNull().defaultNow(),
   requestedDays: integer('requested_days').notNull(),
   requestReason: text('request_reason').notNull(),
   status: extensionStatusEnum('status').notNull().default('pending'),
   requiresApproval: boolean('requires_approval').notNull().default(true),
-  approvedBy: uuid('approved_by'),
+  approvedBy: varchar('approved_by', { length: 255 }), // User ID - matches users.userId VARCHAR(255)
   approvalDecisionAt: timestamp('approval_decision_at'),
   approvalNotes: text('approval_notes'),
   newDeadline: timestamp('new_deadline'),
@@ -156,7 +156,7 @@ export const deadlineAlerts = pgTable('deadline_alerts', {
   alertType: varchar('alert_type', { length: 100 }).notNull(),
   alertSeverity: alertSeverityEnum('alert_severity').notNull(),
   alertTrigger: varchar('alert_trigger', { length: 100 }).notNull(),
-  recipientId: uuid('recipient_id').notNull(),
+  recipientId: varchar('recipient_id', { length: 255 }).notNull(), // User ID - matches users.userId VARCHAR(255)
   recipientRole: varchar('recipient_role', { length: 100 }),
   deliveryMethod: deliveryMethodEnum('delivery_method').notNull(),
   sentAt: timestamp('sent_at').notNull().defaultNow(),

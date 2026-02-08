@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/schema';
 import { and, eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import { withApiAuth } from '@/lib/api-auth-guard';
 
 // Validation schema
 const AnswerSchema = z.object({
@@ -20,13 +21,14 @@ const CreateResponseSchema = z.object({
 });
 
 // GET /api/communications/surveys/[surveyId]/responses - List responses
-export async function GET(
+export const GET = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
@@ -96,16 +98,17 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 // POST /api/communications/surveys/[surveyId]/responses - Submit response
-export async function POST(
+export const POST = withApiAuth(async (
   request: NextRequest,
   { params }: { params: { surveyId: string } }
-) {
+) => {
   try {
     const surveyId = params.surveyId;
-    const tenantId = request.headers.get('x-tenant-id');
+    const organizationId = (request.headers.get('x-organization-id') ?? request.headers.get('x-tenant-id'));
+    const tenantId = organizationId;
     const userId = request.headers.get('x-user-id') || null;
     
     if (!tenantId) {
@@ -295,4 +298,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+});

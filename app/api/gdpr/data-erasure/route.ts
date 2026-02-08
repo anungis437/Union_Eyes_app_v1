@@ -41,11 +41,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tenantId, reason, requestDetails } = body;
+      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, reason, requestDetails } = body;
+      const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+      const tenantId = organizationId;
 
-    if (!tenantId) {
+      if (!organizationId) {
       return NextResponse.json(
-        { error: "Tenant ID required" },
+          { error: "Organization ID required" },
         { status: 400 }
       );
     }
@@ -118,9 +120,11 @@ export const DELETE = async (req: NextRequest) => {
       }
 
       const body = await req.json();
-      const { requestId, userId: targetUserId, tenantId, confirmation } = body;
+        const { requestId, userId: targetUserId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, confirmation } = body;
+        const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+        const tenantId = organizationId;
 
-      if (!requestId || !targetUserId || !tenantId) {
+        if (!requestId || !targetUserId || !organizationId) {
         return NextResponse.json(
           { error: "Missing required fields" },
           { status: 400 }
@@ -137,6 +141,7 @@ export const DELETE = async (req: NextRequest) => {
 
       // Log the admin action
       logger.info('Data erasure initiated', { adminId: userId, targetUserId, tenantId });
+  logger.info('Data erasure initiated', { adminId: userId, targetUserId, organizationId });
 
       // Execute erasure
       await DataErasureService.eraseUserData(
@@ -173,11 +178,12 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get("tenantId");
+      const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+      const tenantId = organizationIdFromQuery;
 
-    if (!tenantId) {
+      if (!tenantId) {
       return NextResponse.json(
-        { error: "Tenant ID required" },
+          { error: "Organization ID required" },
         { status: 400 }
       );
     }

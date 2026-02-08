@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withTenantAuth, TenantContext } from '@/lib/tenant-middleware';
+import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
 import {
   getScheduledReportById,
   updateScheduledReport,
@@ -28,9 +28,9 @@ interface RouteParams {
  * GET /api/reports/scheduled/[id]
  * Get a single scheduled report
  */
-async function getHandler(req: NextRequest, context: TenantContext, params?: RouteParams) {
+async function getHandler(req: NextRequest, context: OrganizationContext, params?: RouteParams) {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
 
     if (!params?.id) {
       return NextResponse.json(
@@ -74,9 +74,9 @@ async function getHandler(req: NextRequest, context: TenantContext, params?: Rou
  * PATCH /api/reports/scheduled/[id]
  * Update a scheduled report
  */
-async function patchHandler(req: NextRequest, context: TenantContext, params?: RouteParams) {
+async function patchHandler(req: NextRequest, context: OrganizationContext, params?: RouteParams) {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
 
     if (!params?.id) {
       return NextResponse.json(
@@ -138,9 +138,9 @@ async function patchHandler(req: NextRequest, context: TenantContext, params?: R
  * DELETE /api/reports/scheduled/[id]
  * Delete a scheduled report
  */
-async function deleteHandler(req: NextRequest, context: TenantContext, params?: RouteParams) {
+async function deleteHandler(req: NextRequest, context: OrganizationContext, params?: RouteParams) {
   try {
-    const { tenantId } = context;
+    const { organizationId } = context;
 
     if (!params?.id) {
       return NextResponse.json(
@@ -161,6 +161,6 @@ async function deleteHandler(req: NextRequest, context: TenantContext, params?: 
   }
 }
 
-export const GET = withTenantAuth(getHandler);
-export const PATCH = withTenantAuth(patchHandler);
-export const DELETE = withTenantAuth(deleteHandler);
+export const GET = withOrganizationAuth(getHandler);
+export const PATCH = withOrganizationAuth(patchHandler);
+export const DELETE = withOrganizationAuth(deleteHandler);

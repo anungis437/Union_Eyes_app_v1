@@ -23,7 +23,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { organizations } from "./organization-members-schema";
+import { organizations } from "../schema-organizations";
 import { profiles } from "./profiles-schema";
 
 // ============================================================================
@@ -83,7 +83,7 @@ export const payments = pgTable(
     organizationId: uuid("organization_id")
       .notNull()
       .references(() => organizations.id, { onDelete: "cascade" }),
-    memberId: uuid("member_id").references(() => profiles.userId, { onDelete: "set null" }),
+    memberId: varchar("member_id", { length: 255 }).references(() => profiles.userId, { onDelete: "set null" }),
     
     // Payment details
     amount: decimal("amount", { precision: 19, scale: 2 }).notNull(),
@@ -116,8 +116,8 @@ export const payments = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    createdBy: uuid("created_by"),
-    updatedBy: uuid("updated_by"),
+    createdBy: varchar("created_by", { length: 255 }),
+    updatedBy: varchar("updated_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("payments_org_idx").on(t.organizationId),
@@ -175,7 +175,7 @@ export const paymentMethods = pgTable(
     organizationId: uuid("organization_id")
       .notNull()
       .references(() => organizations.id, { onDelete: "cascade" }),
-    memberId: uuid("member_id")
+    memberId: varchar("member_id", { length: 255 })
       .notNull()
       .references(() => profiles.userId, { onDelete: "cascade" }),
     
@@ -238,7 +238,7 @@ export const bankReconciliation = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    reconciledBy: uuid("reconciled_by"),
+    reconciledBy: varchar("reconciled_by", { length: 255 }),
     reconciledAt: timestamp("reconciled_at"),
   },
   (t) => ({
@@ -275,8 +275,8 @@ export const paymentDisputes = pgTable(
     // Audit
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    filedBy: uuid("filed_by"),
-    resolvedBy: uuid("resolved_by"),
+    filedBy: varchar("filed_by", { length: 255 }),
+    resolvedBy: varchar("resolved_by", { length: 255 }),
   },
   (t) => ({
     orgIdx: index("payment_disputes_org_idx").on(t.organizationId),

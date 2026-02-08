@@ -8,11 +8,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimsAssignedToUser } from "@/db/queries/claims-queries";
 import { getUserByEmail } from "@/db/queries/users-queries";
-import { withTenantAuth } from "@/lib/tenant-middleware";
+import { withOrganizationAuth } from "@/lib/organization-middleware";
 
-export const GET = withTenantAuth(async (request: NextRequest, context) => {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const { tenantId: organizationId, userId: clerkUserId } = context;
+    const { organizationId: organizationId, userId: clerkUserId } = context;
     
     if (!clerkUserId) {
       return NextResponse.json(

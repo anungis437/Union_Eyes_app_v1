@@ -120,7 +120,7 @@ export const clauseComparisons = pgTable("clause_comparisons", {
   marketPosition: varchar("market_position", { length: 50 }), // above_market, at_market, below_market
   
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  createdBy: uuid("created_by").notNull(),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
 }, (table) => ({
   organizationIdx: index("clause_comparisons_organization_idx").on(table.organizationId),
   typeIdx: index("clause_comparisons_type_idx").on(table.clauseType),

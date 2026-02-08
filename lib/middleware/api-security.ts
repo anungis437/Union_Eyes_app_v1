@@ -12,6 +12,10 @@ import { validateEnvironment } from '@/lib/config/env-validation';
 import { SQLInjectionScanner } from '@/lib/middleware/sql-injection-prevention';
 import { RequestValidator } from '@/lib/middleware/request-validation';
 import { AuthenticationService, SUPPORTED_ROLES } from '@/lib/middleware/auth-middleware';
+import { db } from '@/db';
+import { organizationMembers } from '@/db/schema/organization-members-schema';
+import { tenantUsers } from '@/db/schema/user-management-schema';
+import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
@@ -28,9 +32,71 @@ type ApiHandler = (
  */
 type ApiHandlerWithAuth = (
   request: NextRequest,
-  user: { id: string; organizationId?: string; role?: string },
+  user: { id: string; organizationId?: string; role?: string; roles?: string[] },
   context?: { params?: Record<string, string> }
 ) => Promise<NextResponse>;
+
+function resolveOrganizationIdFromRequest(request: NextRequest): string | null {
+  const { searchParams } = new URL(request.url);
+  return (
+    searchParams.get('organizationId') ||
+    searchParams.get('orgId') ||
+    request.headers.get('x-organization-id') ||
+    request.headers.get('x-org-id') ||
+    request.headers.get('x-tenant-id') ||
+    searchParams.get('tenantId') ||
+    null
+  );
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+function normalizeRole(role: string): string {
+  if (role === 'super_admin') {
+    return SUPPORTED_ROLES.ADMIN;
+  }
+
+  if (role === 'steward') {
+    return SUPPORTED_ROLES.MEMBER;
+  }
+
+  return role;
+}
+
+async function resolveDbRoles(userId: string, organizationId: string): Promise<string[]> {
+  if (!isUuid(organizationId)) {
+    return [];
+  }
+
+  const [member] = await db
+    .select({ role: organizationMembers.role })
+    .from(organizationMembers)
+    .where(
+      and(
+        eq(organizationMembers.userId, userId),
+        eq(organizationMembers.organizationId, organizationId)
+      )
+    )
+    .limit(1);
+
+  if (member?.role) {
+    return [normalizeRole(member.role)];
+  }
+
+  const [tenantUser] = await db
+    .select({ role: tenantUsers.role })
+    .from(tenantUsers)
+    .where(and(eq(tenantUsers.userId, userId), eq(tenantUsers.tenantId, organizationId)))
+    .limit(1);
+
+  if (tenantUser?.role) {
+    return [normalizeRole(tenantUser.role)];
+  }
+
+  return [];
+}
 
 /**
  * High-level wrapper for routes with basic security checks:
@@ -55,13 +121,16 @@ export function withSecureAPI(handler: ApiHandlerWithAuth): ApiHandler {
       }
 
       // Get authenticated user
-      const { userId } = await auth();
+      const authResult = await auth();
+      const userId = authResult.userId;
       if (!userId) {
         return NextResponse.json(
           { error: 'Unauthorized: Authentication required' },
           { status: 401 }
         );
       }
+
+      const sessionOrganizationId = (authResult as any)?.orgId || (authResult as any)?.organizationId;
 
       // Check for SQL injection patterns in request
       const bodyText = await request.clone().text();
@@ -84,8 +153,24 @@ export function withSecureAPI(handler: ApiHandlerWithAuth): ApiHandler {
         );
       }
 
+      const currentUser = await AuthenticationService.getCurrentUser();
+      const requestOrganizationId = resolveOrganizationIdFromRequest(request);
+      const organizationId =
+        currentUser?.organizationId || sessionOrganizationId || requestOrganizationId || undefined;
+      let roles = currentUser?.roles || [];
+
+      if (!roles.length && organizationId) {
+        roles = await resolveDbRoles(userId, organizationId);
+      }
+
+      const role = roles[0];
+
       // Call handler with authenticated user
-      return await handler(request, { id: userId }, context);
+      return await handler(
+        request,
+        { id: userId, organizationId, role, roles },
+        context
+      );
     } catch (error) {
       logger.error('API handler error', {
         error: error instanceof Error ? error.message : error,
@@ -114,8 +199,22 @@ export function withRoleRequired(
   handler: ApiHandlerWithAuth
 ): ApiHandler {
   return withSecureAPI(async (request, user, context) => {
-    // In production, fetch user's actual role from database
-    // For now, this passes through - implement role checking in your handler
+    const roles = user.roles || (user.role ? [user.role] : []);
+    const hasRole = roles.includes(requiredRole);
+    if (!hasRole) {
+      logger.warn('Role-required access denied', {
+        userId: user.id,
+        requiredRole,
+        roles,
+        endpoint: request.nextUrl.pathname,
+      });
+
+      return NextResponse.json(
+        { error: `Forbidden - ${requiredRole} role required` },
+        { status: 403 }
+      );
+    }
+
     logger.debug('Role-required route access attempt', {
       userId: user.id,
       requiredRole,
@@ -300,8 +399,20 @@ export function withValidatedRequest(
  */
 export function withAdminOnly(handler: ApiHandlerWithAuth): ApiHandler {
   return withSecureAPI(async (request, user, context) => {
-    // In production, fetch user's actual admin status from database/Clerk
-    // For now, this is a placeholder - implement based on your auth provider
+    const roles = user.roles || (user.role ? [user.role] : []);
+    if (!roles.includes(SUPPORTED_ROLES.ADMIN)) {
+      logger.warn('Admin access denied', {
+        userId: user.id,
+        roles,
+        endpoint: request.nextUrl.pathname,
+      });
+
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
+
     logger.debug('Admin route access attempt', {
       userId: user.id,
       endpoint: request.nextUrl.pathname,
