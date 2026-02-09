@@ -33,7 +33,7 @@ export type SignalType =
  */
 export interface TimelineEvent {
   timestamp: Date;
-  type: string;
+  type: 'submitted' | 'acknowledged' | 'first_response' | 'investigation_complete' | 'other';
 }
 
 /**
@@ -234,7 +234,7 @@ export function detectSignals(
   // Signal 4: Member Waiting (URGENT)
   if (caseData.currentState === 'pending_response') {
     const lastResponseEvent = caseData.timeline
-      .filter(e => e.type === 'first_response' || e.type === 'response_sent')
+      .filter(e => e.type === 'first_response' || e.type === 'other')
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];
     
     if (lastResponseEvent) {
@@ -290,7 +290,7 @@ export function detectSignals(
   // Signal 6: Escalation Needed (URGENT)
   if (caseData.currentState === 'investigating') {
     const investigationStartEvent = caseData.timeline.find(
-      e => e.type === 'investigation_started' || e.type === 'acknowledged'
+      e => e.type === 'other' || e.type === 'acknowledged'
     );
     
     if (investigationStartEvent) {

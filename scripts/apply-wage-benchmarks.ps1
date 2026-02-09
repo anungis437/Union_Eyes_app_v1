@@ -98,8 +98,8 @@ if ($LASTEXITCODE -eq 0) {
     $errors = $result | Select-String -Pattern "ERROR:"
     if ($errors) {
         Write-Host "Errors:" -ForegroundColor Red
-        foreach ($error in $errors) {
-            Write-Host "  $error" -ForegroundColor Red
+        foreach ($errorLine in $errors) {
+            Write-Host "  $errorLine" -ForegroundColor Red
         }
     } else {
         Write-Host $result -ForegroundColor Red
