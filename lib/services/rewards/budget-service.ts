@@ -1,23 +1,32 @@
 /**
  * Budget Service
- * Handles budget envelope management and usage tracking
+ * Handles budget envelope management, usage tracking, and reservations
+ * 
+ * Features:
+ * - Budget envelope creation and management
+ * - Real-time usage tracking with limit enforcement
+ * - Budget reservations for pending awards
+ * - Automatic expiration and cleanup of reservations
  */
 
-import { type PgTransaction } from 'drizzle-orm/pg-core';
-import { type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
 import { db } from '@/db';
 import {
   rewardBudgetEnvelopes,
+  budgetPool,
+  budgetReservations,
   type NewRewardBudgetEnvelope,
   type RewardBudgetEnvelope,
 } from '@/db/schema';
-import { eq, and, sql, lte, gte, desc } from 'drizzle-orm';
+import { eq, and, sql, lte, gte, desc, asc, ne } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
 
-type DbTransaction = PgTransaction<
-  PostgresJsQueryResultHKT,
-  Record<string, never>,
-  any
->;
+export interface BudgetCheckResult {
+  hasEnoughBudget: boolean;
+  availableBudget: number;
+  reservedBudget: number;
+  totalBudget: number;
+  envelopeId?: string;
+}
 
 /**
  * Create a budget envelope
@@ -112,18 +121,14 @@ export async function updateBudgetEnvelope(
 /**
  * Check budget availability for a program
  * Returns true if there is an active envelope with sufficient credits
- * 
- * This is used before issuing awards to ensure budget constraints
  */
 export async function checkBudgetAvailability(
-  tx: DbTransaction | typeof db,
   programId: string,
   creditsNeeded: number
 ): Promise<boolean> {
   const now = new Date();
 
-  // Get active envelope with org scope (MVP: only org-level budgets)
-  const envelope = await tx.query.rewardBudgetEnvelopes.findFirst({
+  const envelope = await db.query.rewardBudgetEnvelopes.findFirst({
     where: and(
       eq(rewardBudgetEnvelopes.programId, programId),
       eq(rewardBudgetEnvelopes.scopeType, 'org'),
@@ -134,7 +139,6 @@ export async function checkBudgetAvailability(
   });
 
   if (!envelope) {
-    // No active budget envelope = unlimited (allow for MVP flexibility)
     return true;
   }
 
@@ -143,22 +147,16 @@ export async function checkBudgetAvailability(
 }
 
 /**
- * Apply budget usage (transactional)
- * Increments or decrements the amount_used field
- * 
- * IMPORTANT: This should be called within a transaction
- * 
+ * Apply budget usage
  * @param amount Can be positive (usage) or negative (refund/revoke)
  */
 export async function applyBudgetUsage(
-  tx: DbTransaction | typeof db,
   programId: string,
   amount: number
 ): Promise<void> {
   const now = new Date();
 
-  // Get active envelope
-  const envelope = await tx.query.rewardBudgetEnvelopes.findFirst({
+  const envelope = await db.query.rewardBudgetEnvelopes.findFirst({
     where: and(
       eq(rewardBudgetEnvelopes.programId, programId),
       eq(rewardBudgetEnvelopes.scopeType, 'org'),
@@ -169,12 +167,10 @@ export async function applyBudgetUsage(
   });
 
   if (!envelope) {
-    // No budget envelope = no tracking needed (unlimited for MVP)
     return;
   }
 
-  // Update amount_used
-  await tx
+  await db
     .update(rewardBudgetEnvelopes)
     .set({
       amountUsed: sql`${rewardBudgetEnvelopes.amountUsed} + ${amount}`,
@@ -184,22 +180,20 @@ export async function applyBudgetUsage(
 }
 
 /**
- * Apply budget usage with limit enforcement (transactional)
- * Returns false if the update would exceed the envelope limit.
+ * Apply budget usage with limit enforcement
  */
 export async function applyBudgetUsageChecked(
-  tx: DbTransaction | typeof db,
   programId: string,
   amount: number
 ): Promise<boolean> {
   if (amount <= 0) {
-    await applyBudgetUsage(tx, programId, amount);
+    await applyBudgetUsage(programId, amount);
     return true;
   }
 
   const now = new Date();
 
-  const envelope = await tx.query.rewardBudgetEnvelopes.findFirst({
+  const envelope = await db.query.rewardBudgetEnvelopes.findFirst({
     where: and(
       eq(rewardBudgetEnvelopes.programId, programId),
       eq(rewardBudgetEnvelopes.scopeType, 'org'),
@@ -213,7 +207,7 @@ export async function applyBudgetUsageChecked(
     return true;
   }
 
-  const [updated] = await tx
+  const [updated] = await db
     .update(rewardBudgetEnvelopes)
     .set({
       amountUsed: sql`${rewardBudgetEnvelopes.amountUsed} + ${amount}`,
@@ -232,21 +226,18 @@ export async function applyBudgetUsageChecked(
 
 /**
  * Get budget usage summary
- * Returns aggregated usage stats for reporting
  */
 export async function getBudgetUsageSummary(
   orgId: string,
   programId?: string
-): Promise<
-  Array<{
-    envelopeId: string;
-    envelopeName: string;
-    used: number;
-    limit: number;
-    percentage: number;
-    isActive: boolean;
-  }>
-> {
+): Promise<Array<{
+  envelopeId: string;
+  envelopeName: string;
+  used: number;
+  limit: number;
+  percentage: number;
+  isActive: boolean;
+}>> {
   const now = new Date();
 
   let whereClause = eq(rewardBudgetEnvelopes.orgId, orgId);
@@ -269,32 +260,306 @@ export async function getBudgetUsageSummary(
   }));
 }
 
+// ============== BUDGET RESERVATION IMPLEMENTATION ==============
+
 /**
- * Reserve budget (optional MVP feature)
- * Temporarily locks budget for pending awards
- * 
- * Note: Not implemented in MVP - awards check budget at issuance time
- * This is a placeholder for future enhancement
+ * Reserve budget for a pending award
  */
 export async function reserveBudget(
-  tx: DbTransaction,
   programId: string,
   amount: number,
+  referenceType: string,
+  referenceId: string,
+  expiresInMinutes = 60 * 24
+): Promise<{ success: boolean; reservationId?: string; error?: string }> {
+  try {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + expiresInMinutes * 60 * 1000);
+
+    const envelope = await db.query.rewardBudgetEnvelopes.findFirst({
+      where: and(
+        eq(rewardBudgetEnvelopes.programId, programId),
+        eq(rewardBudgetEnvelopes.scopeType, 'org'),
+        lte(rewardBudgetEnvelopes.startsAt, now),
+        gte(rewardBudgetEnvelopes.endsAt, now)
+      ),
+      orderBy: [desc(rewardBudgetEnvelopes.createdAt)],
+    });
+
+    if (!envelope) {
+      return { success: true };
+    }
+
+    const reservations = await db.query.budgetReservations.findMany({
+      where: and(
+        eq(budgetReservations.poolId, envelope.id),
+        ne(budgetReservations.status, 'released'),
+        ne(budgetReservations.status, 'expired')
+      ),
+    });
+
+    const totalReserved = reservations.reduce((sum, r) => sum + (r.reservedAmount || 0), 0);
+    const available = envelope.amountLimit - envelope.amountUsed - totalReserved;
+
+    if (available < amount) {
+      return { 
+        success: false, 
+        error: `Insufficient budget. Available: ${available}, Requested: ${amount}` 
+      };
+    }
+
+    const reservationId = uuidv4();
+    await db.insert(budgetReservations).values({
+      id: reservationId,
+      poolId: envelope.id,
+      reservedAmount: amount,
+      status: 'pending',
+      referenceType,
+      referenceId,
+      expiresAt,
+    });
+
+    console.log(`[Budget] Reserved ${amount} credits for ${referenceType}:${referenceId}`);
+    return { success: true, reservationId };
+  } catch (error) {
+    console.error('[Budget] Error reserving budget:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
+/**
+ * Confirm a budget reservation (called when award is issued)
+ */
+export async function confirmBudgetReservation(
   reservationId: string
-): Promise<void> {
-  // TODO: Implement budget reservation logic
-  // For now, we check budget at issuance time instead of approval time
-  throw new Error('Budget reservation not implemented in MVP');
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const reservation = await db.query.budgetReservations.findFirst({
+      where: eq(budgetReservations.id, reservationId),
+    });
+
+    if (!reservation) {
+      return { success: false, error: 'Reservation not found' };
+    }
+
+    if (reservation.status !== 'pending') {
+      return { success: false, error: `Reservation already ${reservation.status}` };
+    }
+
+    await db.update(budgetReservations)
+      .set({ status: 'confirmed', updatedAt: new Date() })
+      .where(eq(budgetReservations.id, reservationId));
+
+    return { success: true };
+  } catch (error) {
+    console.error('[Budget] Error confirming reservation:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
 }
 
 /**
  * Release reserved budget
- * Companion to reserveBudget (not implemented in MVP)
  */
 export async function releaseReservedBudget(
-  tx: DbTransaction,
   reservationId: string
-): Promise<void> {
-  // TODO: Implement budget release logic
-  throw new Error('Budget reservation not implemented in MVP');
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const reservation = await db.query.budgetReservations.findFirst({
+      where: eq(budgetReservations.id, reservationId),
+    });
+
+    if (!reservation) {
+      return { success: false, error: 'Reservation not found' };
+    }
+
+    if (reservation.status === 'released') {
+      return { success: true };
+    }
+
+    await db.update(budgetReservations)
+      .set({ status: 'released', updatedAt: new Date() })
+      .where(eq(budgetReservations.id, reservationId));
+
+    return { success: true };
+  } catch (error) {
+    console.error('[Budget] Error releasing reservation:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
+/**
+ * Release reservations by reference
+ */
+export async function releaseReservationsByReference(
+  referenceType: string,
+  referenceId: string
+): Promise<{ released: number; error?: string }> {
+  try {
+    const reservations = await db.query.budgetReservations.findMany({
+      where: and(
+        eq(budgetReservations.referenceType, referenceType),
+        eq(budgetReservations.referenceId, referenceId),
+        ne(budgetReservations.status, 'released')
+      ),
+    });
+
+    for (const reservation of reservations) {
+      await db.update(budgetReservations)
+        .set({ status: 'released', updatedAt: new Date() })
+        .where(eq(budgetReservations.id, reservation.id));
+    }
+
+    return { released: reservations.length };
+  } catch (error) {
+    console.error('[Budget] Error releasing reservations:', error);
+    return { 
+      released: 0,
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
+/**
+ * Get detailed budget status including reservations
+ */
+export async function getBudgetStatus(
+  programId: string,
+  orgId: string
+): Promise<{
+  envelope: RewardBudgetEnvelope | null;
+  totalBudget: number;
+  used: number;
+  reserved: number;
+  available: number;
+  reservationCount: number;
+}> {
+  const now = new Date();
+
+  const envelope = await db.query.rewardBudgetEnvelopes.findFirst({
+    where: and(
+      eq(rewardBudgetEnvelopes.programId, programId),
+      eq(rewardBudgetEnvelopes.orgId, orgId),
+      lte(rewardBudgetEnvelopes.startsAt, now),
+      gte(rewardBudgetEnvelopes.endsAt, now)
+    ),
+  });
+
+  if (!envelope) {
+    return {
+      envelope: null,
+      totalBudget: 0,
+      used: 0,
+      reserved: 0,
+      available: 0,
+      reservationCount: 0,
+    };
+  }
+
+  const reservations = await db.query.budgetReservations.findMany({
+    where: and(
+      eq(budgetReservations.poolId, envelope.id),
+      ne(budgetReservations.status, 'released'),
+      ne(budgetReservations.status, 'expired')
+    ),
+  });
+
+  const totalReserved = reservations.reduce((sum, r) => sum + (r.reservedAmount || 0), 0);
+
+  return {
+    envelope,
+    totalBudget: envelope.amountLimit,
+    used: envelope.amountUsed,
+    reserved: totalReserved,
+    available: envelope.amountLimit - envelope.amountUsed - totalReserved,
+    reservationCount: reservations.length,
+  };
+}
+
+/**
+ * Clean up expired reservations
+ */
+export async function cleanupExpiredReservations(): Promise<{
+  cleaned: number;
+  released: number;
+}> {
+  const now = new Date();
+
+  const expiredReservations = await db.query.budgetReservations.findMany({
+    where: and(
+      ne(budgetReservations.status, 'released' as any),
+      ne(budgetReservations.status, 'expired' as any),
+      lte(budgetReservations.expiresAt, now)
+    ) as any,
+  });
+
+  let released = 0;
+  for (const reservation of expiredReservations) {
+    await db.update(budgetReservations)
+      .set({ status: 'expired', updatedAt: new Date() })
+      .where(eq(budgetReservations.id, reservation.id));
+    released += reservation.reservedAmount || 0;
+  }
+
+  return {
+    cleaned: expiredReservations.length,
+    released,
+  };
+}
+
+/**
+ * Check budget with reservations
+ */
+export async function checkBudgetWithReservations(
+  programId: string,
+  orgId: string,
+  requestedAmount: number
+): Promise<BudgetCheckResult> {
+  const status = await getBudgetStatus(programId, orgId);
+
+  if (!status.envelope) {
+    return {
+      hasEnoughBudget: true,
+      availableBudget: requestedAmount,
+      reservedBudget: 0,
+      totalBudget: requestedAmount,
+    };
+  }
+
+  return {
+    hasEnoughBudget: status.available >= requestedAmount,
+    availableBudget: status.available,
+    reservedBudget: status.reserved,
+    totalBudget: status.totalBudget,
+    envelopeId: status.envelope.id,
+  };
+}
+
+/**
+ * Get all active reservations
+ */
+export async function getActiveReservations(poolId?: string) {
+  const now = new Date();
+  
+  let whereClause = and(
+    ne(budgetReservations.status, 'released' as any),
+    ne(budgetReservations.status, 'expired' as any)
+  ) as any;
+
+  if (poolId) {
+    whereClause = and(whereClause, eq(budgetReservations.poolId, poolId));
+  }
+
+  return await db.query.budgetReservations.findMany({
+    where: whereClause,
+    orderBy: [asc(budgetReservations.expiresAt)],
+  });
 }

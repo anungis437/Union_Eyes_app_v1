@@ -22,7 +22,7 @@ export interface TimelineEvent {
   id: string;
   caseId: string;
   timestamp: Date;
-  type: string;
+  type: 'submitted' | 'acknowledged' | 'first_response' | 'investigation_complete' | 'other';
   description: string;
   actorId: string;
   actorRole: string;
@@ -194,7 +194,7 @@ export async function generateDefensibilityPack(
       status: slaAssessment.acknowledgment.status,
       daysElapsed: slaAssessment.acknowledgment.daysElapsed,
       daysRemaining: slaAssessment.acknowledgment.daysRemaining,
-      breachDate: slaAssessment.acknowledgment.breachDate,
+      breachDate: slaAssessment.acknowledgment.breachDate ?? undefined,
     });
   }
   
@@ -205,7 +205,7 @@ export async function generateDefensibilityPack(
       status: slaAssessment.firstResponse.status,
       daysElapsed: slaAssessment.firstResponse.daysElapsed,
       daysRemaining: slaAssessment.firstResponse.daysRemaining,
-      breachDate: slaAssessment.firstResponse.breachDate,
+      breachDate: slaAssessment.firstResponse.breachDate ?? undefined,
     });
   }
   
@@ -216,7 +216,7 @@ export async function generateDefensibilityPack(
       status: slaAssessment.investigation.status,
       daysElapsed: slaAssessment.investigation.daysElapsed,
       daysRemaining: slaAssessment.investigation.daysRemaining,
-      breachDate: slaAssessment.investigation.breachDate,
+      breachDate: slaAssessment.investigation.breachDate ?? undefined,
     });
   }
   } // End if (timeline.length > 0)

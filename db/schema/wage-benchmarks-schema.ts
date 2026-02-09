@@ -166,9 +166,9 @@ export const unionDensity = pgTable("union_density", {
 
 }, (table) => [
   index("idx_union_density_noc").on(table.nocCode),
-  index("idx_union_density_naics").On(table.naicsCode),
-  index("idx_union_density_geo").On(table.geographyCode),
-  index("idx_union_density_ref").On(table.refDate),
+  index("idx_union_density_naics").on(table.naicsCode),
+  index("idx_union_density_geo").on(table.geographyCode),
+  index("idx_union_density_ref").on(table.refDate),
 ]);
 
 /**
@@ -201,8 +201,8 @@ export const costOfLivingData = pgTable("cost_of_living_data", {
   syncId: varchar("sync_id", { length: 100 }),
 
 }, (table) => [
-  index("idx_col_data_geo").On(table.geographyCode),
-  index("idx_col_data_year").On(table.year),
+  index("idx_col_data_geo").on(table.geographyCode),
+  index("idx_col_data_year").on(table.year),
 ]);
 
 /**
@@ -236,8 +236,8 @@ export const contributionRates = pgTable("contribution_rates", {
   syncId: varchar("sync_id", { length: 100 }),
 
 }, (table) => [
-  index("idx_contribution_rates_type").On(table.rateType),
-  index("idx_contribution_rates_year").On(table.year),
+  index("idx_contribution_rates_type").on(table.rateType),
+  index("idx_contribution_rates_year").on(table.year),
 ]);
 
 /**
@@ -274,9 +274,9 @@ export const externalDataSyncLog = pgTable("external_data_sync_log", {
   parameters: text("parameters"), // JSON string of sync parameters
 
 }, (table) => [
-  index("idx_sync_log_source").On(table.source),
-  index("idx_sync_log_status").On(table.status),
-  index("idx_sync_log_started").On(table.startedAt),
+  index("idx_sync_log_source").on(table.source),
+  index("idx_sync_log_status").on(table.status),
+  index("idx_sync_log_started").on(table.startedAt),
 ]);
 
 // =============================================================================

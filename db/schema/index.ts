@@ -106,3 +106,15 @@ export * from "./international-address-schema";
 export * from "./wage-benchmarks-schema";
 export * from "./lrb-agreements-schema";
 export * from "./clc-partnership-schema";
+
+// Rewards System
+export * from "./award-templates-schema";
+
+// Automation & Workflows
+export * from "./automation-rules-schema";
+
+// Grievance & Arbitration
+export * from "./grievance-schema";
+
+// PR-12: Defensibility Packs (System-of-Record Exports for Arbitration)
+export * from "./defensibility-packs-schema";

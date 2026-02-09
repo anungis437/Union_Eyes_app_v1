@@ -43,3 +43,10 @@ jobs:
       
       - name: Report status
         if: always()
+        run: |
+          if [ "${{ steps.guard-check.outcome }}" == "success" ]; then
+            echo "✅ API guards validation passed"
+          else
+            echo "❌ API guards validation failed"
+            exit 1
+          fi

@@ -32,12 +32,12 @@ foreach ($pattern in $ForbiddenPatterns) {
     Write-Host "Checking pattern: $pattern"
     
     # Use git ls-files to find tracked files matching pattern
-    $matches = git ls-files | Select-String -Pattern $pattern
+    $matchedFiles = git ls-files | Select-String -Pattern $pattern
     
-    if ($matches) {
+    if ($matchedFiles) {
         Write-Host "❌ VIOLATION: Found tracked artifacts matching '$pattern':" -ForegroundColor Red
-        $matches | Select-Object -First 5 | ForEach-Object { Write-Host "   $_" }
-        $count = ($matches | Measure-Object).Count
+        $matchedFiles | Select-Object -First 5 | ForEach-Object { Write-Host "   $_" }
+        $count = ($matchedFiles | Measure-Object).Count
         Write-Host "   ($count files total)" -ForegroundColor Red
         Write-Host ""
         $ViolationsFound++
