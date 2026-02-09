@@ -2,7 +2,7 @@
  * End-to-End Integration Tests for External Data Module
  */
 
-import { describe, it, expect, beforeAll, afterAll, jest } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 
 // Mock environment variables
 const mockEnv = {

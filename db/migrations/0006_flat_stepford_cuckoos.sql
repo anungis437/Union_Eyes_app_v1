@@ -1,29 +1,129 @@
-CREATE TYPE "public"."notification_bounce_type" AS ENUM('permanent', 'temporary', 'complaint', 'manual');--> statement-breakpoint
-CREATE TYPE "public"."notification_priority" AS ENUM('low', 'normal', 'high', 'urgent');--> statement-breakpoint
-CREATE TYPE "public"."notification_queue_status" AS ENUM('pending', 'processing', 'completed', 'failed', 'retrying');--> statement-breakpoint
-CREATE TYPE "public"."notification_template_status" AS ENUM('active', 'inactive', 'draft', 'archived');--> statement-breakpoint
-CREATE TYPE "public"."notification_template_type" AS ENUM('payment', 'dues', 'strike', 'voting', 'certification', 'general', 'system');--> statement-breakpoint
-CREATE TYPE "public"."consent_status" AS ENUM('granted', 'denied', 'withdrawn', 'expired');--> statement-breakpoint
-CREATE TYPE "public"."consent_type" AS ENUM('essential', 'functional', 'analytics', 'marketing', 'personalization', 'third_party');--> statement-breakpoint
-CREATE TYPE "public"."gdpr_request_status" AS ENUM('pending', 'in_progress', 'completed', 'rejected', 'cancelled');--> statement-breakpoint
-CREATE TYPE "public"."gdpr_request_type" AS ENUM('access', 'rectification', 'erasure', 'restriction', 'portability', 'objection');--> statement-breakpoint
-CREATE TYPE "public"."processing_purpose" AS ENUM('service_delivery', 'legal_compliance', 'contract_performance', 'legitimate_interest', 'consent', 'vital_interest');--> statement-breakpoint
-CREATE TYPE "public"."authentication_method" AS ENUM('email', 'sms', 'phone_call', 'knowledge_based', 'id_verification', 'multi_factor', 'none');--> statement-breakpoint
-CREATE TYPE "public"."signature_document_status" AS ENUM('draft', 'sent', 'delivered', 'viewed', 'signed', 'completed', 'declined', 'voided', 'expired');--> statement-breakpoint
-CREATE TYPE "public"."signature_provider" AS ENUM('docusign', 'hellosign', 'adobe_sign', 'pandadoc', 'internal');--> statement-breakpoint
-CREATE TYPE "public"."signature_type" AS ENUM('electronic', 'digital', 'wet', 'clickwrap');--> statement-breakpoint
-CREATE TYPE "public"."signer_status" AS ENUM('pending', 'sent', 'delivered', 'viewed', 'signed', 'declined', 'authentication_failed', 'expired');--> statement-breakpoint
-CREATE TYPE "public"."ai_provider" AS ENUM('openai', 'anthropic', 'google', 'internal');--> statement-breakpoint
-CREATE TYPE "public"."chat_session_status" AS ENUM('active', 'archived', 'deleted');--> statement-breakpoint
-CREATE TYPE "public"."knowledge_document_type" AS ENUM('collective_agreement', 'union_policy', 'labor_law', 'precedent', 'faq', 'guide', 'other');--> statement-breakpoint
-CREATE TYPE "public"."message_role" AS ENUM('user', 'assistant', 'system', 'function');--> statement-breakpoint
-CREATE TYPE "public"."a11y_issue_severity" AS ENUM('critical', 'serious', 'moderate', 'minor');--> statement-breakpoint
-CREATE TYPE "public"."a11y_issue_status" AS ENUM('open', 'in_progress', 'resolved', 'wont_fix', 'duplicate');--> statement-breakpoint
-CREATE TYPE "public"."audit_status" AS ENUM('pending', 'in_progress', 'completed', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."wcag_level" AS ENUM('A', 'AA', 'AAA');--> statement-breakpoint
-CREATE TYPE "public"."address_status" AS ENUM('active', 'inactive', 'unverified', 'invalid');--> statement-breakpoint
-CREATE TYPE "public"."address_type" AS ENUM('mailing', 'residential', 'business', 'billing', 'shipping', 'temporary');--> statement-breakpoint
-CREATE TABLE "voting_audit_log" (
+DO $$ BEGIN
+	CREATE TYPE "public"."notification_bounce_type" AS ENUM('permanent', 'temporary', 'complaint', 'manual');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."notification_priority" AS ENUM('low', 'normal', 'high', 'urgent');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."notification_queue_status" AS ENUM('pending', 'processing', 'completed', 'failed', 'retrying');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."notification_template_status" AS ENUM('active', 'inactive', 'draft', 'archived');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."notification_template_type" AS ENUM('payment', 'dues', 'strike', 'voting', 'certification', 'general', 'system');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."consent_status" AS ENUM('granted', 'denied', 'withdrawn', 'expired');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."consent_type" AS ENUM('essential', 'functional', 'analytics', 'marketing', 'personalization', 'third_party');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."gdpr_request_status" AS ENUM('pending', 'in_progress', 'completed', 'rejected', 'cancelled');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."gdpr_request_type" AS ENUM('access', 'rectification', 'erasure', 'restriction', 'portability', 'objection');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."processing_purpose" AS ENUM('service_delivery', 'legal_compliance', 'contract_performance', 'legitimate_interest', 'consent', 'vital_interest');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."authentication_method" AS ENUM('email', 'sms', 'phone_call', 'knowledge_based', 'id_verification', 'multi_factor', 'none');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."signature_document_status" AS ENUM('draft', 'sent', 'delivered', 'viewed', 'signed', 'completed', 'declined', 'voided', 'expired');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."signature_provider" AS ENUM('docusign', 'hellosign', 'adobe_sign', 'pandadoc', 'internal');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."signature_type" AS ENUM('electronic', 'digital', 'wet', 'clickwrap');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."signer_status" AS ENUM('pending', 'sent', 'delivered', 'viewed', 'signed', 'declined', 'authentication_failed', 'expired');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."ai_provider" AS ENUM('openai', 'anthropic', 'google', 'internal');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."chat_session_status" AS ENUM('active', 'archived', 'deleted');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."knowledge_document_type" AS ENUM('collective_agreement', 'union_policy', 'labor_law', 'precedent', 'faq', 'guide', 'other');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."message_role" AS ENUM('user', 'assistant', 'system', 'function');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."a11y_issue_severity" AS ENUM('critical', 'serious', 'moderate', 'minor');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."a11y_issue_status" AS ENUM('open', 'in_progress', 'resolved', 'wont_fix', 'duplicate');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."audit_status" AS ENUM('pending', 'in_progress', 'completed', 'failed');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."wcag_level" AS ENUM('A', 'AA', 'AAA');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."address_status" AS ENUM('active', 'inactive', 'unverified', 'invalid');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."address_type" AS ENUM('mailing', 'residential', 'business', 'billing', 'shipping', 'temporary');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "voting_audit_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"session_id" uuid NOT NULL,
 	"receipt_id" varchar(255) NOT NULL,
@@ -42,7 +142,7 @@ CREATE TABLE "voting_audit_log" (
 	CONSTRAINT "voting_audit_log_receipt_id_unique" UNIQUE("receipt_id")
 );
 --> statement-breakpoint
-CREATE TABLE "notification_bounces" (
+CREATE TABLE IF NOT EXISTS "notification_bounces" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"email" text NOT NULL,
@@ -58,7 +158,7 @@ CREATE TABLE "notification_bounces" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "notification_delivery_log" (
+CREATE TABLE IF NOT EXISTS "notification_delivery_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"notification_id" uuid NOT NULL,
@@ -73,7 +173,7 @@ CREATE TABLE "notification_delivery_log" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "notification_queue" (
+CREATE TABLE IF NOT EXISTS "notification_queue" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"status" "notification_queue_status" DEFAULT 'pending' NOT NULL,
@@ -90,7 +190,7 @@ CREATE TABLE "notification_queue" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "notification_templates" (
+CREATE TABLE IF NOT EXISTS "notification_templates" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"template_key" text NOT NULL,
@@ -115,7 +215,7 @@ CREATE TABLE "notification_templates" (
 	CONSTRAINT "notification_templates_template_key_unique" UNIQUE("template_key")
 );
 --> statement-breakpoint
-CREATE TABLE "automation_rules" (
+CREATE TABLE IF NOT EXISTS "automation_rules" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"org_id" uuid NOT NULL,
 	"name" varchar(255) NOT NULL,
@@ -133,7 +233,7 @@ CREATE TABLE "automation_rules" (
 	"created_by" varchar(255)
 );
 --> statement-breakpoint
-CREATE TABLE "cookie_consents" (
+CREATE TABLE IF NOT EXISTS "cookie_consents" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text,
 	"tenant_id" text NOT NULL,
@@ -150,7 +250,7 @@ CREATE TABLE "cookie_consents" (
 	CONSTRAINT "cookie_consents_consent_id_unique" UNIQUE("consent_id")
 );
 --> statement-breakpoint
-CREATE TABLE "data_anonymization_log" (
+CREATE TABLE IF NOT EXISTS "data_anonymization_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"tenant_id" text NOT NULL,
@@ -167,7 +267,7 @@ CREATE TABLE "data_anonymization_log" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "data_processing_records" (
+CREATE TABLE IF NOT EXISTS "data_processing_records" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"activity_name" text NOT NULL,
@@ -186,7 +286,7 @@ CREATE TABLE "data_processing_records" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "data_retention_policies" (
+CREATE TABLE IF NOT EXISTS "data_retention_policies" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"policy_name" text NOT NULL,
@@ -203,7 +303,7 @@ CREATE TABLE "data_retention_policies" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "gdpr_data_requests" (
+CREATE TABLE IF NOT EXISTS "gdpr_data_requests" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"tenant_id" text NOT NULL,
@@ -225,7 +325,7 @@ CREATE TABLE "gdpr_data_requests" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "user_consents" (
+CREATE TABLE IF NOT EXISTS "user_consents" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"tenant_id" text NOT NULL,
@@ -245,7 +345,7 @@ CREATE TABLE "user_consents" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "document_signers" (
+CREATE TABLE IF NOT EXISTS "document_signers" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"document_id" uuid NOT NULL,
 	"user_id" text,
@@ -275,7 +375,7 @@ CREATE TABLE "document_signers" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "signature_audit_trail" (
+CREATE TABLE IF NOT EXISTS "signature_audit_trail" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"document_id" uuid NOT NULL,
 	"signer_id" uuid,
@@ -293,7 +393,7 @@ CREATE TABLE "signature_audit_trail" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "signature_documents" (
+CREATE TABLE IF NOT EXISTS "signature_documents" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"title" text NOT NULL,
@@ -327,7 +427,7 @@ CREATE TABLE "signature_documents" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "signature_templates" (
+CREATE TABLE IF NOT EXISTS "signature_templates" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"name" text NOT NULL,
@@ -348,7 +448,7 @@ CREATE TABLE "signature_templates" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "signature_webhooks_log" (
+CREATE TABLE IF NOT EXISTS "signature_webhooks_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"provider" "signature_provider" NOT NULL,
 	"event_type" text NOT NULL,
@@ -365,7 +465,7 @@ CREATE TABLE "signature_webhooks_log" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "ai_safety_filters" (
+CREATE TABLE IF NOT EXISTS "ai_safety_filters" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"input" text NOT NULL,
 	"output" text,
@@ -379,7 +479,7 @@ CREATE TABLE "ai_safety_filters" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "chat_messages" (
+CREATE TABLE IF NOT EXISTS "chat_messages" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"session_id" uuid NOT NULL,
 	"role" "message_role" NOT NULL,
@@ -396,7 +496,7 @@ CREATE TABLE "chat_messages" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "chat_sessions" (
+CREATE TABLE IF NOT EXISTS "chat_sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"tenant_id" text NOT NULL,
@@ -416,7 +516,7 @@ CREATE TABLE "chat_sessions" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "chatbot_analytics" (
+CREATE TABLE IF NOT EXISTS "chatbot_analytics" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"period_start" timestamp NOT NULL,
@@ -437,7 +537,7 @@ CREATE TABLE "chatbot_analytics" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "chatbot_suggestions" (
+CREATE TABLE IF NOT EXISTS "chatbot_suggestions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"category" text NOT NULL,
@@ -454,35 +554,39 @@ CREATE TABLE "chatbot_suggestions" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "knowledge_base" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"tenant_id" text NOT NULL,
-	"title" text NOT NULL,
-	"document_type" "knowledge_document_type" NOT NULL,
-	"content" text NOT NULL,
-	"summary" text,
-	"source_type" text NOT NULL,
-	"source_id" text,
-	"source_url" text,
-	"embedding" vector(1536),
-	"embedding_model" text DEFAULT 'text-embedding-ada-002',
-	"tags" jsonb,
-	"keywords" jsonb,
-	"language" text DEFAULT 'en' NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"previous_version_id" uuid,
-	"is_public" boolean DEFAULT false NOT NULL,
-	"allowed_tenants" jsonb,
-	"view_count" integer DEFAULT 0 NOT NULL,
-	"citation_count" integer DEFAULT 0 NOT NULL,
-	"last_used_at" timestamp,
-	"is_active" boolean DEFAULT true NOT NULL,
-	"created_by" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
+DO $$ BEGIN
+	IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'vector') THEN
+		CREATE TABLE IF NOT EXISTS "knowledge_base" (
+			"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+			"tenant_id" text NOT NULL,
+			"title" text NOT NULL,
+			"document_type" "knowledge_document_type" NOT NULL,
+			"content" text NOT NULL,
+			"summary" text,
+			"source_type" text NOT NULL,
+			"source_id" text,
+			"source_url" text,
+			"embedding" vector(1536),
+			"embedding_model" text DEFAULT 'text-embedding-ada-002',
+			"tags" jsonb,
+			"keywords" jsonb,
+			"language" text DEFAULT 'en' NOT NULL,
+			"version" integer DEFAULT 1 NOT NULL,
+			"previous_version_id" uuid,
+			"is_public" boolean DEFAULT false NOT NULL,
+			"allowed_tenants" jsonb,
+			"view_count" integer DEFAULT 0 NOT NULL,
+			"citation_count" integer DEFAULT 0 NOT NULL,
+			"last_used_at" timestamp,
+			"is_active" boolean DEFAULT true NOT NULL,
+			"created_by" text NOT NULL,
+			"created_at" timestamp DEFAULT now() NOT NULL,
+			"updated_at" timestamp DEFAULT now() NOT NULL
+		);
+	END IF;
+END $$;
 --> statement-breakpoint
-CREATE TABLE "accessibility_audits" (
+CREATE TABLE IF NOT EXISTS "accessibility_audits" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"audit_name" text NOT NULL,
@@ -511,7 +615,7 @@ CREATE TABLE "accessibility_audits" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "accessibility_issues" (
+CREATE TABLE IF NOT EXISTS "accessibility_issues" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"audit_id" uuid NOT NULL,
 	"tenant_id" text NOT NULL,
@@ -547,7 +651,7 @@ CREATE TABLE "accessibility_issues" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "accessibility_test_suites" (
+CREATE TABLE IF NOT EXISTS "accessibility_test_suites" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text,
 	"suite_name" text NOT NULL,
@@ -571,7 +675,7 @@ CREATE TABLE "accessibility_test_suites" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "accessibility_user_testing" (
+CREATE TABLE IF NOT EXISTS "accessibility_user_testing" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"session_name" text NOT NULL,
@@ -595,7 +699,7 @@ CREATE TABLE "accessibility_user_testing" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "wcag_success_criteria" (
+CREATE TABLE IF NOT EXISTS "wcag_success_criteria" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"criteria_number" text NOT NULL,
 	"criteria_title" text NOT NULL,
@@ -615,7 +719,7 @@ CREATE TABLE "wcag_success_criteria" (
 	CONSTRAINT "wcag_success_criteria_criteria_number_unique" UNIQUE("criteria_number")
 );
 --> statement-breakpoint
-CREATE TABLE "address_change_history" (
+CREATE TABLE IF NOT EXISTS "address_change_history" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"address_id" uuid NOT NULL,
 	"change_type" text NOT NULL,
@@ -627,7 +731,7 @@ CREATE TABLE "address_change_history" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "address_validation_cache" (
+CREATE TABLE IF NOT EXISTS "address_validation_cache" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"input_hash" text NOT NULL,
 	"country_code" text NOT NULL,
@@ -649,7 +753,7 @@ CREATE TABLE "address_validation_cache" (
 	CONSTRAINT "address_validation_cache_input_hash_unique" UNIQUE("input_hash")
 );
 --> statement-breakpoint
-CREATE TABLE "country_address_formats" (
+CREATE TABLE IF NOT EXISTS "country_address_formats" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"country_code" text NOT NULL,
 	"country_name" text NOT NULL,
@@ -680,7 +784,7 @@ CREATE TABLE "country_address_formats" (
 	CONSTRAINT "country_address_formats_country_code_unique" UNIQUE("country_code")
 );
 --> statement-breakpoint
-CREATE TABLE "international_addresses" (
+CREATE TABLE IF NOT EXISTS "international_addresses" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"tenant_id" text NOT NULL,
 	"user_id" text,
@@ -725,176 +829,1080 @@ CREATE TABLE "international_addresses" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "cba_version_history" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "collective_agreements" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "collective_agreements" ALTER COLUMN "last_modified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "clause_comparisons" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "claim_updates" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "claims" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "claims" ALTER COLUMN "assigned_to" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "voting_sessions" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "user_management"."oauth_providers" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "user_management"."tenant_users" ALTER COLUMN "invited_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "user_management"."user_sessions" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "user_management"."users" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "cba_version_history" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "collective_agreements" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "collective_agreements" ALTER COLUMN "last_modified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "clause_comparisons" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "claim_updates" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DROP VIEW IF EXISTS v_critical_deadlines CASCADE;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "claims" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "claims" ALTER COLUMN "assigned_to" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "voting_sessions" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "user_management"."oauth_providers" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "user_management"."tenant_users" ALTER COLUMN "invited_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "user_management"."user_sessions" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DROP VIEW IF EXISTS v_member_training_transcript CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_member_education_summary CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_member_certification_status CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_member_course_history CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_training_analytics CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_member_skills CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_certification_expiry_tracking CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_course_session_dashboard CASCADE;--> statement-breakpoint
+DROP VIEW IF EXISTS v_training_program_progress CASCADE;--> statement-breakpoint
+DO $$
+DECLARE r RECORD;
+BEGIN
+	FOR r IN (
+		SELECT schemaname, tablename, policyname
+		FROM pg_policies
+		WHERE tablename IN (
+			'users',
+			'oauth_providers',
+			'tenant_users',
+			'user_sessions',
+			'audit_logs',
+			'security_events'
+		)
+	) LOOP
+		EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
+	END LOOP;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "user_management"."users" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
 ALTER TABLE "user_management"."users" ALTER COLUMN "user_id" DROP DEFAULT;--> statement-breakpoint
-ALTER TABLE "tenant_management"."tenant_configurations" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "audit_security"."audit_logs" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "audit_security"."security_events" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "audit_security"."security_events" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "bargaining_notes" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "bargaining_notes" ALTER COLUMN "last_modified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "cba_footnotes" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "deadline_alerts" ALTER COLUMN "recipient_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "deadline_extensions" ALTER COLUMN "requested_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "deadline_extensions" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "claim_deadlines" ALTER COLUMN "completed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "claim_deadlines" ALTER COLUMN "escalated_to" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "report_executions" ALTER COLUMN "executed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "report_shares" ALTER COLUMN "shared_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "report_shares" ALTER COLUMN "shared_with" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "report_templates" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "reports" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "reports" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "scheduled_reports" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "clause_comparisons_history" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "clause_library_tags" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "shared_clause_library" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "arbitration_precedents" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "precedent_citations" ALTER COLUMN "cited_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "cross_org_access_log" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "organization_sharing_grants" ALTER COLUMN "revoked_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "organization_sharing_grants" ALTER COLUMN "granted_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "organization_contacts" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "per_capita_remittances" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "per_capita_remittances" ALTER COLUMN "rejected_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "per_capita_remittances" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "remittance_approvals" ALTER COLUMN "approver_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "communication_preferences" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "user_engagement_scores" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_assignments" ALTER COLUMN "assigned_to" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_assignments" ALTER COLUMN "assigned_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_communications" ALTER COLUMN "from_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_communications" ALTER COLUMN "to_user_ids" SET DATA TYPE varchar(255)[];--> statement-breakpoint
-ALTER TABLE "grievance_communications" ALTER COLUMN "recorded_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_documents" ALTER COLUMN "signed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_documents" ALTER COLUMN "uploaded_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_documents" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_settlements" ALTER COLUMN "proposed_by_user" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_settlements" ALTER COLUMN "responded_by_user" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_settlements" ALTER COLUMN "union_approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_settlements" ALTER COLUMN "management_approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_settlements" ALTER COLUMN "finalized_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_transitions" ALTER COLUMN "transitioned_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_transitions" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "grievance_workflows" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "course_registrations" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "course_registrations" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "course_sessions" ALTER COLUMN "lead_instructor_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "course_sessions" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "member_certifications" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "member_certifications" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "program_enrollments" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "training_courses" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "training_programs" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "comparative_analyses" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "insight_recommendations" ALTER COLUMN "acknowledged_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "insight_recommendations" ALTER COLUMN "dismissed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "kpi_configurations" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "foreign_workers" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "gss_applications" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "lmbp_compliance_alerts" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "lmbp_compliance_reports" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "lmbp_letters" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "governance_events" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "reserved_matter_votes" ALTER COLUMN "proposed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "data_subject_access_requests" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "data_subject_access_requests" ALTER COLUMN "assigned_to" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "privacy_breaches" ALTER COLUMN "reported_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "provincial_consent" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "provincial_data_handling" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "provincial_data_handling" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "band_council_consent" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "indigenous_data_access_log" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "indigenous_data_access_log" ALTER COLUMN "accessed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "indigenous_data_sharing_agreements" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "indigenous_member_data" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "traditional_knowledge_registry" ALTER COLUMN "primary_keeper_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "rl1_tax_slips" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "rl1_tax_slips" ALTER COLUMN "generated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "strike_fund_disbursements" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "t4a_tax_slips" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "t4a_tax_slips" ALTER COLUMN "generated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "tax_year_end_processing" ALTER COLUMN "processed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "weekly_threshold_tracking" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_activations" ALTER COLUMN "signature_1_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_activations" ALTER COLUMN "signature_2_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_activations" ALTER COLUMN "signature_3_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_activations" ALTER COLUMN "audited_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_1" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_2" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_3" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_4" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_5" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "disaster_recovery_drills" ALTER COLUMN "conducted_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "disaster_recovery_drills" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "emergency_declarations" ALTER COLUMN "declared_by_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "key_holder_registry" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "swiss_cold_storage" ALTER COLUMN "encrypted_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "swiss_cold_storage" ALTER COLUMN "last_accessed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "geofence_events" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "location_deletion_log" ALTER COLUMN "initiated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "location_tracking" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "location_tracking_audit" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "location_tracking_audit" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "location_tracking_config" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "member_location_consent" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "bank_of_canada_rates" ALTER COLUMN "imported_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "currency_enforcement_audit" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "currency_enforcement_policy" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "currency_enforcement_violations" ALTER COLUMN "attempted_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "currency_enforcement_violations" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "fx_rate_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "t106_filing_tracking" ALTER COLUMN "prepared_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "t106_filing_tracking" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "t106_filing_tracking" ALTER COLUMN "filed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "transaction_currency_conversions" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "transfer_pricing_documentation" ALTER COLUMN "documented_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "transfer_pricing_documentation" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "arms_length_verification" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "blind_trust_registry" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "blind_trust_registry" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_audit_log" ALTER COLUMN "subject_user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_disclosures" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_of_interest_policy" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_review_committee" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_review_committee" ALTER COLUMN "appointed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "conflict_training" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "recusal_tracking" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "recusal_tracking" ALTER COLUMN "documented_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "recusal_tracking" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "cpi_adjusted_pricing" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "cpi_data" ALTER COLUMN "imported_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "fmv_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "fmv_benchmarks" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "fmv_policy" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "fmv_violations" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "fmv_violations" ALTER COLUMN "detected_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "independent_appraisals" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "procurement_bids" ALTER COLUMN "evaluated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "procurement_requests" ALTER COLUMN "requested_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "procurement_requests" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "procurement_requests" ALTER COLUMN "awarded_to" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "certification_alerts" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "certification_alerts" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "certification_audit_log" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "certification_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "certification_compliance_reports" ALTER COLUMN "generated_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "continuing_education" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "continuing_education" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "staff_certifications" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
-ALTER TABLE "staff_certifications" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "tenant_management"."tenant_configurations" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DROP VIEW IF EXISTS audit_security.active_audit_logs CASCADE;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "audit_security"."audit_logs" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "audit_security"."security_events" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "audit_security"."security_events" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "bargaining_notes" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "bargaining_notes" ALTER COLUMN "last_modified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "cba_footnotes" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "deadline_alerts" ALTER COLUMN "recipient_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "deadline_extensions" ALTER COLUMN "requested_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "deadline_extensions" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "claim_deadlines" ALTER COLUMN "completed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "claim_deadlines" ALTER COLUMN "escalated_to" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "report_executions" ALTER COLUMN "executed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "report_shares" ALTER COLUMN "shared_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "report_shares" ALTER COLUMN "shared_with" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "report_templates" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "reports" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "reports" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "scheduled_reports" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "clause_comparisons_history" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "clause_library_tags" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "shared_clause_library" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "arbitration_precedents" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'precedent_citations'
+			AND column_name = 'cited_by'
+	) THEN
+		ALTER TABLE "precedent_citations" ALTER COLUMN "cited_by" SET DATA TYPE varchar(255);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "cross_org_access_log" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "organization_sharing_grants" ALTER COLUMN "revoked_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "organization_sharing_grants" ALTER COLUMN "granted_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "organization_contacts" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'per_capita_remittances'
+			AND column_name = 'approved_by'
+	) THEN
+		ALTER TABLE "per_capita_remittances" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'per_capita_remittances'
+			AND column_name = 'rejected_by'
+	) THEN
+		ALTER TABLE "per_capita_remittances" ALTER COLUMN "rejected_by" SET DATA TYPE varchar(255);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'per_capita_remittances'
+			AND column_name = 'created_by'
+	) THEN
+		ALTER TABLE "per_capita_remittances" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "remittance_approvals" ALTER COLUMN "approver_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "communication_preferences" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "user_engagement_scores" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_assignments" ALTER COLUMN "assigned_to" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_assignments" ALTER COLUMN "assigned_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_communications" ALTER COLUMN "from_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_communications" ALTER COLUMN "to_user_ids" SET DATA TYPE varchar(255)[];
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_communications" ALTER COLUMN "recorded_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_documents" ALTER COLUMN "signed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_documents" ALTER COLUMN "uploaded_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_documents" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_settlements" ALTER COLUMN "proposed_by_user" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_settlements" ALTER COLUMN "responded_by_user" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_settlements" ALTER COLUMN "union_approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_settlements" ALTER COLUMN "management_approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_settlements" ALTER COLUMN "finalized_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_transitions" ALTER COLUMN "transitioned_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_transitions" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "grievance_workflows" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "course_registrations" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "course_registrations" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "course_sessions" ALTER COLUMN "lead_instructor_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "course_sessions" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "member_certifications" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "member_certifications" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "program_enrollments" ALTER COLUMN "member_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "training_courses" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "training_programs" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "comparative_analyses" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "insight_recommendations" ALTER COLUMN "acknowledged_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "insight_recommendations" ALTER COLUMN "dismissed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "kpi_configurations" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "foreign_workers" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "gss_applications" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "lmbp_compliance_alerts" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "lmbp_compliance_reports" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "lmbp_letters" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "governance_events" ALTER COLUMN "created_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "reserved_matter_votes" ALTER COLUMN "proposed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "data_subject_access_requests" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "data_subject_access_requests" ALTER COLUMN "assigned_to" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "privacy_breaches" ALTER COLUMN "reported_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "provincial_consent" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'provincial_data_handling'
+			AND column_name = 'user_id'
+	) THEN
+		ALTER TABLE "provincial_data_handling" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'provincial_data_handling'
+			AND column_name = 'performed_by'
+	) THEN
+		ALTER TABLE "provincial_data_handling" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "band_council_consent" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "indigenous_data_access_log" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "indigenous_data_access_log" ALTER COLUMN "accessed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "indigenous_data_sharing_agreements" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "indigenous_member_data" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "traditional_knowledge_registry" ALTER COLUMN "primary_keeper_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "rl1_tax_slips" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "rl1_tax_slips" ALTER COLUMN "generated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "strike_fund_disbursements" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "t4a_tax_slips" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "t4a_tax_slips" ALTER COLUMN "generated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "tax_year_end_processing" ALTER COLUMN "processed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "weekly_threshold_tracking" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_activations" ALTER COLUMN "signature_1_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_activations" ALTER COLUMN "signature_2_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_activations" ALTER COLUMN "signature_3_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_activations" ALTER COLUMN "audited_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_1" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_2" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_3" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_4" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "break_glass_system" ALTER COLUMN "key_holder_id_5" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "disaster_recovery_drills" ALTER COLUMN "conducted_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "disaster_recovery_drills" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "emergency_declarations" ALTER COLUMN "declared_by_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "key_holder_registry" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "swiss_cold_storage" ALTER COLUMN "encrypted_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "swiss_cold_storage" ALTER COLUMN "last_accessed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "geofence_events" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "location_deletion_log" ALTER COLUMN "initiated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "location_tracking" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "location_tracking_audit" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "location_tracking_audit" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "location_tracking_config" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "member_location_consent" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "bank_of_canada_rates" ALTER COLUMN "imported_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "currency_enforcement_audit" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "currency_enforcement_policy" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "currency_enforcement_violations" ALTER COLUMN "attempted_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "currency_enforcement_violations" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "fx_rate_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "t106_filing_tracking" ALTER COLUMN "prepared_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "t106_filing_tracking" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "t106_filing_tracking" ALTER COLUMN "filed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "transaction_currency_conversions" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "transfer_pricing_documentation" ALTER COLUMN "documented_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "transfer_pricing_documentation" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "arms_length_verification" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "blind_trust_registry" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "blind_trust_registry" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_audit_log" ALTER COLUMN "subject_user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_disclosures" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_of_interest_policy" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_review_committee" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_review_committee" ALTER COLUMN "appointed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "conflict_training" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "recusal_tracking" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "recusal_tracking" ALTER COLUMN "documented_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "recusal_tracking" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "cpi_adjusted_pricing" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "cpi_data" ALTER COLUMN "imported_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "fmv_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "fmv_benchmarks" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "fmv_policy" ALTER COLUMN "updated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "fmv_violations" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "fmv_violations" ALTER COLUMN "detected_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "independent_appraisals" ALTER COLUMN "reviewed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "procurement_bids" ALTER COLUMN "evaluated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "procurement_requests" ALTER COLUMN "requested_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "procurement_requests" ALTER COLUMN "approved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "procurement_requests" ALTER COLUMN "awarded_to" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "certification_alerts" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "certification_alerts" ALTER COLUMN "resolved_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "certification_audit_log" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "certification_audit_log" ALTER COLUMN "performed_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "certification_compliance_reports" ALTER COLUMN "generated_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "continuing_education" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "continuing_education" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "staff_certifications" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "staff_certifications" ALTER COLUMN "verified_by" SET DATA TYPE varchar(255);
+EXCEPTION
+  WHEN undefined_column THEN NULL;
+  WHEN undefined_table THEN NULL;
+END $$;--> statement-breakpoint
 ALTER TABLE "collective_agreements" ADD COLUMN "sector" varchar(200);--> statement-breakpoint
 ALTER TABLE "collective_agreements" ADD COLUMN "ai_processed" boolean DEFAULT false;--> statement-breakpoint
 ALTER TABLE "cba_clauses" ADD COLUMN "organization_id" uuid NOT NULL;--> statement-breakpoint
@@ -920,7 +1928,16 @@ ALTER TABLE "ai_safety_filters" ADD CONSTRAINT "ai_safety_filters_session_id_cha
 ALTER TABLE "ai_safety_filters" ADD CONSTRAINT "ai_safety_filters_message_id_chat_messages_id_fk" FOREIGN KEY ("message_id") REFERENCES "public"."chat_messages"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_session_id_chat_sessions_id_fk" FOREIGN KEY ("session_id") REFERENCES "public"."chat_sessions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "chat_sessions" ADD CONSTRAINT "chat_sessions_user_id_profiles_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."profiles"("user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "knowledge_base" ADD CONSTRAINT "knowledge_base_created_by_profiles_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."profiles"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.tables
+		WHERE table_schema = 'public'
+			AND table_name = 'knowledge_base'
+	) THEN
+		ALTER TABLE "knowledge_base" ADD CONSTRAINT "knowledge_base_created_by_profiles_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."profiles"("user_id") ON DELETE no action ON UPDATE no action;
+	END IF;
+END $$;--> statement-breakpoint
 ALTER TABLE "accessibility_audits" ADD CONSTRAINT "accessibility_audits_scheduled_by_profiles_user_id_fk" FOREIGN KEY ("scheduled_by") REFERENCES "public"."profiles"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "accessibility_issues" ADD CONSTRAINT "accessibility_issues_audit_id_accessibility_audits_id_fk" FOREIGN KEY ("audit_id") REFERENCES "public"."accessibility_audits"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "accessibility_issues" ADD CONSTRAINT "accessibility_issues_assigned_to_profiles_user_id_fk" FOREIGN KEY ("assigned_to") REFERENCES "public"."profiles"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -986,10 +2003,48 @@ CREATE INDEX "chatbot_analytics_period_idx" ON "chatbot_analytics" USING btree (
 CREATE INDEX "chatbot_suggestions_tenant_id_idx" ON "chatbot_suggestions" USING btree ("tenant_id");--> statement-breakpoint
 CREATE INDEX "chatbot_suggestions_category_idx" ON "chatbot_suggestions" USING btree ("category");--> statement-breakpoint
 CREATE INDEX "chatbot_suggestions_is_active_idx" ON "chatbot_suggestions" USING btree ("is_active");--> statement-breakpoint
-CREATE INDEX "knowledge_base_tenant_id_idx" ON "knowledge_base" USING btree ("tenant_id");--> statement-breakpoint
-CREATE INDEX "knowledge_base_document_type_idx" ON "knowledge_base" USING btree ("document_type");--> statement-breakpoint
-CREATE INDEX "knowledge_base_embedding_idx" ON "knowledge_base" USING hnsw ("embedding" vector_cosine_ops);--> statement-breakpoint
-CREATE INDEX "knowledge_base_is_active_idx" ON "knowledge_base" USING btree ("is_active");--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.tables
+		WHERE table_schema = 'public'
+			AND table_name = 'knowledge_base'
+	) THEN
+		CREATE INDEX IF NOT EXISTS "knowledge_base_tenant_id_idx" ON "knowledge_base" USING btree ("tenant_id");
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.tables
+		WHERE table_schema = 'public'
+			AND table_name = 'knowledge_base'
+	) THEN
+		CREATE INDEX IF NOT EXISTS "knowledge_base_document_type_idx" ON "knowledge_base" USING btree ("document_type");
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.tables
+		WHERE table_schema = 'public'
+			AND table_name = 'knowledge_base'
+	) AND EXISTS (
+		SELECT 1 FROM pg_type WHERE typname = 'vector'
+	) THEN
+		CREATE INDEX IF NOT EXISTS "knowledge_base_embedding_idx" ON "knowledge_base" USING hnsw ("embedding" vector_cosine_ops);
+	END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.tables
+		WHERE table_schema = 'public'
+			AND table_name = 'knowledge_base'
+	) THEN
+		CREATE INDEX IF NOT EXISTS "knowledge_base_is_active_idx" ON "knowledge_base" USING btree ("is_active");
+	END IF;
+END $$;--> statement-breakpoint
 CREATE INDEX "accessibility_audits_tenant_id_idx" ON "accessibility_audits" USING btree ("tenant_id");--> statement-breakpoint
 CREATE INDEX "accessibility_audits_status_idx" ON "accessibility_audits" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "accessibility_audits_created_at_idx" ON "accessibility_audits" USING btree ("created_at");--> statement-breakpoint
@@ -1018,3 +2073,9 @@ CREATE INDEX "international_addresses_is_primary_idx" ON "international_addresse
 CREATE INDEX "international_addresses_postal_code_idx" ON "international_addresses" USING btree ("postal_code");--> statement-breakpoint
 ALTER TABLE "voter_eligibility" ADD CONSTRAINT "voter_eligibility_member_id_organization_members_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."organization_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "voting_sessions" ADD CONSTRAINT "voting_sessions_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
+
+
+
+
+
+

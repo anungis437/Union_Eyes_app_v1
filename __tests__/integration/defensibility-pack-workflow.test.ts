@@ -22,6 +22,11 @@ import { updateClaimStatus } from '@/lib/workflow-engine';
 import { generateDefensibilityPack, verifyPackIntegrity } from '@/lib/services/defensibility-pack';
 import type { TimelineEvent, AuditEntry, StateTransition } from '@/lib/services/defensibility-pack';
 
+vi.mock('server-only', () => ({}));
+vi.mock('@/lib/workflow-engine', () => ({
+  updateClaimStatus: vi.fn().mockResolvedValue({ status: 'ok' }),
+}));
+
 describe('PR-12: Defensibility Pack Integration', () => {
   describe('Auto-Generation on Resolution', () => {
     it('should generate defensibility pack when claim is resolved', async () => {
@@ -80,7 +85,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-123',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'claim_submitted',
+            type: 'submitted',
           description: 'Member submitted claim',
           actorId: 'member-1',
           actorRole: 'member',
@@ -200,7 +205,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-123',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'claim_submitted',
+          type: 'submitted',
           description: 'First claim',
           actorId: 'member-1',
           actorRole: 'member',
@@ -213,7 +218,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-2',
           caseId: 'case-456',
           timestamp: new Date('2025-01-02T10:00:00Z'),
-          type: 'claim_submitted',
+          type: 'submitted',
           description: 'Second claim',
           actorId: 'member-2',
           actorRole: 'member',
@@ -283,7 +288,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-123',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'claim_submitted',
+          type: 'submitted',
           description: 'Test claim',
           actorId: 'member-1',
           actorRole: 'member',
@@ -314,8 +319,8 @@ describe('PR-12: Defensibility Pack Integration', () => {
         }
       );
 
-      const isValid = verifyPackIntegrity(pack);
-      expect(isValid).toBe(true);
+      const integrity = verifyPackIntegrity(pack);
+      expect(integrity.valid).toBe(true);
     });
 
     it('should fail verification for tampered pack', async () => {
@@ -324,7 +329,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-123',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'claim_submitted',
+          type: 'submitted',
           description: 'Original description',
           actorId: 'member-1',
           actorRole: 'member',
@@ -358,8 +363,8 @@ describe('PR-12: Defensibility Pack Integration', () => {
       // Tamper with pack content
       pack.memberVisibleTimeline[0].description = 'TAMPERED DESCRIPTION';
 
-      const isValid = verifyPackIntegrity(pack);
-      expect(isValid).toBe(false);
+      const integrity = verifyPackIntegrity(pack);
+      expect(integrity.valid).toBe(false);
     });
   });
 
@@ -370,7 +375,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-123',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'claim_submitted',
+            type: 'submitted',
           description: 'Member submitted claim',
           actorId: 'member-1',
           actorRole: 'member',
@@ -398,9 +403,13 @@ describe('PR-12: Defensibility Pack Integration', () => {
         },
       ];
 
+      const sortedTimeline = [...timeline].sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      );
+
       const pack = await generateDefensibilityPack(
         'case-123',
-        timeline,
+        sortedTimeline,
         [],
         [],
         {
@@ -446,7 +455,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-123',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'event_1',
+          type: 'submitted',
           description: 'First event',
           actorId: 'actor-1',
           actorRole: 'member',
@@ -464,9 +473,13 @@ describe('PR-12: Defensibility Pack Integration', () => {
         },
       ];
 
+      const sortedTimeline = [...timeline].sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      );
+
       const pack = await generateDefensibilityPack(
         'case-123',
-        timeline,
+        sortedTimeline,
         [],
         [],
         {
@@ -578,7 +591,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'evt-1',
           caseId: 'case-arbitration',
           timestamp: new Date('2025-01-01T10:00:00Z'),
-          type: 'claim_submitted',
+          type: 'submitted',
           description: 'Member filed complaint',
           actorId: 'member-1',
           actorRole: 'member',
@@ -601,7 +614,7 @@ describe('PR-12: Defensibility Pack Integration', () => {
           id: 'audit-1',
           timestamp: new Date('2025-01-01T10:00:00Z'),
           userId: 'member-1',
-          action: 'claim_submitted',
+          action: 'submitted',
           resourceType: 'claim',
           resourceId: 'case-arbitration',
           sanitizedMetadata: { claimType: 'wrongful_termination' },

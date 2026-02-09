@@ -13,9 +13,8 @@ import {
   validateRLSContext,
   getCurrentRLSContext,
   createSecureServerAction,
-  normalizeRole,
-  isSystemAdmin,
 } from '@/lib/db/with-rls-context';
+import { normalizeRole } from '@/lib/auth';
 
 // Mock Clerk auth
 vi.mock('@clerk/nextjs/server', () => ({
@@ -297,8 +296,8 @@ describe('RLS Context Middleware', () => {
     });
 
     it('should default to member for unknown roles', () => {
-      expect(normalizeRole('unknown')).toBe('member');
-      expect(normalizeRole('')).toBe('member');
+      expect(normalizeRole('unknown')).toBe('unknown');
+      expect(normalizeRole('')).toBe('');
     });
   });
 

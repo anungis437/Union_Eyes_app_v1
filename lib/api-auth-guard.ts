@@ -43,8 +43,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser as clerkCurrentUser } from '@clerk/nextjs/server';
+import { eq } from 'drizzle-orm';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema';
+import { users } from '@/db/schema/user-management-schema';
 import {
   getMemberRoles,
   getMemberHighestRoleLevel,
@@ -244,29 +246,6 @@ export const PUBLIC_API_ROUTES = new Set([
   // ========================================================================
   '/api/sentry-example-api',    // Sentry error testing (TODO: Remove in production)
 ]);
-
-/**
- * Check if a given pathname matches any public route pattern
- * Handles both exact matches and path prefix patterns
- * 
- * @param pathname - The request pathname to check (e.g., '/api/health')
- * @returns true if pathname is public, false otherwise
- */
-export function isPublicRoute(pathname: string): boolean {
-  // Check exact matches first (most common case)
-  if (PUBLIC_API_ROUTES.has(pathname)) {
-    return true;
-  }
-  
-  // Check path prefix patterns (routes ending with '/')
-  for (const route of PUBLIC_API_ROUTES) {
-    if (route.endsWith('/') && pathname.startsWith(route)) {
-      return true;
-    }
-  }
-  
-  return false;
-}
 
 /**
  * Cron job routes that authenticate via secret header
@@ -528,35 +507,28 @@ export async function requireRole(role: string): Promise<UnifiedUserContext> {
  * Get user role from database
  */
 async function getUserRoleFromDatabase(userId: string): Promise<string> {
-  try {
-    const membership = await db.query.organizationMembers.findFirst({
-      where: (om, { eq }) => eq(om.userId, userId),
-    });
-    return membership?.role || 'member';
-  } catch {
-    return 'member';
-  }
+  const membership = await db.query.organizationMembers.findFirst({
+    where: (om, { eq }) => eq(om.userId, userId),
+  });
+  return membership?.role || 'member';
 }
 
 /**
- * Check if user is system administrator
+ * Check if user is a system administrator
  */
-export async function isSystemAdmin(userId?: string): Promise<boolean> {
+export async function isSystemAdmin(userIdOverride?: string): Promise<boolean> {
   try {
-    const targetUserId = userId || (await getCurrentUser())?.id;
-    
-    if (!targetUserId) {
+    const userId = userIdOverride || (await auth()).userId;
+    if (!userId) {
       return false;
     }
-    
-    const { users } = await import('@/db/schema/user-management-schema');
-    const { eq } = await import('drizzle-orm');
-    
-    const user = await db.query.users.findFirst({
-      where: eq(users.userId, targetUserId),
-      columns: { isSystemAdmin: true },
-    });
-    
+
+    const [user] = await db
+      .select({ isSystemAdmin: users.isSystemAdmin })
+      .from(users)
+      .where(eq(users.userId, userId))
+      .limit(1);
+
     return user?.isSystemAdmin ?? false;
   } catch (error) {
     console.error('[Auth] Error checking system admin status:', error);

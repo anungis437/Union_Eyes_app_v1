@@ -50,9 +50,6 @@ vi.mock('@/db/schema/organization-members-schema', () => ({
   },
 }));
 
-vi.mock('@/db/schema/claims-schema', () => ({
-  claims: {},
-}));
 
 const baseContext = {
   organizationId: 'org-1',

@@ -16,14 +16,45 @@ import {
 // Mock database
 const mockFlags = new Map<string, any>();
 
+const extractFeatureName = (where: any): string | undefined => {
+  if (!where) return undefined;
+
+  if (typeof where === 'object') {
+    const queryChunks = where.queryChunks || where.SQL?.queryChunks;
+    if (Array.isArray(queryChunks)) {
+      for (const chunk of queryChunks) {
+        if (typeof chunk?.value === 'string') {
+          return chunk.value;
+        }
+      }
+    }
+
+    if (typeof where.right?.value === 'string') {
+      return where.right.value;
+    }
+
+    const value = where._value?.[0]?.right?.value;
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (typeof where.value === 'string') {
+      return where.value;
+    }
+  }
+
+  return undefined;
+};
+
 vi.mock('@/db/db', () => ({
   db: {
     query: {
       featureFlags: {
         findFirst: vi.fn(async ({ where }: any) => {
           // Extract feature name from where clause
-          const featureName = where?._value?.[0]?.right?.value;
-          return mockFlags.get(featureName) || null;
+          const featureName = extractFeatureName(where)
+            ?? (mockFlags.size === 1 ? Array.from(mockFlags.keys())[0] : undefined);
+          return featureName ? (mockFlags.get(featureName) || null) : null;
         }),
         findMany: vi.fn(async () => {
           return Array.from(mockFlags.values()).filter(f => f.enabled);

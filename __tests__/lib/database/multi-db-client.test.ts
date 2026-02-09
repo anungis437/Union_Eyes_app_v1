@@ -76,11 +76,23 @@ describe('Multi-DB Client - Configuration', () => {
   it('should use DATABASE_TYPE environment variable', () => {
     process.env.DATABASE_TYPE = 'azure-sql';
     process.env.AZURE_SQL_CONNECTION_STRING = 'Server=test.database.windows.net';
+    delete process.env.DATABASE_URL;
     
     const config = getDatabaseConfig();
     
     expect(config.type).toBe('azure-sql');
     expect(config.connectionString).toBe('Server=test.database.windows.net');
+  });
+
+  it('should prefer DATABASE_URL when present', () => {
+    process.env.DATABASE_TYPE = 'azure-sql';
+    process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+    process.env.AZURE_SQL_CONNECTION_STRING = 'Server=test.database.windows.net';
+
+    const config = getDatabaseConfig();
+
+    expect(config.type).toBe('azure-sql');
+    expect(config.connectionString).toBe('postgresql://user:pass@localhost:5432/db');
   });
 
   it('should parse pool configuration from environment', () => {

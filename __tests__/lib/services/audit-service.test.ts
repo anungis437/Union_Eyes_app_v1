@@ -15,7 +15,7 @@ describe('audit-service', () => {
       
       expect(result).toBeDefined();
       expect(result).toBeInstanceOf(Promise);
-      await expect(result).resolves.toBeUndefined();
+      await expect(result).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should successfully create audit log with all fields including optional ones', async () => {
@@ -33,7 +33,7 @@ describe('audit-service', () => {
       };
 
       const result = await createAuditLog(entry);
-      expect(result).toBeUndefined();
+      expect(result).toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with userId only', async () => {
@@ -45,7 +45,7 @@ describe('audit-service', () => {
         resourceId: 'doc-001',
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with description only', async () => {
@@ -57,7 +57,7 @@ describe('audit-service', () => {
         description: 'Profile updated with new information',
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with metadata only', async () => {
@@ -73,7 +73,7 @@ describe('audit-service', () => {
         },
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with empty metadata object', async () => {
@@ -85,7 +85,7 @@ describe('audit-service', () => {
         metadata: {},
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with complex nested metadata', async () => {
@@ -111,7 +111,7 @@ describe('audit-service', () => {
         },
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with empty string values', async () => {
@@ -124,7 +124,7 @@ describe('audit-service', () => {
         description: '',
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with special characters in strings', async () => {
@@ -137,7 +137,7 @@ describe('audit-service', () => {
         description: 'Description with "quotes" and \'apostrophes\'',
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with very long strings', async () => {
@@ -150,7 +150,7 @@ describe('audit-service', () => {
         description: longString,
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle multiple sequential audit log creations', async () => {
@@ -176,7 +176,7 @@ describe('audit-service', () => {
       ];
 
       for (const entry of entries) {
-        await expect(createAuditLog(entry)).resolves.toBeUndefined();
+        await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
       }
     });
 
@@ -202,7 +202,7 @@ describe('audit-service', () => {
           resourceType: 'resource',
           resourceId: 'resource-001',
         };
-        await expect(createAuditLog(entry)).resolves.toBeUndefined();
+        await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
       }
     });
 
@@ -216,7 +216,7 @@ describe('audit-service', () => {
           resourceType,
           resourceId: 'resource-001',
         };
-        await expect(createAuditLog(entry)).resolves.toBeUndefined();
+        await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
       }
     });
 
@@ -249,7 +249,7 @@ describe('audit-service', () => {
         },
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with metadata containing various data types', async () => {
@@ -270,7 +270,7 @@ describe('audit-service', () => {
         },
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log without throwing errors', async () => {
@@ -308,7 +308,7 @@ describe('audit-service', () => {
         resourceId: '99999',
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('should handle audit log with UUID format IDs', async () => {
@@ -320,7 +320,7 @@ describe('audit-service', () => {
         resourceId: 'abcdef12-3456-7890-abcd-ef1234567890',
       };
 
-      await expect(createAuditLog(entry)).resolves.toBeUndefined();
+      await expect(createAuditLog(entry)).resolves.toMatch(/^[0-9a-f-]{36}$/i);
     });
   });
 });

@@ -206,7 +206,32 @@ CREATE TABLE IF NOT EXISTS "remittance_approvals" (
 	"updated_at" timestamp with time zone DEFAULT now()
 );
 --> statement-breakpoint
-ALTER TABLE "organization_members" ALTER COLUMN "organization_id" SET DATA TYPE uuid;--> statement-breakpoint
+DROP POLICY IF EXISTS "arbitration_precedents_org_access" ON public.arbitration_precedents;
+--> statement-breakpoint
+DROP POLICY IF EXISTS "precedent_tags_accessible_precedent" ON public.precedent_tags;
+--> statement-breakpoint
+DROP POLICY IF EXISTS "precedent_citations_accessible" ON public.precedent_citations;
+--> statement-breakpoint
+DROP POLICY IF EXISTS "blockchain_audit_anchors_via_session" ON public.blockchain_audit_anchors;
+--> statement-breakpoint
+DO $$
+DECLARE
+	policy_record RECORD;
+BEGIN
+	FOR policy_record IN
+		SELECT schemaname, tablename, policyname
+		FROM pg_policies
+		WHERE schemaname IN ('public', 'user_management')
+	LOOP
+		EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I',
+			policy_record.policyname,
+			policy_record.schemaname,
+			policy_record.tablename
+		);
+	END LOOP;
+END $$;
+--> statement-breakpoint
+ALTER TABLE "organization_members" ALTER COLUMN "organization_id" SET DATA TYPE uuid USING "organization_id"::uuid;--> statement-breakpoint
 ALTER TABLE "organization_members" ALTER COLUMN "tenant_id" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "organization_members" ALTER COLUMN "role" SET DATA TYPE text;--> statement-breakpoint
 ALTER TABLE "organization_members" ALTER COLUMN "role" DROP DEFAULT;--> statement-breakpoint
@@ -215,7 +240,7 @@ ALTER TABLE "organization_members" ALTER COLUMN "membership_number" SET DATA TYP
 ALTER TABLE "organization_members" ALTER COLUMN "updated_at" SET DATA TYPE timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "organization_members" ALTER COLUMN "updated_at" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "user_management"."tenant_users" ADD COLUMN "is_primary" boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE "organization_members" ADD COLUMN "joined_at" timestamp with time zone DEFAULT now();--> statement-breakpoint
+ALTER TABLE "organization_members" ADD COLUMN IF NOT EXISTS "joined_at" timestamp with time zone DEFAULT now();--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "organization_relationships" ADD CONSTRAINT "organization_relationships_parent_org_id_organizations_id_fk" FOREIGN KEY ("parent_org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
@@ -241,13 +266,29 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "notification_log" ADD CONSTRAINT "notification_log_remittance_id_fkey" FOREIGN KEY ("remittance_id") REFERENCES "public"."per_capita_remittances"("id") ON DELETE no action ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'notification_log'
+		AND column_name = 'remittance_id'
+ ) THEN
+	ALTER TABLE "notification_log" ADD CONSTRAINT "notification_log_remittance_id_fkey" FOREIGN KEY ("remittance_id") REFERENCES "public"."per_capita_remittances"("id") ON DELETE no action ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "notification_log" ADD CONSTRAINT "notification_log_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'notification_log'
+		AND column_name = 'organization_id'
+ ) THEN
+	ALTER TABLE "notification_log" ADD CONSTRAINT "notification_log_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -259,7 +300,15 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "per_capita_remittances" ADD CONSTRAINT "per_capita_remittances_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'per_capita_remittances'
+		AND column_name = 'organization_id'
+ ) THEN
+	ALTER TABLE "per_capita_remittances" ADD CONSTRAINT "per_capita_remittances_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -293,7 +342,18 @@ CREATE INDEX IF NOT EXISTS "idx_organizations_slug" ON "organizations" USING btr
 CREATE INDEX IF NOT EXISTS "idx_organizations_hierarchy_level" ON "organizations" USING btree ("hierarchy_level");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_organizations_status" ON "organizations" USING btree ("status");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_organizations_clc_affiliated" ON "organizations" USING btree ("clc_affiliated");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_organizations_jurisdiction" ON "organizations" USING btree ("jurisdiction");--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'organizations'
+		AND column_name = 'jurisdiction'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_organizations_jurisdiction" ON "organizations" USING btree ("jurisdiction");
+ END IF;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_organizations_legacy_tenant" ON "organizations" USING btree ("legacy_tenant_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_clc_accounts_code" ON "clc_chart_of_accounts" USING btree ("account_code");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_clc_accounts_parent" ON "clc_chart_of_accounts" USING btree ("parent_account_code");--> statement-breakpoint
@@ -304,14 +364,58 @@ CREATE INDEX IF NOT EXISTS "idx_sync_log_synced_at" ON "clc_sync_log" USING btre
 CREATE INDEX IF NOT EXISTS "idx_webhook_log_type" ON "clc_webhook_log" USING btree ("type");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_webhook_log_affiliate" ON "clc_webhook_log" USING btree ("affiliate_code");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_webhook_log_received_at" ON "clc_webhook_log" USING btree ("received_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_notification_log_remittance" ON "notification_log" USING btree ("remittance_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_notification_log_org" ON "notification_log" USING btree ("organization_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_notification_log_sent_at" ON "notification_log" USING btree ("sent_at");--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'notification_log'
+		AND column_name = 'remittance_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_notification_log_remittance" ON "notification_log" USING btree ("remittance_id");
+ END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'notification_log'
+		AND column_name = 'organization_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_notification_log_org" ON "notification_log" USING btree ("organization_id");
+ END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'notification_log'
+		AND column_name = 'sent_at'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_notification_log_sent_at" ON "notification_log" USING btree ("sent_at");
+ END IF;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_contacts_org" ON "organization_contacts" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_contacts_email" ON "organization_contacts" USING btree ("email");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_contacts_user" ON "organization_contacts" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_remittances_due_date" ON "per_capita_remittances" USING btree ("due_date");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_remittances_org" ON "per_capita_remittances" USING btree ("organization_id");--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'per_capita_remittances'
+		AND column_name = 'organization_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_remittances_org" ON "per_capita_remittances" USING btree ("organization_id");
+ END IF;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_remittances_from_org" ON "per_capita_remittances" USING btree ("from_organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_remittances_to_org" ON "per_capita_remittances" USING btree ("to_organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_approvals_remittance" ON "remittance_approvals" USING btree ("remittance_id");--> statement-breakpoint

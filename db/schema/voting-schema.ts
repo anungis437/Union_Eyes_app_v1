@@ -78,6 +78,10 @@ export const votes = pgTable("votes", {
   optionId: uuid("option_id").notNull().references(() => votingOptions.id, { onDelete: "cascade" }),
   voterId: varchar("voter_id", { length: 100 }).notNull(), // Anonymized
   voterHash: varchar("voter_hash", { length: 100 }), // Hash for verification
+  signature: text("signature"),
+  receiptId: varchar("receipt_id", { length: 255 }),
+  verificationCode: varchar("verification_code", { length: 100 }),
+  auditHash: varchar("audit_hash", { length: 255 }),
   castAt: timestamp("cast_at", { withTimezone: true }).defaultNow(),
   isAnonymous: boolean("is_anonymous").default(true),
   voterType: varchar("voter_type", { length: 20 }).default("member"),

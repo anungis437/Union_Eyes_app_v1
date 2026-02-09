@@ -431,7 +431,19 @@ CREATE TABLE IF NOT EXISTS "room_bookings" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "user_management"."tenant_users" DROP CONSTRAINT "tenant_users_user_id_users_user_id_fk";
+ALTER TABLE "user_management"."tenant_users" DROP CONSTRAINT IF EXISTS "tenant_users_user_id_users_user_id_fk";
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_select_org ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_insert_admin ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_update_admin ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_delete_admin ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_own_record ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_admin_access ON user_management.tenant_users;
 --> statement-breakpoint
 ALTER TABLE "user_management"."tenant_users" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
 DO $$ BEGIN

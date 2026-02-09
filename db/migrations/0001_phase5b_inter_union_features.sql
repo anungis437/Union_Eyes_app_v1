@@ -840,7 +840,19 @@ CREATE TABLE IF NOT EXISTS "organization_sharing_settings" (
 	CONSTRAINT "organization_sharing_settings_organization_id_unique" UNIQUE("organization_id")
 );
 --> statement-breakpoint
-ALTER TABLE "user_management"."tenant_users" DROP CONSTRAINT "tenant_users_user_id_users_user_id_fk";
+ALTER TABLE "user_management"."tenant_users" DROP CONSTRAINT IF EXISTS "tenant_users_user_id_users_user_id_fk";
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_select_org ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_insert_admin ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_update_admin ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_delete_admin ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_own_record ON user_management.tenant_users;
+--> statement-breakpoint
+DROP POLICY IF EXISTS tenant_users_admin_access ON user_management.tenant_users;
 --> statement-breakpoint
 ALTER TABLE "user_management"."tenant_users" ALTER COLUMN "user_id" SET DATA TYPE varchar(255);--> statement-breakpoint
 DO $$ BEGIN
@@ -934,13 +946,29 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "precedent_citations" ADD CONSTRAINT "precedent_citations_citing_precedent_id_arbitration_precedents_id_fk" FOREIGN KEY ("citing_precedent_id") REFERENCES "public"."arbitration_precedents"("id") ON DELETE set null ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'precedent_citations'
+		AND column_name = 'citing_precedent_id'
+ ) THEN
+	ALTER TABLE "precedent_citations" ADD CONSTRAINT "precedent_citations_citing_precedent_id_arbitration_precedents_id_fk" FOREIGN KEY ("citing_precedent_id") REFERENCES "public"."arbitration_precedents"("id") ON DELETE set null ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "precedent_citations" ADD CONSTRAINT "precedent_citations_citing_organization_id_organizations_id_fk" FOREIGN KEY ("citing_organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'precedent_citations'
+		AND column_name = 'citing_organization_id'
+ ) THEN
+	ALTER TABLE "precedent_citations" ADD CONSTRAINT "precedent_citations_citing_organization_id_organizations_id_fk" FOREIGN KEY ("citing_organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -958,19 +986,43 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "cross_org_access_log" ADD CONSTRAINT "cross_org_access_log_resource_owner_org_id_organizations_id_fk" FOREIGN KEY ("resource_owner_org_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'cross_org_access_log'
+		AND column_name = 'resource_owner_org_id'
+ ) THEN
+	ALTER TABLE "cross_org_access_log" ADD CONSTRAINT "cross_org_access_log_resource_owner_org_id_organizations_id_fk" FOREIGN KEY ("resource_owner_org_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organization_sharing_grants" ADD CONSTRAINT "organization_sharing_grants_grantor_org_id_organizations_id_fk" FOREIGN KEY ("grantor_org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'organization_sharing_grants'
+		AND column_name = 'grantor_org_id'
+ ) THEN
+	ALTER TABLE "organization_sharing_grants" ADD CONSTRAINT "organization_sharing_grants_grantor_org_id_organizations_id_fk" FOREIGN KEY ("grantor_org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organization_sharing_grants" ADD CONSTRAINT "organization_sharing_grants_grantee_org_id_organizations_id_fk" FOREIGN KEY ("grantee_org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'organization_sharing_grants'
+		AND column_name = 'grantee_org_id'
+ ) THEN
+	ALTER TABLE "organization_sharing_grants" ADD CONSTRAINT "organization_sharing_grants_grantee_org_id_organizations_id_fk" FOREIGN KEY ("grantee_org_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
+ END IF;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -996,20 +1048,86 @@ CREATE INDEX IF NOT EXISTS "idx_precedents_outcome" ON "arbitration_precedents" 
 CREATE INDEX IF NOT EXISTS "idx_precedents_arbitrator" ON "arbitration_precedents" USING btree ("arbitrator_name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_precedents_jurisdiction" ON "arbitration_precedents" USING btree ("jurisdiction");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_precedents_sharing" ON "arbitration_precedents" USING btree ("sharing_level");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_precedents_level" ON "arbitration_precedents" USING btree ("precedent_level");--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'arbitration_precedents'
+		AND column_name = 'precedent_level'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_precedents_level" ON "arbitration_precedents" USING btree ("precedent_level");
+ END IF;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_precedents_sector" ON "arbitration_precedents" USING btree ("sector");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_citations_precedent" ON "precedent_citations" USING btree ("precedent_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_citations_claim" ON "precedent_citations" USING btree ("citing_claim_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_citations_org" ON "precedent_citations" USING btree ("citing_organization_id");--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'precedent_citations'
+		AND column_name = 'citing_organization_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_citations_org" ON "precedent_citations" USING btree ("citing_organization_id");
+ END IF;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_precedent_tags_precedent" ON "precedent_tags" USING btree ("precedent_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_precedent_tags_name" ON "precedent_tags" USING btree ("tag_name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_access_log_user" ON "cross_org_access_log" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_access_log_user_org" ON "cross_org_access_log" USING btree ("user_organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_access_log_resource" ON "cross_org_access_log" USING btree ("resource_type","resource_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_access_log_owner" ON "cross_org_access_log" USING btree ("resource_owner_org_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_access_log_date" ON "cross_org_access_log" USING btree ("accessed_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_sharing_grants_grantor" ON "organization_sharing_grants" USING btree ("grantor_org_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "idx_sharing_grants_grantee" ON "organization_sharing_grants" USING btree ("grantee_org_id");--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'cross_org_access_log'
+		AND column_name = 'resource_owner_org_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_access_log_owner" ON "cross_org_access_log" USING btree ("resource_owner_org_id");
+ END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'cross_org_access_log'
+		AND column_name = 'accessed_at'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_access_log_date" ON "cross_org_access_log" USING btree ("accessed_at");
+ END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'organization_sharing_grants'
+		AND column_name = 'grantor_org_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_sharing_grants_grantor" ON "organization_sharing_grants" USING btree ("grantor_org_id");
+ END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ IF EXISTS (
+	SELECT 1
+	FROM information_schema.columns
+	WHERE table_schema = 'public'
+		AND table_name = 'organization_sharing_grants'
+		AND column_name = 'grantee_org_id'
+ ) THEN
+	CREATE INDEX IF NOT EXISTS "idx_sharing_grants_grantee" ON "organization_sharing_grants" USING btree ("grantee_org_id");
+ END IF;
+END $$;
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_sharing_grants_resource" ON "organization_sharing_grants" USING btree ("resource_type");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_sharing_grants_expires" ON "organization_sharing_grants" USING btree ("expires_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_sharing_settings_org" ON "organization_sharing_settings" USING btree ("organization_id");--> statement-breakpoint

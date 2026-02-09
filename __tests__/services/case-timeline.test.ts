@@ -18,6 +18,7 @@ import {
 } from '@/lib/services/case-timeline-service';
 import { db } from '@/db/db';
 import { claims, claimUpdates, organizations } from '@/db/schema';
+import { users } from '@/db/schema/user-management-schema';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
@@ -25,13 +26,17 @@ describe('Case Timeline Service - Visibility Scopes', () => {
   let testClaimId: string;
   let testOrgId: string = randomUUID();
   let testMemberId: string = randomUUID();
+  const claimNumber = `TEST-VISIBILITY-${randomUUID().slice(0, 8)}`;
+  let officerId: string;
+  let adminId: string;
+  const systemUserId = 'system';
 
   beforeAll(async () => {
     // Create test organization first
     await db.insert(organizations).values({
       id: testOrgId,
       name: 'Test Union Local',
-      slug: 'test-union-local-visibility',
+      slug: `test-union-local-visibility-${testOrgId.slice(0, 8)}`,
       organizationType: 'local',
       hierarchyPath: [testOrgId],
       hierarchyLevel: 0,
@@ -40,11 +45,35 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       status: 'active',
     }).onConflictDoNothing();
 
+    const [orgRow] = await db
+      .select({ id: organizations.id })
+      .from(organizations)
+      .where(eq(organizations.id, testOrgId))
+      .limit(1);
+
+    if (!orgRow) {
+      const [fallbackOrg] = await db
+        .select({ id: organizations.id })
+        .from(organizations)
+        .limit(1);
+
+      if (fallbackOrg) {
+        testOrgId = fallbackOrg.id;
+      } else {
+        throw new Error('No organizations available for case timeline tests');
+      }
+    }
+
+    await db.insert(users).values({
+      userId: testMemberId,
+      email: `member-${testMemberId}@example.com`,
+    }).onConflictDoNothing();
+
     // Create a test claim
     const [claim] = await db
       .insert(claims)
       .values({
-        claimNumber: 'TEST-VISIBILITY-001',
+        claimNumber,
         organizationId: testOrgId,
         memberId: testMemberId,
         claimType: 'grievance_discipline',
@@ -57,8 +86,14 @@ describe('Case Timeline Service - Visibility Scopes', () => {
 
     testClaimId = claim.claimId;
 
-    const officerUuid = randomUUID();
-    const adminUuid = randomUUID();
+    officerId = randomUUID();
+    adminId = randomUUID();
+
+    await db.insert(users).values([
+      { userId: officerId, email: `officer-${officerId}@example.com` },
+      { userId: adminId, email: `admin-${adminId}@example.com` },
+      { userId: systemUserId, email: 'system@example.com' },
+    ]).onConflictDoNothing();
 
     // Add events with different visibility scopes
     await addCaseEvent({
@@ -73,7 +108,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       claimId: testClaimId,
       updateType: 'internal_note',
       message: 'Officer reviewing claim for merit',
-      createdBy: officerUuid,
+      createdBy: officerId,
       visibilityScope: 'staff',
     });
 
@@ -81,7 +116,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       claimId: testClaimId,
       updateType: 'admin_action',
       message: 'Admin assigned to legal team',
-      createdBy: adminUuid,
+      createdBy: adminId,
       visibilityScope: 'admin',
     });
 
@@ -89,7 +124,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       claimId: testClaimId,
       updateType: 'status_change',
       message: 'Your claim is under review',
-      createdBy: 'system',
+      createdBy: systemUserId,
       visibilityScope: 'member',
     });
 
@@ -97,7 +132,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       claimId: testClaimId,
       updateType: 'internal_strategy',
       message: 'Strategy discussion: settlement threshold $50k',
-      createdBy: officerUuid,
+      createdBy: officerId,
       visibilityScope: 'staff',
     });
   });
@@ -105,11 +140,31 @@ describe('Case Timeline Service - Visibility Scopes', () => {
   afterAll(async () => {
     // Cleanup test data
     if (testClaimId) {
-      await db.delete(claimUpdates).where(eq(claimUpdates.claimId, testClaimId));
-      await db.delete(claims).where(eq(claims.claimId, testClaimId));
+      try {
+        await db.delete(claimUpdates).where(eq(claimUpdates.claimId, testClaimId));
+        await db.delete(claims).where(eq(claims.claimId, testClaimId));
+      } catch (error) {
+        console.warn('[Case Timeline] Cleanup skipped:', error);
+      }
+    }
+    try {
+      await db.delete(users).where(eq(users.userId, testMemberId));
+      if (officerId) {
+        await db.delete(users).where(eq(users.userId, officerId));
+      }
+      if (adminId) {
+        await db.delete(users).where(eq(users.userId, adminId));
+      }
+      await db.delete(users).where(eq(users.userId, systemUserId));
+    } catch (error) {
+      console.warn('[Case Timeline] User cleanup skipped:', error);
     }
     if (testOrgId) {
-      await db.delete(organizations).where(eq(organizations.id, testOrgId));
+      try {
+        await db.delete(organizations).where(eq(organizations.id, testOrgId));
+      } catch (error) {
+        console.warn('[Case Timeline] Organization cleanup skipped:', error);
+      }
     }
   });
 
@@ -217,7 +272,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
         claimId: testClaimId,
         updateType: 'internal_note',
         message: 'Internal discussion',
-        createdBy: randomUUID(),
+        createdBy: officerId,
         isInternal: true,
       });
 
@@ -234,7 +289,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
         claimId: testClaimId,
         updateType: 'admin_action',
         message: 'Admin performed action',
-        createdBy: randomUUID(),
+        createdBy: adminId,
       });
 
       const [event] = await db

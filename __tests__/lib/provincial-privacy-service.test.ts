@@ -116,7 +116,7 @@ describeIf('ProvincialPrivacyService', () => {
     });
 
     it('should calculate 1-year expiry for Quebec marketing consent', () => {
-      const now = new Date('2025-01-01');
+      const now = new Date(2025, 0, 1);
       const expiresAt = new Date(now);
       expiresAt.setFullYear(expiresAt.getFullYear() + 1);
       

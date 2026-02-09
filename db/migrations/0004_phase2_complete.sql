@@ -15,40 +15,181 @@
 
 -- Enable transaction control for safer execution
 BEGIN TRANSACTION;
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 1: Enum Definitions (Safe Version)
 -- ============================================================================
 
 -- These enums are NEW (not in previous migrations)
-CREATE TYPE IF NOT EXISTS "public"."notification_schedule_status" AS ENUM('scheduled', 'sent', 'cancelled', 'failed');
-CREATE TYPE IF NOT EXISTS "public"."newsletter_bounce_type" AS ENUM('hard', 'soft', 'technical');
-CREATE TYPE IF NOT EXISTS "public"."newsletter_campaign_status" AS ENUM('draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled');
-CREATE TYPE IF NOT EXISTS "public"."newsletter_engagement_event" AS ENUM('open', 'click', 'unsubscribe', 'spam_report');
-CREATE TYPE IF NOT EXISTS "public"."newsletter_list_type" AS ENUM('manual', 'dynamic', 'segment');
-CREATE TYPE IF NOT EXISTS "public"."newsletter_recipient_status" AS ENUM('pending', 'sent', 'delivered', 'bounced', 'failed');
-CREATE TYPE IF NOT EXISTS "public"."newsletter_subscriber_status" AS ENUM('subscribed', 'unsubscribed', 'bounced');
-CREATE TYPE IF NOT EXISTS "public"."template_category" AS ENUM('general', 'announcement', 'event', 'update', 'custom');
-CREATE TYPE IF NOT EXISTS "public"."push_delivery_status" AS ENUM('pending', 'sent', 'delivered', 'failed', 'clicked', 'dismissed');
-CREATE TYPE IF NOT EXISTS "public"."push_notification_status" AS ENUM('draft', 'scheduled', 'sending', 'sent', 'failed', 'cancelled');
-CREATE TYPE IF NOT EXISTS "public"."push_platform" AS ENUM('ios', 'android', 'web');
-CREATE TYPE IF NOT EXISTS "public"."push_priority" AS ENUM('low', 'normal', 'high', 'urgent');
-CREATE TYPE IF NOT EXISTS "public"."communication_channel" AS ENUM('email', 'sms', 'push', 'newsletter', 'in_app');
-CREATE TYPE IF NOT EXISTS "public"."assignment_role" AS ENUM('primary_officer', 'secondary_officer', 'legal_counsel', 'external_arbitrator', 'management_rep', 'witness', 'observer');
-CREATE TYPE IF NOT EXISTS "public"."assignment_status" AS ENUM('assigned', 'accepted', 'in_progress', 'completed', 'reassigned', 'declined');
-CREATE TYPE IF NOT EXISTS "public"."document_version_status" AS ENUM('draft', 'pending_review', 'approved', 'rejected', 'superseded');
-CREATE TYPE IF NOT EXISTS "public"."grievance_stage_type" AS ENUM('filed', 'intake', 'investigation', 'step_1', 'step_2', 'step_3', 'mediation', 'pre_arbitration', 'arbitration', 'resolved', 'withdrawn', 'denied', 'settled');
-CREATE TYPE IF NOT EXISTS "public"."grievance_workflow_status" AS ENUM('active', 'draft', 'archived');
-CREATE TYPE IF NOT EXISTS "public"."settlement_status" AS ENUM('proposed', 'under_review', 'accepted', 'rejected', 'finalized');
-CREATE TYPE IF NOT EXISTS "public"."transition_trigger_type" AS ENUM('manual', 'automatic', 'deadline', 'approval', 'rejection');
-CREATE TYPE IF NOT EXISTS "public"."award_kind" AS ENUM('milestone', 'peer', 'admin', 'automated');
-CREATE TYPE IF NOT EXISTS "public"."budget_period" AS ENUM('monthly', 'quarterly', 'annual');
-CREATE TYPE IF NOT EXISTS "public"."budget_scope_type" AS ENUM('org', 'local', 'department', 'manager');
-CREATE TYPE IF NOT EXISTS "public"."program_status" AS ENUM('draft', 'active', 'archived');
-CREATE TYPE IF NOT EXISTS "public"."redemption_provider" AS ENUM('shopify');
-CREATE TYPE IF NOT EXISTS "public"."wallet_event_type" AS ENUM('earn', 'spend', 'expire', 'revoke', 'adjust', 'refund');
-CREATE TYPE IF NOT EXISTS "public"."wallet_source_type" AS ENUM('award', 'redemption', 'admin_adjustment', 'system');
-CREATE TYPE IF NOT EXISTS "public"."webhook_provider" AS ENUM('shopify');
+DO $$ BEGIN
+  CREATE TYPE "public"."notification_schedule_status" AS ENUM('scheduled', 'sent', 'cancelled', 'failed');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."newsletter_bounce_type" AS ENUM('hard', 'soft', 'technical');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."newsletter_campaign_status" AS ENUM('draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."newsletter_engagement_event" AS ENUM('open', 'click', 'unsubscribe', 'spam_report');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."newsletter_list_type" AS ENUM('manual', 'dynamic', 'segment');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."newsletter_recipient_status" AS ENUM('pending', 'sent', 'delivered', 'bounced', 'failed');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."newsletter_subscriber_status" AS ENUM('subscribed', 'unsubscribed', 'bounced');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."template_category" AS ENUM('general', 'announcement', 'event', 'update', 'custom');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."push_delivery_status" AS ENUM('pending', 'sent', 'delivered', 'failed', 'clicked', 'dismissed');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."push_notification_status" AS ENUM('draft', 'scheduled', 'sending', 'sent', 'failed', 'cancelled');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."push_platform" AS ENUM('ios', 'android', 'web');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."push_priority" AS ENUM('low', 'normal', 'high', 'urgent');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."communication_channel" AS ENUM('email', 'sms', 'push', 'newsletter', 'in_app');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."assignment_role" AS ENUM('primary_officer', 'secondary_officer', 'legal_counsel', 'external_arbitrator', 'management_rep', 'witness', 'observer');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."assignment_status" AS ENUM('assigned', 'accepted', 'in_progress', 'completed', 'reassigned', 'declined');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."document_version_status" AS ENUM('draft', 'pending_review', 'approved', 'rejected', 'superseded');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."grievance_stage_type" AS ENUM('filed', 'intake', 'investigation', 'step_1', 'step_2', 'step_3', 'mediation', 'pre_arbitration', 'arbitration', 'resolved', 'withdrawn', 'denied', 'settled');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."grievance_workflow_status" AS ENUM('active', 'draft', 'archived');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."settlement_status" AS ENUM('proposed', 'under_review', 'accepted', 'rejected', 'finalized');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."transition_trigger_type" AS ENUM('manual', 'automatic', 'deadline', 'approval', 'rejection');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."award_kind" AS ENUM('milestone', 'peer', 'admin', 'automated');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."budget_period" AS ENUM('monthly', 'quarterly', 'annual');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."budget_scope_type" AS ENUM('org', 'local', 'department', 'manager');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."program_status" AS ENUM('draft', 'active', 'archived');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."redemption_provider" AS ENUM('shopify');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."wallet_event_type" AS ENUM('earn', 'spend', 'expire', 'revoke', 'adjust', 'refund');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."wallet_source_type" AS ENUM('award', 'redemption', 'admin_adjustment', 'system');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."webhook_provider" AS ENUM('shopify');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
+--> statement-breakpoint
 
 -- EXISTING ENUMS (already created in earlier migrations - only add missing values)
 -- These use ALTER TYPE ADD VALUE since the enums already exist
@@ -59,48 +200,56 @@ DO $$ BEGIN
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'harassment_sexual';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'harassment_workplace';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'wage_dispute';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'contract_dispute';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'retaliation';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'wrongful_termination';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 DO $$ BEGIN
   ALTER TYPE "public"."claim_type" ADD VALUE 'other';
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
+--> statement-breakpoint
 
 -- Note: award_status and redemption_status already exist in migration 058
 -- DO NOT recreate them - they are handled by migration 058
@@ -119,6 +268,7 @@ CREATE TABLE IF NOT EXISTS "provincial_privacy_config" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "provincial_data_handling" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -127,6 +277,7 @@ CREATE TABLE IF NOT EXISTS "provincial_data_handling" (
   "handling_rules" JSONB,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 3: Location Tracking Tables (Geofence Privacy)
@@ -142,6 +293,7 @@ CREATE TABLE IF NOT EXISTS "member_location_consent" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "location_tracking" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -154,6 +306,7 @@ CREATE TABLE IF NOT EXISTS "location_tracking" (
   "purpose" TEXT,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 4: Tax Compliance Tables
@@ -172,6 +325,7 @@ CREATE TABLE IF NOT EXISTS "strike_payments" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "tax_slips" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -187,6 +341,7 @@ CREATE TABLE IF NOT EXISTS "tax_slips" (
   "filed_at" TIMESTAMP,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 5: Emergency Declaration Tables
@@ -205,6 +360,7 @@ CREATE TABLE IF NOT EXISTS "emergency_declarations" (
   "recovery_time_hours" NUMERIC(5, 2),
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "geofence_events" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -215,6 +371,7 @@ CREATE TABLE IF NOT EXISTS "geofence_events" (
   "timestamp" TIMESTAMP DEFAULT NOW(),
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 6: Carbon Emissions Tables
@@ -231,6 +388,7 @@ CREATE TABLE IF NOT EXISTS "carbon_emissions" (
   "renewable_percentage" NUMERIC(5, 2) DEFAULT 0,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "azure_resources" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -244,6 +402,7 @@ CREATE TABLE IF NOT EXISTS "azure_resources" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 7: Currency & Transfer Pricing Tables
@@ -264,6 +423,7 @@ CREATE TABLE IF NOT EXISTS "cross_border_transactions" (
   "t106_filing_date" TIMESTAMP,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "exchange_rates" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -273,6 +433,7 @@ CREATE TABLE IF NOT EXISTS "exchange_rates" (
   "source" TEXT DEFAULT 'BOC',
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 8: Compliance & Audit Tables
@@ -288,6 +449,7 @@ CREATE TABLE IF NOT EXISTS "compliance_audit_log" (
   "details" JSONB,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 CREATE TABLE IF NOT EXISTS "breach_notifications" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -301,6 +463,7 @@ CREATE TABLE IF NOT EXISTS "breach_notifications" (
   "authority_notified" BOOLEAN DEFAULT false,
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 9: Consent & Privacy Tracking
@@ -317,6 +480,7 @@ CREATE TABLE IF NOT EXISTS "privacy_consents" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 10: Notification Tables
@@ -337,6 +501,7 @@ CREATE TABLE IF NOT EXISTS "notifications" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "sent_at" TIMESTAMP
 );
+--> statement-breakpoint
 
 -- ============================================================================
 -- SECTION 11: Additional Required Tables (Stubs from Schema)
@@ -351,18 +516,103 @@ CREATE TABLE IF NOT EXISTS "sms_campaigns" (
   "status" TEXT DEFAULT 'draft',
   "created_at" TIMESTAMP DEFAULT NOW()
 );
+--> statement-breakpoint
 
 -- Create indices for performance
-CREATE INDEX IF NOT EXISTS "idx_location_tracking_member_id" ON location_tracking(member_id);
-CREATE INDEX IF NOT EXISTS "idx_strike_payments_member_tax_year" ON strike_payments(member_id, tax_year);
-CREATE INDEX IF NOT EXISTS "idx_emergency_declarations_member_status" ON emergency_declarations(member_id, status);
-CREATE INDEX IF NOT EXISTS "idx_carbon_emissions_date" ON carbon_emissions(date);
-CREATE INDEX IF NOT EXISTS "idx_cross_border_transactions_date" ON cross_border_transactions(transaction_date);
-CREATE INDEX IF NOT EXISTS "idx_breach_notifications_member" ON breach_notifications(member_id);
-CREATE INDEX IF NOT EXISTS "idx_privacy_consents_member_province" ON privacy_consents(member_id, province);
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'location_tracking'
+      AND column_name = 'member_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_location_tracking_member_id" ON location_tracking(member_id);
+  END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'strike_payments'
+      AND column_name IN ('member_id', 'tax_year')
+    GROUP BY table_name
+    HAVING COUNT(*) = 2
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_strike_payments_member_tax_year" ON strike_payments(member_id, tax_year);
+  END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'emergency_declarations'
+      AND column_name IN ('member_id', 'status')
+    GROUP BY table_name
+    HAVING COUNT(*) = 2
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_emergency_declarations_member_status" ON emergency_declarations(member_id, status);
+  END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'carbon_emissions'
+      AND column_name = 'date'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_carbon_emissions_date" ON carbon_emissions(date);
+  END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'cross_border_transactions'
+      AND column_name = 'transaction_date'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_cross_border_transactions_date" ON cross_border_transactions(transaction_date);
+  END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'breach_notifications'
+      AND column_name = 'member_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_breach_notifications_member" ON breach_notifications(member_id);
+  END IF;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'privacy_consents'
+      AND column_name IN ('member_id', 'province')
+    GROUP BY table_name
+    HAVING COUNT(*) = 2
+  ) THEN
+    CREATE INDEX IF NOT EXISTS "idx_privacy_consents_member_province" ON privacy_consents(member_id, province);
+  END IF;
+END $$;
+--> statement-breakpoint
 
 -- ============================================================================
 -- COMMIT TRANSACTION
 -- ============================================================================
 
 COMMIT;
+--> statement-breakpoint

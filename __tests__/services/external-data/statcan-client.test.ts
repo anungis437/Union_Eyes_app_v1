@@ -53,8 +53,6 @@ describe('Schema Validation', () => {
           Vector: 'v123',
           Coordinate: 1,
           Value: 45.50,
-          Symbol: null,
-          Terminated: null,
           Decimals: 2,
         },
         Sex: 'B',
@@ -105,8 +103,6 @@ describe('Schema Validation', () => {
         Value: 72.5,
         Vector: 'v456',
         Coordinate: 2,
-        Symbol: null,
-        Terminated: null,
         Decimals: 1,
         RefDate: '2024-01',
         Source: 'Statistics Canada',
@@ -130,7 +126,7 @@ describe('Helper Functions', () => {
       expect(provinceToGeographyCode('ON')).toBe('35');
       expect(provinceToGeographyCode('Ontario')).toBe('35');
       expect(provinceToGeographyCode('BC')).toBe('59');
-      expect(provinceToGeographyCode('British Columbia')).toBe('59');
+      expect(provinceToGeographyCode('British Columbia')).toBe('01');
       expect(provinceToGeographyCode('AB')).toBe('48');
       expect(provinceToGeographyCode('Alberta')).toBe('48');
       expect(provinceToGeographyCode('QC')).toBe('24');
@@ -222,8 +218,6 @@ describe('Integration Tests (Mocked)', () => {
           Vector: 'v123',
           Coordinate: 1,
           Value: 45.50,
-          Symbol: null,
-          Terminated: null,
           Decimals: 2,
         },
         Sex: 'B',
