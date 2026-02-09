@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ProvincialPrivacyService, type Province } from "@/services/provincial-privacy-service";
-import { getServerSession } from "next-auth";
+import { requireApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * POST /api/privacy/consent
  * Record user consent for provincial privacy compliance
+ * 
+ * GUARDED: requireApiAuth
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const userId = session.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Authentication guard
+    const { userId } = await requireApiAuth();
 
     const body = await request.json();
     const { province, consentType, consentGiven, consentText, consentLanguage } = body;
@@ -57,17 +53,13 @@ export async function POST(request: NextRequest) {
 /**
  * GET /api/privacy/consent?province=QC&consentType=marketing
  * Check if user has valid consent
+ * 
+ * GUARDED: requireApiAuth
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const userId = session.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Authentication guard
+    const { userId } = await requireApiAuth();
 
     const { searchParams } = new URL(request.url);
     const province = searchParams.get("province") as Province;

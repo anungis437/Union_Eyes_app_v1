@@ -101,3 +101,8 @@ export * from "./accessibility-schema";
 
 // Priority 2: International Address Formats
 export * from "./international-address-schema";
+
+// External Data Integration (Statistics Canada, LRB, CLC)
+export * from "./wage-benchmarks-schema";
+export * from "./lrb-agreements-schema";
+export * from "./clc-partnership-schema";

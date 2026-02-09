@@ -1,18 +1,18 @@
 /**
  * Signature Recording API
  * POST /api/signatures/sign - Record signature
+ * 
+ * GUARDED: requireApiAuth
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { requireApiAuth } from '@/lib/api-auth-guard';
 import { SignatureService } from "@/lib/signature/signature-service";
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Authentication guard
+    const { userId } = await requireApiAuth();
 
     const body = await req.json();
     const {

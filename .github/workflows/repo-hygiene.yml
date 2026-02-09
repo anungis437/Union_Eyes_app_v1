@@ -1,0 +1,33 @@
+name: Repository Hygiene
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  hygiene-check:
+    name: Check for tracked build artifacts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for accurate checks
+      
+      - name: Run hygiene check
+        run: bash scripts/check-repo-hygiene.sh
+        shell: bash
+      
+      - name: Report status
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Repository hygiene check passed"
+          else
+            echo "❌ Repository hygiene check failed"
+            echo "::error::Build artifacts are tracked in git. See logs above for details."
+            exit 1
+          fi

@@ -14,6 +14,9 @@ packages/**/node_modules/
 
 # testing
 /coverage
+**/coverage/
+.cache/
+**/.cache/
 
 # next.js
 /.next/
@@ -21,6 +24,12 @@ packages/**/node_modules/
 
 # production
 /build
+dist/
+**/dist/
+
+# turbo
+.turbo/
+**/.turbo/
 
 # misc
 .DS_Store
