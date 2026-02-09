@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { db } from '@/db/db';
+import { sql } from 'drizzle-orm';
 import { 
   grievanceTransitions, 
   grievanceApprovals,
@@ -80,16 +81,16 @@ describe('PR #12: Database Immutability Constraints', () => {
     it('should prevent DELETE on audit logs', async () => {
       // Audit logs should never be deleted, only archived
       await expect(
-        db.execute('DELETE FROM audit_security.audit_logs WHERE id = \\'test-id\\'')
+        db.execute(sql`DELETE FROM audit_security.audit_logs WHERE id = 'test-id'`)
       ).rejects.toThrow(/cannot be deleted|immutable/i);
     });
 
     it('should prevent UPDATE of non-archive fields on audit logs', async () => {
       // Trying to modify action, metadata, etc. should fail
       await expect(
-        db.execute(
-          "UPDATE audit_security.audit_logs SET action = 'modified' WHERE id = 'test-id'"
-        )
+        db.execute(sql`
+          UPDATE audit_security.audit_logs SET action = 'modified' WHERE id = 'test-id'
+        `)
       ).rejects.toThrow(/immutable|not permitted/i);
     });
   });
