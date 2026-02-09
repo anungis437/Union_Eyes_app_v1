@@ -4,12 +4,12 @@ import { db } from '@/db';
 import { members, duesTransactions } from '@/services/financial-service/src/db/schema';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { stripe } from '@/lib/stripe';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Bank reconciliation - compare Stripe payouts with recorded transactions
 export const GET = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

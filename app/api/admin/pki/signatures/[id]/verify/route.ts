@@ -9,10 +9,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySignature, verifyDocumentIntegrity } from '@/services/pki/verification-service';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
   try {
       const signatureOrDocumentId = params.id;
       const body = await request.json();

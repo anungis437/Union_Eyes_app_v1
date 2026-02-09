@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
@@ -37,7 +37,7 @@ import { sql } from 'drizzle-orm';
  *   }
  * }
  */
-export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   // Rate limit monitoring reads
@@ -57,14 +57,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
   }
 
   try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
+    const tenantId = organizationId || userId;
 
     // Query active alerts from monitoring tables
     const alertsData = await db.execute(sql`
@@ -190,7 +183,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/ml/monitoring/alerts
@@ -202,16 +195,11 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
  *   alertId: string
  * }
  */
-export async function POST(request: NextRequest) {
+export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+  const tenantId = organizationId || userId;
+  
   try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
     const { alertId } = await request.json();
 
     if (!alertId) {
@@ -257,4 +245,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

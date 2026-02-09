@@ -17,7 +17,7 @@ import {
   newsletterListSubscribers 
 } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
@@ -30,7 +30,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
     try {
       const { userId, organizationId } = context;
 

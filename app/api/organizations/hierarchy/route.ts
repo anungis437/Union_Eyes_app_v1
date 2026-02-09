@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 /**
  * Organization Hierarchy API
  * Get hierarchical organization structure with RLS isolation
@@ -6,14 +6,14 @@ import { requireUser } from '@/lib/auth/unified-auth';
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
-export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
+export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   try {

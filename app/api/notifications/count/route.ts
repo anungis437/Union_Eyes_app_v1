@@ -2,10 +2,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { logger } from '@/lib/logger';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

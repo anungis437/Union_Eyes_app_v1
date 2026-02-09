@@ -14,10 +14,10 @@ import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: Request) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
       const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;

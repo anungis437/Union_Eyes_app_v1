@@ -5,11 +5,11 @@ import { memberCertifications, trainingCourses, members, organizations } from "@
 import { eq, and, or, gte, lte, inArray, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // GET /api/education/certifications - List certifications with filters
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
   try {
       const { searchParams } = new URL(request.url);
       const organizationId = searchParams.get("organizationId");
@@ -154,7 +154,7 @@ export const GET = async (request: NextRequest) => {
 
 // POST /api/education/certifications - Issue new certification
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
       const {
@@ -267,7 +267,7 @@ export const POST = async (request: NextRequest) => {
 
 // PATCH /api/education/certifications?id={certificationId} - Update certification
 export const PATCH = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const { searchParams } = new URL(request.url);
       const certificationId = searchParams.get("id");
@@ -351,7 +351,7 @@ export const PATCH = async (request: NextRequest) => {
 
 // DELETE /api/education/certifications?id={certificationId} - Revoke certification
 export const DELETE = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
   try {

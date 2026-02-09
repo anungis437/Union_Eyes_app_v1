@@ -10,7 +10,7 @@ import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 interface FormField {
   id: string;

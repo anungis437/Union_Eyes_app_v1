@@ -68,13 +68,13 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/emergency/recovery?emergencyId=EMG-123&memberId=456
  * Get recovery status
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const emergencyId = searchParams.get('emergencyId');

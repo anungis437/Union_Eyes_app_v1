@@ -84,13 +84,13 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/emergency/pipeda?breachId=xxx&province=QC
  * Get PIPEDA breach notification status
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const breachId = searchParams.get('breachId');

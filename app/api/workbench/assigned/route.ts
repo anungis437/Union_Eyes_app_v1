@@ -10,7 +10,7 @@ import { getClaimsAssignedToUser } from "@/db/queries/claims-queries";
 import { getUserByEmail } from "@/db/queries/users-queries";
 import { withOrganizationAuth } from "@/lib/organization-middleware";
 
-export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
+export const GET = withApiAuth(async (request: NextRequest, context) => {
   try {
     const { organizationId: organizationId, userId: clerkUserId } = context;
     

@@ -11,10 +11,10 @@ import {
   saveClauseComparison 
 } from "@/lib/services/clause-service";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {

@@ -13,7 +13,8 @@ import { z } from "zod";
 import { claims, claimUpdates } from "@/db/schema/claims-schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
@@ -35,10 +36,14 @@ const updateClaimSchema = z.object({
  * GET /api/claims/[id]
  * Fetch a single claim by ID with updates
  */
-export const GET = withEnhancedRoleAuth(30, async (request, context) => {
-  const { userId, organizationId } = context;
+export const GET = async (
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) => {
+  return withEnhancedRoleAuth(30, async (request, context) => {
+    const { userId, organizationId } = context;
 
-  try {
+    try {
       const claimNumber = params.id;
 
       // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
@@ -103,15 +108,19 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
           { status: 500 }
         );
       }
-      })(request, { params });
+  })(request);
 };
 
 /**
  * PATCH /api/claims/[id]
  * Update a claim
  */
-export const PATCH = withEnhancedRoleAuth(60, async (request, context) => {
-  const { userId, organizationId } = context;
+export const PATCH = async (
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
     let rawBody: unknown;
     try {
       rawBody = await request.json();
@@ -194,16 +203,21 @@ export const PATCH = withEnhancedRoleAuth(60, async (request, context) => {
             { status: 500 }
           );
         }
-}, { params });
+  })(request);
+};
 
 /**
  * DELETE /api/claims/[id]
  * Delete a claim (soft delete)
  */
-export const DELETE = withEnhancedRoleAuth(60, async (request, context) => {
-  const { userId, organizationId } = context;
+export const DELETE = async (
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    const { userId, organizationId } = context;
 
-  try {
+    try {
       const claimNumber = params.id;
 
       // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
@@ -270,6 +284,6 @@ export const DELETE = withEnhancedRoleAuth(60, async (request, context) => {
           { status: 500 }
         );
       }
-      })(request, { params });
+  })(request);
 };
 

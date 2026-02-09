@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { put } from '@vercel/blob';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Upload and parse employer remittance file

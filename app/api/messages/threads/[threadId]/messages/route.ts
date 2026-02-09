@@ -10,11 +10,11 @@ import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { put } from '@vercel/blob';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const POST = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
     // CRITICAL: Rate limit message sending

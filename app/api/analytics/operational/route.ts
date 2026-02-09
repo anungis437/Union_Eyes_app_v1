@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { claims, users } from '@/db/schema';
 import { eq, and, gte, count, sql } from 'drizzle-orm';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) => {
+export const GET = withRoleAuth('member', async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   // Rate limit operational analytics

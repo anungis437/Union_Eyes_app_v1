@@ -5,7 +5,7 @@ import { trainingPrograms, trainingCourses } from "@/db/migrations/schema";
 import { eq, and, or, inArray, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 // GET /api/education/programs - List training programs with filters
 export const GET = async (request: NextRequest) => {

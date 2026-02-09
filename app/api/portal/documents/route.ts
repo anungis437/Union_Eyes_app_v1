@@ -4,10 +4,10 @@ import { db } from '@/db/db';
 import { memberDocuments } from '@/db/schema/member-documents-schema';
 import { eq, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async () => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

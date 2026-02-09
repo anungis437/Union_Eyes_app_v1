@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { db } from "@/db/db";
 import { documents } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";

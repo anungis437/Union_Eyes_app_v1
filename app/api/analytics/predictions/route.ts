@@ -9,10 +9,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePredictions } from '@/actions/analytics-actions';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(40, async (request, context) => {
+  return withRoleAuth('member', async (request, context) => {
     const { userId, organizationId } = context;
 
     // Rate limit advanced analytics (predictions are AI-driven)
@@ -100,7 +100,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const predictionType = searchParams.get('predictionType');

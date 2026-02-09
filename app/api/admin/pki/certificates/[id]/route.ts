@@ -13,10 +13,10 @@ import { db } from '@/db';
 import { digitalSignatures } from '@/db/migrations/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
   try {
       const { organizationId } = context;
 
@@ -77,7 +77,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
   try {
       const { organizationId } = context;
 

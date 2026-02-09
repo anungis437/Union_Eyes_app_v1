@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/api-auth-guard';
 import { validateEnvironment } from '@/lib/config/env-validation';
 import { SQLInjectionScanner } from '@/lib/middleware/sql-injection-prevention';
 import { RequestValidator } from '@/lib/middleware/request-validation';

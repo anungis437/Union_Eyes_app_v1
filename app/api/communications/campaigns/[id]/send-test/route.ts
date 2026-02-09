@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterCampaigns } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
@@ -25,7 +25,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withEnhancedRoleAuth(40, async (request, context) => {
+  return withRoleAuth('member', async (request, context) => {
     try {
       const { userId, organizationId } = context;
 

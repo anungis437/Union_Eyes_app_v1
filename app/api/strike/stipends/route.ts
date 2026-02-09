@@ -10,7 +10,7 @@ import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ const calculateStipendSchema = z.object({
  * Calculate strike stipend amount for a member
  * Uses the calculate_stipend_amount database function
  */
-export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+export const POST = withRoleAuth('steward', async (request, context) => {
   try {
     const body = await request.json();
     const parsed = calculateStipendSchema.safeParse(body);

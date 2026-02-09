@@ -37,14 +37,14 @@ import {
   type NewSmsTemplate,
   type NewSmsCampaign,
 } from '@/db/schema/sms-communications-schema';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // ============================================================================
 // GET HANDLER - Routes based on action parameter
 // ============================================================================
 
 export const GET = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {
@@ -89,7 +89,7 @@ export const GET = async (req: NextRequest) => {
 // ============================================================================
 
 export const POST = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

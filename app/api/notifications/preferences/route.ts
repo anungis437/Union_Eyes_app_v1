@@ -10,10 +10,10 @@ import { db } from '@/db';
 import { userNotificationPreferences } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -52,7 +52,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const PUT = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

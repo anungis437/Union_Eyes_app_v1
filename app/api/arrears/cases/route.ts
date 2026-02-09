@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
 import { eq, and, gte, lte, desc, sql, inArray } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Validation schema for GET query parameters
 const listArrearsSchema = z.object({
@@ -18,7 +18,7 @@ const listArrearsSchema = z.object({
 });
 
 // List arrears cases with filters
-export const GET = withEnhancedRoleAuth(10, async (request, context) => {
+export const GET = withRoleAuth(10, async (request, context) => {
   const parsed = listArrearsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });

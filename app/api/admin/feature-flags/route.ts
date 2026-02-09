@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllFeatureFlags, toggleFeatureFlag } from '@/lib/feature-flags';
 import { z } from 'zod';
 import { withSecureAPI, logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -82,7 +82,7 @@ export const GET = withSecureAPI(async (request, user) => {
 /**
  * Toggle a feature flag
  */
-export const PATCH = withEnhancedRoleAuth(90, async (request, context) => {
+export const PATCH = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

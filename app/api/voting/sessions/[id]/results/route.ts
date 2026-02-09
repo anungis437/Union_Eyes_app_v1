@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { votingSessions, votingOptions, votes } from '@/db/schema/voting-schema';
 import { eq, desc, count } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 interface RouteParams {
   params: {
@@ -12,7 +12,7 @@ interface RouteParams {
 }
 
 export const GET = async (request: NextRequest, { params }: RouteParams) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
   try {
       const sessionId = params.id;
       const { searchParams } = new URL(request.url);

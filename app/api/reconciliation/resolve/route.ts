@@ -3,12 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { members, duesTransactions, employerRemittances } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Resolve reconciliation discrepancies
 export const POST = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

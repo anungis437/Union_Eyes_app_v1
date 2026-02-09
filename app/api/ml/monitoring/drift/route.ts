@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
@@ -162,4 +162,4 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       { status: 500 }
     );
   }
-}
+});

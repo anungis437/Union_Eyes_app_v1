@@ -1,0 +1,23 @@
+🎉 NEW in Version 1.0.0
+
+• Complete claims management system - Submit and track all your claims in one place
+• Advanced OCR document scanning - Instant text extraction from receipts and documents
+• Biometric authentication - Secure login with fingerprint or face unlock
+• Real-time claim tracking - Know exactly where your claim stands
+• Push notifications - Get instant updates on claim status
+• Offline mode with automatic sync - Work anywhere, anytime
+• Secure document storage - Bank-level encryption for all your files
+• Member dashboard and analytics - View your complete claim history
+• Direct messaging - Chat with union staff instantly
+• Multi-language support - Available in multiple languages
+
+Bug Fixes & Improvements:
+• Optimized performance for faster app loading
+• Enhanced security with latest protocols
+• Improved image upload quality
+• Better offline sync capability
+• Faster claim submission processing
+
+Thank you for choosing UnionEyes! We're constantly working to improve your experience.
+
+Have feedback? Contact us at support@unioneyes.com

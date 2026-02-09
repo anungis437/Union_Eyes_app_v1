@@ -18,7 +18,7 @@ import { eq, and, or, ilike, inArray, sql } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Helper to anonymize employer names
 function anonymizeEmployerName(originalName: string): string {
@@ -73,7 +73,7 @@ async function canAccessClause(
 
 // GET /api/clause-library - List clauses with filters
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId } = context;
 
   try {
@@ -201,7 +201,7 @@ export const GET = async (request: NextRequest) => {
 
 // POST /api/clause-library - Create new shared clause
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
   try {

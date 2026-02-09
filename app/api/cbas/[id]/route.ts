@@ -16,10 +16,10 @@ import {
 import { getClausesByCBAId } from "@/lib/services/clause-service";
 import { getBargainingNotesByCBA } from "@/lib/services/bargaining-notes-service";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
   try {
       const { id } = params;
       const { searchParams } = new URL(request.url);
@@ -66,7 +66,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -115,7 +115,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const { id } = params;
       const { searchParams } = new URL(request.url);

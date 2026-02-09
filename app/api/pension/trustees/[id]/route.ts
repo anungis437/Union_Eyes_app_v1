@@ -11,12 +11,12 @@ import { pensionTrustees } from '@/db/migrations/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId } = context;
 
     try {
@@ -53,7 +53,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
     try {
@@ -103,7 +103,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
     try {

@@ -1,0 +1,184 @@
+{
+  "expo": {
+    "name": "UnionEyes",
+    "slug": "unioneyes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "unioneyes",
+    "primaryColor": "#1e40af",
+    "description": "UnionEyes - Comprehensive union management, claims processing, and member engagement platform",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1e40af"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.unioneyes.app",
+      "buildNumber": "1",
+      "appStoreUrl": "https://apps.apple.com/app/unioneyes/id0000000000",
+      "requireFullScreen": false,
+      "userInterfaceStyle": "automatic",
+      "associatedDomains": ["applinks:unioneyes.com", "applinks:*.unioneyes.com"],
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "UnionEyes needs access to your camera to capture documents and receipts for claims.",
+        "NSPhotoLibraryUsageDescription": "UnionEyes needs access to your photo library to select documents for claims.",
+        "NSPhotoLibraryAddUsageDescription": "UnionEyes needs permission to save processed documents to your photo library.",
+        "NSFaceIDUsageDescription": "UnionEyes uses Face ID for secure authentication.",
+        "NSMicrophoneUsageDescription": "UnionEyes needs access to microphone for video documentation.",
+        "NSLocationWhenInUseUsageDescription": "UnionEyes uses your location to provide location-based services and claims.",
+        "NSCalendarsUsageDescription": "UnionEyes needs access to your calendar to schedule meetings and events.",
+        "NSRemindersUsageDescription": "UnionEyes can create reminders for important deadlines.",
+        "NSContactsUsageDescription": "UnionEyes can access your contacts to help you find and connect with other union members.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": false
+        },
+        "UIBackgroundModes": ["fetch", "remote-notification"],
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["mailto", "tel", "sms"]
+      },
+      "entitlements": {
+        "com.apple.developer.associated-domains": [
+          "applinks:unioneyes.com",
+          "applinks:*.unioneyes.com"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.unioneyes.app",
+      "versionCode": 1,
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.unioneyes.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e40af"
+      },
+      "icon": "./assets/icon.png",
+      "allowBackup": true,
+      "userInterfaceStyle": "automatic",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.VIBRATE",
+        "android.permission.NOTIFICATIONS",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
+      "blockedPermissions": ["android.permission.ACCESS_FINE_LOCATION"],
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "unioneyes.com",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "*.unioneyes.com",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow UnionEyes to access your camera to capture documents and receipts.",
+          "microphonePermission": "Allow UnionEyes to access your microphone for video documentation."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow UnionEyes to use Face ID for secure authentication."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#1e40af",
+          "sounds": ["./assets/notification-sound.wav"]
+        }
+      ],
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      },
+      "storybookEnabled": "false",
+      "apiUrl": "https://api.unioneyes.com",
+      "sentryDsn": "YOUR_SENTRY_DSN",
+      "amplitudeApiKey": "YOUR_AMPLITUDE_KEY"
+    },
+    "owner": "unioneyes",
+    "privacy": "public",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "unioneyes",
+            "project": "unioneyes-mobile"
+          }
+        }
+      ]
+    },
+    "currentFullName": "@unioneyes/unioneyes",
+    "originalFullName": "@unioneyes/unioneyes",
+    "locales": {
+      "en": "./locales/en.json"
+    }
+  }
+}

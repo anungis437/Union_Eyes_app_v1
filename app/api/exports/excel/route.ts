@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { createExportJob, updateExportJobStatus } from '@/db/queries/analytics-queries';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 async function postHandler(req: NextRequest, context) {
   try {

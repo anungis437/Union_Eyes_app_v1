@@ -5,7 +5,7 @@ import { claims } from '@/db/schema/claims-schema';
 import { eq, desc, and, count, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { withSecureAPI, logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 /**
  * Validation schema

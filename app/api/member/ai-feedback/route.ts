@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 
 /**
  * POST /api/member/ai-feedback

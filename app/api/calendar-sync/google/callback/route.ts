@@ -11,10 +11,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { externalCalendarConnections } from '@/db/schema/calendar-schema';
 import { exchangeCodeForTokens } from '@/lib/external-calendar-sync/google-calendar-service';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

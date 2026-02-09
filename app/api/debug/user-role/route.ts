@@ -4,12 +4,12 @@ import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema-organizations';
 import { eq } from 'drizzle-orm';
 import { getUserRoleInOrganization, getOrganizationIdForUser } from '@/lib/organization-utils';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
 export const GET = async () => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

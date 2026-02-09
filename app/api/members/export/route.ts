@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { listMembers } from "@/lib/services/member-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**
@@ -20,7 +20,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-
  * - role: string[] (comma-separated)
  * - department: string
  */
-export const GET = withEnhancedRoleAuth(20, async (request, context) => {
+export const GET = withRoleAuth(20, async (request, context) => {
   const { userId, organizationId } = context;
 
   // Check rate limit for export operations
@@ -151,8 +151,7 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
           ...rows.map((row) =>
             row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
           ),
-        ].join("
-");
+        ].join("\n");
 
         return new NextResponse(csv, {
           status: 200,
@@ -162,6 +161,8 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
           },
         });
       } catch (error) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
           userId,
           endpoint: '/api/members/export',
           method: 'GET',
@@ -176,7 +177,5 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
           { status: 500 }
         );
       }
-})     }
-      })(request);
-};
+});
 

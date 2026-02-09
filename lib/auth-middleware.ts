@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@/lib/api-auth-guard';
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { tenantUsers } from '@/db/schema/user-management-schema';

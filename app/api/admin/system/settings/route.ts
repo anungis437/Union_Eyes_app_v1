@@ -14,7 +14,7 @@ import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { getSystemConfigs, updateSystemConfig } from "@/actions/admin-actions";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**
@@ -53,7 +53,7 @@ async function checkAdminRole(userId: string): Promise<boolean> {
  * GET /api/admin/system/settings
  * Get system configurations
  */
-export const GET = withEnhancedRoleAuth(90, async (request, context) => {
+export const GET = withRoleAuth(90, async (request, context) => {
   const parsed = getSettingsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
@@ -139,7 +139,7 @@ try {
  * PUT /api/admin/system/settings
  * Update system configuration
  */
-export const PUT = withEnhancedRoleAuth(90, async (request, context) => {
+export const PUT = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

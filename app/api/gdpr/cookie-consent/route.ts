@@ -4,13 +4,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { CookieConsentManager } from "@/lib/gdpr/consent-manager";
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const user = await currentUser();
-    const body = await req.json();
+    const user = await getCurrentUser();
+    const body = await request.json();
 
     const {
       consentId,
@@ -30,12 +30,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Get IP address from request
-    const ipAddress = req.headers.get("x-forwarded-for") || 
-                      req.headers.get("x-real-ip") || 
+    const ipAddress = request.headers.get("x-forwarded-for") || 
+                      request.headers.get("x-real-ip") || 
                       "unknown";
 
     const consent = await CookieConsentManager.saveCookieConsent({
-      userId: user?.id,
+      userId: user?.id || null,
       tenantId,
       consentId,
       essential: essential ?? true,
@@ -54,11 +54,11 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function GET(req: NextRequest) {
+export const GET = async (request: NextRequest) => {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const consentId = searchParams.get("consentId");
 
     if (!consentId) {
@@ -85,4 +85,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+};

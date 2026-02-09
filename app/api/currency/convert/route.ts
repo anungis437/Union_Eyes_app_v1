@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { convertUSDToCAD, getBankOfCanadaNoonRate } from '@/lib/services/transfer-pricing-service';
 import type { CurrencyConversionResponse } from '@/lib/types/compliance-api-types';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 
 /**

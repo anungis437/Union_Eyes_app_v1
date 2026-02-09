@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { db } from "@/db/db";
 import { documents } from "@/db/schema";
@@ -27,7 +27,7 @@ interface CleanupOptions {
  * - daysOld: number (optional) - Delete files older than X days (default: 30)
  * - dryRun: boolean (optional) - Preview cleanup without actually deleting
  */
-export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+export const POST = withRoleAuth(90, async (request, context) => {
   const { userId, organizationId } = context;
 
   try {

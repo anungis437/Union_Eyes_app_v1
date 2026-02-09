@@ -165,16 +165,14 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
             { status: 403 }
           );
         }
-          { status: 400 }
-        );
-      }
 
-      await deleteUserFromTenant(targetUserId, tenantId);
+        await deleteUserFromTenant(targetUserId, tenantId);
 
-      return NextResponse.json({
-        success: true,
-        message: "User removed from tenant",
-      });
+        return NextResponse.json({
+          success: true,
+          message: "User removed from tenant",
+        });
+      }, organizationId);
     } catch (error) {
       logger.error("Failed to delete user", error);
       return NextResponse.json(

@@ -9,14 +9,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { claimUpdates, claims, profilesTable } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
     const resolvedParams = await params;

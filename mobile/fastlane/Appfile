@@ -1,0 +1,17 @@
+# iOS App Identifier
+app_identifier("com.unioneyes.app")
+
+# Apple ID
+apple_id("your-apple-id@example.com")
+
+# Apple Team ID
+team_id("YOUR_TEAM_ID")
+
+# iTunes Connect Team ID (if different from Team ID)
+itunes_connect_id("YOUR_ITC_TEAM_ID")
+
+# For Android
+package_name("com.unioneyes.app")
+
+# JSON key file path for Google Play
+json_key_file("./google-play-service-account.json")

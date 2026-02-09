@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSocialMediaService } from '@/lib/social-media/social-media-service';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;

@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +38,7 @@ const createFundSchema = z.object({
  * GET /api/strike/funds
  * List strike funds for an organization
  */
-export const GET = withEnhancedRoleAuth(60, async (request, context) => {
+export const GET = withRoleAuth('steward', async (request, context) => {
   try {
     const queryResult = listFundsSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -150,7 +150,7 @@ export const GET = withEnhancedRoleAuth(60, async (request, context) => {
  * POST /api/strike/funds
  * Create a new strike fund
  */
-export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+export const POST = withRoleAuth(90, async (request, context) => {
   try {
     const body = await request.json();
     const parsed = createFundSchema.safeParse(body);

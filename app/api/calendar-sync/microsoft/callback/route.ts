@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { externalCalendarConnections } from '@/db/schema/calendar-schema';
 import { exchangeCodeForTokens } from '@/lib/external-calendar-sync/microsoft-calendar-service';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {

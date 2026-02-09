@@ -9,6 +9,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { 
   arbitrationDecisions, 
   arbitratorProfiles, 
@@ -16,11 +17,10 @@ import {
 } from "@/db/schema";
 import { claims } from "@/db/schema/claims-schema";
 import { eq, desc, and, or, like, inArray, sql } from "drizzle-orm";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
 
   try {
       const { searchParams } = new URL(request.url);
@@ -141,15 +141,15 @@ export const GET = async (request: NextRequest) => {
         offset,
         hasMore: offset + limit < countResult.count,
       });
-    } catch (error) {
-      console.error("Error searching precedents:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
+      }, organizationId);
+  } catch (error) {
+    console.error("Error searching precedents:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+});
 
 /**
  * Find relevant arbitration decisions for a claim

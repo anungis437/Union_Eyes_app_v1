@@ -160,5 +160,4 @@ describe('Security Tests', () => {
     it('should not expose sensitive data in logs', async () => {
       expect(true).toBe(true);
     });
-  });
 });

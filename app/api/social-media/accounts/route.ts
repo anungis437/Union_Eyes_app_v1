@@ -14,7 +14,7 @@ import { createLinkedInClient } from '@/lib/social-media/linkedin-api-client';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Lazy initialization to avoid build-time execution
 let supabaseClient: ReturnType<typeof createClient> | null = null;
@@ -29,7 +29,7 @@ function getSupabaseClient() {
 }
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
@@ -94,7 +94,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
   try {
       const { userId, organizationId } = context;
       const body = await request.json();
@@ -211,7 +211,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const DELETE = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
@@ -308,7 +308,7 @@ export const DELETE = async (request: NextRequest) => {
 };
 
 export const PUT = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const { userId, organizationId } = context;
       

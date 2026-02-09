@@ -12,7 +12,7 @@ import { getDocumentSignatures } from '@/services/pki/signature-service';
 import { createWorkflow, startWorkflow } from '@/services/pki/workflow-engine';
 import type { WorkflowCreateParams } from '@/services/pki/workflow-engine';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {

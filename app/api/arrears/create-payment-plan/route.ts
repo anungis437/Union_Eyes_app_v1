@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 // Validation schema for POST body
 const createPaymentPlanSchema = z.object({

@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { processDocumentOCR } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * POST /api/documents/[id]/ocr
@@ -16,7 +16,7 @@ export const POST = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

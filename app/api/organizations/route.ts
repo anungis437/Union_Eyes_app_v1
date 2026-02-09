@@ -21,7 +21,7 @@ import { logger } from '@/lib/logger';
 import { getUserRole } from '@/lib/auth-middleware';
 import { validateBody, bodySchemas } from '@/lib/validation';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * GET /api/organizations
@@ -32,7 +32,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
  * - ?include_stats=true: Include memberCount, childCount, activeClaims
  */
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -225,7 +225,7 @@ export const GET = async (request: NextRequest) => {
  * Requires authentication - additional role checks should be added
  */
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

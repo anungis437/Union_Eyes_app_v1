@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { createDocument } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { put } from "@vercel/blob";
 
@@ -57,7 +57,7 @@ const ALLOWED_MIME_TYPES = [
  * - isConfidential: boolean (optional)
  * - accessLevel: string (optional)
  */
-export const POST = withEnhancedRoleAuth(40, async (request, context) => {
+export const POST = withRoleAuth('member', async (request, context) => {
   const { userId, organizationId } = context;
 
   try {

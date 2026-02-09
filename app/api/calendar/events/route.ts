@@ -15,7 +15,7 @@ import { db } from "@/db";
 import { calendarEvents } from "@/db/schema";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from "@/lib/middleware/request-validation";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
@@ -44,7 +44,7 @@ const eventSchema = z.object({
  * - endDate: Filter events before this date
  * - eventType: Filter by event type
  */
-export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
+export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   try {
@@ -154,7 +154,7 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
  * 
  * Create a new calendar event (requires Role Level 40)
  */
-export const POST = withEnhancedRoleAuth(40, async (request: NextRequest, context) => {
+export const POST = withRoleAuth('member', async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   try {

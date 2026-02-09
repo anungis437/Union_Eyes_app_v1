@@ -12,7 +12,7 @@ import {
   createFolder,
   getFolderTree
 } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schema for creating folders
@@ -34,7 +34,7 @@ const createFolderSchema = z.object({
  * - tree: boolean - return full folder tree structure
  */
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -114,7 +114,7 @@ export const GET = async (request: NextRequest) => {
  * - description: string
  * - parentFolderId: string
  */
-export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+export const POST = withRoleAuth(20, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

@@ -13,10 +13,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { reports } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(50, async (request, context) => {
+  return withRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

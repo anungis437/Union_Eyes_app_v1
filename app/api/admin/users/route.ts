@@ -7,7 +7,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { getAdminUsers } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
@@ -16,7 +15,7 @@ import { tenants } from "@/db/schema/tenant-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schemas for admin users API
@@ -34,7 +33,7 @@ const listUsersQuerySchema = z.object({
  * List all users with filtering
  * Security: Admin role required + validated query parameters
  */
-export const GET = withEnhancedRoleAuth(90, async (request, context) => {
+export const GET = withRoleAuth('admin', async (request, context) => {
   const parsed = listUsersQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
@@ -133,7 +132,7 @@ const createUserSchema = z.object({
   role: z.enum(["admin", "officer", "member", "viewer"]).default("member"),
 });
 
-export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+export const POST = withRoleAuth('admin', async (request, context) => {
   const parsed = z.object({}).safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });

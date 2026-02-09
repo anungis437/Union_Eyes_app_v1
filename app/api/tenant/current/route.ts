@@ -13,7 +13,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {

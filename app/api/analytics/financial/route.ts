@@ -6,14 +6,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/claims-schema';
 import { sql, gte, and, eq } from 'drizzle-orm';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) => {
+export const GET = withRoleAuth('steward', async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   // Rate limit financial analytics (sensitive data)

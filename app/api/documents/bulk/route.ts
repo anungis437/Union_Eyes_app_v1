@@ -12,7 +12,7 @@ import {
   bulkDeleteDocuments,
   bulkProcessOCR
 } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schemas for bulk operations
@@ -58,7 +58,7 @@ const bulkOperationSchema = z.discriminatedUnion('operation', [
  * - tags: string[] (for tag operation)
  * - tagOperation: "add" | "remove" | "replace" (for tag operation)
  */
-export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+export const POST = withRoleAuth(20, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

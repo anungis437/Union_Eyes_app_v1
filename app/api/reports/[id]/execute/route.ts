@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getReportById, logReportExecution } from '@/db/queries/analytics-queries';
 import { ReportExecutor } from '@/lib/report-executor';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
@@ -148,4 +148,4 @@ async function checkReportAccess(
   return shares.length > 0;
 }
 
-export const POST = withEnhancedRoleAuth(40, postHandler);
+export const POST = withRoleAuth(40, postHandler);

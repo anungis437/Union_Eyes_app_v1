@@ -5,7 +5,7 @@ import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { db } from '@/db';
 import { tenantUsers } from '@/services/financial-service/src/db/schema';
 import { eq } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Validation schema for late fees calculation
 const lateFeeSchema = z.object({
@@ -30,7 +30,7 @@ async function checkAdminRole(userId: string): Promise<boolean> {
  * Calculate and apply late fees to overdue transactions
  * Admin only endpoint - typically called by cron job
  */
-export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+export const POST = withRoleAuth('steward', async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

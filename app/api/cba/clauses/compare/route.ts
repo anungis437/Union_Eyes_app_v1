@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { cbaClause, clauseComparisons, collectiveAgreements } from "@/db/schema";
 import { inArray, eq, and } from "drizzle-orm";
-import { withOrganizationAuth } from "@/lib/organization-middleware";
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { db } from '@/db/db';
 
 /**
  * POST /api/cba/clauses/compare
@@ -22,11 +23,18 @@ import { withOrganizationAuth } from "@/lib/organization-middleware";
  *   analysisType: 'wages' | 'benefits' | 'working_conditions' | 'general'
  * }
  */
-export const POST = withOrganizationAuth(async (request: NextRequest, context) => {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const { organizationId, userId } = context;
-    const tenantId = organizationId;
-
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId) {
+      return NextResponse.json(
+        { error: 'Authentication and tenant context required' },
+        { status: 401 }
+      );
+    }
+    
+    const tenantId = user.tenantId;
+    const userId = user.id;
     const body = await request.json();
     const { clauseIds, analysisType = "general" } = body;
 
@@ -183,10 +191,17 @@ function analyzeClauseContent(clauses: any[], analysisType: string) {
  * Retrieve previously saved comparisons for the current tenant
  * Protected by tenant middleware
  */
-export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
-    const { organizationId } = context;
-
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId) {
+      return NextResponse.json(
+        { error: 'Authentication and tenant context required' },
+        { status: 401 }
+      );
+    }
+    
+    const tenantId = user.tenantId;
     const { searchParams } = new URL(request.url);
     const clauseIds = searchParams.get("clauseIds")?.split(",") || [];
 

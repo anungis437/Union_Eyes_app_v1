@@ -24,7 +24,7 @@ import {
   calculateAllPerCapita,
   savePerCapitaRemittances 
 } from '@/services/clc/per-capita-calculator';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
@@ -57,7 +57,7 @@ const calculateRemittancesSchema = z.object({
 // =====================================================================================
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
     try {
@@ -231,7 +231,7 @@ export const GET = async (request: NextRequest) => {
 // POST - Calculate remittances
 // =====================================================================================
 
-export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+export const POST = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

@@ -8,11 +8,11 @@ import {
 } from '@/lib/services/rewards/redemption-service';
 import { redemptionInitiateSchema } from '@/lib/validation/rewards-schemas';
 import { z } from 'zod';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
   try {
       // 1. Authenticate
       const { userId, organizationId } = context;
@@ -77,7 +77,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       // 1. Authenticate
       const { userId, organizationId } = context;
@@ -144,7 +144,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const DELETE = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       // 1. Authenticate
       const { userId, organizationId } = context;

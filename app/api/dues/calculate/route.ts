@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { DuesCalculationEngine } from '@/lib/dues-calculation-engine';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Validation schema for dues calculation
@@ -13,7 +13,7 @@ const calculateDuesSchema = z.object({
   memberData: z.record(z.any()).optional(),
 });
 
-export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+export const POST = withRoleAuth('steward', async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

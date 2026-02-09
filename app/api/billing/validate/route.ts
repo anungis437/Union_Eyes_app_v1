@@ -7,7 +7,7 @@ import {
 } from '@/lib/services/transfer-pricing-service';
 import type { BillingValidationRequest, BillingValidationResponse } from '@/lib/types/compliance-api-types';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Billing Validation API
@@ -26,7 +26,7 @@ const billingValidationSchema = z.object({
  * POST /api/billing/validate
  * Validate billing request for CAD currency compliance and T106 requirements
  */
-export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+export const POST = withRoleAuth('steward', async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

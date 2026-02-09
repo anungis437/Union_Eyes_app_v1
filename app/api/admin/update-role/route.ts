@@ -4,7 +4,7 @@ import { organizationMembers } from '@/db/schema-organizations';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
@@ -35,7 +35,7 @@ async function checkAdminRole(userId: string): Promise<boolean> {
  * PATCH /api/admin/update-role
  * Update a user's role in an organization (admin only)
  */
-export const PATCH = withEnhancedRoleAuth(90, async (request, context) => {
+export const PATCH = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

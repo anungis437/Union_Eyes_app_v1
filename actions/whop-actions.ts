@@ -2,7 +2,7 @@
 
 import { getProfileByUserId, updateProfile, updateProfileByWhopUserId, getProfileByEmail, createProfile, deleteProfileById } from "@/db/queries/profiles-queries";
 import { whopApp } from "@/lib/whop";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@/lib/api-auth-guard';
 import { revalidatePath } from "next/cache";
 import { getPendingProfileByEmail, markPendingProfileAsClaimed, deletePendingProfile } from "@/db/queries/pending-profiles-queries";
 

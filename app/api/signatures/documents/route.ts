@@ -5,20 +5,21 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { SignatureService } from "@/lib/signature/signature-service";
 
 /**
  * Create signature request
  */
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const formData = await req.formData();
+    
+    const userId = user.id;
+    const formData = await request.formData();
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
@@ -75,19 +76,20 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Get user's documents
  */
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { searchParams } = new URL(req.url);
+    
+    const userId = user.id;
+    const { searchParams } = new URL(request.url);
     const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
 
     if (!organizationId) {
@@ -109,4 +111,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

@@ -7,7 +7,7 @@ import {
   validateSummaryStructure,
 } from '@unioneyes/ai';
 import { z } from 'zod';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 /**
@@ -288,8 +288,7 @@ ${claim.description}
         content += `[${activity.created_at}] ${activity.activity_type}: ${activity.description}
 `;
       });
-    content += '
-';
+    content += '\n';
   }
 
   // Additional notes

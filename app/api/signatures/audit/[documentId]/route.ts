@@ -4,15 +4,15 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { AuditTrailService } from "@/lib/signature/signature-service";
 
-export async function GET(
+export const GET = withApiAuth(async (
   req: NextRequest,
   { params }: { params: { documentId: string } }
-) {
+) => {
   try {
-    const user = await currentUser();
+    const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -48,4 +48,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});

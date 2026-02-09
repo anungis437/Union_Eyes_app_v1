@@ -12,10 +12,10 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
   try {

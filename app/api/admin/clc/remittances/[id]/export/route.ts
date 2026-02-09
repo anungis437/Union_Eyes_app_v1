@@ -19,7 +19,7 @@ import { organizations } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { remittanceExporter, RemittanceExportFormat } from '@/services/clc/remittance-export';
 import { remittanceValidator } from '@/services/clc/remittance-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
@@ -35,7 +35,7 @@ export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
     try {

@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db/db';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * GET - Get all shares for a report
@@ -240,6 +240,6 @@ async function deleteHandler(
   }
 }
 
-export const GET = withOrganizationAuth(getHandler);
-export const POST = withOrganizationAuth(postHandler);
-export const DELETE = withOrganizationAuth(deleteHandler);
+export const GET = withApiAuth(getHandler);
+export const POST = withApiAuth(postHandler);
+export const DELETE = withApiAuth(deleteHandler);

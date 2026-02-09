@@ -4,14 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { searchMembers } from '@/db/queries/organization-members-queries';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
-    const { organizationId } = context;
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId) {
+      return NextResponse.json(
+        { error: 'Authentication and tenant context required' },
+        { status: 401 }
+      );
+    }
+    
+    const tenantId = user.tenantId;
     const searchParams = request.nextUrl.searchParams;
 
     // Get search query and filters

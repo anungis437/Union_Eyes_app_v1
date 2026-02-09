@@ -6,7 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { sql, db } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
@@ -99,7 +100,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       { status: 500 }
     );
   }
-}
+});
 
 // Helper function to get claims by date range
 async function getClaimsByDateRange(
@@ -111,5 +112,3 @@ async function getClaimsByDateRange(
   // TODO: Implement database query with filters
   return [];
 }
-
-export const GET = withOrganizationAuth(handler);

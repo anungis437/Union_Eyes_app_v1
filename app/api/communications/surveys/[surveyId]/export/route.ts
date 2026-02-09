@@ -121,8 +121,7 @@ export const GET = withApiAuth(async (
         ...rows.map((row) =>
           row.map((cell) => `"${cell.toString().replace(/"/g, '""')}"`).join(',')
         ),
-      ].join('
-');
+      ].join('\n');
 
       return new NextResponse(csvContent, {
         headers: {

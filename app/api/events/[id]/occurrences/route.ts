@@ -22,7 +22,7 @@ import {
   getRecurrenceDescription,
 } from '@/lib/recurring-events-service';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // ============================================================================
 // GET /api/events/[id]/occurrences
@@ -30,7 +30,7 @@ import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 // ============================================================================
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
@@ -161,7 +161,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 // ============================================================================
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -233,7 +233,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 // ============================================================================
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

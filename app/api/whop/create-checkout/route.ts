@@ -1,7 +1,7 @@
 
 import { NextResponse } from "next/server";
 import { DEFAULT_REDIRECT_URL } from "../webhooks/utils/constants";
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 
 /**
  * API endpoint to create a Whop checkout session with properly structured metadata

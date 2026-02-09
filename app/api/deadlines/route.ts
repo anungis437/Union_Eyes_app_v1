@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import {
   getClaimDeadlines,
   getCriticalDeadlines,
@@ -32,7 +32,7 @@ import {
  * GET /api/deadlines
  * List deadlines with filters
  */
-export const GET = withOrganizationAuth(async (request: NextRequest, context: any) => {
+export const GET = withApiAuth(async (request: NextRequest, context: any) => {
   const { organizationId, userId } = context;
   const { searchParams } = new URL(request.url);
   

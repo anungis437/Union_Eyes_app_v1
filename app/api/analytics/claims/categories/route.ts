@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 interface CategoryBreakdown {
   category: string;
@@ -96,4 +96,4 @@ async function handler(req: NextRequest, context) {
   }
 }
 
-export const GET = withOrganizationAuth(handler);
+export const GET = withApiAuth(handler);

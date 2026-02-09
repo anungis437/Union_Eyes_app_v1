@@ -8,7 +8,7 @@ import { eq, and } from 'drizzle-orm';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { put } from '@vercel/blob';
 import { ReceiptDocument, ReceiptData } from '@/components/pdf/receipt-template';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * GET: Generate and download receipt PDF for transaction
@@ -23,7 +23,7 @@ export const GET = async (
   req: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
     const { userId, organizationId } = context;
 
     const transactionId = params.id;

@@ -11,11 +11,11 @@ import { db } from '@/db';
 import { insightRecommendations } from '@/db/migrations/schema';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(30, async (request, context) => {
+  return withRoleAuth(30, async (request, context) => {
     const { userId, organizationId } = context;
 
     // Rate limit insights queries
@@ -84,7 +84,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const PATCH = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(40, async (request, context) => {
+  return withRoleAuth('member', async (request, context) => {
     const { userId, organizationId } = context;
 
     // Rate limit insights updates
@@ -175,7 +175,7 @@ export const PATCH = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(50, async (request, context) => {
+  return withRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
 
     // Rate limit insight creation

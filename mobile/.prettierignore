@@ -1,0 +1,11 @@
+node_modules
+.expo
+.expo-shared
+ios
+android
+dist
+build
+coverage
+*.log
+.DS_Store
+.pnpm-cache

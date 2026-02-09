@@ -1,0 +1,308 @@
+# Fastlane Configuration for UnionEyes Mobile
+
+platform :ios do
+  desc "Build iOS app for development"
+  lane :dev do
+    setup_ci if ENV['CI']
+    match(type: "development", readonly: is_ci)
+    gym(
+      scheme: "UnionEyes",
+      configuration: "Debug",
+      export_method: "development",
+      output_directory: "./build/ios"
+    )
+  end
+
+  desc "Build iOS app for TestFlight"
+  lane :beta do
+    setup_ci if ENV['CI']
+    
+    # Increment build number
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1
+    )
+    
+    # Get certificates and provisioning profiles
+    match(type: "appstore", readonly: is_ci)
+    
+    # Build the app
+    gym(
+      scheme: "UnionEyes",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "./build/ios",
+      include_bitcode: false,
+      include_symbols: true
+    )
+    
+    # Upload to TestFlight
+    pilot(
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      notify_external_testers: false
+    )
+    
+    # Upload dSYMs to Sentry
+    sentry_upload_dsym(
+      org_slug: 'unioneyes',
+      project_slug: 'unioneyes-mobile',
+      dsym_path: './build/ios/UnionEyes.app.dSYM.zip'
+    )
+  end
+
+  desc "Deploy iOS app to App Store"
+  lane :release do
+    setup_ci if ENV['CI']
+    
+    # Increment version
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1
+    )
+    
+    # Get certificates and provisioning profiles
+    match(type: "appstore", readonly: is_ci)
+    
+    # Build the app
+    gym(
+      scheme: "UnionEyes",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "./build/ios",
+      include_bitcode: false,
+      include_symbols: true
+    )
+    
+    # Upload to App Store Connect
+    deliver(
+      submit_for_review: false,
+      automatic_release: false,
+      force: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      precheck_include_in_app_purchases: false
+    )
+    
+    # Upload dSYMs to Sentry
+    sentry_upload_dsym(
+      org_slug: 'unioneyes',
+      project_slug: 'unioneyes-mobile',
+      dsym_path: './build/ios/UnionEyes.app.dSYM.zip'
+    )
+    
+    # Create GitHub release
+    github_release = set_github_release(
+      repository_name: "unioneyes/unioneyes-mobile",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "iOS v#{get_version_number} (#{get_build_number})",
+      tag_name: "ios-v#{get_version_number}-#{get_build_number}",
+      description: File.read("../store-assets/app-store/release-notes.txt"),
+      is_draft: false,
+      is_prerelease: false
+    )
+  end
+
+  desc "Take screenshots for App Store"
+  lane :screenshots do
+    snapshot(
+      scheme: "UnionEyes",
+      output_directory: "./screenshots/ios",
+      clear_previous_screenshots: true,
+      reinstall_app: true,
+      erase_simulator: true
+    )
+  end
+
+  desc "Upload metadata to App Store Connect"
+  lane :metadata do
+    deliver(
+      submit_for_review: false,
+      skip_binary_upload: true,
+      skip_screenshots: false,
+      force: true
+    )
+  end
+
+  desc "Register new devices"
+  lane :register_devices do
+    register_devices(
+      devices_file: "./fastlane/devices.txt"
+    )
+    match(type: "development", force_for_new_devices: true)
+  end
+end
+
+platform :android do
+  desc "Build Android app for development"
+  lane :dev do
+    gradle(
+      task: "assemble",
+      build_type: "Debug",
+      project_dir: "./android"
+    )
+  end
+
+  desc "Build Android app for internal testing"
+  lane :beta do
+    # Increment version code
+    increment_version_code(
+      gradle_file_path: "./android/app/build.gradle"
+    )
+    
+    # Build the app
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "./android",
+      properties: {
+        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
+      }
+    )
+    
+    # Upload to Play Store (Internal Testing)
+    upload_to_play_store(
+      track: 'internal',
+      release_status: 'completed',
+      aab: './android/app/build/outputs/bundle/release/app-release.aab',
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    # Upload mapping files to Sentry
+    sentry_upload_proguard(
+      org_slug: 'unioneyes',
+      project_slug: 'unioneyes-mobile',
+      android_manifest_path: './android/app/src/main/AndroidManifest.xml'
+    )
+  end
+
+  desc "Deploy Android app to Play Store"
+  lane :release do
+    # Increment version code
+    increment_version_code(
+      gradle_file_path: "./android/app/build.gradle"
+    )
+    
+    # Build the app
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "./android",
+      properties: {
+        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
+      }
+    )
+    
+    # Upload to Play Store (Production)
+    upload_to_play_store(
+      track: 'production',
+      release_status: 'completed',
+      aab: './android/app/build/outputs/bundle/release/app-release.aab',
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+    
+    # Upload mapping files to Sentry
+    sentry_upload_proguard(
+      org_slug: 'unioneyes',
+      project_slug: 'unioneyes-mobile',
+      android_manifest_path: './android/app/src/main/AndroidManifest.xml'
+    )
+    
+    # Create GitHub release
+    github_release = set_github_release(
+      repository_name: "unioneyes/unioneyes-mobile",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "Android v#{get_version_name} (#{get_version_code})",
+      tag_name: "android-v#{get_version_name}-#{get_version_code}",
+      description: File.read("../store-assets/play-store/release-notes.txt"),
+      is_draft: false,
+      is_prerelease: false
+    )
+  end
+
+  desc "Take screenshots for Play Store"
+  lane :screenshots do
+    screengrab(
+      locales: ['en-US'],
+      clear_previous_screenshots: true,
+      app_package_name: 'com.unioneyes.app',
+      use_tests_in_packages: ['com.unioneyes.app.screenshots']
+    )
+  end
+
+  desc "Upload metadata to Play Store"
+  lane :metadata do
+    upload_to_play_store(
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Promote from Internal to Beta"
+  lane :promote_to_beta do
+    upload_to_play_store(
+      track: 'internal',
+      track_promote_to: 'beta',
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Promote from Beta to Production"
+  lane :promote_to_production do
+    upload_to_play_store(
+      track: 'beta',
+      track_promote_to: 'production',
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end
+
+# Shared lanes
+desc "Run tests"
+lane :test do
+  sh("cd .. && pnpm test")
+end
+
+desc "Run linter"
+lane :lint do
+  sh("cd .. && pnpm lint")
+end
+
+desc "Type check"
+lane :typecheck do
+  sh("cd .. && pnpm type-check")
+end
+
+desc "Clean build artifacts"
+lane :clean do
+  sh("cd .. && pnpm clean")
+end
+
+# Error handling
+error do |lane, exception, options|
+  slack(
+    message: "Error in lane #{lane}: #{exception}",
+    success: false,
+    slack_url: ENV['SLACK_WEBHOOK_URL']
+  )
+end

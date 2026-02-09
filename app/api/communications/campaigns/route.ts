@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterCampaigns, newsletterTemplates, newsletterDistributionLists } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
@@ -32,7 +32,7 @@ const createCampaignSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
   try {
     const { userId, organizationId } = context;
 
@@ -91,7 +91,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
   }
 });
 
-export const POST = withEnhancedRoleAuth(40, async (request: NextRequest, context) => {
+export const POST = withRoleAuth('member', async (request: NextRequest, context) => {
   try {
     const { userId, organizationId } = context;
 

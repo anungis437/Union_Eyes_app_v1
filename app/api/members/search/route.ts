@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { searchMembers, getMemberStatistics } from "@/lib/services/member-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schemas
@@ -28,7 +28,7 @@ const searchMembersSchema = z.object({
  * POST /api/members/search
  * Advanced member search with full-text search and filters
  */
-export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+export const POST = withRoleAuth(20, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();
@@ -94,7 +94,7 @@ try {
  * GET /api/members/search
  * Get member statistics
  */
-export const GET = withEnhancedRoleAuth(20, async (request, context) => {
+export const GET = withRoleAuth(20, async (request, context) => {
   const { userId, organizationId } = context;
 
   try {

@@ -1,0 +1,26 @@
+Version 1.0.0 - Initial Release
+
+What's New:
+• Complete claims management system
+• Advanced OCR document scanning
+• Biometric authentication (Face ID/Touch ID)
+• Real-time claim tracking
+• Push notifications for claim updates
+• Offline mode with automatic sync
+• Secure document storage
+• Member dashboard and analytics
+• Direct messaging with union staff
+• Multi-language support
+
+We're excited to bring UnionEyes to your device! This initial release includes all core features to help you manage your union membership efficiently.
+
+Bug Fixes & Improvements:
+• Optimized app performance
+• Enhanced security protocols
+• Improved image upload quality
+• Better offline capability
+• Faster claim submission processing
+
+Thank you for choosing UnionEyes! We're committed to providing the best experience for union members. 
+
+Have feedback? Contact us at support@unioneyes.com

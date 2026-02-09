@@ -9,14 +9,14 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { collectiveAgreements, cbaClause } from "@/db/schema";
 import { eq, desc, and, or, like, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
-export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
       const body = await request.json();
@@ -116,19 +116,18 @@ export const POST = async (request: NextRequest) => {
         offset,
         hasMore: offset + limit < countResult.count,
       });
-    } catch (error) {
-      console.error("Error searching CBAs:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
+      }, user.organizationId);
+  } catch (error) {
+    console.error("Error searching CBAs:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+});
 
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
+  const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
       const { searchParams } = new URL(request.url);
@@ -175,13 +174,12 @@ export const GET = async (request: NextRequest) => {
           .limit(limit);
       }
 
-      return NextResponse.json({ results });
-    } catch (error) {
-      console.error("Error fetching CBAs:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
+    return NextResponse.json({ results });
+  } catch (error) {
+    console.error("Error fetching CBAs:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+});

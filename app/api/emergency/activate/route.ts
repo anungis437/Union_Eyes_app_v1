@@ -5,7 +5,7 @@ import {
   purgeExpiredLocations,
 } from '@/lib/services/geofence-privacy-service';
 import type { EmergencyActivationRequest, EmergencyActivationResponse } from '@/lib/types/compliance-api-types';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 
 /**
@@ -26,7 +26,7 @@ const emergencyActivationSchema = z.object({
   expectedDurationDays: z.number().int().positive().max(365),
 });
 
-export const POST = withEnhancedRoleAuth(60, async (request) => {
+export const POST = withRoleAuth('steward', async (request) => {
   try {
     const body = await request.json();
     const parsed = emergencyActivationSchema.safeParse(body);

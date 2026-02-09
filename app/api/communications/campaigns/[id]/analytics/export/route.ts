@@ -16,7 +16,7 @@ import {
   newsletterEngagement 
 } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
@@ -24,7 +24,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     try {
       const { userId, organizationId } = context;
 
@@ -123,8 +123,7 @@ export async function GET(
     const csv = [
       headers.join(','),
       ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-    ].join('
-');
+    ].join('\n');
 
     // Audit log
     await logApiAuditEvent({

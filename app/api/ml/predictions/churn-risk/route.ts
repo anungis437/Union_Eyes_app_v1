@@ -1,4 +1,4 @@
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { z } from 'zod';
@@ -33,7 +33,7 @@ interface ChurnPrediction {
   predictedAt: Date;
 }
 
-export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   // Rate limit ML predictions

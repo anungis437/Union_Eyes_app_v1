@@ -9,10 +9,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { inAppNotifications } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -52,7 +52,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

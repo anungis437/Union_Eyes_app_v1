@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { client } from '@/db/db';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
-async function handler(req: NextRequest, context) {
+async function handler(req: NextRequest) {
   try {
-    const organizationId = context.organizationId;
-    const tenantId = organizationId;
-    
-    if (!tenantId) {
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId) {
       return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
+        { error: 'Authentication and tenant context required' },
+        { status: 401 }
       );
     }
-
+    
+    const tenantId = user.tenantId;
     const searchParams = req.nextUrl.searchParams;
     const days = parseInt(searchParams.get('days') || '90');
 
@@ -79,4 +77,4 @@ async function handler(req: NextRequest, context) {
   }
 }
 
-export const GET = withOrganizationAuth(handler);
+export const GET = withApiAuth(handler);

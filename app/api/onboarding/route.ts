@@ -11,12 +11,12 @@ import { organizations } from '@/db/schema-organizations';
 import { logger } from '@/lib/logger';
 import { eventBus, AppEvents } from '@/lib/events';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const runtime = 'nodejs';
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

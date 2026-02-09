@@ -11,10 +11,10 @@ import { db } from '@/db';
 import { comparativeAnalyses, organizations } from '@/db/migrations/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(40, async (request, context) => {
+  return withRoleAuth('member', async (request, context) => {
     const { userId, organizationId } = context;
 
     // Rate limit analytics queries
@@ -100,7 +100,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
     const { userId, organizationId } = context;
 
     // Rate limit comparative analytics generation

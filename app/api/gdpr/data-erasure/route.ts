@@ -6,11 +6,10 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { withApiAuth, withRoleAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from "@/db";
 import { GdprRequestManager, DataErasureService } from "@/lib/gdpr/consent-manager";
 import { logger } from "@/lib/logger";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 /**
  * Helper to check if user is admin/DPO
@@ -33,21 +32,22 @@ async function checkAdminOrDPORole(userId: string): Promise<boolean> {
 /**
  * Request data erasure (RTBF)
  */
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    
+    const userId = user.id;
+    const body = await request.json();
+    const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, reason, requestDetails } = body;
+    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+    const tenantId = organizationId;
 
-    const body = await req.json();
-      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, reason, requestDetails } = body;
-      const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-      const tenantId = organizationId;
-
-      if (!organizationId) {
+    if (!organizationId) {
       return NextResponse.json(
-          { error: "Organization ID required" },
+        { error: "Organization ID required" },
         { status: 400 }
       );
     }
@@ -102,88 +102,91 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export const DELETE = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId, organizationId } = context;
-
+export const DELETE = withRoleAuth('admin', async (request: NextRequest) => {
   try {
-      // Check if user is admin/DPO
-      const isAdmin = await checkAdminOrDPORole(userId);
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    const userId = user.id;
+    
+    // Check if user is admin/DPO
+    const isAdmin = await checkAdminOrDPORole(userId);
 
-      if (!isAdmin) {
-        return NextResponse.json(
-          { error: "Forbidden - Admin access required" },
-          { status: 403 }
-        );
-      }
-
-      const body = await req.json();
-        const { requestId, userId: targetUserId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, confirmation } = body;
-        const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-        const tenantId = organizationId;
-
-        if (!requestId || !targetUserId || !organizationId) {
-        return NextResponse.json(
-          { error: "Missing required fields" },
-          { status: 400 }
-        );
-      }
-
-      // Require explicit confirmation
-      if (confirmation !== `DELETE_USER_DATA_${targetUserId}`) {
-        return NextResponse.json(
-          { error: "Invalid confirmation code" },
-          { status: 400 }
-        );
-      }
-
-      // Log the admin action
-      logger.info('Data erasure initiated', { adminId: userId, targetUserId, tenantId });
-  logger.info('Data erasure initiated', { adminId: userId, targetUserId, organizationId });
-
-      // Execute erasure
-      await DataErasureService.eraseUserData(
-        targetUserId,
-        tenantId,
-        requestId,
-        userId
-      );
-
-      return NextResponse.json({
-        success: true,
-        message: "User data has been permanently erased",
-        executedAt: new Date(),
-        executedBy: userId,
-      });
-    } catch (error) {
-      console.error("Data erasure execution error:", error);
+    if (!isAdmin) {
       return NextResponse.json(
-        { error: "Failed to execute data erasure" },
-        { status: 500 }
+        { error: "Forbidden - Admin access required" },
+        { status: 403 }
       );
     }
-    })(request);
-};
+
+    const body = await request.json();
+    const { requestId, userId: targetUserId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, confirmation } = body;
+    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+    const tenantId = organizationId;
+
+    if (!requestId || !targetUserId || !organizationId) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Require explicit confirmation
+    if (confirmation !== `DELETE_USER_DATA_${targetUserId}`) {
+      return NextResponse.json(
+        { error: "Invalid confirmation code" },
+        { status: 400 }
+      );
+    }
+
+    // Log the admin action
+    logger.info('Data erasure initiated', { adminId: userId, targetUserId, tenantId });
+
+    // Execute erasure
+    await DataErasureService.eraseUserData(
+      targetUserId,
+      tenantId,
+      requestId,
+      userId
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "User data has been permanently erased",
+      executedAt: new Date(),
+      executedBy: userId,
+    });
+  } catch (error) {
+    console.error("Data erasure execution error:", error);
+    return NextResponse.json(
+      { error: "Failed to execute data erasure" },
+      { status: 500 }
+    );
+  }
+});
 
 /**
  * Get erasure request status
  */
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    
+    const userId = user.id;
+    const { searchParams } = new URL(request.url);
+    const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+    const tenantId = organizationIdFromQuery;
 
-    const { searchParams } = new URL(req.url);
-      const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
-      const tenantId = organizationIdFromQuery;
-
-      if (!tenantId) {
+    if (!tenantId) {
       return NextResponse.json(
-          { error: "Organization ID required" },
+        { error: "Organization ID required" },
         { status: 400 }
       );
     }
@@ -207,4 +210,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

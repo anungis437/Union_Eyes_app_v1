@@ -23,7 +23,7 @@ import { organizationMembers } from "@/db/schema-organizations";
 import { organizations } from "@/db/schema-organizations";
 import { eq, and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Type definitions for import
 interface ImportRow {
@@ -75,7 +75,7 @@ async function checkAdminOrOfficerRole(userId: string): Promise<boolean> {
 // =====================================================
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
   try {
@@ -397,8 +397,7 @@ export const POST = async (request: NextRequest) => {
 // =====================================================
 
 function parseCSV(text: string): ImportRow[] {
-  const lines = text.split("
-").filter((line) => line.trim());
+  const lines = text.split("\n").filter((line) => line.trim());
   if (lines.length < 2) return [];
 
   const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));

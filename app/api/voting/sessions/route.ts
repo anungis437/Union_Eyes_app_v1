@@ -4,7 +4,7 @@ import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/sch
 import { eq, desc, and, count } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schemas
@@ -34,7 +34,7 @@ const createSessionSchema = z.object({
  * GET /api/voting/sessions
  * List voting sessions with optional filters
  */
-export const GET = withEnhancedRoleAuth(10, async (request, context) => {
+export const GET = withRoleAuth(10, async (request, context) => {
   const parsed = listSessionsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
@@ -164,7 +164,7 @@ try {
  * POST /api/voting/sessions
  * Create a new voting session (admin/officer only)
  */
-export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+export const POST = withRoleAuth(20, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

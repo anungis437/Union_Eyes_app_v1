@@ -13,7 +13,7 @@ import { analyzeOrganizationPerformance } from '@/services/clc/compliance-report
 import { db } from '@/database';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
 import { sql } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {

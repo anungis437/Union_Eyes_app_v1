@@ -128,13 +128,6 @@ export const GET = async (
   }
   })(request);
 };
-        return NextResponse.json(
-          { error: "Failed to fetch document", details: error instanceof Error ? error.message : "Unknown error" },
-          { status: 500 }
-        );
-      }
-      })(request, { params });
-};
 
 /**
  * PATCH /api/documents/[id]

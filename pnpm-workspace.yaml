@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - services/*
+  - mobile
 
 # Ignore build scripts for packages with version conflicts or build issues
 # These dependencies have multiple versions across the workspace and attempting

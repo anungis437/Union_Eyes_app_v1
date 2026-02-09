@@ -11,10 +11,10 @@ import { signDocument } from '@/services/pki/signature-service';
 import { recordSignature } from '@/services/pki/workflow-engine';
 import type { SignDocumentParams } from '@/services/pki/signature-service';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

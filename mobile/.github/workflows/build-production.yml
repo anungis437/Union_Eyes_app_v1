@@ -1,0 +1,96 @@
+name: Build Production
+
+on:
+  push:
+    tags:
+      - 'mobile-v*'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+
+jobs:
+  build:
+    name: Build Production
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ github.event.inputs.platform == 'all' && fromJSON('["ios", "android"]') || fromJSON(format('["{0}"]', github.event.inputs.platform || 'all')) }}
+    
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: 🏗 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: |
+          cd mobile
+          pnpm install --frozen-lockfile
+
+      - name: 🔍 Validate build
+        run: |
+          cd mobile
+          node scripts/validate-build.js
+
+      - name: 🏗 Build app - ${{ matrix.platform }}
+        run: |
+          cd mobile
+          if [ "${{ matrix.platform }}" == "all" ]; then
+            eas build --platform all --profile production --non-interactive
+          else
+            eas build --platform ${{ matrix.platform }} --profile production --non-interactive
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📊 Generate changelog
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd mobile
+          node scripts/generate-changelog.js > CHANGELOG.md
+
+      - name: 📝 Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: UnionEyes Mobile ${{ github.ref }}
+          body_path: mobile/CHANGELOG.md
+          draft: false
+          prerelease: false
+
+      - name: 🚀 Notify Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Production build ${{ job.status }} for ${{ matrix.platform }}
+            Tag: ${{ github.ref }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

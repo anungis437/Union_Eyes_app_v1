@@ -12,11 +12,11 @@ import { clauseLibraryTags, sharedClauseLibrary } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // POST /api/clause-library/[id]/tags - Add tag
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
     try {
@@ -120,7 +120,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
 // DELETE /api/clause-library/[id]/tags - Remove tag
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
     try {

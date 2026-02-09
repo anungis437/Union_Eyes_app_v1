@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { provincialPrivacyConfig, provincialDataHandling } from '@/db/schema/provincial-privacy-schema';
 import { eq } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 
 /**
@@ -15,7 +15,7 @@ const provinceSchema = z.object({
 });
 
 // GET /api/privacy/provincial?province=QC
-export const GET = withEnhancedRoleAuth(50, async (request) => {
+export const GET = withRoleAuth(50, async (request) => {
   try {
     const query = provinceSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -76,7 +76,7 @@ const privacyConfigSchema = z.object({
 
 // POST /api/privacy/provincial
 // Create or update provincial privacy configuration
-export const POST = withEnhancedRoleAuth(90, async (request) => {
+export const POST = withRoleAuth(90, async (request) => {
   try {
     const body = await request.json();
     const parsed = privacyConfigSchema.safeParse(body);

@@ -5,25 +5,26 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { GdprRequestManager, DataExportService } from "@/lib/gdpr/consent-manager";
 
 /**
  * Request data export
  */
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    
+    const userId = user.id;
+    const body = await request.json();
+    const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, preferredFormat, requestDetails } = body;
+    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+    const tenantId = organizationId;
 
-    const body = await req.json();
-      const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, preferredFormat, requestDetails } = body;
-      const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-      const tenantId = organizationId;
-
-      if (!organizationId) {
+    if (!organizationId) {
       return NextResponse.json(
         { error: "Organization ID required" },
         { status: 400 }
@@ -92,22 +93,23 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Download exported data
  */
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { searchParams } = new URL(req.url);
+    
+    const userId = user.id;
+    const { searchParams } = new URL(request.url);
     const requestId = searchParams.get("requestId");
-      const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
-      const tenantId = organizationIdFromQuery;
+    const organizationIdFromQuery = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
+    const tenantId = organizationIdFromQuery;
 
     if (!requestId || !tenantId) {
       return NextResponse.json(
@@ -160,4 +162,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

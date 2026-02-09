@@ -9,6 +9,9 @@
  * Version: 1.0.0
  * Created: December 6, 2025
  */
+// TODO: Migrate to withApiAuth wrapper pattern for consistency
+// Original pattern used getCurrentUser() with manual auth checks
+
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -19,7 +22,7 @@ import {
   profiles 
 } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 const addSubscribersSchema = z.object({
   profileIds: z.array(z.string()).min(1, 'At least one profile ID required'),

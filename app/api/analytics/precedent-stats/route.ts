@@ -10,10 +10,10 @@ import {
 import { eq, and, gte, desc, sql, inArray } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     try {
       const searchParams = request.nextUrl.searchParams;
       const fromDate = searchParams.get("fromDate") || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

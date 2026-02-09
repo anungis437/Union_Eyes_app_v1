@@ -1,7 +1,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {

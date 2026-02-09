@@ -5,7 +5,7 @@
  * Server-side utilities for checking user roles and permissions
  */
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from '@/lib/api-auth-guard';
 import { db } from "@/db/db";
 import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq } from "drizzle-orm";

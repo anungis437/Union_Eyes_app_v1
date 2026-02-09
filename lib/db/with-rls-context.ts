@@ -22,7 +22,7 @@
  * - Error handling with security event logging
  */
 
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 

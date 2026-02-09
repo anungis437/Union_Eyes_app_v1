@@ -5,7 +5,7 @@ import { db } from '@/db';
 import { members } from '@/services/financial-service/src/db/schema';
 import { eq } from 'drizzle-orm';
 import { stripe } from '@/lib/stripe';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 /**
  * Create Stripe SetupIntent for saving payment method without charging

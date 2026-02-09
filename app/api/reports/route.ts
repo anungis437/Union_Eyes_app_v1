@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getReports, createReport } from '@/db/queries/analytics-queries';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
@@ -143,5 +143,5 @@ async function postHandler(req: NextRequest, context) {
   }
 }
 
-export const GET = withEnhancedRoleAuth(30, getHandler);
-export const POST = withEnhancedRoleAuth(50, postHandler);
+export const GET = withRoleAuth(30, getHandler);
+export const POST = withRoleAuth(50, postHandler);

@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 /**
  * UC-08: Workload Forecasting API
  * 
@@ -188,14 +188,12 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+  
   try {
-    const { userId, organizationId } = await requireUser();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const body = await request.json();
     const { startDate, endDate, organizationId: requestOrganizationId } = body;
@@ -207,7 +205,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const organizationId = requestOrganizationId || organizationId || userId;
+    const requestOrgId = body.organizationId || organizationId || userId;
     const start = new Date(startDate);
     const end = new Date(endDate);
     const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
@@ -355,7 +353,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Aggregate daily predictions to weekly averages

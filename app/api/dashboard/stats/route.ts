@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimStatistics } from "@/db/queries/claims-queries";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
@@ -49,7 +49,7 @@ const getCachedDashboardStats = unstable_cache(
  * Fetch dashboard statistics for the specified tenant
  * Protected by enhanced role-based auth with rate limiting
  */
-export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
   // Rate limit dashboard refreshes

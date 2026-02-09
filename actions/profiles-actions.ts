@@ -4,7 +4,7 @@ import { createProfile, deleteProfile, getAllProfiles, getProfileByUserId, updat
 import { InsertProfile, SelectProfile } from "@/db/schema/profiles-schema";
 import { ActionResult } from "@/types/actions/actions-types";
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@/lib/api-auth-guard';
 
 export async function createProfileAction(data: InsertProfile): Promise<ActionResult<SelectProfile>> {
   try {

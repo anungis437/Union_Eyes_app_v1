@@ -5,7 +5,7 @@ import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { db } from '@/db';
 import { tenantUsers } from '@/services/financial-service/src/db/schema';
 import { eq } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Validation schema for billing cycle generation
 const billingCycleSchema = z.object({
@@ -31,7 +31,7 @@ async function checkAdminRole(userId: string): Promise<boolean> {
  * Generate dues transactions for a billing cycle
  * Admin only endpoint
  */
-export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+export const POST = withRoleAuth('steward', async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

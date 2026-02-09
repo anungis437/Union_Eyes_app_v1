@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { duesTransactions, memberDuesAssignments, duesRules, members } from '@/services/financial-service/src/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Validation schema for query parameters

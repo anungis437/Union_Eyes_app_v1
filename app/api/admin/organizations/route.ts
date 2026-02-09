@@ -32,7 +32,7 @@ import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withRoleRequired, logApiAuditEvent } from "@/lib/middleware/api-security";
 import { SUPPORTED_ROLES } from "@/lib/middleware/auth-middleware";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schemas
@@ -97,7 +97,7 @@ async function checkAdminRole(userId: string): Promise<boolean> {
 // GET - List Organizations
 // =====================================================
 
-export const GET = withEnhancedRoleAuth(90, async (request, context) => {
+export const GET = withRoleAuth(90, async (request, context) => {
   const parsed = listOrganizationsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
@@ -255,7 +255,7 @@ try {
 // POST - Create Organization
 // =====================================================
 
-export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+export const POST = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();
@@ -448,7 +448,7 @@ try {
 // PATCH - Bulk Update Organizations
 // =====================================================
 
-export const PATCH = withEnhancedRoleAuth(90, async (request, context) => {
+export const PATCH = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();
@@ -533,7 +533,7 @@ try {
 // DELETE - Bulk Archive Organizations
 // =====================================================
 
-export const DELETE = withEnhancedRoleAuth(90, async (request, context) => {
+export const DELETE = withRoleAuth(90, async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();

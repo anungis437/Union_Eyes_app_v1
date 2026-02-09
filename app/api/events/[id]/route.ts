@@ -16,7 +16,7 @@ import { db } from '@/db/db';
 import { calendarEvents, calendars, eventAttendees, calendarSharing } from '@/db/schema/calendar-schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Check if user has access to event
@@ -92,7 +92,7 @@ async function checkEventAccess(eventId: string, userId: string) {
 }
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -147,7 +147,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -296,7 +296,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

@@ -10,7 +10,7 @@ import { ERPConnectorRegistry } from '@/packages/financial/src/erp/connector-int
 import { db } from '@/db';
 import { erpConnectors } from '@/db/schema/erp-integration-schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {

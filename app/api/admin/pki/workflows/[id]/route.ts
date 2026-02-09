@@ -16,10 +16,10 @@ import {
   cancelWorkflow,
 } from '@/services/pki/workflow-engine';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
   try {
       const workflowId = params.id;
       const { searchParams } = new URL(request.url);
@@ -61,7 +61,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const PUT = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
   try {
       const workflowId = params.id;
 
@@ -89,7 +89,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
   try {

@@ -11,14 +11,14 @@ import { db } from '@/db';
 import { arbitrationPrecedents, organizations } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import * as documentService from '@/lib/services/precedent-document-service';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
 export const GET = async (request: NextRequest, context: RouteContext) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   const { id: precedentId } = await context.params;
@@ -83,7 +83,7 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
 };
 
 export const POST = async (request: NextRequest, context: RouteContext) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   const { id: precedentId } = await context.params;
@@ -217,7 +217,7 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
 };
 
 export const DELETE = async (request: NextRequest, context: RouteContext) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   const { id: precedentId } = await context.params;

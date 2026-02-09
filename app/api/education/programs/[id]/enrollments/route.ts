@@ -12,11 +12,11 @@ import { eq, and, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { sendProgramMilestone } from "@/lib/email/training-notifications";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // GET /api/education/programs/[id]/enrollments - List program enrollments
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
   try {
       const programId = params.id;
       const { searchParams } = new URL(request.url);
@@ -181,7 +181,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
 // POST /api/education/programs/[id]/enrollments - Enroll member in program
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const programId = params.id;
       const body = await request.json();
@@ -286,7 +286,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
 // PATCH /api/education/programs/[id]/enrollments?enrollmentId={id} - Update enrollment
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
   try {
       const { searchParams } = new URL(request.url);
       const enrollmentId = searchParams.get("enrollmentId");

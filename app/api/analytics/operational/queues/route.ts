@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/claims-schema';
 import { eq, and, sql } from 'drizzle-orm';
 
 async function handler(req: NextRequest) {
-  const tenantId = (req as any).tenantId;
+  const user = await getCurrentUser();
+  if (!user || !user.tenantId) {
+    return NextResponse.json(
+      { error: 'Authentication and tenant context required' },
+      { status: 401 }
+    );
+  }
+  
+  const tenantId = user.tenantId;
 
   // Get queue metrics by priority
   const queues = await db.execute(sql`
@@ -30,4 +38,4 @@ async function handler(req: NextRequest) {
   return NextResponse.json(queues);
 }
 
-export const GET = withOrganizationAuth(handler);
+export const GET = withApiAuth(handler);

@@ -1,6 +1,29 @@
 /**
  * Enhanced RBAC Middleware for Enterprise Unions
  * 
+ * @deprecated This module has been consolidated into @/lib/api-auth-guard
+ * 
+ * ⚠️ DEPRECATION NOTICE ⚠️
+ * This file is being phased out. All enterprise RBAC features have been
+ * consolidated into the canonical authentication module: @/lib/api-auth-guard
+ * 
+ * Migration Guide:
+ * 
+ * 1. withEnhancedRoleAuth() → Use withEnhancedRoleAuth() from @/lib/api-auth-guard
+ * 2. withPermission() → Use withPermission() from @/lib/api-auth-guard
+ * 3. withScopedRoleAuth() → Use withScopedRoleAuth() from @/lib/api-auth-guard
+ * 
+ * Example migration:
+ * ```typescript
+ * // OLD
+ * import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+ * 
+ * // NEW
+ * import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+ * ```
+ * 
+ * All functionality remains identical. This is a simple import path change.
+ * 
  * Features:
  * - Multi-role support (members can have multiple roles)
  * - Scope-based permissions (department, location, shift)

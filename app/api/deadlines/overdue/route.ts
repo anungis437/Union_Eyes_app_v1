@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOverdueDeadlines } from '@/db/queries/deadline-queries';
-import { getUserFromRequest } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/api-auth-guard';
 import { cookies } from 'next/headers';
 import { db, organizations } from '@/db';
 import { eq } from 'drizzle-orm';
@@ -11,7 +11,7 @@ import { eq } from 'drizzle-orm';
  */
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },

@@ -822,8 +822,8 @@ export async function verifyAuditLogIntegrity(
   organizationId: string,
   startDate?: Date,
   endDate?: Date
-): Promise<{
-  const tenantId = organizationId; valid: boolean; totalRecords: number; invalidRecords: number }> {
+): Promise<{ valid: boolean; totalRecords: number; invalidRecords: number }> {
+  const tenantId = organizationId;
   let query = sql`
     WITH log_chain AS (
       SELECT 

@@ -114,13 +114,13 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/carbon/validate
  * Get carbon validation requirements and standards
  */
-export async function GET() {
+export const GET = withApiAuth(async () => {
   try {
     return NextResponse.json({
       valid: true,

@@ -11,7 +11,7 @@ import {
   bulkUpdateMemberStatus,
   bulkUpdateMemberRole
 } from "@/lib/services/member-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**
@@ -58,7 +58,7 @@ const bulkOperationSchema = z.discriminatedUnion('operation', [
  * - status: string (for updateStatus operation)
  * - role: string (for updateRole operation)
  */
-export const POST = withEnhancedRoleAuth(60, async (request, context) => {
+export const POST = withRoleAuth('steward', async (request, context) => {
   const { userId, organizationId } = context;
 
   // Check rate limit for bulk import operations

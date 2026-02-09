@@ -1,0 +1,15 @@
+git_url("https://github.com/unioneyes/certificates")
+
+storage_mode("git")
+
+type("development") # or "appstore", "adhoc", "enterprise"
+
+app_identifier(["com.unioneyes.app"])
+
+username("your-apple-id@example.com")
+
+# Uncomment for specific Git branch
+# git_branch("main")
+
+# Uncomment if using a private Git repository
+# git_basic_authorization(Base64.strict_encode64("username:personal_access_token"))

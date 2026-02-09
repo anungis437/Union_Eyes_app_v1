@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 export const dynamic = 'force-dynamic';
@@ -31,7 +31,7 @@ const calculateStipendsSchema = z.object({
  * GET /api/strike/disbursements
  * List stipend disbursements for a strike fund
  */
-export const GET = withEnhancedRoleAuth(60, async (request, context) => {
+export const GET = withRoleAuth('steward', async (request, context) => {
   try {
     const queryResult = listDisbursementsSchema.safeParse(
       Object.fromEntries(request.nextUrl.searchParams)
@@ -116,7 +116,7 @@ export const GET = withEnhancedRoleAuth(60, async (request, context) => {
  * POST /api/strike/disbursements/calculate
  * Calculate stipends for eligible members for a specific week
  */
-export const POST = withEnhancedRoleAuth(90, async (request, context) => {
+export const POST = withRoleAuth(90, async (request, context) => {
   try {
     const body = await request.json();
     const parsed = calculateStipendsSchema.safeParse(body);

@@ -12,7 +12,7 @@ import { db, organizations } from "@/db";
 import { arbitrationPrecedents } from "@/db/schema";
 import { eq, and, or, ilike, inArray, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 // Helper to check access
 async function canAccessPrecedent(

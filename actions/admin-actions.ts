@@ -9,7 +9,9 @@
  * - All queries use provided transaction for RLS enforcement
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@/lib/api-auth-guard';
+import { requireAdmin } from '@/lib/auth/rbac-server';
+import { db } from '@/db/db';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { tenantUsers, users } from "@/db/schema/user-management-schema";
 import { tenants, tenantConfigurations, tenantUsage } from "@/db/schema/tenant-management-schema";

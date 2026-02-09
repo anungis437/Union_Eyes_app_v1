@@ -10,7 +10,7 @@ import { tenantUsers } from '@/db/schema/user-management-schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // This route uses dynamic features and must not be statically generated
 export const dynamic = 'force-dynamic';
@@ -43,7 +43,7 @@ async function checkAdminRole(userId: string): Promise<boolean> {
  * GET /api/admin/jobs
  * Get job queue statistics (admin only)
  */
-export const GET = withEnhancedRoleAuth(90, async (request, context) => {
+export const GET = withRoleAuth(90, async (request, context) => {
   const parsed = jobsQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });

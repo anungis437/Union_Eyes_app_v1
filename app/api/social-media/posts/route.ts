@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSocialMediaService } from '@/lib/social-media/social-media-service';
 import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
@@ -24,8 +24,7 @@ function getSupabaseClient() {
   return supabaseClient;
 }
 
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
   try {
       const { userId, organizationId } = context;
 
@@ -103,14 +102,9 @@ export const GET = async (request: NextRequest) => {
       console.error('Unexpected error:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-    })(request);
-};
+});
 
-export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(40, async (request, context) => {
-  try {
-      const { userId, organizationId } = context;
-
+export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
   try {
       const { userId, organizationId } = context;
 
@@ -222,11 +216,9 @@ export const POST = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-    })(request);
-};
+});
 
-export const DELETE = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+export const DELETE = withRoleAuth(20, async (request: NextRequest, context) => {
   try {
       const { userId, organizationId } = context;
       
@@ -275,5 +267,4 @@ export const DELETE = async (request: NextRequest) => {
         { status: 500 }
       );
     }
-    })(request);
-};
+});

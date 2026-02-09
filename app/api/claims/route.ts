@@ -12,7 +12,7 @@ import { z } from "zod";
 import { claims } from "@/db/schema/claims-schema";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
@@ -41,7 +41,7 @@ const createClaimSchema = z.object({
  * Fetch all claims with optional filtering
  * Protected by tenant middleware - only returns claims for the user's current tenant
  */
-export const GET = withEnhancedRoleAuth(30, async (request, context) => {
+export const GET = withRoleAuth(30, async (request, context) => {
   const { userId, organizationId } = context;
 
     try {
@@ -156,7 +156,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
  * Create a new claim
  * Protected by tenant middleware - claim will be created in the user's current tenant
  */
-export const POST = withEnhancedRoleAuth(30, async (request, context) => {
+export const POST = withRoleAuth(30, async (request, context) => {
   const { userId, organizationId } = context;
 
   // Check rate limit for claims operations

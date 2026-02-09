@@ -6,7 +6,7 @@ import {
   getTaxFilingStatus,
 } from '@/lib/services/strike-fund-tax-service';
 import type { T106FilingRequest, T106FilingResponse } from '@/lib/types/compliance-api-types';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';

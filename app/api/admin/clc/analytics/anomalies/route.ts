@@ -13,11 +13,11 @@ import { detectAnomalies } from '@/services/clc/compliance-reports';
 import { db } from '@/database';
 import { perCapitaRemittances } from '@/db/schema/clc-per-capita-schema';
 import { sql } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
   try {

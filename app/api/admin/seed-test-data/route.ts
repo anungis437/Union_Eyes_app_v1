@@ -16,10 +16,10 @@ import { claims, organizationMembers, profiles } from "@/db/schema";
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {

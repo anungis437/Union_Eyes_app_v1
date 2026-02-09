@@ -16,7 +16,7 @@ import { inArray, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
 // POST /api/clause-library/compare - Compare multiple clauses
 export const POST = async (request: NextRequest) => {

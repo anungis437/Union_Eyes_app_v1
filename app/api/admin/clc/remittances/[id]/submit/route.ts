@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { perCapitaRemittances } from '@/db/schema';
 import { eq, sql } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
 const submitRemittanceSchema = z.object({
@@ -31,7 +31,7 @@ export const POST = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     let rawBody: unknown;
     try {
       rawBody = await request.json();

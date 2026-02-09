@@ -5,7 +5,7 @@ import { eq, and, count, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent, SQLInjectionScanner } from '@/lib/middleware/api-security';
 import { RequestValidator } from '@/lib/middleware/request-validation';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 interface RouteParams {
   params: {
@@ -27,7 +27,7 @@ const updateSessionSchema = z.object({
 });
 
 export const GET = async (request: NextRequest, { params }: RouteParams) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -210,7 +210,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
 };
 
 export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -427,7 +427,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
 };
 
 export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

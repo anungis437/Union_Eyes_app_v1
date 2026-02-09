@@ -22,7 +22,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizations } from "@/db/schema-organizations";
 import { createOrganization } from "@/db/queries/organization-queries";
 import { eq } from "drizzle-orm";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Type definitions for import
 type Jurisdiction = "federal" | "AB" | "BC" | "MB" | "NB" | "NL" | "NS" | "NT" | "NU" | "ON" | "PE" | "QC" | "SK" | "YT";
@@ -72,7 +72,7 @@ interface ImportResult {
 // =====================================================
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
   try {
@@ -366,8 +366,7 @@ export const POST = async (request: NextRequest) => {
 // =====================================================
 
 function parseCSV(text: string): ImportRow[] {
-  const lines = text.split("
-").filter((line) => line.trim());
+  const lines = text.split("\n").filter((line) => line.trim());
   if (lines.length < 2) return [];
 
   const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));

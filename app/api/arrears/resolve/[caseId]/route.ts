@@ -4,7 +4,7 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schema for resolving arrears case
@@ -21,7 +21,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: { caseId: string } }
 ) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     let rawBody: unknown;
     try {
       rawBody = await request.json();

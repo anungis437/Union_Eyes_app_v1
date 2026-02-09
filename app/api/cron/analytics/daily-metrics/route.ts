@@ -39,8 +39,7 @@ async function sendInsightNotifications(organizationId: string, insights: any[])
     // Create notification message
     const insightSummary = insights
       .map((insight) => `• ${insight.title} (${insight.priority})`)
-      .join('
-');
+      .join('\n');
 
     // Send email to each admin
     for (const admin of admins) {

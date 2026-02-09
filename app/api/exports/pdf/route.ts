@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { createExportJob, updateExportJobStatus } from '@/db/queries/analytics-queries';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 async function postHandler(req: NextRequest, context) {
   try {
@@ -58,4 +58,4 @@ async function postHandler(req: NextRequest, context) {
   }
 }
 
-export const POST = withOrganizationAuth(postHandler);
+export const POST = withApiAuth(postHandler);

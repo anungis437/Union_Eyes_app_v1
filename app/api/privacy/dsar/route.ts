@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { ProvincialPrivacyService, type Province } from "@/services/provincial-privacy-service";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Helper to check if user has admin/privacy officer role
@@ -26,7 +26,7 @@ async function checkPrivacyPermissions(userId: string): Promise<boolean> {
 }
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -69,7 +69,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {

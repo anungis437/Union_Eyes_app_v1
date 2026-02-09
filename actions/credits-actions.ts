@@ -1,7 +1,7 @@
 "use server";
 
 import { getProfileByUserId, updateProfile } from "@/db/queries/profiles-queries";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from '@/lib/api-auth-guard';
 import { revalidatePath } from "next/cache";
 
 // Constants

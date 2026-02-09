@@ -18,7 +18,7 @@ import {
 import { eq, and, or, ilike, inArray, gte, lte, sql } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 // Helper to check if user can access precedent based on sharing level
 async function canAccessPrecedent(
@@ -58,7 +58,7 @@ async function canAccessPrecedent(
 
 // GET /api/arbitration/precedents - List precedents with filters
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {
     const { userId } = context;
 
   try {
@@ -207,7 +207,7 @@ export const GET = async (request: NextRequest) => {
 
 // POST /api/arbitration/precedents - Create new precedent
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withRoleAuth(20, async (request, context) => {
     const { userId } = context;
 
   try {

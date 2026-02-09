@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { updateClaimStatus, addClaimNote } from "@/lib/workflow-engine";
 import { requireUser } from '@/lib/auth/unified-auth';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
@@ -10,7 +10,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
  * PATCH /api/claims/[id]/status
  * Update claim status with workflow validation (Role level 60 required for approve/reject operations)
  */
-export const PATCH = withEnhancedRoleAuth(60, async (request, context) => {
+export const PATCH = withRoleAuth('steward', async (request, context) => {
   const { userId, organizationId } = context;
 
   // Check rate limit for claims operations
@@ -113,7 +113,7 @@ export const PATCH = withEnhancedRoleAuth(60, async (request, context) => {
  * POST /api/claims/[id]/status/note
  * Add a note to the claim (Role level 30 required)
  */
-export const POST = withEnhancedRoleAuth(30, async (request, context) => {
+export const POST = withRoleAuth(30, async (request, context) => {
   const { userId, organizationId } = context;
 
   try {

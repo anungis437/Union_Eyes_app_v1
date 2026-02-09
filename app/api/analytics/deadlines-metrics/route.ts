@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getDeadlineAnalytics } from '@/db/queries/analytics-queries';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 async function handler(req: NextRequest, context) {
   try {
@@ -48,4 +48,4 @@ async function handler(req: NextRequest, context) {
   }
 }
 
-export const GET = withOrganizationAuth(handler);
+export const GET = withApiAuth(handler);

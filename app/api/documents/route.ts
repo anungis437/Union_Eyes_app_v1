@@ -13,7 +13,7 @@ import {
   searchDocuments,
   getDocumentStatistics 
 } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * Validation schema for creating documents
@@ -54,7 +54,7 @@ const createDocumentSchema = z.object({
  * - statistics: boolean - returns statistics instead of list
  * - search: boolean - uses advanced search
  */
-export const GET = withEnhancedRoleAuth(10, async (request, context) => {
+export const GET = withRoleAuth(10, async (request, context) => {
   const { userId, organizationId } = context;
 
   try {
@@ -225,7 +225,7 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
  * - accessLevel: string
  * - metadata: object
  */
-export const POST = withEnhancedRoleAuth(40, async (request, context) => {
+export const POST = withRoleAuth('member', async (request, context) => {
   const { userId, organizationId } = context;
 
   let rawBody: unknown;

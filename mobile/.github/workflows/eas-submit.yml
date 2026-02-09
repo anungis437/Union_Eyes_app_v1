@@ -1,0 +1,87 @@
+name: EAS Submit
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to submit'
+        required: true
+        type: choice
+        options:
+          - ios
+          - android
+          - all
+      track:
+        description: 'Release track'
+        required: true
+        type: choice
+        options:
+          - production
+          - beta
+          - preview
+      build_id:
+        description: 'Build ID (optional - uses latest if not provided)'
+        required: false
+        type: string
+
+jobs:
+  submit:
+    name: Submit to Stores
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ github.event.inputs.platform == 'all' && fromJSON('["ios", "android"]') || fromJSON(format('["{0}"]', github.event.inputs.platform)) }}
+    
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🍎 Submit to App Store (iOS)
+        if: matrix.platform == 'ios'
+        run: |
+          cd mobile
+          if [ -n "${{ github.event.inputs.build_id }}" ]; then
+            eas submit --platform ios --id ${{ github.event.inputs.build_id }} --profile ${{ github.event.inputs.track }}
+          else
+            eas submit --platform ios --latest --profile ${{ github.event.inputs.track }}
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
+          EXPO_APPLE_PASSWORD: ${{ secrets.EXPO_APPLE_PASSWORD }}
+
+      - name: 🤖 Submit to Play Store (Android)
+        if: matrix.platform == 'android'
+        run: |
+          cd mobile
+          if [ -n "${{ github.event.inputs.build_id }}" ]; then
+            eas submit --platform android --id ${{ github.event.inputs.build_id }} --profile ${{ github.event.inputs.track }}
+          else
+            eas submit --platform android --latest --profile ${{ github.event.inputs.track }}
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🚀 Notify team
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Store submission ${{ job.status }} 
+            Platform: ${{ matrix.platform }}
+            Track: ${{ github.event.inputs.track }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

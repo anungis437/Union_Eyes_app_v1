@@ -10,23 +10,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getAllDataSources } from '@/lib/report-executor';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 async function getHandler(req: NextRequest, context) {
   try {
-    const organizationId = context.organizationId;
-    const tenantId = organizationId;
-    const userId = context.userId;
-    
-    if (!tenantId || !userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId) {
       return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
-        { status: 400 }
+        { error: 'Authentication and tenant context required' },
+        { status: 401 }
       );
     }
-
+    
+    const tenantId = user.tenantId;
+    const userId = user.id;
+    
     // Get data sources from report executor registry
     const dataSources = getAllDataSources();
 
@@ -77,4 +76,4 @@ function getIconForDataSource(dataSourceId: string): string {
   return iconMap[dataSourceId] || 'Table';
 }
 
-export const GET = withOrganizationAuth(getHandler);
+export const GET = withApiAuth(getHandler);

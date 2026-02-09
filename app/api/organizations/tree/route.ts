@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 /**
  * API Route: Organization Tree
  * Get the full organization hierarchy tree

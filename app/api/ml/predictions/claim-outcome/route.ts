@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { z } from 'zod';
@@ -59,15 +59,7 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
   }
 
   try {
-  try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
+    const tenantId = organizationId || userId;
     const body = await request.json();
     
     let claimData: any;
@@ -133,4 +125,4 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       { status: 500 }
     );
   }
-}
+});

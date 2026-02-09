@@ -5,19 +5,19 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { SignatureService, AuditTrailService } from "@/lib/signature/signature-service";
 
-export async function GET(
+export const GET = withApiAuth(async (
   req: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    
     const documentId = params.id;
     const document = await SignatureService.getDocumentStatus(documentId);
 
@@ -31,18 +31,19 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiAuth(async (
   req: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getCurrentUser();
+    if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    
+    const userId = user.id;
     const documentId = params.id;
     const body = await req.json();
     const { action, reason } = body;
@@ -74,4 +75,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+});

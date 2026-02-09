@@ -22,7 +22,7 @@ import { defensibilityPacks, packDownloadLog, packVerificationLog } from '@/db/s
 import { claims } from '@/db/schema/claims-schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { verifyPackIntegrity } from '@/lib/services/defensibility-pack';
 import { createHash } from 'crypto';
@@ -35,7 +35,7 @@ import { createHash } from 'crypto';
  * - format: 'json' | 'download' (default: 'json')
  * - purpose: 'review' | 'arbitration' | 'legal' | 'member_request' (default: 'review')
  */
-export const GET = withEnhancedRoleAuth(30, async (request, context) => {
+export const GET = withRoleAuth(30, async (request, context) => {
   const { userId, organizationId, role, params } = context;
 
   try {
