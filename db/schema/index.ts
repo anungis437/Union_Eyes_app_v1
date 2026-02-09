@@ -106,3 +106,12 @@ export * from "./international-address-schema";
 export * from "./wage-benchmarks-schema";
 export * from "./lrb-agreements-schema";
 export * from "./clc-partnership-schema";
+
+// Rewards System
+export * from "./award-templates-schema";
+
+// Automation & Workflows
+export * from "./automation-rules-schema";
+
+// Grievance & Arbitration
+export * from "./grievance-schema";
