@@ -2,13 +2,18 @@
 import { getProfileByUserId } from "@/db/queries/profiles-queries";
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireApiAuth } from '@/lib/api-auth-guard';
 
-// This API is now only used for occasional status checks
-// The main cancellation flow happens through page revalidation
+/**
+ * GET /api/user/status
+ * Get current user's status
+ * 
+ * GUARDED: requireApiAuth
+ */
 export async function GET() {
   try {
-    const { userId } = await requireUser();
+    // Authentication guard
+    const { userId } = await requireApiAuth();
     
     if (!userId) {
       return NextResponse.json({ status: null }, { status: 401 });

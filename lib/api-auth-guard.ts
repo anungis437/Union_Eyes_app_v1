@@ -219,17 +219,71 @@ export { auth, currentUser } from '@clerk/nextjs/server';
 
 /**
  * Require authenticated user with organization context
- * (alias for existing patterns)
+ * 
+ * Modern, simple guard for API route handlers.
+ * 
+ * Usage:
+ * ```ts
+ * import { requireApiAuth } from '@/lib/api-auth-guard';
+ * 
+ * export async function GET(request: NextRequest) {
+ *   const { userId, organizationId } = await requireApiAuth({ tenant: true });
+ *   
+ *   // Your handler logic
+ *   return NextResponse.json({ data });
+ * }
+ * 
+ * // With role requirement:
+ * export async function POST(request: NextRequest) {
+ *   const { userId, organizationId, role } = await requireApiAuth({
+ *     tenant: true,
+ *     roles: ['admin', 'executive']
+ *   });
+ *   
+ *   // Your handler logic
+ * }
+ * ```
  */
-export async function requireApiUser() {
+export async function requireApiAuth(options: {
+  tenant?: boolean;
+  roles?: string[];
+  allowPublic?: boolean;
+} = {}) {
   const { userId, orgId } = await auth();
   
-  if (!userId) {
+  if (!userId && !options.allowPublic) {
     throw new Error('Unauthorized: Authentication required');
   }
   
-  return {
-    userId,
-    organizationId: orgId || null,
+  const context = {
+    userId: userId || null,
+    organizationId: options.tenant ? (orgId || null) : null,
+    role: null as string | null,
   };
+  
+  // If roles are specified, verify user has one of them
+  if (options.roles && options.roles.length > 0 && userId) {
+    // This would integrate with your role checking system
+    // For now, we'll add a placeholder that should be implemented
+    // based on your existing role system (withEnhancedRoleAuth, etc.)
+    const userRole = await getUserRoleFromDatabase(userId);
+    
+    if (!options.roles.includes(userRole)) {
+      throw new Error(`Forbidden: Requires one of roles: ${options.roles.join(', ')}`);
+    }
+    
+    context.role = userRole;
+  }
+  
+  return context;
+}
+
+/**
+ * Helper to get user role from database
+ * TODO: Integrate with existing role system
+ */
+async function getUserRoleFromDatabase(userId: string): Promise<string> {
+  // This is a placeholder - integrate with your existing role queries
+  // For now, return 'member' as default
+  return 'member';
 }

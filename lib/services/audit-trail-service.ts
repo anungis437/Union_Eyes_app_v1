@@ -505,6 +505,101 @@ export class AuditTrailService {
       ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
     ].join('\n');
   }
+
+  /**
+   * Log a privileged action (general-purpose audit logging)
+   * 
+   * Use this for non-financial mutations that require audit trails.
+   * Examples: user management, role changes, data access, configuration changes.
+   * 
+   * @param params - Privileged action details
+   * @returns Promise with audit log entry
+   */
+  static async logPrivilegedAction(params: {
+    actorId: string;
+    actorRole: string;
+    organizationId: string;
+    actionType: string;
+    entityType: string;
+    entityId: string;
+    metadata?: Record<string, any>;
+    visibilityScope: 'member' | 'staff' | 'admin' | 'system';
+    ipAddress?: string;
+    userAgent?: string;
+  }): Promise<any> {
+    // Import at method level to avoid circular dependencies
+    const { auditLogs } = await import('@/db/schema/audit-security-schema');
+
+    // Sanitize metadata to remove sensitive fields
+    const sanitizedMetadata = this.sanitizeMetadata(params.metadata || {});
+
+    const [entry] = await db.insert(auditLogs).values({
+      organizationId: params.organizationId,
+      userId: params.actorId,
+      action: params.actionType,
+      resourceType: params.entityType,
+      resourceId: params.entityId,
+      metadata: {
+        ...sanitizedMetadata,
+        actorRole: params.actorRole,
+        visibilityScope: params.visibilityScope,
+      },
+      ipAddress: params.ipAddress,
+      userAgent: params.userAgent,
+      severity: 'info',
+      outcome: 'success',
+    }).returning();
+
+    return entry;
+  }
+
+  /**
+   * Sanitize metadata to remove sensitive fields
+   * 
+   * Removes passwords, tokens, secret keys, and other sensitive data
+   * before storing in audit logs.
+   * 
+   * @param metadata - Raw metadata object
+   * @returns Sanitized metadata
+   */
+  static sanitizeMetadata(metadata: Record<string, any>): Record<string, any> {
+    const sensitiveKeys = [
+      'password',
+      'token',
+      'secret',
+      'apiKey',
+      'accessToken',
+      'refreshToken',
+      'sessionToken',
+      'privateKey',
+      'sin',  // Social Insurance Number
+      'ssn',  // Social Security Number
+      'creditCard',
+      'cardNumber',
+      'cvv',
+      'pin',
+    ];
+
+    const sanitized: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(metadata)) {
+      const lowerKey = key.toLowerCase();
+      
+      // Check if key matches sensitive pattern
+      const isSensitive = sensitiveKeys.some(sk => lowerKey.includes(sk.toLowerCase()));
+      
+      if (isSensitive) {
+        sanitized[key] = '[REDACTED]';
+      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // Recursively sanitize nested objects
+        sanitized[key] = this.sanitizeMetadata(value);
+      } else {
+        sanitized[key] = value;
+      }
+    }
+
+    return sanitized;
+  }
 }
 
 // ============================================================================

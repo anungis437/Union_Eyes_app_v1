@@ -23,7 +23,7 @@ import {
   index
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { claims } from "./claims-schema";
+import { claims, visibilityScopeEnum } from "./claims-schema";
 
 // ============================================================================
 // ENUMS
@@ -245,6 +245,9 @@ export const grievanceTransitions = pgTable("grievance_transitions", {
   
   // Duration tracking
   stageDurationDays: integer("stage_duration_days"),
+  
+  // Visibility scope (PR-4: dual-surface enforcement)
+  visibilityScope: visibilityScopeEnum("visibility_scope").default("staff").notNull(),
   
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, any>>().default({}),

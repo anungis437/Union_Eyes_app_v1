@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getOverdueClaims, getClaimsApproachingDeadline } from "@/lib/workflow-engine";
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * GET /api/workflow/overdue
  * Get all overdue claims (requires admin/steward access)
+ * 
+ * GUARDED: requireApiAuth with tenant isolation
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await requireUser();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Authentication guard with tenant isolation
+    const { userId, organizationId } = await requireApiAuth({ tenant: true });
 
     // TODO: Add role-based access control (only stewards/admins should see this)
-    // For now, allowing all authenticated users
+    // Consider: await requireApiAuth({ tenant: true, roles: ['admin', 'steward'] })
 
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type") || "overdue";

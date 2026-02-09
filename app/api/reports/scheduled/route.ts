@@ -5,6 +5,7 @@
  * POST /api/reports/scheduled - Create a new scheduled report
  * 
  * Part of: Phase 2.4 - Scheduled Reports System
+ * GUARDED: withOrganizationAuth (existing guard is acceptable)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,6 +19,8 @@ import {
 /**
  * GET /api/reports/scheduled
  * List all scheduled reports for the tenant
+ * 
+ * GUARDED: withOrganizationAuth
  */
 async function getHandler(req: NextRequest, context: OrganizationContext) {
   try {

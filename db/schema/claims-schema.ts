@@ -41,6 +41,14 @@ export const claimTypeEnum = pgEnum("claim_type", [
   "harassment_physical"
 ]);
 
+// Visibility scope enum for dual-surface enforcement (PR-4)
+export const visibilityScopeEnum = pgEnum("visibility_scope", [
+  "member",
+  "staff",
+  "admin",
+  "system"
+]);
+
 // Claims table
 export const claims = pgTable("claims", {
   claimId: uuid("claim_id").primaryKey().defaultRandom(),
@@ -114,6 +122,7 @@ export const claimUpdates = pgTable("claim_updates", {
   message: text("message").notNull(),
   createdBy: varchar("created_by", { length: 255 }).notNull(),
   isInternal: boolean("is_internal").default(false),
+  visibilityScope: visibilityScopeEnum("visibility_scope").default("member").notNull(),
   metadata: jsonb("metadata").default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
