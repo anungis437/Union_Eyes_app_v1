@@ -118,3 +118,21 @@ export * from "./grievance-schema";
 
 // PR-12: Defensibility Packs (System-of-Record Exports for Arbitration)
 export * from "./defensibility-packs-schema";
+
+// ============================================================================
+// EXPLICIT RE-EXPORTS TO RESOLVE AMBIGUITIES
+// ============================================================================
+
+// ClauseType: Use the one from cba-clauses-schema (more specific enum)
+export { type ClauseType } from "./cba-clauses-schema";
+
+// clcSyncLog: Use the one from clc-partnership-schema (main definition)
+export { clcSyncLog } from "./clc-partnership-schema";
+
+// Rewards: Use the ones from award-templates-schema and automation-rules-schema
+export { awardStatusEnum } from "./award-templates-schema";
+export { rewardWalletLedger } from "./award-templates-schema";
+export { automationRules, type AutomationRule } from "./automation-rules-schema";
+
+// Grievance: Use the ones from grievance-schema (main definitions)
+export { type GrievanceType, grievanceDeadlines, type GrievanceDeadline } from "./grievance-schema";
