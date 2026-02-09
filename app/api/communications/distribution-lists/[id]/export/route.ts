@@ -16,7 +16,7 @@ import {
   profiles 
 } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/api-auth-guard';
 
 export async function GET(
   request: NextRequest,

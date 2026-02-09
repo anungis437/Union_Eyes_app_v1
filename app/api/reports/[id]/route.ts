@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { db } from '@/db';
 import { sql } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';

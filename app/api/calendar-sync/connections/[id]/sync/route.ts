@@ -21,7 +21,7 @@ import {
   getDeltaLink,
 } from '@/lib/external-calendar-sync/microsoft-calendar-service';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {

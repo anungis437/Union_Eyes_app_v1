@@ -12,7 +12,7 @@ import { db } from '@/db/db';
 import { meetingRooms, roomBookings, calendarEvents } from '@/db/schema/calendar-schema';
 import { eq, and, or, gte, lte, desc } from 'drizzle-orm';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {

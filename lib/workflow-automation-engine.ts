@@ -4,15 +4,23 @@
 // Description: State machine for grievance workflow management with automatic
 //              transitions, SLA tracking, approval chains, and notifications
 // Created: 2025-12-06
+// Updated: 2026-02-09 (PR #9: FSM integration for transition validation)
 // ============================================================================
 
 import { db } from "@/db/db";
 import { eq, and, desc, asc, isNull, lte, gte, sql } from "drizzle-orm";
+import { 
+  validateClaimTransition, 
+  type ClaimStatus,
+  type ClaimPriority,
+  type ClaimTransitionContext 
+} from "@/lib/services/claim-workflow-fsm";
 import {
   claims,
   grievanceWorkflows,
   grievanceStages,
   grievanceTransitions,
+  grievanceApprovals,
   grievanceDeadlines,
   grievanceAssignments,
   type GrievanceWorkflow,
@@ -43,6 +51,14 @@ export type TransitionResult = {
   requiresApproval?: boolean;
   nextStage?: GrievanceStage;
   actionsTriggered?: string[];
+  fsmValidation?: {
+    warnings?: string[];
+    metadata?: {
+      slaCompliant: boolean;
+      daysInState: number;
+      nextDeadline?: Date;
+    };
+  };
 };
 
 export type WorkflowStatus = {
@@ -69,6 +85,51 @@ export type ApprovalRequest = {
   requestedAt: Date;
   reason?: string;
 };
+
+// ============================================================================
+// STAGE TYPE TO FSM STATUS MAPPING (PR #9)
+// ============================================================================
+
+/**
+ * Maps grievance stage types to FSM claim statuses for validation
+ * This enables FSM enforcement on grievance workflows
+ */
+const STAGE_TYPE_TO_STATUS_MAP: Record<string, ClaimStatus> = {
+  filed: 'submitted',
+  intake: 'under_review',
+  investigation: 'investigation',
+  step_1: 'assigned',
+  step_2: 'investigation',
+  step_3: 'investigation',
+  mediation: 'investigation',
+  pre_arbitration: 'under_review',
+  arbitration: 'investigation',
+  resolved: 'resolved',
+  withdrawn: 'rejected',
+  denied: 'rejected',
+  settled: 'closed',
+};
+
+/**
+ * Get FSM status from grievance stage type
+ */
+function getStatusFromStageType(stageType: string): ClaimStatus {
+  return STAGE_TYPE_TO_STATUS_MAP[stageType] || 'under_review';
+}
+
+/**
+ * Map user ID to role level for FSM validation
+ * In production, this should query the user's actual role from database
+ */
+async function getUserRole(userId: string, tenantId: string): Promise<string> {
+  // TODO: Replace with actual role lookup from database
+  // For now, assume system users have admin role
+  if (userId === 'system') return 'system';
+  
+  // Simple heuristic: check if user is in organization admins
+  // This should be replaced with proper role lookup
+  return 'steward'; // Default to steward for non-system users
+}
 
 // ============================================================================
 // WORKFLOW INITIALIZATION
@@ -208,6 +269,7 @@ export async function transitionToStage(
     notes?: string;
     requiresApproval?: boolean;
     triggerType?: "manual" | "automatic" | "deadline" | "approval";
+    priority?: ClaimPriority;
   } = {}
 ): Promise<TransitionResult> {
   try {
@@ -215,9 +277,21 @@ export async function transitionToStage(
     const currentTransition = await db.query.grievanceTransitions.findFirst({
       where: eq(grievanceTransitions.claimId, claimId),
       orderBy: [desc(grievanceTransitions.transitionedAt)],
+      with: {
+        fromStage: true,
+        toStage: true,
+      },
     });
 
     const currentStageId = currentTransition?.toStageId;
+
+    // Get current stage details (for FSM validation)
+    let currentStage: GrievanceStage | undefined;
+    if (currentStageId) {
+      currentStage = await db.query.grievanceStages.findFirst({
+        where: eq(grievanceStages.id, currentStageId),
+      });
+    }
 
     // Get target stage details
     const toStage = await db.query.grievanceStages.findFirst({
@@ -227,6 +301,70 @@ export async function transitionToStage(
     if (!toStage) {
       return { success: false, error: "Target stage not found" };
     }
+
+    // ========================================================================
+    // PR #9: FSM VALIDATION (Enforce state machine rules)
+    // ========================================================================
+
+    // Get claim details for FSM validation
+    const claim = await db.query.claims.findFirst({
+      where: eq(claims.claimId, claimId),
+    });
+
+    if (!claim) {
+      return { success: false, error: "Claim not found" };
+    }
+
+    // Map stage types to FSM statuses
+    const currentStatus = currentStage 
+      ? getStatusFromStageType(currentStage.stageType)
+      : 'submitted';
+    const targetStatus = getStatusFromStageType(toStage.stageType);
+
+    // Get user role for permission check
+    const userRole = await getUserRole(userId, tenantId);
+
+    // Check if claim has required documentation
+    const hasRequiredDocumentation = options.notes ? options.notes.length > 0 : false;
+
+    // TODO: Check for unresolved critical signals (integrate with LRO signals)
+    const hasUnresolvedCriticalSignals = false;
+
+    // Build FSM validation context
+    const fsmContext: ClaimTransitionContext = {
+      claimId,
+      currentStatus,
+      targetStatus,
+      userId,
+      userRole,
+      priority: (options.priority || claim.priority || 'medium') as ClaimPriority,
+      statusChangedAt: currentTransition?.transitionedAt || claim.createdAt || new Date(),
+      hasUnresolvedCriticalSignals,
+      hasRequiredDocumentation,
+      isOverdue: false, // TODO: Calculate from SLA service
+      notes: options.notes,
+    };
+
+    // Validate transition with FSM
+    const fsmValidation = validateClaimTransition(fsmContext);
+
+    if (!fsmValidation.allowed) {
+      return {
+        success: false,
+        error: `FSM Validation Failed: ${fsmValidation.reason}`,
+        requiresApproval: false,
+        fsmValidation: {
+          warnings: fsmValidation.requiredActions,
+        },
+      };
+    }
+
+    // Log FSM warnings (if any) but allow transition
+    if (fsmValidation.warnings && fsmValidation.warnings.length > 0) {
+      console.warn('FSM Warnings for transition:', fsmValidation.warnings);
+    }
+
+    // ========================================================================
 
     // Check if approval required
     if (toStage.requireApproval && !options.requiresApproval) {
@@ -319,6 +457,10 @@ export async function transitionToStage(
       transitionId: transition.id,
       nextStage: toStage,
       actionsTriggered,
+      fsmValidation: {
+        warnings: fsmValidation.warnings,
+        metadata: fsmValidation.metadata,
+      },
     };
   } catch (error) {
     console.error("Error transitioning stage:", error);
@@ -352,14 +494,20 @@ export async function approveTransition(
       return { success: false, error: "Pending transition not found" };
     }
 
-    // Update transition with approval
+    // PR #10: Create append-only approval record (immutable transition history)
+    await db.insert(grievanceApprovals).values({
+      organizationId: tenantId,
+      transitionId: transitionId,
+      approverUserId: approverId,
+      action: 'approved',
+      reviewedAt: new Date(),
+      metadata: { originalTransition: transition },
+    });
+
+    // Mark transition as no longer requiring approval
     await db
       .update(grievanceTransitions)
-      .set({
-        requiresApproval: false,
-        approvedBy: approverId,
-        approvedAt: new Date(),
-      })
+      .set({ requiresApproval: false })
       .where(eq(grievanceTransitions.id, transitionId));
 
     // Execute the transition
@@ -394,7 +542,18 @@ export async function rejectTransition(
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Update transition with rejection
+    // PR #10: Create append-only rejection record (immutable transition history)
+    await db.insert(grievanceApprovals).values({
+      organizationId: tenantId,
+      transitionId: transitionId,
+      approverUserId: rejectorId,
+      action: 'rejected',
+      rejectionReason: reason,
+      reviewedAt: new Date(),
+      metadata: {},
+    });
+
+    // Mark transition as no longer requiring approval and append rejection note
     await db
       .update(grievanceTransitions)
       .set({
@@ -667,9 +826,19 @@ async function evaluateConditions(
 
   if (!claim) return false;
 
+  // PR #14: Type-safe field access with proper validation
+  const getClaimField = (fieldName: string): unknown => {
+    // Runtime check for valid claim fields
+    if (fieldName in claim) {
+      return (claim as Record<string, unknown>)[fieldName];
+    }
+    console.warn(`Invalid field name: ${fieldName}`);
+    return undefined;
+  };
+
   // Evaluate each condition
   for (const condition of conditions) {
-    const fieldValue = (claim as any)[condition.field];
+    const fieldValue = getClaimField(condition.field);
 
     switch (condition.operator) {
       case "equals":

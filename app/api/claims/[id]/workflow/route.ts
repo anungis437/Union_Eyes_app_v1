@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { claims } from "@/db/schema/claims-schema";
 import { eq } from "drizzle-orm";
 import { getClaimWorkflowStatus } from "@/lib/workflow-engine";
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 

@@ -10,7 +10,7 @@ import {
   createVotingAuditLog,
 } from '@/lib/services/voting-crypto-service';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 interface RouteParams {
   params: {

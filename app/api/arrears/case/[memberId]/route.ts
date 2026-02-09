@@ -4,7 +4,7 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { arrearsCases, members, duesTransactions } from '@/services/financial-service/src/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 /**
  * Get detailed arrears case information

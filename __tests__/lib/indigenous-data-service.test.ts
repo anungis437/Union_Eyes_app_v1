@@ -17,11 +17,69 @@ vi.mock('@/db', () => ({
   db: {
     query: {
       members: {
-        findFirst: vi.fn()
+        findFirst: vi.fn().mockResolvedValue(null)
+      },
+      indigenousMemberData: {
+        findFirst: vi.fn().mockResolvedValue({
+          userId: 'member-001',
+          bandCouncilId: 'bc-001',
+          bandCouncil: {
+            id: 'bc-001',
+            bandName: 'Example First Nation'
+          }
+        })
+      },
+      bandCouncilConsent: {
+        findMany: vi.fn().mockResolvedValue([{
+          id: 'BCA-001',
+          bandCouncilId: 'bc-001',
+          consentGiven: true,
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        }]),
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'BCA-001',
+          bandCouncilId: 'bc-001',
+          consentGiven: true,
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        })
+      },
+      bandCouncils: {
+        findMany: vi.fn().mockImplementation((options) => {
+          // Mock findMany to respect where clauses
+          const allBandCouncils = [{
+            id: 'bc-001',
+            bandName: 'Example First Nation',
+            bandNumber: 'BN-001',
+            onReserveStorageEnabled: false,
+            dataResidencyRequired: true
+          }];
+          
+          // If querying for onReserveStorageEnabled: true, return empty
+          if (options?.where) {
+            return Promise.resolve([]);
+          }
+          
+          return Promise.resolve(allBandCouncils);
+        }),
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'bc-001',
+          bandName: 'Example First Nation',
+          bandNumber: 'BN-001',
+          onReserveStorageEnabled: false,
+          dataResidencyRequired: true
+        })
+      },
+      indigenousDataAccessLog: {
+        findMany: vi.fn().mockResolvedValue([])
       }
     },
     insert: vi.fn(() => ({
       values: vi.fn(() => Promise.resolve())
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => Promise.resolve())
+      }))
     }))
   }
 }));
@@ -58,14 +116,14 @@ describe('IndigenousDataService', () => {
         'user-001',
         'employment',
         'Generate report',
-        'public'
+        'standard'
       );
 
-      expect(request.id).toMatch(/^DAR-\d+$/);
+      expect(request.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(request.requesterId).toBe('user-001');
       expect(request.dataType).toBe('employment');
       expect(request.purpose).toBe('Generate report');
-      expect(request.sensitivity).toBe('public');
+      expect(request.sensitivity).toBe('standard');
       expect(request.requiresBandCouncilApproval).toBe(false);
       expect(request.requiresElderApproval).toBe(false);
       expect(request.status).toBe('pending');
@@ -89,10 +147,10 @@ describe('IndigenousDataService', () => {
         'user-001',
         'health_records',
         'Audit compliance',
-        'restricted'
+        'sensitive'
       );
 
-      expect(request.sensitivity).toBe('restricted');
+      expect(request.sensitivity).toBe('sensitive');
       expect(request.requiresBandCouncilApproval).toBe(true);
       expect(request.requiresElderApproval).toBe(false);
     });
@@ -102,7 +160,7 @@ describe('IndigenousDataService', () => {
         'user-001',
         'employment',
         'Generate report',
-        'internal'
+        'standard'
       );
 
       expect(request.requestedAt).toBeInstanceOf(Date);
@@ -114,11 +172,11 @@ describe('IndigenousDataService', () => {
       const result = await service.checkAccessPermission(
         'user-001',
         'employment',
-        'public'
+        'standard'
       );
 
       expect(result.hasAccess).toBe(true);
-      expect(result.reason).toContain('Public data');
+      expect(result.reason).toContain('Standard data');
     });
 
     it('should deny access to sacred data without approval', async () => {
@@ -129,40 +187,40 @@ describe('IndigenousDataService', () => {
       );
 
       expect(result.hasAccess).toBe(false);
-      expect(result.reason).toContain('Band Council approval');
+      expect(result.reason).toContain('explicit approval');
     });
 
     it('should deny access to restricted data without approval', async () => {
       const result = await service.checkAccessPermission(
         'user-001',
         'health_records',
-        'restricted'
+        'sensitive'
       );
 
       expect(result.hasAccess).toBe(false);
-      expect(result.reason).toContain('Band Council approval');
+      expect(result.reason).toContain('explicit approval');
     });
 
     it('should deny external access to internal data', async () => {
       const result = await service.checkAccessPermission(
         'external-user-001',
         'employment',
-        'internal'
+        'sensitive'
       );
 
       expect(result.hasAccess).toBe(false);
-      expect(result.reason).toContain('External access requires');
+      expect(result.reason).toContain('explicit approval');
     });
 
     it('should allow community member access to internal data', async () => {
       const result = await service.checkAccessPermission(
         'member-001',
         'employment',
-        'internal'
+        'standard'
       );
 
       expect(result.hasAccess).toBe(true);
-      expect(result.reason).toContain('community members');
+      expect(result.reason).toContain('basic authentication');
     });
   });
 
@@ -254,7 +312,7 @@ describe('IndigenousDataService', () => {
         'Community health records and medical information'
       );
 
-      expect(result.sensitivity).toBe('restricted');
+      expect(result.sensitivity).toBe('sensitive');
       expect(result.requiresElderApproval).toBe(false);
       expect(result.culturalProtocols).toContain('Band Council approval required');
     });
@@ -265,7 +323,7 @@ describe('IndigenousDataService', () => {
         'Child welfare case files and social services documentation'
       );
 
-      expect(result.sensitivity).toBe('restricted');
+      expect(result.sensitivity).toBe('sensitive');
       expect(result.requiresElderApproval).toBe(false);
     });
 
@@ -275,7 +333,7 @@ describe('IndigenousDataService', () => {
         'Member SIN and status number records'
       );
 
-      expect(result.sensitivity).toBe('restricted');
+      expect(result.sensitivity).toBe('sensitive');
       expect(result.requiresElderApproval).toBe(false);
     });
 
@@ -285,9 +343,9 @@ describe('IndigenousDataService', () => {
         'General employment records and payroll information'
       );
 
-      expect(result.sensitivity).toBe('internal');
+      expect(result.sensitivity).toBe('standard');
       expect(result.requiresElderApproval).toBe(false);
-      expect(result.culturalProtocols[0]).toContain('Standard community data protocols');
+      expect(result.culturalProtocols[0]).toContain('Standard data handling protocols');
     });
   });
 
@@ -299,7 +357,7 @@ describe('IndigenousDataService', () => {
         'Document traditional practices for preservation'
       );
 
-      expect(result.requestId).toMatch(/^ELD-\d+$/);
+      expect(result.requestId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(result.status).toBe('pending');
       expect(result.message).toContain('Elder approval request submitted');
       expect(result.message).toContain('7 days');
@@ -321,14 +379,14 @@ describe('IndigenousDataService', () => {
       const report = await service.generateComplianceReport();
 
       expect(report.ocapPrinciples.ownership.compliant).toBe(true);
-      expect(report.ocapPrinciples.ownership.notes).toContain('Band Council agreements in place for all Indigenous members');
+      expect(report.ocapPrinciples.ownership.notes.some(n => n.includes('active Band Council agreement'))).toBe(true);
     });
 
     it('should indicate control compliance', async () => {
       const report = await service.generateComplianceReport();
 
       expect(report.ocapPrinciples.control.compliant).toBe(true);
-      expect(report.ocapPrinciples.control.notes).toContain('All data access requires Band Council approval');
+      expect(report.ocapPrinciples.control.notes.some(n => n.includes('All data access requires appropriate approval'))).toBe(true);
     });
 
     it('should indicate access compliance', async () => {
@@ -342,7 +400,7 @@ describe('IndigenousDataService', () => {
       const report = await service.generateComplianceReport();
 
       expect(report.ocapPrinciples.possession.compliant).toBe(false);
-      expect(report.ocapPrinciples.possession.notes).toContain('No on-premise servers currently deployed');
+      expect(report.ocapPrinciples.possession.notes.some(n => n.includes('0.0% of reserves have on-premise storage'))).toBe(true);
     });
 
     it('should include data access request statistics', async () => {
@@ -372,7 +430,7 @@ describe('IndigenousDataService', () => {
         new Date('2026-02-07')
       );
 
-      expect(result.exportId).toMatch(/^EXPORT-\d+$/);
+      expect(result.exportId).toMatch(/^EXPORT-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       expect(result.recordCount).toBeGreaterThanOrEqual(0);
       expect(result.exportPath).toContain('/exports/');
       expect(result.encrypted).toBe(true);

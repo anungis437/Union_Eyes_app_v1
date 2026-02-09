@@ -16,7 +16,7 @@ import {
 import { eq } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 // Helper to log cross-org access
 async function logCrossOrgAccess(

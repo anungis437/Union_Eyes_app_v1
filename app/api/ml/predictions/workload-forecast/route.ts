@@ -1,4 +1,5 @@
-import { requireUser } from '@/lib/api-auth-guard';
+import { requireUser, withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 /**
  * UC-08: Workload Forecasting API
  * 

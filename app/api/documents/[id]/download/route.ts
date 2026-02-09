@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { getDocumentById } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**

@@ -17,7 +17,7 @@ import {
 import { eq, and } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 type RouteContext = {
   params: Promise<{ id: string }>;

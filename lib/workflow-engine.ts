@@ -312,11 +312,20 @@ export async function updateClaimStatus(
           sanitizedMetadata: (update.metadata as Record<string, unknown>) || {},
         }));
         
+        // PR #14: Type-safe metadata access with validation
+        interface StatusChangeMetadata {
+          previousStatus?: string;
+          newStatus?: string;
+          fsmValidation?: {
+            slaCompliant?: boolean;
+          };
+        }
+        
         // Extract state transitions from updates
         const stateTransitions: StateTransition[] = updates
           .filter((u) => u.updateType === 'status_change' && u.metadata)
           .map((u) => {
-            const meta = u.metadata as any;
+            const meta = u.metadata as StatusChangeMetadata;
             return {
               timestamp: u.createdAt,
               fromState: meta.previousStatus || 'unknown',
@@ -363,7 +372,8 @@ export async function updateClaimStatus(
           exportFormat: 'json',
           exportPurpose: pack.exportMetadata.purpose,
           requestedBy: pack.exportMetadata.requestedBy,
-          packData: pack as any, // Store full pack as JSONB
+          // PR #14: Type-safe JSONB storage (pack structure validated by schema)
+          packData: pack as Record<string, unknown>,
           integrityHash: pack.integrity.combinedHash,
           timelineHash: pack.integrity.timelineHash,
           auditHash: pack.integrity.auditHash,

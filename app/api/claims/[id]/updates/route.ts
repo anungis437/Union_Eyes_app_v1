@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { claimUpdates } from "@/db/schema/claims-schema";
 import { desc, eq } from "drizzle-orm";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**

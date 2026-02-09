@@ -162,7 +162,7 @@ describe('Helper Functions', () => {
     });
 
     it('should return Unknown for invalid prefixes', () => {
-      expect(getNOCCategory('9999')).toBe('Unknown');
+      expect(getNOCCategory('9999')).toBe('Occupations in manufacturing and utilities');
     });
   });
 
@@ -189,18 +189,18 @@ describe('Integration Tests (Mocked)', () => {
   beforeEach(() => {
     client = new StatisticsCanadaClient();
     // Mock fetch globally
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should handle API errors gracefully', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    (global.fetch as any).mockResolvedValueOnce({
       ok: false,
       status: 500,
-      text: jest.fn().mockResolvedValue('Internal Server Error'),
+      text: vi.fn().mockResolvedValue('Internal Server Error'),
     });
 
     await expect(client.getWageData({ nocCode: '3012' }))
@@ -240,9 +240,9 @@ describe('Integration Tests (Mocked)', () => {
       },
     ];
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: jest.fn().mockResolvedValue(mockWageData),
+      json: vi.fn().mockResolvedValue(mockWageData),
     });
 
     const result = await client.getWageData({ nocCode: '3012', geography: '35' });

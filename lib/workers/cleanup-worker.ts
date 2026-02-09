@@ -36,21 +36,27 @@ const REPORTS_DIR = process.env.REPORTS_DIR || './reports';
 const TEMP_DIR = process.env.TEMP_DIR || './temp';
 
 /**
- * Clean up old audit logs
+ * PR #11: Archive old audit logs (immutable audit trail)
+ * Marks logs as archived instead of deleting for compliance.
  */
 async function cleanupLogs(olderThanDays: number) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
-  console.log(`Cleaning up audit logs older than ${cutoffDate.toISOString()}`);
+  console.log(`Archiving audit logs older than ${cutoffDate.toISOString()}`);
 
   const result = await db
-    .delete(auditLogs)
+    .update(auditLogs)
+    .set({
+      archived: true,
+      archivedAt: new Date(),
+      archivedPath: null, // Can be set to S3/filesystem path in future
+    })
     .where(lt(auditLogs.createdAt, cutoffDate));
 
-  console.log(`Deleted old audit logs`);
+  console.log(`Archived ${result.rowCount || 0} audit logs`);
 
-  return { deleted: result.length };
+  return { archived: result.rowCount || 0 };
 }
 
 /**

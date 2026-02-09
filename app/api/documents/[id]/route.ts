@@ -15,7 +15,7 @@ import {
   permanentlyDeleteDocument,
   getDocumentVersions
 } from "@/lib/services/document-service";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 /**
  * Validation schema for updating documents

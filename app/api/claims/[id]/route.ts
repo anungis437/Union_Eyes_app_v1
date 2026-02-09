@@ -14,8 +14,9 @@ import { claims, claimUpdates } from "@/db/schema/claims-schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
 
 /**
  * Validation schema for updating claims
@@ -160,11 +161,47 @@ export const PATCH = async (
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
         }
 
-        // Update claim - RLS policies enforce tenant isolation
+        // SECURITY FIX (PR #7): Extract status from body to enforce FSM validation
+        const { status, ...safeUpdates } = body;
+
+        // If status change requested, enforce FSM validation via workflow engine
+        if (status && status !== existingClaim.status) {
+          const result = await updateClaimStatus(
+            claimNumber,
+            status as ClaimStatus,
+            userId,
+            'Status update via API',
+            tx
+          );
+
+          if (!result.success) {
+            logApiAuditEvent({
+              timestamp: new Date().toISOString(),
+              userId,
+              endpoint: `/api/claims/${claimNumber}`,
+              method: 'PATCH',
+              eventType: 'validation_failed',
+              severity: 'medium',
+              dataType: 'CLAIMS',
+              details: {
+                reason: 'FSM validation failed',
+                currentStatus: existingClaim.status,
+                requestedStatus: status,
+                error: result.error,
+              },
+            });
+            return NextResponse.json(
+              { error: result.error || 'Invalid status transition' },
+              { status: 400 }
+            );
+          }
+        }
+
+        // Update other fields safely (status excluded from spread)
         const [updatedClaim] = await tx
           .update(claims)
           .set({
-            ...body,
+            ...safeUpdates,
             updatedAt: new Date(),
           })
           .where(eq(claims.claimId, existingClaim.claimId))
@@ -242,11 +279,41 @@ export const DELETE = async (
           return NextResponse.json({ error: "Claim not found" }, { status: 404 });
         }
 
-        // Soft delete by setting closedAt - RLS policies enforce tenant isolation
+        // SECURITY FIX (PR #7): Enforce FSM validation via workflow engine
+        // This ensures cooling-off periods, role checks, and signal checks are enforced
+        const result = await updateClaimStatus(
+          claimNumber,
+          'closed',
+          userId,
+          'Claim closed via DELETE endpoint',
+          tx
+        );
+
+        if (!result.success) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId,
+            endpoint: `/api/claims/${claimNumber}`,
+            method: 'DELETE',
+            eventType: 'validation_failed',
+            severity: 'medium',
+            dataType: 'CLAIMS',
+            details: {
+              reason: 'FSM validation failed',
+              currentStatus: existingClaim.status,
+              error: result.error,
+            },
+          });
+          return NextResponse.json(
+            { error: result.error || 'Cannot close claim at this time' },
+            { status: 400 }
+          );
+        }
+
+        // Update closedAt timestamp after successful FSM transition
         await tx
           .update(claims)
           .set({
-            status: "closed",
             closedAt: new Date(),
             updatedAt: new Date(),
           })

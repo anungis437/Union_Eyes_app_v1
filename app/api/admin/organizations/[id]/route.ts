@@ -27,7 +27,7 @@ import {
 } from "@/db/queries/organization-queries";
 import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 // =====================================================
 // GET - Get Organization by ID

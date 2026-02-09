@@ -7,7 +7,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 export const POST = async (request: NextRequest, { params }: { params: { action: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {

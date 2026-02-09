@@ -192,25 +192,45 @@ export async function getAuditStats(
 }
 
 /**
- * Delete old audit logs (for compliance with retention policies)
- * Note: In production, you may want to archive instead of delete
+ * PR #11: Archive old audit logs instead of deleting (immutable audit trail)
+ * Marks audit logs as archived for compliance with retention policies.
+ * Logs can be exported to cold storage (S3/JSON) and marked with archive path.
+ */
+export async function archiveOldAuditLogs(
+  organizationId: string,
+  beforeDate: Date,
+  archivePath?: string
+): Promise<number> {
+  const result = await db.update(auditLogs)
+    .set({
+      archived: true,
+      archivedAt: new Date(),
+      archivedPath: archivePath || null,
+    })
+    .where(
+      and(
+        eq(auditLogs.organizationId, organizationId),
+        lte(auditLogs.timestamp, beforeDate),
+        eq(auditLogs.archived, false) // Only archive non-archived logs
+      )
+    );
+
+  console.log(`[Audit] Archived ${result.rowCount} audit logs before ${beforeDate.toISOString()}`);
+  return result.rowCount || 0;
+}
+
+/**
+ * @deprecated Use archiveOldAuditLogs() instead. Direct deletion violates audit trail immutability.
+ * This function is disabled to prevent accidental data loss.
  */
 export async function deleteOldAuditLogs(
   organizationId: string,
   beforeDate: Date
 ): Promise<number> {
-  // In production, this should be carefully controlled
-  // Consider archiving to cold storage first
-  const result = await db.delete(auditLogs)
-    .where(
-      and(
-        eq(auditLogs.organizationId, organizationId),
-        lte(auditLogs.timestamp, beforeDate)
-      )
-    );
-
-  console.log(`[Audit] Deleted ${result.rowCount} audit logs before ${beforeDate.toISOString()}`);
-  return result.rowCount || 0;
+  throw new Error(
+    'PR #11: Direct audit log deletion is disabled. Use archiveOldAuditLogs() instead. ' +
+    'Audit logs must be archived (not deleted) for compliance and defensibility.'
+  );
 }
 
 /**

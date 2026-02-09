@@ -18,7 +18,7 @@ import { tenantUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 export const GET = async (request: NextRequest, { params }: { params: { userId: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {

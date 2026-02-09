@@ -12,7 +12,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { collectiveAgreements, cbaClause, cbaContacts, cbaVersionHistory } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {

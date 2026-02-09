@@ -12,7 +12,7 @@ import { sharedClauseLibrary } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 // PATCH /api/clause-library/[id]/share - Update sharing settings
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {

@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterCampaigns } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 

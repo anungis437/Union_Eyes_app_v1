@@ -179,54 +179,110 @@ export interface ApiGuardOptions {
 }
 
 // =============================================================================
-// PUBLIC & CRON ROUTES ALLOWLIST
+// PUBLIC & CRON ROUTES ALLOWLIST (PR #4: Single Source of Truth)
 // =============================================================================
+// 
+// SECURITY: This is the ONLY place where public routes should be defined.
+// Middleware.ts imports from here to ensure consistency.
+//
+// JUSTIFICATION REQUIRED: Every public route must have explicit documentation
+// explaining WHY it bypasses authentication.
+//
+// PATTERN GUIDELINES:
+// - Use exact paths (preferred): '/api/health'
+// - Use path prefixes for route groups: '/api/webhooks/' (must end with /)
+// - Minimize wildcards to reduce attack surface
+// - Never use broad wildcards like '/api/*'
+//
 
 /**
  * Public API routes that do NOT require authentication
+ * Each route is documented with justification
  */
 export const PUBLIC_API_ROUTES = new Set([
-  // Health checks and monitoring
-  '/api/health',
-  '/api/health/liveness',
-  '/api/status',
-  '/api/docs/openapi.json',
+  // ========================================================================
+  // HEALTH CHECKS & MONITORING
+  // Justification: Infrastructure monitoring, no sensitive data
+  // ========================================================================
+  '/api/health',              // Basic health check for uptime monitoring
+  '/api/health/liveness',      // Kubernetes liveness probe
+  '/api/status',               // System status endpoint for ops dashboards
+  '/api/docs/openapi.json',    // Public API documentation (describes public endpoints only)
   
-  // Webhooks (authenticate via signature verification)
-  '/api/webhooks/stripe',
-  '/api/webhooks/clc',
-  '/api/webhooks/signatures',
-  '/api/webhooks/whop',
-  '/api/signatures/webhooks/docusign',
-  '/api/integrations/shopify/webhooks',
-  '/api/stripe/webhooks',
-  '/api/whop/webhooks',
+  // ========================================================================
+  // WEBHOOKS
+  // Justification: External systems push events, authenticated via signatures
+  // ========================================================================
+  '/api/webhooks/stripe',      // Stripe payment events (verified via webhook signature)
+  '/api/webhooks/clc',         // CLC per-capita updates (verified via API key)
+  '/api/webhooks/signatures',  // DocuSign signature events (verified via webhook signature)
+  '/api/webhooks/whop',        // Whop membership events (verified via webhook signature)
+  '/api/signatures/webhooks/docusign', // Legacy DocuSign webhook endpoint
+  '/api/integrations/shopify/webhooks', // Shopify order events (verified via HMAC)
+  '/api/stripe/webhooks',      // Alternative Stripe webhook endpoint
+  '/api/whop/webhooks',        // Alternative Whop webhook endpoint
   
-  // Public checkout/payment flows
-  '/api/whop/unauthenticated-checkout',
-  '/api/whop/create-checkout',
+  // ========================================================================
+  // PUBLIC CHECKOUT/PAYMENT FLOWS
+  // Justification: Guest checkout required for payment processor integrations
+  // ========================================================================
+  '/api/whop/unauthenticated-checkout', // Guest checkout flow (creates session on success)
+  '/api/whop/create-checkout',          // Whop checkout creation (redirects to Whop auth)
   
-  // Public tracking/analytics (no sensitive data)
-  '/api/communications/track/open/*',
-  '/api/communications/track/click',
-  '/api/communications/unsubscribe/*',
+  // ========================================================================
+  // PUBLIC TRACKING/ANALYTICS
+  // Justification: Email opens/clicks tracking, must work without auth
+  // Note: These use path prefixes - handler validates token in URL
+  // ========================================================================
+  '/api/communications/track/',    // Email tracking endpoints (token-based auth in URL)
+  '/api/communications/unsubscribe/', // Email unsubscribe (token-based)
   
-  // Dev-only (should be removed in production)
-  '/api/sentry-example-api',
+  // ========================================================================
+  // DEV/TESTING ENDPOINTS
+  // Justification: Sentry integration testing
+  // WARNING: Should be disabled in production via feature flag
+  // ========================================================================
+  '/api/sentry-example-api',    // Sentry error testing (TODO: Remove in production)
 ]);
 
 /**
+ * Check if a given pathname matches any public route pattern
+ * Handles both exact matches and path prefix patterns
+ * 
+ * @param pathname - The request pathname to check (e.g., '/api/health')
+ * @returns true if pathname is public, false otherwise
+ */
+export function isPublicRoute(pathname: string): boolean {
+  // Check exact matches first (most common case)
+  if (PUBLIC_API_ROUTES.has(pathname)) {
+    return true;
+  }
+  
+  // Check path prefix patterns (routes ending with '/')
+  for (const route of PUBLIC_API_ROUTES) {
+    if (route.endsWith('/') && pathname.startsWith(route)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Cron job routes that authenticate via secret header
+ * 
+ * SECURITY: These routes check X-CRON-SECRET header matches CRON_SECRET env var
+ * Justification: Background jobs must run without user authentication
  */
 export const CRON_API_ROUTES = new Set([
-  '/api/cron/analytics/daily-metrics',
-  '/api/cron/education-reminders',
-  '/api/cron/monthly-dues',
-  '/api/cron/monthly-per-capita',
-  '/api/cron/overdue-notifications',
-  '/api/cron/scheduled-reports',
-  '/api/rewards/cron',
-  '/api/cron/external-data-sync',
+  '/api/cron/analytics/daily-metrics',  // Daily analytics aggregation
+  '/api/cron/education-reminders',      // Send education course reminders
+  '/api/cron/monthly-dues',             // Process monthly dues payments
+  '/api/cron/monthly-per-capita',       // CLC per-capita reporting
+  '/api/cron/overdue-notifications',    // Send overdue claim notifications
+  '/api/cron/scheduled-reports',        // Generate scheduled reports
+  '/api/rewards/cron',                  // Process rewards point expiration
+  '/api/cron/external-data-sync',       // Sync data from external systems
 ]);
 
 // =============================================================================
@@ -235,22 +291,18 @@ export const CRON_API_ROUTES = new Set([
 
 /**
  * Check if a route path is in the public allowlist
+ * Handles both exact matches and path prefix patterns (routes ending with '/')
  */
 export function isPublicRoute(pathname: string): boolean {
+  // Check exact matches first (most common case)
   if (PUBLIC_API_ROUTES.has(pathname)) {
     return true;
   }
   
-  // Pattern match for dynamic routes
+  // Check path prefix patterns (routes ending with '/')
   for (const route of PUBLIC_API_ROUTES) {
-    if (route.includes('[') || route.includes('*')) {
-      const pattern = route
-        .replace(/\[.*?\]/g, '[^/]+')
-        .replace(/\*/g, '.*');
-      const regex = new RegExp(`^${pattern}$`);
-      if (regex.test(pathname)) {
-        return true;
-      }
+    if (route.endsWith('/') && pathname.startsWith(route)) {
+      return true;
     }
   }
   
@@ -781,9 +833,10 @@ export function withEnhancedRoleAuth<T = any>(
 ) {
   return withApiAuth(async (request: NextRequest, baseContext: any) => {
     const startTime = Date.now();
-    const { userId, organizationId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
 
-    if (!userId || !organizationId) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized: Authentication required' },
         { status: 401 }
@@ -793,11 +846,12 @@ export function withEnhancedRoleAuth<T = any>(
     try {
       // Get member from context
       const userContext = await getUserContext();
+      const organizationId = userContext?.organizationId;
       const memberId = userContext?.memberId;
 
-      if (!memberId) {
+      if (!memberId || !organizationId) {
         await logAuditDenial(
-          { organizationId, userId, memberId: '' },
+          { organizationId: organizationId || '', userId, memberId: '' },
           options.auditAction || 'access_resource',
           'member',
           'No member ID in context',
@@ -927,9 +981,10 @@ export function withPermission<T = any>(
 ) {
   return withApiAuth(async (request: NextRequest, baseContext: any) => {
     const startTime = Date.now();
-    const { userId, organizationId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
 
-    if (!userId || !organizationId) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized: Authentication required' },
         { status: 401 }
@@ -938,11 +993,12 @@ export function withPermission<T = any>(
 
     try {
       const userContext = await getUserContext();
+      const organizationId = userContext?.organizationId;
       const memberId = userContext?.memberId;
 
-      if (!memberId) {
+      if (!memberId || !organizationId) {
         await logAuditDenial(
-          { organizationId, userId, memberId: '' },
+          { organizationId: organizationId || '', userId, memberId: '' },
           options.auditAction || requiredPermission,
           options.resourceType || 'resource',
           'No member ID in context',
@@ -1046,9 +1102,10 @@ export function withScopedRoleAuth<T = any>(
 ) {
   return withApiAuth(async (request: NextRequest, baseContext: any) => {
     const startTime = Date.now();
-    const { userId, organizationId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
 
-    if (!userId || !organizationId) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized: Authentication required' },
         { status: 401 }
@@ -1057,11 +1114,12 @@ export function withScopedRoleAuth<T = any>(
 
     try {
       const userContext = await getUserContext();
+      const organizationId = userContext?.organizationId;
       const memberId = userContext?.memberId;
 
-      if (!memberId) {
+      if (!memberId || !organizationId) {
         await logAuditDenial(
-          { organizationId, userId, memberId: '' },
+          { organizationId: organizationId || '', userId, memberId: '' },
           options.auditAction || `scoped_${roleCode}`,
           'role',
           'No member ID',

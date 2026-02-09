@@ -24,6 +24,12 @@ export const auditLogs = auditSecuritySchema.table("audit_logs", {
   outcome: varchar("outcome", { length: 20 }).default("success"),
   errorMessage: text("error_message"),
   metadata: jsonb("metadata").default(sql`'{}'::jsonb`),
+  
+  // PR #11: Archive support (never delete audit logs)
+  archived: boolean("archived").default(false).notNull(),
+  archivedAt: timestamp("archived_at", { withTimezone: true }),
+  archivedPath: text("archived_path"), // Path to archived file (S3, filesystem, etc.)
+  
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (table) => ({
   checkAction: check("valid_action", 

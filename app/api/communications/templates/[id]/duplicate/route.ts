@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { newsletterTemplates } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/api-auth-guard';
 
 export async function POST(
   request: NextRequest,

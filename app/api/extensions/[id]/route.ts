@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { approveDeadlineExtension, denyDeadlineExtension } from '@/db/queries/deadline-queries';
-import { getUserFromRequest } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/api-auth-guard';
 
 /**
  * PATCH /api/extensions/[id]
@@ -11,7 +11,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getUserFromRequest(request);
+    const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },

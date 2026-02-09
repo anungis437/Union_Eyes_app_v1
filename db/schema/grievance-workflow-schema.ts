@@ -641,6 +641,40 @@ export const grievanceCommunicationsRelations = relations(grievanceCommunication
 }));
 
 // ============================================================================
+// GRIEVANCE APPROVALS TABLE (PR #10: Immutable Transition History)
+// ============================================================================
+/**
+ * Append-only approval records for grievance transitions.
+ * Replaces mutable approvedBy/approvedAt fields in grievanceTransitions table.
+ * Each approval or rejection is a new INSERT, never UPDATE.
+ */
+export const grievanceApprovals = pgTable("grievance_approvals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").notNull(),
+  transitionId: uuid("transition_id").notNull().references(() => grievanceTransitions.id, { onDelete: "cascade" }),
+  
+  // Approval details
+  approverUserId: varchar("approver_user_id", { length: 255 }).notNull(),
+  approverRole: varchar("approver_role", { length: 50 }),
+  action: varchar("action", { length: 20 }).notNull(), // 'approved', 'rejected', 'returned'
+  
+  // Approval metadata
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }).defaultNow(),
+  comment: text("comment"),
+  rejectionReason: text("rejection_reason"),
+  
+  // Metadata
+  metadata: jsonb("metadata").$type<Record<string, any>>().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  organizationIdx: index("idx_grievance_approvals_organization").on(table.organizationId),
+  transitionIdx: index("idx_grievance_approvals_transition").on(table.transitionId),
+  approverIdx: index("idx_grievance_approvals_approver").on(table.approverUserId),
+  actionIdx: index("idx_grievance_approvals_action").on(table.action),
+  reviewedAtIdx: index("idx_grievance_approvals_reviewed_at").on(table.reviewedAt),
+}));
+
+// ============================================================================
 // INFERRED TYPES
 // ============================================================================
 
@@ -652,6 +686,9 @@ export type InsertGrievanceStage = typeof grievanceStages.$inferInsert;
 
 export type GrievanceTransition = typeof grievanceTransitions.$inferSelect;
 export type InsertGrievanceTransition = typeof grievanceTransitions.$inferInsert;
+
+export type GrievanceApproval = typeof grievanceApprovals.$inferSelect;
+export type InsertGrievanceApproval = typeof grievanceApprovals.$inferInsert;
 
 export type GrievanceAssignment = typeof grievanceAssignments.$inferSelect;
 export type InsertGrievanceAssignment = typeof grievanceAssignments.$inferInsert;

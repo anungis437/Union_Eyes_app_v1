@@ -11,7 +11,7 @@ import {
   deleteOrganization,
 } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
-import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
 /**
  * GET /api/organizations/[id]

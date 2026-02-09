@@ -18,16 +18,21 @@ jobs:
           fetch-depth: 0  # Full history for accurate checks
       
       - name: Run hygiene check
-        run: bash scripts/check-repo-hygiene.sh
+        run: |
+          bash scripts/check-repo-hygiene.sh || {
+            echo "::error::❌ Repository hygiene check FAILED!"
+            echo "::error::Tracked build artifacts detected. These files should NOT be committed:"
+            echo "::error::  - .next/ (Next.js build output)"
+            echo "::error::  - node_modules/ (dependencies)"
+            echo "::error::  - dist/, build/ (build outputs)"
+            echo "::error::  - coverage/ (test coverage reports)"
+            echo "::error::"
+            echo "::error::To fix, run:"
+            echo "::error::  git rm --cached -r .next/ dist/ build/ coverage/ out/"
+            echo "::error::  git commit -m 'chore: remove tracked build artifacts'"
+            exit 1
+          }
         shell: bash
       
-      - name: Report status
-        if: always()
-        run: |
-          if [ $? -eq 0 ]; then
-            echo "✅ Repository hygiene check passed"
-          else
-            echo "❌ Repository hygiene check failed"
-            echo "::error::Build artifacts are tracked in git. See logs above for details."
-            exit 1
-          fi
+      - name: Report success
+        run: echo "✅ Repository hygiene check passed - no build artifacts tracked"

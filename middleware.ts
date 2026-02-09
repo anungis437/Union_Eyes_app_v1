@@ -44,6 +44,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import createIntlMiddleware from 'next-intl/middleware';
 import { locales, defaultLocale } from './i18n';
+import { PUBLIC_API_ROUTES, CRON_API_ROUTES, isPublicRoute as isPublicApiRoute } from './lib/api-auth-guard';
 
 const isProtectedRoute = createRouteMatcher([
   "/:locale/dashboard(.*)"
@@ -62,23 +63,8 @@ const isPublicRoute = createRouteMatcher([
   "/:locale/sign-up(.*)"
 ]);
 
-const isApiPublicRoute = createRouteMatcher([
-  "/api/health",
-  "/api/health/liveness",
-  "/api/status",
-  "/api/docs/openapi.json",
-  "/api/webhooks(.*)",
-  "/api/stripe/webhooks",
-  "/api/whop/webhooks",
-  "/api/signatures/webhooks(.*)",
-  "/api/integrations/shopify/webhooks",
-  "/api/communications/track(.*)",
-  "/api/communications/unsubscribe(.*)",
-  "/api/whop/unauthenticated-checkout",
-  "/api/sentry-example-api"
-]);
-
-const isApiCronRoute = createRouteMatcher(["/api/cron(.*)"]);
+// PR #4: Removed duplicate API route lists (now imported from lib/api-auth-guard.ts)
+// This ensures single source of truth for route allowlists
 
 // Create i18n middleware
 const intlMiddleware = createIntlMiddleware({
@@ -91,11 +77,13 @@ const intlMiddleware = createIntlMiddleware({
 // This handles both payment provider use cases from whop-setup.md and stripe-setup.md
 export default clerkMiddleware((auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api')) {
-    if (isApiPublicRoute(req)) {
+    // PR #4: Use centralized public route checker from api-auth-guard.ts
+    if (isPublicApiRoute(req.nextUrl.pathname)) {
       return NextResponse.next();
     }
 
-    if (isApiCronRoute(req)) {
+    // PR #4: Check cron routes using centralized CRON_API_ROUTES
+    if (CRON_API_ROUTES.has(req.nextUrl.pathname)) {
       const cronSecret = process.env.CRON_SECRET || "";
       const providedSecret = req.headers.get("x-cron-secret") || "";
       if (!cronSecret || cronSecret !== providedSecret) {
