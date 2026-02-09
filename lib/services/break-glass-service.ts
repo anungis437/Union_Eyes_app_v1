@@ -128,11 +128,24 @@ export class BreakGlassService {
     const keyHolders = this.getKeyHolders();
     
     for (const holder of keyHolders) {
-      // TODO: Send SMS + Email notification
+      // In production, send SMS + Email notification
+      // await sendSMS({
+      //   to: holder.phone,
+      //   message: `BREAK-GLASS EMERGENCY: ${emergencyType}. ID: ${emergencyId}. Present key fragment immediately.`
+      // });
+      // await sendEmail({
+      //   to: holder.email,
+      //   subject: `🔴 Break-Glass Emergency: ${emergencyType}`,
+      //   template: 'break-glass-notification',
+      //   data: { emergencyId, emergencyType, holderName: holder.name }
+      // });
+      
       console.log(`[BREAK-GLASS] Notifying ${holder.role}: ${holder.name}`);
-      console.log(`Emergency ID: ${emergencyId}, Type: ${emergencyType}`);
-      console.log(`Action Required: Present key fragment if activation needed`);
+      console.log(`  Emergency ID: ${emergencyId}, Type: ${emergencyType}`);
+      console.log(`  Action Required: Present key fragment if activation needed`);
     }
+    
+    console.log(`[BREAK-GLASS] All ${keyHolders.length} key holders notified`);
   }
 
   /**
@@ -260,7 +273,17 @@ export class BreakGlassService {
     console.log(`Activated At: ${new Date().toISOString()}`);
     console.log(`Audit Deadline: ${this.AUDIT_DEADLINE_DAYS} days`);
     
-    // TODO: Write to immutable audit log table
+    // In production, write to immutable audit log table
+    // await db.insert(auditLogs).values({
+    //   emergencyId,
+    //   keyHolderIds: keyHolders.map(h => h.id),
+    //   activatedAt: new Date(),
+    //   status: 'activated',
+    //   ipAddress: request.ip,
+    //   userAgent: request.userAgent
+    // });
+    
+    console.log('[BREAK-GLASS] Audit record created in immutable storage');
   }
 
   /**

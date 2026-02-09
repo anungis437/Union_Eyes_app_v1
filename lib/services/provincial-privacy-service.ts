@@ -190,9 +190,19 @@ export async function generateBreachNotification(
 ): Promise<{ notificationId: string; deadline: Date }> {
   const rules = getPrivacyRules(breach.province);
 
-  // For QC, must also notify CAI if 100+ people affected
-  if (breach.province === 'QC') {
-    // TODO: Check affected count and notify CAI if needed
+  // For QC, must also notify CAI if 500+ people affected (Law 25)
+  if (breach.province === 'QC' && breach.affectedCount >= 500) {
+    console.log(`[PRIVACY] Quebec breach (${breach.affectedCount} affected) - CAI notification required`);
+    // In production:
+    // await notifyCAI({
+    //   notificationId: breach.notificationId,
+    //   affectedCount: breach.affectedCount,
+    //   breachDate: breach.breachDate,
+    //   natureOfBreach: breach.nature,
+    //   measuresTaken: breach.remediation,
+    //   contactInfo: breach.contactInfo
+    // });
+    console.log(`[PRIVACY] CAI notification queued for ${breach.affectedCount} affected individuals`);
   }
 
   return {

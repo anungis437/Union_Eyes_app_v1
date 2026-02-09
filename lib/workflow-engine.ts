@@ -27,6 +27,13 @@ import {
   type ClaimPriority 
 } from './services/claim-workflow-fsm';
 import { detectAllSignals } from './services/lro-signals';
+import { 
+  generateDefensibilityPack,
+  type TimelineEvent,
+  type AuditEntry,
+  type StateTransition 
+} from './services/defensibility-pack';
+import { defensibilityPacks } from '../db/schema/defensibility-packs-schema';
 
 // Define valid status transitions
 export const STATUS_TRANSITIONS = {
@@ -268,19 +275,110 @@ export async function updateClaimStatus(
       },
     });
 
-    // AUTO-GENERATE DEFENSIBILITY PACK (PR-6 integration, PR-11 enforcement)
-    // TODO: Full integration pending - requires timeline and audit trail assembly
+    // AUTO-GENERATE DEFENSIBILITY PACK (PR-12 complete integration)
     // When claim is resolved or closed, automatically generate immutable export
-    /*
     if (newStatus === 'resolved' || newStatus === 'closed') {
       try {
-        // await generateDefensibilityPack(...);
-       console.log(`[DEFENSIBILITY PACK] Auto-generation triggered for claim ${claim.claimNumber} (${newStatus})`);
+        console.log(`[DEFENSIBILITY PACK] Auto-generation triggered for claim ${claim.claimNumber} (${newStatus})`);
+        
+        // Fetch complete timeline (all claim updates)
+        const updates = await tx
+          .select()
+          .from(claimUpdates)
+          .where(eq(claimUpdates.claimId, claim.claimId))
+          .orderBy(claimUpdates.createdAt);
+        
+        // Convert updates to timeline events
+        const timeline: TimelineEvent[] = updates.map((update) => ({
+          id: update.updateId,
+          caseId: claim.claimId,
+          timestamp: update.createdAt,
+          type: update.updateType,
+          description: update.message,
+          actorId: update.createdBy,
+          actorRole: update.isInternal ? 'staff' : 'member',
+          visibilityScope: update.isInternal ? ('staff' as const) : ('member' as const),
+          metadata: update.metadata as Record<string, unknown> | undefined,
+        }));
+        
+        // Build audit trail from updates
+        const auditTrail: AuditEntry[] = updates.map((update) => ({
+          id: update.updateId,
+          timestamp: update.createdAt,
+          userId: update.createdBy,
+          action: update.updateType,
+          resourceType: 'claim',
+          resourceId: claim.claimId,
+          sanitizedMetadata: (update.metadata as Record<string, unknown>) || {},
+        }));
+        
+        // Extract state transitions from updates
+        const stateTransitions: StateTransition[] = updates
+          .filter((u) => u.updateType === 'status_change' && u.metadata)
+          .map((u) => {
+            const meta = u.metadata as any;
+            return {
+              timestamp: u.createdAt,
+              fromState: meta.previousStatus || 'unknown',
+              toState: meta.newStatus || 'unknown',
+              actorRole: u.isInternal ? 'staff' : 'member',
+              reason: u.message,
+              validationPassed: meta.fsmValidation?.slaCompliant !== false,
+            };
+          });
+        
+        // Generate the pack
+        const pack = await generateDefensibilityPack(
+          claim.claimId,
+          timeline,
+          auditTrail,
+          stateTransitions,
+          {
+            purpose: 'arbitration',
+            requestedBy: 'system',
+            exportFormat: 'json',
+            includeSensitiveData: false,
+            generatedBy: 'system',
+            caseSummary: {
+              title: claim.title || `Claim ${claim.claimNumber}`,
+              memberId: claim.memberId,
+              memberName: 'Member', // TODO: Fetch from profiles
+              currentState: newStatus,
+              createdAt: claim.createdAt,
+              lastUpdated: updatedClaim.updatedAt || new Date(),
+              grievanceType: claim.issueType || 'general',
+              priority: claim.priority || 'medium',
+            },
+          }
+        );
+        
+        // Store pack in database
+        await tx.insert(defensibilityPacks).values({
+          caseId: claim.claimId,
+          caseNumber: claim.claimNumber,
+          organizationId: claim.organizationId,
+          packVersion: pack.exportVersion,
+          generatedAt: pack.generatedAt,
+          generatedBy: pack.generatedBy,
+          exportFormat: 'json',
+          exportPurpose: pack.exportMetadata.purpose,
+          requestedBy: pack.exportMetadata.requestedBy,
+          packData: pack as any, // Store full pack as JSONB
+          integrityHash: pack.integrity.combinedHash,
+          timelineHash: pack.integrity.timelineHash,
+          auditHash: pack.integrity.auditHash,
+          stateTransitionHash: pack.integrity.stateTransitionHash,
+          verificationStatus: 'verified',
+          fileSizeBytes: JSON.stringify(pack).length,
+        });
+        
+        console.log(`[DEFENSIBILITY PACK] Successfully generated for claim ${claim.claimNumber}`);
+        console.log(`[DEFENSIBILITY PACK] Integrity hash: ${pack.integrity.combinedHash.substring(0, 16)}...`);
       } catch (error) {
         console.error('[DEFENSIBILITY PACK] Generation failed:', error);
+        // Don't fail the status update if pack generation fails
       }
     }
-    */
 
     // Send email notification (async, don't block on email sending)
     sendClaimStatusNotification(claim.claimId, currentStatus, newStatus, notes).catch((error) => {

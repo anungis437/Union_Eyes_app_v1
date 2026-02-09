@@ -115,3 +115,6 @@ export * from "./automation-rules-schema";
 
 // Grievance & Arbitration
 export * from "./grievance-schema";
+
+// PR-12: Defensibility Packs (System-of-Record Exports for Arbitration)
+export * from "./defensibility-packs-schema";
