@@ -11,12 +11,14 @@
 All **enterprise-role-middleware** features have been **consolidated into the canonical `@/lib/api-auth-guard` module**. This is a **simple import path change** - all functionality remains identical.
 
 ### What's Changing
+
 - ✅ **Import path only**: `@/lib/enterprise-role-middleware` → `@/lib/api-auth-guard`
 - ✅ **No API changes**: All function signatures remain identical
 - ✅ **Zero functionality changes**: Behavior is exactly the same
 - ✅ **All features preserved**: Multi-role, permissions, scoping, audit logging
 
 ### Why Consolidate
+
 - 🎯 **Single source of truth** for all authentication patterns
 - 📚 **Simplified documentation** - one module to learn
 - 🔧 **Easier maintenance** - changes in one place
@@ -27,6 +29,7 @@ All **enterprise-role-middleware** features have been **consolidated into the ca
 ## Quick Migration (TL;DR)
 
 ### Before (enterprise-role-middleware)
+
 ```typescript
 import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
 
@@ -36,6 +39,7 @@ export const GET = withEnhancedRoleAuth(50, async (request, context) => {
 ```
 
 ### After (canonical api-auth-guard)
+
 ```typescript
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
@@ -123,6 +127,7 @@ if ($errors.Count -gt 0) {
 ```
 
 **Run it:**
+
 ```powershell
 cd C:\APPS\Union_Eyes_app_v1
 .\scripts\migrate-enterprise-to-canonical.ps1
@@ -190,6 +195,7 @@ migrateFiles().catch(console.error);
 ```
 
 **Run it:**
+
 ```bash
 pnpm tsx scripts/migrate-enterprise-to-canonical.ts
 ```
@@ -201,6 +207,7 @@ pnpm tsx scripts/migrate-enterprise-to-canonical.ts
 If you prefer to migrate files manually:
 
 ### Step 1: Find All Files
+
 ```powershell
 # Find all files importing from enterprise-role-middleware
 Get-ChildItem -Path "app\api" -Recurse -Filter "*.ts" | `
@@ -211,11 +218,13 @@ Get-ChildItem -Path "app\api" -Recurse -Filter "*.ts" | `
 ### Step 2: Update Each File
 
 **Find this:**
+
 ```typescript
 import { withEnhancedRoleAuth, withPermission } from '@/lib/enterprise-role-middleware';
 ```
 
 **Replace with:**
+
 ```typescript
 import { withEnhancedRoleAuth, withPermission } from '@/lib/api-auth-guard';
 ```
@@ -234,6 +243,7 @@ import { withEnhancedRoleAuth, withPermission } from '@/lib/api-auth-guard';
 ### Example 1: withEnhancedRoleAuth
 
 **Before:**
+
 ```typescript
 // app/api/ai/summarize/route.ts
 import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
@@ -250,6 +260,7 @@ export const POST = withEnhancedRoleAuth(50, async (request, context) => {
 ```
 
 **After:**
+
 ```typescript
 // app/api/ai/summarize/route.ts
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
@@ -270,6 +281,7 @@ export const POST = withEnhancedRoleAuth(50, async (request, context) => {
 ### Example 2: withPermission
 
 **Before:**
+
 ```typescript
 // app/api/documents/[id]/approve/route.ts
 import { withPermission } from '@/lib/enterprise-role-middleware';
@@ -281,6 +293,7 @@ export const POST = withPermission('approve_document', async (request, context) 
 ```
 
 **After:**
+
 ```typescript
 // app/api/documents/[id]/approve/route.ts
 import { withPermission } from '@/lib/api-auth-guard';
@@ -296,6 +309,7 @@ export const POST = withPermission('approve_document', async (request, context) 
 ### Example 3: withScopedRoleAuth
 
 **Before:**
+
 ```typescript
 // app/api/departments/[id]/stewards/route.ts
 import { withScopedRoleAuth } from '@/lib/enterprise-role-middleware';
@@ -307,6 +321,7 @@ export const GET = withScopedRoleAuth('dept_steward', 'department', async (reque
 ```
 
 **After:**
+
 ```typescript
 // app/api/departments/[id]/stewards/route.ts
 import { withScopedRoleAuth } from '@/lib/api-auth-guard';
@@ -322,6 +337,7 @@ export const GET = withScopedRoleAuth('dept_steward', 'department', async (reque
 ### Example 4: Multiple Imports
 
 **Before:**
+
 ```typescript
 import { 
   withEnhancedRoleAuth, 
@@ -332,6 +348,7 @@ import {
 ```
 
 **After:**
+
 ```typescript
 import { 
   withEnhancedRoleAuth, 
@@ -346,19 +363,25 @@ import {
 ## Testing After Migration
 
 ### 1. Type Check
+
 ```powershell
 pnpm tsc --noEmit
 ```
+
 Should pass with no type errors.
 
 ### 2. Run Tests
+
 ```powershell
 pnpm test:coverage
 ```
+
 All existing tests should pass without modifications.
 
 ### 3. Spot Check API Routes
+
 Test a few migrated routes manually:
+
 - Routes using `withEnhancedRoleAuth`
 - Routes using `withPermission`
 - Routes using `withScopedRoleAuth`
@@ -395,6 +418,7 @@ Get-ChildItem -Path "app\api" -Recurse -Filter "*.ts" | `
 ```
 
 **Key affected areas:**
+
 - `app/api/ai/**` - AI/ML features (40+ files)
 - `app/api/analytics/**` - Analytics endpoints (15+ files)
 - `app/api/documents/**` - Document management (10+ files)
@@ -453,11 +477,13 @@ If you encounter issues during migration:
 ## Next Steps After Migration
 
 1. **Remove enterprise-role-middleware** (after 1-2 sprint buffer):
+
    ```bash
    git rm lib/enterprise-role-middleware.ts
    ```
 
 2. **Update ESLint rules** to prevent old imports:
+
    ```javascript
    // .eslintrc.js
    rules: {
@@ -486,20 +512,24 @@ For complete API documentation of all enterprise RBAC functions now available in
 **Key exports from `@/lib/api-auth-guard`:**
 
 ### Wrappers
+
 - `withEnhancedRoleAuth(minLevel, handler, options)` - Multi-role auth with level checking
 - `withPermission(permission, handler, options)` - Permission-based auth
 - `withScopedRoleAuth(roleCode, scopeType, handler, options)` - Scoped role auth
 
 ### Runtime Checks
+
 - `requirePermission(context, permission, errorMessage?)` - Assert permission
 - `requireRoleLevel(context, minLevel, errorMessage?)` - Assert role level
 - `requireScope(context, scopeType, scopeValue, errorMessage?)` - Assert scope
 
 ### Helpers
+
 - `canAccessMemberResource(context, ownerId, minLevel?)` - Check resource access
 - `getPrimaryRole(context)` - Get highest role
 - `getRolesForScope(context, scopeType, scopeValue?)` - Filter roles by scope
 
 ### Types
+
 - `EnhancedRoleContext` - Context with multi-role support
 - `MemberRoleWithDetails` - Role information with scope details

@@ -60,6 +60,7 @@ ANALYTICS_RETENTION_DAYS=30
 ### Data Structure in Redis
 
 #### 1. Endpoint Metrics
+
 **Key Pattern:** `analytics:metrics:{endpoint}:{date}`  
 **Type:** Sorted Set  
 **Score:** Timestamp (milliseconds)  
@@ -77,6 +78,7 @@ ANALYTICS_RETENTION_DAYS=30
 ```
 
 #### 2. Slow Queries
+
 **Key Pattern:** `analytics:slow:{date}`  
 **Type:** Sorted Set  
 **Score:** Query duration (milliseconds)  
@@ -85,20 +87,25 @@ ANALYTICS_RETENTION_DAYS=30
 Stores top 1,000 slowest queries per day.
 
 #### 3. Daily Summary
+
 **Key Pattern:** `analytics:summary:{date}`  
 **Type:** Hash  
 **Fields:**
+
 - `totalQueries` - Total query count
 - `totalDuration` - Sum of all durations
 - `cachedQueries` - Count of cached queries
 - `slowQueries` - Count of slow queries (>1000ms)
 
 #### 4. Unique Endpoints/Tenants
+
 **Key Patterns:**
+
 - `analytics:endpoints:{date}` - Set of unique endpoint names
 - `analytics:tenants:{date}` - Set of unique tenant IDs
 
 #### 5. Tenant-Specific Metrics
+
 **Key Pattern:** `analytics:tenant:{tenantId}:{date}`  
 **Type:** Sorted Set  
 **Score:** Timestamp  
@@ -138,6 +145,7 @@ const exported = await performanceMonitor.exportMetrics();
 ### Important Changes
 
 #### 1. **All methods are now async**
+
 ```typescript
 // OLD (synchronous)
 performanceMonitor.recordQuery(endpoint, duration, cached, tenantId);
@@ -149,7 +157,9 @@ const report = await performanceMonitor.getEndpointReport(endpoint);
 ```
 
 #### 2. **`withPerformanceTracking` doesn't block**
+
 The recording now happens async without waiting:
+
 ```typescript
 export async function withPerformanceTracking<T>(
   endpoint: string,
@@ -178,7 +188,9 @@ export async function withPerformanceTracking<T>(
 ```
 
 #### 3. **Date-based queries supported**
+
 You can now query historical data:
+
 ```typescript
 // Get today's reports
 const todayReports = await performanceMonitor.getAllReports();
@@ -195,16 +207,21 @@ const yesterdaySlow = await performanceMonitor.getSlowQueries(10, '2026-02-05');
 ## Migration Steps (Already Completed)
 
 ### ✅ Step 1: Create Redis-backed Implementation
+
 Created `lib/analytics-performance-redis.ts` with full feature parity.
 
 ### ✅ Step 2: Backup Old Implementation
+
 Renamed `lib/analytics-performance.ts` → `lib/analytics-performance-old.ts`
 
 ### ✅ Step 3: Activate Redis Version
+
 Renamed `lib/analytics-performance-redis.ts` → `lib/analytics-performance.ts`
 
 ### ✅ Step 4: Update Health Checks
+
 Added Redis ping to `/api/health` endpoint:
+
 ```typescript
 async function checkRedis(): Promise<HealthCheckResult> {
   const redis = new Redis({
@@ -218,7 +235,9 @@ async function checkRedis(): Promise<HealthCheckResult> {
 ```
 
 ### ✅ Step 5: Update Environment Validator
+
 Added validation for:
+
 - `UPSTASH_REDIS_REST_URL` (validates HTTPS URL)
 - `UPSTASH_REDIS_REST_TOKEN`
 - `ANALYTICS_RETENTION_DAYS` (validates positive integer)
@@ -243,6 +262,7 @@ Added validation for:
    - Copy REST Token: `AXXXabc123...`
 
 4. **Add to Environment**
+
    ```bash
    # .env.local (development)
    UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
@@ -268,6 +288,7 @@ if (!redis) {
 ```
 
 When Redis is not configured:
+
 - ✅ Application starts normally
 - ✅ No errors thrown
 - ⚠️ Analytics recording silently fails (logged as warning)
@@ -279,22 +300,27 @@ When Redis is not configured:
 ## Performance Considerations
 
 ### Write Performance
+
 - **Non-blocking:** Recording metrics doesn't block API responses
 - **Fire-and-forget:** Uses `.catch()` to handle errors without throwing
 - **Pipelined writes:** Uses Redis pipelines for atomic operations
 
 ### Read Performance
+
 - **Efficient queries:** Uses Redis native data structures (sorted sets, hashes)
 - **Caching opportunity:** Results can be cached for expensive reports
 - **Date-based partitioning:** Data split by date for faster queries
 
 ### Storage
+
 **Estimated storage per day:**
+
 - 1,000 queries/day × 200 bytes/metric ≈ 200 KB/day
 - 10,000 queries/day × 200 bytes/metric ≈ 2 MB/day
 - 100,000 queries/day × 200 bytes/metric ≈ 20 MB/day
 
 **30-day retention:**
+
 - Low traffic: ~6 MB
 - Medium traffic: ~60 MB
 - High traffic: ~600 MB
@@ -304,6 +330,7 @@ When Redis is not configured:
 ## Monitoring
 
 ### Health Check
+
 ```bash
 # Check Redis connectivity
 curl https://app.unioneyes.com/api/health
@@ -326,14 +353,18 @@ curl https://app.unioneyes.com/api/health
 ```
 
 ### Redis Dashboard
+
 Upstash provides a web dashboard:
+
 - Real-time metrics (requests/sec, latency)
 - Data browser (inspect keys and values)
 - Performance graphs
 - Cost tracking
 
 ### Query Performance
+
 The analytics system tracks its own performance:
+
 ```typescript
 // Get analytics about analytics queries
 const summary = await performanceMonitor.getSummary();
@@ -346,6 +377,7 @@ console.log(`Avg duration: ${summary.avgDuration}ms`);
 ## Testing
 
 ### 1. Test Redis Connectivity
+
 ```typescript
 import { Redis } from '@upstash/redis';
 
@@ -358,6 +390,7 @@ await redis.ping(); // Should return "PONG"
 ```
 
 ### 2. Test Recording Metrics
+
 ```typescript
 import { performanceMonitor } from '@/lib/analytics-performance';
 
@@ -374,6 +407,7 @@ console.log(report); // Should show 1 query with 150ms duration
 ```
 
 ### 3. Test Slow Query Detection
+
 ```typescript
 // Record a slow query (>1000ms)
 await performanceMonitor.recordQuery(
@@ -389,6 +423,7 @@ console.log(slowQueries); // Should include the slow query
 ```
 
 ### 4. Test Data Expiration
+
 ```bash
 # In Redis CLI or Upstash dashboard
 TTL analytics:metrics:/api/test:2026-02-06
@@ -418,7 +453,9 @@ The old in-memory version will work immediately without Redis configuration.
 ## Future Improvements
 
 ### 1. Advanced Percentiles
+
 Current implementation estimates P95/P99. Could be improved:
+
 ```typescript
 // Store all durations in sorted set
 // Query with ZRANGE for exact percentiles
@@ -427,7 +464,9 @@ const p95Duration = await redis.zrange(key, p95Index, p95Index);
 ```
 
 ### 2. Real-time Aggregations
+
 Use Redis Streams for real-time metric processing:
+
 ```typescript
 await redis.xadd('analytics-stream', '*', {
   endpoint, duration, cached, tenantId
@@ -435,7 +474,9 @@ await redis.xadd('analytics-stream', '*', {
 ```
 
 ### 3. Grafana Integration
+
 Export metrics in Prometheus format:
+
 ```typescript
 export function prometheusMetrics() {
   return `
@@ -447,7 +488,9 @@ export function prometheusMetrics() {
 ```
 
 ### 4. Anomaly Detection
+
 Track metric trends and alert on anomalies:
+
 ```typescript
 if (avgDuration > historicalAverage * 2) {
   logger.warn('Query performance degradation detected');
@@ -461,16 +504,19 @@ if (avgDuration > historicalAverage * 2) {
 ### Upstash Redis Pricing (as of Feb 2026)
 
 **Free Tier:**
+
 - 10,000 commands/day
 - 256 MB storage
 - Sufficient for small deployments
 
 **Pay-as-you-go:**
+
 - $0.20 per 100K commands
 - $0.25 per GB storage
 - ~$5-10/month for typical usage
 
 **Pro ($10/month):**
+
 - 1M commands/day included
 - 3 GB storage included
 - Multi-region replication

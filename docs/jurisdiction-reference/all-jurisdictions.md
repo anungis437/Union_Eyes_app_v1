@@ -46,6 +46,7 @@ Time limit to file a grievance after an incident or violation occurs.
 | **Yukon** (CA-YT) | **30 days** | Business | Labour Standards Act s.45 | Territorial jurisdiction |
 
 **Key Notes:**
+
 - ⚠️ **Quebec is unique**: Uses **calendar days** instead of business days
 - 🌐 **Bilingual jurisdictions**: Federal, Quebec, and New Brunswick require bilingual filings
 - 📊 **Most common**: 30 business days (10 jurisdictions)
@@ -74,6 +75,7 @@ Time limit to refer a grievance to arbitration after it is rejected at the final
 | **Yukon** (CA-YT) | **90 days** | Calendar | Labour Standards Act s.46 | From rejection at final step |
 
 **Key Notes:**
+
 - ⚠️ **Newfoundland has shortest deadline**: Only **10 calendar days** to file for arbitration
 - ⚠️ **Nova Scotia and Ontario have no statutory deadline**: Collective agreement controls
 - 📊 **Most common**: 60 calendar days (5 jurisdictions)
@@ -102,6 +104,7 @@ Percentage of votes (or members) required to authorize strike action.
 | **Yukon** (CA-YT) | **50%+1** | Votes cast | Labour Standards Act s.38 | Simple majority |
 
 **Key Notes:**
+
 - 🔴 **Manitoba (65%)**: Highest threshold in Canada - super-majority required
 - 🟠 **New Brunswick (60%)**: Higher than standard but lower than Manitoba
 - 🟡 **Saskatchewan (45%)**: UNIQUE - calculated as % of **all eligible members**, not votes cast
@@ -134,6 +137,7 @@ Advance notice (in hours or days) required before commencing strike action.
 | **Yukon** (CA-YT) | **48 hours** | Labour Standards Act s.39 | 2 days advance notice |
 
 **Key Notes:**
+
 - 🔴 **Quebec (7 days)**: Longest notice period in Canada
 - 🟠 **Federal/AB/BC (72 hours)**: 3 days advance notice
 - 🟢 **Most common (48 hours)**: 8 jurisdictions require 2 days
@@ -163,6 +167,7 @@ Which certification method(s) are allowed: card-check (automatic certification) 
 | **Yukon** (CA-YT) | ✅ Yes | No | Labour Standards Act s.29 | Card-check if ≥50% support |
 
 **Key Notes:**
+
 - ✅ **11 jurisdictions**: Allow card-check certification
 - ❌ **3 jurisdictions**: Mandatory vote only (Federal, NS, ON)
 - 📊 **Card-check available**: 78% of jurisdictions (11/14)
@@ -191,6 +196,7 @@ Percentage of employees required to sign union cards for card-check certificatio
 | **Yukon** (CA-YT) | **50%** | N/A | Labour Standards Act s.29 | Standard threshold |
 
 **Key Notes:**
+
 - 🔴 **AB/MB/NL (65%)**: Highest card-check threshold
 - 🟡 **Saskatchewan (45%)**: Lowest card-check threshold in Canada
 - 🟢 **6 jurisdictions (50%)**: Standard "majority" threshold
@@ -220,6 +226,7 @@ Time limits for collective bargaining notice and good faith bargaining requireme
 | **Yukon** (CA-YT) | **60 days** before expiry | Ongoing duty | Labour Standards Act s.35 | Standard notice period |
 
 **Key Notes:**
+
 - 🟠 **90 days notice**: Federal, MB, NB, ON, QC (5 jurisdictions)
 - 🟢 **60 days notice**: Most common (8 jurisdictions)
 - 🔵 **30 days notice**: Newfoundland only (shortest)
@@ -248,6 +255,7 @@ Mandatory waiting period before strike/lockout can commence after conciliation o
 | **Yukon** (CA-YT) | **14 days** after conciliation | Labour Standards Act s.40 | After conciliation officer report |
 
 **Key Notes:**
+
 - 🔴 **Federal (21 days)**: Longest cooling-off period
 - 🟠 **Ontario (17 days)**: Second longest
 - 🟢 **14 days**: Most common (9 jurisdictions)
@@ -277,6 +285,7 @@ Rules governing strike action in essential services (hospitals, utilities, publi
 | **Yukon** (CA-YT) | ✅ Yes | Required by Board | Labour Standards Act s.41 | Public services protected |
 
 **Key Notes:**
+
 - ✅ **All 14 jurisdictions**: Have essential services legislation
 - 🏥 **Health care**: Most commonly designated essential service
 - 🚒 **Emergency services**: Police, fire, ambulance always protected
@@ -306,6 +315,7 @@ Jurisdictions requiring bilingual (English/French) documentation and proceedings
 | **Yukon** (CA-YT) | ⚠️ Partial | English, French | Languages Act (YT) | French language services available |
 
 **Key Notes:**
+
 - ✅ **3 jurisdictions**: Require bilingual labour relations documents (Federal, NB, QC)
 - 🌐 **Federal**: English + French (CIRB accepts both)
 - 🌐 **New Brunswick**: Only officially bilingual province (equal status)
@@ -349,16 +359,19 @@ Jurisdictions requiring bilingual (English/French) documentation and proceedings
 ## How to Use This Reference
 
 ### For Union Organizers
+
 1. **Before filing a grievance**: Check Section 1 for your jurisdiction's deadline
 2. **Planning a strike vote**: Check Section 3 for your jurisdiction's threshold
 3. **Filing for certification**: Check Sections 5 & 6 for card-check availability and thresholds
 
 ### For Legal Representatives
+
 1. **Cite legal references**: Each table includes the specific statutory provision
 2. **Compare jurisdictions**: Use multi-jurisdiction comparison cards in the platform
 3. **Verify calculations**: Use the interactive deadline calculator to verify business day calculations
 
 ### For System Administrators
+
 1. **Verify data accuracy**: Cross-reference this document with the database
 2. **Update annually**: Review and update legal references and holiday schedules
 3. **Document changes**: Note any legislative amendments affecting deadlines or thresholds
@@ -385,8 +398,9 @@ Jurisdictions requiring bilingual (English/French) documentation and proceedings
 ## Legal Disclaimer
 
 This reference is provided for informational purposes only and does not constitute legal advice. Labour laws are subject to change through legislative amendments, court decisions, and administrative rulings. Always consult:
+
 - **Official legislation** for your jurisdiction
 - **A qualified labour lawyer** licensed in your jurisdiction
 - **Your union's legal counsel** for case-specific advice
 
-For questions about this reference, contact: support@unionclaims.ca
+For questions about this reference, contact: <support@unionclaims.ca>

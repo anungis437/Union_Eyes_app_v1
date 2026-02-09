@@ -1,6 +1,7 @@
 # CLC Per-Capita Integration Service - User & Admin Guide
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [User Guide](#user-guide)
 3. [Admin Guide](#admin-guide)
@@ -15,6 +16,7 @@
 Per-capita tax is a monthly payment made by local unions to their parent organizations (provincial federations, national unions, or the Canadian Labour Congress). The payment is calculated based on the number of members in good standing, multiplied by a fixed per-capita rate.
 
 **Example:**
+
 - Local 456 has 500 total members
 - 480 members are in good standing (20 suspended)
 - Per-capita rate is $5.00/member
@@ -23,6 +25,7 @@ Per-capita tax is a monthly payment made by local unions to their parent organiz
 ### Why It Matters
 
 Per-capita taxes fund:
+
 - **National/provincial operations**: Staff salaries, office costs, advocacy
 - **Member services**: Legal support, collective bargaining assistance, training
 - **Political action**: Lobbying, campaigns, policy development
@@ -30,6 +33,7 @@ Per-capita taxes fund:
 - **Solidarity programs**: International labor support, community initiatives
 
 **Compliance is critical**: Late or missing remittances can result in:
+
 - Loss of voting rights at conventions
 - Suspension of member services
 - Financial penalties
@@ -44,11 +48,13 @@ Per-capita taxes fund:
 #### Dashboard Overview
 
 Access the Per-Capita Remittances dashboard at:
+
 ```
 /admin/clc/remittances
 ```
 
 **Dashboard Features:**
+
 1. **Summary Cards** (top section)
    - **Total Due**: Sum of all remittances (pending + submitted + paid)
    - **Total Paid**: Amount successfully paid to parent org
@@ -70,12 +76,14 @@ Access the Per-Capita Remittances dashboard at:
 #### Filtering Remittances
 
 Use filters to narrow down the list:
+
 - **Status**: All, Pending, Submitted, Paid, Overdue
 - **Month**: Specific month (January-December)
 - **Year**: Fiscal year
 - **Organization ID**: Filter by local union
 
 **Steps:**
+
 1. Select filter values
 2. Click **"Apply Filters"**
 3. Click **"Clear"** to reset all filters
@@ -93,6 +101,7 @@ Use filters to narrow down the list:
 ### Submitting Remittances
 
 **For single remittances:**
+
 1. Find the pending remittance in the table
 2. Click **"Submit"** button in Actions column
 3. Confirm submission in popup
@@ -112,6 +121,7 @@ Use filters to narrow down the list:
 3. File downloads automatically to your Downloads folder
 
 **CSV File Contents:**
+
 - Organization name, CLC affiliate code
 - Remittance period (month/year)
 - Member counts (total, good standing, remittable)
@@ -119,6 +129,7 @@ Use filters to narrow down the list:
 - Due date and status
 
 **XML File Structure:**
+
 - CLC-compliant EDI format
 - Includes header (metadata), lines (member details), summary (totals)
 - Ready for upload to CLC finance system
@@ -132,6 +143,7 @@ For annual Statistics Canada Labour Organization Survey:
 3. Download text file with government reporting format
 
 **StatCan File Contents:**
+
 - Organization info (name, CLC code, address)
 - Reporting period (fiscal year)
 - Financial summary (revenue by category)
@@ -142,6 +154,7 @@ For annual Statistics Canada Labour Organization Survey:
 ### Viewing Remittance Details
 
 **From the table:**
+
 1. Click on remittance row to expand details
 2. View:
    - Full organization names and codes
@@ -150,6 +163,7 @@ For annual Statistics Canada Labour Organization Survey:
    - Notes and comments
 
 **Member Counts Explained:**
+
 - **Total Members**: All members on roster
 - **Good Standing Members**: Members current on dues, not suspended
 - **Remittable Members**: Members counted for per-capita (usually = good standing)
@@ -169,18 +183,21 @@ Rates are configured in the database per parent organization and effective date:
 **Database Table**: `per_capita_rates`
 
 **Columns:**
+
 - `organization_id`: Parent org receiving remittances (CLC, provincial federation)
 - `effective_date`: Date rate becomes active
 - `rate_amount`: Per-capita amount (e.g., 5.00)
 - `rate_type`: 'monthly', 'quarterly', 'annual'
 
 **Example Query:**
+
 ```sql
 INSERT INTO per_capita_rates (organization_id, effective_date, rate_amount, rate_type)
 VALUES ('clc-national', '2024-01-01', 5.00, 'monthly');
 ```
 
 **Rate Changes:**
+
 - Create new row with new `effective_date`
 - System automatically uses correct rate for each period
 - Historical rates preserved for audit trail
@@ -190,10 +207,12 @@ VALUES ('clc-national', '2024-01-01', 5.00, 'monthly');
 Default rule: **Due date = last day of month following remittance period**
 
 Example:
+
 - December 2024 remittance → Due January 31, 2025
 - January 2025 remittance → Due February 28, 2025
 
 **Grace Period**: Configure in `organization_settings`:
+
 ```sql
 UPDATE organization_settings
 SET setting_value = '7'
@@ -208,6 +227,7 @@ This adds 7-day grace period before marking overdue.
 Monthly calculation runs automatically on **1st of month at 00:00 (midnight)**.
 
 **Vercel Cron Configuration** (`vercel.json`):
+
 ```json
 {
   "crons": [
@@ -220,14 +240,17 @@ Monthly calculation runs automatically on **1st of month at 00:00 (midnight)**.
 ```
 
 **Schedule Format**: Cron expression `minute hour day month weekday`
+
 - `0 0 1 * *` = minute 0, hour 0 (midnight), day 1 (first of month), any month, any weekday
 
 **To change schedule:**
+
 1. Edit `vercel.json`
 2. Commit and push to deploy
 3. Vercel automatically updates cron
 
 **Manual Trigger** (for testing or missed runs):
+
 ```bash
 curl -X GET "https://your-domain.com/api/cron/monthly-per-capita?CRON_SECRET=your_secret"
 ```
@@ -241,6 +264,7 @@ curl -X GET "https://your-domain.com/api/cron/monthly-per-capita?CRON_SECRET=you
 **Cause**: Data integrity issue preventing export
 
 **Diagnosis:**
+
 1. Check validation errors in response
 2. Common issues:
    - Missing organization (local union or parent not found)
@@ -249,6 +273,7 @@ curl -X GET "https://your-domain.com/api/cron/monthly-per-capita?CRON_SECRET=you
    - Missing dates or account codes
 
 **Fix:**
+
 ```sql
 -- Check organization exists
 SELECT * FROM organizations WHERE id = 'org-123';
@@ -274,18 +299,23 @@ WHERE id = 'rem-123';
 **Cause**: Cron job or API endpoint encountered error
 
 **Diagnosis:**
+
 1. Check server logs:
+
    ```bash
    vercel logs --follow
    ```
+
 2. Look for errors in `/api/cron/monthly-per-capita` or `/api/admin/clc/remittances`
 
 **Common Causes:**
+
 - Database connection timeout
 - Missing parent organization for local union
 - No per-capita rate configured for period
 
 **Fix:**
+
 ```sql
 -- Check all locals have parent orgs
 SELECT o.id, o.name, o.parent_organization_id
@@ -313,12 +343,14 @@ LIMIT 1;
 **Cause**: Requested export format not supported
 
 **Supported Formats:**
+
 - `csv` - Comma-separated values
 - `xml` - CLC XML/EDI format
 - `edi` - Alias for XML
 - `statcan` - Statistics Canada LAB-05302
 
 **Fix**: Use correct format parameter in URL:
+
 ```
 /api/admin/clc/remittances/export?format=csv
 /api/admin/clc/remittances/export?format=xml
@@ -332,6 +364,7 @@ LIMIT 1;
 **Scenario**: Monthly cron ran but some orgs have no remittances
 
 **Investigation:**
+
 ```sql
 -- Find orgs without December 2024 remittance
 SELECT o.id, o.name
@@ -348,12 +381,14 @@ AND NOT EXISTS (
 ```
 
 **Possible Causes:**
+
 1. **No members in good standing**: Org has 0 remittable members
 2. **Missing membership data**: `memberships` table not updated
 3. **Org inactive**: Check `is_active` flag
 4. **Parent org missing**: No `parent_organization_id` set
 
 **Manual Calculation:**
+
 ```typescript
 // Via API (requires admin auth)
 POST /api/admin/clc/remittances
@@ -366,6 +401,7 @@ Body: {
 ```
 
 Or direct service call:
+
 ```typescript
 import { PerCapitaCalculator } from '@/services/clc/per-capita-calculator';
 
@@ -381,12 +417,15 @@ await calculator.savePerCapitaRemittances(results);
 #### Recalculate Remittances
 
 **When needed:**
+
 - Membership data was corrected after initial calculation
 - Per-capita rate changed retroactively
 - Member status updated (suspended → active)
 
 **Steps:**
+
 1. Delete incorrect remittance:
+
    ```sql
    DELETE FROM per_capita_remittances
    WHERE from_organization_id = 'org-123'
@@ -395,6 +434,7 @@ await calculator.savePerCapitaRemittances(results);
    ```
 
 2. Recalculate via API:
+
    ```bash
    curl -X POST "https://your-domain.com/api/admin/clc/remittances" \
      -H "Content-Type: application/json" \
@@ -407,6 +447,7 @@ await calculator.savePerCapitaRemittances(results);
    ```
 
 3. Verify new calculation:
+
    ```sql
    SELECT * FROM per_capita_remittances
    WHERE from_organization_id = 'org-123'
@@ -419,10 +460,12 @@ await calculator.savePerCapitaRemittances(results);
 #### Mark Remittance as Paid
 
 **When needed:**
+
 - Payment received outside system (e.g., manual check, wire transfer)
 - CLC confirmed payment but system status still "Submitted"
 
 **Via API:**
+
 ```bash
 curl -X POST "https://your-domain.com/api/admin/clc/remittances/rem-123/submit" \
   -H "Content-Type: application/json" \
@@ -434,6 +477,7 @@ curl -X POST "https://your-domain.com/api/admin/clc/remittances/rem-123/submit" 
 ```
 
 **Via Database:**
+
 ```sql
 UPDATE per_capita_remittances
 SET 
@@ -449,6 +493,7 @@ WHERE id = 'rem-123';
 #### Void/Cancel Remittance
 
 **When needed:**
+
 - Duplicate remittance created
 - Calculation error discovered, needs recalculation
 - Org merged/dissolved mid-period
@@ -469,6 +514,7 @@ WHERE id = 'rem-123';
 ```
 
 Voided remittances:
+
 - Remain in database for audit trail
 - Excluded from totals and exports
 - Visible in admin history views
@@ -585,9 +631,11 @@ CREATE TYPE account_type AS ENUM (
 **Base URL**: `/api/admin/clc/remittances`
 
 #### GET `/api/admin/clc/remittances`
+
 List remittances with filters
 
 **Query Parameters:**
+
 - `status` (optional): 'pending' | 'submitted' | 'paid' | 'overdue'
 - `month` (optional): 1-12
 - `year` (optional): 4-digit year
@@ -598,6 +646,7 @@ List remittances with filters
 - `pageSize` (optional): Results per page (default 50)
 
 **Response:**
+
 ```json
 {
   "remittances": [
@@ -640,9 +689,11 @@ List remittances with filters
 ---
 
 #### POST `/api/admin/clc/remittances`
+
 Calculate remittances
 
 **Request Body:**
+
 ```json
 {
   "organizationId": "org-123",  // Optional: single org or omit for all orgs
@@ -653,6 +704,7 @@ Calculate remittances
 ```
 
 **Response:**
+
 ```json
 {
   "calculations": [
@@ -678,12 +730,15 @@ Calculate remittances
 ---
 
 #### GET `/api/admin/clc/remittances/[id]/export`
+
 Export single remittance
 
 **Query Parameters:**
+
 - `format`: 'csv' | 'xml' | 'edi' | 'statcan' (default 'csv')
 
 **Response Headers:**
+
 - `Content-Type`: text/csv | application/xml | text/plain
 - `Content-Disposition`: attachment; filename="clc-remittance-123-12-2024.csv"
 
@@ -692,9 +747,11 @@ Export single remittance
 ---
 
 #### POST `/api/admin/clc/remittances/[id]/submit`
+
 Submit remittance for payment
 
 **Request Body:**
+
 ```json
 {
   "notes": "Submitted via dashboard",
@@ -703,6 +760,7 @@ Submit remittance for payment
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -717,9 +775,11 @@ Submit remittance for payment
 ---
 
 #### GET `/api/admin/clc/remittances/export`
+
 Batch export multiple remittances
 
 **Query Parameters:**
+
 - `format`: 'csv' | 'xml' | 'statcan' (default 'csv')
 - `status` (optional): Filter by status
 - `month` (optional): Filter by month
@@ -738,6 +798,7 @@ Batch export multiple remittances
 **Schedule**: `0 0 1 * *` (1st of month at midnight)
 
 **Process:**
+
 1. Query all active local unions with parent organizations
 2. For each org:
    - Count members in good standing
@@ -748,11 +809,13 @@ Batch export multiple remittances
 4. Send admin notification with summary
 
 **Manual Trigger:**
+
 ```bash
 GET /api/cron/monthly-per-capita?CRON_SECRET=<secret>
 ```
 
 **Environment Variable:**
+
 ```env
 CRON_SECRET=your_secret_key_here
 ```
@@ -764,11 +827,13 @@ CRON_SECRET=your_secret_key_here
 #### CSV Format
 
 **Headers:**
+
 ```
 Organization,Period,Total Members,Good Standing Members,Remittable Members,Per-Capita Rate,Total Amount,Due Date,Status,CLC Affiliate Code
 ```
 
 **Example Row:**
+
 ```
 Local 456,Dec 2024,500,480,480,$5.00,$2400.00,Jan 31 2025,Pending,CLC-456
 ```
@@ -778,6 +843,7 @@ Local 456,Dec 2024,500,480,480,$5.00,$2400.00,Jan 31 2025,Pending,CLC-456
 #### XML/EDI Format
 
 **Structure:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <CLCRemittanceFile>
@@ -811,6 +877,7 @@ Local 456,Dec 2024,500,480,480,$5.00,$2400.00,Jan 31 2025,Pending,CLC-456
 #### StatCan LAB-05302 Format
 
 **Plain Text Sections:**
+
 ```
 === ORGANIZATION INFO ===
 Organization Name: Local 456
@@ -833,6 +900,7 @@ Average Monthly Members: 480
 ```
 
 **StatCan Categories:**
+
 - `010`: Membership Dues
 - `020`: Initiation Fees
 - `030`: Per-Capita Taxes ← **Remittances go here**
@@ -847,13 +915,15 @@ Average Monthly Members: 480
 ## Support
 
 For technical support or questions:
-- **Email**: support@unionclaims.ca
-- **Documentation**: https://docs.unionclaims.ca
-- **Issue Tracker**: https://github.com/union-claims/issues
+
+- **Email**: <support@unionclaims.ca>
+- **Documentation**: <https://docs.unionclaims.ca>
+- **Issue Tracker**: <https://github.com/union-claims/issues>
 
 For CLC-specific questions:
-- **CLC Finance Department**: finance@clcctc.ca
-- **CLC Affiliate Support**: affiliates@clcctc.ca
+
+- **CLC Finance Department**: <finance@clcctc.ca>
+- **CLC Affiliate Support**: <affiliates@clcctc.ca>
 
 ---
 

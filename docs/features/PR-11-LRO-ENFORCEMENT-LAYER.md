@@ -34,6 +34,7 @@
 A sophisticated finite state machine that governs ALL claim state transitions with **6 layers of enforcement**:
 
 **Enforcement Layer 1: Valid Transition Check**
+
 ```typescript
 // BEFORE: Any transition possible
 await db.update(claims).set({ status: 'closed' }); // No validation
@@ -49,6 +50,7 @@ const validation = validateClaimTransition({
 ```
 
 **Enforcement Layer 2: Role-Based Authorization**
+
 ```typescript
 // BLOCKS: Member trying to reject claim
 validateClaimTransition({
@@ -67,6 +69,7 @@ validateClaimTransition({
 ```
 
 **Enforcement Layer 3: Minimum Time-in-State**
+
 ```typescript
 // BLOCKS: Premature transition from investigation
 validateClaimTransition({
@@ -78,6 +81,7 @@ validateClaimTransition({
 ```
 
 **Enforcement Layer 4: Required Documentation**
+
 ```typescript
 // BLOCKS: Closure without documentation
 validateClaimTransition({
@@ -90,6 +94,7 @@ validateClaimTransition({
 ```
 
 **Enforcement Layer 5: Critical Signal Blocking** ⭐ *Most Important*
+
 ```typescript
 // BLOCKS: Closure with unresolved critical signals
 validateClaimTransition({
@@ -110,6 +115,7 @@ validateClaimTransition({
 ```
 
 **Enforcement Layer 6: SLA Compliance Tracking**
+
 ```typescript
 // ALLOWED BUT WARNED: Valid transition with SLA breach
 const result = validateClaimTransition({
@@ -164,6 +170,7 @@ if (!validation.allowed) {
 
 **Audit Trail Enhancement:**  
 Every transition now logs FSM metadata:
+
 ```typescript
 await tx.insert(claimUpdates).values({
   message: validation.warnings ? 
@@ -183,33 +190,39 @@ await tx.insert(claimUpdates).values({
 
 ---##
 
- 3. CI Enforcement Tests (`__tests__/ci/enforcement-layer.test.ts`)
+ 1. CI Enforcement Tests (`__tests__/ci/enforcement-layer.test.ts`)
 
 **11 tests that PROVE the governance layer cannot be bypassed:**
 
 ✅ **API Route Guards**
+
 - Scans all routes in `app/api`
 - Identifies 82 potentially unguarded routes (logged as warning)
 - **ENFORCES**: Critical routes (claims/status) MUST have auth guards
 
 ✅ **FSM Enforcement**
+
 - 8 illegal transitions tested (all blocked)
 - Role-based permissions enforced (members/stewards blocked from admin actions)
 - Minimum time-in-state enforced (24h, 72h, 168h for key states)
 
 ✅ **Signal-Based Blocking**
+
 - Critical signals block closure (tested via FSM)
 - Closure allowed only when signals resolved
 
 ✅ **SLA Tracking**
+
 - SLA calculated for all cases
 - Breaches generate warnings (not blocking, but logged)
 
 ✅ **Documentation Requirements**
+
 - Transitions requiring docs blocked without notes
 - Notes accepted as documentation substitute
 
 **The Tests Prove:**
+
 ```typescript
 // Test: should reject all illegal state transitions
 for (const [from, to] of illegalTransitions) {
@@ -230,6 +243,7 @@ expect(result.reason).toContain('critical signals');
 ## Addressing the Validator's Scorecard
 
 ### 1️⃣ Hard State Machines ✅ COMPLETE
+
 **Before:** "Transitions feel guided, not governed."  
 **After:** **Transitions ARE governed. 8 states, 6 enforcement layers, illegal moves impossible.**
 
@@ -240,19 +254,23 @@ expect(result.reason).toContain('critical signals');
 - ✅ Signals block closure (critical signal = no close)
 
 ### 2️⃣ Defensibility as First-Class Object 🔧 PLANNED
+
 **Status:** Architecture ready, full integration pending
 
 **What's Working:**
+
 - ✅ defensibility-pack.ts service exists (PR-6)
 - ✅ SHA-256 integrity hashing
 - ✅ Dual timeline (member vs staff visibility)
 
 **What's Needed:**
+
 - 🔧 Auto-generation trigger on claim resolution
 - 🔧 Database schema for pack storage
 - 🔧 Download API for pack retrieval
 
 **Current Approach:**
+
 ```typescript
 // workflow-engine.ts (commented until full integration)
 if (newStatus === 'resolved' || newStatus === 'closed') {
@@ -262,6 +280,7 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 ```
 
 ### 3️⃣ Enforcement Proof ✅ COMPLETE
+
 **Before:** "Policy enforcement still not mechanically impossible to bypass."  
 **After:** **CI tests prove policies cannot be bypassed.**
 
@@ -276,10 +295,12 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 ## Test Coverage Summary
 
 **PR-11 Added:**
+
 - 24 Claim Workflow FSM tests (100% pass)
 - 11 CI Enforcement tests (100% pass)
 
 **Total LRO Test Suite:**
+
 ```
 ✅ 188/188 tests passing (100%)
 ├── PR-5: Case Workflow FSM (31 tests)
@@ -297,7 +318,9 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 ## Business Impact: From "Can" to "Must"
 
 ### Scenario 1: Officer Tries to Close Case Prematurely
+
 **Before PR-11:**
+
 - Officer clicks "Close Case"
 - System allows (no enforcement)
 - Member not notified ❌
@@ -305,6 +328,7 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 - Documentation missing ❌
 
 **After PR-11:**
+
 ```typescript
 // Officer clicks "Close Case" on 5-day-old resolved case
 const result = await updateClaimStatus('CASE-123', 'closed', 'officer_456');
@@ -318,13 +342,16 @@ const result = await updateClaimStatus('CASE-123', 'closed', 'officer_456');
 ```
 
 ### Scenario 2: Admin Tries to Close Case with Critical Signals
+
 **Before PR-11:**
+
 - Admin closes case
 - Member never notified of resolution ❌
 - SLA breach not addressed ❌
 - Case closed anyway ❌
 
 **After PR-11:**
+
 ```typescript
 // Admin clicks "Close Case" but critical signals exist
 const signals = await detectAllSignals([claim]); // Detects: member_not_notified, sla_breach
@@ -345,12 +372,15 @@ const result = await updateClaimStatus('CASE-456', 'closed', 'admin_789');
 ```
 
 ### Scenario 3: Member Tries to Reject Own Claim
+
 **Before PR-11:**
+
 - Member has API access
 - Could potentially call status change
 - No role enforcement ❌
 
 **After PR-11:**
+
 ```typescript
 // Member attempts API call: PATCH /api/claims/CASE-789/status { status: 'rejected' }
 
@@ -373,6 +403,7 @@ const result = validateClaimTransition({
 ## Files Changed
 
 ### Core Services
+
 1. **`lib/services/claim-workflow-fsm.ts`** (NEW)
    - 458 lines
    - Complete FSM with 6 enforcement layers
@@ -386,12 +417,13 @@ const result = validateClaimTransition({
    - Defensibility pack trigger (commented for now)
 
 ### Tests
-3. **`__tests__/services/claim-workflow-fsm.test.ts`** (NEW)
+
+1. **`__tests__/services/claim-workflow-fsm.test.ts`** (NEW)
    - 24 comprehensive FSM tests
    - Covers all 6 enforcement layers
    - Edge cases, role checks, time constraints
 
-4. **`__tests__/ci/enforcement-layer.test.ts`** (NEW)
+2. **`__tests__/ci/enforcement-layer.test.ts`** (NEW)
    - 11 CI enforcement proofs
    - API guard coverage
    - Illegal transition blocking
@@ -402,6 +434,7 @@ const result = validateClaimTransition({
 ## Key Code Patterns
 
 ### Pattern 1: FSM Validation Before Any Status Change
+
 ```typescript
 // EVERY status change goes through FSM
 const signals = await detectAllSignals([claim]);
@@ -420,6 +453,7 @@ if (!validation.allowed) {
 ```
 
 ### Pattern 2: Signal-Aware Blocking
+
 ```typescript
 // Signals integrate with FSM
 const signals = await detectAllSignals([claim]);
@@ -434,6 +468,7 @@ if (currentState.blockIfCriticalSignals && hasCriticalBlockers) {
 ```
 
 ### Pattern 3: Audit Trail with FSM Metadata
+
 ```typescript
 // Every transition logs FSM insights
 await tx.insert(claimUpdates).values({
@@ -455,6 +490,7 @@ await tx.insert(claimUpdates).values({
 **The FSM creates a foundation for data-driven policy refinement:**
 
 1. **SLA Standards Tunable:**
+
    ```typescript
    // Adjust based on real performance data
    export const CLAIM_SLA_STANDARDS = {
@@ -463,6 +499,7 @@ await tx.insert(claimUpdates).values({
    ```
 
 2. **Minimum Time-in-State Configurable:**
+
    ```typescript
    // Based on actual case resolution patterns
    resolved: {
@@ -471,6 +508,7 @@ await tx.insert(claimUpdates).values({
    ```
 
 3. **Role-Based Rules Evolvable:**
+
    ```typescript
    // Expand as org structure changes
    requiresRole: {
@@ -548,6 +586,7 @@ if (hasUnresolvedCriticalSignals) {
 PR-11 closes the gap between "capable platform" and "opinionated system."
 
 **What Changed:**
+
 - Excellence was encouraged → Excellence is now **enforced**
 - Transitions were guided → Transitions are now **governed**
 - Signals were visible → Signals now **block**

@@ -20,6 +20,7 @@ PR-10 completes the Labour Relations Operating System transformation by instrume
 Centralized service for tracking and analyzing LRO performance metrics.
 
 **Core Metric Categories:**
+
 - **Case Management**: Resolution times, state transitions, SLA compliance
 - **Signal Detection**: Signal counts by severity, action rates
 - **Feature Adoption**: Flag usage, feature engagement
@@ -64,6 +65,7 @@ await trackFeatureFlagEvaluation(
 ```
 
 **Event Types Tracked:**
+
 ```typescript
 type MetricEventType =
   // Case Management
@@ -105,11 +107,13 @@ REST endpoint providing aggregated metrics for dashboards and reports.
 **Endpoint:** `GET /api/admin/lro/metrics`
 
 **Query Parameters:**
+
 - `startDate`: ISO date string (default: 30 days ago)
 - `endDate`: ISO date string (default: now)
 - `organizationId`: Filter by organization (optional)
 
 **Response:**
+
 ```json
 {
   "metrics": {
@@ -156,36 +160,42 @@ REST endpoint providing aggregated metrics for dashboards and reports.
 ### 3. Calculation Functions
 
 **SLA Compliance Rate:**
+
 ```typescript
 const rate = calculateSLAComplianceRate(cases);
 // Returns: percentage of cases meeting SLA standards
 ```
 
 **Average Resolution Time:**
+
 ```typescript
 const avgHours = calculateAvgResolutionTime(cases);
 // Returns: average hours from case creation to resolution
 ```
 
 **Signal Action Rate:**
+
 ```typescript
 const rate = calculateSignalActionRate(signals);
 // Returns: percentage of signals that received officer action
 ```
 
 **Top Performing Officers:**
+
 ```typescript
 const topOfficers = getTopPerformingOfficers(officerMetrics, 10);
 // Returns: top N officers sorted by SLA compliance, then cases resolved
 ```
 
 **Signal Effectiveness:**
+
 ```typescript
 const effectiveness = calculateSignalEffectiveness(signals);
 // Returns: metrics per signal type (detected, acknowledged, resolved, dismissed)
 ```
 
 **Case Resolution Metrics:**
+
 ```typescript
 const metrics = getCaseResolutionMetrics(caseData);
 // Returns: full case lifecycle analysis with state transitions
@@ -194,12 +204,14 @@ const metrics = getCaseResolutionMetrics(caseData);
 ### 4. Buffered Event Collection
 
 **Architecture:**
+
 - Events collected in-memory buffer (100 events)
 - Auto-flush to database every 60 seconds or when buffer full
 - Prevents database overhead from high-frequency tracking
 - Fail-safe: errors logged but don't block operations
 
 **Buffer Management:**
+
 ```typescript
 const metricBuffer: MetricEvent[] = [];
 const BUFFER_SIZE = 100;
@@ -228,6 +240,7 @@ setInterval(() => {
 **SLA Compliance Rate:** Percentage meeting SLA standards
 
 **Targets:**
+
 - SLA Compliance > 90%
 - Average Resolution Time < 48 hours (acknowledgment), < 30 days (investigation)
 - Open Cases trend downward month-over-month
@@ -240,6 +253,7 @@ setInterval(() => {
 **Signals Per Case:** Average signals per case (lower is better)
 
 **Targets:**
+
 - Signal Action Rate > 85%
 - Critical Signal Response < 4 hours
 - Avg Signals Per Case < 2 (indicates cleaner processes)
@@ -252,6 +266,7 @@ setInterval(() => {
 **Cases Resolved Per Officer:** Productivity measure
 
 **Targets:**
+
 - Balanced workload (±20% variance across officers)
 - Response Time < 24 hours
 - Individual SLA Compliance > 85%
@@ -264,6 +279,7 @@ setInterval(() => {
 **Export Generation:** Count of defensibility pack exports
 
 **Targets:**
+
 - Feature Adoption > 60% after 30 days
 - Dashboard Active Users > 80% of officers
 - Regular export generation (monthly minimum)
@@ -275,30 +291,36 @@ setInterval(() => {
 **17/17 metrics tests passing:**
 
 ### Case Resolution Metrics (3 tests)
+
 ✅ Calculate total duration for open case  
 ✅ Calculate total duration for resolved case  
 ✅ Process state transitions with timestamps
 
 ### Signal Effectiveness (2 tests)
+
 ✅ Calculate metrics by signal type  
 ✅ Handle signals with no actions
 
 ### SLA Compliance Rate (3 tests)
+
 ✅ Calculate compliance percentage  
 ✅ Return 100% for all compliant cases  
 ✅ Return 100% for empty array (no cases)
 
 ### Average Resolution Time (3 tests)
+
 ✅ Calculate average hours for resolved cases  
 ✅ Return 0 for no resolved cases  
 ✅ Return 0 for empty array
 
 ### Signal Action Rate (3 tests)
+
 ✅ Calculate percentage of signals acted upon  
 ✅ Return 0 for no signals  
 ✅ Return 0 when no signals acted upon
 
 ### Top Performing Officers (3 tests)
+
 ✅ Sort by SLA compliance rate first  
 ✅ Sort by cases resolved when SLA rates equal  
 ✅ Limit results to specified count
@@ -308,32 +330,42 @@ setInterval(() => {
 ## Integration with LRO Stack
 
 ### PR-5: Opinionated Workflow Rules
+
 **Metrics Tracked:**
+
 - FSM state transitions (frequency, duration)
 - SLA breach events
 - Admin override usage
 
 ### PR-6: Defensibility Pack Exports
+
 **Metrics Tracked:**
+
 - Export generation count
 - Export integrity verification success rate
 - Export download frequency
 
 ### PR-7: LRO Signals API
+
 **Metrics Tracked:**
+
 - Signal detection counts by type
 - Signal severity distribution
 - Signal action rates (acknowledged, resolved, dismissed)
 
 ### PR-8: Minimal UI Panel
+
 **Metrics Tracked:**
+
 - Dashboard view count
 - Filter usage patterns
 - Auto-refresh enablement rate
 - Signal badge interactions
 
 ### PR-9: Pilot Mode Feature Flags
+
 **Metrics Tracked:**
+
 - Feature flag evaluation counts
 - Feature adoption rates over time
 - Pilot organization engagement
@@ -438,6 +470,7 @@ console.log(`Critical Signals: ${dashboardStats.critical}`);
 ## Business Value
 
 ### Before PR-10
+
 - No visibility into case management performance
 - Unknown SLA compliance rates
 - Guessing at feature effectiveness
@@ -445,6 +478,7 @@ console.log(`Critical Signals: ${dashboardStats.critical}`);
 - No data-driven improvement strategy
 
 ### After PR-10
+
 - Real-time KPI dashboard for all LRO metrics
 - Quantified SLA compliance (target: >90%)
 - Signal effectiveness measured (action rates, resolution rates)
@@ -506,21 +540,25 @@ console.log(`Critical Signals: ${dashboardStats.critical}`);
 ## Future Enhancements
 
 **Predictive Analytics:**
+
 - ML model predicting case resolution time based on initial attributes
 - Risk score for SLA breach likelihood
 - Officer workload optimization suggestions
 
 **Comparative Analytics:**
+
 - Benchmark against similar organizations
 - Best practice identification (top performers)
 - Peer-to-peer learning recommendations
 
 **Real-Time Streaming:**
+
 - WebSocket-based live metrics dashboard
 - Push notifications for critical events
 - Live officer performance leaderboard
 
 **Advanced Reporting:**
+
 - Custom report builder UI
 - Scheduled email reports
 - Export to BI tools (Tableau, PowerBI)
@@ -542,6 +580,7 @@ console.log(`Critical Signals: ${dashboardStats.critical}`);
 | **Total** | **Complete LRO System** | **153** | **✅** |
 
 **System Capabilities:**
+
 - ✅ 10-state finite state machine with validation
 - ✅ 3 SLA standards with automatic tracking
 - ✅ SHA-256 verified defensibility exports
@@ -552,6 +591,7 @@ console.log(`Critical Signals: ${dashboardStats.critical}`);
 - ✅ Comprehensive metrics instrumentation
 
 **Business Transformation:**
+
 - **3x case management capacity** (through prioritization)
 - **90% SLA compliance rate** (up from ~70%)
 - **80% reduction in triage time** (automatic signals)

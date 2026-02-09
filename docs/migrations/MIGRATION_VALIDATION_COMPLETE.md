@@ -18,6 +18,7 @@
 ### 1. ❌ Duplicate Migration Numbering (FIXED ✅)
 
 **Problem**: Multiple migration files with same numbers
+
 - 0000: 2 files (cynical_madrox + flippant_luke_cage)
 - 0001: 2 files (flimsy_shiver_man + phase5b_inter_union_features)
 - 0002: 2 files (complex_vertigo + true_selene)  
@@ -26,25 +27,29 @@
 
 **Root Cause**: Multiple `pnpm drizzle-kit generate` runs created conflicting migrations
 
-**Solution**: 
+**Solution**:
+
 - ✅ Removed 6 orphaned migration files not in journal
 - ✅ Kept only migrations tracked in `meta/_journal.json`
 - ✅ Verified journal alignment (6 migrations = 6 files)
 
 ### 2. ❌ Backup & Debug Files in Migrations (FIXED ✅)
 
-**Problem**: 
+**Problem**:
+
 - `0004_phase2_complete.sql.bak`
 - `0004_phase2_complete.sql.skip`
 - `schema.ts` (shouldn't be in migrations folder)
 - `relations.ts` (shouldn't be in migrations folder)
 
-**Solution**: 
+**Solution**:
+
 - ✅ Removed 4 backup/debug files
 
 ### 3. ❌ Mixed Migration Numbering System (FIXED ✅)
 
 **Problem**: Three different numbering schemes:
+
 - Drizzle format: `0000_name.sql` (tracked)
 - Manual format: `053_name.sql`, `067_name.sql` (not tracked)
 - No numbers: `add_cited_cases_column.sql`, `cba_intelligence_manual.sql`
@@ -52,6 +57,7 @@
 **Root Cause**: Manual SQL patches added outside Drizzle's migration system
 
 **Solution**:
+
 - ✅ Created `db/migrations/manual/` directory
 - ✅ Moved 16 manual migrations to separate folder
 - ✅ Core directory now contains ONLY Drizzle migrations
@@ -60,6 +66,7 @@
 ### 4. ✅ pnpm-lock.yaml - NO ISSUES
 
 **Checked**: ✅ Only ONE `pnpm-lock.yaml` at repository root
+
 - Location: `./pnpm-lock.yaml`
 - Size: 0.75 MB
 - Last modified: 2026-02-06 11:18
@@ -71,6 +78,7 @@
 ## Current Migration Structure
 
 ### Core Migrations (db/migrations/)
+
 **Managed by Drizzle Kit** - Auto-generated, tracked in `meta/_journal.json`
 
 ```
@@ -85,6 +93,7 @@
 **Total**: 6 migrations ✅
 
 ### Manual Migrations (db/migrations/manual/)
+
 **Hand-written SQL** - RLS policies, triggers, functions
 
 ```
@@ -113,23 +122,27 @@ phase5b_inter_union_features.sql           (580 lines) - Phase 5B features
 ## Schema Alignment Verification
 
 ### ✅ Drizzle Schema Check
+
 ```bash
 $ pnpm drizzle-kit check
 Everything's fine 👌
 ```
 
 ### ✅ Journal Alignment
+
 - **Journal entries**: 6 migrations
 - **Migration files**: 6 files (0000-0005)
 - **Status**: ✅ **PERFECTLY ALIGNED**
 
 ### ✅ Schema Files
+
 - **Location**: `db/schema/`
 - **Count**: 54 schema files
 - **Exported via**: `db/schema/index.ts`
 - **Tables defined**: 280+ tables
 
 **Key schemas**:
+
 - `profiles-schema.ts` - Member profiles
 - `collective-agreements-schema.ts` - CBAs
 - `grievance-workflow-schema.ts` - Grievances
@@ -144,6 +157,7 @@ Everything's fine 👌
 ## How to Use (Production Workflow)
 
 ### Step 1: Apply Core Migrations
+
 ```bash
 # Verify schema alignment
 pnpm drizzle-kit check
@@ -156,6 +170,7 @@ pnpm drizzle-kit migrate
 ```
 
 ### Step 2: Apply Manual Migrations
+
 ```bash
 # Dry run (see what would be applied)
 pnpm tsx scripts/apply-manual-migrations.ts --dry-run
@@ -168,6 +183,7 @@ pnpm tsx scripts/apply-manual-migrations.ts --from 055
 ```
 
 ### Step 3: Verify Database State
+
 ```bash
 # Check for drift
 pnpm drizzle-kit check
@@ -181,6 +197,7 @@ pnpm drizzle-kit studio
 ## Migration Repeatability
 
 ### ✅ From Scratch
+
 To set up database from zero:
 
 ```bash
@@ -198,6 +215,7 @@ pnpm drizzle-kit check
 ```
 
 ### ✅ Incremental Updates
+
 For existing databases:
 
 ```bash
@@ -209,6 +227,7 @@ pnpm tsx scripts/apply-manual-migrations.ts
 ```
 
 ### ✅ Fresh Clone
+
 Team members cloning the repo:
 
 ```bash
@@ -244,16 +263,19 @@ pnpm tsx scripts/apply-manual-migrations.ts
 ## Files Created/Modified
 
 ### New Files
+
 1. ✅ `db/migrations/README.md` - Migration documentation
 2. ✅ `scripts/apply-manual-migrations.ts` - Manual migration script
 3. ✅ `docs/migrations/MIGRATION_VALIDATION_COMPLETE.md` - This document
 
 ### Modified Structure
+
 1. ✅ `db/migrations/` - Now contains ONLY core Drizzle migrations (6 files)
 2. ✅ `db/migrations/manual/` - New folder with 16 manual migrations
 3. ✅ Removed 10 orphaned files (duplicates, backups, debug)
 
 ### No Changes Needed
+
 1. ✅ `db/schema/index.ts` - Already correct (exports all 54 schemas)
 2. ✅ `drizzle.config.ts` - Already correct (points to schema & migrations)
 3. ✅ `pnpm-lock.yaml` - Single file at root (no issues)
@@ -265,6 +287,7 @@ pnpm tsx scripts/apply-manual-migrations.ts
 🎉 **Migration system is PRODUCTION READY**
 
 **Key Achievements**:
+
 - ✅ Cleaned 10 orphaned/duplicate migration files
 - ✅ Organized 16 manual migrations into separate folder
 - ✅ Perfect alignment: 6 files = 6 journal entries
@@ -275,12 +298,14 @@ pnpm tsx scripts/apply-manual-migrations.ts
 - ✅ Verified single pnpm-lock.yaml
 
 **Next Steps**:
+
 1. Test on staging environment
 2. Backup production database
 3. Apply migrations to production
 4. Update deployment pipelines to include manual migrations
 
 **Maintenance**:
+
 - When adding new tables: use `pnpm drizzle-kit generate`
 - When adding RLS/triggers: create manual migration in `db/migrations/manual/`
 - Always run `pnpm drizzle-kit check` before deployment

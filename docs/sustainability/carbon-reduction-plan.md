@@ -11,18 +11,22 @@ Union Eyes commits to **net-zero emissions by 2050**, aligned with Science Based
 ## Current Emissions (2026 Baseline)
 
 ### Scope 1: Direct Emissions
+
 **Total: 0 tonnes CO2e/year**
 
 Union Eyes has zero direct emissions:
+
 - ✅ 100% cloud-based infrastructure (no owned servers)
 - ✅ No company vehicles
 - ✅ No owned facilities (remote-first company)
 - ✅ No on-premise combustion (heating, generators)
 
 ### Scope 2: Indirect Emissions (Electricity)
+
 **Total: 45 tonnes CO2e/year**
 
 **Sources**:
+
 1. **Azure Cloud Infrastructure** - 40 tonnes CO2e
    - Region: Canada Central (Quebec)
    - Power source: 99% hydroelectric
@@ -35,9 +39,11 @@ Union Eyes has zero direct emissions:
    - Emission factor: Varies by province (0.01-0.15 kg/kWh)
 
 ### Scope 3: Supply Chain & Other Indirect Emissions
+
 **Total: 180 tonnes CO2e/year**
 
 **Sources**:
+
 1. **Employee Remote Work** - 120 tonnes CO2e
    - 20 employees working from home
    - Electricity, heating, internet
@@ -61,6 +67,7 @@ Union Eyes has zero direct emissions:
 **Total Annual Emissions**: 225 tonnes CO2e
 
 ### Per-Member Carbon Footprint
+
 - Active members: ~5,000
 - Emissions per member: 0.045 tonnes CO2e/year (45 kg)
 - Industry average: 0.12 tonnes CO2e/year
@@ -71,6 +78,7 @@ Union Eyes has zero direct emissions:
 ### What is SBTi?
 
 Science Based Targets initiative (SBTi) is a partnership between:
+
 - CDP (Carbon Disclosure Project)
 - UN Global Compact
 - World Resources Institute (WRI)
@@ -81,6 +89,7 @@ Science Based Targets initiative (SBTi) is a partnership between:
 ### Our Commitment
 
 Union Eyes commits to:
+
 1. Set near-term (2030) and long-term (2050) science-based targets
 2. Submit targets to SBTi for validation
 3. Report annual progress publicly
@@ -94,6 +103,7 @@ Union Eyes commits to:
 **2030 Target**: 22.5 tonnes CO2e
 
 **How we'll achieve it**:
+
 1. ✅ 100% renewable energy regions (already achieved)
 2. 🚧 Optimize database queries → -10% compute usage
 3. 🚧 Edge computing (Cloudflare Workers) → reduce data center load
@@ -107,10 +117,12 @@ Union Eyes commits to:
 **Goal**: Achieve net-zero emissions across all scopes
 
 **Net-Zero Definition** (per SBTi):
+
 - 90% absolute emissions reduction (from 2026 baseline)
 - 10% carbon removal (permanent sequestration)
 
 **2050 Target Breakdown**:
+
 - Scope 1: 0 tonnes (already zero)
 - Scope 2: 4.5 tonnes CO2e (90% reduction from 45)
 - Scope 3: 18 tonnes CO2e (90% reduction from 180)
@@ -118,6 +130,7 @@ Union Eyes commits to:
 - **Carbon removal**: 22.5 tonnes via verified projects
 
 **Carbon Removal Methods** (evaluated by 2040):
+
 - Direct Air Capture (DAC)
 - Biochar sequestration
 - Enhanced weathering
@@ -167,18 +180,22 @@ These regions are prohibited due to high fossil fuel usage:
 ### Current Deployment
 
 **Production**:
+
 - Primary: Azure Canada Central (Montreal data center)
 - Disaster Recovery: Azure Canada East (Quebec City data center)
 - CDN: Cloudflare (100% renewable match globally)
 
 **Staging/Development**:
+
 - Azure Canada Central (same as production)
 
 **Database**:
+
 - PostgreSQL on Azure Canada Central
 - Replica on Azure Canada East (HA)
 
 **Why Canada Central?**
+
 - **99% renewable** (Hydro-Québec)
 - **Low latency** for Canadian users
 - **Data sovereignty** (all data stays in Canada)
@@ -189,6 +206,7 @@ These regions are prohibited due to high fossil fuel usage:
 **Current**: Azure's renewable energy credits (RECs)
 
 **Future** (by 2028): Explore direct PPAs
+
 - Purchase renewable energy directly from Hydro-Québec
 - 10-year contract for guaranteed renewable supply
 - Supports new renewable capacity (additionality)
@@ -198,31 +216,37 @@ These regions are prohibited due to high fossil fuel usage:
 ### Phase 1: 2026-2027 (Foundation)
 
 #### 1. ✅ Migrate to Renewable-Only Regions
+
 **Status**: Complete  
 **Impact**: -30 tonnes CO2e/year (65% Scope 2 reduction)
 
 **Actions Taken**:
+
 - Migrated from us-east-1 (Virginia, coal) to Canada Central (hydro)
 - Updated Terraform to block non-renewable regions
 - CI/CD checks enforce renewable policy
 
 #### 2. ✅ Carbon Dashboard
+
 **Status**: Complete  
 **Impact**: Visibility and awareness
 
 **Features**:
+
 - Monthly emissions tracking
 - Per-member carbon footprint
 - Comparison to industry average
 - Renewable energy % verification
 
-**Access**: https://union-eyes.com/admin/sustainability
+**Access**: <https://union-eyes.com/admin/sustainability>
 
 #### 3. 🚧 Carbon Offsets (Temporary)
+
 **Status**: In Progress  
 **Impact**: 100% offset (225 tonnes/year)
 
 **Provider**: Gold Standard certified projects
+
 - Wind farms (India, China)
 - Solar installations (Sub-Saharan Africa)
 - Reforestation (Canada, Brazil)
@@ -232,10 +256,12 @@ These regions are prohibited due to high fossil fuel usage:
 **Sunset Plan**: Phase out offsets by 2035 as actual reductions achieved
 
 #### 4. 🚧 Database Query Optimization
+
 **Status**: 40% complete  
 **Target**: -10% compute usage = -4 tonnes CO2e/year
 
 **Actions**:
+
 - Index optimization (reduce full table scans)
 - Query caching (Redis)
 - Materialized views (pre-computed aggregations)
@@ -246,9 +272,11 @@ These regions are prohibited due to high fossil fuel usage:
 ### Phase 2: 2028-2030 (Acceleration)
 
 #### 5. Green Code Optimization
+
 **Target**: -15% compute usage = -6 tonnes CO2e/year
 
 **Techniques**:
+
 - **Lazy loading**: Load data on-demand, not upfront
 - **Compression**: Gzip responses, optimize images
 - **Edge caching**: Serve static content from Cloudflare edge
@@ -257,9 +285,11 @@ These regions are prohibited due to high fossil fuel usage:
 **Measurement**: Carbon-aware profiling tools (CodeCarbon, GreenFrame)
 
 #### 6. Edge Computing Migration
+
 **Target**: -20% data center load = -8 tonnes CO2e/year
 
 **Strategy**:
+
 - Move lightweight logic to Cloudflare Workers
 - Serve static assets from edge
 - Use edge databases (Cloudflare D1, Turso)
@@ -268,9 +298,11 @@ These regions are prohibited due to high fossil fuel usage:
 **Benefits**: Lower latency + lower emissions
 
 #### 7. ARM-Based Infrastructure
+
 **Target**: -30% power consumption = -12 tonnes CO2e/year
 
 **Plan**:
+
 - Migrate to Azure ARM-based VMs (Ampere Altra)
 - ARM processors use 50% less power than x86 (Intel/AMD)
 - Recompile Docker images for ARM64 architecture
@@ -278,15 +310,18 @@ These regions are prohibited due to high fossil fuel usage:
 **Timeline**: Pilot Q3 2028, full migration Q1 2029
 
 #### 8. Member Carbon Awareness Campaigns
+
 **Target**: Educate 100% of members on carbon impact
 
 **Content**:
+
 - Carbon dashboard in member portal
 - Tips for reducing personal carbon footprint
 - Union's climate action resources
 - Climate justice and worker rights
 
 **Gamification**:
+
 - Badge: "Green Union Member" (low-carbon actions)
 - Leaderboard: Union locals with best sustainability
 - Challenges: "Car-free commute month"
@@ -294,26 +329,32 @@ These regions are prohibited due to high fossil fuel usage:
 ### Phase 3: 2031-2040 (Deep Decarbonization)
 
 #### 9. Scope 3 Supply Chain Engagement
+
 **Target**: 50% Scope 3 reduction = -90 tonnes CO2e/year
 
 **Actions**:
+
 - Require SaaS vendors to disclose emissions
 - Prefer carbon-neutral vendors (Stripe Climate, GitHub Green)
 - Employee remote work incentives (heat pumps, solar)
 - Sustainable procurement policy
 
 #### 10. Carbon-Aware Scheduling
+
 **Target**: -10% emissions via intelligent scheduling
 
 **Concept**: Run batch jobs (backups, reports) when grid is greenest
+
 - Use real-time grid carbon intensity data (Electricity Maps API)
 - Schedule non-urgent jobs for low-carbon hours
 - Example: Run database backups at 2 AM when hydro dominates grid
 
 #### 11. Employee Climate Incentives
+
 **Target**: Reduce employee Scope 3 emissions by 30%
 
 **Programs**:
+
 - Home energy audit reimbursement ($500/employee)
 - Heat pump installation subsidy ($2,000/employee)
 - Solar panel rebate ($5,000/employee)
@@ -323,22 +364,27 @@ These regions are prohibited due to high fossil fuel usage:
 ### Phase 4: 2041-2050 (Net-Zero)
 
 #### 12. Residual Emissions Elimination
+
 **Target**: 90% total reduction (225 → 22.5 tonnes CO2e)
 
 **Hard-to-Abate Emissions**:
+
 - Some employee travel (conferences, union events)
 - Embedded emissions in hardware
 - SaaS vendor emissions (outside direct control)
 
 **Strategies**:
+
 - Virtual-first culture (minimize travel)
 - Refurbished hardware (extend lifespan)
 - Carbon-neutral SaaS vendors only
 
 #### 13. Carbon Removal (10%)
+
 **Target**: Permanently remove 22.5 tonnes CO2e/year
 
 **Methods** (evaluated by 2045):
+
 1. **Direct Air Capture** (Climeworks, Carbon Engineering)
    - Cost: $100-300/tonne (declining)
    - Permanence: 1,000+ years
@@ -358,6 +404,7 @@ These regions are prohibited due to high fossil fuel usage:
 ### Measurement Tools
 
 #### Cloud Emissions
+
 **Tool**: Azure Sustainability Calculator  
 **Frequency**: Monthly  
 **Metrics**: kWh usage, PUE, regional emission factors, renewable %
@@ -365,16 +412,19 @@ These regions are prohibited due to high fossil fuel usage:
 **Alternative**: Cloud Carbon Footprint (open-source)
 
 #### Office Emissions
+
 **Method**: Utility bills × emission factors  
 **Source**: National Inventory Report (Environment Canada)  
 **Frequency**: Quarterly
 
 #### Travel Emissions
+
 **Tool**: Expensify carbon tracking (integrated)  
 **Method**: Distance × mode-specific emission factor  
 **Modes**: Flight (economy, business), train, car, bus
 
 #### Supply Chain Emissions
+
 **Method**: Supplier questionnaires + spend-based estimation  
 **Standard**: GHG Protocol Scope 3 guidance  
 **Frequency**: Annually
@@ -382,16 +432,19 @@ These regions are prohibited due to high fossil fuel usage:
 ### Reporting Frequency
 
 **Internal Dashboard**: Real-time (updated daily)
+
 - Azure usage and emissions
 - YTD progress vs. targets
 - Team-level breakdowns
 
 **Quarterly Review**: CFO + Sustainability Committee
+
 - Emissions trends
 - Mitigation effectiveness
 - Budget vs. actuals
 
 **Annual Report**: Published April each year
+
 - Audited emissions (Scope 1, 2, 3)
 - Progress vs. SBTi targets
 - Carbon offset purchases
@@ -443,6 +496,7 @@ We only purchase **high-quality offsets** meeting these standards:
 **Rationale**: Offsets are a bridge, not a destination. Real emissions cuts are priority.
 
 **Glidepath**:
+
 - 2026: 225 tonnes offset (100%)
 - 2028: 180 tonnes offset (80%) → 20% real reduction
 - 2030: 112 tonnes offset (50%) → 50% real reduction
@@ -452,9 +506,10 @@ We only purchase **high-quality offsets** meeting these standards:
 
 ### Carbon Dashboard (Member Portal)
 
-**URL**: https://union-eyes.com/dashboard/sustainability
+**URL**: <https://union-eyes.com/dashboard/sustainability>
 
 **Features**:
+
 1. **Union Eyes Platform Carbon Footprint**
    - Per-member: 0.045 tonnes CO2e/year
    - Industry average: 0.12 tonnes CO2e/year
@@ -479,7 +534,9 @@ We only purchase **high-quality offsets** meeting these standards:
 ### Gamification & Engagement
 
 #### Green Union Member Badge
+
 **Requirements**:
+
 - Complete carbon footprint assessment
 - Pledge 3 climate actions (e.g., bike to work, plant-based meal, home energy audit)
 - Share climate action story with fellow members
@@ -487,7 +544,9 @@ We only purchase **high-quality offsets** meeting these standards:
 **Reward**: Digital badge, featured in newsletter
 
 #### Union Local Sustainability Leaderboard
+
 **Metrics**:
+
 - % members with "Green Union Member" badge
 - Collective carbon reductions (self-reported)
 - Climate campaigns launched
@@ -495,6 +554,7 @@ We only purchase **high-quality offsets** meeting these standards:
 **Prize**: Winning local gets $500 climate action grant
 
 #### Climate Challenges
+
 - **Car-Free Commute Month** (May)
 - **Meatless Mondays** (ongoing)
 - **Energy Audit August** (home assessments)
@@ -503,12 +563,14 @@ We only purchase **high-quality offsets** meeting these standards:
 ### Educational Content
 
 **Quarterly Newsletter**:
+
 - Union Eyes sustainability updates
 - Climate justice stories
 - Member spotlight (climate leaders)
 - Resources and tools
 
 **Webinar Series** (annual):
+
 1. Climate Change 101 for Union Members
 2. Just Transition: Protecting Workers in Green Economy
 3. Home Energy Efficiency on a Budget
@@ -519,12 +581,14 @@ We only purchase **high-quality offsets** meeting these standards:
 ### Sustainability Committee
 
 **Composition**:
+
 - Union President (Chair)
 - Platform CTO (Co-Chair)
 - 1 Union Member Representative (elected)
 - 1 External Sustainability Advisor (pro bono)
 
 **Mandate**:
+
 - Set and monitor carbon reduction targets
 - Approve carbon offset purchases
 - Review quarterly emissions reports
@@ -563,6 +627,7 @@ We only purchase **high-quality offsets** meeting these standards:
 **Publication**: April 30 each year (for previous calendar year)
 
 **Contents**:
+
 1. Message from Union President & CTO
 2. Emissions summary (Scope 1, 2, 3)
 3. Progress vs. SBTi targets
@@ -574,6 +639,7 @@ We only purchase **high-quality offsets** meeting these standards:
 9. Third-party verification statement
 
 **Distribution**:
+
 - Published on website (public)
 - Email to all members
 - Shared with investors/Board

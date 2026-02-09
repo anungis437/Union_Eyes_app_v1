@@ -49,6 +49,7 @@ Task 4 delivers a comprehensive PKI (Public Key Infrastructure) digital signatur
 ### Database Schema
 
 Uses existing `digital_signatures` table from migration 045:
+
 - **40+ fields** covering signature metadata, certificate details, audit trail
 - **7 indexes** for performance (organization, document, signer, status, type, timestamp, hash)
 - **Enums**: signature_type ('pki_certificate', 'digital_signature'), signature_status ('pending', 'signed', 'verified', 'rejected', 'revoked')
@@ -118,6 +119,7 @@ interface StoredCertificate {
 ```
 
 **Implementation Notes**:
+
 - Uses Node.js `crypto.X509Certificate` class (Node 15.6+) for native certificate parsing
 - SHA-256 fingerprint generation for certificate identification
 - Distinguished Name (DN) parsing from comma-separated string to structured object
@@ -185,6 +187,7 @@ interface SignatureResult {
 ```
 
 **Implementation Notes**:
+
 - Two signing modes:
   1. **Attestation-only**: Records signature without cryptographic signing (for internal workflows)
   2. **Cryptographic**: RSA-SHA512 signature using private key (for external documents)
@@ -251,6 +254,7 @@ interface DocumentIntegrityResult {
 ```
 
 **Implementation Notes**:
+
 - **Certificate Validity**: Checks `certificateNotBefore` and `certificateNotAfter` timestamps
 - **Cryptographic Verification**: Uses Node.js `crypto.createVerify()` with RSA-SHA512 and public key
 - **Attestation-Only Signatures**: Skips cryptographic verification, validates certificate only
@@ -368,6 +372,7 @@ interface WorkflowSigner {
 3. **majority**: More than half of signers must sign (middle ground)
 
 **Implementation Notes**:
+
 - **In-Memory Storage**: Current implementation uses Map for workflow storage (temporary until migration 051)
 - **Future Migration**: Requires `signature_workflows` table to persist workflows
 - **Step Advancement**: Automatic when step completion criteria met
@@ -393,28 +398,28 @@ interface WorkflowSigner {
 
 #### Signature Operations
 
-3. **`GET/POST /api/admin/pki/signatures`** (120 lines)
+1. **`GET/POST /api/admin/pki/signatures`** (120 lines)
    - **GET**: List signatures for a document
    - **POST**: Create signature request workflow
    - Supports auto-start workflow option
 
-4. **`POST /api/admin/pki/signatures/[id]/sign`** (100 lines)
+2. **`POST /api/admin/pki/signatures/[id]/sign`** (100 lines)
    - Sign a document (with or without workflow)
    - Records audit trail (IP address, user agent)
    - Updates workflow progress if part of workflow
 
-5. **`POST /api/admin/pki/signatures/[id]/verify`** (70 lines)
+3. **`POST /api/admin/pki/signatures/[id]/verify`** (70 lines)
    - Verify single signature or entire document
    - Supports optional document content for hash verification
    - Returns detailed verification result
 
 #### Workflow Management
 
-6. **`GET /api/admin/pki/workflows`** (90 lines)
+1. **`GET /api/admin/pki/workflows`** (90 lines)
    - List workflows (filtered by user, document, or status)
    - Filter options: all, pending, completed, by document
 
-7. **`GET/PUT/DELETE /api/admin/pki/workflows/[id]`** (120 lines)
+2. **`GET/PUT/DELETE /api/admin/pki/workflows/[id]`** (120 lines)
    - **GET**: Get workflow status or full details
    - **PUT**: Advance workflow manually (admin override)
    - **DELETE**: Cancel workflow with reason
@@ -426,6 +431,7 @@ interface WorkflowSigner {
 ### 1. Per-Capita Remittances (Week 2 Enhancement)
 
 **Officer Attestation Workflow**:
+
 ```typescript
 // When treasurer submits remittance for approval:
 1. Create signature workflow:
@@ -442,6 +448,7 @@ interface WorkflowSigner {
 ```
 
 **API Integration**:
+
 - Modify `POST /api/admin/clc/remittances/submit` to create signature workflow
 - Add `GET /api/admin/clc/remittances/[id]/signatures` for remittance signatures
 - Update dashboard to fetch and display workflow status
@@ -449,16 +456,19 @@ interface WorkflowSigner {
 ### 2. Document Signing (Future Use Cases)
 
 **Collective Agreements**:
+
 - Sequential workflow: Union negotiator → Chief negotiator → Union president → Employer rep
 - Stores final signed agreement hash
 - Verification for legal disputes
 
 **Grievance Resolutions**:
+
 - Parallel workflow: Multiple union reps can sign
 - Completion type: majority (e.g., 2 of 3 reps)
 - Audit trail for arbitration
 
 **Contracts**:
+
 - Hybrid workflow: Sequential steps (internal approval) then parallel (external parties)
 - Document integrity verification before execution
 
@@ -468,7 +478,7 @@ interface WorkflowSigner {
 
 ### Certificate Management
 
-1. **Certificate Validation**: 
+1. **Certificate Validation**:
    - Enforces minimum 30-day validity before acceptance
    - Validates subject fields (CN required, O/email recommended)
    - Checks key usage extensions (digitalSignature, nonRepudiation)
@@ -502,8 +512,8 @@ interface WorkflowSigner {
 
 1. **Indexes**: 7 indexes on `digital_signatures` table for fast lookups
    - By organization, document, signer, status, type, timestamp, hash
-   
-2. **Bulk Operations**: 
+
+2. **Bulk Operations**:
    - `bulkVerifySignatures()` for batch verification
    - `getExpiringCertificates()` for renewal notifications
 
@@ -704,12 +714,14 @@ curl -X POST http://localhost:3000/api/admin/pki/signatures/sig456/verify \
 ## Success Metrics
 
 ### Code Quality
+
 - ✅ **3,900+ lines** of production code
 - ✅ **Zero lint errors** across all PKI services and API routes
 - ✅ **Type-safe** implementation (TypeScript throughout)
 - ✅ **Schema-aligned** with digital_signatures table
 
 ### Functionality
+
 - ✅ **Certificate management**: Upload, validate, store, retrieve, revoke
 - ✅ **Document signing**: Attestation-only and cryptographic modes
 - ✅ **Signature verification**: Cryptographic verification, certificate validation, hash checking
@@ -717,6 +729,7 @@ curl -X POST http://localhost:3000/api/admin/pki/signatures/sig456/verify \
 - ✅ **API coverage**: 7 routes covering all PKI operations
 
 ### Integration Readiness
+
 - ✅ **Per-capita remittances**: Ready for Week 2 officer attestation integration
 - ✅ **Document signing**: Foundation for collective agreements, contracts, grievances
 - ✅ **Audit trail**: Complete signature history with IP, user agent, timestamps
@@ -726,7 +739,7 @@ curl -X POST http://localhost:3000/api/admin/pki/signatures/sig456/verify \
 
 ## Next Steps (Week 2)
 
-1. **Per-Capita Integration**: 
+1. **Per-Capita Integration**:
    - Modify remittance submission to require officer attestation
    - Add signature workflow to remittance dashboard
    - Implement "Sign Attestation" button and workflow tracker

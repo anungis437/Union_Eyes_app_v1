@@ -94,11 +94,13 @@ const response = await fetch('/api/ai/search', {
 ### Understanding Results
 
 **Confidence Levels:**
+
 - 🟢 **High** (>80%): Strong matches found
 - 🟡 **Medium** (60-80%): Relevant but not exact
 - 🔴 **Low** (<60%): Weak matches, use with caution
 
 **Sources:**
+
 - Every response includes document references
 - Click "Show Details" to see snippets
 - Relevance scores show match quality (e.g., 87%)
@@ -106,12 +108,14 @@ const response = await fetch('/api/ai/search', {
 ### Best Practices
 
 ✅ **DO:**
+
 - Use AI for research and ideation
 - Verify all citations with primary sources
 - Provide feedback to improve results
 - Refine queries if results are poor
 
 ❌ **DON'T:**
+
 - Use AI outputs without human review
 - Make strategic decisions based solely on AI
 - Share AI drafts externally without review
@@ -163,9 +167,11 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## API Endpoints
 
 ### POST /api/ai/search
+
 Search for relevant cases using RAG.
 
 **Request:**
+
 ```json
 {
   "query": "What are precedents for tardiness dismissal?",
@@ -182,6 +188,7 @@ Search for relevant cases using RAG.
 ```
 
 **Response:**
+
 ```json
 {
   "answer": "Based on the retrieved cases...",
@@ -200,9 +207,11 @@ Search for relevant cases using RAG.
 ```
 
 ### POST /api/ai/feedback
+
 Submit feedback on an AI response.
 
 **Request:**
+
 ```json
 {
   "query_id": "uuid",
@@ -212,9 +221,11 @@ Submit feedback on an AI response.
 ```
 
 ### POST /api/ai/summarize
+
 Generate case summary.
 
 **Request:**
+
 ```json
 {
   "claim_id": "uuid",
@@ -223,6 +234,7 @@ Generate case summary.
 ```
 
 **Response:**
+
 ```json
 {
   "summary_id": "uuid",
@@ -303,6 +315,7 @@ const detected = detectUnmaskedPII(masked);
 ### Key Metrics
 
 Track in production:
+
 - Query latency (P95 <3s)
 - Confidence distribution
 - Feedback ratio (>70% positive)
@@ -311,6 +324,7 @@ Track in production:
 ### Alerts
 
 Set up alerts for:
+
 - PII leaks (unmasked SIN/addresses in logs)
 - High error rates
 - Slow queries (>5s)
@@ -319,6 +333,7 @@ Set up alerts for:
 ### Dashboards
 
 Use Supabase views:
+
 - `ai_usage_by_org` - Usage statistics
 - `ai_feedback_summary` - Feedback analytics
 
@@ -353,6 +368,7 @@ You're trying to import AI functions in a client component. Move to API route.
 ### "PII detected in output"
 
 This should never happen. If it does:
+
 1. Report to security team immediately
 2. Check maskPII() is being called
 3. Review prompt templates
@@ -361,6 +377,7 @@ This should never happen. If it does:
 ## Security Checklist
 
 Before deploying:
+
 - [ ] OPENAI_API_KEY is in Key Vault (not .env)
 - [ ] RLS policies tested
 - [ ] PII masking validated
@@ -382,6 +399,7 @@ Union Eyes AI features follow the same license as the main project.
 ## Changelog
 
 ### v1.0 (November 13, 2025)
+
 - ✅ Phase 1 complete
 - ✅ RAG search implemented
 - ✅ Case summaries implemented

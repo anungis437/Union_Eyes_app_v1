@@ -3,6 +3,7 @@
 ## 🎯 Current Status: 65% Complete
 
 ### ✅ Completed
+
 - [x] Azure infrastructure provisioned (16 resources across staging & production)
 - [x] All Azure credentials retrieved and documented
 - [x] Environment files created (.env.staging, .env.production)
@@ -11,25 +12,30 @@
 - [x] Docker build in progress (421MB context)
 
 ### 🔄 In Progress
+
 - [ ] **Docker build** - Currently building with optimized context (~10-15 min remaining)
 
 ### ⏳ Next Actions (Priority Order)
 
 #### 1️⃣ Deploy GPT-4 Models ✅ COMPLETED
+
 **Solution**: Created new OpenAI services in East US region (Canada Central doesn't support deployments)
 
 **What Was Done**:
+
 1. Created **unioneyes-staging-openai-eastus** with gpt-4o-mini deployed (50K tokens/min)
 2. Created **unioneyes-prod-openai-eastus** with gpt-4o deployed (40K tokens/min)
-3. Updated both Web Apps with new endpoints: https://eastus.api.cognitive.microsoft.com/
+3. Updated both Web Apps with new endpoints: <https://eastus.api.cognitive.microsoft.com/>
 4. Restarted apps to apply changes
 
 📖 **Full Details**: `GPT4_DEPLOYMENT_COMPLETE.md` (root directory)
 
 #### 2️⃣ Add Clerk Authentication Keys ✅ COMPLETED
+
 **Keys Added**: 2025-11-12
 
 **What Was Done**:
+
 1. Added keys to both staging and production Web Apps
    - Publishable Key: `pk_test_a25vd24taGFnZmlzaC02Ny5jbGVyay5hY2NvdW50cy5kZXYk`
    - Secret Key: `sk_test_CgTyrzrO1CazAU5AGQvOkq7OyybHaWwzMS4g3DUoQA`
@@ -82,6 +88,7 @@ az acr repository list --name unioneyesprodacr
 ```
 
 **Or use automated script**:
+
 ```powershell
 .\scripts\deploy-to-azure.ps1
 ```
@@ -91,12 +98,14 @@ az acr repository list --name unioneyesprodacr
 #### 3️⃣ Configure Web Apps (45 minutes per environment)
 
 **Get ACR credentials**:
+
 ```powershell
 az acr credential show --name unioneyesstagingacr
 # Copy username and password
 ```
 
 **Configure Staging Web App**:
+
 ```powershell
 az webapp config container set \
   --name unioneyes-staging-app \
@@ -108,6 +117,7 @@ az webapp config container set \
 ```
 
 **Set Environment Variables** (Azure Portal):
+
 1. Go to **unioneyes-staging-app** → **Configuration**
 2. Click **New application setting** for each from `.env.staging`:
    - `DATABASE_URL` (with real password)
@@ -119,6 +129,7 @@ az webapp config container set \
 5. Click **Save**
 
 **Restart**:
+
 ```powershell
 az webapp restart --name unioneyes-staging-app --resource-group unioneyes-staging-rg
 ```
@@ -130,6 +141,7 @@ az webapp restart --name unioneyes-staging-app --resource-group unioneyes-stagin
 #### 4️⃣ Setup Database Access (10 minutes)
 
 **Add firewall rules for Azure services**:
+
 ```powershell
 # Staging
 az postgres flexible-server firewall-rule create \
@@ -149,6 +161,7 @@ az postgres flexible-server firewall-rule create \
 ```
 
 **Get/Reset PostgreSQL passwords** (if needed):
+
 ```powershell
 # Staging
 az postgres flexible-server update \
@@ -168,6 +181,7 @@ az postgres flexible-server update \
 #### 5️⃣ Run Database Migrations (20 minutes per environment)
 
 **Staging**:
+
 ```powershell
 # Set connection string (use password from step 4)
 $env:DATABASE_URL="postgresql://unionadmin:<PASSWORD>@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require"
@@ -187,6 +201,7 @@ psql $env:DATABASE_URL -c "\dt"
 #### 6️⃣ Verify Deployments (20 minutes)
 
 **Staging**:
+
 ```powershell
 # Check deployment status
 az webapp show --name unioneyes-staging-app --resource-group unioneyes-staging-rg --query state
@@ -199,6 +214,7 @@ start https://unioneyes-staging-app.azurewebsites.net
 ```
 
 **Test checklist**:
+
 - [ ] App loads without errors
 - [ ] User registration works (Clerk)
 - [ ] User login works
@@ -213,6 +229,7 @@ start https://unioneyes-staging-app.azurewebsites.net
 #### 7️⃣ Setup GitHub Actions (60 minutes)
 
 **Create service principals**:
+
 ```powershell
 # Staging
 az ad sp create-for-rbac --name "unioneyes-staging-github" \
@@ -230,6 +247,7 @@ az ad sp create-for-rbac --name "unioneyes-prod-github" \
 ```
 
 **Add GitHub secrets**:
+
 1. Go to GitHub repo → Settings → Secrets and variables → Actions
 2. Add secrets from `AZURE_CREDENTIALS.md` (30+ secrets)
 3. Key secrets:
@@ -241,6 +259,7 @@ az ad sp create-for-rbac --name "unioneyes-prod-github" \
    - Clerk keys
 
 **Create branches**:
+
 ```bash
 git checkout -b staging
 git push origin staging
@@ -250,6 +269,7 @@ git push origin production
 ```
 
 **Test automated deployment**:
+
 ```bash
 git checkout staging
 git commit --allow-empty -m "Test CI/CD"
@@ -262,21 +282,25 @@ git push origin staging
 #### 8️⃣ Integrate Azure Services (4-6 hours)
 
 **Install SDKs**:
+
 ```powershell
 pnpm add @azure/storage-blob @azure/openai microsoft-cognitiveservices-speech-sdk
 ```
 
 **Create utility libraries**:
+
 - `lib/azure-storage.ts` - File upload/download to Blob Storage
 - `lib/azure-speech.ts` - Speech-to-Text transcription
 - `lib/azure-openai.ts` - AI analysis and recommendations
 
 **API endpoints**:
+
 - `POST /api/claims/[id]/attachments` - Upload claim attachments
 - `POST /api/speech/transcribe` - Transcribe voice recordings
 - `POST /api/claims/analyze` - AI analysis of claims
 
 **UI components**:
+
 - File upload dropzone
 - Voice recorder
 - AI insights panel
@@ -303,6 +327,7 @@ pnpm add @azure/storage-blob @azure/openai microsoft-cognitiveservices-speech-sd
 ## 💰 Monthly Cost Estimate
 
 ### Staging: ~$50-60/month
+
 - App Service Plan (B1): $13.14
 - PostgreSQL (Standard_B2s): $15-20
 - Storage: $5
@@ -311,6 +336,7 @@ pnpm add @azure/storage-blob @azure/openai microsoft-cognitiveservices-speech-sd
 - Container Registry: $5
 
 ### Production: ~$140-150/month
+
 - App Service Plan (P1V3): $80.30
 - PostgreSQL (Standard_B2s): $15-20
 - Storage: $10
@@ -323,12 +349,14 @@ pnpm add @azure/storage-blob @azure/openai microsoft-cognitiveservices-speech-sd
 ## 🔗 Quick Reference
 
 ### URLs
-- **Staging App**: https://unioneyes-staging-app.azurewebsites.net
-- **Production App**: https://unioneyes-prod-app.azurewebsites.net
-- **Azure Portal**: https://portal.azure.com
+
+- **Staging App**: <https://unioneyes-staging-app.azurewebsites.net>
+- **Production App**: <https://unioneyes-prod-app.azurewebsites.net>
+- **Azure Portal**: <https://portal.azure.com>
 - **GitHub Repo**: (your repository URL)
 
 ### Resource Names
+
 - **Staging RG**: unioneyes-staging-rg
 - **Production RG**: unioneyes-prod-rg
 - **Staging DB**: unioneyes-staging-db.postgres.database.azure.com
@@ -337,6 +365,7 @@ pnpm add @azure/storage-blob @azure/openai microsoft-cognitiveservices-speech-sd
 - **Production ACR**: unioneyesprodacr.azurecr.io
 
 ### Documentation
+
 - Full credentials: `AZURE_CREDENTIALS.md`
 - GPT-4 deployment: `docs/AZURE_OPENAI_DEPLOYMENT.md`
 - Deployment status: `DEPLOYMENT_STATUS.md`
@@ -348,6 +377,7 @@ pnpm add @azure/storage-blob @azure/openai microsoft-cognitiveservices-speech-sd
 ## 🚨 Troubleshooting
 
 ### Docker build fails
+
 ```powershell
 # Clean up and rebuild
 docker system prune -a
@@ -355,12 +385,14 @@ docker build --no-cache -t unioneyes:latest .
 ```
 
 ### Web App not pulling image
+
 ```powershell
 # Check ACR credentials in Web App config
 az webapp config show --name unioneyes-staging-app --resource-group unioneyes-staging-rg
 ```
 
 ### Database connection fails
+
 ```powershell
 # Check firewall rules
 az postgres flexible-server firewall-rule list \
@@ -372,6 +404,7 @@ psql "postgresql://unionadmin:<PASSWORD>@unioneyes-staging-db.postgres.database.
 ```
 
 ### OpenAI deployment not found
+
 - Ensure deployment name is exactly "gpt-4" (matches env var)
 - Check deployment status in Azure Portal
 - Wait 2-3 minutes after creation for propagation

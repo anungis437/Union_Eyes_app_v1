@@ -674,14 +674,14 @@ For questions or issues with deployment:
 
 **Internal:**
 
-- Email: dev@unioneyes.com
+- Email: <dev@unioneyes.com>
 - Slack: #mobile-deployment
 
 **External:**
 
-- Apple: https://developer.apple.com/support/
-- Google: https://support.google.com/googleplay/android-developer
-- Expo: https://docs.expo.dev/
+- Apple: <https://developer.apple.com/support/>
+- Google: <https://support.google.com/googleplay/android-developer>
+- Expo: <https://docs.expo.dev/>
 
 ---
 

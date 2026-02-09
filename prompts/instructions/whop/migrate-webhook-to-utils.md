@@ -30,28 +30,35 @@ app/api/whop/webhooks/
 ## File Contents
 
 ### constants.ts
+
 - `DEFAULT_USAGE_CREDITS`
 - `CREDIT_RENEWAL_DAYS`
 
-### user-utils.ts 
+### user-utils.ts
+
 - `extractUserId` function
 
 ### plan-utils.ts
+
 - `determinePlanType` function
 
 ### payment-handlers.ts
+
 - `handlePaymentSuccess` function
 - Payment-related utility functions
 
 ### membership-handlers.ts
+
 - `handleMembershipChange` function
 - Membership status change related utilities
 
 ### path-utils.ts
+
 - Revalidation path constants
 - Helper function for revalidating common paths
 
 ### route.ts (updated)
+
 - Simplified to import and use utilities
 - Core webhook handling logic
 - Event routing to appropriate handlers

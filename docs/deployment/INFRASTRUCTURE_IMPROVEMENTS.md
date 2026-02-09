@@ -19,6 +19,7 @@ This batch implemented production-ready infrastructure utilities to enhance reli
 **Purpose:** Comprehensive environment variable validation at application startup
 
 **Features:**
+
 - ✅ 20+ environment variable definitions with types and descriptions
 - ✅ `validateEnv()` - Returns validation result with detailed errors
 - ✅ `requireEnv()` - Throws error if variable missing (for critical config)
@@ -26,6 +27,7 @@ This batch implemented production-ready infrastructure utilities to enhance reli
 - ✅ Helper utilities: `isProduction()`, `isDevelopment()`, `isTest()`
 
 **Environment Variables Validated:**
+
 ```typescript
 // Database
 - DATABASE_URL (required in production)
@@ -61,6 +63,7 @@ This batch implemented production-ready infrastructure utilities to enhance reli
 ```
 
 **Usage:**
+
 ```typescript
 // At application startup (instrumentation.ts)
 const validation = validateEnv();
@@ -79,22 +82,26 @@ if (!validation.isValid) {
 **Functions:**
 
 #### `checkDatabaseHealth()`
+
 - Tests database connectivity with timeout
 - Returns health status, response time, error (if any)
 - **Timeout:** 5 seconds
 - **Usage:** Monitoring systems, health endpoints
 
 #### `validateDatabaseConnection()`
+
 - Validates connection with retry logic
 - **Retries:** 3 attempts with 2-second delay
 - **Usage:** Startup checks, connection troubleshooting
 
 #### `testDatabaseQuery()`
+
 - Executes simple SELECT 1 query
 - Measures query response time
 - **Usage:** Performance baseline
 
 #### `validateDatabaseSchema()`
+
 - Checks existence of critical tables
 - **Tables Validated:**
   - users
@@ -108,17 +115,20 @@ if (!validation.isValid) {
 - **Usage:** Deployment verification, migration validation
 
 #### `runDatabaseStartupChecks()`
+
 - Comprehensive validation suite
 - Runs connection + schema validation
 - Returns overall health status with detailed results
 - **Usage:** Application startup (instrumentation.ts)
 
 #### `getDatabaseHealthForEndpoint()`
+
 - Formatted response for health endpoints
 - Returns status, response time, optional error
 - **Usage:** /api/health route
 
 **Usage:**
+
 ```typescript
 // In instrumentation.ts
 const health = await runDatabaseStartupChecks();
@@ -140,6 +150,7 @@ return NextResponse.json({ checks: { database: dbHealth } });
 **Error Classes:**
 
 #### `AppError` (Base Class)
+
 ```typescript
 class AppError extends Error {
   type: string;          // Error category
@@ -150,6 +161,7 @@ class AppError extends Error {
 ```
 
 #### Specialized Error Classes
+
 - **ValidationError** - HTTP 400 - Invalid input data
 - **NotFoundError** - HTTP 404 - Resource not found
 - **UnauthorizedError** - HTTP 401 - Authentication required
@@ -160,7 +172,9 @@ class AppError extends Error {
 **Utilities:**
 
 #### `safeAsync<T>(fn: Promise<T>)`
+
 Type-safe async wrapper returns `[data, null]` on success, `[null, error]` on failure
+
 ```typescript
 const [user, error] = await safeAsync(getUserById(id));
 if (error) {
@@ -169,16 +183,21 @@ if (error) {
 ```
 
 #### `safeAsyncWithDefault<T>(fn: Promise<T>, defaultValue: T)`
+
 Returns default value instead of error
+
 ```typescript
 const user = await safeAsyncWithDefault(getUserById(id), null);
 ```
 
 #### `retryWithBackoff<T>(fn: () => Promise<T>, options)`
+
 Retries failed operations with exponential backoff
+
 - **Default retries:** 3
 - **Default delay:** 1000ms
 - **Backoff factor:** 2x
+
 ```typescript
 const result = await retryWithBackoff(
   () => fetchExternalAPI(),
@@ -187,7 +206,9 @@ const result = await retryWithBackoff(
 ```
 
 #### `withDatabaseErrorHandling<T>(fn: () => Promise<T>, operation: string)`
+
 Wraps database operations with consistent error handling
+
 ```typescript
 const users = await withDatabaseErrorHandling(
   () => db.select().from(usersTable),
@@ -196,7 +217,9 @@ const users = await withDatabaseErrorHandling(
 ```
 
 #### `errorBoundary(fn: Function)`
+
 Higher-order function for API route error handling
+
 ```typescript
 export const POST = errorBoundary(async (req: NextRequest) => {
   // Your handler code
@@ -205,12 +228,15 @@ export const POST = errorBoundary(async (req: NextRequest) => {
 ```
 
 #### `handleAPIError(error: unknown)`
+
 Formats errors for API responses with proper status codes
 
 #### `isOperationalError(error: unknown)`
+
 Distinguishes operational (expected) from programming errors
 
 **Usage:**
+
 ```typescript
 // API route with error boundary
 export const GET = errorBoundary(async (req: NextRequest) => {
@@ -240,44 +266,52 @@ export const GET = errorBoundary(async (req: NextRequest) => {
 **Contents:**
 
 #### Dockerfile Comparison
+
 - **Dockerfile** - Full production build with workspaces (10-15 min build)
 - **Dockerfile.simple** - Lightweight pre-built deployment (2-3 min build)
 - **Dockerfile.staging** - Staging optimized build (5-8 min build)
 
 #### Docker Compose Configurations
+
 - **docker-compose.yml** - Local development with hot reload
 - **docker-compose.staging.yml** - Staging environment deployment
 - **docker-compose.prod.yml** - Production deployment (not recommended)
 
 #### Build Strategies
+
 - Local Build + Docker Deploy
 - Full Docker Build
 - Multi-Stage with Cache
 
 #### Environment Variables
+
 - .env file method
 - Build arguments method
 - Runtime environment method
 
 #### Recommended Production Setup
+
 - ✅ Vercel (recommended)
 - Kubernetes
 - AWS ECS/Fargate
 - ⚠️ NOT Docker Compose (single-host limitations)
 
 #### Optimization Tips
+
 - Multi-stage builds for size reduction
 - Layer caching strategies
 - .dockerignore best practices
 - Security hardening (non-root user, specific versions)
 
 #### Troubleshooting
+
 - Build failures
 - Container crashes
 - Slow build times
 - Large image sizes
 
 #### Health Checks & Resource Limits
+
 - Docker health check configuration
 - CPU and memory limits
 
@@ -296,6 +330,7 @@ export const GET = errorBoundary(async (req: NextRequest) => {
 ### **instrumentation.ts** (UPDATED)
 
 **Changes:**
+
 - ✅ Added environment validation at startup
 - ✅ Added database startup checks
 - ✅ Validates before Sentry initialization
@@ -304,6 +339,7 @@ export const GET = errorBoundary(async (req: NextRequest) => {
 - ✅ Optional: Can skip DB checks with `SKIP_DB_STARTUP_CHECK=true`
 
 **Startup Flow (Node.js runtime):**
+
 1. **Environment Validation**
    - Calls `validateEnv()` from lib/env-validator.ts
    - Logs all missing/invalid environment variables
@@ -321,12 +357,14 @@ export const GET = errorBoundary(async (req: NextRequest) => {
    - Previous behavior maintained
 
 **Console Output:**
+
 ```
 ✅ Environment validation passed
 ✅ Database startup checks passed
 ```
 
 Or on failure:
+
 ```
 ❌ Environment validation failed:
   - DATABASE_URL is required in production
@@ -343,12 +381,14 @@ Or on failure:
 **Status:** ✅ Production-ready with Redis (Upstash)
 
 **Features:**
+
 - Sliding window rate limiting with Redis
 - Graceful degradation (fail-open if Redis unavailable)
 - Per-user and per-organization limits
 - Comprehensive preset configurations
 
 **Preset Rate Limits:**
+
 ```typescript
 RATE_LIMITS.AI_QUERY              // 20 req/hour (expensive Azure OpenAI)
 RATE_LIMITS.ML_PREDICTIONS        // 50 req/hour (expensive inference)
@@ -360,6 +400,7 @@ RATE_LIMITS.SIGNUP                // 3 req/hour (spam prevention)
 ```
 
 **Usage:**
+
 ```typescript
 const result = await checkRateLimit(userId, RATE_LIMITS.AI_QUERY);
 
@@ -385,10 +426,12 @@ if (!result.allowed) {
 **Status:** ✅ Production-ready
 
 **Endpoints:**
+
 - `GET /api/health` - Full health check with response body
 - `HEAD /api/health` - Lightweight status code only
 
 **Checks Performed:**
+
 1. **Database** - Connection and query performance
    - Active connections vs max connections
    - Response time (healthy < 100ms, degraded > 100ms)
@@ -402,6 +445,7 @@ if (!result.allowed) {
    - Database URL
 
 **Response Format:**
+
 ```json
 {
   "status": "healthy",
@@ -423,6 +467,7 @@ if (!result.allowed) {
 ```
 
 **Status Codes:**
+
 - `200 OK` - All checks passed
 - `503 Service Unavailable` - Critical check failed
 
@@ -431,6 +476,7 @@ if (!result.allowed) {
 ## Testing & Validation
 
 ### Environment Validator Testing
+
 ```bash
 # Test validation (should pass)
 pnpm tsx -e "import('./lib/env-validator').then(m => console.log(m.validateEnv()))"
@@ -440,6 +486,7 @@ NODE_ENV=production DATABASE_URL= pnpm tsx -e "import('./lib/env-validator').the
 ```
 
 ### Database Validator Testing
+
 ```bash
 # Test database health
 pnpm tsx -e "import('./lib/db-validator').then(m => m.checkDatabaseHealth().then(console.log))"
@@ -449,6 +496,7 @@ pnpm tsx -e "import('./lib/db-validator').then(m => m.runDatabaseStartupChecks()
 ```
 
 ### Health Endpoint Testing
+
 ```bash
 # Test health endpoint
 curl http://localhost:3000/api/health
@@ -461,6 +509,7 @@ curl -s http://localhost:3000/api/health | jq
 ```
 
 ### Error Handler Testing
+
 ```typescript
 // Test in API route
 import { errorBoundary, ValidationError } from '@/lib/error-handler';
@@ -477,6 +526,7 @@ export const GET = errorBoundary(async (req) => {
 ## Integration Checklist
 
 ### ✅ Completed
+
 - [x] Environment validation created
 - [x] Database health checks created
 - [x] Error handling framework created
@@ -486,6 +536,7 @@ export const GET = errorBoundary(async (req) => {
 - [x] Docker configurations documented
 
 ### ⏳ Recommended Next Steps
+
 - [ ] Add environment validation tests to CI/CD
 - [ ] Set up monitoring alerts for health endpoint failures
 - [ ] Configure rate limiting on high-traffic API routes
@@ -517,11 +568,13 @@ SENTRY_DSN=https://...
 ## Docker Deployment Examples
 
 ### Development
+
 ```bash
 docker-compose up
 ```
 
 ### Staging Build
+
 ```bash
 docker build -f Dockerfile.staging \
   --build-arg NEXT_PUBLIC_APP_URL=https://staging.unioneyes.com \
@@ -533,6 +586,7 @@ docker run -p 3000:3000 \
 ```
 
 ### Production Build (Kubernetes)
+
 ```bash
 # Build
 docker build -f Dockerfile -t unioneyes:1.0.0 .

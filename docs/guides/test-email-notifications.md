@@ -1,23 +1,27 @@
 # Email Notifications Test Plan
 
 ## Overview
+
 Test end-to-end email notification functionality for claim status changes.
 
 ## Prerequisites
+
 ✅ Dev server running on localhost:3000
-✅ Logged in as: info@nzilaventures.com (LRO)
+✅ Logged in as: <info@nzilaventures.com> (LRO)
 ✅ RESEND_API_KEY configured in .env.local
 ✅ Test claims: CLM-2025-003, CLM-2025-004
 
 ## Email Service Configuration
 
 ### Current Setup
-- **Email Service**: Resend (https://resend.com)
+
+- **Email Service**: Resend (<https://resend.com>)
 - **API Key**: Configured in `.env.local` as `RESEND_API_KEY=re_UaoQtFBw_81TGGt3pTKedNNNkiFU8ku7y`
 - **From Email**: `noreply@unionclaims.com` (configurable via `EMAIL_FROM`)
 - **Reply-To**: `support@unionclaims.com` (configurable via `EMAIL_REPLY_TO`)
 
 ### Email Flow
+
 1. User updates claim status via StatusUpdate component
 2. `updateClaimStatus()` in workflow-engine validates transition
 3. On success, calls `sendClaimStatusNotification()` asynchronously
@@ -28,6 +32,7 @@ Test end-to-end email notification functionality for claim status changes.
 ## Test Cases
 
 ### Test 1: Check Email Configuration
+
 **Goal**: Verify Resend API key is configured
 
 ```powershell
@@ -40,36 +45,43 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 2: Update Claim Status and Monitor Console
+
 **Goal**: Trigger email notification and verify console logs
 
 **Steps**:
+
 1. Open browser console (F12)
-2. Navigate to http://localhost:3000/dashboard/claims/CLM-2025-003
+2. Navigate to <http://localhost:3000/dashboard/claims/CLM-2025-003>
 3. Update status from current → "Under Review"
 4. Add notes: "Testing email notification - under review"
 5. Click "Update Status"
 
 **Expected Console Logs**:
+
 - ✅ "Notification sent for claim [UUID]: under_review"
 - ✅ No error messages about email sending
 - OR ❌ "Failed to send email notification: [error]"
 
 **Where to check**:
+
 - Browser console (client-side)
 - Terminal running `pnpm dev` (server-side logs)
 
 ---
 
 ### Test 3: Verify Email Received
+
 **Goal**: Confirm email arrives at member's inbox
 
 **Steps**:
+
 1. After Test 2, check email inbox for member
 2. Member email should be from Clerk user linked to claim
 3. Look for email with subject: "Claim Under Review - [Claim Title]"
 
 **Expected Email**:
-- **From**: noreply@unionclaims.com
+
+- **From**: <noreply@unionclaims.com>
 - **To**: Member email (from Clerk user)
 - **Subject**: "Claim Under Review - [Claim Type] Claim"
 - **Content**:
@@ -81,6 +93,7 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
   - "View Claim" button linking to claim detail page
 
 **If email not received**:
+
 - Check spam/junk folder
 - Verify RESEND_API_KEY is valid
 - Check Resend dashboard for delivery status
@@ -89,9 +102,11 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 4: Test Multiple Status Transitions
+
 **Goal**: Verify emails sent for each transition
 
 **Transitions to test**:
+
 1. Under Review → Investigation
    - Notes: "Escalating to investigation - email test"
 2. Investigation → Pending Documentation
@@ -102,6 +117,7 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
    - Notes: "Claim resolved in member's favor - email test"
 
 **Expected**:
+
 - 4 separate emails received (one per transition)
 - Each email shows correct status change
 - Each email includes the notes provided
@@ -110,18 +126,22 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 5: Test Steward Notification
+
 **Goal**: Verify steward receives notification when appropriate
 
 **Setup**:
+
 - Claim must be assigned to a steward
 - Test claim CLM-2025-003 is assigned to UUID ending in ...0101
 
 **Steps**:
+
 1. Update status to one that notifies steward:
    - "Assigned", "Investigation", "Pending Documentation", or "Resolved"
 2. Check both member and steward inboxes
 
 **Expected**:
+
 - Member receives email ✅
 - Steward receives email ✅ (same content)
 - Console log shows email sent to both recipients
@@ -131,9 +151,11 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 6: Test Email Template Rendering
+
 **Goal**: Verify email HTML renders correctly
 
 **Check these elements in received email**:
+
 - [ ] Header with "Union Claims Portal" branding
 - [ ] Status badge with appropriate color:
   - Under Review: Orange (#f59e0b)
@@ -149,17 +171,21 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 7: Test Error Handling
+
 **Goal**: Verify graceful handling of email failures
 
 **Scenario 1: Invalid member email**
+
 - This would require database manipulation (skip for now)
 
 **Scenario 2: Network error**
+
 - Monitor console for error handling
 - Status update should succeed even if email fails
 - Console should log: "Failed to send email notification: [error]"
 
 **Expected Behavior**:
+
 - Status update ALWAYS succeeds
 - Email failures are logged but don't block updates
 - User sees success message regardless of email status
@@ -167,23 +193,29 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 8: Test Email Service Configuration
+
 **Goal**: Verify email service handles missing configuration
 
 **Steps**:
+
 1. Stop dev server
 2. Temporarily comment out `RESEND_API_KEY` in .env.local:
+
    ```
    # RESEND_API_KEY=re_UaoQtFBw_81TGGt3pTKedNNNkiFU8ku7y
    ```
+
 3. Restart dev server
 4. Update claim status
 
 **Expected**:
+
 - Status update succeeds ✅
 - Console warns: "RESEND_API_KEY not configured. Email will not be sent."
 - No email sent (graceful degradation)
 
 **Restore after test**:
+
 ```powershell
 # Uncomment RESEND_API_KEY in .env.local
 # Restart dev server
@@ -192,13 +224,16 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 9: Check Resend Dashboard
+
 **Goal**: Verify emails in Resend service dashboard
 
 **Steps**:
-1. Log in to Resend dashboard: https://resend.com/emails
+
+1. Log in to Resend dashboard: <https://resend.com/emails>
 2. Check recent emails sent
 
 **Expected**:
+
 - All test emails appear in dashboard
 - Delivery status shows "Delivered" (or "Sent")
 - Click to view email preview
@@ -207,14 +242,17 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ---
 
 ### Test 10: Test Second Claim
+
 **Goal**: Ensure notifications work for multiple claims
 
 **Steps**:
+
 1. Navigate to CLM-2025-004
 2. Update status with notes: "Testing second claim email"
 3. Check email inbox
 
 **Expected**:
+
 - Email received for CLM-2025-004
 - Correct claim ID in email
 - All details match CLM-2025-004 (not CLM-2025-003)
@@ -224,6 +262,7 @@ Get-Content .env.local | Select-String "RESEND_API_KEY"
 ## Database Verification
 
 ### Check Email was Triggered
+
 ```sql
 -- Check recent status updates (these trigger emails)
 SELECT 
@@ -247,6 +286,7 @@ LIMIT 10;
 ## Implementation Notes
 
 ### Email Service Files
+
 - **Email Service**: `lib/email-service.ts`
   - Handles Resend API integration
   - Lazy-initializes Resend client
@@ -268,20 +308,23 @@ LIMIT 10;
   - Async call with error catching (doesn't block status update)
 
 ### Steward Notification Statuses
+
 Stewards receive emails for these status changes:
+
 - `assigned`
 - `investigation`
 - `pending_documentation`
 - `resolved`
 
 ### Current Limitations
+
 1. **Deadline tracking**: Not implemented in schema
    - Email template has placeholders for deadline/daysRemaining
    - `sendOverdueClaimNotification()` is a stub
-   
+
 2. **Email tracking**: No database log of sent emails
    - Consider adding email_logs table in future
-   
+
 3. **Email preferences**: No user preference for notifications
    - All members receive all emails
 
@@ -293,11 +336,13 @@ Stewards receive emails for these status changes:
 ## Success Criteria
 
 ✅ **Configuration**:
+
 - [ ] RESEND_API_KEY is set in .env.local
 - [ ] Email service initializes without errors
 - [ ] Server logs show no email configuration errors
 
 ✅ **Functionality**:
+
 - [ ] Emails sent for status updates (console confirms)
 - [ ] Emails received in member inbox
 - [ ] Email content matches claim details
@@ -305,12 +350,14 @@ Stewards receive emails for these status changes:
 - [ ] Multiple status transitions = multiple emails
 
 ✅ **Template Quality**:
+
 - [ ] Email renders correctly (all sections visible)
 - [ ] Links work (View Claim button)
 - [ ] Colors/badges display correctly
 - [ ] Responsive design works
 
 ✅ **Error Handling**:
+
 - [ ] Missing API key: graceful warning, status update succeeds
 - [ ] Invalid email: logged error, status update succeeds
 - [ ] Network error: logged error, status update succeeds
@@ -320,17 +367,21 @@ Stewards receive emails for these status changes:
 ## Known Issues & Workarounds
 
 ### Issue 1: Member Email Lookup
+
 **Problem**: Emails are fetched from Clerk using `memberId` from claims table.
 **Workaround**: Ensure all claims have valid `memberId` that matches Clerk user ID.
 
 ### Issue 2: Resend Sandbox Mode
+
 **Problem**: Resend free tier may have sandbox restrictions.
-**Workaround**: 
+**Workaround**:
+
 - Verify domain ownership in Resend dashboard
 - Or use verified test email addresses
 - Check Resend documentation for sandbox limitations
 
 ### Issue 3: Email Delivery Delays
+
 **Problem**: Emails may take a few seconds to arrive.
 **Workaround**: Wait 30-60 seconds before checking inbox.
 

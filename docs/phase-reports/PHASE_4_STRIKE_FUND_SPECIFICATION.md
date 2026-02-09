@@ -1,4 +1,5 @@
 # Phase 4: Strike & Hardship Fund Module
+
 **Technical Specification v1.0**
 
 ## Executive Summary
@@ -14,6 +15,7 @@
 ## Database Schema
 
 ### 1. Strike Funds
+
 ```sql
 CREATE TABLE strike_funds (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -56,6 +58,7 @@ CREATE INDEX idx_strike_funds_type ON strike_funds(fund_type);
 ```
 
 ### 2. Member Fund Eligibility
+
 ```sql
 CREATE TABLE fund_eligibility (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -101,6 +104,7 @@ CREATE INDEX idx_fund_eligibility_status ON fund_eligibility(status);
 ```
 
 ### 3. Picket Attendance
+
 ```sql
 CREATE TABLE picket_attendance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -150,6 +154,7 @@ CREATE INDEX idx_picket_attendance_status ON picket_attendance(verification_stat
 ```
 
 ### 4. Stipend Disbursements
+
 ```sql
 CREATE TABLE stipend_disbursements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -206,6 +211,7 @@ CREATE INDEX idx_stipend_period ON stipend_disbursements(period_start, period_en
 ```
 
 ### 5. Public Donations (Crowd-funding)
+
 ```sql
 CREATE TABLE public_donations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -256,6 +262,7 @@ CREATE INDEX idx_donations_created ON public_donations(created_at DESC);
 ```
 
 ### 6. Hardship Applications
+
 ```sql
 CREATE TABLE hardship_applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -303,6 +310,7 @@ CREATE INDEX idx_hardship_urgency ON hardship_applications(urgency);
 ## API Endpoints
 
 ### Fund Management
+
 ```
 POST   /api/strike-funds                  - Create fund
 GET    /api/strike-funds                  - List funds
@@ -315,6 +323,7 @@ GET    /api/strike-funds/:id/forecast     - AI burn-rate forecast
 ```
 
 ### Picket Attendance
+
 ```
 POST   /api/picket/check-in               - Check in to picket
 POST   /api/picket/check-out              - Check out from picket
@@ -326,6 +335,7 @@ POST   /api/picket/:id/verify             - Verify attendance
 ```
 
 ### Stipend Processing
+
 ```
 POST   /api/stipends/calculate            - Calculate weekly stipends
 GET    /api/stipends                      - List disbursements
@@ -336,6 +346,7 @@ POST   /api/stipends/bulk-approve         - Bulk approve stipends
 ```
 
 ### Public Donations
+
 ```
 POST   /api/donations/create-intent       - Create Stripe intent
 POST   /api/donations                     - Record donation
@@ -345,6 +356,7 @@ GET    /api/donations/leaderboard         - Top donors (public)
 ```
 
 ### Hardship Applications
+
 ```
 POST   /api/hardship/apply                - Submit application
 GET    /api/hardship/applications         - List applications
@@ -359,10 +371,12 @@ POST   /api/hardship/:id/deny             - Deny application
 ## NFC Picket Check-In System
 
 ### Hardware Requirements
+
 - NFC-enabled tablets/phones at picket lines
 - Optional: NFC cards for members without smartphones
 
 ### Implementation
+
 ```typescript
 interface NFCCheckIn {
   memberId: string;
@@ -399,6 +413,7 @@ async function handleNFCTap(tapData: NFCCheckIn) {
 ## AI Burn-Rate Predictor
 
 ### Model Inputs
+
 - Current fund balance
 - Number of striking members
 - Average weekly stipend
@@ -407,6 +422,7 @@ async function handleNFCTap(tapData: NFCCheckIn) {
 - Donation inflow rate
 
 ### Prediction Output
+
 ```typescript
 interface BurnRateForecast {
   currentBalance: number;
@@ -424,6 +440,7 @@ interface BurnRateForecast {
 ```
 
 ### Algorithm
+
 ```typescript
 async function predictFundBurnRate(fundId: string): Promise<BurnRateForecast> {
   const fund = await getStrikeFund(fundId);
@@ -468,6 +485,7 @@ async function predictFundBurnRate(fundId: string): Promise<BurnRateForecast> {
 ## Workflows
 
 ### Weekly Stipend Processing
+
 ```yaml
 trigger: schedule (Friday 5pm)
 steps:
@@ -482,6 +500,7 @@ steps:
 ```
 
 ### Hardship Application Review
+
 ```yaml
 trigger: application_submitted
 steps:
@@ -495,6 +514,7 @@ steps:
 ```
 
 ### Public Donation Processing
+
 ```yaml
 trigger: stripe_webhook (payment_succeeded)
 steps:

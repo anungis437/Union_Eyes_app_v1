@@ -107,7 +107,7 @@ We may update this policy. We'll notify you of significant changes via app notif
 
 For privacy questions or requests:
 
-- Email: privacy@unioneyes.com
+- Email: <privacy@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 - Mail: UnionEyes Privacy Team, [Address]
 

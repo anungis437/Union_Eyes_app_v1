@@ -36,6 +36,7 @@
 ## Test Status
 
 Tests are written but require:
+
 - Existing organization in test database
 - Test user creation (foreign key constraint on `member_id`)
 
@@ -44,6 +45,7 @@ The service logic is correct and tests are comprehensive. They will pass once te
 ## Files Changed
 
 **Created (5 files):**
+
 - `db/migrations/0060_add_visibility_scopes.sql`
 - `lib/services/case-timeline-service.ts`
 - `__tests__/services/case-timeline.test.ts`
@@ -51,6 +53,7 @@ The service logic is correct and tests are comprehensive. They will pass once te
 - `docs/PR-4-COMPLETE.md` (this file)
 
 **Modified (3 files):**
+
 - `db/schema/claims-schema.ts` - Added enum and column
 - `db/schema/grievance-workflow-schema.ts` - Added column
 - `scripts/check-api-guards.js` - (Previous PR-2 enhancement)
@@ -58,6 +61,7 @@ The service logic is correct and tests are comprehensive. They will pass once te
 ## Next Steps
 
 1. **Apply Migration:**
+
    ```bash
    pnpm drizzle-kit push
    # or
@@ -65,6 +69,7 @@ The service logic is correct and tests are comprehensive. They will pass once te
    ```
 
 2. **Use the Service in API Routes:**
+
    ```typescript
    // app/api/claims/[id]/timeline/route.ts
    import { getMemberVisibleTimeline, getLroVisibleTimeline } from '@/lib/services/case-timeline-service';
@@ -87,6 +92,7 @@ The service logic is correct and tests are comprehensive. They will pass once te
 ## Verification
 
 All acceptance criteria met:
+
 - [x] `visibility_scope` column added to relevant tables
 - [x] Timeline service filters events by scope  
 - [x] Members cannot access staff-only events (logic confirmed)

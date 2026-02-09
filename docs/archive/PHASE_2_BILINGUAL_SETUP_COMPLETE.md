@@ -16,6 +16,7 @@ Phase 2 establishes the foundation for bilingual support (English/French) across
 ## ✅ Completed Infrastructure
 
 ### 1. Internationalization Library
+
 - **Installed**: `next-intl ^4.5.2`
 - **Purpose**: Industry-standard i18n for Next.js
 - **Features**:
@@ -27,6 +28,7 @@ Phase 2 establishes the foundation for bilingual support (English/French) across
 ### 2. Translation Files Created
 
 **English (messages/en.json)**:
+
 - Common UI strings (welcome, buttons, forms)
 - Navigation labels
 - Authentication messages
@@ -39,12 +41,14 @@ Phase 2 establishes the foundation for bilingual support (English/French) across
 - Validation rules
 
 **French (messages/fr.json)**:
+
 - Complete Quebec French translations
 - Canadian terminology (e.g., "courriel" vs "email")
 - Professional union language
 - Cultural adaptations for claims terminology
 
 **Translation Categories**:
+
 ```json
 {
   "common": {...},         // Buttons, actions, generic UI
@@ -63,6 +67,7 @@ Phase 2 establishes the foundation for bilingual support (English/French) across
 ### 3. i18n Configuration Files
 
 **i18n/config.ts**:
+
 ```typescript
 export const locales = ['en', 'fr'] as const;
 export type Locale = (typeof locales)[number];
@@ -75,11 +80,13 @@ export const localeNames: Record<Locale, string> = {
 ```
 
 **i18n/request.ts**:
+
 - Server-side request configuration
 - Automatic message loading by locale
 - Locale validation and fallback
 
 **next.config.mjs**:
+
 - Integrated next-intl plugin
 - Configured for translation file imports
 - Standalone build support maintained
@@ -87,6 +94,7 @@ export const localeNames: Record<Locale, string> = {
 ### 4. Middleware Integration
 
 **middleware.ts** (Updated):
+
 - Added i18n middleware alongside Clerk auth
 - Locale detection from:
   - URL path (`/fr/dashboard`)
@@ -98,6 +106,7 @@ export const localeNames: Record<Locale, string> = {
 ### 5. Language Toggle Component
 
 **components/language-toggle.tsx**:
+
 - Dropdown with EN/FR selection
 - Globe icon for visibility
 - Preserves current route when switching
@@ -105,6 +114,7 @@ export const localeNames: Record<Locale, string> = {
 - Saves preference for future visits
 
 **Features**:
+
 - Client-side component
 - Uses useLocale() and useTranslations()
 - Integrates with shadcn/ui Select
@@ -113,6 +123,7 @@ export const localeNames: Record<Locale, string> = {
 ### 6. Supabase Storage Setup
 
 **Voice Recordings Bucket**: ✅ Created
+
 - **Name**: `voice-recordings`
 - **Access**: Authenticated users only
 - **File Size Limit**: 25MB
@@ -125,6 +136,7 @@ export const localeNames: Record<Locale, string> = {
   - audio/mp4
 
 **Storage Policies** (To be applied via Supabase Dashboard):
+
 1. Authenticated users can upload
 2. Authenticated users can view
 3. Users can delete their own recordings
@@ -135,6 +147,7 @@ export const localeNames: Record<Locale, string> = {
 ## 🏗️ Architecture
 
 ### Locale Routing Strategy
+
 ```
 Default (English):
 /dashboard              → English dashboard
@@ -146,6 +159,7 @@ French:
 ```
 
 ### Translation Usage Pattern
+
 ```tsx
 // Server Component
 import {useTranslations} from 'next-intl';
@@ -161,6 +175,7 @@ export function MyComponent() {
 ```
 
 ### Voice Recorder Language Integration
+
 ```tsx
 <VoiceRecorder
   language={locale === 'fr' ? 'fr-CA' : 'en-CA'}
@@ -175,17 +190,20 @@ export function MyComponent() {
 ## 🎯 Quebec Compliance Features
 
 ### Language Requirements
+
 - ✅ French available as primary language
 - ✅ Quebec French terminology (`courriel`, not `email`)
 - ✅ Professional union vocabulary
 - ✅ Legal terms properly translated
 
 ### Voice Recognition
+
 - ✅ Azure Speech SDK supports `fr-CA` (Quebec French)
 - ✅ Auto-detection of French accents
 - ✅ Regional dialect handling
 
 ### Cultural Adaptations
+
 - Union terminology aligned with Quebec labor law
 - Claim types translated to Quebec context
 - Date/time formats adapted for Canadian French
@@ -220,25 +238,25 @@ export function MyComponent() {
 
 ### Medium Priority (Week 2)
 
-5. **Dashboard Translations**:
+1. **Dashboard Translations**:
    - Widget titles and descriptions
    - Statistics labels
    - Chart axis labels
    - Quick action buttons
 
-6. **Member Management**:
+2. **Member Management**:
    - Table column headers
    - Status badges
    - Filter labels
    - Form fields
 
-7. **Admin Panel**:
+3. **Admin Panel**:
    - All admin interface strings
    - Report labels
    - Settings pages
    - Log entries
 
-8. **Error Pages**:
+4. **Error Pages**:
    - 404 Not Found
    - 500 Server Error
    - Unauthorized pages
@@ -246,19 +264,19 @@ export function MyComponent() {
 
 ### Testing & Refinement (Week 3)
 
-9. **Bilingual Voice Testing**:
+1. **Bilingual Voice Testing**:
    - Test French Canadian transcription accuracy
    - Compare with English accuracy
    - Test mixed language claims
    - Verify audio storage works for both languages
 
-10. **User Flow Testing**:
+2. **User Flow Testing**:
     - Complete claim submission in French
     - Switch languages mid-session
     - Test all forms in both languages
     - Verify email notifications are translated
 
-11. **SEO & Accessibility**:
+3. **SEO & Accessibility**:
     - Add `lang` attribute to HTML
     - Meta descriptions in both languages
     - Screen reader testing
@@ -269,6 +287,7 @@ export function MyComponent() {
 ## 📊 Translation Coverage
 
 ### Current Status
+
 ```
 ✅ messages/en.json      - 150+ strings translated
 ✅ messages/fr.json      - 150+ strings translated
@@ -278,6 +297,7 @@ export function MyComponent() {
 ```
 
 ### Coverage by Module
+
 | Module | English | French | Integrated |
 |--------|---------|--------|------------|
 | Common UI | ✅ | ✅ | ⏳ |
@@ -296,6 +316,7 @@ export function MyComponent() {
 ## 🔧 Configuration Files
 
 ### Environment Variables
+
 ```bash
 # Already configured
 NEXT_PUBLIC_SUPABASE_URL=https://lzwzyxayfrbdpmlcltjd.supabase.co
@@ -308,6 +329,7 @@ AZURE_SPEECH_REGION=canadacentral
 ```
 
 ### Package.json
+
 ```json
 {
   "dependencies": {
@@ -322,6 +344,7 @@ AZURE_SPEECH_REGION=canadacentral
 ## 🎓 Usage Examples
 
 ### Basic Translation
+
 ```tsx
 'use client';
 import { useTranslations } from 'next-intl';
@@ -336,6 +359,7 @@ export function MyComponent() {
 ```
 
 ### Translation with Parameters
+
 ```tsx
 const t = useTranslations('validation');
 
@@ -348,6 +372,7 @@ const t = useTranslations('validation');
 ```
 
 ### Voice Recorder with Locale
+
 ```tsx
 'use client';
 import { useLocale } from 'next-intl';
@@ -387,34 +412,34 @@ export function ClaimForm() {
 
 ### Short Term (Next 2 Weeks)
 
-4. **Complete UI Translation**:
+1. **Complete UI Translation**:
    - Update all components to use translations
    - Add language toggle to header
    - Test language switching
 
-5. **Bilingual Voice Testing**:
+2. **Bilingual Voice Testing**:
    - Test French Canadian transcription
    - Compare accuracy between languages
    - Document any issues
 
-6. **Email Notifications**:
+3. **Email Notifications**:
    - Create French email templates
    - Auto-detect user language preference
    - Test all notification types
 
 ### Long Term (Month 1-2)
 
-7. **CBA Document Management**:
+1. **CBA Document Management**:
    - Add language field to CBA table
    - Support uploading French versions
    - Link English/French document pairs
 
-8. **Regional Content**:
+2. **Regional Content**:
    - Quebec-specific claim types
    - Provincial labor law references
    - Regional union contacts
 
-9. **Advanced Features**:
+3. **Advanced Features**:
    - Real-time language switching (without page reload)
    - Mixed-language search
    - Bilingual PDF generation
@@ -443,6 +468,7 @@ export function ClaimForm() {
 ## 📈 Success Metrics
 
 ### Technical
+
 - ✅ 2 locales supported (EN, FR)
 - ✅ 300+ translation strings defined
 - ✅ i18n infrastructure configured
@@ -450,6 +476,7 @@ export function ClaimForm() {
 - ⏳ 0% components integrated (pending)
 
 ### User Impact (To be measured)
+
 - % of users choosing French interface
 - French Canadian voice transcription accuracy
 - Claim submission completion rate (FR vs EN)
@@ -462,6 +489,7 @@ export function ClaimForm() {
 **Phase 2 Infrastructure: Complete!**
 
 All foundational elements for bilingual support are now in place:
+
 - ✅ next-intl library installed and configured
 - ✅ 300+ UI strings translated (EN/FR)
 - ✅ i18n routing configured
@@ -472,6 +500,7 @@ All foundational elements for bilingual support are now in place:
 **Next Phase**: Component integration to activate bilingual UI throughout the application.
 
 **Estimated Time to Full Bilingual**: 1-2 weeks
+
 - Week 1: Integrate translations into existing components
 - Week 2: Test, refine, and document
 

@@ -3,6 +3,7 @@
 ## ✅ Completed Setup
 
 ### 1. Sentry Monitoring (DONE)
+
 - ✅ Installed @sentry/nextjs package
 - ✅ Configured sentry.server.config.ts with DSN
 - ✅ Configured sentry.edge.config.ts
@@ -14,6 +15,7 @@
 **DSN:** `https://3a27b790762b741291334c39f6e330bb@o4509395283542016.ingest.de.sentry.io/4510423943544912`
 
 **Features enabled:**
+
 - Error tracking
 - Performance monitoring (100% trace sample rate)
 - Session replay
@@ -21,13 +23,15 @@
 - Source map uploading
 
 ### 2. Environment Variables (DONE)
-- ✅ Added FINANCIAL_SERVICE_URL=http://localhost:3007
+
+- ✅ Added FINANCIAL_SERVICE_URL=<http://localhost:3007>
 - ✅ Added FINANCIAL_SERVICE_API_KEY=dev_key_12345
 - ✅ Added STRIPE_SECRET_KEY (from financial-service)
 - ✅ Added NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-- ✅ Added NEXT_PUBLIC_APP_URL=http://localhost:3000
+- ✅ Added NEXT_PUBLIC_APP_URL=<http://localhost:3000>
 
 ### 3. Error Boundaries (DONE)
+
 - ✅ Created portal-specific error boundary with Sentry integration
 - ✅ Created root error boundary for app-level errors
 - ✅ Both error boundaries include:
@@ -42,6 +46,7 @@
 ## 🚀 Quick Start - Testing the Portal
 
 ### Step 1: Start the Financial Service
+
 ```powershell
 # Terminal 1 - Start financial service
 cd services/financial-service
@@ -49,32 +54,37 @@ npm run dev
 ```
 
 **Expected output:**
+
 ```
 Financial Service listening on port 3007
 Database connected successfully
 ```
 
 ### Step 2: Start the Main Application
+
 ```powershell
 # Terminal 2 - Start Next.js app
 npm run dev
 ```
 
 **Expected output:**
+
 ```
 - ready started server on 0.0.0.0:3000, url: http://localhost:3000
 ```
 
 ### Step 3: Test Sentry Integration
-1. Visit: http://localhost:3000/sentry-example-page
+
+1. Visit: <http://localhost:3000/sentry-example-page>
 2. Click the buttons to trigger test errors:
    - **Client Error** - Should capture in Sentry with session replay
    - **Server Error** - Should capture server-side exception
-3. Check Sentry dashboard: https://nzila-ventures.sentry.io/issues/
+3. Check Sentry dashboard: <https://nzila-ventures.sentry.io/issues/>
 4. Verify errors appear with full context
 
 ### Step 4: Access Member Portal
-1. Visit: http://localhost:3000/portal
+
+1. Visit: <http://localhost:3000/portal>
 2. Sign in with Clerk (or create test account)
 3. Verify dashboard loads with stats
 
@@ -83,12 +93,14 @@ npm run dev
 ## 🧪 Testing Checklist
 
 ### Authentication & Access
+
 - [ ] Portal requires sign-in (redirects to /sign-in if not authenticated)
 - [ ] Authenticated users can access /portal
 - [ ] User profile data loads from organization_members table
 - [ ] "Back to Admin Dashboard" link works
 
 ### Dashboard Page (/portal)
+
 - [ ] Stats cards display correctly:
   - [ ] Total Claims
   - [ ] Success Rate
@@ -104,6 +116,7 @@ npm run dev
 - [ ] Animations work (cards fade in with stagger)
 
 ### Profile Page (/portal/profile)
+
 - [ ] Personal info displays: name, email, phone
 - [ ] Employment info displays: department, position, hire date
 - [ ] Union info displays: membership #, seniority, join date
@@ -114,7 +127,9 @@ npm run dev
 - [ ] Success toast appears after save
 
 ### Claims Pages
+
 **List Page (/portal/claims)**
+
 - [ ] All claims display in list
 - [ ] Search by claim number works
 - [ ] Search by type works
@@ -128,6 +143,7 @@ npm run dev
 - [ ] Empty state shows when no claims
 
 **New Claim Page (/portal/claims/new)**
+
 - [ ] Form displays all fields
 - [ ] Claim type dropdown has 8 options
 - [ ] Date picker works for incident date
@@ -137,6 +153,7 @@ npm run dev
 - [ ] Cancel button returns to list
 
 **Detail Page (/portal/claims/[id])**
+
 - [ ] Claim details display correctly
 - [ ] Status badge shows at top
 - [ ] Incident information section complete
@@ -144,7 +161,9 @@ npm run dev
 - [ ] Back button returns to list
 
 ### Dues Page (/portal/dues)
+
 **⚠️ REQUIRES FINANCIAL SERVICE RUNNING**
+
 - [ ] Total balance displays in blue card
 - [ ] "Pay Now" button visible if balance > 0
 - [ ] Breakdown cards show:
@@ -160,6 +179,7 @@ npm run dev
 - [ ] After payment, redirects back to /portal/dues?payment=success
 
 **Test Payment Flow:**
+
 1. Click "Pay Now"
 2. Verify redirect to Stripe Checkout
 3. Use test card: `4242 4242 4242 4242`
@@ -170,7 +190,9 @@ npm run dev
 8. Check database for transaction record
 
 ### Documents Page (/portal/documents)
+
 **⚠️ BACKEND NOT YET IMPLEMENTED**
+
 - [ ] Upload interface displays
 - [ ] Search box renders
 - [ ] Empty state shows when no documents
@@ -178,17 +200,20 @@ npm run dev
 - [ ] Download buttons work (when backend ready)
 
 ### Placeholder Pages
+
 - [ ] /portal/messages shows "Coming Soon"
 - [ ] /portal/notifications shows "Coming Soon"
 - [ ] /portal/settings shows "Coming Soon"
 
 ### Navigation
+
 - [ ] All 8 sidebar items render
 - [ ] Active page highlighted in sidebar
 - [ ] Navigation between pages works smoothly
 - [ ] Responsive layout works on mobile
 
 ### Error Handling
+
 - [ ] Portal errors show custom error boundary
 - [ ] Errors captured in Sentry
 - [ ] "Try again" button works
@@ -200,6 +225,7 @@ npm run dev
 ## 🔍 Manual API Testing
 
 ### Test Member Profile Endpoint
+
 ```powershell
 # Get member profile (requires Clerk auth token)
 curl http://localhost:3000/api/members/me `
@@ -207,6 +233,7 @@ curl http://localhost:3000/api/members/me `
 ```
 
 **Expected response:**
+
 ```json
 {
   "id": "123",
@@ -224,12 +251,14 @@ curl http://localhost:3000/api/members/me `
 ```
 
 ### Test Dues Balance Endpoint
+
 ```powershell
 # Get dues balance (proxies to financial-service)
 curl http://localhost:3000/api/portal/dues/balance
 ```
 
 **Expected response:**
+
 ```json
 {
   "totalOwed": 150.00,
@@ -250,6 +279,7 @@ curl http://localhost:3000/api/portal/dues/balance
 ```
 
 ### Test Payment Endpoint
+
 ```powershell
 # Create Stripe checkout session
 curl -X POST http://localhost:3000/api/portal/dues/pay `
@@ -258,6 +288,7 @@ curl -X POST http://localhost:3000/api/portal/dues/pay `
 ```
 
 **Expected response:**
+
 ```json
 {
   "url": "https://checkout.stripe.com/c/pay/cs_test_..."
@@ -269,35 +300,45 @@ curl -X POST http://localhost:3000/api/portal/dues/pay `
 ## 🐛 Troubleshooting
 
 ### Issue: Portal pages return 500 error
+
 **Cause:** Financial service not running or env vars missing
 **Fix:**
+
 1. Start financial service: `cd services/financial-service && npm run dev`
 2. Verify .env has FINANCIAL_SERVICE_URL and FINANCIAL_SERVICE_API_KEY
 
 ### Issue: Dues page shows "Failed to load"
+
 **Cause:** Financial service connection failed
 **Fix:**
+
 1. Check financial service is running on port 3007
 2. Check FINANCIAL_SERVICE_API_KEY matches between services
 3. Check network tab for error details
 
 ### Issue: Stripe payment fails
+
 **Cause:** Invalid Stripe keys or webhook not configured
 **Fix:**
+
 1. Verify STRIPE_SECRET_KEY in .env matches Stripe dashboard
 2. Use test mode keys (sk_test_...)
 3. Check Stripe dashboard for error logs
 
 ### Issue: Sentry not capturing errors
+
 **Cause:** Sentry not initialized or DSN missing
 **Fix:**
+
 1. Check sentry.server.config.ts has correct DSN
 2. Restart dev server to reload Sentry config
 3. Visit /sentry-example-page to test manually
 
 ### Issue: Profile edits don't save
+
 **Cause:** organizationMembers table RLS policy or missing data
 **Fix:**
+
 1. Verify user exists in organization_members table
 2. Check RLS policies allow member to update own record
 3. Check browser console for API error details
@@ -326,6 +367,7 @@ curl -X POST http://localhost:3000/api/portal/dues/pay `
 ## 🎯 Next Priority Tasks
 
 ### HIGH PRIORITY (Blocks launch - 8-12 hours)
+
 1. ✅ **Configure Sentry** (DONE - 3 hours)
 2. ✅ **Set up environment variables** (DONE - 30 min)
 3. ✅ **Add error boundaries** (DONE - 1 hour)
@@ -342,16 +384,18 @@ curl -X POST http://localhost:3000/api/portal/dues/pay `
    - Fix any bugs found
 
 ### MEDIUM PRIORITY (Polish - 2-3 hours)
-6. ⏭️ **Implement document upload backend**
+
+1. ⏭️ **Implement document upload backend**
    - Set up Vercel Blob Storage or S3
    - Create upload API route
    - Connect to documents page
    - Test upload/download
 
 ### LOW PRIORITY (Future releases - 20-30 hours)
-7. ⏭️ **Build messages system**
-8. ⏭️ **Build notifications center**
-9. ⏭️ **Complete settings page**
+
+1. ⏭️ **Build messages system**
+2. ⏭️ **Build notifications center**
+3. ⏭️ **Complete settings page**
 
 ---
 
@@ -370,8 +414,8 @@ curl -X POST http://localhost:3000/api/portal/dues/pay `
 
 ## 📞 Support Resources
 
-- **Sentry Dashboard:** https://nzila-ventures.sentry.io/
-- **Stripe Dashboard:** https://dashboard.stripe.com/test/dashboard
-- **Clerk Dashboard:** https://dashboard.clerk.com/
+- **Sentry Dashboard:** <https://nzila-ventures.sentry.io/>
+- **Stripe Dashboard:** <https://dashboard.stripe.com/test/dashboard>
+- **Clerk Dashboard:** <https://dashboard.clerk.com/>
 - **Financial Service Docs:** `services/financial-service/IMPLEMENTATION_COMPLETE.md`
 - **Portal Implementation Guide:** `MEMBER_PORTAL_IMPLEMENTATION_COMPLETE.md`

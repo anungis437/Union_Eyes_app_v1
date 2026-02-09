@@ -10,6 +10,7 @@ This document outlines the implementation of a "Pay First, Create Account Later"
 ### 1. Existing Files to Modify
 
 #### **app/api/whop/create-checkout/route.ts**
+
 ```typescript
 // Current implementation checks for auth
 export async function POST(req: Request) {
@@ -22,6 +23,7 @@ export async function POST(req: Request) {
 ```
 
 **Changes needed:**
+
 - Modify to support both authenticated and non-authenticated requests
 - Add conditional logic to handle email-only checkout
 - Implement token generation for tracking
@@ -63,9 +65,11 @@ export async function POST(req: Request) {
 ```
 
 #### **app/api/whop/webhooks/utils/payment-handlers.ts**
+
 Currently handles payment success for authenticated users only:
 
 **Changes needed:**
+
 - Enhance to handle email-only payments without breaking existing flow
 - Implementation approach:
 
@@ -118,6 +122,7 @@ async function createPendingProfile(data) {
 ```
 
 #### **actions/whop-actions.ts**
+
 Add new functions to handle frictionless checkout and profile claiming:
 
 ```typescript
@@ -132,6 +137,7 @@ export async function claimPendingProfile(userId: string, email: string, token?:
 ```
 
 #### **db/queries/profiles-queries.ts**
+
 Leverage existing file by adding email-based lookup:
 
 ```typescript
@@ -154,6 +160,7 @@ export const claimProfileWithToken = async (token: string, userId: string) => {
 ### 2. New Files Required
 
 #### **app/pay/page.tsx**
+
 A new page for unauthenticated checkout:
 
 ```typescript
@@ -173,6 +180,7 @@ export default function PayPage() {
 ```
 
 #### **app/(auth)/signup/claim-profile.tsx**
+
 Component to handle profile claiming logic (to be used in signup page):
 
 ```typescript
@@ -195,21 +203,27 @@ export default function ClaimProfile({ userId, email, token }) {
 ## Implementation Details
 
 ### 1. Pricing Page Flow
+
 The `/pay` page will:
+
 - Display pricing options
 - Collect user email
 - Generate a checkout URL with email and token in metadata
 - Redirect to Whop checkout
 
 ### 2. Payment Success Handling
+
 When payment succeeds:
+
 - Webhook checks if clerkUserId exists in metadata
 - If not, it checks for email and token
 - Creates a profile with email, token, and "paid_pending_account" status
 - Stores all payment details (whopUserId, membership, credits, etc.)
 
 ### 3. Signup Integration
+
 Modify the Clerk signup component integration to:
+
 - Extract token from URL parameters
 - Remember email if present in URL
 - After successful signup, check if a profile with matching email exists
@@ -242,6 +256,7 @@ export default function SignUpPage() {
 ```
 
 ### 4. Profile Claiming
+
 Add a new API route to handle post-signup profile claiming:
 
 ```typescript
@@ -268,47 +283,60 @@ export async function GET(req: Request) {
 ## Edge Cases & Solutions
 
 ### 1. User Pays But Closes Browser Before Signup
+
 **Solution:**
+
 - Email-based matching serves as primary recovery mechanism
 - When user eventually signs up with same email, profile is automatically matched
 - Token in URL serves as secondary mechanism if redirected directly
 
 ### 2. User Pays With One Email, Signs Up With Another
+
 **Solution:**
+
 - After login, add "I already paid" option in account settings
 - Allow user to enter email used for payment or token from URL
 - Admin can manually link profiles if needed
 
 ### 3. User Pays Multiple Times Before Creating Account
+
 **Solution:**
+
 - Use most recent or highest-tier payment as primary profile
 - Consolidate credits if applicable
 - Store payment history for reference
 
 ### 4. Multiple Users Try to Claim Same Purchase
+
 **Solution:**
+
 - First claim wins
 - Once a profile has a userId, it's no longer claimable
 - Show clear error message if purchase already claimed
 
 ### 5. Existing Account Users Try to Use New Flow
+
 **Solution:**
+
 - If signed in user visits /pay, redirect to normal checkout
 - Add clear messaging to indicate separate flows
 
 ## Compatibility Safeguards
 
 ### 1. Dual-Path Processing in Webhook Handlers
+
 - All existing code paths remain untouched
 - New logic runs only when clerkUserId is missing
 - Each function has clear separation between auth/non-auth flows
 
 ### 2. Error Handling and Logging
+
 - Add comprehensive error handling for new paths
 - Log all operations clearly to track flow
 - Implement fallbacks at each step
 
 ### 3. Testing Strategy
+
 - Test both flows independently
 - Verify existing flow continues to work
 - Test edge cases and transitions between flows
@@ -316,16 +344,19 @@ export async function GET(req: Request) {
 ## Technical Implementation Notes
 
 ### 1. Code Organization
+
 - Add new functions to existing files where logical
 - Create new files only for new UI components and routes
 - Keep helper functions close to where they're used
 
 ### 2. Database Considerations
+
 - No schema changes needed
 - Use existing fields efficiently
 - Leverage indexes on email field for performance
 
 ### 3. Security Considerations
+
 - Validate all inputs server-side
 - Use cryptographically secure tokens
 - Implement rate limiting on token claiming

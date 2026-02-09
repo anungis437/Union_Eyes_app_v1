@@ -119,6 +119,7 @@ The Unified User Profile Management System provides a comprehensive, production-
 **Migration**: `016_extend_user_profiles.sql`
 
 #### Personal Information Columns
+
 ```sql
 first_name VARCHAR(100)
 last_name VARCHAR(100)
@@ -131,6 +132,7 @@ language VARCHAR(10)         -- ISO 639-1 code
 ```
 
 #### Preference Columns (JSONB)
+
 ```sql
 notification_preferences JSONB  -- Email, push, SMS, in-app settings
 ui_preferences JSONB            -- Theme, colors, font, layout
@@ -139,6 +141,7 @@ security_settings JSONB         -- 2FA, session timeout, trusted devices
 ```
 
 #### Activity Tracking
+
 ```sql
 last_activity_at TIMESTAMP
 login_count INTEGER DEFAULT 0
@@ -147,12 +150,14 @@ last_failed_login_at TIMESTAMP
 ```
 
 #### Onboarding
+
 ```sql
 onboarding_completed BOOLEAN DEFAULT FALSE
 onboarding_progress JSONB      -- Steps tracking
 ```
 
 #### Metadata
+
 ```sql
 profile_completeness INTEGER   -- Score 0-100 (auto-calculated)
 metadata JSONB                 -- Additional custom data
@@ -194,6 +199,7 @@ VALUES (
 ```
 
 **Policies**:
+
 - Users can upload their own avatar
 - Users can update their own avatar
 - Users can delete their own avatar
@@ -202,6 +208,7 @@ VALUES (
 ### Helper Functions
 
 #### 1. calculate_profile_completeness(p_user_id UUID)
+
 **Returns**: INTEGER (0-100)  
 **Purpose**: Calculate profile completion score based on filled fields
 
@@ -212,6 +219,7 @@ SELECT calculate_profile_completeness('user-uuid-here');
 ```
 
 #### 2. update_profile_completeness()
+
 **Trigger Function**: Automatically updates profile_completeness after INSERT/UPDATE
 
 ```sql
@@ -220,6 +228,7 @@ SELECT calculate_profile_completeness('user-uuid-here');
 ```
 
 #### 3. get_user_full_name(p_user_id UUID)
+
 **Returns**: TEXT  
 **Purpose**: Get formatted name (display_name > first+last > email)
 
@@ -229,6 +238,7 @@ SELECT get_user_full_name('user-uuid-here');
 ```
 
 #### 4. update_notification_preference(p_user_id, p_channel, p_key, p_value)
+
 **Purpose**: Safely update nested JSONB notification preferences
 
 ```sql
@@ -241,6 +251,7 @@ SELECT update_notification_preference(
 ```
 
 #### 5. record_login_activity(p_user_id UUID, p_success BOOLEAN)
+
 **Purpose**: Track login attempts and update counters
 
 ```sql
@@ -292,6 +303,7 @@ const service = getUserProfileService();
 #### Profile CRUD Methods
 
 ##### getProfile(userId: string)
+
 Get a user's profile by ID
 
 ```typescript
@@ -304,6 +316,7 @@ if (data) {
 ```
 
 ##### getCurrentProfile()
+
 Get the currently authenticated user's profile
 
 ```typescript
@@ -314,6 +327,7 @@ if (data) {
 ```
 
 ##### updateProfile(userId: string, updates: UpdateProfileInput)
+
 Update profile fields
 
 ```typescript
@@ -330,6 +344,7 @@ const { data, error } = await service.updateProfile('user-uuid', {
 ```
 
 ##### searchProfiles(organizationId: string, query?: string)
+
 Search profiles within an organization
 
 ```typescript
@@ -340,6 +355,7 @@ const { data, error } = await service.searchProfiles('org-uuid', 'john');
 #### Avatar Management
 
 ##### uploadAvatar(userId: string, file: File)
+
 Upload user avatar to Supabase Storage
 
 ```typescript
@@ -354,11 +370,13 @@ if (data) {
 ```
 
 **Validation**:
+
 - Max size: 2MB
 - Allowed types: JPEG, PNG, WebP, GIF
 - Automatic error messages for violations
 
 ##### deleteAvatar(userId: string)
+
 Remove user's avatar from storage and database
 
 ```typescript
@@ -371,6 +389,7 @@ if (!error) {
 #### Preferences Management
 
 ##### updateNotificationPreferences(userId, preferences)
+
 Update notification settings
 
 ```typescript
@@ -389,6 +408,7 @@ await service.updateNotificationPreferences('user-uuid', {
 ```
 
 ##### updateUIPreferences(userId, preferences)
+
 Update UI/appearance settings
 
 ```typescript
@@ -403,6 +423,7 @@ await service.updateUIPreferences('user-uuid', {
 ```
 
 ##### updatePrivacySettings(userId, settings)
+
 Update privacy controls
 
 ```typescript
@@ -416,6 +437,7 @@ await service.updatePrivacySettings('user-uuid', {
 ```
 
 ##### updateSecuritySettings(userId, settings)
+
 Update security configuration
 
 ```typescript
@@ -432,6 +454,7 @@ await service.updateSecuritySettings('user-uuid', {
 #### Onboarding Methods
 
 ##### updateOnboardingProgress(userId, progress)
+
 Update onboarding state
 
 ```typescript
@@ -444,6 +467,7 @@ await service.updateOnboardingProgress('user-uuid', {
 ```
 
 ##### completeOnboardingStep(userId, stepId)
+
 Mark a single step as complete
 
 ```typescript
@@ -454,6 +478,7 @@ await service.completeOnboardingStep('user-uuid', 'profile');
 #### Activity Tracking
 
 ##### recordLoginActivity(userId, success: boolean)
+
 Track login attempts
 
 ```typescript
@@ -467,6 +492,7 @@ await service.recordLoginActivity('user-uuid', false);
 ```
 
 ##### updateLastActivity(userId)
+
 Update last activity timestamp
 
 ```typescript
@@ -477,6 +503,7 @@ await service.updateLastActivity('user-uuid');
 #### Utility Methods
 
 ##### calculateCompleteness(userId)
+
 Get profile completeness score
 
 ```typescript
@@ -485,6 +512,7 @@ console.log(`Profile is ${score}% complete`);
 ```
 
 ##### getFullName(userId)
+
 Get formatted name
 
 ```typescript
@@ -494,6 +522,7 @@ console.log(`User: ${name}`);
 ```
 
 ##### softDeleteProfile(userId)
+
 Soft delete a profile
 
 ```typescript
@@ -617,6 +646,7 @@ function ProfileEditor() {
 #### Real-time Updates
 
 The hook automatically subscribes to profile changes and refreshes when:
+
 - Another session updates the profile
 - Profile is updated by admin
 - Activity tracking updates the timestamp
@@ -648,11 +678,13 @@ import { ProfileCard } from '@court-lens/auth';
 ```
 
 **Props**:
+
 - `className?: string` - Additional CSS classes
 - `showCompleteness?: boolean` - Show progress bar (default: true)
 - `onEditClick?: () => void` - Edit button handler
 
 **Features**:
+
 - Avatar with fallback to User icon
 - Full name, title, department
 - Role badge with color coding
@@ -677,11 +709,13 @@ import { ProfileEditor } from '@court-lens/auth';
 ```
 
 **Props**:
+
 - `onSave?: () => void` - Called after successful save
 - `onCancel?: () => void` - Cancel button handler
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - All editable profile fields
 - Real-time character count for bio
 - Timezone selector with common zones
@@ -708,6 +742,7 @@ import { AvatarUploader } from '@court-lens/auth';
 ```
 
 **Props**:
+
 - `currentAvatarUrl?: string` - Current avatar URL
 - `size?: 'sm' | 'md' | 'lg' | 'xl'` - Avatar size (default: 'md')
 - `editable?: boolean` - Enable upload/delete (default: true)
@@ -717,6 +752,7 @@ import { AvatarUploader } from '@court-lens/auth';
 - `className?: string` - Additional CSS classes
 
 **Features**:
+
 - Click to upload or drag-drop
 - Image preview before upload
 - File validation (size, type)
@@ -737,6 +773,7 @@ import { NotificationPreferencesPanel } from '@court-lens/auth';
 ```
 
 **Features**:
+
 - Email notifications with frequency selector
 - Push notifications
 - SMS notifications
@@ -757,6 +794,7 @@ import { UIPreferencesPanel } from '@court-lens/auth';
 ```
 
 **Features**:
+
 - Theme selector (Light, Dark, System)
 - Accent color picker (5 colors)
 - Font size (Small, Medium, Large)
@@ -777,6 +815,7 @@ import { PrivacySettingsPanel } from '@court-lens/auth';
 ```
 
 **Features**:
+
 - Profile visibility (Public, Organization, Private)
 - Show email toggle
 - Show phone toggle
@@ -796,6 +835,7 @@ import { SecuritySettingsPanel } from '@court-lens/auth';
 ```
 
 **Features**:
+
 - Two-factor authentication toggle
 - 2FA status indicator
 - Session timeout selector
@@ -820,12 +860,14 @@ import { ProfileSettingsPage } from '@court-lens/auth';
 ```
 
 **Props**:
+
 - `defaultTab?: SettingsTab` - Initial tab (default: 'profile')
 - `onClose?: () => void` - Close handler
 - `showCloseButton?: boolean` - Show X button (default: false)
 - `className?: string` - Additional CSS classes
 
 **Tabs**:
+
 1. **Profile** - ProfileCard + ProfileEditor
 2. **Notifications** - NotificationPreferencesPanel
 3. **Appearance** - UIPreferencesPanel
@@ -833,6 +875,7 @@ import { ProfileSettingsPage } from '@court-lens/auth';
 5. **Security** - SecuritySettingsPanel
 
 **Features**:
+
 - Sidebar navigation with icons
 - Tab descriptions
 - Help section with docs link
@@ -857,6 +900,7 @@ const [isOpen, setIsOpen] = useState(false);
 ```
 
 **Features**:
+
 - Modal overlay with backdrop
 - Full ProfileSettingsPage inside
 - Close button
@@ -878,6 +922,7 @@ import { SettingsWidget } from '@court-lens/auth';
 ```
 
 **Features**:
+
 - Horizontal tab navigation
 - Quick access to all panels
 - "View All" button
@@ -1064,6 +1109,7 @@ export function QuickActions() {
 ### TypeScript Interfaces
 
 #### UserProfile
+
 ```typescript
 interface UserProfile {
   userId: string;
@@ -1100,6 +1146,7 @@ interface UserProfile {
 ```
 
 #### UpdateProfileInput
+
 ```typescript
 interface UpdateProfileInput {
   firstName?: string;
@@ -1116,6 +1163,7 @@ interface UpdateProfileInput {
 ```
 
 #### NotificationPreferences
+
 ```typescript
 interface NotificationPreferences {
   email: {
@@ -1151,6 +1199,7 @@ type NotificationType =
 ```
 
 #### UIPreferences
+
 ```typescript
 interface UIPreferences {
   theme: 'light' | 'dark' | 'system';
@@ -1166,6 +1215,7 @@ interface UIPreferences {
 ```
 
 #### PrivacySettings
+
 ```typescript
 interface PrivacySettings {
   profileVisibility: 'public' | 'organization' | 'private';
@@ -1177,6 +1227,7 @@ interface PrivacySettings {
 ```
 
 #### SecuritySettings
+
 ```typescript
 interface SecuritySettings {
   twoFactorEnabled: boolean;

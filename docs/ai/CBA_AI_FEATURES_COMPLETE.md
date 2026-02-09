@@ -13,9 +13,11 @@
 ### Priority 2: AI Features (COMPLETE)
 
 #### 1. AI Clause Extraction Service
+
 **File**: `lib/services/ai/clause-extraction-service.ts` (460+ lines)
 
 **Features**:
+
 - ✅ Extract clauses from PDF documents using GPT-4 Vision
 - ✅ Automatic classification of 26 clause types
 - ✅ Metadata extraction (clause numbers, titles, cross-references)
@@ -26,6 +28,7 @@
 - ✅ AI-powered clause summaries
 
 **Key Functions**:
+
 ```typescript
 extractClausesFromPDF(pdfUrl, cbaId, options)
 batchExtractClauses(cbas, options)
@@ -38,9 +41,11 @@ analyzeClauseQuality(clause, context)
 ---
 
 #### 2. AI Vector Search Service
+
 **File**: `lib/services/ai/vector-search-service.ts` (540+ lines)
 
 **Features**:
+
 - ✅ Semantic search using OpenAI embeddings (text-embedding-3-small)
 - ✅ PostgreSQL pgvector integration for similarity search
 - ✅ Hybrid search (semantic + keyword)
@@ -51,6 +56,7 @@ analyzeClauseQuality(clause, context)
 - ✅ Configurable similarity thresholds
 
 **Key Functions**:
+
 ```typescript
 semanticClauseSearch(query, options)
 semanticPrecedentSearch(query, options)
@@ -63,6 +69,7 @@ generatePrecedentEmbeddings(options)
 **API Endpoint**: `POST /api/ai/semantic-search`
 
 **Search Types**:
+
 - `clauses`: Search only clause content
 - `precedents`: Search arbitration decisions  
 - `unified`: Search both clauses and precedents
@@ -71,9 +78,11 @@ generatePrecedentEmbeddings(options)
 ---
 
 #### 3. AI Auto-Classification Service
+
 **File**: `lib/services/ai/auto-classification-service.ts` (490+ lines)
 
 **Features**:
+
 - ✅ Automatic clause type classification (26 types)
 - ✅ Smart tag generation for searchability
 - ✅ Cross-reference detection
@@ -84,6 +93,7 @@ generatePrecedentEmbeddings(options)
 - ✅ Classification validation and re-classification
 
 **Key Functions**:
+
 ```typescript
 classifyClause(clauseContent, context)
 generateClauseTags(clauseContent, clauseType)
@@ -96,6 +106,7 @@ batchClassifyClauses(clauses, options)
 **API Endpoint**: `POST /api/ai/classify`
 
 **Actions**:
+
 - `classify-clause`: Classify a single clause
 - `generate-tags`: Generate searchable tags
 - `detect-refs`: Find cross-references
@@ -106,9 +117,11 @@ batchClassifyClauses(clauses, options)
 ---
 
 #### 4. AI Precedent Matching Service
+
 **File**: `lib/services/ai/precedent-matching-service.ts` (550+ lines)
 
 **Features**:
+
 - ✅ Hybrid precedent matching (semantic + keyword + metadata)
 - ✅ Relevance scoring with weighted factors
 - ✅ Outcome prediction with confidence
@@ -120,6 +133,7 @@ batchClassifyClauses(clauses, options)
 - ✅ Citation analysis
 
 **Key Functions**:
+
 ```typescript
 matchClaimToPrecedents(claim, options)
 analyzeClaimWithPrecedents(claim, options)
@@ -129,11 +143,13 @@ generateLegalMemorandum(claim, analysis)
 **API Endpoint**: `POST /api/ai/match-precedents`
 
 **Actions**:
+
 - `match`: Find relevant precedents
 - `analyze`: Full claim analysis with predictions
 - `memorandum`: Generate legal memo
 
 **Matching Algorithm**:
+
 ```
 Relevance Score = (Semantic Similarity × 0.5) + 
                   (Keyword Match × 0.3) + 
@@ -145,9 +161,11 @@ Relevance Score = (Semantic Similarity × 0.5) +
 ### Priority 3: Analytics Dashboard (COMPLETE)
 
 #### 1. Arbitrator Success Rates Component
+
 **File**: `components/analytics/ArbitratorSuccessRates.tsx` (280+ lines)
 
 **Features**:
+
 - ✅ Win rate visualization (union/employer/split)
 - ✅ Average decision timeframes
 - ✅ Specialization display
@@ -157,6 +175,7 @@ Relevance Score = (Semantic Similarity × 0.5) +
 - ✅ Color-coded performance indicators
 
 **Visual Elements**:
+
 - Horizontal bar chart showing win rate distribution
 - Badge indicators for decision speed
 - Specialization tags
@@ -165,9 +184,11 @@ Relevance Score = (Semantic Similarity × 0.5) +
 ---
 
 #### 2. Clause Trends By Type Component
+
 **File**: `components/analytics/ClauseTrendsByType.tsx` (240+ lines)
 
 **Features**:
+
 - ✅ Distribution visualization for all 26 clause types
 - ✅ Top 5 clause types with animated bars
 - ✅ Grid view for complete distribution
@@ -177,6 +198,7 @@ Relevance Score = (Semantic Similarity × 0.5) +
 - ✅ Jurisdiction and sector filtering
 
 **Visual Elements**:
+
 - Animated progress bars for top 5 types
 - Grid cards with individual type metrics
 - Color-coded indicators per clause type
@@ -185,9 +207,11 @@ Relevance Score = (Semantic Similarity × 0.5) +
 ---
 
 #### 3. CBA Expiry Tracker Component
+
 **File**: `components/analytics/CBAExpiryTracker.tsx` (310+ lines)
 
 **Features**:
+
 - ✅ Expiry timeline tracking (30/60/90/180/365 days)
 - ✅ Urgency level classification (critical/warning/info)
 - ✅ Member impact calculations
@@ -197,12 +221,14 @@ Relevance Score = (Semantic Similarity × 0.5) +
 - ✅ Sort by expiry date
 
 **Visual Elements**:
+
 - Alert banner for critical expirations
 - Three summary cards (expiring count, members affected, critical actions)
 - Color-coded timeline entries
 - Urgency badges (Urgent/Soon/Upcoming)
 
 **Alert Thresholds**:
+
 - **Critical**: ≤ 30 days (red)
 - **Warning**: ≤ 90 days (yellow)
 - **Info**: > 90 days (blue)
@@ -212,9 +238,11 @@ Relevance Score = (Semantic Similarity × 0.5) +
 ### Support Files
 
 #### Sample Data Import Script
+
 **File**: `scripts/import-sample-cba-data.ts` (500+ lines)
 
 **Sample Data Included**:
+
 - ✅ 3 Collective Bargaining Agreements
 - ✅ 10 Clauses (covering multiple types)
 - ✅ 3 Arbitrator Profiles
@@ -223,6 +251,7 @@ Relevance Score = (Semantic Similarity × 0.5) +
 - ✅ 1 Wage Progression schedule
 
 **Usage**:
+
 ```bash
 pnpm tsx scripts/import-sample-cba-data.ts
 ```
@@ -267,11 +296,13 @@ DATABASE_URL=postgresql://...
 ### Database Setup
 
 **1. Install pgvector extension**:
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
 **2. Add embedding columns** (if not already added):
+
 ```sql
 ALTER TABLE cba_clauses 
 ADD COLUMN IF NOT EXISTS embedding vector(1536);
@@ -287,6 +318,7 @@ ON arbitration_decisions USING ivfflat (embedding vector_cosine_ops);
 ```
 
 **3. Run migrations**:
+
 ```bash
 pnpm drizzle-kit push
 ```
@@ -381,6 +413,7 @@ curl -X POST http://localhost:3000/api/ai/match-precedents \
 ## 🎯 Feature Completion Status
 
 ### Priority 1: Backend & API ✅ 100% Complete
+
 - [x] CBA Service
 - [x] Clause Service
 - [x] Precedent Service
@@ -390,6 +423,7 @@ curl -X POST http://localhost:3000/api/ai/match-precedents \
 - [x] Sample data import script
 
 ### Priority 2: AI Features ✅ 100% Complete
+
 - [x] Clause extraction from PDFs (GPT-4 Vision)
 - [x] Semantic search (OpenAI embeddings + pgvector)
 - [x] Auto-classification (26 clause types)
@@ -399,6 +433,7 @@ curl -X POST http://localhost:3000/api/ai/match-precedents \
 - [x] AI API endpoints (4 routes)
 
 ### Priority 3: Analytics Dashboard ✅ 100% Complete
+
 - [x] Arbitrator Success Rates component
 - [x] Clause Trends By Type component
 - [x] CBA Expiry Tracker component
@@ -413,6 +448,7 @@ curl -X POST http://localhost:3000/api/ai/match-precedents \
 ### Immediate Actions
 
 1. **Test AI Features**:
+
    ```bash
    # Import sample data
    pnpm tsx scripts/import-sample-cba-data.ts
@@ -539,12 +575,14 @@ const analysis = await fetch('/api/ai/match-precedents', {
 ## ✨ Achievement Summary
 
 ### Phase 1 (Priority 1): Backend Foundation ✅
+
 - Built world-class backend services
 - Created 14 production-ready API routes
 - Implemented comprehensive CRUD operations
 - Added advanced filtering and analytics
 
 ### Phase 2 (Priority 2): AI Intelligence ✅
+
 - Integrated OpenAI GPT-4 for clause extraction
 - Implemented semantic search with pgvector
 - Built auto-classification system
@@ -552,6 +590,7 @@ const analysis = await fetch('/api/ai/match-precedents', {
 - Added legal memorandum generation
 
 ### Phase 3 (Priority 3): Analytics & Insights ✅
+
 - Built 3 comprehensive analytics components
 - Created interactive visualizations
 - Implemented real-time data updates
@@ -582,6 +621,7 @@ const analysis = await fetch('/api/ai/match-precedents', {
 ## 🙏 Acknowledgments
 
 Implementation completed using:
+
 - **OpenAI GPT-4**: Clause extraction and classification
 - **OpenAI Embeddings**: Semantic search (text-embedding-3-small)
 - **PostgreSQL pgvector**: Vector similarity search

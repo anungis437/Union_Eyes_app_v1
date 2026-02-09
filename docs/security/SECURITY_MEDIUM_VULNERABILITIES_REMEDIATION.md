@@ -7,11 +7,13 @@ This document details the remediation of **5 medium-severity security vulnerabil
 ## Executive Summary
 
 **Security Rating Improvement:**
+
 - Before: 6/10 (from initial RLS gaps assessment)
 - After RLS fixes: 9.5/10
 - After Medium-severity fixes: **9.8/10** ⬆️ +3.8 overall improvement
 
 **Vulnerabilities Addressed:**
+
 - ✅ 55+ unvalidated process.env accesses → Centralized validation utility
 - ✅ Voting system cryptography → Enhanced with env validation + HMAC-SHA256
 - ✅ 374 API routes with SQL injection risk → Prevention middleware created
@@ -26,9 +28,10 @@ This document details the remediation of **5 medium-severity security vulnerabil
 
 **Purpose:** Centralized, type-safe management of all environment variables with audit logging
 
-### Key Features:
+### Key Features
 
 #### 1.1 Comprehensive Variable Schema
+
 - 50+ documented environment variables
 - Zod-based type-safe schema definition
 - Required vs optional distinction
@@ -41,7 +44,9 @@ const apiKey = env.SENDGRID_API_KEY; // May be undefined
 ```
 
 #### 1.2 Validated Variables (50+)
+
 **Critical (Required):**
+
 - `DATABASE_URL` - PostgreSQL connection (validated format)
 - `CLERK_SECRET_KEY` - Authentication (min 10 chars)
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Client auth
@@ -49,6 +54,7 @@ const apiKey = env.SENDGRID_API_KEY; // May be undefined
 - `NEXT_PUBLIC_APP_URL` - Application URL (validated as HTTPS)
 
 **High Priority (Optional in dev, required in prod):**
+
 - `STRIPE_WEBHOOK_SECRET` - Payment processing
 - `STRIPE_SECRET_KEY` - Stripe integration
 - `SENDGRID_API_KEY` - Email notifications
@@ -56,18 +62,21 @@ const apiKey = env.SENDGRID_API_KEY; // May be undefined
 - `AWS_REGION`, `CLOUDFLARE_R2_BUCKET`, `AZURE_STORAGE_*` - Document storage
 
 **Medium Priority (Optional):**
+
 - `REDIS_HOST`, `REDIS_PORT` - Caching
 - `SENTRY_DSN` - Error tracking
 - Azure services credentials
 - Firebase credentials
 
 #### 1.3 Audit Logging
+
 - **Validation events:** Track when env validation passes/fails
 - **Access tracking:** Log all environment variable accesses
 - **Security events:** Alert on missing critical variables
 - **Metrics export:** Audit log with timestamps and details
 
 #### 1.4 Development vs Production Checks
+
 ```typescript
 // Production: Fails immediately on critical missing vars
 if (NODE_ENV === 'production' && !VOTING_SECRET) {
@@ -81,6 +90,7 @@ if (NODE_ENV === 'development' && !SENDGRID_API_KEY) {
 ```
 
 **Usage in instrumentation.ts:**
+
 ```typescript
 const { validateEnvironment } = await import('./lib/config/env-validation');
 const envValidation = validateEnvironment();
@@ -93,15 +103,18 @@ if (!envValidation.isValid) {
 }
 ```
 
-### Security Impact:
+### Security Impact
+
 - ✅ Prevents production crashes from missing env vars
 - ✅ Eliminates 55+ unvalidated process.env accesses
 - ✅ Type-safe environment access throughout app
 - ✅ Audit trail of all environment validation events
 - ✅ Fail-fast in production for security-critical vars
 
-### Test Coverage: [__tests__/security/env-validation.test.ts](
-__tests__/security/env-validation.test.ts)
+### Test Coverage: [**tests**/security/env-validation.test.ts](
+
+**tests**/security/env-validation.test.ts)
+
 - ✅ 25+ test cases covering all validation scenarios
 - ✅ Error cases, edge cases, metrics, audit logs
 
@@ -113,9 +126,10 @@ __tests__/security/env-validation.test.ts)
 
 **Purpose:** Ensure VOTING_SECRET is always validated before use
 
-### Key Improvements:
+### Key Improvements
 
 #### 2.1 Secure Secret Validation
+
 ```typescript
 // Before: No validation
 const votingSecret = process.env.VOTING_SECRET // Could be undefined
@@ -131,17 +145,20 @@ if (votingSecret.length < 32) {
 ```
 
 #### 2.2 Integration with env-validation
+
 - Uses centralized `env` proxy for validated access
 - Automatic audit logging of VOTING_SECRET accesses
 - Type-safe guarantees throughout voting-service
 
 #### 2.3 Cryptographic Standards
+
 - HMAC-SHA256 for signature generation
 - PBKDF2 with 600,000 iterations (NIST 2023 recommendation)
 - Nonce-based freshness verification
 - Deterministic vote hashing
 
 **Voting Flow:**
+
 ```typescript
 1. Get validated VOTING_SECRET via env.VOTING_SECRET
 2. Derive session key with PBKDF2(secret, salt, iterations=600000)
@@ -150,7 +167,8 @@ if (votingSecret.length < 32) {
 5. Return signature + receipt for voter verification
 ```
 
-### Security Impact:
+### Security Impact
+
 - ✅ Voting system guaranteed to have valid cryptographic secret
 - ✅ Prevents runtime errors from missing VOTING_SECRET
 - ✅ HMAC-SHA256 signatures prevent vote tampering
@@ -165,10 +183,12 @@ if (votingSecret.length < 32) {
 
 **Purpose:** Detect and prevent SQL injection attacks in API routes
 
-### Key Features:
+### Key Features
 
 #### 3.1 Pattern Detection System
+
 Detects multiple injection patterns:
+
 - **Union-based:** `UNION SELECT` attacks
 - **Comment-based:** SQL comment injection (`--`, `/* */`)
 - **Function-based:** Dangerous functions (`DROP TABLE`, `DELETE FROM`, etc.)
@@ -176,6 +196,7 @@ Detects multiple injection patterns:
 - **String concatenation:** Query concatenation patterns
 
 #### 3.2 Severity Classification
+
 ```
 - CRITICAL: UNION SELECTs, DROP TABLE, DELETE FROM
 - HIGH: Raw SQL concatenation
@@ -184,6 +205,7 @@ Detects multiple injection patterns:
 ```
 
 #### 3.3 Scanner API
+
 ```typescript
 import { SQLInjectionScanner, validateSQLSafety } from '@/lib/middleware/sql-injection-prevention';
 
@@ -200,6 +222,7 @@ if (!result.isSafe) {
 ```
 
 #### 3.4 ORM Validation
+
 ```typescript
 // Validate that code uses proper ORM patterns
 const isSafe = SQLInjectionScanner.validateORMUsage(codeString);
@@ -211,11 +234,13 @@ const isSafe = SQLInjectionScanner.validateORMUsage(codeString);
 ```
 
 #### 3.5 Audit Logging
+
 - Log all injection attempts with severity
 - Track patterns detected and recommendations
 - Generate vulnerability reports
 
 #### 3.6 Remediation Guidance
+
 ```typescript
 // UNSAFE_PATTERNS_AUDIT documents all dangerous patterns:
 {
@@ -226,7 +251,8 @@ const isSafe = SQLInjectionScanner.validateORMUsage(codeString);
 }
 ```
 
-### Usage in API Routes:
+### Usage in API Routes
+
 ```typescript
 import { validateSQLSafety } from '@/lib/middleware/sql-injection-prevention';
 
@@ -244,14 +270,16 @@ export async function POST(request: Request) {
 }
 ```
 
-### Security Impact:
+### Security Impact
+
 - ✅ Prevents SQL injection in 374+ API routes
 - ✅ Detects raw SQL template usage patterns
 - ✅ Enforces parameterized query requirements
 - ✅ Provides remediation guidance
 - ✅ Audit trail of all injection attempts
 
-### Coverage:
+### Coverage
+
 - Covers 374 identified vulnerable routes
 - Detectable patterns cover OWASP Top 10 injection techniques
 - Integration with Drizzle ORM recommendations
@@ -264,9 +292,10 @@ export async function POST(request: Request) {
 
 **Purpose:** Comprehensive request body and query parameter validation
 
-### Key Features:
+### Key Features
 
 #### 4.1 Zod-Based Schema Validation
+
 ```typescript
 import { z } from 'zod';
 import { validateRequest, RequestValidator } from '@/lib/middleware/request-validation';
@@ -290,6 +319,7 @@ console.log(result.data.email); // Type: string
 ```
 
 #### 4.2 Pre-Configured Validators
+
 ```typescript
 import { createValidator } from '@/lib/middleware/request-validation';
 
@@ -306,7 +336,9 @@ createValidator.dateRange()          // Date validation
 ```
 
 #### 4.3 Sanitization Rules
+
 Built-in sanitization for common attack vectors:
+
 - **HTML stripping:** Remove `<script>`, `<img>` tags
 - **Email normalization:** Lowercase, trim
 - **URL validation:** Reject `javascript:`, `data:` protocols
@@ -315,6 +347,7 @@ Built-in sanitization for common attack vectors:
 - **Numeric validation:** Range checking, integer enforcement
 
 #### 4.4 Error Formatting
+
 ```typescript
 // Zod errors formatted into readable structure
 {
@@ -328,6 +361,7 @@ Built-in sanitization for common attack vectors:
 ```
 
 #### 4.5 Audit Logging
+
 ```typescript
 // ValidationAuditLog tracks validation events
 ValidationAuditLog.log('/api/users', true);  // Success
@@ -345,6 +379,7 @@ const stats = ValidationAuditLog.getStats();
 ```
 
 #### 4.6 Common Validation Patterns
+
 ```typescript
 // User registration
 const registerSchema = z.object({
@@ -368,7 +403,8 @@ const listQuery = z.object({
 });
 ```
 
-### Usage in Routes:
+### Usage in Routes
+
 ```typescript
 export async function POST(request: Request) {
   // Validate request
@@ -383,7 +419,8 @@ export async function POST(request: Request) {
 }
 ```
 
-### Security Impact:
+### Security Impact
+
 - ✅ Prevents invalid data from reaching business logic
 - ✅ XSS prevention via HTML tag stripping
 - ✅ CSRF prevention through request validation
@@ -391,8 +428,10 @@ export async function POST(request: Request) {
 - ✅ Audit trail of validation events
 - ✅ Standardized error responses
 
-### Test Coverage: [__tests__/security/security-middleware.test.ts](
-__tests__/security/security-middleware.test.ts#L140-L350)
+### Test Coverage: [**tests**/security/security-middleware.test.ts](
+
+**tests**/security/security-middleware.test.ts#L140-L350)
+
 - ✅ 30+ validation test cases
 - ✅ Email, UUID, URL, phone, password, slug validation
 - ✅ Error handling and edge cases
@@ -405,9 +444,10 @@ __tests__/security/security-middleware.test.ts#L140-L350)
 
 **Purpose:** Consistent authentication and authorization across all protected routes
 
-### Key Features:
+### Key Features
 
 #### 5.1 Role-Based Access Control (RBAC)
+
 Defined roles with specific permissions:
 
 ```typescript
@@ -442,6 +482,7 @@ VIEWER: [
 ```
 
 #### 5.2 Authentication Helper Functions
+
 ```typescript
 import { requireAuth, requireRole, requirePermission, requireOrganizationAccess } from '@/lib/middleware/auth-middleware';
 
@@ -479,6 +520,7 @@ export async function GET(request: Request, { params }: { params: { orgId: strin
 ```
 
 #### 5.3 Wrapper Functions
+
 ```typescript
 // Simple syntax for common patterns
 export const POST = withAuth(async (request, user) => {
@@ -498,6 +540,7 @@ export const DELETE = withPermission('delete:organization', async (request, user
 ```
 
 #### 5.4 Permission Matrix
+
 ```typescript
 // Check if user has permission
 const canDeleteOrg = AuthenticationService.hasPermission(user, 'delete:organization');
@@ -516,6 +559,7 @@ const canAccess = AuthenticationService.canAccessOrganization(user, orgId);
 ```
 
 #### 5.5 Token Validation
+
 ```typescript
 import { extractBearerToken, isValidBearerToken } from '@/lib/middleware/auth-middleware';
 
@@ -529,6 +573,7 @@ if (!isValidBearerToken(token)) {
 ```
 
 #### 5.6 Audit Logging
+
 ```typescript
 import { AuthenticationAuditLog } from '@/lib/middleware/auth-middleware';
 
@@ -543,9 +588,10 @@ AuthenticationAuditLog.getStats()
 // }
 ```
 
-### Usage Patterns:
+### Usage Patterns
 
 #### Pattern 1: Protected Route
+
 ```typescript
 export async function POST(request: Request) {
   const auth = await requireAuth();
@@ -556,6 +602,7 @@ export async function POST(request: Request) {
 ```
 
 #### Pattern 2: Admin-Only Route
+
 ```typescript
 export async function DELETE(request: Request) {
   const auth = await requireRole(SUPPORTED_ROLES.ADMIN);
@@ -566,6 +613,7 @@ export async function DELETE(request: Request) {
 ```
 
 #### Pattern 3: Organization-Scoped Route
+
 ```typescript
 export async function GET(request: Request, { params }: { params: { orgId: string } }) {
   const auth = await requireOrganizationAccess(params.orgId);
@@ -577,6 +625,7 @@ export async function GET(request: Request, { params }: { params: { orgId: strin
 ```
 
 #### Pattern 4: Permission-Based Route
+
 ```typescript
 export async function POST(request: Request) {
   const auth = await requirePermission('create:voting');
@@ -586,7 +635,8 @@ export async function POST(request: Request) {
 }
 ```
 
-### Security Impact:
+### Security Impact
+
 - ✅ Consistent authentication across all routes
 - ✅ Role-based access control prevents unauthorized access
 - ✅ Permission granularity for fine-grained control
@@ -595,8 +645,10 @@ export async function POST(request: Request) {
 - ✅ Prevents mixed authentication patterns
 - ✅ Clear permission requirements in code
 
-### Test Coverage: [__tests__/security/security-middleware.test.ts](
-__tests__/security/security-middleware.test.ts#L360-L450)
+### Test Coverage: [**tests**/security/security-middleware.test.ts](
+
+**tests**/security/security-middleware.test.ts#L360-L450)
+
 - ✅ 20+ authentication test cases
 - ✅ Role hierarchy verification
 - ✅ Permission matrix validation
@@ -606,18 +658,20 @@ __tests__/security/security-middleware.test.ts#L360-L450)
 
 ## 6. Comprehensive Test Suite ✅
 
-### Files:
-1. [__tests__/security/env-validation.test.ts](
+### Files
+
+1. [**tests**/security/env-validation.test.ts](
 __tests__/security/env-validation.test.ts) - 25+ tests
-2. [__tests__/security/security-middleware.test.ts](
+2. [**tests**/security/security-middleware.test.ts](
 __tests__/security/security-middleware.test.ts) - 50+ tests
 
-### Test Coverage Summary:
+### Test Coverage Summary
+
 - ✅ **75+ total security tests**
 - ✅ **0 compilation errors**
 - ✅ **All Vitest compatible**
 
-#### Test Categories:
+#### Test Categories
 
 1. **Environment Validation (25 tests)**
    - Critical variable validation
@@ -656,18 +710,21 @@ __tests__/security/security-middleware.test.ts) - 50+ tests
 ## 7. Implementation Checklist ✅
 
 ### Configuration
+
 - [x] Env variables documented (50+)
 - [x] Validation schema created
 - [x] Instrumentation updated for startup validation
 - [x] Production fail-fast configured
 
 ### Voting System
+
 - [x] Env validation integrated
 - [x] VOTING_SECRET length validation
 - [x] Error messages improved
 - [x] Audit logging enabled
 
 ### SQL Injection Prevention
+
 - [x] Pattern detection system created
 - [x] Severity classification implemented
 - [x] ORM validation tool created
@@ -675,6 +732,7 @@ __tests__/security/security-middleware.test.ts) - 50+ tests
 - [x] Remediation guidance provided
 
 ### Input Validation
+
 - [x] Zod schema integration
 - [x] Common validators created
 - [x] Sanitization rules defined
@@ -682,6 +740,7 @@ __tests__/security/security-middleware.test.ts) - 50+ tests
 - [x] Audit logging configured
 
 ### Authentication
+
 - [x] RBAC roles defined (7 roles)
 - [x] Permission matrix created
 - [x] Helper functions implemented
@@ -689,6 +748,7 @@ __tests__/security/security-middleware.test.ts) - 50+ tests
 - [x] Audit logging configured
 
 ### Testing
+
 - [x] Environment validation tests (25)
 - [x] SQL injection prevention tests (15)
 - [x] Input validation tests (30)
@@ -700,6 +760,7 @@ __tests__/security/security-middleware.test.ts) - 50+ tests
 ## 8. Deployment Guide
 
 ### Step 1: Update Environment Configuration
+
 ```bash
 # Update .env with all required variables
 VOTING_SECRET="<32+ character cryptographic secret>"
@@ -708,6 +769,7 @@ SENDGRID_API_KEY="<valid key>"
 ```
 
 ### Step 2: Test Startup Validation
+
 ```bash
 npm run build
 npm start
@@ -715,18 +777,21 @@ npm start
 ```
 
 ### Step 3: Run Security Tests
+
 ```bash
 npm run test -- security
 # Should see: ✅ All 75+ tests passing
 ```
 
 ### Step 4: Audit Existing Routes
+
 - Scan app/api/* for raw SQL templates
 - Replace with Drizzle ORM parameterized queries
 - Add input validation to route handlers
 - Implement standardized authentication
 
 ### Step 5: Monitor Audit Logs
+
 ```typescript
 import { getEnvironmentAuditLog, getEnvironmentMetrics } from '@/lib/config/env-validation';
 import { AuthenticationAuditLog } from '@/lib/middleware/auth-middleware';
@@ -740,7 +805,8 @@ const authStats = AuthenticationAuditLog.getStats();
 
 ## 9. Security Metrics
 
-### Before Implementation:
+### Before Implementation
+
 - Environment validation: ❌ 0%
 - Input validation coverage: ❌ 30%
 - Standardized auth: ❌ 40%
@@ -748,7 +814,8 @@ const authStats = AuthenticationAuditLog.getStats();
 - Audit logging: ❌ Basic only
 - **Overall Security: 6.0/10**
 
-### After Implementation:
+### After Implementation
+
 - Environment validation: ✅ 100% (50+ variables)
 - Input validation coverage: ✅ 95%+ (with helpers)
 - Standardized auth: ✅ 100% (7 roles, permission matrix)
@@ -756,7 +823,8 @@ const authStats = AuthenticationAuditLog.getStats();
 - Audit logging: ✅ Comprehensive (all layers)
 - **Overall Security: 9.8/10** ⬆️ **+3.8 improvement**
 
-### Code Quality Metrics:
+### Code Quality Metrics
+
 - New lines of security code: **1,500+**
 - Test coverage: **75+ security tests**
 - Compilation errors: **0**
@@ -767,6 +835,7 @@ const authStats = AuthenticationAuditLog.getStats();
 ## 10. Remediation Roadmap
 
 ### Immediate (0-1 week) ✅
+
 - [x] Deploy env validation utility
 - [x] Update instrumentation for startup validation
 - [x] Test voting system with validated VOTING_SECRET
@@ -776,6 +845,7 @@ const authStats = AuthenticationAuditLog.getStats();
 - [x] Write comprehensive tests
 
 ### Short-term (1-2 weeks) - Next Phase
+
 - [ ] Audit all 374 API routes for SQL injection risks
 - [ ] Replace raw SQL templates with Drizzle ORM
 - [ ] Add input validation to all route handlers
@@ -784,6 +854,7 @@ const authStats = AuthenticationAuditLog.getStats();
 - [ ] Address any failed validation patterns
 
 ### Medium-term (2-4 weeks) - Hardening
+
 - [ ] Implement rate limiting on auth endpoints
 - [ ] Add CSRF token validation
 - [ ] Enable security headers (Helmet)
@@ -792,6 +863,7 @@ const authStats = AuthenticationAuditLog.getStats();
 - [ ] Conduct security code review
 
 ### Long-term (Monthly review)
+
 - [ ] Regular penetration testing
 - [ ] Update OWASP mappings
 - [ ] Review and update permission matrix
@@ -810,10 +882,8 @@ const authStats = AuthenticationAuditLog.getStats();
 | [lib/middleware/sql-injection-prevention.ts](lib/middleware/sql-injection-prevention.ts) | 380 | SQL injection detection |
 | [lib/middleware/request-validation.ts](lib/middleware/request-validation.ts) | 520 | Input validation middleware |
 | [lib/middleware/auth-middleware.ts](lib/middleware/auth-middleware.ts) | 510 | Authentication/authorization |
-| [__tests__/security/env-validation.test.ts](
-__tests__/security/env-validation.test.ts) | 280 | Env validation tests |
-| [__tests__/security/security-middleware.test.ts](
-__tests__/security/security-middleware.test.ts) | 680 | Middleware tests |
+| [**tests**/security/env-validation.test.ts](__tests__/security/env-validation.test.ts) | 280 | Env validation tests |
+| [**tests**/security/security-middleware.test.ts](__tests__/security/security-middleware.test.ts) | 680 | Middleware tests |
 
 **Total Security Code: 2,790+ lines**
 **Compilation Status: ✅ 0 errors**

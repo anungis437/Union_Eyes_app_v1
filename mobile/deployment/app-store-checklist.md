@@ -315,20 +315,20 @@ fastlane ios release
 
 ## Resources
 
-- **App Store Connect**: https://appstoreconnect.apple.com
-- **Review Guidelines**: https://developer.apple.com/app-store/review/guidelines/
-- **Human Interface Guidelines**: https://developer.apple.com/design/human-interface-guidelines/
-- **App Store Resources**: https://developer.apple.com/app-store/
-- **TestFlight**: https://developer.apple.com/testflight/
+- **App Store Connect**: <https://appstoreconnect.apple.com>
+- **Review Guidelines**: <https://developer.apple.com/app-store/review/guidelines/>
+- **Human Interface Guidelines**: <https://developer.apple.com/design/human-interface-guidelines/>
+- **App Store Resources**: <https://developer.apple.com/app-store/>
+- **TestFlight**: <https://developer.apple.com/testflight/>
 
 ## Support
 
 For internal support:
 
-- Email: dev@unioneyes.com
+- Email: <dev@unioneyes.com>
 - Slack: #mobile-deployment
 
 For Apple support:
 
-- Developer Support: https://developer.apple.com/support/
-- Contact Apple: https://developer.apple.com/contact/
+- Developer Support: <https://developer.apple.com/support/>
+- Contact Apple: <https://developer.apple.com/contact/>

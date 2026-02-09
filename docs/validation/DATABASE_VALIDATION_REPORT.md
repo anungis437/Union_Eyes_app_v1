@@ -1,4 +1,5 @@
 # Database Schema Validation Report
+
 **Date:** November 25, 2025  
 **Database:** Azure PostgreSQL - unioneyes (Staging)  
 **Version:** PostgreSQL 16.10
@@ -8,12 +9,14 @@
 ## ✅ Migration Completed Successfully
 
 ### Added Missing Column
+
 - **Table:** `clause_comparisons_history`
 - **Column:** `organization_id` (uuid, NOT NULL, references organizations.id)
 - **Index:** `idx_clause_comparisons_org` created
 - **Status:** ✅ **COMPLETE**
 
 ### Re-enabled Features
+
 - ✅ Clause comparison history logging restored
 - ✅ All imports and code re-enabled in compare endpoint
 
@@ -22,6 +25,7 @@
 ## 📊 Database Overview
 
 ### Connection Details
+
 - **Host:** unioneyes-staging-db.postgres.database.azure.com
 - **Database:** unioneyes
 - **User:** unionadmin
@@ -30,6 +34,7 @@
 - **Total Enum Types:** 77
 
 ### Critical Tables Status
+
 | Table | Status | Notes |
 |-------|--------|-------|
 | `organizations` | ✅ Present | 35 columns |
@@ -48,24 +53,31 @@
 ## 🔍 Column Mapping Verification
 
 ### organizations table
+
 **Schema uses `name`, database uses `name`** ✅
+
 - Columns: 35 total
 - Key fields: id, name, slug, organization_type, parent_id, hierarchy_path
 - All required columns present
 
 ### claims table  
+
 **Schema uses `id`, database uses `claim_id`** ⚠️ **Schema mismatch**
+
 - Columns: 27 total
 - Key fields: claim_id (not id), claim_number, tenant_id, member_id (not claimant_id)
 - Note: Field names differ from schema but table is functional
 
 ### clause_comparisons_history table
+
 **Schema uses `comparisonNotes`, database uses `notes`** ⚠️ **Schema mismatch**
+
 - Columns: 6 total (including new `organization_id`)
 - All fields present: id, user_id, organization_id, clause_ids, notes, created_at
 - ✅ Migration successful - organization_id added
 
 ### shared_clause_library table
+
 - Columns: All required fields present
 - Fields: id, source_organization_id, clause_title, clause_text, sharing_level, comparison_count
 - ✅ Complete and functional
@@ -77,12 +89,14 @@
 The following tables have column name mismatches between the Drizzle schema and actual database:
 
 ### 1. `claims` table
+
 | Schema Name | Database Name |
 |-------------|---------------|
 | `id` | `claim_id` |
 | `claimant_id` | `member_id` |
 
 ### 2. `clause_comparisons_history` table
+
 | Schema Name | Database Name |
 |-------------|---------------|
 | `comparisonNotes` | `notes` |
@@ -94,6 +108,7 @@ The following tables have column name mismatches between the Drizzle schema and 
 ## 🎯 Application Status
 
 ### ✅ Fully Functional Features
+
 1. **Clause Library**
    - Browse clauses ✅
    - View single clause ✅
@@ -111,6 +126,7 @@ The following tables have column name mismatches between the Drizzle schema and 
    - Cookie-based org switching ✅
 
 ### ⏸️ Features with Placeholders
+
 1. **Deadline Management**
    - Tables: `claim_deadlines`, `deadline_rules`, `deadline_extensions` don't exist yet
    - API endpoints return empty data gracefully
@@ -125,6 +141,7 @@ The following tables have column name mismatches between the Drizzle schema and 
 ## 🔒 Database Security & Access
 
 ### Active Connection
+
 - **Environment:** Staging (Azure PostgreSQL)
 - **SSL Mode:** Required
 - **Connection Pooling:** Enabled (max 3 connections)
@@ -132,8 +149,9 @@ The following tables have column name mismatches between the Drizzle schema and 
 - **Connect Timeout:** 5 seconds
 
 ### Supabase Configuration
+
 - **Status:** Not actively used (using Azure PostgreSQL instead)
-- **URL:** https://lzwzyxayfrbdpmlcltjd.supabase.co
+- **URL:** <https://lzwzyxayfrbdpmlcltjd.supabase.co>
 - **Note:** Credentials present in .env.local but not being used
 
 ---
@@ -269,11 +287,13 @@ The following tables have column name mismatches between the Drizzle schema and 
 ## 📝 Recommended Next Steps
 
 ### Optional Improvements
+
 1. Consider standardizing column names between schema and database
 2. Add `claim_deadlines` schema when implementing deadline feature
 3. Add `cba` and `cba_clause` schemas when implementing CBA feature
 
 ### Maintenance
+
 - Regular backup schedule (Azure handles this)
 - Monitor connection pool usage
 - Review slow query logs periodically

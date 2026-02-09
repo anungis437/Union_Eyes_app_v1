@@ -9,18 +9,21 @@
 ## Executive Summary
 
 ### ✅ **Strengths - What's Working**
+
 1. **RLS Policies Implemented**: 61 comprehensive policies across 11 tables (Migration 0058)
 2. **Clerk Authentication Active**: Using Clerk for user management with varchar(255) user IDs  
 3. **RBAC Roles Defined**: 4-tier hierarchy (`member` → `steward` → `officer` → `admin`)
 4. **Dual Auth Pattern**: RLS policies support both JWT (`request.jwt.claims`) and fallback (`app.current_user_id`)
 
 ### ⚠️ **Critical Gaps - Requires Immediate Action**
+
 1. **No Automatic Context Setting**: Database queries don't automatically set user context
 2. **Manual Context Required**: Each API route must manually call `SET app.current_user_id`
 3. **JWT Integration Incomplete**: No middleware to extract Clerk JWT and set `request.jwt.claims`
 4. **Role Mismatch**: Application uses `super_admin` role, database policies use `admin/officer`
 
 ### 📊 **Alignment Score: 68/100**
+
 - RLS Implementation: 95/100 ✅
 - Auth Integration: 45/100 ⚠️
 - RBAC Consistency: 65/100 ⚠️
@@ -52,6 +55,7 @@ CREATE POLICY course_reg_insert ON course_registrations
 ```
 
 **Policy Coverage:**
+
 - ✅ `users`: 4 policies (SELECT, INSERT, UPDATE, DELETE)
 - ✅ `claims`: 4 policies (full CRUD)
 - ✅ `course_registrations`: 4 policies (full CRUD)
@@ -69,12 +73,14 @@ CREATE POLICY course_reg_insert ON course_registrations
 ### 🎯 **RLS Design Patterns**
 
 1. **Self-Service + Admin Override**
+
    ```sql
    member_id = current_user_id  -- Users manage their own records
    OR EXISTS (SELECT 1 FROM organization_members WHERE role = 'admin')  -- Admins override
    ```
 
 2. **Organization-Based Multi-Tenancy**
+
    ```sql
    organization_id::text IN (
      SELECT DISTINCT tenant_id::text FROM organization_members
@@ -83,6 +89,7 @@ CREATE POLICY course_reg_insert ON course_registrations
    ```
 
 3. **Role-Based CRUD Restrictions**
+
    ```sql
    -- Anyone can read, only admins can delete
    FOR SELECT USING (org_member_check)
@@ -90,6 +97,7 @@ CREATE POLICY course_reg_insert ON course_registrations
    ```
 
 ### ✅ **RLS Score: 95/100**
+
 - Policy completeness: 100%
 - Granularity: Excellent
 - Performance: Good (indexed predicates)
@@ -104,6 +112,7 @@ CREATE POLICY course_reg_insert ON course_registrations
 #### ✅ **What's Working**
 
 **Clerk Configuration:**
+
 ```typescript
 // lib/auth.ts - Clerk is primary auth provider
 import { auth, currentUser } from '@clerk/nextjs/server';
@@ -123,6 +132,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 ```
 
 **Database Schema:**
+
 ```sql
 -- Migration 0055: Converted to varchar(255) for Clerk IDs
 ALTER TABLE user_management.users ALTER COLUMN user_id TYPE varchar(255);
@@ -133,6 +143,7 @@ ALTER TABLE claims ALTER COLUMN member_id TYPE varchar(255);
 #### ❌ **Critical Gap: No Automatic Context Setting**
 
 **Current Pattern (Manual):**
+
 ```typescript
 // app/api/admin/clc/remittances/route.ts
 export async function POST(req: Request) {
@@ -147,6 +158,7 @@ const { userId } = await auth();  // Get Clerk user ID
 ```
 
 **Problems:**
+
 1. ❌ Easy to forget `SET app.current_user_id` in new routes
 2. ❌ No automatic cleanup (`RESET app.current_user_id`)
 3. ❌ JWT path (`request.jwt.claims`) never used (no middleware sets it)
@@ -155,6 +167,7 @@ const { userId } = await auth();  // Get Clerk user ID
 #### 🎯 **Missing: Database Middleware**
 
 **What We Need:**
+
 ```typescript
 // lib/db/with-rls-context.ts (DOESN'T EXIST YET)
 import { auth } from '@clerk/nextjs/server';
@@ -194,6 +207,7 @@ export async function POST(req: Request) {
 ```
 
 ### ⚠️ **Auth Integration Score: 45/100**
+
 - Clerk setup: 100% ✅
 - Database schema: 100% ✅
 - **Manual context setting: 30%** ❌ (API routes only)
@@ -209,6 +223,7 @@ export async function POST(req: Request) {
 #### Application-Side RBAC
 
 **Defined Roles (lib/auth.ts):**
+
 ```typescript
 export const ROLE_HIERARCHY = {
   super_admin: 100,  // ❌ Not in database enum!
@@ -222,6 +237,7 @@ export const ROLE_HIERARCHY = {
 #### Database-Side RBAC
 
 **Enum Values (organization_members.role):**
+
 ```sql
 -- Actual enum in database:
 CREATE TYPE member_role AS ENUM (
@@ -233,6 +249,7 @@ CREATE TYPE member_role AS ENUM (
 ```
 
 **RLS Policy Roles:**
+
 ```sql
 -- Policies use: 'admin', 'officer', 'steward', 'member'
 AND om.role IN ('admin', 'officer', 'steward')  -- Training coordinators
@@ -251,6 +268,7 @@ AND om.role IN ('admin', 'officer')            -- Admin operations
 | `guest` | ❌ Missing | ❌ Never checked | **BROKEN** |
 
 **Impact:**
+
 ```typescript
 // This works in application code:
 const isSuperAdmin = hasRole(req, 'super_admin');  // Returns true
@@ -265,6 +283,7 @@ await db.insert(organizationMembers).values({
 ### 🎯 **Role-Based Permission Examples**
 
 **Training Management:**
+
 ```sql
 -- Stewards can register members for training
 CREATE POLICY course_reg_insert ON course_registrations
@@ -274,6 +293,7 @@ CREATE POLICY course_reg_insert ON course_registrations
 ```
 
 **Claims Management:**
+
 ```sql
 -- Only admin/officer can delete claims
 CREATE POLICY claims_delete ON claims
@@ -283,6 +303,7 @@ CREATE POLICY claims_delete ON claims
 ```
 
 **User Management:**
+
 ```sql
 -- System admin check uses database column
 CREATE POLICY users_delete_admin ON user_management.users
@@ -292,6 +313,7 @@ CREATE POLICY users_delete_admin ON user_management.users
 ```
 
 ### ⚠️ **RBAC Consistency Score: 65/100**
+
 - Role definitions: 60% (mismatch between app and DB)
 - Policy implementation: 90% ✅
 - Hierarchy enforcement: 50% (not consistent)
@@ -368,9 +390,11 @@ CREATE POLICY users_delete_admin ON user_management.users
 ### 🔴 **HIGH-SEVERITY Risks**
 
 #### Risk 1: Forgotten Context (`app.current_user_id` not set)
+
 - **Likelihood**: High (manual process)
 - **Impact**: Critical (bypass RLS, see all data)
 - **Example**:
+
   ```typescript
   // Developer forgets to set context
   export async function GET(req: Request) {
@@ -383,9 +407,11 @@ CREATE POLICY users_delete_admin ON user_management.users
   ```
 
 #### Risk 2: Role Enum Mismatch
+
 - **Likelihood**: Medium (happens during onboarding/updates)
 - **Impact**: High (application errors, broken permissions)
 - **Example**:
+
   ```typescript
   // Works in app, crashes in database
   await db.insert(organizationMembers).values({
@@ -394,9 +420,11 @@ CREATE POLICY users_delete_admin ON user_management.users
   ```
 
 #### Risk 3: Context Leakage in Connection Pooling
+
 - **Likelihood**: Medium (connection reuse)
 - **Impact**: Critical (user sees another user's data)
 - **Example**:
+
   ```typescript
   // Request 1: Sets context for user A
   await db.execute(sql`SET app.current_user_id = 'user_a'`);
@@ -411,11 +439,13 @@ CREATE POLICY users_delete_admin ON user_management.users
 ### 🟡 **MEDIUM-SEVERITY Risks**
 
 #### Risk 4: No JWT Integration
+
 - RLS policies support JWT path but it's never used
 - All requests fall back to `app.current_user_id`
 - Missing opportunity for direct Clerk → PostgreSQL integration
 
 #### Risk 5: Role Hierarchy Not Enforced in Database
+
 - Application assumes `admin` > `steward` > `member`
 - Database has no constraint enforcing this
 - Could create `member` with admin-level `is_system_admin` flag
@@ -468,6 +498,7 @@ export function createSecureServerAction<TInput, TOutput>(
 ```
 
 **Migration Path:**
+
 ```typescript
 // Before:
 export async function POST(req: Request) {
@@ -488,6 +519,7 @@ export async function POST(req: Request) {
 #### Task 1.2: Fix Role Enum Mismatch
 
 **Option A: Update Application (Recommended)**
+
 ```typescript
 // lib/auth.ts - BEFORE
 export const ROLE_HIERARCHY = {
@@ -517,6 +549,7 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
 ```
 
 **Option B: Update Database (Not Recommended)**
+
 ```sql
 -- Add super_admin and guest to enum (requires migration)
 ALTER TYPE member_role ADD VALUE 'super_admin';  -- Can't remove values!
@@ -759,6 +792,7 @@ pnpm test __tests__/security/rls-context.test.ts
 5. ❌ **No automatic middleware** (developers must remember to set context)
 
 **Priority Actions:**
+
 1. **CRITICAL**: Create `withRLSContext()` middleware (1-2 days)
 2. **HIGH**: Fix role enum mismatch (1 day)
 3. **MEDIUM**: Add context validation (1 day)

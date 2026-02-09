@@ -1,9 +1,11 @@
 # Admin Panel API Documentation
 
 ## Authentication
+
 All admin endpoints require authentication via Clerk and admin role verification.
 
 ## Base URL
+
 `/api/admin`
 
 ---
@@ -11,9 +13,11 @@ All admin endpoints require authentication via Clerk and admin role verification
 ## Statistics Endpoints
 
 ### GET /api/admin/stats/overview
+
 Get system-wide statistics.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -28,12 +32,15 @@ Get system-wide statistics.
 ```
 
 ### GET /api/admin/stats/activity
+
 Get recent activity feed.
 
 **Query Parameters:**
+
 - `limit` (optional): Number of items to return (max 100, default 50)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -55,14 +62,17 @@ Get recent activity feed.
 ## User Management Endpoints
 
 ### GET /api/admin/users
+
 List all users with optional filtering.
 
 **Query Parameters:**
+
 - `search` (optional): Search by user ID or tenant name
 - `tenantId` (optional): Filter by tenant ID
 - `role` (optional): Filter by role (member, steward, officer, admin)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -84,9 +94,11 @@ List all users with optional filtering.
 ```
 
 ### POST /api/admin/users
+
 Add a user to a tenant.
 
 **Request Body:**
+
 ```json
 {
   "userId": "user_123",
@@ -96,6 +108,7 @@ Add a user to a tenant.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -110,9 +123,11 @@ Add a user to a tenant.
 ```
 
 ### GET /api/admin/users/[userId]
+
 Get user details across all tenants.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -130,9 +145,11 @@ Get user details across all tenants.
 ```
 
 ### PUT /api/admin/users/[userId]
+
 Update user role or status.
 
 **Request Body:**
+
 ```json
 {
   "tenantId": "abc-123",
@@ -142,6 +159,7 @@ Update user role or status.
 ```
 
 Or:
+
 ```json
 {
   "tenantId": "abc-123",
@@ -150,6 +168,7 @@ Or:
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -158,12 +177,15 @@ Or:
 ```
 
 ### DELETE /api/admin/users/[userId]
+
 Remove user from tenant.
 
 **Query Parameters:**
+
 - `tenantId` (required): Tenant ID
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -176,12 +198,15 @@ Remove user from tenant.
 ## Organization Management Endpoints
 
 ### GET /api/admin/organizations
+
 List all organizations with statistics.
 
 **Query Parameters:**
+
 - `search` (optional): Search by name or slug
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -205,9 +230,11 @@ List all organizations with statistics.
 ```
 
 ### POST /api/admin/organizations
+
 Create a new organization.
 
 **Request Body:**
+
 ```json
 {
   "tenantSlug": "new-org",
@@ -219,6 +246,7 @@ Create a new organization.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -230,9 +258,11 @@ Create a new organization.
 ```
 
 ### GET /api/admin/organizations/[tenantId]
+
 Get organization details with statistics.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -268,9 +298,11 @@ Get organization details with statistics.
 ```
 
 ### PUT /api/admin/organizations/[tenantId]
+
 Update organization details.
 
 **Request Body:**
+
 ```json
 {
   "tenantName": "Updated Name",
@@ -282,6 +314,7 @@ Update organization details.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -290,9 +323,11 @@ Update organization details.
 ```
 
 ### DELETE /api/admin/organizations/[tenantId]
+
 Archive (soft delete) an organization.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -305,12 +340,15 @@ Archive (soft delete) an organization.
 ## System Management Endpoints
 
 ### GET /api/admin/system/settings
+
 Get system configurations.
 
 **Query Parameters:**
+
 - `category` (optional): Filter by category
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -327,9 +365,11 @@ Get system configurations.
 ```
 
 ### PUT /api/admin/system/settings
+
 Update system configuration.
 
 **Request Body:**
+
 ```json
 {
   "tenantId": "abc-123",
@@ -340,6 +380,7 @@ Update system configuration.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -348,9 +389,11 @@ Update system configuration.
 ```
 
 ### POST /api/admin/system/cache
+
 Clear application cache.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -363,9 +406,11 @@ Clear application cache.
 ## Database Management Endpoints
 
 ### GET /api/admin/database/health
+
 Get database health metrics.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -391,9 +436,11 @@ Get database health metrics.
 ```
 
 ### POST /api/admin/database/optimize
+
 Run database optimization (ANALYZE).
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -414,6 +461,7 @@ All endpoints return errors in this format:
 ```
 
 Common HTTP status codes:
+
 - `401`: Unauthorized (not logged in)
 - `403`: Forbidden (not admin)
 - `404`: Not found

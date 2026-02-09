@@ -77,6 +77,7 @@ mark_overdue_deadlines() RETURNS INT
 - `v_member_deadline_summary` - Per-member deadline counts (overdue, due soon, critical)
 
 **15+ Performance Indexes:**
+
 - Tenant + status + current_deadline (multi-column)
 - Claim ID + status
 - Days until due (for alert generation)
@@ -84,6 +85,7 @@ mark_overdue_deadlines() RETURNS INT
 - Deadline ID + alert trigger (prevent duplicate alerts)
 
 **Features:**
+
 - Automatic status calculation (computed columns: `is_overdue`, `days_until_due`, `days_overdue`)
 - Business day awareness (configurable per rule)
 - Holiday calendar (tenant-specific + global holidays)
@@ -98,6 +100,7 @@ mark_overdue_deadlines() RETURNS INT
 **25+ Query Functions:**
 
 **Rule Management (5 functions):**
+
 ```typescript
 getDeadlineRules(tenantId) - Get all active rules
 getDeadlineRuleByCode(tenantId, ruleCode) - Find specific rule
@@ -107,6 +110,7 @@ updateDeadlineRule(ruleId, data) - Modify rule
 ```
 
 **Deadline Tracking (8 functions):**
+
 ```typescript
 getClaimDeadlines(claimId) - All deadlines for claim
 getPendingClaimDeadlines(claimId) - Active deadlines only
@@ -121,6 +125,7 @@ markOverdueDeadlines() - Batch update status (scheduled job)
 ```
 
 **Extension Workflow (4 functions):**
+
 ```typescript
 requestDeadlineExtension(deadlineId, tenantId, requestedBy, days, reason, requiresApproval)
 approveDeadlineExtension(extensionId, approvedBy, daysGranted?, notes?)
@@ -130,6 +135,7 @@ getPendingExtensionRequests(tenantId) - Approval queue
 ```
 
 **Alert Generation (6 functions):**
+
 ```typescript
 createDeadlineAlert(deadlineId, tenantId, recipientId, alertType, trigger, deliveryMethod, options)
 generateUpcomingDeadlineAlerts(tenantId)
@@ -141,6 +147,7 @@ getUnreadAlerts(memberId, tenantId) - In-app notification list
 ```
 
 **Business Day Calculations (3 functions):**
+
 ```typescript
 calculateBusinessDays(startDate, endDate, tenantId?) - Count business days between dates
 addBusinessDays(startDate, daysToAdd, tenantId?) - Add X business days to date
@@ -148,6 +155,7 @@ getHolidays(startDate, endDate, tenantId?) - Get holidays in range
 ```
 
 **Reporting (3 functions):**
+
 ```typescript
 getDeadlineComplianceMetrics(tenantId, startDate?, endDate?)
   - Monthly compliance rates (on-time %, missed %, avg days overdue)
@@ -158,6 +166,7 @@ getDeadlineDashboardSummary(tenantId)
 ```
 
 **Architecture:**
+
 - Full TypeScript types for all entities
 - Drizzle ORM for type-safe queries
 - Comprehensive error handling
@@ -171,6 +180,7 @@ getDeadlineDashboardSummary(tenantId)
 **Orchestration & Business Logic:**
 
 **Deadline Creation:**
+
 ```typescript
 initializeClaimDeadlines(claimId, tenantId, claimType, priority, filingDate, createdBy)
   - Called when claim is filed
@@ -183,6 +193,7 @@ addClaimDeadline(claimId, tenantId, deadlineName, daysFromNow, priority, created
 ```
 
 **Deadline Monitoring:**
+
 ```typescript
 updateDeadlineStatuses()
   - Run every 5 minutes by scheduled job
@@ -194,6 +205,7 @@ getMemberUpcomingDeadlines(memberId, tenantId, daysAhead) - Member-specific
 ```
 
 **Alert Management:**
+
 ```typescript
 generateDeadlineAlerts(tenantId)
   - Run every hour by scheduled job
@@ -215,6 +227,7 @@ takeAlertAction(alertId, action) - Record user action
 ```
 
 **Extension Workflow:**
+
 ```typescript
 requestExtension(deadlineId, tenantId, requestedBy, days, reason)
   - Creates extension request
@@ -232,6 +245,7 @@ getPendingExtensions(tenantId) - Approval queue for officers
 ```
 
 **Escalation:**
+
 ```typescript
 escalateOverdueDeadlines(tenantId)
   - Run every 15 minutes by scheduled job
@@ -242,6 +256,7 @@ escalateOverdueDeadlines(tenantId)
 ```
 
 **Completion:**
+
 ```typescript
 markDeadlineComplete(deadlineId, completedBy, notes?)
   - Marks deadline as completed
@@ -253,6 +268,7 @@ autoCompleteClaimDeadlines(claimId, completedBy, claimStatus)
 ```
 
 **Reporting:**
+
 ```typescript
 getComplianceReport(tenantId, startDate?, endDate?)
   - Monthly compliance metrics
@@ -263,6 +279,7 @@ getDashboardSummary(tenantId)
 ```
 
 **Utility Functions:**
+
 ```typescript
 calculateDeadlineDate(startDate, days, businessDaysOnly, tenantId?)
   - Calculates deadline date (business days or calendar days)
@@ -276,6 +293,7 @@ getDeadlineStatus(deadline): { color, label, severity }
 ```
 
 **Scheduled Jobs:**
+
 ```typescript
 runDeadlineMonitoringJob(tenantId) - Every 5 minutes
   - Update statuses + generate alerts
@@ -437,6 +455,7 @@ calculate_business_days(start_date, end_date, tenant_id) {
 ```
 
 When a grievance is filed:
+
 - Automatically creates "Initial Response Deadline" 15 business days from filing
 - If deadline is missed, escalates to chief steward after 3 days
 - Member can request extension (up to 30 days) with approval required
@@ -444,6 +463,7 @@ When a grievance is filed:
 ### 2. Multi-Channel Alerts
 
 **In-App Notifications:**
+
 ```typescript
 {
   alertType: "upcoming",
@@ -457,17 +477,20 @@ When a grievance is filed:
 ```
 
 **Email Alerts (Ready for Integration):**
+
 - HTML template with claim details
 - Action button (View Claim)
 - Unsubscribe link
 - Delivery tracking (sent → delivered → opened)
 
 **SMS Alerts (Infrastructure Pending):**
+
 - Short message (160 chars)
 - Link to claim
 - Delivery confirmation
 
 **Weekly Digest:**
+
 - Sent Monday 8 AM
 - Summary: "You have 5 upcoming deadlines, 2 overdue"
 - List of top 10 critical deadlines
@@ -523,6 +546,7 @@ Create escalation alert
 ### 5. Compliance Reporting
 
 **Monthly Metrics:**
+
 ```typescript
 {
   month: "2025-11",
@@ -538,6 +562,7 @@ Create escalation alert
 ```
 
 **Member Performance:**
+
 ```typescript
 {
   memberId: "user-123",
@@ -573,6 +598,7 @@ Create escalation alert
 ### 2. UI Components (6 hours)
 
 **DeadlinesList Component:**
+
 ```tsx
 <DeadlinesList
   deadlines={deadlines}
@@ -582,12 +608,14 @@ Create escalation alert
   onExtend={handleExtend}
 />
 ```
+
 - Table with sortable columns
 - Filters (status, priority, date range)
 - Traffic light indicators
 - Action buttons (Complete, Extend)
 
 **DeadlineCalendar Component:**
+
 ```tsx
 <DeadlineCalendar
   tenantId={tenantId}
@@ -595,12 +623,14 @@ Create escalation alert
   onDateClick={handleDateClick}
 />
 ```
+
 - Full calendar view (month/week/day)
 - Color-coded deadlines (green/yellow/red/black)
 - Click to view claim details
 - Drag-to-reschedule (with extension request)
 
 **DeadlineWidget Component (Dashboard):**
+
 ```tsx
 <DeadlineWidget
   summary={dashboardSummary}
@@ -608,11 +638,13 @@ Create escalation alert
   onViewAll={handleViewAll}
 />
 ```
+
 - Summary cards (overdue, due today, due soon)
 - List of next 5 critical deadlines
 - Link to full deadline page
 
 **ExtensionRequestDialog:**
+
 ```tsx
 <ExtensionRequestDialog
   deadline={selectedDeadline}
@@ -620,11 +652,13 @@ Create escalation alert
   onCancel={handleCancel}
 />
 ```
+
 - Form: days requested, reason
 - Max extension validation
 - Approval requirement notice
 
 **ExtensionApprovalDialog (Officer):**
+
 ```tsx
 <ExtensionApprovalDialog
   extension={pendingExtension}
@@ -632,11 +666,13 @@ Create escalation alert
   onDeny={handleDeny}
 />
 ```
+
 - Request details (requester, days, reason)
 - Approval form (days granted, notes)
 - Deny form (reason required)
 
 **DeadlineAlertList (Notification Center):**
+
 ```tsx
 <DeadlineAlertList
   alerts={unreadAlerts}
@@ -644,6 +680,7 @@ Create escalation alert
   onTakeAction={handleTakeAction}
 />
 ```
+
 - List of unread in-app alerts
 - Badge count on navbar
 - Mark as read
@@ -742,6 +779,7 @@ export async function sendDeadlineAlert(
 ## 📈 Impact Assessment
 
 **Before Deadline System:**
+
 - Manual deadline tracking (spreadsheets, calendars)
 - Missed deadlines discovered after the fact
 - No proactive alerts
@@ -749,6 +787,7 @@ export async function sendDeadlineAlert(
 - No compliance metrics
 
 **After Deadline System:**
+
 - Automatic deadline creation when claims are filed
 - Proactive alerts (3 days, 1 day, day-of)
 - Traffic light dashboard (see status at a glance)
@@ -758,6 +797,7 @@ export async function sendDeadlineAlert(
 - Business day calculation (accurate legal deadlines)
 
 **Estimated Benefits:**
+
 - **60% reduction in missed deadlines** (proactive alerts + auto-escalation)
 - **80% reduction in manual deadline tracking** (auto-creation from rules)
 - **50% faster deadline resolution** (clear ownership + escalation)
@@ -836,6 +876,7 @@ export async function sendDeadlineAlert(
 ## 📝 Lessons Learned
 
 **What Went Well:**
+
 - Systematic approach (schema → queries → service → API → UI)
 - Comprehensive planning (all edge cases considered up front)
 - Business day calculation (accurate legal deadline compliance)
@@ -843,12 +884,14 @@ export async function sendDeadlineAlert(
 - Audit trail (every change logged)
 
 **Challenges:**
+
 - Complex business logic (business days, holidays, escalation chains)
 - Alert deduplication (prevent spam)
 - Scheduled job timing (balance accuracy vs. server load)
 - Multi-channel delivery (email, SMS, in-app)
 
 **Future Improvements:**
+
 - Machine learning for deadline prediction (historical data)
 - Smart escalation (based on member workload, not just role)
 - Customizable alert preferences (per member)
@@ -866,6 +909,7 @@ export async function sendDeadlineAlert(
 **Types:** TypeScript interfaces in query files
 
 **Key Types:**
+
 ```typescript
 DeadlineRule - Configurable deadline rules
 ClaimDeadline - Calculated deadlines for claims
@@ -875,6 +919,7 @@ Holiday - Holiday calendar
 ```
 
 **Key Views:**
+
 ```sql
 v_critical_deadlines - Overdue + due soon
 v_deadline_compliance_metrics - Monthly compliance rates
@@ -882,6 +927,7 @@ v_member_deadline_summary - Per-member stats
 ```
 
 **Key Functions:**
+
 ```sql
 calculate_business_days(start, end, tenant_id)
 add_business_days(start, days, tenant_id)
@@ -947,6 +993,7 @@ mark_overdue_deadlines()
 **Est. Completion:** November 16, 2025 (2.5 days)
 
 **Quality Assessment:**
+
 - Database Schema: ✅ Production-ready
 - Query Layer: ✅ Production-ready
 - Service Layer: ✅ Production-ready

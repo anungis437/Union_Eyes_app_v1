@@ -11,6 +11,7 @@ This application has been architected to support **multiple database systems** w
 ## Why Multi-Database Support?
 
 ### Business Benefits
+
 1. **Deployment Flexibility**: Deploy to any cloud provider or on-premises
 2. **Enterprise Requirements**: Many enterprises require SQL Server
 3. **Cost Optimization**: Choose database based on pricing and features
@@ -18,6 +19,7 @@ This application has been architected to support **multiple database systems** w
 5. **Vendor Independence**: Not locked into specific database vendor
 
 ### Technical Benefits
+
 1. **Type Safety**: Drizzle ORM provides compile-time type checking
 2. **Query Optimization**: Database-specific optimizations automatically applied
 3. **Consistent API**: Same code works across all databases
@@ -74,6 +76,7 @@ const documents = await db
 ```
 
 **Key Functions:**
+
 - `getDatabase()` - Get unified database client
 - `createFullTextSearchQuery()` - Full-text search across databases
 - `getCurrentTimestamp()` - Current time for any database
@@ -95,6 +98,7 @@ import { getDatabase } from '@/db'; // Unified client (recommended)
 All services use the abstraction layer:
 
 **Example: Batch Operations Service**
+
 ```typescript
 // lib/documents/batch-operations-service.ts
 import { getDatabase, eq, and, inArray, isNull } from '@/lib/database/multi-db-client';
@@ -172,18 +176,21 @@ AZURE_SQL_CONNECTION_STRING=Server=tcp:server.database.windows.net,1433;Database
 Automatically translates search syntax:
 
 **PostgreSQL:**
+
 ```sql
 to_tsvector('english', content) @@ plainto_tsquery('english', 'search term')
 ts_rank(to_tsvector('english', content), plainto_tsquery('english', 'search term'))
 ```
 
 **Azure SQL:**
+
 ```sql
 CONTAINS(content, 'search term')
 RANK() OVER (ORDER BY ...)
 ```
 
 **Usage:**
+
 ```typescript
 const query = createFullTextSearchQuery(
   'union contract',
@@ -195,18 +202,21 @@ const query = createFullTextSearchQuery(
 ### JSON Operations
 
 **PostgreSQL:**
+
 ```sql
 metadata::jsonb->>'category'
 metadata::jsonb @> '{"status":"active"}'
 ```
 
 **Azure SQL:**
+
 ```sql
 JSON_VALUE(metadata, '$.category')
 JSON_QUERY(metadata, '$.status') = 'active'
 ```
 
 **Usage:**
+
 ```typescript
 const value = jsonExtract('metadata', '$.category', dbType);
 ```
@@ -214,18 +224,21 @@ const value = jsonExtract('metadata', '$.category', dbType);
 ### Array Operations
 
 **PostgreSQL:**
+
 ```sql
 array_append(tags, 'new-tag')
 'tag-name' = ANY(tags)
 ```
 
 **Azure SQL:**
+
 ```sql
 JSON_MODIFY(tags, 'append $', 'new-tag')
 JSON_VALUE(tags, '$[0]') = 'tag-name'
 ```
 
 **Usage:**
+
 ```typescript
 const updated = arrayAppend('tags', 'new-tag', dbType);
 ```
@@ -235,43 +248,51 @@ const updated = arrayAppend('tags', 'new-tag', dbType);
 ### PostgreSQL → Azure SQL
 
 1. **Export PostgreSQL Data:**
+
 ```bash
 pg_dump -h localhost -U postgres -d unionclaims > backup.sql
 ```
 
-2. **Update Environment:**
+1. **Update Environment:**
+
 ```bash
 DATABASE_TYPE=azure-sql
 DATABASE_URL=mssql://...
 ```
 
-3. **Run Migrations:**
+1. **Run Migrations:**
+
 ```bash
 pnpm drizzle-kit push
 ```
 
-4. **Import Data:**
+1. **Import Data:**
+
 - Convert SQL syntax (PostgreSQL → T-SQL)
 - Import using Azure Data Studio or sqlcmd
 
 ### Azure SQL → PostgreSQL
 
 1. **Export Azure SQL Data:**
+
 - Use Azure Data Studio or SSMS
 - Export as SQL script
 
-2. **Update Environment:**
+1. **Update Environment:**
+
 ```bash
 DATABASE_TYPE=postgresql
 DATABASE_URL=postgresql://...
 ```
 
-3. **Run Migrations:**
+1. **Run Migrations:**
+
 ```bash
 pnpm drizzle-kit push
 ```
 
-4. **Import Data:**
+1. **Import Data:**
+
 ```bash
 psql -h localhost -U postgres -d unionclaims < converted_data.sql
 ```
@@ -281,6 +302,7 @@ psql -h localhost -U postgres -d unionclaims < converted_data.sql
 ### Local Development
 
 **Option 1: PostgreSQL (Recommended)**
+
 ```bash
 # Install PostgreSQL locally or use Docker
 docker run -d \
@@ -302,6 +324,7 @@ pnpm dev
 ```
 
 **Option 2: SQL Server**
+
 ```bash
 # Install SQL Server locally or use Docker
 docker run -d \
@@ -338,12 +361,14 @@ pnpm test:integration
 ## Performance Considerations
 
 ### PostgreSQL
+
 - **Best For**: JSONB operations, complex queries, arrays
 - **Indexing**: Use GIN indexes for full-text and JSONB
 - **Pool Size**: 10-20 connections recommended
 - **Optimize**: EXPLAIN ANALYZE queries, enable query logging
 
 ### Azure SQL
+
 - **Best For**: Enterprise features, automatic tuning, analytics
 - **Indexing**: Use columnstore for analytics workloads
 - **Pool Size**: 50-100 connections (depends on tier)
@@ -395,6 +420,7 @@ const { data } = await supabase
 ### Connection Issues
 
 **Check database health:**
+
 ```typescript
 import { checkDatabaseHealth } from '@/lib/database/multi-db-client';
 
@@ -404,12 +430,14 @@ console.log(health);
 ```
 
 **PostgreSQL issues:**
+
 - Verify `DATABASE_URL` format
 - Check PostgreSQL is running
 - Confirm firewall/network access
 - Test with `psql` command
 
 **Azure SQL issues:**
+
 - Verify Azure firewall rules allow your IP
 - Check connection string format
 - Confirm SSL/TLS encryption settings
@@ -418,11 +446,13 @@ console.log(health);
 ### Query Errors
 
 **Syntax errors:**
+
 - Ensure using abstraction layer functions
 - Check for database-specific SQL in raw queries
 - Verify column names match schema
 
 **Performance issues:**
+
 - Enable query logging
 - Analyze execution plans
 - Check indexes exist
@@ -439,6 +469,7 @@ console.log(health);
 ## Support
 
 For issues or questions:
+
 1. Check documentation in `/docs`
 2. Review troubleshooting section above
 3. Test connection with health check

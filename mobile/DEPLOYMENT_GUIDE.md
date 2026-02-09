@@ -678,16 +678,16 @@ keytool -list -v -keystore unioneyes.keystore
 
 ### Internal Support
 
-- **Email:** dev@unioneyes.com
+- **Email:** <dev@unioneyes.com>
 - **Slack:** #mobile-deployment
 - **On-Call:** [phone number]
 
 ### External Resources
 
-- **Apple Developer:** https://developer.apple.com/support/
-- **Google Play Support:** https://support.google.com/googleplay/android-developer
-- **Expo Docs:** https://docs.expo.dev/
-- **EAS Docs:** https://docs.expo.dev/eas/
+- **Apple Developer:** <https://developer.apple.com/support/>
+- **Google Play Support:** <https://support.google.com/googleplay/android-developer>
+- **Expo Docs:** <https://docs.expo.dev/>
+- **EAS Docs:** <https://docs.expo.dev/eas/>
 
 ### Quick Commands Reference
 
@@ -737,7 +737,7 @@ Required access levels:
 
 - **Apple Developer Support:** [contact info]
 - **Google Play Support:** [contact info]
-- **Expo Support:** support@expo.dev
+- **Expo Support:** <support@expo.dev>
 - **Internal On-Call:** [phone number]
 
 ---
@@ -746,4 +746,4 @@ Required access levels:
 **Last Updated:** February 9, 2026  
 **Next Review:** March 9, 2026
 
-For questions or issues, contact: dev@unioneyes.com
+For questions or issues, contact: <dev@unioneyes.com>

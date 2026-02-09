@@ -1,9 +1,11 @@
 # Database Migrations
 
 ## Overview
+
 This directory contains all database migrations for the Union Eyes application. Migrations are split into two categories:
 
 ### 1. Core Drizzle Migrations (Root Directory)
+
 Located in: `db/migrations/`
 
 These are **auto-generated** by Drizzle Kit and track the primary database schema evolution:
@@ -18,6 +20,7 @@ These are **auto-generated** by Drizzle Kit and track the primary database schem
 **Migration Tracking**: Managed by Drizzle via `meta/_journal.json`
 
 **How to Apply**:
+
 ```bash
 # Generate new migration from schema changes
 pnpm drizzle-kit generate
@@ -30,17 +33,20 @@ pnpm drizzle-kit migrate
 ```
 
 ### 2. Manual Migrations (manual/ Directory)
+
 Located in: `db/migrations/manual/`
 
 These are **hand-written SQL patches** for features not handled by Drizzle's schema system:
 
 **RLS (Row-Level Security) Policies**:
+
 - `053_enable_rls_policies.sql` - Enable RLS on all tables
 - `054_fix_rls_policies.sql` - RLS policy fixes
 - `055_pension_trustee_rls_policies.sql` - Pension/trustee specific policies
 - `067_advanced_analytics_rls_fix.sql` - Analytics RLS
 
 **Feature Enhancements**:
+
 - `056_critical_business_functions.sql` - Critical business logic (601 lines)
 - `057_add_audit_timestamps.sql` - Audit trail timestamps (310 lines)
 - `058_recognition_rewards_system.sql` - Recognition & rewards (464 lines)
@@ -50,6 +56,7 @@ These are **hand-written SQL patches** for features not handled by Drizzle's sch
 - `069_feature_flags_system.sql` - Feature flags system (75 lines)
 
 **Patch Migrations**:
+
 - `add_cited_cases_column.sql` - Add cited cases to arbitration
 - `add-notification-preferences.sql` - Notification preferences
 - `apply-feature-flags.sql` - Feature flag application
@@ -59,6 +66,7 @@ These are **hand-written SQL patches** for features not handled by Drizzle's sch
 **⚠️ Important**: Manual migrations are NOT tracked by Drizzle's journal. You must apply them manually in order.
 
 **How to Apply Manual Migrations**:
+
 ```bash
 # Via psql
 psql $DATABASE_URL -f db/migrations/manual/053_enable_rls_policies.sql
@@ -90,10 +98,12 @@ node scripts/apply-manual-migrations.js
 ## Schema Alignment
 
 The current schema in `db/schema/index.ts` represents the **desired state** after:
+
 - ✅ Core Drizzle migrations (0000-0005)
 - ⚠️ Manual migrations (053-069) - must be applied separately
 
 To verify your database matches the schema:
+
 ```bash
 # Check for drift
 pnpm drizzle-kit check
@@ -132,6 +142,7 @@ Before deploying migrations to production:
 ## meta/ Directory
 
 The `meta/` directory contains Drizzle's internal migration tracking:
+
 - `_journal.json` - Migration history and order
 - `XXXX_snapshot.json` - Schema snapshots per migration
 

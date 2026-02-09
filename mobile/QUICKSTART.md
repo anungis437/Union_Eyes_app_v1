@@ -16,11 +16,12 @@
    ```
 
    Update `.env` with your actual values:
-   - Get Clerk publishable key from https://clerk.com
+   - Get Clerk publishable key from <https://clerk.com>
    - Set your API URL
    - Configure feature flags
 
 3. **Start Development**
+
    ```bash
    pnpm start
    ```
@@ -98,6 +99,7 @@ pnpm web      # Browser preview
    ```
 
 3. Configure project:
+
    ```bash
    eas build:configure
    ```

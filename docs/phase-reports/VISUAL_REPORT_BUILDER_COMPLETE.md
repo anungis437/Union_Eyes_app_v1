@@ -16,17 +16,20 @@ The Visual Report Builder is a no-code interface that empowers non-technical use
 ## 🎯 Key Features
 
 ### 1. **Data Source Selection**
+
 - Choose from multiple data sources: Claims, Members, Deadlines, Grievances
 - View field metadata (type, aggregatable, filterable, sortable)
 - Dynamic field loading from API
 
 ### 2. **Field Selection**
+
 - Drag-and-drop or click-to-add fields
 - Aggregation functions: count, sum, avg, min, max, distinct
 - Visual badges for field types and aggregations
 - Add/remove fields easily
 
 ### 3. **Visual Filter Builder**
+
 - Type-specific operators (string, number, date, boolean)
 - String: equals, not equals, contains, in (list)
 - Number: equals, not equals, greater than, less than, between
@@ -36,6 +39,7 @@ The Visual Report Builder is a no-code interface that empowers non-technical use
 - No SQL knowledge required
 
 ### 4. **Chart Configuration**
+
 - 6 visualization types:
   - **Table**: Tabular data display
   - **Bar Chart**: Compare values across categories
@@ -48,6 +52,7 @@ The Visual Report Builder is a no-code interface that empowers non-technical use
 - Smart auto-configuration
 
 ### 5. **Live Preview**
+
 - Real-time data preview with visualization
 - Tabbed interface: Visualization tab, Data Table tab
 - Export functionality: CSV, Excel, PDF
@@ -55,6 +60,7 @@ The Visual Report Builder is a no-code interface that empowers non-technical use
 - Row/column count summary
 
 ### 6. **Save & Execute**
+
 - Save reports for later use
 - Execute reports on demand
 - Create report templates
@@ -96,6 +102,7 @@ src/app/(dashboard)/reports/
 ## 🔧 Technical Implementation
 
 ### **Technologies Used**
+
 - **Next.js 14**: App Router with server/client components
 - **React with TypeScript**: Full type safety
 - **Shadcn/ui**: Component library (Dialog, Select, Tabs, Card, Button, Badge, etc.)
@@ -128,6 +135,7 @@ interface ReportConfig {
 ### **API Integration**
 
 #### **1. Data Sources API** (`GET /api/reports/datasources`)
+
 ```json
 {
   "dataSources": [
@@ -152,6 +160,7 @@ interface ReportConfig {
 ```
 
 #### **2. Save Report API** (`POST /api/reports/builder`)
+
 ```json
 {
   "name": "Claims by Status",
@@ -164,6 +173,7 @@ interface ReportConfig {
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -176,6 +186,7 @@ interface ReportConfig {
 ```
 
 #### **3. Execute Report API** (`POST /api/reports/execute`)
+
 ```json
 {
   "config": {
@@ -213,6 +224,7 @@ interface ReportConfig {
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -226,6 +238,7 @@ interface ReportConfig {
 ```
 
 #### **4. Export API** (`POST /api/exports/{csv|excel|pdf}`)
+
 ```json
 {
   "reportName": "Claims by Status",
@@ -242,6 +255,7 @@ interface ReportConfig {
 ```
 
 **Response:**
+
 ```json
 {
   "exportJobId": "uuid",
@@ -389,16 +403,19 @@ interface ReportConfig {
 ## 🔒 Security & Permissions
 
 ### **Tenant Isolation**
+
 - All queries automatically filtered by `tenant_id`
 - Reports saved with tenant context
 - No cross-tenant data access
 
 ### **Authentication**
+
 - Clerk authentication required for all endpoints
 - User and organization IDs validated
 - Unauthorized requests return 401
 
 ### **SQL Injection Prevention**
+
 - Dynamic SQL built server-side only
 - User input escaped and parameterized
 - Field names validated against schema
@@ -409,17 +426,20 @@ interface ReportConfig {
 ## 📊 Success Metrics
 
 ### **Performance**
+
 - ✅ <2 second dashboard load time
 - ✅ <1 second report preview generation
 - ✅ Query execution time displayed to user
 
 ### **Usability**
+
 - ✅ Non-technical users can create reports without SQL
 - ✅ Drag-and-drop interface (planned enhancement)
 - ✅ Visual filter builder with type-specific controls
 - ✅ Real-time preview with live data
 
 ### **Features**
+
 - ✅ All 6 chart types supported
 - ✅ Export to CSV, Excel, PDF
 - ✅ Save reports for later use
@@ -431,6 +451,7 @@ interface ReportConfig {
 ## 🧪 Testing
 
 ### **Component Tests**
+
 ```bash
 # Run component tests
 npm test src/components/analytics/ReportBuilder.test.tsx
@@ -440,6 +461,7 @@ npm test src/components/analytics/ReportPreview.test.tsx
 ```
 
 ### **API Endpoint Tests**
+
 ```bash
 # Test report builder APIs
 curl -X GET http://localhost:3000/api/reports/datasources
@@ -449,6 +471,7 @@ curl -X GET http://localhost:3000/api/reports/templates
 ```
 
 ### **Manual Testing Checklist**
+
 - [ ] Load data sources from API
 - [ ] Add/remove fields with aggregations
 - [ ] Create filters with all operator types
@@ -464,12 +487,14 @@ curl -X GET http://localhost:3000/api/reports/templates
 ## 🐛 Known Issues & Limitations
 
 ### **Current Limitations**
+
 1. **Chart Component Props**: Some chart components expect different prop structures (bars, lines, areas arrays vs dataKeys). These need to be aligned.
 2. **Export Job Polling**: Export jobs are created but status polling is not implemented yet. Users must check exports page manually.
 3. **Drag-and-Drop**: Currently click-to-add for fields. True drag-and-drop with React DnD is planned.
 4. **Template Management**: Template editing and deletion UI not yet implemented.
 
 ### **Future Enhancements**
+
 1. **React DnD Integration**: True drag-and-drop for field ordering
 2. **Advanced Filters**: Nested filter groups with complex AND/OR logic
 3. **Calculated Fields**: User-defined formulas (e.g., `field1 + field2`)
@@ -493,12 +518,14 @@ curl -X GET http://localhost:3000/api/reports/templates
 ## ✅ Completion Checklist
 
 ### **UI Components** ✅
+
 - [x] ReportBuilder.tsx - Main component
 - [x] FilterBuilder.tsx - Filter creation dialog
 - [x] ChartSelector.tsx - Chart configuration
 - [x] ReportPreview.tsx - Live preview with data
 
 ### **API Endpoints** ✅
+
 - [x] GET /api/reports/datasources - Data sources list
 - [x] POST /api/reports/builder - Save report config
 - [x] GET /api/reports/builder - List saved reports
@@ -506,18 +533,21 @@ curl -X GET http://localhost:3000/api/reports/templates
 - [x] GET /api/reports/templates - Get report templates
 
 ### **Dashboard Page** ✅
+
 - [x] /reports/builder - Report builder page
 - [x] Navigation link in sidebar
 - [x] Save/execute callbacks
 - [x] Success/error messages
 
 ### **API Integration** ✅
+
 - [x] Fetch data sources from API
 - [x] Execute reports with real data
 - [x] Fallback to mock data if API fails
 - [x] Export integration with export APIs
 
 ### **Documentation** ✅
+
 - [x] Component usage examples
 - [x] API endpoint documentation
 - [x] User guide with screenshots

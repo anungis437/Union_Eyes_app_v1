@@ -13,6 +13,7 @@
 With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achieved **100% feature parity** with market leaders in core union operations, plus **innovative differentiators** competitors lack. Recent completions include dues collection (Phase 3), training management (Phase 4), comprehensive communications (Phase 5: SMS, surveys, newsletters, push notifications, analytics), complete public-facing tools (Phase 6: CMS, donations, events, job board), full organizing campaign management (Phase 7: NLRB/CLRB filings, card signing, field tools with offline mode), comprehensive analytics & reporting (Phase 8: 15+ KPI dashboards, per capita analytics, scheduled reports), and configurable alerting system (Phase 9: visual workflow builders, escalation management, execution monitoring).
 
 **Competitive Positioning: FEATURE PARITY ACHIEVED (Matching Leaders)**
+
 - **Market Readiness:** 100% ✅ (PRODUCTION READY)
 - **Enterprise Readiness:** 95% (mobile apps + certifications pending)
 - **Feature Parity:** 100% (alerting & automation gap closed - only mobile apps remain)
@@ -59,6 +60,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **1. DUES COLLECTION & PAYMENT PROCESSING** ✅ **100% Complete** (RECENTLY COMPLETED!)
 
 **UnionTrack ENGAGE:**
+
 - ✅ Integrated merchant accounts (7 payment processors)
 - ✅ Credit card, debit card, ACH payments
 - ✅ Automatic dues deduction file imports
@@ -71,6 +73,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Arrears management and flagging
 
 **UnionWare:**
+
 - ✅ Multi-processor integration
 - ✅ Automated payment processing
 - ✅ Dues calculation engine
@@ -79,6 +82,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Audit trails
 
 **UnionEyes:**
+
 - ✅ Stripe integration (production-ready)
 - ✅ T4A generation
 - ✅ **Dues calculation engine** (tier-based, flat rate, pro-rated)
@@ -101,6 +105,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **2. MEMBER COMMUNICATIONS** ✅ **80% Complete** (Phase 5 COMPLETE)
 
 **UnionTrack ENGAGE:**
+
 - ✅ Two-way text messaging (SMS)
 - ✅ Email campaigns with templates
 - ✅ Social media integration (Facebook, Twitter, Instagram)
@@ -113,6 +118,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Communication analytics
 
 **UnionWare:**
+
 - ✅ Email campaigns
 - ✅ SMS messaging
 - ✅ Event notifications
@@ -120,6 +126,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Template library
 
 **UnionEyes (Phase 5 Complete - December 6, 2025):**
+
 - ✅ Email notifications (Resend integration)
 - ✅ Basic notification system with queue
 - ✅ In-app notifications
@@ -146,27 +153,28 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ❌ **NO social media integration** (deferred to Phase 6)
 
 **Phase 5 Deliverables (4 weeks - ALL COMPLETE):**
+
 - ✅ Week 1: Twilio SMS integration (COMPLETE - 3,050 lines)
-  * Database layer: 7 tables, 35 RLS policies (500+ lines)
-  * Service layer: Twilio integration (600+ lines)
-  * API layer: 9 endpoints (400+ lines)
-  * UI layer: Template editor, campaign builder, inbox, dashboard (1,550+ lines)
+  - Database layer: 7 tables, 35 RLS policies (500+ lines)
+  - Service layer: Twilio integration (600+ lines)
+  - API layer: 9 endpoints (400+ lines)
+  - UI layer: Template editor, campaign builder, inbox, dashboard (1,550+ lines)
 - ✅ Week 2: Survey & polling system (COMPLETE - 5,100 lines)
-  * Database layer: 6 tables, 6 RLS policies, 3 triggers (500+ lines)
-  * Schema layer: Drizzle TypeScript with API types (450+ lines)
-  * UI layer: Survey builder, response collection, results dashboard, poll widgets (3,050+ lines)
-  * API layer: 8 endpoints with validation, rate limiting, export (1,100+ lines)
-  * Features: 6 question types, Chart.js visualizations, CSV/Excel export, real-time voting, duplicate prevention
+  - Database layer: 6 tables, 6 RLS policies, 3 triggers (500+ lines)
+  - Schema layer: Drizzle TypeScript with API types (450+ lines)
+  - UI layer: Survey builder, response collection, results dashboard, poll widgets (3,050+ lines)
+  - API layer: 8 endpoints with validation, rate limiting, export (1,100+ lines)
+  - Features: 6 question types, Chart.js visualizations, CSV/Excel export, real-time voting, duplicate prevention
 - ✅ Week 3: Newsletter builder (COMPLETE - 6,200 lines)
-  * Database layer: 5 tables with RLS policies (newsletter_templates, newsletters, newsletter_recipients, newsletter_links, newsletter_clicks)
-  * Existing infrastructure: newsletter-schema.ts (439 lines), newsletter-editor.tsx, template-gallery.tsx, campaign-scheduler.tsx, newsletter-analytics.tsx, distribution-list-manager.tsx
-  * Features: TipTap WYSIWYG editor, rich text formatting, image support, templates, scheduling, click tracking
+  - Database layer: 5 tables with RLS policies (newsletter_templates, newsletters, newsletter_recipients, newsletter_links, newsletter_clicks)
+  - Existing infrastructure: newsletter-schema.ts (439 lines), newsletter-editor.tsx, template-gallery.tsx, campaign-scheduler.tsx, newsletter-analytics.tsx, distribution-list-manager.tsx
+  - Features: TipTap WYSIWYG editor, rich text formatting, image support, templates, scheduling, click tracking
 - ✅ Week 4: Analytics dashboard + push notifications (COMPLETE - 8,500 lines)
-  * Database layer: 6 tables with RLS (communication_analytics, user_engagement_scores, push_devices, push_notifications, push_notification_recipients, communication_preferences)
-  * Push components: push-notification-builder.tsx (450 lines), push-device-manager.tsx (400 lines), push-notification-history.tsx (500 lines)
-  * Service integration: fcm-service.ts (697 lines) - Firebase Cloud Messaging
-  * Analytics: unified-analytics-dashboard.tsx, engagement scoring (0-100 per channel)
-  * Features: iOS/Android/Web push, device management, delivery tracking, cross-channel analytics
+  - Database layer: 6 tables with RLS (communication_analytics, user_engagement_scores, push_devices, push_notifications, push_notification_recipients, communication_preferences)
+  - Push components: push-notification-builder.tsx (450 lines), push-device-manager.tsx (400 lines), push-notification-history.tsx (500 lines)
+  - Service integration: fcm-service.ts (697 lines) - Firebase Cloud Messaging
+  - Analytics: unified-analytics-dashboard.tsx, engagement scoring (0-100 per channel)
+  - Features: iOS/Android/Web push, device management, delivery tracking, cross-channel analytics
 
 **VERDICT:** Phase 5 is **100% COMPLETE** (December 6, 2025). We now have **80% communications parity** with market leaders - missing only social media integration (deferred to Phase 6). We have SMS, surveys, newsletters, push notifications, and analytics.
 
@@ -177,6 +185,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **3. MOBILE APPLICATIONS** ❌ **0% Complete**
 
 **UnionTrack ENGAGE:**
+
 - ✅ iOS native app
 - ✅ Android native app
 - ✅ Member portal (mobile-optimized web)
@@ -187,11 +196,13 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Mobile dues payment
 
 **UnionWare:**
+
 - ✅ Mobile-responsive web portal
 - ✅ Native apps for key features
 - ✅ Field organizer tools
 
 **UnionEyes:**
+
 - ❌ **NO iOS app**
 - ❌ **NO Android app**
 - ❌ **NO mobile-optimized UI** (responsive but not optimized)
@@ -208,6 +219,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **4. TRAINING & CERTIFICATION MANAGEMENT** ✅ **100% Complete**
 
 **UnionTrack ENGAGE:**
+
 - ✅ Course management
 - ✅ Class scheduling
 - ✅ Roster management
@@ -220,12 +232,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Configurable alerts for certification deadlines
 
 **UnionWare:**
+
 - ✅ Training module
 - ✅ Apprenticeship tracking
 - ✅ Certification management
 - ✅ Continuing education tracking
 
 **UnionEyes:**
+
 - ✅ **Course catalog with categories** (15+ delivery methods, difficulty levels, CLC approval)
 - ✅ **Course registration system** (capacity management, waitlists, prerequisites)
 - ✅ **Session scheduling** (dates, times, instructors, locations, duration)
@@ -249,6 +263,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **5. CONTRACT MANAGEMENT & EXPIRATION TRACKING** ✅ **100% Complete**
 
 **UnionTrack ENGAGE:**
+
 - ✅ Contract upload and storage
 - ✅ Contract expiration tracking
 - ✅ Configurable alerts for upcoming expirations
@@ -258,12 +273,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Public contract library
 
 **UnionWare:**
+
 - ✅ Contract management system
 - ✅ Expiration alerts
 - ✅ Bargaining unit tracking
 - ✅ Contract clause search
 
 **UnionEyes:**
+
 - ✅ **CBA document management** (complete metadata: title, parties, dates, scope)
 - ✅ **Expiration date tracking** (indexed for fast queries)
 - ✅ **Contract status management** (active, expired, under_negotiation, ratified_pending, archived)
@@ -289,6 +306,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **6. WEBSITE & PUBLIC-FACING TOOLS** ✅ **100% Complete**
 
 **UnionTrack ENGAGE:**
+
 - ✅ CMS for public website
 - ✅ Member-only portal
 - ✅ Public donation pages
@@ -298,12 +316,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Social media feed integration
 
 **UnionWare:**
+
 - ✅ Public website builder
 - ✅ Member portal
 - ✅ Event management
 - ✅ Resource library
 
 **UnionEyes:**
+
 - ✅ Visual page builder with drag-drop editing (9 block types)
 - ✅ Template gallery (8 professional templates)
 - ✅ Public donation pages with Stripe integration
@@ -326,6 +346,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **7. DOCUMENT MANAGEMENT & STORAGE** ✅ **85% Complete**
 
 **UnionTrack ENGAGE:**
+
 - ✅ Flexible document storage
 - ✅ Tagging and categorization
 - ✅ Document sharing with permissions
@@ -335,12 +356,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Full-text search
 
 **UnionWare:**
+
 - ✅ Centralized document repository
 - ✅ Member document profiles
 - ✅ Secure storage
 - ✅ Document workflows
 
 **UnionEyes:**
+
 - ✅ **Dual storage system** (Vercel Blob + Supabase Storage with RLS)
 - ✅ **Version control** (parent/child versioning, isLatestVersion tracking)
 - ✅ **Document metadata** (tags array, category, description fields)
@@ -369,6 +392,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **8. SOCIAL MEDIA INTEGRATION** ❌ **0% Complete**
 
 **UnionTrack ENGAGE:**
+
 - ✅ Direct posting to Facebook, Twitter, Instagram
 - ✅ Social media scheduling
 - ✅ Political campaign integration
@@ -377,11 +401,13 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Engagement analytics
 
 **UnionWare:**
+
 - ✅ Social media posting
 - ✅ Event promotion
 - ✅ News sharing
 
 **UnionEyes:**
+
 - ❌ **NO social media integration**
 - ❌ **NO posting capabilities**
 - ❌ **NO social media analytics**
@@ -395,6 +421,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **9. ALERTING & AUTOMATION** ✅ **100% Complete** (Phase 9 COMPLETE)
 
 **UnionTrack ENGAGE:**
+
 - ✅ Configurable system alerts
 - ✅ Contract expiration alerts
 - ✅ Training/certification deadline alerts
@@ -405,12 +432,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Escalation rules
 
 **UnionWare:**
+
 - ✅ Automated notifications
 - ✅ Deadline tracking
 - ✅ Workflow automation
 - ✅ Escalation management
 
 **UnionEyes:**
+
 - ✅ Email notifications (Resend integration)
 - ✅ Deadline reminders (1, 3, 7 days for sessions)
 - ✅ Status update notifications
@@ -428,6 +457,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ **Workflow templates** (onboarding, dues payment, grievance processing)
 
 **Phase 9 Deliverables (December 7, 2025):**
+
 1. **SQL Schema** (`packages/db/src/schema/phase-9-alerting-automation.sql` - 1,050 lines)
    - 8 tables: alert_rules, alert_conditions, alert_actions, alert_escalations, alert_executions, workflow_definitions, workflow_executions, alert_recipients
    - 40+ RLS policies for tenant isolation
@@ -478,6 +508,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **10. ORGANIZING TOOLS** ✅ **100% Complete** (Phase 7 COMPLETE)
 
 **UnionTrack ENGAGE:**
+
 - ✅ Organizing campaign management
 - ✅ Contact management with workplace mapping
 - ✅ Card signing tracker
@@ -490,12 +521,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Employer response tracking
 
 **UnionWare:**
+
 - ✅ Organizing module
 - ✅ Campaign tracking
 - ✅ Contact management
 - ✅ Card check management
 
 **UnionEyes (Phase 7 Complete - December 6, 2025):**
+
 - ✅ **Organizing campaign management** (campaign dashboard with aggregate stats, filters, progress tracking - 350 lines)
 - ✅ **Contact management** (workplace mapping, commitment levels, influence assessment)
 - ✅ **Card signing tracker** (signature validation, batch submission, legal compliance checks - 650 lines)
@@ -519,9 +552,10 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ **Legal compliance checklists** (built-in validation for authorization cards)
 
 **Phase 7 Deliverables (ALL COMPLETE):**
+
 - ✅ **SQL schema**: 8 tables with 40+ RLS policies, 6 triggers, 45+ indexes (1,100 lines)
-  * organizing_campaigns, organizing_contacts, card_signing_events, nlrb_clrb_filings
-  * union_representation_votes, field_organizer_activities, employer_responses, organizing_campaign_milestones
+  - organizing_campaigns, organizing_contacts, card_signing_events, nlrb_clrb_filings
+  - union_representation_votes, field_organizer_activities, employer_responses, organizing_campaign_milestones
 - ✅ **TypeScript schema**: Full Drizzle ORM definitions, relations, type exports (900 lines)
 - ✅ **Campaign dashboard**: Overview, filters, aggregate stats, campaign cards (350 lines)
 - ✅ **Card signing tracker**: Collection interface, validation, batch submission, status management (650 lines)
@@ -529,6 +563,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ **Field organizer tools**: Contact selection, activity logging, offline mode, GPS tracking (700 lines)
 
 **Database Architecture:**
+
 - **organizing_campaigns**: Campaign lifecycle (name, code, employer, status, priority, unit size, card counts, demographics, team, timeline, strategy, outcomes)
 - **organizing_contacts**: Contact profiles (name, job title, department, shift, workplace mapping, commitment level, influence, card signed status, house visit tracking)
 - **card_signing_events**: Authorization cards (signed date/time, location, witness, legal validation, card status, submission tracking)
@@ -547,6 +582,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **11. STRIKE FUND MANAGEMENT** ✅ **85% Complete** (Our Strength!)
 
 **UnionTrack ENGAGE:**
+
 - ✅ Strike fund tracking
 - ✅ Eligibility management
 - ✅ Stipend disbursement
@@ -555,10 +591,12 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ❌ NO location verification
 
 **UnionWare:**
+
 - ⚠️ Limited strike fund features
 - ⚠️ Basic financial tracking
 
 **UnionEyes:**
+
 - ✅ **Strike fund creation and tracking**
 - ✅ **Member eligibility engine**
 - ✅ **Weekly stipend calculator**
@@ -580,12 +618,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **12. AI-POWERED FEATURES** ✅ **90% Complete** (Our Strength!)
 
 **Competitors:**
+
 - ❌ Limited AI features
 - ⚠️ Basic search
 - ❌ NO AI-powered clause comparison
 - ❌ NO AI-powered precedent matching
 
 **UnionEyes:**
+
 - ✅ **AI-powered clause comparison** (unique)
 - ✅ **Precedent database with AI matching**
 - ✅ **Voice recording with transcription** (claims submission)
@@ -602,6 +642,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **13. ANALYTICS & REPORTING** ✅ **100% Complete** (Phase 8 COMPLETE)
 
 **UnionTrack ENGAGE:**
+
 - ✅ Real-time dashboards
 - ✅ Communication analytics
 - ✅ Engagement metrics
@@ -612,12 +653,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ Benchmark comparisons
 
 **UnionWare:**
+
 - ✅ Comprehensive reporting
 - ✅ Custom reports
 - ✅ Financial analytics
 - ✅ Compliance reports
 
 **UnionEyes (Phase 8 Complete - December 7, 2025):**
+
 - ✅ Executive dashboard (15+ KPIs)
 - ✅ Materialized views (sub-second queries)
 - ✅ Multi-format exports (PDF, Excel, CSV)
@@ -629,8 +672,9 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ **Engagement metrics** (score distribution, at-risk detection, activity heatmaps, predictive analytics - 750 lines)
 
 **Phase 8 Deliverables (ALL COMPLETE):**
+
 - ✅ **SQL schema**: 5 tables with 25+ RLS policies, 6 triggers, 30+ indexes (1,050 lines)
-  * scheduled_reports, report_delivery_history, benchmark_categories, benchmark_data, tenant_benchmark_snapshots
+  - scheduled_reports, report_delivery_history, benchmark_categories, benchmark_data, tenant_benchmark_snapshots
 - ✅ **TypeScript schema**: Full Drizzle ORM definitions, relations, type exports (750 lines)
 - ✅ **Scheduled reports manager**: Dashboard, cron builder, recipient management, delivery history (700 lines)
 - ✅ **Benchmark comparison dashboard**: Side-by-side comparisons, percentile rank gauges, bar charts, performance indicators (750 lines)
@@ -638,6 +682,7 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 - ✅ **Engagement metrics dashboard**: Score distribution, top/at-risk members, activity heatmaps, lifecycle stages, predictive analytics (750 lines)
 
 **Database Architecture:**
+
 - **scheduled_reports**: Report scheduling (report_type, frequency, cron_expression, output_format, recipients, filters, last_run, next_run)
 - **report_delivery_history**: Delivery tracking (scheduled_report_id, delivery_date, status, file_url, file_size, error_message)
 - **benchmark_categories**: Metric definitions (category_name, display_name, unit_type, higher_is_better, category_group, description)
@@ -653,12 +698,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **14. SECURITY & COMPLIANCE** ✅ **95% Complete** (Our Strength!)
 
 **Competitors:**
+
 - ✅ SOC 2 compliance (some)
 - ✅ Data encryption
 - ✅ Role-based access
 - ⚠️ Variable RLS coverage
 
 **UnionEyes:**
+
 - ✅ **179 RLS policies (100% coverage)** (industry-leading)
 - ✅ **Zero unprotected tables**
 - ✅ **JWT authentication**
@@ -706,12 +753,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 ### **Competitor Pricing**
 
 **UnionTrack ENGAGE:**
+
 - **Small Locals (<500 members):** $15,000-$25,000/year
 - **Medium Locals (500-2,000):** $25,000-$40,000/year
 - **Large Locals (2,000+):** $40,000-$75,000/year
 - **National Unions:** Custom (likely $100,000+)
 
 **UnionWare:**
+
 - **Small Locals:** $20,000-$30,000/year
 - **Medium Locals:** $30,000-$50,000/year
 - **Large Locals:** $50,000-$80,000/year
@@ -722,12 +771,14 @@ With Phase 9 Alerting & Automation now complete (December 7, 2025), we have achi
 Given our **feature gaps** and **zero market share**, we CANNOT price at parity. We need to **undercut by 40-60%** to gain market traction.
 
 **Recommended Pricing:**
+
 - **Small Locals (<500):** $6,000-$10,000/year (60% discount vs. competitors)
 - **Medium Locals (500-2,000):** $12,000-$20,000/year (50% discount)
 - **Large Locals (2,000+):** $25,000-$40,000/year (40% discount)
 - **Early Adopter Discount:** 50% off Year 1 (to compensate for missing features)
 
 **Justification:**
+
 - We're **unproven** (0 customers)
 - We're **missing critical features** (dues, mobile, training)
 - We need **market validation**
@@ -930,6 +981,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - ❌ No social media integration (lower priority)
 
 **Honest Assessment:**
+
 - **Pilot-Ready:** STRONG YES (production-ready with comprehensive features)
 - **Production-Ready:** STRONG YES (98% feature parity with market leaders)
 - **Enterprise-Ready:** APPROACHING (missing only mobile apps + SOC 2 certification)
@@ -943,6 +995,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - We're **behind** in: mobile apps (0% - CRITICAL gap), social media integration (0%)
 
 **Honest Assessment:**
+
 - We can **compete head-to-head** on innovation, UX, and core operations
 - We have **strong feature breadth** across all core union management functions (27,000+ lines across 6 phases)
 - **Only mobile apps remain** as a critical enterprise blocker
@@ -957,6 +1010,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - Competitors have **proven ROI**
 
 **Honest Assessment:**
+
 - We need **3-5 pilot customers** (ideally free/discounted)
 - We need **6-12 months** of customer validation
 - We need **testimonials** before we can charge full price
@@ -970,6 +1024,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - No customer interviews
 
 **Honest Assessment:**
+
 - We need to **price aggressively low** initially
 - We need to **offer pilots/trials**
 - We cannot price at parity until we prove value
@@ -983,6 +1038,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - They can **acquire us** (if we're a threat)
 
 **Honest Assessment:**
+
 - We have a **12-18 month window** to gain market share
 - We need to **move FAST**
 - We need to **build switching costs** (lock customers in)
@@ -994,6 +1050,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 ### **Phase 1: Fill Critical Gaps (MOSTLY COMPLETE)**
 
 **✅ COMPLETED: Dues Collection System** 🟢
+
 - ✅ Payment portal for members (Stripe Elements)
 - ✅ Multiple payment processors (Stripe integration)
 - ✅ Dues calculation engine (tier-based, flat rate, pro-rated)
@@ -1004,6 +1061,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - **Impact:** CRITICAL GAP CLOSED
 
 **✅ COMPLETED: Training Management System** 🟢
+
 - ✅ Course catalog with 15+ delivery methods
 - ✅ Registration system (capacity, waitlists, prerequisites)
 - ✅ Session scheduling (dates, instructors, locations)
@@ -1017,23 +1075,25 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - **Impact:** CRITICAL GAP CLOSED
 
 **✅ COMPLETED: Phase 5 Communications Suite** 🟢
+
 - ✅ Week 1: Twilio SMS integration (COMPLETE - 3,050 lines)
-  * Database (7 tables, 35 RLS), Service (600+), API (9 endpoints), UI (4 components)
-  * Features: Template editor, campaign builder, two-way inbox, dashboard
+  - Database (7 tables, 35 RLS), Service (600+), API (9 endpoints), UI (4 components)
+  - Features: Template editor, campaign builder, two-way inbox, dashboard
 - ✅ Week 2: Survey & polling system (COMPLETE - 5,100 lines)
-  * Database (6 tables, 6 RLS, 3 triggers), API (8 endpoints), UI (4 components)
-  * Features: 6 question types, Chart.js visualizations, CSV/Excel export, real-time voting
+  - Database (6 tables, 6 RLS, 3 triggers), API (8 endpoints), UI (4 components)
+  - Features: 6 question types, Chart.js visualizations, CSV/Excel export, real-time voting
 - ✅ Week 3: Newsletter builder (COMPLETE - 6,200 lines)
-  * Database (5 tables with RLS), Existing components (newsletter-editor, template-gallery, etc.)
-  * Features: TipTap WYSIWYG, rich text, templates, scheduling, click tracking
+  - Database (5 tables with RLS), Existing components (newsletter-editor, template-gallery, etc.)
+  - Features: TipTap WYSIWYG, rich text, templates, scheduling, click tracking
 - ✅ Week 4: Analytics + push notifications (COMPLETE - 8,500 lines)
-  * Database (6 tables with RLS), Push components (3 new), FCM service (697 lines)
-  * Features: Firebase Cloud Messaging, iOS/Android/Web push, device management, engagement scoring
+  - Database (6 tables with RLS), Push components (3 new), FCM service (697 lines)
+  - Features: Firebase Cloud Messaging, iOS/Android/Web push, device management, engagement scoring
 - **Status:** COMPLETE (December 6, 2025)
 - **Total:** 23,000+ lines of production code
 - **Impact:** CRITICAL GAP CLOSED - 80% communications parity achieved
 
 **Priority 1: Mobile Apps** 🔴 (NEXT AFTER PHASE 5)
+
 - Build native iOS app (React Native)
 - Build native Android app (React Native)
 - Mobile-optimized UI improvements
@@ -1044,21 +1104,25 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 ### **Phase 2: Market Entry Strategy (3-6 Months)**
 
 **Target Market: Small-Medium Locals (<2,000 members)**
+
 - Underserved by expensive competitors
 - More willing to try new solutions
 - Less risk if we fail
 
 **Geographic Focus: Canada First**
+
 - CLC compliance built-in
 - Less competition
 - French language support (planned)
 
 **Pricing: Aggressive Discount Pricing**
+
 - 50-60% below competitors
 - Free pilots for first 3-5 customers
 - 50% discount for Year 1 early adopters
 
 **Go-to-Market:**
+
 1. **Pilot Program** (Free for 3-5 unions)
    - Hand-picked locals
    - Close partnership
@@ -1078,6 +1142,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 ### **Phase 3: Feature Parity (6-12 Months)**
 
 **Must-Build Features:**
+
 1. Training management module (trade unions)
 2. Native mobile apps (iOS, Android)
 3. Social media integration
@@ -1092,6 +1157,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 ### **Phase 4: Enterprise Readiness (12-18 Months)**
 
 **Requirements:**
+
 1. SOC 2 compliance certification
 2. SSO/SAML integration
 3. White-glove professional services
@@ -1122,6 +1188,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 ### **Can We Compete? YES, BUT...**
 
 **Our Path to Success:**
+
 1. ✅ **COMPLETE: Dues collection system** (arrears, reconciliation, billing, PDF receipts) - **Phase 3 DONE**
 2. ✅ **COMPLETE: Training management system** (full lifecycle, automated notifications) - **Phase 4 DONE**
 3. ✅ **COMPLETE: Contract management system** (AI comparison, version control, inter-union sharing) - **DONE**
@@ -1134,6 +1201,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 10. ✅ Invest in enterprise readiness (SOC 2, professional services) - **Year 2-3**
 
 **Our Competitive Advantages:**
+
 - 🟢 **Modern UX** (competitors have legacy UI)
 - 🟢 **AI-powered features** (competitors have none)
 - 🟢 **Strike fund innovation** (unique NFC/GPS check-in)
@@ -1145,6 +1213,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - 🟢 **Superior security** (179 RLS policies, 100% coverage)
 
 **Our Remaining Gaps:**
+
 - 🔴 **Unproven in market** (zero customers - pilot-ready)
 - 🟡 **No mobile apps** (highest priority for next phase)
 - 🟡 **Limited communications** (no SMS/social - enhancement needed)
@@ -1153,6 +1222,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 ### **Final Verdict:**
 
 **We can compete and win - 100% FEATURE PARITY ACHIEVED:**
+
 - We're **100% ready** (up from 87-90% - alerting & automation complete)
 - We're **production-ready for pilot customers** TODAY
 - We have **100% feature parity** with market leaders (up from 87%)
@@ -1162,6 +1232,7 @@ Given our **feature gaps** and **zero market share**, we CANNOT price at parity.
 - We should price **40-50% below competitors** initially for pilot customers
 
 **MAJOR MILESTONES ACHIEVED (November-December 2025):**
+
 - **Phase 3 (Dues Collection):** Complete system with arrears, reconciliation, billing (~2,150 lines)
 - **Phase 4 (Training Management):** Full lifecycle with automated notifications (~2,969 lines)
 - **Phase 5 (Communications):** SMS, surveys, newsletters, push notifications, analytics (~3,500 lines)
@@ -1257,6 +1328,7 @@ This demonstrates our **exceptional development velocity** - features that would
 **Gap Closed:** 35%
 
 **Competitive Advantages Gained:**
+
 - ✅ **Configurable alert rules** (visual rule builder vs. hardcoded timing)
 - ✅ **Contract expiration alerts** (90-day warning template)
 - ✅ **Visual workflow builder** (drag-drop-style automation vs. state machine only)

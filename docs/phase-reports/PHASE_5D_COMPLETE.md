@@ -31,12 +31,14 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **File**: `database/migrations/048_jurisdiction_framework.sql` (456 lines)
 
 #### Tables Created (4)
+
 1. **jurisdiction_rules**: Core rules table with deadline_days, legal_reference, is_bilingual_required
 2. **jurisdiction_holidays**: Holiday management for business day calculations
 3. **jurisdiction_deadlines**: Calculated deadline tracking for audit trail
 4. **jurisdiction_documents**: Template storage for jurisdiction-specific forms
 
 #### Enums Created (5)
+
 1. **ca_jurisdiction**: 14 values (CA-FED, CA-AB through CA-YT)
 2. **jurisdiction_rule_category**: 10 categories (grievance_filing, strike_vote, certification, etc.)
 3. **jurisdiction_filing_method**: 3 methods (online, mail, in-person)
@@ -44,12 +46,14 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 5. **jurisdiction_document_type**: 5 types (form, template, notice, certificate, report)
 
 #### Functions Created (4)
+
 1. **add_business_days(jurisdiction, start_date, business_days)**: Add business days excluding holidays
 2. **subtract_business_days(jurisdiction, start_date, business_days)**: Subtract business days
 3. **is_business_day(jurisdiction, check_date)**: Validate if date is business day
 4. **count_business_days(jurisdiction, start_date, end_date)**: Count business days between dates
 
 #### Indexes Created (22)
+
 - Optimized queries for jurisdiction lookups, rule categories, holiday ranges, and deadline tracking
 
 **Validation**: ✅ All tables, enums, functions, and indexes created successfully (verified Session 3)
@@ -163,21 +167,21 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 
 #### Module-Specific Components (Session 4)
 
-6. **ClaimJurisdictionInfo** (`components/claims/claim-jurisdiction-info.tsx`) - 223 lines
+1. **ClaimJurisdictionInfo** (`components/claims/claim-jurisdiction-info.tsx`) - 223 lines
    - Jurisdiction badge + deadline tracking for Claims module
    - Urgency alerts (red/orange/yellow/green)
    - Interactive deadline calculator embedded
    - Legal reference footer (Canada Labour Code sections)
    - **Integration**: Claims detail page sidebar (above Status Update)
 
-7. **GrievanceJurisdictionInfo** (`components/grievances/grievance-jurisdiction-info.tsx`) - 270 lines
+2. **GrievanceJurisdictionInfo** (`components/grievances/grievance-jurisdiction-info.tsx`) - 270 lines
    - Multi-step deadline tracking (Step 1 → Step 2 → Step 3 → Arbitration)
    - Visual timeline showing current step with urgency indicators
    - Arbitration filing deadline calculator with special alerts
    - Next steps guidance for arbitration preparation
    - **Integration**: Ready for grievance detail page (when created)
 
-8. **StrikeVoteJurisdictionInfo** (`components/strike/strike-vote-jurisdiction-info.tsx`) - 380 lines
+3. **StrikeVoteJurisdictionInfo** (`components/strike/strike-vote-jurisdiction-info.tsx`) - 380 lines
    - Jurisdiction-specific threshold validation:
      - Manitoba: 65% of votes cast
      - New Brunswick: 60% of votes cast
@@ -188,7 +192,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
    - Multi-jurisdiction comparison educational card
    - **Integration**: Ready for strike vote pages
 
-9. **CertificationJurisdictionInfo** (`components/certification/certification-jurisdiction-info.tsx`) - 430 lines
+4. **CertificationJurisdictionInfo** (`components/certification/certification-jurisdiction-info.tsx`) - 430 lines
    - Card-check vs mandatory vote logic by jurisdiction:
      - **Card-Check Available**: AB (65%), BC (55%), MB (65%), NB (60%), NL (65%), PE (50%), QC (50%), SK (45%)
      - **Mandatory Vote Only**: Federal (35% to trigger), NS (40% to trigger), ON (40% to trigger)
@@ -235,6 +239,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
    - Bilingual support: Quebec notices require French/English versions
 
 **Features**:
+
 - PDF export with proper formatting
 - Print-friendly layouts
 - Auto-save drafts
@@ -254,6 +259,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **File**: `lib/jurisdiction-helpers.ts` (218 lines)
 
 **Functions Implemented**:
+
 1. **mapJurisdictionValue(oldValue)**: Convert legacy enum format to new ca_jurisdiction format
 2. **getJurisdictionName(jurisdiction)**: Get display name ("Federal", "Ontario", etc.)
 3. **getOrganizationJurisdiction(organizationId)**: Async database lookup for org's jurisdiction
@@ -270,12 +276,14 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **File Modified**: `app/[locale]/dashboard/claims/[id]/page.tsx`
 
 **Changes Made**:
+
 - Line 8: Added import for ClaimJurisdictionInfo component
 - Lines 17-20: Extended Claim interface to include tenantId and filedDate
 - Lines ~280-295: Integrated ClaimJurisdictionInfo component in sidebar
 - Animation timing: delay 0.25s for jurisdiction section
 
 **Result**: Claims detail page now shows:
+
 - Jurisdiction badge (Federal, Ontario, etc.)
 - Deadline calculation if claim involves grievance
 - Urgency alerts (red/orange/yellow/green based on days remaining)
@@ -289,6 +297,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **Component Created**: `components/grievances/grievance-jurisdiction-info.tsx` (270 lines)
 
 **Features**:
+
 - Jurisdiction badge display
 - Multi-step timeline (Step 1 → Step 2 → Step 3 → Arbitration)
 - Deadline tracking for each grievance step (typically 10 business days per step)
@@ -305,6 +314,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **Component Created**: `components/strike/strike-vote-jurisdiction-info.tsx` (380 lines)
 
 **Features**:
+
 - Jurisdiction badge display
 - Strike vote threshold requirements by jurisdiction:
   - **Manitoba**: 65% of votes cast required (super-majority)
@@ -329,6 +339,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **Component Created**: `components/certification/certification-jurisdiction-info.tsx` (430 lines)
 
 **Features**:
+
 - Jurisdiction badge display
 - Certification method determination:
   - **Card-Check Available** (8 jurisdictions):
@@ -385,6 +396,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
    - Created indexes for organization jurisdiction lookups
 
 **Verification Steps Completed**:
+
 - ✅ All tables exist with correct schemas
 - ✅ Enums have correct values (14 jurisdictions, 10 rule categories, etc.)
 - ✅ Functions return correct results (business day calculations tested with holidays)
@@ -401,6 +413,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 **Status**: Ready for next phase
 
 **Recommended Testing**:
+
 1. **Unit Tests** (lib/jurisdiction-helpers.ts):
    - Test mapJurisdictionValue with all 14 jurisdictions
    - Test getDeadlineUrgency with edge cases (0 days, negative days, large values)
@@ -424,12 +437,14 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
    - Test Quebec bilingual form generation
 
 **User Documentation Needed**:
+
 - How to use jurisdiction features (for union staff)
 - Jurisdiction rules reference guide (14 jurisdictions × 10 rule categories)
 - Deadline calculation examples with screenshots
 - Multi-jurisdiction comparison use cases
 
 **Developer Documentation Needed**:
+
 - Jurisdiction framework architecture overview
 - How to add new jurisdiction rules
 - How to extend jurisdiction helpers
@@ -463,12 +478,13 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 ## Jurisdiction Coverage
 
 ### Federal Jurisdiction ✅
+
 - **Code**: CA-FED
 - **Grievance Filing**: 25 business days (Canada Labour Code §240)
 - **Strike Vote**: Simple majority (50%+1) required, 72-hour notice before strike
 - **Certification**: Mandatory vote in all cases, 35% support cards required to trigger vote
 - **Bilingual**: Yes - all documents must be available in English and French
-- **Special Rules**: 
+- **Special Rules**:
   - Cooling-off period requirements for strikes
   - CIRB (Canada Industrial Relations Board) oversight
   - Federal sector conciliation before strike
@@ -476,24 +492,28 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 ### Provincial Jurisdictions
 
 #### Alberta (CA-AB) ✅
+
 - **Grievance Filing**: 30 business days
 - **Strike Vote**: Simple majority, no cooling-off period
 - **Certification**: Card-check with 65%+ support, mandatory vote if 40-65%
 - **Forms**: LRB-001 (Alberta Labour Relations Board)
 
 #### British Columbia (CA-BC) ✅
+
 - **Grievance Filing**: 20 business days
 - **Strike Vote**: Simple majority, 72-hour strike notice
 - **Certification**: Card-check with 55%+ support, mandatory vote if 45-55%
 - **Special Rules**: Sectoral bargaining in construction industry
 
 #### Manitoba (CA-MB) ✅
+
 - **Grievance Filing**: 15 business days
 - **Strike Vote**: **65% majority required** (super-majority)
 - **Certification**: Card-check with 65%+ support (cards must be signed within 90 days)
 - **Special Rules**: Highest strike vote threshold in Canada
 
 #### New Brunswick (CA-NB) ✅
+
 - **Grievance Filing**: 20 business days
 - **Strike Vote**: **60% majority required**
 - **Certification**: Card-check with 60%+ support, mandatory vote if 40-60%
@@ -501,28 +521,33 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 - **Special Rules**: Designated services during strikes
 
 #### Newfoundland and Labrador (CA-NL) ✅
+
 - **Grievance Filing**: 20 business days
 - **Strike Vote**: Simple majority
 - **Certification**: Card-check with 65%+ support
 - **Special Rules**: Essential services legislation
 
 #### Northwest Territories (CA-NT) ✅
+
 - **Grievance Filing**: 25 business days
 - **Strike Vote**: Simple majority
 - **Certification**: Card-check with 50%+ support
 
 #### Nova Scotia (CA-NS) ✅
+
 - **Grievance Filing**: 15 business days
 - **Strike Vote**: Simple majority
 - **Certification**: **Mandatory vote only** (no card-check), 40% support to trigger vote
 - **Special Rules**: Essential services designation
 
 #### Nunavut (CA-NU) ✅
+
 - **Grievance Filing**: 25 business days
 - **Strike Vote**: Simple majority
 - **Certification**: Card-check with 50%+ support
 
 #### Ontario (CA-ON) ✅
+
 - **Grievance Filing**: 30 business days (most common in collective agreements)
 - **Strike Vote**: Simple majority
 - **Certification**: **Mandatory vote only** (no card-check), 40% support to trigger vote
@@ -530,31 +555,35 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 - **Special Rules**: Largest provincial labour market, extensive case law
 
 #### Prince Edward Island (CA-PE) ✅
+
 - **Grievance Filing**: 15 business days
 - **Strike Vote**: Simple majority
 - **Certification**: Card-check with 50%+ support, board discretion to order vote
 - **Special Rules**: Small labour market, board has broad discretion
 
 #### Quebec (CA-QC) ✅
+
 - **Grievance Filing**: 20 business days
 - **Strike Vote**: Simple majority
 - **Certification**: Card-check with 50%+1 support (absolute majority)
 - **Bilingual**: Yes - all documents must be French (English optional)
 - **Forms**: TAT (Tribunal administratif du travail) application, union constitution required
-- **Special Rules**: 
+- **Special Rules**:
   - Quebec Labour Code applies
   - Anti-scab provisions (strictest in Canada)
   - Sectoral decrees in some industries
 
 #### Saskatchewan (CA-SK) ✅
+
 - **Grievance Filing**: 20 business days
 - **Strike Vote**: **45% of ALL eligible members must vote "yes"** (unique calculation, not % of votes cast)
 - **Certification**: Card-check with **45% support** (lowest threshold in Canada)
-- **Special Rules**: 
+- **Special Rules**:
   - Strike vote calculation different from all other jurisdictions
   - Pro-labour certification rules
 
 #### Yukon (CA-YT) ✅
+
 - **Grievance Filing**: 25 business days
 - **Strike Vote**: Simple majority
 - **Certification**: Card-check with 50%+ support
@@ -564,12 +593,14 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 ## Key Differentiators by Feature
 
 ### Strike Vote Thresholds (Ranked)
+
 1. **Manitoba**: 65% (highest)
 2. **New Brunswick**: 60%
 3. **All others**: 50%+1 (simple majority)
 4. **Saskatchewan**: 45% of eligible members (special calculation)
 
 ### Certification Thresholds (Ranked)
+
 1. **Alberta, Manitoba, Newfoundland**: 65% (highest for card-check)
 2. **New Brunswick**: 60%
 3. **British Columbia, Nova Scotia, Ontario**: 55%
@@ -577,11 +608,13 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 5. **Saskatchewan**: 45% (lowest in Canada)
 
 ### Certification Methods
+
 - **Card-Check Available**: AB, BC, MB, NB, NL, PE, QC, SK (8 jurisdictions)
 - **Mandatory Vote Only**: Federal, NS, ON (3 jurisdictions)
 - **Board Discretion**: PE (can order vote even with majority cards)
 
 ### Bilingual Requirements
+
 - **Federal**: English + French required
 - **Quebec**: French required (English optional)
 - **New Brunswick**: English + French required
@@ -592,6 +625,7 @@ Phase 5D successfully implemented a comprehensive Canadian labour law jurisdicti
 ## Technical Architecture
 
 ### Database Layer
+
 ```
 jurisdiction_rules (central table)
 ├── ca_jurisdiction (enum, 14 values)
@@ -614,6 +648,7 @@ organizations
 ```
 
 ### API Layer
+
 ```
 /api/jurisdiction/
 ├── list (GET) - All jurisdictions
@@ -630,6 +665,7 @@ organizations
 ```
 
 ### Component Layer
+
 ```
 components/
 ├── jurisdiction/ (Core reusable components)
@@ -649,6 +685,7 @@ components/
 ```
 
 ### Helper Library
+
 ```typescript
 lib/jurisdiction-helpers.ts
 
@@ -749,6 +786,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 ### Critical Test Scenarios
 
 #### Deadline Calculations
+
 1. **Holiday Edge Cases**:
    - File grievance on Dec 23 → deadline should skip Christmas/Boxing Day/New Year's
    - File in Quebec → use Quebec holidays (different from Ontario)
@@ -763,6 +801,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
    - Civic Holiday (August) varies by province
 
 #### Strike Vote Validations
+
 1. **Saskatchewan Special Rule**:
    - 100 eligible members, 60 votes cast, 50 in favor → 50% calculation
    - FAIL in SK (need 45 of 100 = 45 votes in favor, but have 50 of 60 cast)
@@ -774,6 +813,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
    - PASS in all other jurisdictions (50%+1)
 
 #### Certification Method Selection
+
 1. **Card-Check Eligibility**:
    - AB: 100 employees, 66 cards → Card-check available (66% ≥ 65%)
    - AB: 100 employees, 64 cards → Mandatory vote required (64% < 65%)
@@ -785,6 +825,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
    - Ontario: 100 employees, 30 cards → Application dismissed (30% < 40%)
 
 #### Bilingual Requirements
+
 1. **Quebec**:
    - Grievance filed → template generates French version
    - Strike vote notice → French required, English optional
@@ -802,6 +843,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 ## Business Value
 
 ### For Union Staff
+
 - ✅ **Automated Deadline Tracking**: Never miss a grievance or arbitration deadline
 - ✅ **Compliance Assurance**: System enforces correct jurisdiction rules automatically
 - ✅ **Educational Tools**: Multi-jurisdiction comparison helps staff understand regional differences
@@ -809,17 +851,20 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 - ✅ **Error Prevention**: Urgency alerts (red/orange/yellow) warn of approaching deadlines
 
 ### For Union Members
+
 - ✅ **Transparency**: See exactly when deadlines are and why (legal references shown)
 - ✅ **Confidence**: Know strike votes follow correct thresholds for their jurisdiction
 - ✅ **Fairness**: Certification applications use correct method for their province/territory
 
 ### For Legal Compliance
+
 - ✅ **Audit Trail**: All deadline calculations logged in jurisdiction_deadlines table
 - ✅ **Legal References**: Every rule includes CLC/LRA section numbers
 - ✅ **Bilingual Support**: Federal, Quebec, New Brunswick requirements automatically enforced
 - ✅ **Holiday Compliance**: System respects federal and provincial statutory holidays
 
 ### For System Administrators
+
 - ✅ **Rule Management**: API endpoints to update rules without code changes
 - ✅ **Holiday Management**: Add/remove holidays via jurisdiction_holidays table
 - ✅ **Extensibility**: Custom rules supported via JSON customData field
@@ -830,6 +875,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 ## Next Steps (Post-Phase 5D)
 
 ### Immediate Integration Work
+
 1. **Grievance Module**:
    - Create grievance database table (grievances table with jurisdiction column)
    - Build grievance detail page (`app/[locale]/dashboard/grievances/[id]/page.tsx`)
@@ -849,12 +895,14 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
    - Add form generation based on jurisdiction (CIRB, LRB, TAT forms)
 
 ### Testing Phase
+
 1. **Unit Tests**: jurisdiction-helpers.ts functions (8 functions × 14 jurisdictions = 112 test cases)
 2. **Integration Tests**: API endpoints with holiday edge cases
 3. **Component Tests**: React Testing Library tests for all 9 components
 4. **E2E Tests**: Playwright tests for complete workflows (file claim → see deadline → deadline approaches → urgency alert)
 
 ### Documentation Phase
+
 1. **User Guides**:
    - Jurisdiction features overview (for union staff)
    - Deadline calculator tutorial
@@ -877,6 +925,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 ## Lessons Learned
 
 ### What Went Well ✅
+
 1. **Phased Approach**: Breaking Phase 5D into 8 tasks allowed incremental progress and validation
 2. **Database-First Design**: PostgreSQL functions for business day calculations proved very fast and reliable
 3. **Reusable Components**: Core components (JurisdictionBadge, DeadlineCalculator) used by all modules
@@ -884,12 +933,14 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 5. **TypeScript**: Strong typing caught many bugs before runtime (CAJurisdiction type, interface props)
 
 ### Challenges Overcome 🛠️
+
 1. **Saskatchewan Special Rule**: Strike vote calculation different from all other jurisdictions (45% of eligible, not % of votes cast) required special logic
 2. **Holiday Management**: Different holidays by jurisdiction (Quebec Family Day vs Ontario Family Day) required separate holiday calendar per jurisdiction
 3. **Bilingual Support**: Quebec requires French, Federal requires English+French, New Brunswick requires English+French → conditional logic needed
 4. **Year Boundary Calculations**: Business day calculations spanning December → January required careful holiday handling
 
 ### Future Improvements 🚀
+
 1. **Custom Holiday Management UI**: Admin interface to add/edit holidays without SQL (currently requires database insert)
 2. **Rule Versioning**: Track historical rule changes (e.g., if Manitoba changes 65% threshold, keep history for old cases)
 3. **Deadline Notifications**: Email/SMS alerts when deadlines approaching (integrate with notification system)
@@ -902,6 +953,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 ## Success Metrics
 
 ### Code Quality
+
 - ✅ **0 TypeScript Errors**: All components fully typed
 - ✅ **0 ESLint Warnings**: Clean code following project standards
 - ✅ **Responsive Design**: All components work on mobile/tablet/desktop
@@ -909,6 +961,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 - ✅ **Test Coverage**: 2,273 lines of comprehensive tests (unit, integration, component)
 
 ### Functionality
+
 - ✅ **14 Jurisdictions Supported**: Federal + 10 provinces + 3 territories
 - ✅ **10 Rule Categories**: Grievance, strike vote, certification, arbitration, conciliation, lockout, essential services, notice periods, contract negotiation, unfair labour practices
 - ✅ **100+ Holidays Loaded**: Federal and provincial holidays for 2024-2026
@@ -916,12 +969,14 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 - ✅ **Special Jurisdictions**: Manitoba 65% super-majority, Saskatchewan 45% of eligible members, Quebec Bill 101 bilingual
 
 ### Performance
+
 - ✅ **Fast Queries**: All jurisdiction queries <50ms (thanks to 22 indexes)
 - ✅ **Efficient Calculations**: Business day functions use PostgreSQL (faster than JavaScript)
 - ✅ **Lazy Loading**: Components load jurisdiction data only when needed
 - ✅ **Caching**: Jurisdiction rules cached in React state (avoid repeated API calls)
 
 ### Documentation
+
 - ✅ **User Guides**: 2 comprehensive guides (800+ lines) - features overview, calculator tutorial
 - ✅ **Reference Guides**: 2 detailed references (1,100+ lines) - all jurisdictions table, special rules with case law
 - ✅ **Developer Guide**: 1 integration guide (490 lines) - component patterns, API usage, testing strategies
@@ -936,6 +991,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 **1. User Guides (2 files, 800+ lines)**
 
 **`docs/user-guides/jurisdiction-features-overview.md`** (450 lines)
+
 - Introduction to 14 Canadian jurisdictions (Federal + 10 provinces + 3 territories)
 - Key features: Automatic jurisdiction detection, business day calculations, bilingual support (Federal/QC/NB)
 - Strike vote thresholds: Manitoba 65% super-majority, Saskatchewan 45% of eligible members (unique calculation), New Brunswick 60%, 11 others 50%+1
@@ -946,6 +1002,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 - Common questions: Why business days, Quebec bilingual requirements, holiday updates
 
 **`docs/user-guides/deadline-calculator-tutorial.md`** (350 lines)
+
 - Step-by-step tutorial (6 steps: open → select date → enter days → review holidays → view result → export PDF)
 - 4 interactive scenarios with full calculations:
   - Federal grievance crossing Christmas (Dec 23 → Feb 5, excludes Dec 25/26/Jan 1)
@@ -959,6 +1016,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 **2. Reference Guides (2 files, 1,100+ lines)**
 
 **`docs/jurisdiction-reference/all-jurisdictions.md`** (650 lines)
+
 - Complete reference table: 14 jurisdictions × 10 rule categories = 140 rules documented
 - Section 1 - Grievance Filing: Federal 25 days, Quebec 15 calendar (unique), most 30 business
 - Section 2 - Arbitration Filing: NL 10 days (shortest), Federal 90 days, NS/ON no deadline
@@ -974,6 +1032,7 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 - All rules include legal citations to statutes/sections
 
 **`docs/jurisdiction-reference/special-rules.md`** (450 lines)
+
 - Deep dive into 3 jurisdictions with unique rules: Manitoba, Saskatchewan, Quebec
 - **Manitoba 65% Super-Majority**: Labour Relations Act s.68, only super-majority in Canada, historical context (1996 Filmon government), practical implications (aim for 70%+ before voting), comparison examples, case law UFCW Local 832 v Manitoba [2003]
 - **Saskatchewan 45% of Eligible Members**: Labour Relations Act s.6(2), unique calculation using all eligible members not votes cast, abstentions effectively count as "No", detailed examples showing low turnout failures (400 vote, 380 Yes = 95% of votes but 38% of eligible FAILS), turnout critical strategies, case law SLRB Decision 138-99
@@ -985,9 +1044,10 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 **3. Developer Guide (1 file, 490 lines)**
 
 **`docs/developer/jurisdiction-integration-guide.md`** (490 lines)
+
 - Architecture overview: Layered architecture diagram (Presentation → Business Logic → API → Data)
 - Key files reference: 26 files with purposes and paths
-- **Component Integration Examples**: 
+- **Component Integration Examples**:
   - Example 1: Adding jurisdiction to new ULP module (full code, 60 lines)
   - Example 2: Creating custom lockout component (full implementation, 120 lines)
 - **API Endpoint Usage**: All 10 endpoints with TypeScript examples:
@@ -1008,11 +1068,13 @@ import { CertificationJurisdictionInfo } from '@/components/certification/certif
 **Total Lines**: 2,390 lines across 5 comprehensive files
 
 **Target Audiences**:
+
 - End users: Features overview, calculator tutorial (800 lines)
 - Union organizers/legal: All jurisdictions reference, special rules with case law (1,100 lines)
 - Developers: Integration guide with code examples, API patterns, testing (490 lines)
 
 **Content Coverage**:
+
 - 14 Canadian jurisdictions fully documented
 - 10 rule categories per jurisdiction = 140 rules total
 - 3 special jurisdictions with deep analysis (MB, SK, QC)
@@ -1033,6 +1095,7 @@ The Canadian labour law jurisdiction framework is now **100% PRODUCTION-READY** 
 ### Final Deliverables Summary
 
 **Implementation (4,325 lines, 26 files)**:
+
 - Database schema: 4 tables, 5 enums, 4 PostgreSQL functions, 22 indexes
 - API layer: 10 REST endpoints (7 rules + 3 calculation)
 - UI components: 9 React components (5 core + 4 module-specific)
@@ -1040,12 +1103,14 @@ The Canadian labour law jurisdiction framework is now **100% PRODUCTION-READY** 
 - Document templates: 4 bilingual templates
 
 **Testing (2,273 lines, 7 files)**:
+
 - Unit tests: jurisdiction-helpers.ts (310 lines)
 - API integration tests: All 10 endpoints (478 lines)
 - Component tests: 5 components with React Testing Library (1,485 lines)
 - Edge case coverage: Holidays, year boundaries, leap years, special jurisdictions
 
 **Documentation (2,390 lines, 5 files)**:
+
 - User guides: 2 files (800 lines) - features, calculator tutorial
 - Reference guides: 2 files (1,100 lines) - all jurisdictions, special rules
 - Developer guide: 1 file (490 lines) - integration patterns, API usage, testing
@@ -1079,9 +1144,10 @@ The Canadian labour law jurisdiction framework is now **100% PRODUCTION-READY** 
 
 ## Acknowledgments
 
-This phase represents a **transformational advancement** in the Union Claims Platform. The jurisdiction framework provides union staff with enterprise-grade tools to navigate the complex landscape of Canadian labour law across all 14 jurisdictions. 
+This phase represents a **transformational advancement** in the Union Claims Platform. The jurisdiction framework provides union staff with enterprise-grade tools to navigate the complex landscape of Canadian labour law across all 14 jurisdictions.
 
 **Key Impacts**:
+
 - **Legal Compliance**: Automated deadline calculations ensure no missed filing deadlines
 - **Efficiency**: Business day logic handles holidays automatically, saving hours of manual calculation
 - **Education**: Multi-jurisdiction comparison helps organizers understand regional differences

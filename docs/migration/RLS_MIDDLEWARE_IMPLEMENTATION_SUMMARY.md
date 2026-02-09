@@ -9,9 +9,11 @@
 ## ✅ Completed Work
 
 ### 1. Core RLS Middleware Infrastructure (lib/db/with-rls-context.ts)
+
 **Status:** ✅ COMPLETE - 300+ lines
 
 **Functions Implemented:**
+
 - `withRLSContext()` - Automatic transaction-scoped context setting
 - `withExplicitUserContext()` - Admin impersonation support  
 - `withSystemContext()` - Clerk webhooks/system operations
@@ -22,6 +24,7 @@
 - Full JSDoc documentation with code examples
 
 **Key Features:**
+
 - ✅ Transaction-scoped isolation using `SET LOCAL`
 - ✅ Automatic cleanup on error
 - ✅ Connection pool safety
@@ -31,9 +34,11 @@
 ---
 
 ### 2. Role Alignment Fixes (lib/auth.ts)
+
 **Status:** ✅ COMPLETE - 150+ lines updated
 
 **Changes:**
+
 - ✅ `ROLE_HIERARCHY` aligned to database enum (admin/officer/steward/member)
 - ✅ `LEGACY_ROLE_MAP` for backward compatibility (super_admin→admin, guest→member)
 - ✅ `normalizeRole()` - Converts legacy roles to aligned enum values
@@ -43,6 +48,7 @@
 - ✅ Updated `hasRole()` to use `normalizeRole()` for backward compatibility
 
 **Benefits:**
+
 - Zero breaking changes for existing code
 - Gradual migration path
 - Database enum alignment
@@ -50,9 +56,11 @@
 ---
 
 ### 3. Middleware Architecture Documentation (middleware.ts)
+
 **Status:** ✅ COMPLETE - 40-line header added
 
 **Documentation Added:**
+
 - 3-layer middleware stack explanation (Edge → RLS → Application)
 - Clear separation of concerns
 - Coordination between Clerk auth, RLS context, and RBAC
@@ -60,10 +68,12 @@
 
 ---
 
-### 4. Comprehensive Test Suite (__tests__/lib/db/with-rls-context.test.ts)
+### 4. Comprehensive Test Suite (**tests**/lib/db/with-rls-context.test.ts)
+
 **Status:** ✅ COMPLETE - 500+ lines, 40+ test cases
 
 **Test Coverage:**
+
 - ✅ `withRLSContext` - Authentication, isolation, error handling, cleanup
 - ✅ `withExplicitUserContext` - Admin impersonation flows
 - ✅ `withSystemContext` - Webhook handling
@@ -78,14 +88,17 @@
 ---
 
 ### 5. Migration Documentation
+
 **Status:** ✅ COMPLETE
 
 **Files Created:**
+
 - `docs/security/RLS_SECURITY_ASSESSMENT.md` - Initial security audit (32/100 → 95/100)
 - `docs/security/RLS_AUTH_RBAC_ALIGNMENT.md` - Complete alignment assessment (68/100 → 94/100)
 - `docs/migration/API_ROUTE_RLS_MIGRATION_GUIDE.md` - Step-by-step migration guide with 6 patterns
 
 **Guide Contents:**
+
 - Before/after code examples for 6 common patterns
 - Step-by-step migration process (3 phases)
 - Code search commands for finding unmigrated routes
@@ -96,9 +109,11 @@
 ---
 
 ### 6. Reference Migration Example
+
 **Status:** ✅ COMPLETE - `app/api/admin/clc/remittances/route.ts`
 
 **Changes:**
+
 - ✅ Removed `checkAdminRole()` function (redundant with `withEnhancedRoleAuth`)
 - ✅ Removed all manual `SET app.current_user_id` commands
 - ✅ Wrapped GET handler in `withRLSContext()` (3 db queries → 1 transaction)
@@ -107,6 +122,7 @@
 - ✅ Added migration status header to file
 
 **Metrics:**
+
 - Lines removed: ~20 (manual context setting, role checks)
 - Lines added: ~10 (withRLSContext wrappers)
 - Code reduction: ~10 lines net (-10%)
@@ -130,13 +146,16 @@
 ## 🎯 Gaps Closed
 
 ### Critical Gap #1: Manual Context Setting ✅ FIXED
+
 **Before:**
+
 ```typescript
 await db.execute(sql`SET app.current_user_id = ${userId}`);
 const data = await db.select().from(claims);
 ```
 
 **After:**
+
 ```typescript
 return withRLSContext(async (tx) => {
   const data = await tx.select().from(claims);
@@ -145,6 +164,7 @@ return withRLSContext(async (tx) => {
 ```
 
 **Impact:**
+
 - ⏱️ Development time: -30% (no manual context)
 - 🚨 Security risk: -90% (automatic fail-safe)
 - 🧪 Test complexity: -40% (built-in cleanup)
@@ -152,7 +172,9 @@ return withRLSContext(async (tx) => {
 ---
 
 ### Critical Gap #2: Role Enum Mismatch ✅ FIXED
+
 **Before:**
+
 ```typescript
 ROLE_HIERARCHY = {
   super_admin: 100,  // ❌ Not in database enum
@@ -164,6 +186,7 @@ ROLE_HIERARCHY = {
 ```
 
 **After:**
+
 ```typescript
 ROLE_HIERARCHY = {
   admin: 100,     // ✅ Aligned
@@ -183,6 +206,7 @@ function normalizeRole(role: string): Role {
 ```
 
 **Impact:**
+
 - ✅ Zero breaking changes (backward compatible)
 - ✅ Database queries now succeed (valid enum values)
 - ✅ Clear migration path forward
@@ -190,7 +214,9 @@ function normalizeRole(role: string): Role {
 ---
 
 ### Critical Gap #3: No Validation ✅ FIXED
+
 **Before:**
+
 ```typescript
 // Context might not be set - query succeeds but returns wrong data
 await db.execute(sql`SET app.current_user_id = ${userId}`);
@@ -198,6 +224,7 @@ const data = await db.select().from(claims); // No validation!
 ```
 
 **After:**
+
 ```typescript
 return withRLSContext(async (tx) => {
   // validateRLSContext() called automatically
@@ -207,6 +234,7 @@ return withRLSContext(async (tx) => {
 ```
 
 **Impact:**
+
 - 🛡️ Security: Fail-safe prevents accidental data exposure
 - 🐛 Debugging: Clear error messages instead of silent failures
 - ✅ Confidence: Guaranteed context setting
@@ -214,7 +242,9 @@ return withRLSContext(async (tx) => {
 ---
 
 ### Critical Gap #4: Context Leakage Risk ✅ FIXED
+
 **Before:**
+
 ```typescript
 // SET without RESET - context persists across requests in connection pool
 await db.execute(sql`SET app.current_user_id = ${userId}`);
@@ -223,6 +253,7 @@ const data = await db.select().from(claims);
 ```
 
 **After:**
+
 ```typescript
 return withRLSContext(async (tx) => {
   // SET LOCAL ensures transaction-scoped isolation
@@ -233,6 +264,7 @@ return withRLSContext(async (tx) => {
 ```
 
 **Impact:**
+
 - ⚡ Performance: No manual cleanup overhead
 - 🔒 Security: Zero risk of context leakage
 - ☁️ Scalability: Safe for connection pooling
@@ -244,21 +276,25 @@ return withRLSContext(async (tx) => {
 ### Phase 2: High-Priority Route Migration (Estimated: 2-3 days)
 
 **Priority 1: CLC Exports (3 routes remaining)**
+
 - [ ] `app/api/admin/clc/remittances/[id]/export/route.ts` (1 manual SET)
 - [ ] `app/api/admin/clc/remittances/export/route.ts` (1 manual SET)
 - [ ] `app/api/admin/clc/remittances/[id]/submit/route.ts` (1 manual SET)
 
 **Priority 2: Claims Management (estimated 12 routes)**
+
 - [ ] `app/api/claims/**` - Claims CRUD operations
 - Pattern: Same as remittances (withRLSContext wrapper)
 - Estimated: 1-2 hours total
 
 **Priority 3: Training & Certifications (estimated 8 routes)**
+
 - [ ] `app/api/training/**` - Training enrollment, records
 - [ ] `app/api/certifications/**` - Certification management  
 - Estimated: 1 hour total
 
 **Priority 4: User Management (estimated 6 routes)**
+
 - [ ] `app/api/users/**` - User profile operations
 - [ ] `app/api/admin/users/**` - Admin user management
 - Estimated: 30-45 minutes
@@ -268,11 +304,13 @@ return withRLSContext(async (tx) => {
 ### Phase 3: Admin & System Routes (Estimated: 1-2 days)
 
 **Admin Routes (~20 routes)**
+
 - [ ] `app/api/admin/organizations/**`
 - [ ] `app/api/admin/reports/**`
 - [ ] `app/api/admin/analytics/**`
 
 **System Routes (~10 routes)**
+
 - [ ] `app/api/webhooks/**` - Use `withSystemContext()` (no user context)
 - [ ] `app/api/cron/**` - Use `withSystemContext()`
 - [ ] `app/api/internal/**` - Use `withSystemContext()`
@@ -282,12 +320,14 @@ return withRLSContext(async (tx) => {
 ### Phase 4: ESLint Rule & Validation (Estimated: 1 day)
 
 **ESLint Rule Implementation**
+
 - [ ] Create custom rule: `custom/require-rls-context`
 - [ ] Detect: `db.select|insert|update|delete` in `app/api/**`
 - [ ] Enforce: Wrapped in `withRLSContext|withExplicitUserContext|withSystemContext`
 - [ ] Exclude: `lib/db/**`, `scripts/**`, `__tests__/**`
 
 **Validation Commands**
+
 ```bash
 # Should return 0 (no remaining manual SET commands in app/api)
 grep -r "SET app.current_user_id" app/api/ | grep -v " * -" | wc -l
@@ -301,6 +341,7 @@ grep -r "withRLSContext\|withSystemContext\|withExplicitUserContext" app/api/ | 
 ### Phase 5: Performance Benchmarking (Estimated: 1 day)
 
 **Benchmark Queries**
+
 ```sql
 -- Enable pg_stat_statements
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
@@ -317,6 +358,7 @@ ORDER BY mean_exec_time DESC;
 ```
 
 **Performance Targets**
+
 - ✅ Simple SELECT: <10ms overhead
 - ✅ Complex JOIN: <15ms overhead  
 - ✅ Aggregation: <12ms overhead
@@ -338,6 +380,7 @@ ORDER BY mean_exec_time DESC;
 | **TOTAL** | **50** | **5** | **1** | **44** | **10%** |
 
 **Estimated Time to Complete:**
+
 - Phase 2 (High-Priority): 2-3 days
 - Phase 3 (Admin/System): 1-2 days
 - Phase 4 (ESLint): 1 day
@@ -349,6 +392,7 @@ ORDER BY mean_exec_time DESC;
 ## ✅ Production Readiness Checklist
 
 ### Security ✅ COMPLETE
+
 - [x] 61 RLS policies active across 11 tables
 - [x] All critical tables protected (claims, training, users, remittances)
 - [x] Automatic context setting with fail-safe validation
@@ -357,6 +401,7 @@ ORDER BY mean_exec_time DESC;
 - [x] Audit trail immutability enforced
 
 ### Code Quality ✅ COMPLETE
+
 - [x] Core middleware implemented with full JSDoc
 - [x] Comprehensive test suite (40+ test cases)
 - [x] Migration guide with 6 patterns documented
@@ -364,12 +409,14 @@ ORDER BY mean_exec_time DESC;
 - [x] Role alignment with backward compatibility
 
 ### Integration 🔄 IN PROGRESS
+
 - [x] 1 API route migrated (reference example)
 - [ ] 49 API routes remaining
 - [ ] ESLint rule to enforce pattern
 - [ ] Performance benchmarking
 
 ### Documentation ✅ COMPLETE
+
 - [x] RLS Security Assessment (95/100 score)
 - [x] RLS/Auth/RBAC Alignment (94/100 score)
 - [x] API Route Migration Guide
@@ -381,21 +428,25 @@ ORDER BY mean_exec_time DESC;
 ## 🎉 Key Achievements
 
 ### 1. **Security Transformation**
+
 - **Before:** Manual context, no validation, leakage risk
 - **After:** Automatic, fail-safe, transaction-isolated
 - **Score:** 68/100 → 94/100 (38% improvement)
 
 ### 2. **Developer Experience**
+
 - **Before:** 20+ lines of boilerplate per route
 - **After:** 1-line wrapper with TypeScript inference
 - **Time Saved:** ~30% faster development
 
 ### 3. **Code Quality**
+
 - **Before:** Scattered context setting, inconsistent patterns
 - **After:** Unified middleware, enforced by ESLint
 - **Maintainability:** +50% (fewer manual steps)
 
 ### 4. **Backward Compatibility**
+
 - **Breaking Changes:** 0
 - **Migration Path:** Gradual, safe, reversible
 - **Legacy Support:** LEGACY_ROLE_MAP handles old roles
@@ -407,13 +458,14 @@ ORDER BY mean_exec_time DESC;
 1. **Complete CLC Export Routes** (1 hour)
    - Migrate 3 remaining CLC routes using same pattern as reference
    - Test with existing integration tests
-   
+
 2. **Migrate Claims Routes** (1-2 hours)
    - Highest user impact
    - Most sensitive data
    - Template from remittances migration
 
 3. **Run Validation Commands** (15 minutes)
+
    ```bash
    # Verify no remaining manual SET in migrated routes
    grep -r "SET app.current_user_id" app/api/admin/clc/ | grep -v " * -"
@@ -437,6 +489,7 @@ ORDER BY mean_exec_time DESC;
 **Next:** Systematic migration of 49 remaining API routes over 1 week  
 
 **Key Success Metrics:**
+
 - ✅ 61 RLS policies protecting all critical data
 - ✅ Automatic context setting with fail-safe validation  
 - ✅ Zero breaking changes via backward compatibility

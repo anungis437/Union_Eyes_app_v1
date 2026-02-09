@@ -7,6 +7,7 @@
 ### ✅ Completed
 
 #### Azure Resources Created
+
 - **Staging Resource Group:** unioneyes-staging-rg (Canada Central)
 - **Production Resource Group:** unioneyes-prod-rg (Canada Central)
 - **Azure Container Registries:** unioneyesstagingacr, unioneyesprodacr (Basic SKU)
@@ -18,6 +19,7 @@
 - **OpenAI Services:** unioneyes-staging-openai, unioneyes-prod-openai (Canada Central, S0)
 
 #### Configuration Files
+
 - ✅ `.env.staging` - All Azure credentials configured
 - ✅ `.env.production` - All Azure credentials configured
 - ✅ `AZURE_CREDENTIALS.md` - Complete credential documentation
@@ -33,6 +35,7 @@
 ### 🔄 In Progress
 
 #### Azure OpenAI Model Deployments
+
 - **Status:** Models must be deployed via Azure Portal (CLI not supported in Canada Central)
 - **Action Required:** Follow `docs/AZURE_OPENAI_DEPLOYMENT.md` to deploy:
   - Staging: gpt-4o-mini with 50K TPM
@@ -40,6 +43,7 @@
 - **Deployment Name:** `gpt-4` (matches env var)
 
 #### Docker Image Build
+
 - **Status:** Building locally for testing
 - **Command:** `docker build -t unioneyes:latest .`
 - **Next:** Test with `docker-compose up`, then push to ACR
@@ -47,6 +51,7 @@
 ### ⏳ Pending
 
 #### Database Setup
+
 - [ ] Run Drizzle migrations on staging PostgreSQL
 - [ ] Run Drizzle migrations on production PostgreSQL
 - [ ] Verify all 22 tables created
@@ -54,6 +59,7 @@
 - [ ] Test database connectivity from Web Apps
 
 #### ACR Push
+
 - [ ] Login to unioneyesstagingacr
 - [ ] Tag and push staging image
 - [ ] Login to unioneyesprodacr
@@ -61,6 +67,7 @@
 - [ ] Verify images in ACR
 
 #### Web App Configuration
+
 - [ ] Configure staging Web App to pull from ACR
 - [ ] Set all staging environment variables
 - [ ] Enable always-on and HTTPS-only for staging
@@ -70,6 +77,7 @@
 - [ ] Test deployments at azurewebsites.net URLs
 
 #### GitHub Actions Setup
+
 - [ ] Create Azure service principals (staging & prod)
 - [ ] Add all GitHub secrets (see AZURE_CREDENTIALS.md)
 - [ ] Create `staging` branch
@@ -77,6 +85,7 @@
 - [ ] Test production deployment pipeline
 
 #### Application Integration
+
 - [ ] Integrate Azure Blob Storage for file uploads
 - [ ] Integrate Azure Speech-to-Text for voice claims
 - [ ] Integrate Azure OpenAI for claim scoring
@@ -89,16 +98,19 @@
 ## Quick Reference
 
 ### Staging URLs
-- **Web App:** https://unioneyes-staging-app.azurewebsites.net
+
+- **Web App:** <https://unioneyes-staging-app.azurewebsites.net>
 - **Database:** unioneyes-staging-db.postgres.database.azure.com:5432
 - **ACR:** unioneyesstagingacr.azurecr.io
 
 ### Production URLs
-- **Web App:** https://unioneyes-prod-app.azurewebsites.net
+
+- **Web App:** <https://unioneyes-prod-app.azurewebsites.net>
 - **Database:** unioneyes-prod-db.postgres.database.azure.com:5432
 - **ACR:** unioneyesprodacr.azurecr.io
 
 ### Database Passwords
+
 ⚠️ **IMPORTANT:** PostgreSQL admin passwords were generated during setup script execution. If you didn't save them:
 
 ```bash
@@ -132,6 +144,7 @@ Then update .env.staging and .env.production with new passwords.
    - Verify app runs and connects to local PostgreSQL
 
 3. **Push to Azure Container Registry** (10-15 min)
+
    ```bash
    # Staging
    az acr login --name unioneyesstagingacr
@@ -152,6 +165,7 @@ Then update .env.staging and .env.production with new passwords.
    - Restart and verify
 
 5. **Run Database Migrations** (15-20 min per environment)
+
    ```bash
    # Connect to staging
    DATABASE_URL="postgresql://unionadmin:PASSWORD@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require"
@@ -182,6 +196,7 @@ Then update .env.staging and .env.production with new passwords.
 If deployment issues occur:
 
 ### Rollback Docker Image
+
 ```bash
 # List previous images
 az acr repository show-tags --name unioneyesstagingacr --repository unioneyes
@@ -194,6 +209,7 @@ az webapp config container set \
 ```
 
 ### Rollback Database
+
 ```bash
 # Restore from automatic backup
 az postgres flexible-server backup create \
@@ -213,16 +229,19 @@ az postgres flexible-server restore \
 ## Monitoring
 
 ### View Application Logs
+
 ```bash
 az webapp log tail --name unioneyes-staging-app --resource-group unioneyes-staging-rg
 ```
 
 ### Check Resource Status
+
 ```bash
 az resource list --resource-group unioneyes-staging-rg --output table
 ```
 
 ### Monitor Costs
+
 - Navigate to Cost Management + Billing in Azure Portal
 - Set up budget alerts for $100/month staging, $300/month production
 - Review daily spend
@@ -238,6 +257,7 @@ az resource list --resource-group unioneyes-staging-rg --output table
 - **Docker Compose:** `docker-compose.yml`, `docker-compose.staging.yml`, `docker-compose.prod.yml`
 
 For issues, check logs first:
+
 ```bash
 # App logs
 az webapp log tail --name unioneyes-staging-app --resource-group unioneyes-staging-rg

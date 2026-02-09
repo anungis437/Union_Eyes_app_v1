@@ -3,12 +3,14 @@
 ## ✅ Completed Steps
 
 ### 1. Docker Image Build and Push
+
 - **Local Image Built**: `unioneyes:latest` (255MB)
   - Image ID: 5833338db3aa
   - 11 layers successfully built
   - All dependencies resolved
 
 ### 2. Azure Container Registry (ACR)
+
 - **Staging ACR**: `unioneyesstagingacr.azurecr.io`
   - Image pushed: `unioneyes:latest`
   - Version tagged: `v1.0.0`
@@ -22,6 +24,7 @@
   - Status: ✅ Verified
 
 ### 3. Database Configuration
+
 - **Staging Database**:
   - Server: `unioneyes-staging-db.postgres.database.azure.com`
   - Admin User: `unionadmin`
@@ -35,6 +38,7 @@
   - State: Ready (PostgreSQL 16)
 
 ### 4. Web App Configuration
+
 - **Staging App**: `unioneyes-staging-app.azurewebsites.net`
   - Container: Configured with ACR
   - Environment Variables: ✅ Set (15 variables - includes Clerk keys)
@@ -52,7 +56,9 @@
   - Last Updated: 2025-11-12 14:32:49 UTC
 
 ### 5. Environment Variables Configured
+
 Both staging and production have:
+
 - `DATABASE_URL` (with updated passwords)
 - `NODE_ENV`
 - `NEXT_PUBLIC_APP_URL`
@@ -72,22 +78,26 @@ Both staging and production have:
 ## ⚠️ Pending Tasks
 
 ### 1. Deploy GPT-4 Models ✅ COMPLETED
+
 **✅ DEPLOYED: Created new OpenAI services in East US region with models**
+
 - Canada Central region doesn't support CLI deployment
 - Created new services in East US where deployments are supported
 
-#### Staging OpenAI Service (East US):
+#### Staging OpenAI Service (East US)
+
 - **Service**: `unioneyes-staging-openai-eastus`
-- **Endpoint**: https://eastus.api.cognitive.microsoft.com/
+- **Endpoint**: <https://eastus.api.cognitive.microsoft.com/>
 - **Model**: gpt-4o-mini (2024-07-18)
 - **Deployment Name**: gpt-4
 - **Capacity**: 50K tokens/min, 500 requests/min
 - **Key**: CFbfKCRpEXfj5ZSqEMyfevhyoZ3PN2nJTMYqzJM5MZeS0ahuiZGzJQQJ99BKACYeBjFXJ3w3AAABACOGz9hr
 - **Status**: ✅ Deployed & Configured in Web App
 
-#### Production OpenAI Service (East US):
+#### Production OpenAI Service (East US)
+
 - **Service**: `unioneyes-prod-openai-eastus`
-- **Endpoint**: https://eastus.api.cognitive.microsoft.com/
+- **Endpoint**: <https://eastus.api.cognitive.microsoft.com/>
 - **Model**: gpt-4o (2024-08-06)
 - **Deployment Name**: gpt-4
 - **Capacity**: 40K tokens/min, 40 requests/10sec
@@ -97,11 +107,14 @@ Both staging and production have:
 **Status**: ✅ COMPLETED - Both Web Apps restarted with new endpoints
 
 ### 2. Add Clerk Authentication Keys
+
 The following environment variables need real values:
+
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
 - `CLERK_SECRET_KEY`
 
 **To Add**:
+
 ```bash
 # Staging
 az webapp config appsettings set --name unioneyes-staging-app --resource-group unioneyes-staging-rg --settings NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_YOUR_KEY" CLERK_SECRET_KEY="sk_test_YOUR_KEY"
@@ -113,6 +126,7 @@ az webapp config appsettings set --name unioneyes-prod-app --resource-group unio
 **Status**: ❌ Waiting for Clerk Keys
 
 ### 3. Run Database Migrations
+
 ```bash
 # Staging
 $env:DATABASE_URL = "postgresql://unionadmin:UnionEyes2025!Staging@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require"
@@ -131,17 +145,20 @@ psql $env:DATABASE_URL -c "\dt"
 **Status**: ✅ COMPLETED - 19 tables created in both databases (2025-11-12)
 
 ### 4. Verify Application Startup ✅ COMPLETED
+
 **Verification Date**: 2025-11-12
 
 **Staging App Status**:
+
 - State: Running
-- URL: https://unioneyes-staging-app.azurewebsites.net
+- URL: <https://unioneyes-staging-app.azurewebsites.net>
 - Last Modified: 2025-11-12 14:32:35 UTC
 - Environment: 15 variables configured
 
 **Production App Status**:
+
 - State: Running
-- URL: https://unioneyes-prod-app.azurewebsites.net
+- URL: <https://unioneyes-prod-app.azurewebsites.net>
 - Last Modified: 2025-11-12 14:32:49 UTC
 - Environment: 15 variables configured
 
@@ -150,6 +167,7 @@ psql $env:DATABASE_URL -c "\dt"
 **Status**: ❌ Pending previous steps
 
 ### 5. Setup GitHub Actions CI/CD
+
 - Create service principals for both environments
 - Add 30+ GitHub secrets
 - Create staging branch
@@ -162,6 +180,7 @@ psql $env:DATABASE_URL -c "\dt"
 ## 📊 Deployment Summary
 
 ### Azure Resources (16 Total)
+
 | Resource Type | Staging | Production |
 |--------------|---------|------------|
 | Resource Group | ✅ unioneyes-staging-rg | ✅ unioneyes-prod-rg |
@@ -173,10 +192,12 @@ psql $env:DATABASE_URL -c "\dt"
 | OpenAI Service | ⚠️ unioneyes-staging-openai | ⚠️ unioneyes-prod-openai |
 
 **Legend**:
+
 - ✅ = Fully Configured
 - ⚠️ = Needs Manual Configuration (GPT-4 model deployment)
 
 ### Current Blockers
+
 1. **GPT-4 Model Deployment** (Manual, Azure Portal required)
 2. **Clerk Authentication Keys** (Need to obtain from Clerk dashboard)
 
@@ -216,39 +237,47 @@ psql $env:DATABASE_URL -c "\dt"
 ## 📝 Important Notes
 
 ### Database Passwords Updated
+
 The database passwords have been reset to:
+
 - **Staging**: `UnionEyes2025!Staging`
 - **Production**: `UnionEyes2025!Production`
 
 ⚠️ **Update** `AZURE_CREDENTIALS.md` with these new passwords.
 
 ### ACR Digest
+
 Both environments use the same container image:
+
 - **Digest**: `sha256:5833338db3aa15099e3a6bd2ce07bb749b146b17dbd490729961e563f794ffd1`
 - **Size**: 255MB (11 layers)
 - **Tags**: `latest`, `v1.0.0`
 
 ### Web App URLs
-- **Staging**: https://unioneyes-staging-app.azurewebsites.net
-- **Production**: https://unioneyes-prod-app.azurewebsites.net
+
+- **Staging**: <https://unioneyes-staging-app.azurewebsites.net>
+- **Production**: <https://unioneyes-prod-app.azurewebsites.net>
 
 ---
 
 ## 🔧 Troubleshooting
 
 ### If Container Fails to Start
+
 1. Check ACR credentials in Web App settings
 2. Verify environment variables are set
 3. Check application logs: `az webapp log tail`
 4. Ensure GPT-4 model is deployed
 
 ### If Database Connection Fails
+
 1. Verify firewall rules allow Azure services
 2. Check DATABASE_URL format
 3. Test connection with psql
 4. Ensure database password is correct
 
 ### If Authentication Fails
+
 1. Verify Clerk keys are set
 2. Check NEXT_PUBLIC_APP_URL matches Web App URL
 3. Verify Clerk dashboard has correct URLs configured

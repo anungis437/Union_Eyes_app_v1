@@ -17,6 +17,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 ## 📋 Module Discovery Summary
 
 ### Location & Structure
+
 - **Path**: `d:\APPS\union-claims-standalone\UnionEyes\cba-intelligence\`
 - **Package Name**: `@unioneyes/cba-intelligence`
 - **Version**: 0.1.0
@@ -24,6 +25,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 - **Port**: 3005 (configured in package.json)
 
 ### Technical Stack
+
 - **Framework**: Next.js 14.0.0
 - **UI Library**: React 18.2.0 with @unioneyes/ui workspace package
 - **Data Management**: @tanstack/react-query, @tanstack/react-table
@@ -37,6 +39,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 ## ✅ Alignment Validation Against Strategic Vision
 
 ### Vision Requirement #1: Collective Bargaining Module
+
 **From Founder Notes**: "Transform bargaining notes into hyperlinks and footnotes in collective agreements... Bible Gateway for CBAs"
 
 **CBA Intelligence Module Coverage**:
@@ -51,6 +54,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 ---
 
 ### Vision Requirement #2: Corporate Knowledge Preservation
+
 **From Founder Notes**: "Mike worked 10 years... Mike leaves and we lose all corporate knowledge... solve this problem"
 
 **CBA Intelligence Module Coverage**:
@@ -66,6 +70,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 ---
 
 ### Vision Requirement #3: Comparison & Analytics
+
 **From Founder Notes**: "Compare across jurisdictions... understand market position... support evidence-based bargaining"
 
 **CBA Intelligence Module Coverage**:
@@ -81,6 +86,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 ---
 
 ### Vision Requirement #4: Multi-Jurisdictional Support
+
 **From Founder Notes**: "National standardization... work across all Canadian labor boards"
 
 **CBA Intelligence Module Coverage**:
@@ -99,6 +105,7 @@ The **CBA Intelligence Engine** from unioneyes has been successfully integrated 
 ### Core Type System (403 lines - Comprehensive)
 
 #### 1. **CBA Document Structure** ✅
+
 ```typescript
 export interface CBA {
   id: string;
@@ -118,9 +125,11 @@ export interface CBA {
   updatedAt: Date;
 }
 ```
+
 **Validation**: Perfect alignment with document management requirements
 
 #### 2. **Clause Intelligence** ✅
+
 ```typescript
 export interface CBAClause {
   id: string;
@@ -153,9 +162,11 @@ export type ClauseType =
   | 'training_development'
   | 'other';
 ```
+
 **Validation**: Comprehensive clause categorization for intelligent retrieval
 
 #### 3. **Hyperlink & Footnote System** ✅
+
 ```typescript
 export interface ClauseMatch {
   id: string;
@@ -167,9 +178,11 @@ export interface ClauseMatch {
   matchType: 'exact' | 'semantic' | 'structural';
 }
 ```
+
 **Validation**: Implements "Bible Gateway" hyperlink model from founder vision
 
 #### 4. **Corporate Knowledge Archive** ✅
+
 ```typescript
 export interface CBAMetadata {
   bargainingUnit: string;
@@ -186,9 +199,11 @@ export interface NegotiationEvent {
   description: string; // The institutional knowledge that would be lost
 }
 ```
+
 **Validation**: Solves "Mike leaves and knowledge disappears" problem
 
 #### 5. **Arbitration & Precedent System** ✅
+
 ```typescript
 export interface ArbitrationDecision {
   id: string;
@@ -227,9 +242,11 @@ export interface ArbitrationDecision {
   language: 'en' | 'fr' | 'bilingual';
 }
 ```
+
 **Validation**: Comprehensive case law integration for evidence-based bargaining
 
 #### 6. **Claims Integration** ✅
+
 ```typescript
 export interface CBAReference {
   id: string;
@@ -253,9 +270,11 @@ export interface ClaimPrecedentAnalysis {
   arbitratorTendencies?: ArbitratorProfile; // Intelligence on decision-makers
 }
 ```
+
 **Validation**: Perfect integration bridge between claims module and CBA intelligence
 
 #### 7. **Analytics & Comparison** ✅
+
 ```typescript
 export interface ClauseComparison {
   sourceClause: CBAClause;
@@ -278,6 +297,7 @@ export interface WageProgression {
   currentAgreementId: string;
 }
 ```
+
 **Validation**: Supports evidence-based bargaining with market intelligence
 
 ---
@@ -285,9 +305,11 @@ export interface WageProgression {
 ## 🎨 UI Components Validation
 
 ### Dashboard Component
+
 **File**: `cba-intelligence/src/components/CBADashboard.tsx`
 
 **Features**:
+
 - ✅ Clean, professional UI matching UnionEyes design system
 - ✅ Search functionality for clauses and agreements
 - ✅ Recent CBAs widget
@@ -303,6 +325,7 @@ export interface WageProgression {
 ## 🔗 Integration Requirements
 
 ### ✅ What's Already Done
+
 1. **Type System**: Comprehensive 403-line TypeScript definition
 2. **Build System**: Next.js 14 configured, builds successfully
 3. **Port Allocation**: Port 3005 assigned (no conflicts)
@@ -312,8 +335,10 @@ export interface WageProgression {
 ### ⚠️ What Needs Integration (Pending Tasks)
 
 #### Priority 1: Navigation Integration (HIGH)
+
 **Current State**: Module exists standalone, not in sidebar navigation  
 **Required Action**:
+
 ```typescript
 // Add to UnionEyes/components/sidebar.tsx navItems array:
 { 
@@ -327,8 +352,10 @@ export interface WageProgression {
 **Impact**: Makes CBA Intelligence discoverable to users
 
 #### Priority 2: Route Mounting (HIGH)
+
 **Current State**: CBA Intelligence runs on port 3005 separately  
 **Required Action**:
+
 - Create `UnionEyes/src/app/dashboard/collective-agreements/page.tsx`
 - Mount CBADashboard component
 - Configure sub-routes for CBA viewer, comparison tools, analytics
@@ -337,8 +364,10 @@ export interface WageProgression {
 **Impact**: Integrates CBA Intelligence into main app navigation
 
 #### Priority 3: Database Schema Integration (MEDIUM)
+
 **Current State**: Types defined, database tables not yet created  
 **Required Action**:
+
 - Create Drizzle ORM schema files based on CBA types
 - Run migrations to create tables: `cbas`, `cba_clauses`, `arbitration_decisions`, `negotiation_events`
 - Link to existing claims tables via foreign keys
@@ -347,8 +376,10 @@ export interface WageProgression {
 **Impact**: Enables data persistence and querying
 
 #### Priority 4: API Endpoints (MEDIUM)
+
 **Current State**: Frontend UI exists, backend APIs not yet built  
 **Required Action**:
+
 - Create Next.js API routes for CBA CRUD operations
 - Implement search and comparison endpoints
 - Build precedent analysis API with AI integration
@@ -358,8 +389,10 @@ export interface WageProgression {
 **Impact**: Makes UI functional with real data
 
 #### Priority 5: Document Processing Pipeline (LOW - FUTURE)
+
 **Current State**: Type system supports document parsing, not implemented  
 **Required Action**:
+
 - Integrate PDF parsing library (pdf-parse or similar)
 - OCR for scanned documents (Azure Computer Vision)
 - NLP pipeline for entity extraction (OpenAI GPT-4)
@@ -424,6 +457,7 @@ export interface WageProgression {
 ## 📈 Impact Assessment
 
 ### Business Value
+
 - **Competitive Differentiation**: ✅ "Bible Gateway for CBAs" is unique in union tech space
 - **Corporate Knowledge**: ✅ Prevents loss of institutional knowledge when staff leave
 - **Evidence-Based Bargaining**: ✅ Data-driven negotiations with market comparisons
@@ -431,12 +465,14 @@ export interface WageProgression {
 - **Risk Mitigation**: ✅ Precedent analysis reduces likelihood of unfavorable arbitration
 
 ### Technical Value
+
 - **Type Safety**: ✅ 403 lines of TypeScript prevent runtime errors
 - **Scalability**: ✅ Vector embeddings support semantic search at scale
 - **Extensibility**: ✅ Clean interfaces allow easy feature additions
 - **Maintainability**: ✅ Well-documented types serve as living documentation
 
 ### User Value
+
 - **LRO Efficiency**: ✅ Find relevant precedents in seconds vs. hours
 - **Bargaining Power**: ✅ Market data supports stronger negotiating positions
 - **Knowledge Continuity**: ✅ New staff access 10+ years of institutional memory
@@ -462,6 +498,7 @@ export interface WageProgression {
 ## 🚀 Recommended Next Steps
 
 ### Week 1: Basic Integration (16 hours)
+
 1. **Add Navigation Item** (30 min)
    - Update `sidebar.tsx` with Collective Agreements link
    - Add BookOpen icon from Lucide
@@ -492,38 +529,40 @@ export interface WageProgression {
    - Check search functionality
 
 ### Week 2: Advanced Features (20 hours)
-7. **Clause Comparison Tool** (6 hours)
+
+1. **Clause Comparison Tool** (6 hours)
    - Build comparison UI
    - Implement similarity scoring
    - Display side-by-side diffs
 
-8. **Precedent Analysis** (8 hours)
+2. **Precedent Analysis** (8 hours)
    - Integrate OpenAI for analysis
    - Build success probability calculator
    - Link to claims module
 
-9. **Document Upload** (4 hours)
+3. **Document Upload** (4 hours)
    - PDF/Word file upload
    - Azure Blob Storage integration
    - Basic text extraction
 
-10. **Analytics Dashboard** (2 hours)
+4. **Analytics Dashboard** (2 hours)
     - Wage progression charts
     - Benefit comparison tables
     - Market position indicators
 
 ### Week 3: Knowledge Extraction (15 hours)
-11. **Negotiation History UI** (4 hours)
+
+1. **Negotiation History UI** (4 hours)
     - Timeline component
     - Event entry form
     - Historical notes display
 
-12. **Voice-to-Text Integration** (6 hours)
+2. **Voice-to-Text Integration** (6 hours)
     - Azure Speech Services for interviews
     - Transcribe departing LRO knowledge
     - Link to relevant CA clauses
 
-13. **Knowledge Graph** (5 hours)
+3. **Knowledge Graph** (5 hours)
     - Visualize relationships between clauses, precedents, decisions
     - Interactive exploration UI
     - "Bible Gateway" footnote popups

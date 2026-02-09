@@ -10,6 +10,7 @@
 **GOOD NEWS:** You already have a comprehensive training/education system implemented! The competitive analysis was outdated - the system is **60% complete, not 0%**.
 
 ### What EXISTS ✅
+
 - ✅ Complete database schema (6 tables, 820 lines SQL)
 - ✅ Course catalog management API
 - ✅ Course sessions & scheduling infrastructure
@@ -20,6 +21,7 @@
 - ✅ UI components (CourseCatalog, MemberLearningPortal)
 
 ### What's MISSING ❌
+
 - ❌ Session scheduling API endpoints
 - ❌ Certification issuance workflow API
 - ❌ Apprenticeship management API
@@ -34,9 +36,11 @@
 ## 📊 DATABASE SCHEMA (100% Complete!)
 
 ### ✅ **Table 1: `training_courses`**
+
 **Status:** Fully implemented with RLS policies
 
 **Columns:**
+
 - `id`, `organization_id`, `course_code`, `course_name`, `course_description`
 - `course_category` (16 categories: steward_training, leadership_development, health_and_safety, etc.)
 - `delivery_method` (in_person, virtual_live, self_paced_online, hybrid, webinar, workshop)
@@ -52,15 +56,18 @@
 - `is_active`, `is_mandatory`, `mandatory_for_roles`
 
 **RLS Policies:** ✅ Full coverage
+
 - `select_training_courses`: Organization-scoped SELECT
 - `manage_training_courses`: Admin/officer/education_coordinator/training_coordinator
 
 ---
 
 ### ✅ **Table 2: `course_sessions`**
+
 **Status:** Fully implemented with RLS policies
 
 **Columns:**
+
 - `id`, `organization_id`, `course_id`
 - `session_code`, `session_name`
 - `start_date`, `end_date`, `session_times` (JSONB)
@@ -78,9 +85,11 @@
 ---
 
 ### ✅ **Table 3: `course_registrations`**
+
 **Status:** Fully implemented with RLS policies
 
 **Columns:**
+
 - `id`, `organization_id`, `member_id`, `course_id`, `session_id`
 - `registration_date`, `registration_status` (registered, waitlisted, confirmed, attended, completed, incomplete, no_show, cancelled, withdrawn)
 - `requires_approval`, `approved_by`, `approved_date`
@@ -95,9 +104,11 @@
 ---
 
 ### ✅ **Table 4: `member_certifications`**
+
 **Status:** Fully implemented with RLS policies
 
 **Columns:**
+
 - `id`, `organization_id`, `member_id`
 - `certification_name`, `certification_category`
 - `issuing_body`, `certification_number`
@@ -112,9 +123,11 @@
 ---
 
 ### ✅ **Table 5: `training_programs`**
+
 **Status:** Fully implemented with RLS policies (Apprenticeship Programs!)
 
 **Columns:**
+
 - `id`, `organization_id`
 - `program_code`, `program_name`, `program_description`
 - `program_category` (apprenticeship, leadership_pathway, professional_development, onboarding)
@@ -130,9 +143,11 @@
 ---
 
 ### ✅ **Table 6: `program_enrollments`**
+
 **Status:** Fully implemented with RLS policies
 
 **Columns:**
+
 - `id`, `organization_id`, `member_id`, `program_id`
 - `enrollment_date`, `enrollment_status` (active, completed, withdrawn, deferred)
 - `courses_completed`, `courses_required`
@@ -149,6 +164,7 @@
 ### ✅ **Implemented Endpoints**
 
 #### 1. `/api/education/courses`
+
 **File:** `app/api/education/courses/route.ts` (324 lines)
 
 - ✅ **GET** - List courses with filters (category, delivery, difficulty, CLC, search)
@@ -160,6 +176,7 @@
 ---
 
 #### 2. `/api/education/registrations`
+
 **File:** `app/api/education/registrations/route.ts` (333 lines)
 
 - ✅ **GET** - List registrations (by member or session)
@@ -167,6 +184,7 @@
 - ✅ **PATCH** - Update registration status, attendance, completion
 
 **Features:**
+
 - Capacity checking (max_enrollment)
 - Waitlist support
 - Prerequisite validation
@@ -175,12 +193,14 @@
 ---
 
 #### 3. `/api/education/completions`
+
 **File:** `app/api/education/completions/route.ts` (248 lines)
 
 - ✅ **GET** - List completions/certificates for member
 - ✅ **POST** - Mark course completed and issue certificate
 
 **Features:**
+
 - Expiry calculation (for certifications with validity periods)
 - Days until expiry tracking
 - Certificate number generation
@@ -188,6 +208,7 @@
 ---
 
 #### 4. `/api/education/completions/certificates`
+
 **File:** `app/api/education/completions/certificates/route.ts`
 
 - ✅ **GET** - Download certificate (placeholder - needs PDF implementation)
@@ -197,9 +218,11 @@
 ### ❌ **Missing Endpoints** (Need Implementation)
 
 #### 1. `/api/education/sessions` ❌
+
 **Purpose:** Manage course sessions/scheduling
 
 **Endpoints Needed:**
+
 - `GET` - List sessions (with filters: course, date range, status, instructor)
 - `POST` - Create new session
 - `PATCH` - Update session (dates, capacity, status, instructor)
@@ -210,9 +233,11 @@
 ---
 
 #### 2. `/api/education/sessions/[id]/attendance` ❌
+
 **Purpose:** Track attendance for sessions
 
 **Endpoints Needed:**
+
 - `GET` - Get attendance records for session
 - `POST` - Mark attendance (bulk or individual)
 - `PATCH` - Update attendance record
@@ -222,9 +247,11 @@
 ---
 
 #### 3. `/api/education/certifications` ❌
+
 **Purpose:** Manage member certifications
 
 **Endpoints Needed:**
+
 - `GET` - List certifications (with expiry filters)
 - `POST` - Issue certification manually (non-course related)
 - `PATCH` - Update certification (renewal, status)
@@ -235,9 +262,11 @@
 ---
 
 #### 4. `/api/education/certifications/expiring` ❌
+
 **Purpose:** Get expiring certifications for alerts
 
 **Endpoints Needed:**
+
 - `GET` - List certifications expiring in X days
 
 **Priority:** MEDIUM - For automated reminders
@@ -245,9 +274,11 @@
 ---
 
 #### 5. `/api/education/programs` ❌
+
 **Purpose:** Manage training/apprenticeship programs
 
 **Endpoints Needed:**
+
 - `GET` - List programs
 - `POST` - Create program
 - `PATCH` - Update program
@@ -258,9 +289,11 @@
 ---
 
 #### 6. `/api/education/programs/[id]/enrollments` ❌
+
 **Purpose:** Manage program enrollments
 
 **Endpoints Needed:**
+
 - `GET` - List enrollments for program
 - `POST` - Enroll member in program
 - `PATCH` - Update enrollment progress
@@ -271,9 +304,11 @@
 ---
 
 #### 7. `/api/education/instructors` ❌
+
 **Purpose:** Manage instructor assignments
 
 **Endpoints Needed:**
+
 - `GET` - List instructors (with availability, specializations)
 - `POST` - Add instructor
 - `PATCH` - Update instructor profile
@@ -284,9 +319,11 @@
 ---
 
 #### 8. `/api/education/reports/transcript` ❌
+
 **Purpose:** Generate member training transcript
 
 **Endpoints Needed:**
+
 - `GET` - Get member training transcript (PDF/JSON)
 
 **Priority:** MEDIUM - Member records
@@ -298,9 +335,11 @@
 ### ✅ **Implemented Components**
 
 #### 1. `components/education/CourseCatalog.tsx`
+
 **Status:** ✅ Complete (455 lines)
 
 **Features:**
+
 - Course browsing with filters
 - Search functionality
 - Category/delivery/difficulty filters
@@ -312,9 +351,11 @@
 ---
 
 #### 2. `components/education/MemberLearningPortal.tsx`
+
 **Status:** ✅ Complete (needs review)
 
 **Features:**
+
 - Member's enrolled courses
 - Learning progress tracker
 - Completed courses history
@@ -325,9 +366,11 @@
 ### ❌ **Missing Components** (Need Implementation)
 
 #### 1. **Admin: Session Scheduling Interface** ❌
+
 **File:** `components/education/admin/SessionScheduler.tsx`
 
 **Features Needed:**
+
 - Calendar view for sessions
 - Create/edit session form
 - Instructor assignment
@@ -340,9 +383,11 @@
 ---
 
 #### 2. **Admin: Attendance Tracker** ❌
+
 **File:** `components/education/admin/AttendanceTracker.tsx`
 
 **Features Needed:**
+
 - Session roster view
 - Bulk attendance marking
 - Check-in interface
@@ -353,9 +398,11 @@
 ---
 
 #### 3. **Admin: Certification Manager** ❌
+
 **File:** `components/education/admin/CertificationManager.tsx`
 
 **Features Needed:**
+
 - List all certifications
 - Expiry dashboard
 - Issue/renew/revoke controls
@@ -366,9 +413,11 @@
 ---
 
 #### 4. **Admin: Apprenticeship Program Manager** ❌
+
 **File:** `components/education/admin/ApprenticeshipManager.tsx`
 
 **Features Needed:**
+
 - Program list and creation
 - Enrollment management
 - Progress tracking dashboard
@@ -379,9 +428,11 @@
 ---
 
 #### 5. **Admin: Instructor Management** ❌
+
 **File:** `components/education/admin/InstructorManager.tsx`
 
 **Features Needed:**
+
 - Instructor directory
 - Schedule/availability view
 - Performance metrics
@@ -392,9 +443,11 @@
 ---
 
 #### 6. **Member: Certificate Viewer** ❌
+
 **File:** `components/education/MemberCertificates.tsx`
 
 **Features Needed:**
+
 - Certificate gallery
 - PDF download buttons
 - Expiry alerts
@@ -405,9 +458,11 @@
 ---
 
 #### 7. **Member: Apprenticeship Portal** ❌
+
 **File:** `components/education/ApprenticeshipPortal.tsx`
 
 **Features Needed:**
+
 - Program overview
 - Progress tracker (visual)
 - Required courses checklist
@@ -425,6 +480,7 @@
 **File:** `components/pdf/certificate-template.tsx`
 
 **Requirements:**
+
 - Professional certificate design
 - Union logo/branding
 - Member name and member number
@@ -437,6 +493,7 @@
 **Technology:** Use existing `@react-pdf/renderer` (already installed)
 
 **Integration Points:**
+
 - `/api/education/completions` - Auto-generate on completion
 - `/api/education/certifications` - Generate for manual certifications
 - `/api/education/completions/certificates` - Download endpoint
@@ -486,6 +543,7 @@
    - Content: Milestone congratulations, next steps
 
 **Implementation:**
+
 - Create email templates in `emails/` directory
 - Use existing `resend.emails.send()` pattern
 - Create scheduled job for expiry checks
@@ -522,6 +580,7 @@ The schema includes these materialized views:
 **Endpoint:** `/api/education/reports/analytics`
 
 **Reports Needed:**
+
 - Training completion rates by course
 - Attendance trends
 - Certification compliance rate
@@ -535,6 +594,7 @@ The schema includes these materialized views:
 ## 🎯 IMPLEMENTATION ROADMAP
 
 ### **Phase 1: Core Session Management** (Week 1-2)
+
 **Priority:** HIGH - Blocking enrollment workflows
 
 1. ✅ Session scheduling API (`/api/education/sessions`)
@@ -558,6 +618,7 @@ The schema includes these materialized views:
 ---
 
 ### **Phase 2: Certification System** (Week 3)
+
 **Priority:** HIGH - Professional credibility
 
 1. ✅ PDF certificate template (`certificate-template.tsx`)
@@ -582,6 +643,7 @@ The schema includes these materialized views:
 ---
 
 ### **Phase 3: Apprenticeship Management** (Week 4)
+
 **Priority:** MEDIUM - Trade union essential
 
 1. ✅ Program management API (`/api/education/programs`)
@@ -605,6 +667,7 @@ The schema includes these materialized views:
 ---
 
 ### **Phase 4: Notifications & Polish** (Week 5)
+
 **Priority:** MEDIUM - Engagement optimization
 
 1. ✅ Email notification templates
@@ -636,6 +699,7 @@ The schema includes these materialized views:
 | **TOTAL** | **~3,700 lines** | **10-14 days** | - |
 
 **With existing system (60% complete):**
+
 - ✅ Already built: ~1,800 lines (database, 3 APIs, 2 UI components)
 - ❌ Remaining work: ~3,700 lines (4 APIs, 7 UI components, PDF, notifications)
 - **Total system: ~5,500 lines when complete**
@@ -647,6 +711,7 @@ The schema includes these materialized views:
 ### **Current Status: 60% Complete**
 
 **Breakdown:**
+
 - ✅ Database Schema: 100% (6 tables, full RLS)
 - ✅ Core Course API: 100% (courses, registrations, completions)
 - ✅ UI Foundation: 50% (2 of 4 major components)
@@ -659,12 +724,14 @@ The schema includes these materialized views:
 ### **Updated Competitive Analysis**
 
 **Change Training Management status from:**
+
 - ❌ **NO training management** (0%)
 - ❌ **NO course scheduling** (0%)
 - ❌ **NO certification tracking** (0%)
 - ❌ **NO apprenticeship management** (0%)
 
 **To:**
+
 - ✅ **Training management** (60% - database + 3 APIs + 2 UI)
 - ⚠️ **Course scheduling** (30% - schema + API ready, need UI)
 - ⚠️ **Certification tracking** (40% - schema + API, need PDF generation)

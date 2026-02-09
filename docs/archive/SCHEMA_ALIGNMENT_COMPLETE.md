@@ -27,6 +27,7 @@ This document summarizes the comprehensive schema alignment project undertaken t
 **Status**: ✅ COMPLETED
 
 **Columns Added** (9 total):
+
 - `dues_amount` NUMERIC(10,2) NOT NULL - Base union dues
 - `cope_amount` NUMERIC(10,2) DEFAULT 0.00 - COPE contributions
 - `pac_amount` NUMERIC(10,2) DEFAULT 0.00 - PAC contributions
@@ -38,12 +39,14 @@ This document summarizes the comprehensive schema alignment project undertaken t
 - `receipt_url` TEXT - Receipt link
 
 **Key Operations**:
+
 - Backfilled `dues_amount` and `total_amount` from existing `amount` column
 - Added check constraint: `valid_total_amount` ensures total equals sum of components
 - Created indexes: `idx_dues_trans_amounts`, `idx_dues_trans_paid_date`
 - Added column comments for documentation
 
 **Impact**:
+
 - Payment history API can now provide detailed financial breakdown
 - Late fee tracking now functional
 - Receipt URLs can be stored and retrieved
@@ -58,6 +61,7 @@ This document summarizes the comprehensive schema alignment project undertaken t
 **Status**: ✅ COMPLETED
 
 **Columns Added** (7 total):
+
 - `claim_amount` VARCHAR(20) - Amount being claimed
 - `settlement_amount` VARCHAR(20) - Final settlement amount
 - `legal_costs` VARCHAR(20) - Legal expenses
@@ -67,12 +71,14 @@ This document summarizes the comprehensive schema alignment project undertaken t
 - `resolved_at` TIMESTAMP WITH TIME ZONE - Resolution timestamp
 
 **Key Operations**:
+
 - Created 6 indexes for financial reporting and resolution tracking
 - Added constraint: `check_resolved_at_with_status` (resolved/closed claims must have timestamp)
 - Created trigger: `set_claim_resolved_at()` auto-sets resolved_at on status change
 - Backfilled 6,849 existing resolved/closed claims with `resolved_at = updated_at`
 
 **Impact**:
+
 - Complete financial tracking for claims lifecycle
 - Automatic resolution timestamp tracking
 - 6,849 historical claims now have proper audit trail
@@ -83,17 +89,20 @@ This document summarizes the comprehensive schema alignment project undertaken t
 ## Tables Verified as Complete
 
 ### ✅ organization_members
+
 - **Verification Method**: `\d organization_members`
 - **Status**: Has all required columns including `search_vector tsvector` with GIN index
 - **Columns**: 23 total
 - **Action**: No migration needed
 
 ### ✅ in_app_notifications
+
 - **Verification Method**: `\d in_app_notifications`
 - **Status**: Has all 13 columns from schema definition
 - **Action**: No migration needed
 
 ### ✅ user_notification_preferences
+
 - **Verification Method**: `\d user_notification_preferences`
 - **Status**: Uses simplified design with JSON `preferences` TEXT column
 - **Schema Comparison**: Schema defines 19 individual columns, database uses flexible JSON storage
@@ -101,6 +110,7 @@ This document summarizes the comprehensive schema alignment project undertaken t
 - **Note**: This is a valid architectural pattern (rigid columns vs flexible JSON storage)
 
 ### ✅ Message System Tables (5 tables)
+
 - `message_threads`
 - `messages`
 - `message_read_receipts`
@@ -109,6 +119,7 @@ This document summarizes the comprehensive schema alignment project undertaken t
 - **Status**: All tables exist with complete structures
 
 ### ✅ Report System Tables (6 tables)
+
 - `reports`
 - `report_templates`
 - `report_executions`
@@ -118,6 +129,7 @@ This document summarizes the comprehensive schema alignment project undertaken t
 - **Status**: All tables exist with complete structures
 
 ### ✅ Calendar System Tables (4 tables)
+
 - `calendars`
 - `calendar_events`
 - `calendar_sharing`
@@ -131,11 +143,13 @@ This document summarizes the comprehensive schema alignment project undertaken t
 ### app/api/dues/payment-history/route.ts
 
 **Previous State** (Temporary workaround):
+
 ```typescript
 lateFeeAmount: 0, // Column not yet added to database
 ```
 
 **Updated State** (Proper implementation):
+
 ```typescript
 const payments = await db.select({
   // ... existing fields ...
@@ -164,6 +178,7 @@ const formattedPayments = payments.map(payment => ({
 ### db/schema/dues-transactions-schema.ts
 
 **Updated**: Schema now matches actual database structure including:
+
 - All legacy columns (`amount`, `payment_date`, `tenant_id`)
 - All new financial breakdown columns
 - Proper enum definitions matching database constraints
@@ -174,12 +189,14 @@ const formattedPayments = payments.map(payment => ({
 ## Database Statistics
 
 ### Dues Transactions
+
 - **Structure**: 27 columns (was 18 before migration)
 - **Indexes**: 8 total (added 2 new for financial queries)
 - **Constraints**: 3 total (added 1 for total validation)
 - **Existing Data**: Migration 058 ran successfully, 0 rows updated (no existing data)
 
 ### Claims
+
 - **Structure**: 37 columns (was 30 before migration)
 - **Indexes**: 13 total (added 6 new for financial/resolution queries)
 - **Constraints**: Multiple (added 1 for resolution validation)
@@ -216,6 +233,7 @@ psql "CONNECTION_STRING" -c "\d table_name"
 ```
 
 **Key Lessons**:
+
 1. Always check for existing data before adding NOT NULL constraints
 2. Backfill first, constrain second
 3. Use IF NOT EXISTS for idempotent migrations
@@ -267,7 +285,7 @@ psql "CONNECTION_STRING" -c "\d table_name"
 
 ## Conclusion
 
-The schema alignment project successfully resolved critical database-schema mismatches affecting the payment history API and claims management. Two major migrations were executed, adding 16 columns across 2 tables and backfilling 6,849 existing claims with proper timestamps. 
+The schema alignment project successfully resolved critical database-schema mismatches affecting the payment history API and claims management. Two major migrations were executed, adding 16 columns across 2 tables and backfilling 6,849 existing claims with proper timestamps.
 
 The platform's core financial and claims tracking capabilities are now fully operational with complete data integrity constraints and indexes for efficient querying. The systematic migration workflow established during this project provides a template for future schema changes.
 
@@ -278,16 +296,19 @@ The platform's core financial and claims tracking capabilities are now fully ope
 ## Technical Details
 
 ### Database Connection
+
 - **Host**: unioneyes-staging-db.postgres.database.azure.com
 - **Database**: unioneyes
 - **Connection String Format**: `postgresql://unionadmin:PASSWORD@HOST:5432/unioneyes?sslmode=require`
 
 ### Migration Files Location
+
 - **Path**: `database/migrations/`
 - **Naming**: `0XX_descriptive_name.sql`
 - **Latest**: 059_add_claims_financial_columns.sql
 
 ### Schema Files Location
+
 - **Path**: `db/schema/`
 - **Format**: Drizzle ORM TypeScript definitions
 - **Main Index**: `db/schema/index.ts`

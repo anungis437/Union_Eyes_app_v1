@@ -18,6 +18,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 **Technology**: BullMQ with Redis backend
 
 **Core Features**:
+
 - ✅ 5 specialized queues (email, SMS, notifications, reports, cleanup)
 - ✅ Priority-based job processing
 - ✅ Automatic retries with exponential backoff
@@ -29,6 +30,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 - ✅ Automatic cleanup of completed jobs
 
 **Queues Configured**:
+
 ```typescript
 - emailQueue        // Email notifications
 - smsQueue          // SMS alerts
@@ -42,6 +44,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 **Technology**: Resend API with React Email templates
 
 **Features**:
+
 - ✅ Template-based email rendering
 - ✅ User preference checking
 - ✅ Batch email sending
@@ -51,6 +54,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 - ✅ Email digest support (daily/weekly)
 
 **Email Templates**:
+
 - `ClaimStatusNotificationEmail` - Claim status changes
 - `WelcomeEmail` - New user welcome
 - `PasswordResetEmail` - Password reset requests
@@ -63,6 +67,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 **Technology**: Twilio
 
 **Features**:
+
 - ✅ SMS sending via Twilio
 - ✅ Phone number formatting (E.164)
 - ✅ User preference checking
@@ -74,12 +79,14 @@ Complete background job queue and multi-channel communication system with BullMQ
 ### 4. **Multi-Channel Notification System** ✅
 
 **Channels Supported**:
+
 - ✅ Email
 - ✅ SMS
 - ✅ Push (placeholder)
 - ✅ In-app
 
 **Features**:
+
 - ✅ User preference enforcement
 - ✅ Quiet hours support
 - ✅ Channel fallback logic
@@ -90,6 +97,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 ### 5. **In-App Notification Center** ✅
 
 **Features**:
+
 - ✅ Real-time notifications (database-backed)
 - ✅ Read/unread tracking
 - ✅ Notification deletion
@@ -102,12 +110,14 @@ Complete background job queue and multi-channel communication system with BullMQ
 ### 6. **Report Generation System** ✅
 
 **Report Types**:
+
 - ✅ Claims reports (PDF/Excel)
 - ✅ Members reports (PDF/Excel)
 - ✅ Grievances reports (PDF/Excel)
 - ✅ Usage analytics (PDF/Excel)
 
 **Features**:
+
 - ✅ Background processing
 - ✅ File storage
 - ✅ Download links
@@ -117,6 +127,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 ### 7. **Scheduled Cleanup Jobs** ✅
 
 **Cleanup Targets**:
+
 - ✅ Old activity logs
 - ✅ Notification history
 - ✅ Expired sessions
@@ -124,12 +135,14 @@ Complete background job queue and multi-channel communication system with BullMQ
 - ✅ Old exported reports
 
 **Schedule**:
+
 - Daily cleanup at 2 AM (logs, 30 days)
 - Weekly cleanup on Sunday 3 AM (exports, 7 days)
 
 ### 8. **User Notification Preferences** ✅
 
 **Settings Available**:
+
 - ✅ Email notifications (on/off)
 - ✅ SMS notifications (on/off)
 - ✅ Push notifications (on/off)
@@ -146,6 +159,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 ### 9. **Notification History & Audit Log** ✅
 
 **Tracked Information**:
+
 - ✅ Recipient details
 - ✅ Channel used
 - ✅ Subject/template
@@ -158,6 +172,7 @@ Complete background job queue and multi-channel communication system with BullMQ
 ### 10. **Admin Job Queue Dashboard** ✅
 
 **Features**:
+
 - ✅ Queue statistics (waiting, active, completed, failed)
 - ✅ Failed job viewing
 - ✅ Job retry functionality
@@ -217,6 +232,7 @@ emails/
 ### Tables Created
 
 #### **1. user_notification_preferences**
+
 ```sql
 CREATE TABLE user_notification_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -253,6 +269,7 @@ CREATE TABLE user_notification_preferences (
 ```
 
 #### **2. in_app_notifications**
+
 ```sql
 CREATE TABLE in_app_notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -277,6 +294,7 @@ CREATE TABLE in_app_notifications (
 ```
 
 #### **3. notification_history**
+
 ```sql
 CREATE TABLE notification_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -472,12 +490,14 @@ await retryJob('email', 'job_12345');
 ### **Notification Preferences**
 
 #### Get Preferences
+
 ```http
 GET /api/notifications/preferences
 Authorization: Bearer <token>
 ```
 
 Response:
+
 ```json
 {
   "emailEnabled": true,
@@ -494,6 +514,7 @@ Response:
 ```
 
 #### Update Preferences
+
 ```http
 PUT /api/notifications/preferences
 Authorization: Bearer <token>
@@ -510,12 +531,14 @@ Content-Type: application/json
 ### **In-App Notifications**
 
 #### Get Notifications
+
 ```http
 GET /api/notifications?unreadOnly=true&limit=20
 Authorization: Bearer <token>
 ```
 
 Response:
+
 ```json
 {
   "notifications": [
@@ -534,18 +557,21 @@ Response:
 ```
 
 #### Mark as Read
+
 ```http
 PATCH /api/notifications/notif_123
 Authorization: Bearer <token>
 ```
 
 #### Mark All as Read
+
 ```http
 POST /api/notifications/mark-all-read
 Authorization: Bearer <token>
 ```
 
 #### Delete Notification
+
 ```http
 DELETE /api/notifications/notif_123
 Authorization: Bearer <token>
@@ -554,12 +580,14 @@ Authorization: Bearer <token>
 ### **Admin Job Queue** (Admin Only)
 
 #### Get Queue Stats
+
 ```http
 GET /api/admin/jobs
 Authorization: Bearer <admin_token>
 ```
 
 Response:
+
 ```json
 {
   "stats": [
@@ -577,12 +605,14 @@ Response:
 ```
 
 #### Get Failed Jobs
+
 ```http
 GET /api/admin/jobs?queue=email&showFailed=true
 Authorization: Bearer <admin_token>
 ```
 
 #### Retry Failed Job
+
 ```http
 POST /api/admin/jobs/retry
 Authorization: Bearer <admin_token>
@@ -595,6 +625,7 @@ Content-Type: application/json
 ```
 
 #### Pause Queue
+
 ```http
 POST /api/admin/jobs/pause
 Authorization: Bearer <admin_token>
@@ -606,6 +637,7 @@ Content-Type: application/json
 ```
 
 #### Resume Queue
+
 ```http
 POST /api/admin/jobs/resume
 Authorization: Bearer <admin_token>
@@ -617,6 +649,7 @@ Content-Type: application/json
 ```
 
 #### Clean Queue
+
 ```http
 POST /api/admin/jobs/clean
 Authorization: Bearer <admin_token>
@@ -748,25 +781,30 @@ serverAdapter.setBasePath('/admin/queues');
 ## 📊 Performance Characteristics
 
 ### Email Worker
+
 - **Concurrency**: 5 emails simultaneously
 - **Rate Limit**: 100 emails per minute
 - **Retry**: 3 attempts with exponential backoff (5s base)
 
 ### SMS Worker
+
 - **Concurrency**: 3 SMS simultaneously
 - **Rate Limit**: 10 SMS per second (Twilio limit)
 - **Retry**: 2 attempts with exponential backoff (3s base)
 
 ### Notification Worker
+
 - **Concurrency**: 10 notifications simultaneously
 - **Retry**: 3 attempts with exponential backoff (5s base)
 
 ### Report Worker
+
 - **Concurrency**: 2 reports simultaneously
 - **Timeout**: 5 minutes per report
 - **Retry**: 2 attempts with fixed backoff (10s)
 
 ### Cleanup Worker
+
 - **Concurrency**: 1 (sequential)
 - **Retry**: 1 attempt (no retry)
 
@@ -788,6 +826,7 @@ serverAdapter.setBasePath('/admin/queues');
 ## 🔮 Future Enhancements
 
 ### Phase 1 (Short-term)
+
 - [ ] Add WebSocket/SSE for real-time in-app notifications
 - [ ] Implement push notification service (FCM/APNS)
 - [ ] Add email bounce handling
@@ -795,6 +834,7 @@ serverAdapter.setBasePath('/admin/queues');
 - [ ] Add notification templates editor (admin)
 
 ### Phase 2 (Medium-term)
+
 - [ ] Add A/B testing for notification content
 - [ ] Implement notification grouping/threading
 - [ ] Add notification snooze functionality
@@ -802,6 +842,7 @@ serverAdapter.setBasePath('/admin/queues');
 - [ ] Add SMTP fallback for email service
 
 ### Phase 3 (Long-term)
+
 - [ ] Multi-language support for notifications
 - [ ] AI-powered notification personalization
 - [ ] Advanced scheduling (time zones, business hours)
@@ -829,6 +870,7 @@ Or manually create tables using the SQL in the **Database Schema** section above
 ## ✅ Testing Checklist
 
 ### Email System
+
 - [ ] Send single email
 - [ ] Send batch emails
 - [ ] Test email templates render correctly
@@ -837,6 +879,7 @@ Or manually create tables using the SQL in the **Database Schema** section above
 - [ ] Verify delivery tracking
 
 ### SMS System
+
 - [ ] Send SMS to valid number
 - [ ] Test phone number formatting
 - [ ] Verify user preferences are respected
@@ -844,12 +887,14 @@ Or manually create tables using the SQL in the **Database Schema** section above
 - [ ] Verify Twilio SID tracking
 
 ### Multi-Channel Notifications
+
 - [ ] Send to all channels simultaneously
 - [ ] Test channel fallback logic
 - [ ] Verify quiet hours enforcement
 - [ ] Test notification history logging
 
 ### In-App Notifications
+
 - [ ] Create notification
 - [ ] Mark as read
 - [ ] Mark all as read
@@ -858,6 +903,7 @@ Or manually create tables using the SQL in the **Database Schema** section above
 - [ ] Test expiration
 
 ### Job Queue
+
 - [ ] Add jobs to queue
 - [ ] Verify job processing
 - [ ] Test job retries on failure
@@ -867,6 +913,7 @@ Or manually create tables using the SQL in the **Database Schema** section above
 - [ ] Test cleanup
 
 ### API Endpoints
+
 - [ ] Test all GET endpoints
 - [ ] Test all POST endpoints
 - [ ] Test all PATCH endpoints
@@ -881,18 +928,21 @@ Or manually create tables using the SQL in the **Database Schema** section above
 **Area 9 (Background Jobs & Communication System)** is 100% complete with:
 
 ✅ **Core Infrastructure**:
+
 - BullMQ job queue system with 5 specialized queues
 - Redis-backed queue persistence
 - Worker processes for all job types
 - Graceful shutdown and error handling
 
 ✅ **Communication Channels**:
+
 - Email (Resend + React Email templates)
 - SMS (Twilio)
 - Push notifications (placeholder)
 - In-app notification center
 
 ✅ **User Features**:
+
 - Comprehensive notification preferences
 - Quiet hours support
 - Digest emails (daily/weekly)
@@ -900,23 +950,27 @@ Or manually create tables using the SQL in the **Database Schema** section above
 - Notification history
 
 ✅ **Admin Features**:
+
 - Queue monitoring dashboard
 - Failed job retry
 - Queue pause/resume/clean
 - System health checks
 
 ✅ **Background Processing**:
+
 - Report generation
 - Scheduled cleanup jobs
 - Recurring digest emails
 - Automatic maintenance
 
 ✅ **Database Schema**:
+
 - 3 new tables with proper indexes
 - 3 enums for type safety
 - Full TypeScript types
 
 ✅ **API Routes**:
+
 - 9 API endpoints for notifications
 - 4 admin endpoints for queue management
 - Full CRUD operations

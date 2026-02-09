@@ -36,6 +36,7 @@ bundle install
    - Generate App Store certificates: `fastlane match appstore`
 
 3. **Configure Environment Variables**
+
    ```bash
    export MATCH_PASSWORD="your-match-password"
    export FASTLANE_USER="your-apple-id@example.com"
@@ -57,6 +58,7 @@ bundle install
    - Save as `google-play-service-account.json`
 
 3. **Configure Environment Variables**
+
    ```bash
    export ANDROID_KEYSTORE_FILE="path/to/unioneyes.keystore"
    export ANDROID_KEYSTORE_PASSWORD="your-keystore-password"
@@ -314,6 +316,6 @@ rm -rf ~/Library/Developer/Xcode/DerivedData
 
 For issues:
 
-- Check Fastlane docs: https://docs.fastlane.tools
-- GitHub discussions: https://github.com/unioneyes/unioneyes-mobile/discussions
-- Email: dev@unioneyes.com
+- Check Fastlane docs: <https://docs.fastlane.tools>
+- GitHub discussions: <https://github.com/unioneyes/unioneyes-mobile/discussions>
+- Email: <dev@unioneyes.com>

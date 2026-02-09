@@ -11,6 +11,7 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 ## What Was Built
 
 ### 1. Governance Framework ✅
+
 **File:** `RESPONSIBLE_AI.md` (400+ lines)
 
 - **4 Priority Use Cases:**
@@ -34,9 +35,11 @@ Successfully implemented a production-ready, responsible AI foundation for Union
   - Phase 3: Planned (Pattern Detection)
 
 ### 2. AI Package (@unioneyes/ai) ✅
+
 **Location:** `packages/ai/`
 
 **Core Types:** (with Zod validation)
+
 - `AiDocument` - Documents for ingestion (internal/licensed/public)
 - `AiChunk` - Text chunks with embeddings (1536 dimensions)
 - `AiQuery` - User queries with filters and responses
@@ -45,6 +48,7 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - `AiFeedback` - User feedback (good/bad + comment)
 
 **Prompt System:**
+
 - `constraints.ts` - 4 core safety constraints:
   - MUST_CITE_SOURCES
   - REMAIN_NEUTRAL
@@ -54,19 +58,23 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - `summarize.ts` - Case summary and brief generation with PII masking
 
 **Client Utilities:**
+
 - `openai.ts` - OpenAI wrapper with browser-usage prevention
 - `embeddings.ts` - Text chunking (by character/paragraph)
 
 **Key Features:**
+
 - Server-side only (throws error if used in browser)
 - PII masking (detectUnmaskedPII, maskPII functions)
 - Citation enforcement (no hallucinated sources)
 - Confidence levels (high/medium/low)
 
 ### 3. Database Schema ✅
+
 **File:** `database/migrations/019_ai_tables.sql`
 
 **Tables Created:**
+
 - `ai_documents` - Document corpus (title, content, source_type, license_notes, metadata)
 - `ai_chunks` - Chunked text with embeddings (vector(1536) for pgvector)
 - `ai_queries` - Query log with answers and sources
@@ -74,6 +82,7 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - `ai_feedback` - User feedback on responses
 
 **Security Features:**
+
 - Row-Level Security (RLS) on all tables
 - organization_id scoping for multi-tenancy
 - Helper function: `get_user_organization_id()`
@@ -81,12 +90,14 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - Query logging function: `log_ai_query()`
 
 **Views:**
+
 - `ai_usage_by_org` - Query statistics per organization
 - `ai_feedback_summary` - Positive/negative feedback percentages
 
 ### 4. API Routes ✅
 
 **POST /api/ai/search** (RAG Endpoint)
+
 - Authenticate with Clerk
 - Generate query embedding (OpenAI ada-002)
 - Search ai_chunks with pgvector similarity
@@ -97,14 +108,17 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - Log query for auditing
 
 **POST /api/ai/feedback**
+
 - Submit user feedback (good/bad + comment)
 - Validate query_id exists and belongs to organization
 - Store in ai_feedback table
 
 **GET /api/ai/feedback?query_id={id}**
+
 - Retrieve feedback for a specific query
 
 **POST /api/ai/summarize**
+
 - Generate case summary or brief draft
 - Fetch case data from database
 - Mask PII before sending to LLM
@@ -113,18 +127,22 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - Return with [AI DRAFT] warning
 
 **GET /api/ai/summarize?claim_id={id}**
+
 - Retrieve all AI summaries for a claim
 
 ### 5. UI Components ✅
+
 **File:** `src/components/ai/AiSearchPanel.tsx`
 
 **AiSearchPanel:**
+
 - Search input with Enter key support
 - Filter fields: employer, arbitrator, issue_type, date_range
 - Loading states and error handling
 - Beta badge to indicate new feature
 
 **AiAnswerCard:**
+
 - Formatted answer text
 - Sources list with relevance scores
 - Confidence badge (high/medium/low color-coded)
@@ -133,9 +151,11 @@ Successfully implemented a production-ready, responsible AI foundation for Union
 - Disclaimer: "AI-generated response - verify with primary sources"
 
 ### 6. Developer Constraints ✅
+
 **File:** `.github/AI_DEV_CONSTRAINTS.md`
 
 System prompt for AI-assisted development:
+
 - 6 critical constraints documented
 - Code pattern examples (✅ correct vs ❌ incorrect)
 - Testing checklist (12 items)
@@ -146,6 +166,7 @@ System prompt for AI-assisted development:
 ## Security Architecture
 
 ### Server-Side Only Enforcement
+
 ```typescript
 // packages/ai/src/client/openai.ts
 if (config.dangerouslyAllowBrowser) {
@@ -154,6 +175,7 @@ if (config.dangerouslyAllowBrowser) {
 ```
 
 ### PII Masking Pipeline
+
 ```typescript
 // packages/ai/src/prompts/constraints.ts
 export function maskPII(content: string): string {
@@ -166,6 +188,7 @@ export function maskPII(content: string): string {
 ```
 
 ### RLS Policies
+
 ```sql
 -- Example: ai_documents table
 CREATE POLICY ai_documents_org_isolation ON ai_documents
@@ -174,7 +197,9 @@ CREATE POLICY ai_documents_org_isolation ON ai_documents
 ```
 
 ### Citation Enforcement
+
 Every prompt includes:
+
 ```
 CRITICAL: Only reference documents explicitly provided in CONTEXT.
 Never invent case names, arbitrator names, or legal citations.
@@ -232,6 +257,7 @@ WHERE table_name LIKE 'ai_%';
 ## Next Steps - Phase 2
 
 ### Short-Term (Next 2 Weeks)
+
 1. **Document Ingestion Pipeline:**
    - Create /api/ai/ingest endpoint
    - Build admin UI for uploading arbitration awards
@@ -250,33 +276,35 @@ WHERE table_name LIKE 'ai_%';
    - Create onboarding tutorial for AI features
 
 ### Medium-Term (Next 1-2 Months)
-4. **U2: Case Summaries (Production):**
+
+1. **U2: Case Summaries (Production):**
    - Test summary generation on sample cases
    - Add manual review workflow
    - Create comparison UI (AI draft vs human edits)
 
-5. **U3: Similar-Case Recommender:**
+2. **U3: Similar-Case Recommender:**
    - Implement embedding-based similarity search
    - Add "Similar Cases" widget to case detail pages
    - Track click-through rates
 
-6. **Monitoring Dashboard:**
+3. **Monitoring Dashboard:**
    - AI usage metrics (queries/day, latency, confidence distribution)
    - Feedback analytics (positive %, common issues)
    - PII leak detection alerts
 
 ### Long-Term (3-6 Months)
-7. **U4: Pattern Detection:**
+
+1. **U4: Pattern Detection:**
    - Batch analysis for recurring issues
    - Dashboards for trends (employers, issue types)
    - Predictive analytics (grievance success rates)
 
-8. **Model Evaluation:**
+2. **Model Evaluation:**
    - Human ratings on AI outputs
    - A/B testing (different prompts, models)
    - Bias audits (check for unfair patterns)
 
-9. **Cost Optimization:**
+3. **Cost Optimization:**
    - Caching frequently-asked queries
    - Hybrid search (keyword + semantic)
    - Fine-tuning smaller models for specific tasks
@@ -284,6 +312,7 @@ WHERE table_name LIKE 'ai_%';
 ## Success Metrics (Phase 1)
 
 After deployment, track:
+
 - **Adoption:** % of users who try AI search
 - **Engagement:** Queries per active user per week
 - **Quality:** Positive feedback ratio (target: >70%)
@@ -354,12 +383,14 @@ AI_IMPLEMENTATION_SUMMARY.md                 (This file)
 ## Cost Estimation (Monthly)
 
 Assumptions:
+
 - 10 organizations
 - 50 queries/org/month = 500 queries total
 - Avg 5 documents retrieved per query = 2,500 chunk retrievals
 - Avg 500 input tokens + 1,000 output tokens per query
 
 **OpenAI Costs:**
+
 - Embeddings: 500 queries × $0.0001/1K tokens × 50 tokens = $0.25
 - GPT-4: 500 queries × ($0.03/1K input + $0.06/1K output) × 1.5K avg = $67.50
 - **Total: ~$70/month** for Phase 1 workload
@@ -369,6 +400,7 @@ Assumptions:
 ## Security Audit Checklist
 
 Before production deployment:
+
 - [ ] Penetration testing on API routes
 - [ ] RLS policy review (ensure no bypasses)
 - [ ] PII detection validation (test with sample data)
@@ -381,6 +413,7 @@ Before production deployment:
 ## Team Training
 
 Before launch:
+
 - [ ] Demo AI features to union reps
 - [ ] Explain limitations (drafts only, requires review)
 - [ ] Show how to provide feedback
@@ -392,9 +425,9 @@ Before launch:
 - **Governance:** `RESPONSIBLE_AI.md`
 - **Package Docs:** `packages/ai/README.md`
 - **Dev Constraints:** `.github/AI_DEV_CONSTRAINTS.md`
-- **Microsoft AI Principles:** https://www.microsoft.com/en-us/ai/responsible-ai
-- **PIPEDA Compliance:** https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/
-- **Law 25 (Quebec):** https://www.quebec.ca/en/government/ministere/cybersecurity-numerique/bill-64
+- **Microsoft AI Principles:** <https://www.microsoft.com/en-us/ai/responsible-ai>
+- **PIPEDA Compliance:** <https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/>
+- **Law 25 (Quebec):** <https://www.quebec.ca/en/government/ministere/cybersecurity-numerique/bill-64>
 
 ---
 

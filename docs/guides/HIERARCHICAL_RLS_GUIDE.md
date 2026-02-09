@@ -93,6 +93,7 @@ export async function getClaimsForOrganization(orgId: string) {
 Returns organization ID + all descendant IDs (children, grandchildren, etc.)
 
 **Usage:**
+
 ```sql
 -- Get all claims visible to CUPE National
 SELECT c.*
@@ -109,6 +110,7 @@ WHERE c.organization_id IN (
 Returns organization ID + all ancestor IDs (parent, grandparent, etc.)
 
 **Usage:**
+
 ```sql
 -- Get hierarchy path for CUPE Local 79
 SELECT o.name, o.hierarchy_level
@@ -120,6 +122,7 @@ ORDER BY o.hierarchy_level;
 ```
 
 **Result:**
+
 ```
 name                                | hierarchy_level
 ------------------------------------|----------------
@@ -133,6 +136,7 @@ CUPE Local 79                       | 2
 Checks if user can access specific organization (boolean)
 
 **Usage:**
+
 ```typescript
 const canAccess = await db.execute(sql`
   SELECT user_can_access_org(
@@ -151,6 +155,7 @@ if (!canAccess.rows[0]?.can_access) {
 Returns all organization IDs visible to current session user
 
 **Usage:**
+
 ```sql
 -- Automatically used by RLS policies
 -- Manual usage for filtering:
@@ -381,12 +386,14 @@ Migration 050 creates these indexes for optimal performance:
 ### Query Optimization Tips
 
 **✅ DO:**
+
 ```typescript
 // Let RLS handle filtering (fast)
 const claims = await db.select().from(claims);
 ```
 
 **❌ DON'T:**
+
 ```typescript
 // Manual filtering defeats RLS optimization
 const allClaims = await db.select().from(claims); // Gets ALL data!
@@ -463,6 +470,7 @@ WHERE o.id IS NULL;
 
 **Cause:** User not a member of requested org or any ancestor
 **Fix:**
+
 ```sql
 -- Add user to organization
 INSERT INTO organization_members (user_id, organization_id, role, status)
@@ -473,6 +481,7 @@ VALUES ('user-uuid', 'org-uuid', 'member', 'active');
 
 **Cause:** Session context not set
 **Fix:**
+
 ```typescript
 // ALWAYS set context before queries
 await db.execute(sql`SET app.current_user_id = ${userId}`);
@@ -482,6 +491,7 @@ await db.execute(sql`SET app.current_user_id = ${userId}`);
 
 **Cause:** Missing GIN index or outdated statistics
 **Fix:**
+
 ```sql
 -- Rebuild index
 REINDEX INDEX idx_organizations_hierarchy_path_gin;
@@ -495,6 +505,7 @@ ANALYZE claims;
 
 **Expected:** RLS only allows viewing OWN org + DESCENDANTS, not ancestors
 **Workaround:** Use separate query for parent info
+
 ```typescript
 const [parentOrg] = await db
   .select()
@@ -513,6 +524,7 @@ const [parentOrg] = await db
 ## Examples
 
 See complete examples in:
+
 - `__tests__/rls-hierarchy.test.ts` - 100+ test cases
 - `database/migrations/050_hierarchical_rls_policies.sql` - RLS policy definitions
 - `docs/implementation/PHASE_1_IMPLEMENTATION_PLAN.md` - Architecture overview
@@ -520,6 +532,7 @@ See complete examples in:
 ## Support
 
 For questions about hierarchical RLS:
+
 1. Review this guide
 2. Check test suite for examples
 3. Examine query plans with EXPLAIN ANALYZE

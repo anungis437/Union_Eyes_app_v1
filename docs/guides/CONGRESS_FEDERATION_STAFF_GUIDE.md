@@ -1,9 +1,11 @@
 # Congress & Federation Staff Access Guide
 
 ## Overview
+
 This document outlines the implementation of congress and federation staff roles in the Union Claims Platform, supporting the organizational hierarchy of the Canadian labor movement.
 
 ## Organizational Hierarchy
+
 ```
 Canadian Labour Congress (CLC)
 └── Provincial/Territorial Federations (e.g., OFL, BCFED, AFL)
@@ -14,22 +16,27 @@ Canadian Labour Congress (CLC)
 ## Role Definitions
 
 ### Congress Staff (`CONGRESS_STAFF`)
+
 - **Scope**: National (CLC-level)
 - **Role Level**: 5 (between union_rep and admin)
 - **Purpose**: Support national coordination, research, and strategic planning
 
 #### Permissions (27 total)
+
 **Cross-Organizational Analytics**:
+
 - `VIEW_CROSS_UNION_ANALYTICS` - View aggregated data across all affiliates
 - `MANAGE_CROSS_UNION_ANALYTICS` - Configure analytics and generate reports
 
 **Knowledge Management** (Full rights to facilitate cross-union learning):
+
 - `VIEW_PRECEDENT_DATABASE` - Search arbitration cases
 - `MANAGE_PRECEDENT_DATABASE` - Add/edit precedents
 - `VIEW_CLAUSE_LIBRARY` - View successful CBA language
 - `MANAGE_CLAUSE_LIBRARY` - Add/edit clause templates
 
 **Organizational Oversight**:
+
 - `VIEW_ALL_ORGANIZATIONS` - View full organizational hierarchy
 - `MANAGE_AFFILIATES` - Manage affiliate relationships
 - `VIEW_CONGRESS_ANALYTICS` - Congress-specific dashboard
@@ -37,16 +44,20 @@ Canadian Labour Congress (CLC)
 - `MANAGE_SECTOR_ANALYTICS` - Industry-wide wage trends and strategic intelligence
 
 **Respectful Autonomy** (View-only to respect local decision-making):
+
 - `VIEW_CLAIMS`, `VIEW_VOTING` - Monitor but not interfere
 - No permissions for: `MANAGE_CLAIMS`, `MANAGE_VOTING`, `MANAGE_MEMBERS`
 
 ### Federation Staff (`FEDERATION_STAFF`)
+
 - **Scope**: Provincial/Territorial (OFL, BCFED, etc.)
 - **Role Level**: 4 (between union_rep and congress_staff)
 - **Purpose**: Support provincial coordination within federation affiliates
 
 #### Permissions (19 total)
+
 Similar to congress staff but scoped to federation affiliates:
+
 - `VIEW_CROSS_UNION_ANALYTICS` - Scoped to federation members
 - `VIEW_FEDERATION_ANALYTICS` - Federation-specific dashboard
 - `VIEW_PRECEDENT_DATABASE`, `MANAGE_PRECEDENT_DATABASE`
@@ -60,6 +71,7 @@ Similar to congress staff but scoped to federation affiliates:
 ## Navigation Structure
 
 ### Cross-Organizational Operations Section
+
 Available to: congress_staff, federation_staff, admin
 
 1. **Cross-Union Analytics** (`/dashboard/cross-union-analytics`)
@@ -96,24 +108,30 @@ Available to: congress_staff, federation_staff, admin
 ## Implementation Details
 
 ### Setting User Roles in Clerk
+
 1. Navigate to Clerk Dashboard → Users
 2. Select the user account
 3. Edit Public Metadata
 4. Add role field:
+
    ```json
    {
      "role": "congress_staff"
    }
    ```
+
    or
+
    ```json
    {
      "role": "federation_staff"
    }
    ```
+
 5. Save changes - user will have access on next login
 
 ### Role Hierarchy
+
 ```
 0. Guest - Public access
 1. Member - Basic claim submission
@@ -127,13 +145,16 @@ Available to: congress_staff, federation_staff, admin
 ### Permission Philosophy
 
 #### Broad Visibility, Limited Write Access
+
 Congress/federation staff need visibility across affiliates to:
+
 - Identify trends and share best practices
 - Coordinate bargaining strategies
 - Provide research and support
 - Track compliance and governance
 
 However, they should NOT directly manage:
+
 - Individual claims or grievances
 - Member records
 - Voting processes
@@ -142,13 +163,16 @@ However, they should NOT directly manage:
 This respects the principle of **local union autonomy** while enabling cross-organizational coordination.
 
 #### Knowledge Sharing Exception
+
 Full management rights for:
+
 - Precedent database
 - Clause library
 
 Rationale: These are shared resources that benefit all affiliates. Congress/federation staff often have research capacity to curate and maintain these databases.
 
 #### Hierarchical Data Scoping
+
 - **Federation Staff**: See only their federation's affiliates
   - Example: OFL staff see Ontario locals only
 - **Congress Staff**: See all federations and affiliates nationally
@@ -159,18 +183,22 @@ Implementation via RLS policies and organization hierarchy filtering.
 ## Dashboard Behavior
 
 ### For Congress Staff
+
 - No access to local "Claims" or "Voting" tabs (respects autonomy)
 - Extensive "Cross-Organizational Operations" section
 - Analytics show national aggregates
 - Can view individual union data but not modify operational records
 
 ### For Federation Staff
+
 Similar to congress staff but:
+
 - Analytics filtered to federation affiliates
 - Organization view shows federation hierarchy only
 - No access to "Sector Analytics" (congress/admin only)
 
 ### For Admin
+
 - Full access to all sections including cross-org tools
 - Can perform congress/federation staff functions
 - Plus full system administration capabilities
@@ -178,6 +206,7 @@ Similar to congress staff but:
 ## Testing
 
 ### Manual Role Testing Checklist
+
 1. **Member Role** (`role: "member"`):
    - ✓ See Claims, Voting, Analytics
    - ✗ No Precedents, Cross-Union, Compliance
@@ -207,6 +236,7 @@ Similar to congress staff but:
 ## Future Enhancements
 
 ### Phase 1 (API & Middleware)
+
 - [ ] Implement RLS policies for organization hierarchy filtering
 - [ ] Add `/api/analytics/cross-union` endpoint with scope filtering
 - [ ] Add `/api/compliance/reports` for charter tracking
@@ -214,6 +244,7 @@ Similar to congress staff but:
 - [ ] Update organization middleware to handle congress/federation scope
 
 ### Phase 2 (Advanced Features)
+
 - [ ] Organization switcher showing hierarchy for cross-org staff
 - [ ] Breadcrumb navigation (Congress → Federation → Union → Local)
 - [ ] Cross-union analytics dashboard with federation/congress filters
@@ -221,12 +252,14 @@ Similar to congress staff but:
 - [ ] Compliance dashboard with automated reporting
 
 ### Phase 3 (Intelligence Features)
+
 - [ ] Sector analytics with wage comparison tools
 - [ ] Bargaining trend analysis and forecasting
 - [ ] Organizing campaign metrics and coordination
 - [ ] Strategic intelligence reports for national campaigns
 
 ## Related Files
+
 - `lib/auth/roles.ts` - Core RBAC definitions
 - `lib/auth/rbac-hooks.ts` - Client-side permission hooks
 - `components/sidebar.tsx` - Navigation with role-based sections
@@ -236,13 +269,16 @@ Similar to congress staff but:
 - `db/schema-organizations.ts` - Organization hierarchy (Phase 5A)
 
 ## Support
+
 For questions about congress/federation staff implementation:
+
 1. Review this document
 2. Check `lib/auth/roles.ts` for permission definitions
 3. Test role behavior in development with Clerk metadata
 4. Verify navigation items appear/disappear based on role
 
 ## Change Log
+
 - **2025-01-XX**: Initial implementation of congress/federation staff roles
   - Added 2 new roles (CONGRESS_STAFF, FEDERATION_STAFF)
   - Added 13 cross-organizational permissions

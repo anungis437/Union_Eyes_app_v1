@@ -19,21 +19,25 @@ This guide gets you up and running with Union Eyes ML infrastructure in under 10
 ## ⚡ Quick Setup (3 Steps)
 
 ### 1. Install Dependencies
+
 ```bash
 pnpm install
 ```
 
 ### 2. Run Database Migrations
+
 ```bash
 pnpm db:migrate
 ```
 
 If migrations don't exist yet, create them from schema:
+
 ```bash
 psql -U your_user -d your_database -f database/ml-retraining-schema.sql
 ```
 
 ### 3. Seed Platform with Data
+
 ```bash
 # Default: 3 tenants, 50 users, 200 claims per tenant
 pnpm seed:platform
@@ -43,6 +47,7 @@ npx tsx scripts/seed-full-platform.ts --tenants 5 --users 100 --claims 500
 ```
 
 **✅ Done! You now have:**
+
 - 3 tenants (union locals)
 - 150 users (35 members, 12 stewards, 3 admins per tenant)
 - 600 claims across all types and statuses
@@ -56,11 +61,13 @@ npx tsx scripts/seed-full-platform.ts --tenants 5 --users 100 --claims 500
 ## 🎯 Common Tasks
 
 ### View AI Monitoring Dashboard
+
 1. Start dev server: `pnpm dev`
-2. Navigate to: http://localhost:3000/dashboard/ai-monitoring
+2. Navigate to: <http://localhost:3000/dashboard/ai-monitoring>
 3. Explore 4 tabs: Overview, Model Performance, Data Quality, User Activity
 
 ### Test Model Retraining
+
 ```bash
 # Retrain all models
 pnpm ml:retrain:all
@@ -73,6 +80,7 @@ pnpm ml:retrain assignment
 ```
 
 **What it does:**
+
 1. Checks data drift (PSI scores)
 2. Checks model performance (accuracy vs threshold)
 3. Decides if retraining needed
@@ -82,6 +90,7 @@ pnpm ml:retrain assignment
 7. Notifies stakeholders
 
 ### Check Retraining History
+
 ```sql
 SELECT 
   model_type,
@@ -95,6 +104,7 @@ LIMIT 10;
 ```
 
 ### View Active Models
+
 ```sql
 SELECT 
   model_type,
@@ -106,12 +116,14 @@ WHERE is_active = true;
 ```
 
 ### Test Member Portal
-1. Navigate to: http://localhost:3000/member/ai-portal
+
+1. Navigate to: <http://localhost:3000/member/ai-portal>
 2. Explore FAQ accordion (8 questions)
 3. Submit feedback via form
-4. Check API: http://localhost:3000/api/member/ai-feedback
+4. Check API: <http://localhost:3000/api/member/ai-feedback>
 
 ### Test Monitoring APIs
+
 ```bash
 # Get model metrics
 curl http://localhost:3000/api/ml/monitoring/metrics
@@ -164,6 +176,7 @@ union-claims-standalone/
 ## 📊 Database Tables Reference
 
 ### ML Infrastructure Tables
+
 - `ml_model_training_runs` - Training execution history
 - `ml_retraining_notifications` - Stakeholder notifications
 - `model_feature_baselines` - Baseline distributions for drift
@@ -172,6 +185,7 @@ union-claims-standalone/
 - `ml_alert_acknowledgments` - Alert tracking
 
 ### Platform Tables
+
 - `tenants` - Multi-tenant organization data
 - `profiles` - User profiles with roles
 - `claims` - Member claims and cases
@@ -184,28 +198,34 @@ union-claims-standalone/
 ## 🧪 Testing Workflows
 
 ### Test Drift Detection
+
 1. Seed platform: `pnpm seed:platform`
 2. Run retraining: `pnpm ml:retrain:all`
 3. Check output for PSI scores
 4. Verify drift alerts in monitoring dashboard
 
 ### Test Performance Monitoring
+
 1. Query current accuracy:
+
    ```sql
    SELECT model_type, AVG(CASE WHEN prediction_correct THEN 1.0 ELSE 0.0 END) as accuracy
    FROM ml_predictions
    WHERE predicted_at >= NOW() - INTERVAL '7 days'
    GROUP BY model_type;
    ```
+
 2. Compare to thresholds (85% for claim_outcome, 78% for timeline, 85% for churn_risk, 70% for assignment)
 3. Run retraining if below threshold: `pnpm ml:retrain <model_type>`
 
 ### Test Member Feedback Flow
-1. Open member portal: http://localhost:3000/member/ai-portal
+
+1. Open member portal: <http://localhost:3000/member/ai-portal>
 2. Fill feedback form (category: "concern", message: "Test feedback about data privacy")
 3. Submit and verify success message
 4. Check API: `curl http://localhost:3000/api/member/ai-feedback`
 5. Verify feedback in database:
+
    ```sql
    SELECT * FROM member_ai_feedback ORDER BY submitted_at DESC LIMIT 5;
    ```
@@ -215,22 +235,29 @@ union-claims-standalone/
 ## 🛠️ Troubleshooting
 
 ### Error: "Database connection failed"
+
 **Fix:** Check PostgreSQL is running and .env.local has correct DATABASE_URL
 
 ### Error: "Table does not exist"
+
 **Fix:** Run migrations: `pnpm db:migrate` or `psql -f database/ml-retraining-schema.sql`
 
 ### Error: "Insufficient training samples"
+
 **Fix:** Seed more data: `npx tsx scripts/seed-full-platform.ts --claims 500`
 
 ### Dashboard shows "No data"
-**Fix:** 
+
+**Fix:**
+
 1. Verify database has data: `SELECT COUNT(*) FROM ml_predictions;`
 2. Check API endpoints return data
 3. Clear browser cache and reload
 
 ### Retraining pipeline fails
+
 **Fix:**
+
 1. Check logs for specific error
 2. Verify model_metadata table has baseline entries
 3. Verify ml_predictions table has recent data (last 7 days)
@@ -250,6 +277,7 @@ union-claims-standalone/
 ## 🎓 Learning Path
 
 **For Developers:**
+
 1. Read ML_INFRASTRUCTURE_GUIDE.md (20 min)
 2. Run `pnpm seed:platform` and explore database (10 min)
 3. Test monitoring APIs via curl (10 min)
@@ -257,6 +285,7 @@ union-claims-standalone/
 5. Open monitoring dashboard and explore 4 tabs (15 min)
 
 **For Data Scientists:**
+
 1. Study ml-retraining-pipeline.ts (30 min)
 2. Understand drift detection (PSI calculation) (15 min)
 3. Review model validation gates (15 min)
@@ -264,6 +293,7 @@ union-claims-standalone/
 5. Test retraining with custom thresholds (20 min)
 
 **For Product Managers:**
+
 1. Review Q1_2026_PROGRESS_REPORT.md (20 min)
 2. Explore member portal UI at /member/ai-portal (10 min)
 3. Check monitoring dashboard at /dashboard/ai-monitoring (10 min)
@@ -274,6 +304,7 @@ union-claims-standalone/
 ## 🚦 Ready to Deploy?
 
 ### Pre-Deployment Checklist
+
 - [ ] Database migrations applied to production
 - [ ] Environment variables configured (tenant IDs, Azure ML endpoints)
 - [ ] Retraining pipeline scheduled (daily 2 AM recommended)
@@ -285,6 +316,7 @@ union-claims-standalone/
 - [ ] Performance benchmarks established
 
 ### Deploy Commands
+
 ```bash
 # Production build
 pnpm build

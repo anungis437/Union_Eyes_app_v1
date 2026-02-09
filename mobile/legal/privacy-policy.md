@@ -183,7 +183,7 @@ We do not sell your personal information. We may share your information in the f
 
 To exercise any of these rights, contact us at:
 
-- Email: privacy@unioneyes.com
+- Email: <privacy@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 - Mail: UnionEyes Privacy Team, [Address]
 
@@ -243,7 +243,7 @@ EU residents have additional rights under GDPR:
 - Right to object
 - Rights related to automated decision-making
 
-**Data Protection Officer:** dpo@unioneyes.com
+**Data Protection Officer:** <dpo@unioneyes.com>
 
 ## 13. Cookies and Tracking Technologies
 
@@ -275,14 +275,14 @@ For questions about this Privacy Policy or our privacy practices:
 
 **UnionEyes Privacy Team**
 
-- Email: privacy@unioneyes.com
+- Email: <privacy@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 - Mail: [Company Address]
-- Support Portal: https://unioneyes.com/support
+- Support Portal: <https://unioneyes.com/support>
 
 **Data Protection Officer**
 
-- Email: dpo@unioneyes.com
+- Email: <dpo@unioneyes.com>
 
 ## 17. Complaints
 
@@ -324,4 +324,4 @@ You may withdraw consent by:
 
 **Last reviewed:** February 9, 2026
 
-For the most current version, visit: https://unioneyes.com/privacy
+For the most current version, visit: <https://unioneyes.com/privacy>

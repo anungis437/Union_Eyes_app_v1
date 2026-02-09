@@ -7,6 +7,7 @@ This document describes the Azure Key Vault integration for secure PII encryptio
 ## 🎯 Security Benefits
 
 ### Before Key Vault Integration (9.5/10)
+
 - ❌ Encryption keys stored in database
 - ❌ Keys visible to database administrators
 - ❌ No centralized key management
@@ -14,6 +15,7 @@ This document describes the Azure Key Vault integration for secure PII encryptio
 - ❌ Limited audit trail
 
 ### After Key Vault Integration (10/10) ✅
+
 - ✅ Encryption keys stored in Azure Key Vault
 - ✅ Keys protected by HSM (Hardware Security Module)
 - ✅ Centralized key management
@@ -71,6 +73,7 @@ This document describes the Azure Key Vault integration for secure PII encryptio
 ### Prerequisites
 
 1. Azure CLI installed and authenticated:
+
    ```bash
    az login
    az account set --subscription 5d819f33-d16f-429c-a3c0-5b0e94740ba3
@@ -87,6 +90,7 @@ This document describes the Azure Key Vault integration for secure PII encryptio
 ```
 
 This script will:
+
 1. ✅ Create Azure Key Vault (`unioneyes-keyvault`)
 2. ✅ Generate 256-bit AES encryption key
 3. ✅ Store key as secret (`pii-master-key`)
@@ -228,6 +232,7 @@ export async function GET() {
 ### Rotation Process
 
 1. **Generate new key version in Azure Key Vault:**
+
    ```bash
    # Generates new version while keeping old version available
    az keyvault secret set \
@@ -237,6 +242,7 @@ export async function GET() {
    ```
 
 2. **Invalidate application key cache:**
+
    ```typescript
    import { invalidateKeyCache } from '@/lib/azure-keyvault';
    
@@ -245,6 +251,7 @@ export async function GET() {
    ```
 
 3. **Re-encrypt all PII with new key:**
+
    ```sql
    -- Migration script to re-encrypt all data
    DO $$
@@ -285,6 +292,7 @@ export async function GET() {
    ```
 
 4. **Update encryption_keys table:**
+
    ```sql
    SELECT rotate_encryption_key('new-version-id');
    ```
@@ -415,6 +423,7 @@ describe('Key Vault Integration', () => {
 **Cause:** Managed identity not configured or permissions missing
 
 **Solution:**
+
 ```bash
 # Verify managed identity
 az postgres flexible-server identity show \
@@ -433,6 +442,7 @@ az role assignment create \
 **Cause:** Application didn't call `setEncryptionKeyInSession()` before querying PII
 
 **Solution:**
+
 ```typescript
 // Always set key before PII operations
 await setEncryptionKeyInSession(db);
@@ -444,6 +454,7 @@ const result = await db.query('SELECT decrypted_sin FROM members_with_pii WHERE 
 **Cause:** Azure credentials not available
 
 **Solution:**
+
 ```bash
 # Local development: Login with Azure CLI
 az login
@@ -479,12 +490,14 @@ After setup, verify:
 ## 🎯 Security Rating Impact
 
 **Before Key Vault:** 9.5/10
+
 - ✅ 238 RLS policies
 - ✅ Column-level encryption
 - ✅ Audit logging
 - ❌ Keys in database
 
 **After Key Vault:** **10/10** ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
 - ✅ 238 RLS policies
 - ✅ Column-level encryption
 - ✅ Audit logging

@@ -1,11 +1,13 @@
 # Phase 5: Communications Suite - Setup & Integration Guide
 
 ## Overview
+
 Complete implementation of union communication tools including SMS, Surveys/Polling, Newsletters, Analytics, and Push Notifications.
 
 ## ✅ Implementation Status
 
 ### Week 1: SMS Integration (COMPLETE - 3,050 lines)
+
 - Twilio SMS gateway integration
 - SMS campaign builder
 - SMS template editor
@@ -13,6 +15,7 @@ Complete implementation of union communication tools including SMS, Surveys/Poll
 - Database schema with RLS policies
 
 ### Week 2: Survey & Polling System (COMPLETE - 5,100 lines)
+
 - Survey builder with multiple question types
 - Quick poll widget
 - Poll creator
@@ -21,6 +24,7 @@ Complete implementation of union communication tools including SMS, Surveys/Poll
 - Database schema with RLS policies
 
 ### Week 3: Newsletter Builder (COMPLETE - 6,200+ lines)
+
 - **Database Schemas:**
   - `db/schema/newsletter-schema.ts` (439 lines) - Templates, campaigns, recipients, tracking
   - `packages/db/src/schema/phase-5-newsletters.sql` - PostgreSQL schema with RLS
@@ -33,6 +37,7 @@ Complete implementation of union communication tools including SMS, Surveys/Poll
   - `distribution-list-manager.tsx` - Recipient management
 
 ### Week 4: Analytics Dashboard + Push Notifications (COMPLETE - 8,500+ lines)
+
 - **Database Schemas:**
   - `db/schema/communication-analytics-schema.ts` (220 lines) - Analytics and engagement tracking
   - `db/schema/push-notifications.ts` - Push notification schema
@@ -54,6 +59,7 @@ Complete implementation of union communication tools including SMS, Surveys/Poll
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 ```bash
 # Install all dependencies
 pnpm install
@@ -68,6 +74,7 @@ pnpm install
 ```
 
 ### Environment Variables
+
 ```env
 # Twilio SMS (Week 1)
 TWILIO_ACCOUNT_SID=your_account_sid
@@ -86,6 +93,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/union_claims
 ```
 
 ### Database Setup
+
 ```bash
 # Apply all Phase 5 schemas
 psql $DATABASE_URL -f packages/db/src/schema/phase-5-newsletters.sql
@@ -99,11 +107,13 @@ pnpm drizzle-kit push:pg
 ## 📱 Firebase Cloud Messaging Setup
 
 ### 1. Create Firebase Project
+
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Create new project: "Union Claims Push Notifications"
 3. Enable Cloud Messaging
 
 ### 2. Generate Service Account Key
+
 1. Project Settings → Service Accounts
 2. Click "Generate New Private Key"
 3. Download JSON file
@@ -114,6 +124,7 @@ pnpm drizzle-kit push:pg
 ### 3. Client-Side Setup (iOS/Android/Web)
 
 #### iOS App
+
 ```swift
 // AppDelegate.swift
 import Firebase
@@ -144,6 +155,7 @@ func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: Str
 ```
 
 #### Android App
+
 ```kotlin
 // MainActivity.kt
 import com.google.firebase.messaging.FirebaseMessaging
@@ -172,6 +184,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 ```
 
 #### Web App
+
 ```typescript
 // firebase-config.ts
 import { initializeApp } from 'firebase/app';
@@ -216,6 +229,7 @@ onMessage(messaging, (payload) => {
 ## 🔌 API Endpoints
 
 ### SMS Endpoints
+
 ```typescript
 // POST /api/communications/sms/send
 await fetch('/api/communications/sms/send', {
@@ -240,6 +254,7 @@ await fetch('/api/communications/sms/campaign', {
 ```
 
 ### Survey/Poll Endpoints
+
 ```typescript
 // POST /api/communications/surveys/create
 await fetch('/api/communications/surveys/create', {
@@ -268,6 +283,7 @@ await fetch('/api/communications/polls/create', {
 ```
 
 ### Newsletter Endpoints
+
 ```typescript
 // POST /api/communications/newsletters/send
 await fetch('/api/communications/newsletters/send', {
@@ -283,6 +299,7 @@ await fetch('/api/communications/newsletters/send', {
 ```
 
 ### Push Notification Endpoints
+
 ```typescript
 // POST /api/push/register
 await fetch('/api/push/register', {
@@ -332,7 +349,9 @@ await fetch('/api/push/track/click', {
 ## 📊 Analytics Dashboard
 
 ### Access Analytics
+
 Navigate to `/communications/analytics` to view:
+
 - Cross-channel performance (SMS, Email, Push, Newsletter)
 - Delivery rates, open rates, click rates
 - User engagement scores (0-100 per channel)
@@ -340,7 +359,9 @@ Navigate to `/communications/analytics` to view:
 - Best-performing campaigns
 
 ### User Engagement Scoring
+
 Automatically calculated based on:
+
 - Message delivery success
 - Open rates
 - Click-through rates
@@ -348,6 +369,7 @@ Automatically calculated based on:
 - Recency of engagement
 
 Users scored 0-100 per channel:
+
 - 80-100: Highly engaged
 - 60-79: Moderately engaged
 - 40-59: Occasionally engaged
@@ -356,6 +378,7 @@ Users scored 0-100 per channel:
 ## 🧪 Testing
 
 ### Test SMS Integration
+
 ```typescript
 // __tests__/communications/sms.test.ts
 import { sendSMS } from '@/services/twilio-service';
@@ -374,6 +397,7 @@ describe('SMS Integration', () => {
 ```
 
 ### Test Push Notifications
+
 ```typescript
 // __tests__/communications/push.test.ts
 import { sendPushNotification } from '@/services/fcm-service';
@@ -395,13 +419,16 @@ describe('Push Notifications', () => {
 ## 🔐 Security & Permissions
 
 ### Row Level Security (RLS)
+
 All communication tables have RLS policies:
+
 - Users can only view/manage their tenant's communications
 - Executive board has admin access
 - Regular members have read-only access to broadcasts
 - Personal messages are only visible to sender/recipient
 
 ### Permission Checks
+
 ```typescript
 // Check if user can send communications
 const canSendSMS = await hasPermission(userId, 'communications.sms.send');
@@ -412,16 +439,19 @@ const canSendNewsletter = await hasPermission(userId, 'communications.newsletter
 ## 📈 Performance Optimization
 
 ### Batch Processing
+
 - SMS: 100 messages per batch
 - Push: 500 devices per batch (FCM limit)
 - Newsletters: 1,000 recipients per batch
 
 ### Rate Limiting
+
 - SMS: Twilio account limits (varies by plan)
 - Push: 1,000 messages/second (FCM limit)
 - Newsletters: SMTP server limits
 
 ### Caching
+
 - Templates cached for 1 hour
 - Analytics cached for 15 minutes
 - Device registrations cached for 5 minutes
@@ -429,6 +459,7 @@ const canSendNewsletter = await hasPermission(userId, 'communications.newsletter
 ## 🐛 Troubleshooting
 
 ### Push Notifications Not Delivering
+
 1. Check Firebase project configuration
 2. Verify service account key is valid
 3. Ensure device tokens are not expired
@@ -436,12 +467,14 @@ const canSendNewsletter = await hasPermission(userId, 'communications.newsletter
 5. Verify app has notification permissions
 
 ### SMS Not Sending
+
 1. Check Twilio account balance
 2. Verify phone numbers are in E.164 format
 3. Check Twilio phone number is active
 4. Review Twilio error logs
 
 ### Newsletters Not Sending
+
 1. Check SMTP credentials
 2. Verify email addresses are valid
 3. Check spam/bounce rates
@@ -450,6 +483,7 @@ const canSendNewsletter = await hasPermission(userId, 'communications.newsletter
 ## 📚 Component Usage Examples
 
 ### Newsletter Editor
+
 ```tsx
 import { NewsletterEditor } from '@/components/communications/newsletter-editor';
 
@@ -468,6 +502,7 @@ export default function CreateNewsletter() {
 ```
 
 ### Push Notification Builder
+
 ```tsx
 import { PushNotificationBuilder } from '@/components/communications/push-notification-builder';
 
@@ -486,6 +521,7 @@ export default function SendPushNotification() {
 ```
 
 ### Analytics Dashboard
+
 ```tsx
 import { UnifiedAnalyticsDashboard } from '@/components/communications/unified-analytics-dashboard';
 
@@ -497,6 +533,7 @@ export default function CommunicationsAnalytics() {
 ## ✨ Next Steps
 
 1. **Deploy Database Schemas**
+
    ```bash
    psql $DATABASE_URL -f packages/db/src/schema/phase-5-newsletters.sql
    psql $DATABASE_URL -f packages/db/src/schema/phase-5-analytics.sql
@@ -509,6 +546,7 @@ export default function CommunicationsAnalytics() {
    - Integrate FCM in mobile/web apps
 
 3. **Test All Features**
+
    ```bash
    pnpm test __tests__/communications/
    ```
@@ -522,6 +560,7 @@ export default function CommunicationsAnalytics() {
 ## 📞 Support
 
 For issues or questions:
+
 1. Check Firebase Console logs
 2. Review Twilio error logs
 3. Check database RLS policies
@@ -535,6 +574,7 @@ For issues or questions:
 **Phase 5: Communications Suite - 100% COMPLETE**
 
 Total Implementation:
+
 - **23,000+ lines of code**
 - **11 database tables with RLS policies**
 - **16 React components**

@@ -934,6 +934,7 @@ function AdminPage() {
 ```
 
 **Features:**
+
 - Overview tab with key metrics and trends
 - Audit logs tab with filtering and export
 - Anomalies tab with severity filtering
@@ -996,15 +997,18 @@ function AdminPage() {
 **Safeguards Implemented:**
 
 **Administrative Safeguards:**
+
 - Security Management Process: Risk assessments logged
 - Workforce Security: Training completion tracked
 - Access Management: Authorization audit trail
 
 **Physical Safeguards:**
+
 - Workstation Security: Device usage tracked
 - Device Controls: Hardware access logged
 
 **Technical Safeguards:**
+
 - Access Control: Authentication events logged
 - Audit Controls: Comprehensive audit logs
 - Integrity Controls: Data modification tracking
@@ -1229,6 +1233,7 @@ test('Security dashboard displays logs and anomalies', async ({ page }) => {
 **Symptoms:** Audit logs not showing up in dashboard
 
 **Solutions:**
+
 1. Check database connection
 2. Verify RLS policies allow access
 3. Confirm user has proper permissions
@@ -1250,6 +1255,7 @@ console.log('Error:', error);
 **Symptoms:** No anomalies detected despite suspicious activity
 
 **Solutions:**
+
 1. Verify baseline data exists
 2. Check threshold configurations
 3. Ensure sufficient historical data (minimum 7 days)
@@ -1270,6 +1276,7 @@ console.log('Baseline patterns:', baseline);
 **Symptoms:** Slow query performance with large datasets
 
 **Solutions:**
+
 1. Implement pagination
 2. Add appropriate indexes
 3. Archive old logs
@@ -1300,6 +1307,7 @@ REFRESH MATERIALIZED VIEW audit_logs_summary;
 **Symptoms:** Audit logger edge function times out
 
 **Solutions:**
+
 1. Reduce payload size
 2. Use batch processing
 3. Increase function timeout
@@ -1328,6 +1336,7 @@ for (let i = 0; i < events.length; i += batchSize) {
 **Symptoms:** Compliance report generation fails
 
 **Solutions:**
+
 1. Verify date range is valid
 2. Check for sufficient data
 3. Ensure firm_id is correct

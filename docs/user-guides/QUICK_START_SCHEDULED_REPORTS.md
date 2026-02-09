@@ -9,16 +9,19 @@ This guide walks you through setting up and testing the scheduled reports system
 Choose one method:
 
 **PowerShell** (Windows):
+
 ```powershell
 [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
 ```
 
 **Bash** (Mac/Linux):
+
 ```bash
 openssl rand -base64 32
 ```
 
 **Node.js** (Any platform):
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
@@ -46,7 +49,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 **Get Resend API Key**:
-1. Go to https://resend.com/signup
+
+1. Go to <https://resend.com/signup>
 2. Verify your email
 3. Add your domain (or use test domain)
 4. Go to API Keys → Create
@@ -76,24 +80,27 @@ Value: [same value as in .env.local]
 ## Step 4: Test Locally (5 minutes)
 
 **Start your development server**:
+
 ```bash
 pnpm dev
 ```
 
 **Create a test schedule**:
-1. Navigate to http://localhost:3000/dashboard/admin/scheduled-reports
+
+1. Navigate to <http://localhost:3000/dashboard/admin/scheduled-reports>
 2. Click "Create Schedule" button
 3. Fill out the form:
    - **Report**: Select any report
    - **Schedule Type**: Daily
    - **Time**: Select next hour (e.g., if it's 2:30 PM, select 3:00 PM)
    - **Delivery Method**: Email
-   - **Recipients**: your-email@example.com
+   - **Recipients**: <your-email@example.com>
    - **Export Format**: CSV
    - **Active**: Checked
 4. Click "Create Schedule"
 
 **Trigger manual execution**:
+
 ```bash
 # PowerShell
 $env:CRON_SECRET = "your-cron-secret-here"
@@ -108,6 +115,7 @@ curl -X POST http://localhost:3000/api/cron/scheduled-reports \
 ```
 
 **Expected response**:
+
 ```json
 {
   "message": "Execution complete",
@@ -125,6 +133,7 @@ curl -X POST http://localhost:3000/api/cron/scheduled-reports \
 ## Step 5: Test GitHub Actions (3 minutes)
 
 **Commit and push the workflow**:
+
 ```bash
 git add .github/workflows/cron-scheduled-reports.yml
 git commit -m "Add scheduled reports cron workflow"
@@ -132,6 +141,7 @@ git push
 ```
 
 **Trigger manual test**:
+
 1. Go to GitHub → **Actions** tab
 2. Click "Scheduled Reports Cron" workflow
 3. Click "Run workflow" button (top right)
@@ -141,6 +151,7 @@ git push
 7. Verify it completes successfully
 
 **Verify automatic scheduling**:
+
 - The workflow will now run every 15 minutes automatically
 - Check back in 15 minutes to see the first automatic run
 - Click on any run to see detailed logs
@@ -163,6 +174,7 @@ git push
 ## What Happens Next?
 
 **Automatic Execution**:
+
 - GitHub Actions runs every 15 minutes
 - Checks for due schedules (`next_run_at <= NOW`)
 - Executes each schedule:
@@ -173,12 +185,14 @@ git push
   5. Tracks execution in `export_jobs` table
 
 **View Execution History**:
+
 1. Go to `/dashboard/admin/scheduled-reports`
 2. Click on any schedule
 3. View "Execution History" section
 4. See status, timing, and results
 
 **Monitor in Database**:
+
 ```sql
 -- Recent executions
 SELECT * FROM export_jobs 
@@ -196,24 +210,28 @@ WHERE is_active = true;
 ## Common Issues & Quick Fixes
 
 ### Email not received?
+
 - Check spam folder
 - Verify EMAIL_FROM domain is verified in Resend
 - Check Resend dashboard for delivery logs
 - Review application logs for errors
 
 ### GitHub Actions failing?
+
 - Verify APP_URL secret is correct (no trailing slash)
 - Ensure CRON_SECRET matches exactly
 - Check your application is accessible from internet
 - Review workflow logs for specific error
 
 ### No schedules executing?
+
 - Check `next_run_at` is in the past
 - Verify `is_active = true`
 - Manually trigger to test: run curl command above
 - Check application logs
 
 ### Need help?
+
 - Review full documentation: `DEPLOYMENT_CHECKLIST.md`
 - Check troubleshooting section: `PHASE_2_COMPLETE.md`
 - Review code comments in `/api/cron/scheduled-reports/route.ts`
@@ -235,9 +253,10 @@ WHERE is_active = true;
 Your scheduled reports system is now running automatically. Reports will be generated and emailed on schedule without any manual intervention.
 
 **Quick Links**:
-- Admin UI: http://localhost:3000/dashboard/admin/scheduled-reports
-- GitHub Actions: https://github.com/YOUR_ORG/union-claims-standalone/actions
-- Resend Dashboard: https://resend.com/emails
+
+- Admin UI: <http://localhost:3000/dashboard/admin/scheduled-reports>
+- GitHub Actions: <https://github.com/YOUR_ORG/union-claims-standalone/actions>
+- Resend Dashboard: <https://resend.com/emails>
 
 ---
 

@@ -122,14 +122,14 @@ View union density statistics for your sector:
 - **What**: Official government labor market data
 - **Update Frequency**: Monthly
 - **Coverage**: All provinces, all industries
-- **Source**: https://www.statcan.gc.ca
+- **Source**: <https://www.statcan.gc.ca>
 
 ### Provincial Labour Relations Boards
 
 - **Ontario LRB**: ~5,000 active agreements
 - **BC LRB**: ~3,000 active agreements
 - **Update Frequency**: Weekly
-- **Source**: https://www.olrb.gov.on.ca | https://www.lrb.bc.ca
+- **Source**: <https://www.olrb.gov.on.ca> | <https://www.lrb.bc.ca>
 
 ### Canadian Labour Congress
 
@@ -150,6 +150,7 @@ View union density statistics for your sector:
 ### Can I export data?
 
 Yes! Click the **"Export"** button on any report to download:
+
 - CSV format
 - Excel format
 - PDF format
@@ -190,6 +191,6 @@ Some niche occupations or regions may have limited data. Contact support if you 
 
 For questions about external data:
 
-- **Email**: data-support@unioneyes.app
-- **Documentation**: https://docs.unioneyes.app/external-data
-- **Status Page**: https://status.unioneyes.app
+- **Email**: <data-support@unioneyes.app>
+- **Documentation**: <https://docs.unioneyes.app/external-data>
+- **Status Page**: <https://status.unioneyes.app>

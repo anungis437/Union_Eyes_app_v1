@@ -19,6 +19,7 @@ pnpm drizzle-kit push
 The following tables will be created:
 
 ### GDPR Tables
+
 - `user_consents` - User consent records
 - `cookie_consents` - Cookie preferences
 - `gdpr_data_requests` - Data access/erasure requests
@@ -27,6 +28,7 @@ The following tables will be created:
 - `data_anonymization_log` - Audit of anonymization
 
 ### E-Signature Tables
+
 - `signature_documents` - Document records
 - `document_signers` - Signer information
 - `signature_audit_trail` - Complete event log
@@ -119,6 +121,7 @@ LIMIT 10;
 ### 5. Test Data Export
 
 1. Make API request:
+
 ```bash
 curl -X POST http://localhost:3000/api/gdpr/data-export \
   -H "Content-Type: application/json" \
@@ -128,7 +131,8 @@ curl -X POST http://localhost:3000/api/gdpr/data-export \
   }'
 ```
 
-2. Check request created:
+1. Check request created:
+
 ```sql
 SELECT * FROM gdpr_data_requests 
 WHERE request_type = 'access' 
@@ -221,19 +225,22 @@ WHERE created_at < NOW();
 
 ## Monitoring
 
-### Set up cron jobs for:
+### Set up cron jobs for
 
 1. **Expired consent cleanup** (daily)
+
 ```bash
 0 2 * * * curl -X POST http://localhost:3000/api/gdpr/cleanup-expired
 ```
 
-2. **Pending GDPR request alerts** (daily)
+1. **Pending GDPR request alerts** (daily)
+
 ```bash
 0 9 * * * curl -X GET http://localhost:3000/api/gdpr/pending-requests-alert
 ```
 
-3. **Document expiration reminders** (daily)
+1. **Document expiration reminders** (daily)
+
 ```bash
 0 10 * * * curl -X POST http://localhost:3000/api/signatures/check-expirations
 ```
@@ -241,16 +248,19 @@ WHERE created_at < NOW();
 ## Troubleshooting
 
 ### Issue: Cookie banner not appearing
+
 - Check `NEXT_PUBLIC_GDPR_ENABLED=true` in `.env.local`
 - Clear localStorage: `localStorage.removeItem('cookie_consent')`
 - Check browser console for errors
 
 ### Issue: Data export fails
+
 - Check all related tables exist (profiles, claims, votes, etc.)
 - Verify database connection
 - Check logs for specific errors
 
 ### Issue: Signature request fails
+
 - Verify environment variables set
 - Check provider credentials
 - Test provider connection separately
@@ -258,7 +268,7 @@ WHERE created_at < NOW();
 
 ## Performance Optimization
 
-### Add indexes for common queries:
+### Add indexes for common queries
 
 ```sql
 -- GDPR indexes
@@ -281,6 +291,7 @@ WHERE status IN ('pending', 'sent');
 ## Support
 
 For migration issues:
+
 1. Check [`docs/gdpr-and-signatures.md`](gdpr-and-signatures.md)
 2. Review database logs
 3. Test API endpoints individually

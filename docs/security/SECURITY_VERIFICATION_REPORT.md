@@ -11,6 +11,7 @@
 **🎉 MISSION ACCOMPLISHED:** Union Eyes platform has achieved **9.5/10 world-class security rating**, representing a **+35.7% improvement** from the initial 7/10 baseline.
 
 All critical security gaps have been systematically closed through 6 comprehensive database migrations implementing:
+
 - ✅ Row-Level Security (RLS) policies
 - ✅ Column-level encryption
 - ✅ Comprehensive audit logging
@@ -42,6 +43,7 @@ All critical security gaps have been systematically closed through 6 comprehensi
 **Coverage:** 238 policies across 130 tables
 
 **Protected Systems:**
+
 - ✅ Messages & Communications (5 tables, 17 policies)
 - ✅ In-App Notifications (1 table, 4 policies)
 - ✅ Member Documents (1 table, 8 policies)
@@ -52,6 +54,7 @@ All critical security gaps have been systematically closed through 6 comprehensi
 - ✅ Organizations (existing)
 
 **Access Patterns:**
+
 - Tenant isolation: `tenant_id = get_current_tenant_id()`
 - User-scoped: `user_id = get_current_user_id()`
 - Hierarchical org access: `get_user_visible_orgs(user_id)`
@@ -67,6 +70,7 @@ All critical security gaps have been systematically closed through 6 comprehensi
 **Algorithm:** AES-256 via pgp_sym_encrypt
 
 **Encrypted Fields:**
+
 ```sql
 members.encrypted_sin          -- Social Insurance Number (Canada)
 members.encrypted_ssn          -- Social Security Number (USA)
@@ -74,12 +78,14 @@ members.encrypted_bank_account -- Banking information
 ```
 
 **Encryption Functions:**
+
 ```sql
 encrypt_pii(plaintext TEXT) → TEXT
 decrypt_pii(ciphertext TEXT) → TEXT
 ```
 
 **Test Results:**
+
 ```
 ✅ Encryption: PASSED
 ✅ Decryption: PASSED
@@ -88,6 +94,7 @@ decrypt_pii(ciphertext TEXT) → TEXT
 ```
 
 **Security View:**
+
 - `members_with_pii` - Automatically decrypts for authorized queries
 - Transparent to application layer
 - Maintains RLS policies on view
@@ -110,6 +117,7 @@ decrypt_pii(ciphertext TEXT) → TEXT
 | **Parameters** | ✅ Active | Query parameters logged |
 
 **pgAudit Settings:**
+
 ```
 pgaudit.log = 'write,ddl,role'
 pgaudit.log_parameter = 'on'
@@ -117,6 +125,7 @@ pgaudit.log_catalog = 'on'
 ```
 
 **PII Access Tracking:**
+
 - Custom `pii_access_log` table created
 - Tracks: user_id, timestamp, column_name, access_type
 - Admin-only access via RLS
@@ -129,15 +138,19 @@ pgaudit.log_catalog = 'on'
 ### Test 1: RLS Policy Enforcement ✅
 
 **Test:** Verify total policy count
+
 ```sql
 SELECT COUNT(*) FROM pg_policies WHERE schemaname = 'public';
 ```
+
 **Result:** 238 policies ✅
 
 **Test:** Verify tables protected
+
 ```sql
 SELECT COUNT(DISTINCT tablename) FROM pg_policies;
 ```
+
 **Result:** 130 tables ✅
 
 ---
@@ -145,22 +158,28 @@ SELECT COUNT(DISTINCT tablename) FROM pg_policies;
 ### Test 2: Encryption Functionality ✅
 
 **Test:** Encrypt and decrypt test value
+
 ```sql
 SELECT decrypt_pii(encrypt_pii('123-456-789'));
 ```
+
 **Result:** '123-456-789' ✅ (perfect round-trip)
 
 **Test:** Verify encrypted columns exist
+
 ```sql
 SELECT column_name FROM information_schema.columns 
 WHERE table_name = 'members' AND column_name LIKE 'encrypted_%';
 ```
-**Result:** 
+
+**Result:**
+
 ```
 encrypted_sin
 encrypted_ssn
 encrypted_bank_account
 ```
+
 ✅ All 3 fields created
 
 ---
@@ -168,20 +187,25 @@ encrypted_bank_account
 ### Test 3: Audit Logging Configuration ✅
 
 **Test:** Verify pgAudit settings
+
 ```sql
 SHOW pgaudit.log;
 SHOW pgaudit.log_parameter;
 ```
+
 **Result:**
+
 ```
 pgaudit.log = 'write,ddl,role'  ✅
 pgaudit.log_parameter = 'on'    ✅
 ```
 
 **Test:** Verify audit extension loaded
+
 ```sql
 SELECT extname, extversion FROM pg_extension WHERE extname = 'pgaudit';
 ```
+
 **Result:** pgaudit 16.0 ✅
 
 ---
@@ -189,11 +213,14 @@ SELECT extname, extversion FROM pg_extension WHERE extname = 'pgaudit';
 ### Test 4: Security Extensions Status ✅
 
 **Test:** List all security-related extensions
+
 ```sql
 SELECT extname, extversion FROM pg_extension 
 WHERE extname IN ('pgcrypto', 'pgaudit');
 ```
+
 **Result:**
+
 ```
 pgcrypto | 1.3   ✅
 pgaudit  | 16.0  ✅
@@ -221,6 +248,7 @@ pgaudit  | 16.0  ✅
 ## Azure Configuration Applied
 
 ### 1. Extension Allow-listing
+
 ```bash
 az postgres flexible-server parameter set \
   --server-name unioneyes-staging-db \
@@ -228,9 +256,11 @@ az postgres flexible-server parameter set \
   --name azure.extensions \
   --value "pgcrypto,pgaudit,uuid-ossp,pg_trgm,btree_gin,btree_gist"
 ```
+
 ✅ **Status:** Applied successfully
 
 ### 2. Shared Preload Libraries
+
 ```bash
 az postgres flexible-server parameter set \
   --server-name unioneyes-staging-db \
@@ -238,9 +268,11 @@ az postgres flexible-server parameter set \
   --name shared_preload_libraries \
   --value "pgaudit,pg_stat_statements"
 ```
+
 ✅ **Status:** Applied (required server restart)
 
 ### 3. pgAudit Configuration
+
 ```bash
 az postgres flexible-server parameter set \
   --name pgaudit.log \
@@ -250,6 +282,7 @@ az postgres flexible-server parameter set \
   --name pgaudit.log_parameter \
   --value "on"
 ```
+
 ✅ **Status:** Applied and active
 
 ---
@@ -257,6 +290,7 @@ az postgres flexible-server parameter set \
 ## Security Rating Breakdown
 
 ### Access Control: 10/10 ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
 - ✅ 238 RLS policies across 130 tables
 - ✅ Hierarchical organization access
 - ✅ Role-based access control
@@ -265,6 +299,7 @@ az postgres flexible-server parameter set \
 - ✅ Self-service data access
 
 ### Data Isolation: 10/10 ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
 - ✅ Multi-tenant architecture secured
 - ✅ Cross-tenant data leakage prevented
 - ✅ User data isolation verified
@@ -272,6 +307,7 @@ az postgres flexible-server parameter set \
 - ✅ Zero identified gaps
 
 ### Encryption: 10/10 ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
 - ✅ Column-level encryption (AES-256)
 - ✅ PII fields protected (SIN, SSN, bank)
 - ✅ pgcrypto extension enabled
@@ -279,6 +315,7 @@ az postgres flexible-server parameter set \
 - ✅ Azure TDE for data at rest
 
 ### Audit Logging: 10/10 ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
 - ✅ pgAudit extension enabled
 - ✅ Write operations logged
 - ✅ DDL changes tracked
@@ -287,6 +324,7 @@ az postgres flexible-server parameter set \
 - ✅ Query parameters captured
 
 ### Testing: 7/10 ⭐⭐⭐⭐⭐⭐⭐☆☆☆
+
 - ✅ Manual verification complete
 - ✅ Encryption round-trip tested
 - ✅ Policy counts verified
@@ -295,6 +333,7 @@ az postgres flexible-server parameter set \
 - ⏳ Performance impact testing needed
 
 ### Compliance: 8/10 ⭐⭐⭐⭐⭐⭐⭐⭐☆☆
+
 - ✅ GDPR Art. 32 (encryption) compliant
 - ✅ GDPR Art. 5 (data minimization) compliant
 - ✅ SOC 2 CC6.1-6.3 ready
@@ -303,6 +342,7 @@ az postgres flexible-server parameter set \
 - ⏳ External audit recommended
 
 ### Incident Response: 7/10 ⭐⭐⭐⭐⭐⭐⭐☆☆☆
+
 - ✅ Audit logging captures incidents
 - ✅ PII access tracking enabled
 - ⏳ Formal incident response plan needed
@@ -314,10 +354,12 @@ az postgres flexible-server parameter set \
 ## Remaining Work for 10/10 Rating
 
 ### 1. Automated Security Test Suite (Priority: HIGH)
+
 **Estimated Effort:** 6-8 hours  
 **Impact:** +0.3 points
 
 **Test Cases Needed:**
+
 ```typescript
 // __tests__/security/rls-policies.test.ts
 
@@ -361,6 +403,7 @@ describe('RLS Policy Tests', () => {
 ```
 
 **Deliverables:**
+
 - Comprehensive test suite (50+ cases)
 - CI/CD integration
 - Automated regression testing
@@ -369,10 +412,12 @@ describe('RLS Policy Tests', () => {
 ---
 
 ### 2. Formal Incident Response Documentation (Priority: MEDIUM)
+
 **Estimated Effort:** 3-4 hours  
 **Impact:** +0.2 points
 
 **Documentation Needed:**
+
 ```markdown
 ## Incident Response Plan
 
@@ -446,6 +491,7 @@ describe('RLS Policy Tests', () => {
 ### Encryption Overhead
 
 **Test:** Encrypt/Decrypt 1,000 SIN values
+
 ```sql
 -- Average encryption time: 1.2ms per value
 -- Average decryption time: 1.5ms per value
@@ -453,6 +499,7 @@ describe('RLS Policy Tests', () => {
 ```
 
 **Impact Assessment:**
+
 - ✅ Minimal impact on read operations (<3ms)
 - ✅ Negligible impact on write operations
 - ✅ Acceptable for production use
@@ -463,6 +510,7 @@ describe('RLS Policy Tests', () => {
 ### RLS Policy Overhead
 
 **Test:** Query 1,000 records with RLS enabled
+
 ```sql
 -- Without RLS: ~50ms
 -- With RLS: ~65ms
@@ -470,6 +518,7 @@ describe('RLS Policy Tests', () => {
 ```
 
 **Impact Assessment:**
+
 - ✅ Acceptable overhead for security benefit
 - ✅ Scales linearly with dataset size
 - ✅ Can be optimized with proper indexing
@@ -480,11 +529,13 @@ describe('RLS Policy Tests', () => {
 ### Audit Logging Overhead
 
 **pgAudit Impact:**
+
 - Write operations: +5-10% overhead
 - DDL operations: +2-5% overhead
 - Storage: ~1GB per million transactions
 
 **Impact Assessment:**
+
 - ✅ Minimal performance impact
 - ✅ Critical for compliance
 - ✅ Logs can be archived to blob storage
@@ -495,6 +546,7 @@ describe('RLS Policy Tests', () => {
 ## Recommendations
 
 ### Immediate (This Week)
+
 1. ✅ ~~Enable pgcrypto and pgaudit~~ **COMPLETE**
 2. ✅ ~~Implement column encryption~~ **COMPLETE**
 3. ✅ ~~Configure comprehensive audit logging~~ **COMPLETE**
@@ -502,6 +554,7 @@ describe('RLS Policy Tests', () => {
 5. ⏳ Integrate Azure Key Vault for encryption keys
 
 ### Short Term (This Month)
+
 1. Create automated security test suite (6-8 hours)
 2. Document incident response procedures (3-4 hours)
 3. Set up audit log monitoring dashboards
@@ -509,6 +562,7 @@ describe('RLS Policy Tests', () => {
 5. Create key rotation procedures
 
 ### Medium Term (This Quarter)
+
 1. Conduct internal security assessment
 2. Implement data retention policies
 3. Create GDPR data export workflows
@@ -516,6 +570,7 @@ describe('RLS Policy Tests', () => {
 5. Train team on security procedures
 
 ### Long Term (This Year)
+
 1. SOC 2 Type II certification (6-12 months)
 2. External penetration testing
 3. Security awareness training program

@@ -5,12 +5,14 @@
 ### ✅ COMPLETED PHASES (Commits)
 
 #### Phase 0: Discovery & Documentation (f353be2e)
+
 - [x] Repository structure analysis
 - [x] Documentation in `/docs/recognition/`
 - [x] Feature flags in `.env.example`
 - [x] Architecture decisions documented
 
 #### Phase 1: Data Model + RLS + Migrations (2204eaa7)
+
 - [x] Drizzle schema: `db/schema/recognition-rewards-schema.ts`
 - [x] 8 tables with proper indexes and constraints
 - [x] RLS policies following repo patterns
@@ -18,6 +20,7 @@
 - [x] Audit triggers for award issuance and redemptions
 
 #### Phase 2: Services Layer (78803bbb)
+
 - [x] 6 service modules in `lib/services/rewards/`
 - [x] Transactional award issuance (ledger + budget)
 - [x] Wallet balance with O(1) lookups
@@ -26,12 +29,14 @@
 - [x] Idempotency handling
 
 #### Phase 3: Part 1 - Validation & Actions (802785e0)
+
 - [x] Zod schemas: `lib/validation/rewards-schemas.ts`
 - [x] Server actions: `actions/rewards-actions.ts`
 - [x] Admin and member-scoped operations
 - [x] Auth and role enforcement
 
 #### Phase 3: Part 2 - API Routes (ed597bf5)
+
 - [x] Shopify webhook handler: `app/api/integrations/shopify/webhooks/route.ts`
 - [x] Member wallet API: `app/api/rewards/wallet/route.ts`
 - [x] Redemptions API: `app/api/rewards/redemptions/route.ts`
@@ -39,6 +44,7 @@
 - [x] Idempotency handling
 
 #### Phase 4: Part 1 - Member Wallet UI (4c1a8771)
+
 - [x] Wallet page: `app/[locale]/dashboard/rewards/page.tsx`
 - [x] Redemption page: `app/[locale]/dashboard/rewards/redeem/page.tsx`
 - [x] WalletBalanceCard component
@@ -47,6 +53,7 @@
 - [x] i18n translations (EN/FR)
 
 #### Phase 4: Part 2 - Admin Console UI (e0d1e8fe)
+
 - [x] Admin dashboard: `app/[locale]/dashboard/admin/rewards/page.tsx`
 - [x] Programs management: `programs/page.tsx`
 - [x] Awards queue: `awards/page.tsx`
@@ -55,6 +62,7 @@
 - [x] Complete admin translations (EN/FR)
 
 #### Phase 5: Shopify Integration (77de1e04)
+
 - [x] Shopify service: `lib/services/rewards/shopify-service.ts`
 - [x] Storefront API product catalog
 - [x] Admin API discount codes
@@ -69,11 +77,12 @@
 
 ### Phase 6: Analytics & Reporting (NEXT)
 
-#### Need to Create:
+#### Need to Create
 
 **Admin Console Structure**: `/app/[locale]/dashboard/admin/rewards/`
 
 **1. Programs Management** (`programs/page.tsx`)
+
 - List all programs with status filters
 - Create new program modal/form
 - Edit existing programs
@@ -81,6 +90,7 @@
 - Award types CRUD within program context
 
 **2. Awards Queue** (`awards/page.tsx`)
+
 - Pending approvals table with filters
 - Approve/reject actions with notes
 - Issue awards (manual or batch)
@@ -88,18 +98,21 @@
 - Revoke awards with reason
 
 **3. Budget Management** (`budgets/page.tsx`)
+
 - List budget envelopes
 - Create new envelopes with allocations
 - View usage progress bars
 - Budget vs actual reporting
 
 **4. Shopify Configuration** (`shopify/page.tsx`)
+
 - Connection status indicator
 - Test connection button
 - Configure allowed collections
 - View webhook status
 
 **5. Reports Dashboard** (`reports/page.tsx`)
+
 - Total credits issued/redeemed metrics
 - Top award recipients
 - Budget utilization charts
@@ -112,21 +125,23 @@
 **File**: `lib/services/rewards/shopify-service.ts`
 
 **Core Functions Needed**:
+
 1. `fetchCuratedCollections()` - Storefront API GraphQL
    - Query products from allowed_collections
    - Return product catalog with prices, images, variants
-   
+
 2. `createDiscountCode()` - Admin API REST
    - Generate unique code: `UE{redemption_id}`
    - Set fixed amount discount
    - Link to redemption record
-   
+
 3. `createCheckoutSession()` - Generate checkout URL
    - Build Shopify checkout URL
    - Pre-apply discount code
    - Return URL for redirect
 
 **Integration Flow**:
+
 1. Member clicks "Redeem" → `initiateRedemption()` deducts credits
 2. Call `createDiscountCode()` with redemption amount
 3. Return `createCheckoutSession()` URL
@@ -134,6 +149,7 @@
 5. Webhooks update redemption status
 
 **Environment Variables Required**:
+
 ```env
 SHOPIFY_SHOP_DOMAIN=shop-moi-ca.myshopify.com
 SHOPIFY_STOREFRONT_TOKEN=xxx
@@ -171,12 +187,14 @@ SHOPIFY_WEBHOOK_SECRET=xxx
 ### Phase 7: Tests & Hardening
 
 **Files to Create**:
+
 - `__tests__/rewards/wallet-service.test.ts`: Balance calculations
 - `__tests__/rewards/award-service.test.ts`: Issuance transactions
 - `__tests__/rewards/webhook-service.test.ts`: Signature verification
 - `__tests__/rewards/rls-rewards.test.ts`: RLS policy enforcement
 
 **Security Checks**:
+
 - [ ] Members cannot read other members' wallets
 - [ ] Admins cannot act outside org_id
 - [ ] Webhooks verify HMAC signatures
@@ -187,6 +205,7 @@ SHOPIFY_WEBHOOK_SECRET=xxx
 ## Quick Start Commands
 
 ### Run Migration
+
 ```bash
 # Apply migration (use repo's migration tool)
 npm run db:migrate
@@ -195,6 +214,7 @@ drizzle-kit push:pg
 ```
 
 ### Test Server Actions (in REPL or component)
+
 ```typescript
 import { createRecognitionProgram } from '@/actions/rewards-actions';
 
@@ -206,6 +226,7 @@ const result = await createRecognitionProgram({
 ```
 
 ### Test Webhook Locally
+
 ```bash
 # Use ngrok or similar to expose localhost
 ngrok http 3000
@@ -262,10 +283,12 @@ feat(rewards): Phase X - [Title]
 ## Key Files Reference
 
 ### Schema & Migrations
+
 - `db/schema/recognition-rewards-schema.ts` - Drizzle schema
 - `db/migrations/058_recognition_rewards_system.sql` - RLS + tables
 
 ### Services
+
 - `lib/services/rewards/program-service.ts` - Programs & award types
 - `lib/services/rewards/award-service.ts` - Award lifecycle
 - `lib/services/rewards/wallet-service.ts` - Wallet & ledger
@@ -274,10 +297,12 @@ feat(rewards): Phase X - [Title]
 - `lib/services/rewards/webhook-service.ts` - Webhook utilities
 
 ### Actions & Validation
+
 - `actions/rewards-actions.ts` - Server actions
 - `lib/validation/rewards-schemas.ts` - Zod schemas
 
 ### Documentation
+
 - `docs/recognition/overview.md` - Architecture overview
 - `docs/recognition/data-model.md` - Schema documentation
 - `docs/recognition/api-contracts.md` - API specifications
@@ -323,7 +348,8 @@ All commits have been made to this branch. Ready to push or create PR.
 
 ## Success Criteria
 
-### MVP Ready When:
+### MVP Ready When
+
 1. ✅ Database schema deployed
 2. ✅ Services layer complete
 3. ✅ Server actions working
@@ -336,6 +362,7 @@ All commits have been made to this branch. Ready to push or create PR.
 ---
 
 This implementation follows all repo conventions:
+
 - Drizzle ORM with PostgreSQL
 - Clerk auth with custom org members
 - RLS policies for security

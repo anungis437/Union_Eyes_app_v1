@@ -28,16 +28,19 @@ Converts user identifier columns from `uuid` to `varchar(255)` to align with Cle
 The following database objects depend on these columns and must be handled:
 
 ### Views
+
 - `v_member_training_transcript` - depends on course_registrations.member_id
 - (Others may exist - run discovery query below)
 
 ### RLS Policies
+
 - `select_course_registrations`
 - `select_member_certifications`
 - `manage_member_certifications`
 - (Others may exist - run discovery query below)
 
 ### Foreign Keys
+
 - `fk_claims_member` → user_management.users(user_id)
 - `course_registrations_member_id_fkey` → members(id)
 - `member_certifications_member_id_fkey` → members(id)

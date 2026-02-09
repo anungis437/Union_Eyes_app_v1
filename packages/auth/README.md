@@ -99,6 +99,7 @@ packages/auth/
 Provides authentication context to all child components.
 
 **Props:**
+
 - `children: ReactNode` - Child components
 - `appName?: string` - Name of the application (for audit logs)
 
@@ -107,6 +108,7 @@ Provides authentication context to all child components.
 Access authentication state and methods.
 
 **Returns:**
+
 ```typescript
 {
   user: AuthUser | null;
@@ -137,6 +139,7 @@ Access authentication state and methods.
 Permissions follow the pattern `resource:action`:
 
 **Resources:**
+
 - `matters` - Legal matters/cases
 - `clients` - Client records
 - `documents` - Document management
@@ -147,6 +150,7 @@ Permissions follow the pattern `resource:action`:
 - `settings` - System settings
 
 **Actions:**
+
 - `read` - View resources
 - `write` - Create/update resources
 - `delete` - Remove resources
@@ -154,6 +158,7 @@ Permissions follow the pattern `resource:action`:
 - `assign` - Assign to users
 
 **Examples:**
+
 - `matters:read` - View matters
 - `matters:write` - Create/edit matters
 - `billing:approve` - Approve invoices
@@ -219,6 +224,7 @@ const summary = await auditLogger.getUserAuditSummary('user-id', 30);
 Required database tables:
 
 ### user_profiles
+
 ```sql
 CREATE TABLE user_profiles (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id),
@@ -232,6 +238,7 @@ CREATE TABLE user_profiles (
 ```
 
 ### auth_audit_logs
+
 ```sql
 CREATE TABLE auth_audit_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

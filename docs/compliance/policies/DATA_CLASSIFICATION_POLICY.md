@@ -9,10 +9,13 @@
 ## 1. Purpose and Scope
 
 ### 1.1 Purpose
+
 This Data Classification Policy establishes a framework for categorizing data based on sensitivity, confidentiality, and regulatory requirements. Proper classification ensures appropriate security controls are applied to protect union member data, financial information, and operational records.
 
 ### 1.2 Scope
+
 This policy applies to:
+
 - All data created, stored, processed, or transmitted by the system
 - All data formats (electronic, paper, verbal)
 - All organizational levels (CLC, federations, unions, locals)
@@ -54,6 +57,7 @@ This policy applies to:
 **Definition**: Information intended for public disclosure or that poses no risk if disclosed.
 
 **Examples**:
+
 - Public website content
 - Marketing materials and brochures
 - Press releases and announcements
@@ -64,6 +68,7 @@ This policy applies to:
 - Organization directory (public contacts)
 
 **Handling Requirements**:
+
 - No encryption required
 - No access controls required
 - Can be shared with anyone
@@ -76,6 +81,7 @@ This policy applies to:
 **Definition**: Information intended for internal use that could cause minimal harm if disclosed.
 
 **Examples**:
+
 - Internal policies and procedures
 - Organization charts (non-sensitive)
 - Meeting minutes (general)
@@ -85,6 +91,7 @@ This policy applies to:
 - Operational metrics (non-sensitive)
 
 **Handling Requirements**:
+
 - Encryption in transit (HTTPS)
 - Access limited to authenticated users
 - Standard backup retention (7 years)
@@ -97,6 +104,7 @@ This policy applies to:
 **Definition**: Sensitive information that could cause significant harm to individuals or the organization if disclosed.
 
 **Examples**:
+
 - **Member Personal Information**:
   - Full names and contact details
   - Employment information (employer, job title, seniority)
@@ -125,6 +133,7 @@ This policy applies to:
   - Legal opinions (non-privileged)
 
 **Handling Requirements**:
+
 - Encryption in transit (TLS 1.3)
 - Encryption at rest (AES-256)
 - Access limited by role and organization hierarchy (RLS)
@@ -142,6 +151,7 @@ This policy applies to:
 **Definition**: Highly sensitive information that could cause severe harm (legal, financial, reputational) if disclosed. Subject to regulatory protection.
 
 **Examples**:
+
 - **Protected Personal Information (PII)**:
   - Social Insurance Numbers (SIN)
   - Driver's license numbers
@@ -172,6 +182,7 @@ This policy applies to:
   - Incident response plans (detailed)
 
 **Handling Requirements**:
+
 - Encryption in transit (TLS 1.3 with certificate pinning)
 - Encryption at rest (AES-256 with HSM-managed keys)
 - Access limited to specific individuals (need-to-know basis)
@@ -262,6 +273,7 @@ This policy applies to:
 | RESTRICTED | Masked by default | Requires approval | Mandatory |
 
 **Masking Requirements (RESTRICTED)**:
+
 - SIN: Show last 3 digits only (XXX-XXX-123)
 - Credit card: Show last 4 digits (XXXX-XXXX-XXXX-1234)
 - Bank account: Show last 4 digits (XXXXXX1234)
@@ -278,6 +290,7 @@ This policy applies to:
 | RESTRICTED | Approval required | Exceptional, encrypted | No (portal only) |
 
 **External Sharing Procedures**:
+
 1. **CONFIDENTIAL Data**:
    - Encrypt with AES-256 (password-protected)
    - Share password via separate channel
@@ -305,6 +318,7 @@ This policy applies to:
 ## 5. Personal Information (PIPEDA Compliance)
 
 ### 5.1 PIPEDA Principles
+
 The system complies with Canada's Personal Information Protection and Electronic Documents Act (PIPEDA):
 
 1. **Accountability**: Organization responsible for all PII under its control
@@ -321,11 +335,13 @@ The system complies with Canada's Personal Information Protection and Electronic
 ### 5.2 PII Categories
 
 **Basic PII** (CONFIDENTIAL):
+
 - Name, address, phone, email
 - Employment information
 - Union membership status
 
 **Sensitive PII** (RESTRICTED):
+
 - SIN, driver's license, passport
 - Date of birth (when combined with other PII)
 - Banking/financial information
@@ -337,13 +353,16 @@ The system complies with Canada's Personal Information Protection and Electronic
 - Genetic information
 
 ### 5.3 Consent Management
+
 - **Explicit Consent**: Required for RESTRICTED PII (opt-in)
 - **Implied Consent**: Acceptable for CONFIDENTIAL PII in employment context
 - **Withdrawal**: Users can withdraw consent anytime (system provides self-service)
 - **Record Keeping**: All consent records retained for 7 years
 
 ### 5.4 Data Subject Rights
+
 Users have the right to:
+
 1. **Access**: Request copy of their personal data (within 30 days)
 2. **Correction**: Request correction of inaccurate data (within 14 days)
 3. **Deletion**: Request deletion of data (exceptions for legal retention)
@@ -351,6 +370,7 @@ Users have the right to:
 5. **Object**: Object to processing for marketing purposes
 
 **Implementation**:
+
 - Self-service data download portal
 - Privacy request ticketing system
 - 30-day SLA for access requests
@@ -359,6 +379,7 @@ Users have the right to:
 ## 6. Special Data Types
 
 ### 6.1 Financial Data
+
 - **Per-Capita Remittances**: CONFIDENTIAL
   - Organization-level aggregates (member counts, amounts)
   - Cannot be traced to individual members
@@ -373,6 +394,7 @@ Users have the right to:
   - CVV never stored
 
 ### 6.2 Health Information (PHI)
+
 - **Classification**: RESTRICTED
 - **Regulatory Compliance**: Subject to provincial health information acts (e.g., PHIPA in Ontario)
 - **Handling**:
@@ -383,6 +405,7 @@ Users have the right to:
   - Cannot be disclosed without consent (except as required by law)
 
 ### 6.3 Grievance and Disciplinary Records
+
 - **Grievances**: CONFIDENTIAL (member identity protected)
   - Can be anonymized for precedent database
   - 7-year retention per arbitration standards
@@ -392,6 +415,7 @@ Users have the right to:
   - Subject to disclosure obligations in arbitration
 
 ### 6.4 Legal Documents
+
 - **Collective Agreements**:
   - Draft: CONFIDENTIAL (bargaining strategy)
   - Ratified: INTERNAL (shared with members)
@@ -402,6 +426,7 @@ Users have the right to:
   - Post-award: INTERNAL (shared with parties)
 
 ### 6.5 Audit Logs
+
 - **Classification**: CONFIDENTIAL (may contain PII in activity logs)
 - **Contents**:
   - User IDs, IP addresses, user agents
@@ -414,12 +439,15 @@ Users have the right to:
 ## 7. Classification Process
 
 ### 7.1 Data Owner Responsibilities
+
 Every dataset must have a designated **Data Owner**:
+
 - **Executives**: Organization-wide datasets
 - **Department Heads**: Department-specific datasets
 - **Product Managers**: Application datasets
 
 **Data Owner Duties**:
+
 1. **Classify Data**: Determine initial classification level
 2. **Review Classification**: Annual review or when data changes
 3. **Approve Access**: Approve access requests for RESTRICTED data
@@ -427,6 +455,7 @@ Every dataset must have a designated **Data Owner**:
 5. **Training**: Ensure team understands classification
 
 ### 7.2 Classification Workflow
+
 ```
 ┌─────────────────────────────────────────┐
 │  1. Data Creator/Owner Identifies Data  │
@@ -465,6 +494,7 @@ Every dataset must have a designated **Data Owner**:
 ```
 
 ### 7.3 Classification Decision Tree
+
 ```
 Is this data subject to regulatory protection (PIPEDA, PHIPA, etc.)?
 ├─ YES → RESTRICTED (minimum)
@@ -484,19 +514,23 @@ Is this data intended for organization-wide use only?
 ```
 
 ### 7.4 Reclassification
+
 Data classification may be upgraded or downgraded:
 
 **Upgrade Scenarios** (more restrictive):
+
 - Regulatory change (new privacy law)
 - Security incident (breach of similar data)
 - Business impact reassessment
 
 **Downgrade Scenarios** (less restrictive):
+
 - Public disclosure (CBA ratification)
 - Anonymization (grievance precedents)
 - Expiration of confidentiality period
 
 **Reclassification Process**:
+
 1. Data owner proposes reclassification
 2. Security team reviews and approves
 3. Controls updated within 48 hours
@@ -507,6 +541,7 @@ Data classification may be upgraded or downgraded:
 ### 8.1 Technical Controls
 
 **Database-Level Classification**:
+
 ```sql
 -- Classification tags stored in metadata
 CREATE TABLE data_classifications (
@@ -530,13 +565,16 @@ CREATE TABLE column_classifications (
 ```
 
 **Application-Level Enforcement**:
+
 - Data classification checked before rendering
 - RESTRICTED fields masked by default
 - Export functionality respects classification
 - DLP rules block external sharing of CONFIDENTIAL/RESTRICTED data
 
 ### 8.2 User Training
+
 All users receive classification training:
+
 - **General Staff**: 1-hour annual training
   - Classification levels explained
   - Handling requirements
@@ -553,29 +591,36 @@ All users receive classification training:
 ## 9. Compliance and Enforcement
 
 ### 9.1 Violations
+
 Classification violations result in:
+
 - **First Offense**: Retraining and written warning
 - **Second Offense**: Access suspension (30 days)
 - **Third Offense**: Termination
 
 **Severe Violations** (immediate termination):
+
 - Intentional misclassification to evade controls
 - Unauthorized disclosure of RESTRICTED data
 - Disabling classification controls
 
 ### 9.2 Audit and Monitoring
+
 - **Quarterly Audits**: Sample 10% of datasets for correct classification
 - **Annual Certification**: Data owners certify all classifications
 - **Continuous Monitoring**: DLP alerts for classification violations
 
 ## 10. Related Policies
+
 - **Access Control Policy**: Enforces classification-based access
 - **Encryption Standards**: Implements required encryption
 - **Incident Response Plan**: Handles data breaches
 - **Backup and Recovery Policy**: Protects classified data
 
 ## 11. Policy Review
+
 Reviewed annually or when:
+
 - New privacy regulations enacted
 - Significant data breach occurs
 - New data types introduced
@@ -585,6 +630,7 @@ Reviewed annually or when:
 ---
 
 **Document Control**
+
 - **Document ID**: POL-CLS-002
 - **Version**: 1.0
 - **Classification**: INTERNAL USE ONLY

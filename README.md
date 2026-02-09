@@ -52,6 +52,7 @@ UnionEyes has achieved **world-class security certification** with:
 - ✅ **GDPR/PIPEDA/SOC 2/ISO 27001 Compliant**
 
 **Key Security Features**:
+
 - Multi-layered data protection (application, access control, encryption, audit)
 - Organization-based data isolation with hierarchical access
 - Encrypted PII at rest with secure key management
@@ -67,6 +68,7 @@ UnionEyes has achieved **world-class security certification** with:
 UnionEyes is a **complete enterprise union management platform** designed for modern labor organizations. Built with Next.js 14 and Azure PostgreSQL, it provides comprehensive tools for claims processing, member management, collective bargaining, financial tracking, and cross-organizational collaboration.
 
 **Why UnionEyes?**
+
 - 🏢 **All-in-One Platform**: Claims, members, CBA intelligence, financials, collaboration - everything unions need
 - 🔒 **Bank-Level Security**: 10/10 security rating with 238 RLS policies, AES-256 encryption, Azure Key Vault
 - 🚀 **Modern Tech Stack**: Next.js 14, TypeScript, PostgreSQL, Sentry, Clerk authentication
@@ -102,6 +104,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 ## ✨ Key Features
 
 ### 📊 **Claims Management**
+
 - Complete CRUD operations with advanced filtering
 - Automated workflow engine with status transitions
 - File attachments and evidence management
@@ -110,6 +113,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Bulk operations and batch processing
 
 ### 👥 **Member Management**
+
 - Comprehensive member profiles with PII encryption
 - Document management (contracts, certifications, IDs)
 - Certification tracking with expiration alerts
@@ -118,6 +122,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Family member management
 
 ### 📋 **CBA Intelligence**
+
 - Contract upload and parsing
 - Clause library with categorization
 - Precedent database with search
@@ -126,6 +131,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Cross-organization clause sharing (optional)
 
 ### 💰 **Financial System**
+
 - Strike fund management
 - Payment processing (Stripe/Whop integration)
 - Subscription management
@@ -134,6 +140,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Budget planning tools
 
 ### 🤝 **Cross-Organization Collaboration**
+
 - Shared clause library across unions
 - Precedent exchange and discovery
 - Organization directory and profiles
@@ -142,6 +149,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Collaboration analytics
 
 ### 📅 **Calendar & Events**
+
 - Integrated calendar system
 - Event management and scheduling
 - Meeting coordination
@@ -150,6 +158,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Calendar sync capabilities
 
 ### 💬 **Communication**
+
 - In-app messaging system
 - Thread-based conversations
 - Real-time notifications
@@ -158,6 +167,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Mobile-responsive interface
 
 ### 🤖 **AI Workbench**
+
 - Multi-provider AI (Claude, GPT-4, Gemini)
 - Context-aware union assistance
 - Contract analysis and interpretation
@@ -166,6 +176,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Responsible AI guidelines
 
 ### 📊 **Reports & Analytics**
+
 - Custom report builder
 - Scheduled report delivery
 - Real-time dashboards
@@ -176,6 +187,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Multi-dimensional compensation analysis
 
 ### 🛡️ **Defensibility Pack System** ✨ NEW
+
 - System-of-record export packages for arbitration
 - Complete audit trail with tamper-proof signatures
 - Document version control and timeline tracking
@@ -186,6 +198,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Compliance tracking for arbitration deadlines
 
 ### 👁️ **Visibility & Access Controls** ✨ NEW
+
 - Granular visibility scopes: private, union-wide, public, verified-only
 - Row-level security integration for data isolation
 - Configurable sharing permissions for clauses and precedents
@@ -194,6 +207,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Automated visibility enforcement in all data queries
 
 ### 🔐 **Security & Compliance**
+
 - 238 Row-Level Security policies
 - AES-256 encryption for PII
 - Azure Key Vault integration
@@ -202,6 +216,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Role-based access control
 
 ### 📜 **GDPR Compliance** ✨ NEW
+
 - Cookie consent management with granular controls
 - Data export (Article 15 - Right of Access)
 - Right to be forgotten (Article 17 - Data Erasure)
@@ -212,6 +227,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - [View documentation](docs/gdpr-and-signatures.md)
 
 ### ✍️ **E-Signature Integration** ✨ NEW
+
 - DocuSign integration (enterprise-grade)
 - HelloSign/Dropbox Sign support
 - Internal signature system (no external API)
@@ -223,6 +239,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - [View documentation](docs/gdpr-and-signatures.md)
 
 ### 🤖 **AI Chatbot with RAG** ✨ NEW (Priority 2)
+
 - Union rights Q&A assistant powered by AI
 - Multi-provider support (OpenAI GPT-4, Anthropic Claude, Google Gemini)
 - RAG (Retrieval-Augmented Generation) with vector search
@@ -234,6 +251,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - [View documentation](docs/PRIORITY_2_FEATURES.md#1-ai-chatbot-with-rag)
 
 ### ♿ **Accessibility Audit (WCAG 2.2 AA)** ✨ NEW (Priority 2)
+
 - Automated accessibility testing (axe-core, Lighthouse)
 - WCAG 2.2 Level A and AA compliance
 - Issue tracking with severity classification
@@ -245,6 +263,7 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - [View documentation](docs/PRIORITY_2_FEATURES.md#2-accessibility-audit-wcag-22-aa)
 
 ### 🌍 **International Address Formats** ✨ NEW (Priority 2)
+
 - Support for 23+ countries with localized formats
 - Address validation (Google Maps, SmartyStreets, HERE)
 - Geocoding with latitude/longitude resolution
@@ -303,23 +322,28 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 Before you begin, ensure you have:
 
 ### **Required**
+
 - **Node.js 18+** or **Bun** (latest LTS version recommended)
 - **pnpm** package manager (`npm install -g pnpm`)
 - **Azure PostgreSQL** database (or local PostgreSQL 14+)
 - **Redis 7.x** for BullMQ queues
+
   ```bash
   # Quick start with Docker:
   docker run -d -p 6379:6379 --name redis redis:7-alpine
   ```
+
 - **Git** for version control
 
 ### **Accounts & Services**
+
 - **Clerk Account** - User authentication ([clerk.com](https://clerk.com))
 - **Azure Account** - Database, Key Vault, Web Apps ([azure.com](https://azure.com))
 - **Vercel Account** - Blob storage ([vercel.com](https://vercel.com))
 - **Resend Account** - Email delivery ([resend.com](https://resend.com))
 
 ### **Optional (for full features)**
+
 - **Sentry Account** - Error monitoring ([sentry.io](https://sentry.io))
 - **OpenAI API Key** - GPT-4 access ([platform.openai.com](https://platform.openai.com))
 - **Anthropic API Key** - Claude access ([console.anthropic.com](https://console.anthropic.com))
@@ -398,8 +422,9 @@ pnpm turbo dev
 ### **6. Access the Application**
 
 Open your browser and navigate to:
-- **Development**: http://localhost:3000
-- **API Docs**: http://localhost:3000/api/docs (if enabled)
+
+- **Development**: <http://localhost:3000>
+- **API Docs**: <http://localhost:3000/api/docs> (if enabled)
 
 **Default Login**: Create an account through Clerk's authentication flow
 
@@ -494,6 +519,7 @@ WHOP_WEBHOOK_SECRET="..."
 See `.env.example` for complete configuration with detailed comments.
 
 For specific environments:
+
 - `.env.local` - Local development
 - `.env.staging` - Staging environment (Azure)
 - `.env.production` - Production environment (Azure)
@@ -845,6 +871,7 @@ Comprehensive security verification completed on **December 2024** with all 80 i
 | **Integration Tests** | ✅ Pass | ✅ Pass | [Final Report](docs/security/SECURITY_VERIFICATION_FINAL_REPORT.md) |
 
 **Key Security Achievements**:
+
 - ✅ Azure Key Vault integration with hardware-backed keys
 - ✅ AES-256-GCM field-level encryption for all PII/PHI
 - ✅ PostgreSQL Row-Level Security with complete data isolation
@@ -880,13 +907,15 @@ Comprehensive security verification completed on **December 2024** with all 80 i
 - Migration documentation: [docs/archive/SCHEMA_ALIGNMENT_COMPLETE.md](docs/archive/SCHEMA_ALIGNMENT_COMPLETE.md)
 
 ---
-2. **Phase 2**: Advanced Features - Members, Analytics, Reporting
-3. **Phase 3**: Validation & Testing - Security, RLS, Data Integrity
-4. **Phase 4**: Financial System - Strike Fund, Financial Tracking, Payment Processing
-5. **Phase 5A**: Payment Integration - Stripe/Whop, Subscription Management
-6. **Phase 5B**: Cross-Org Collaboration - Clause Library, Precedent Database, Org Discovery
+
+1. **Phase 2**: Advanced Features - Members, Analytics, Reporting
+2. **Phase 3**: Validation & Testing - Security, RLS, Data Integrity
+3. **Phase 4**: Financial System - Strike Fund, Financial Tracking, Payment Processing
+4. **Phase 5A**: Payment Integration - Stripe/Whop, Subscription Management
+5. **Phase 5B**: Cross-Org Collaboration - Clause Library, Precedent Database, Org Discovery
 
 🎉 **Latest: Phase 5B Complete (Nov 20, 2025)**
+
 - ✅ 9 database tables with RLS policies
 - ✅ 16 API endpoints for collaboration
 - ✅ 14 frontend components
@@ -945,6 +974,7 @@ pnpm tsx scripts/verify-security.ts
    - Query filtering validation
 
 **Security Documentation**:
+
 - [Security Verification Report](docs/security/SECURITY_VERIFICATION_FINAL_REPORT.md)
 - [RLS Audit Results](docs/security/SECURITY_AUDIT_RLS.md)
 - [Encryption Implementation](docs/security/SECURITY_IMPLEMENTATION_COMPLETE.md)
@@ -962,12 +992,14 @@ pnpm tsx scripts/verify-security.ts
 ### **Manual Testing Checklist**
 
 **Dashboard**:
+
 - [ ] Real-time metrics display correctly
 - [ ] Charts render with accurate data
 - [ ] Activity feed shows recent events
 - [ ] Quick actions navigate to correct pages
 
 **Claims Management**:
+
 - [ ] Create new claim with all required fields
 - [ ] Edit existing claim and verify updates
 - [ ] Filter claims by status, type, date range
@@ -975,18 +1007,21 @@ pnpm tsx scripts/verify-security.ts
 - [ ] Status transitions trigger notifications
 
 **Member Management**:
+
 - [ ] Create new member profile
 - [ ] Upload member documents to vault
 - [ ] Add family members and relationships
 - [ ] Verify privacy controls work correctly
 
 **AI Workbench**:
+
 - [ ] Chat with each AI provider (OpenAI, Anthropic, Groq, Cerebras, Gemini)
 - [ ] Upload document and ask questions
 - [ ] Verify RAG search returns relevant results
 - [ ] Cost tracking displays correctly
 
 **Security**:
+
 - [ ] PII fields are encrypted at rest
 - [ ] Users can only access their organization's data
 - [ ] Audit logs capture all data modifications
@@ -1001,6 +1036,7 @@ pnpm tsx scripts/verify-security.ts
 UnionEyes is designed for Azure deployment with full infrastructure support:
 
 #### **Prerequisites**
+
 - Azure subscription with Resource Group
 - Azure PostgreSQL Flexible Server (with Citus extension)
 - Azure Key Vault for secret management
@@ -1100,16 +1136,19 @@ pnpm drizzle-kit migrate
 ### **Docker Deployment**
 
 #### **Development**
+
 ```bash
 docker-compose up -d
 ```
 
 #### **Staging**
+
 ```bash
 docker-compose -f docker-compose.staging.yml up -d
 ```
 
 #### **Production**
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
@@ -1125,6 +1164,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ### **Deployment Checklist**
 
 **Pre-Deployment**:
+
 - [ ] All environment variables configured
 - [ ] Azure Key Vault accessible with proper permissions
 - [ ] Database connection tested
@@ -1134,6 +1174,7 @@ docker-compose -f docker-compose.prod.yml up -d
 - [ ] Backup strategy implemented
 
 **Post-Deployment**:
+
 - [ ] Verify application health check endpoint
 - [ ] Test database connectivity
 - [ ] Verify Azure Key Vault integration
@@ -1162,52 +1203,62 @@ docker-compose -f docker-compose.prod.yml up -d
 All documentation is organized in the [docs/](docs/) directory:
 
 #### **Features** ([docs/features/](docs/features/))
+
 - Feature specifications and PR descriptions
 - Implementation guides for major features
 - 13+ detailed feature documents
 
 #### **Implementation** ([docs/implementation/](docs/implementation/))
+
 - Phase completion reports
 - Progress tracking documents
 - Implementation summaries and assessments
 
 #### **Security** ([docs/security/](docs/security/))
+
 - [Security Verification Final Report](docs/security/SECURITY_VERIFICATION_FINAL_REPORT.md) - Complete security test results (80/80 passing)
 - [Security Implementation Complete](docs/security/SECURITY_IMPLEMENTATION_COMPLETE.md) - Azure Key Vault integration
 - [Security Audit RLS](docs/security/SECURITY_AUDIT_RLS.md) - Row-Level Security audit
 - Route authentication audit reports
 
 #### **Compliance** ([docs/compliance/](docs/compliance/))
+
 - GDPR compliance documentation
 - Privacy policy implementation
 - Data protection guidelines
 
 #### **Migrations** ([docs/migrations/](docs/migrations/))
+
 - Database migration logs and outputs
 - Migration execution records
 - Schema alignment documentation
 
 #### **Migration Status** ([docs/migration/](docs/migration/))
+
 - User ID migration reports
 - Migration alignment status
 - Migration inventory and tracking
 
 #### **Developer** ([docs/developer/](docs/developer/))
+
 - Branch merge plans
 - Development workflow guides
 - Technical planning documents
 
 #### **Integrations** ([docs/integrations/](docs/integrations/))
+
 - CBA intelligence integration
 - AI provider setup and configuration
 - Third-party service integrations
 
 #### **AI/CBA Intelligence** ([docs/ai/](docs/ai/))
+
 - CBA intelligence system documentation
 - AI-powered contract analysis guides
 - RAG implementation details
 
 #### **Validation** ([docs/validation/](docs/validation/))
+
 - Final assessment and validation reports
 - Phase verification documents
 - Quality assurance records
@@ -1242,7 +1293,7 @@ API routes are organized under `/app/api/`:
 - **TypeScript Types**: See [types/](types/) for complete type definitions
 - **Database Schema**: See [database/schema/](database/schema/) for Drizzle schemas
 - **Components**: See [components/](components/) for React component library
-- **Test Suites**: See [__tests__/](__tests__/) for test examples
+- **Test Suites**: See [**tests**/](__tests__/) for test examples
 
 ### **External Resources**
 
@@ -1270,6 +1321,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
 ### **Development Workflow**
 
 1. **Fork the Repository**
+
    ```bash
    # Fork on GitHub, then clone your fork
    git clone https://github.com/YOUR_USERNAME/union-claims-standalone.git
@@ -1277,6 +1329,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
    ```
 
 2. **Create a Feature Branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    # Or for bug fixes:
@@ -1284,6 +1337,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
    ```
 
 3. **Set Up Development Environment**
+
    ```bash
    # Install dependencies
    pnpm install
@@ -1302,6 +1356,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
    - Follow TypeScript best practices and ESLint rules
 
 5. **Test Your Changes**
+
    ```bash
    # Run all tests
    pnpm test
@@ -1317,6 +1372,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
    ```
 
 6. **Commit Your Changes**
+
    ```bash
    # Use conventional commit format
    git add .
@@ -1335,6 +1391,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
    - `chore:` - Maintenance tasks
 
 7. **Push to Your Fork**
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -1357,6 +1414,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
 ### **Pull Request Guidelines**
 
 **Before Submitting**:
+
 - [ ] Code follows existing style and patterns
 - [ ] All tests pass (`pnpm test`)
 - [ ] No ESLint errors (`pnpm lint`)
@@ -1365,6 +1423,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
 - [ ] Commit messages follow conventional format
 
 **PR Description Should Include**:
+
 - What: Brief description of changes
 - Why: Reason for the change
 - How: Technical approach taken
@@ -1375,7 +1434,7 @@ We welcome contributions from the community! UnionEyes is built to serve labor u
 
 - **Questions**: Open a GitHub Discussion
 - **Bugs**: Create a detailed issue with reproduction steps
-- **Security Issues**: Email security@unioneyes.com (do not open public issues)
+- **Security Issues**: Email <security@unioneyes.com> (do not open public issues)
 
 ### **Code of Conduct**
 
@@ -1393,15 +1452,18 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ### **MIT License Summary**
 
 ✅ **Permissions**:
+
 - ✓ Commercial use
 - ✓ Modification
 - ✓ Distribution
 - ✓ Private use
 
 ⚠️ **Conditions**:
+
 - License and copyright notice must be included
 
 ❌ **Limitations**:
+
 - No liability
 - No warranty
 
@@ -1410,6 +1472,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 UnionEyes uses open-source software under various licenses. See [package.json](package.json) for complete dependency list.
 
 **Key Dependencies**:
+
 - **Next.js** - MIT License
 - **React** - MIT License
 - **PostgreSQL** - PostgreSQL License
@@ -1428,13 +1491,14 @@ UnionEyes uses open-source software under various licenses. See [package.json](p
 | 🐛 **Bug Reports** | [GitHub Issues](https://github.com/anungis437/union-claims-standalone/issues) |
 | 💡 **Feature Requests** | [GitHub Discussions](https://github.com/anungis437/union-claims-standalone/discussions) |
 | 📖 **Documentation** | [README](README.md), [docs/](docs/) |
-| 🔒 **Security Issues** | security@unioneyes.com (private disclosure) |
+| 🔒 **Security Issues** | <security@unioneyes.com> (private disclosure) |
 | 💬 **General Questions** | [GitHub Discussions](https://github.com/anungis437/union-claims-standalone/discussions) |
-| 📧 **Email Support** | support@unioneyes.com |
+| 📧 **Email Support** | <support@unioneyes.com> |
 
 ### **Before Opening an Issue**
 
 **For Bugs**:
+
 1. Check if the issue already exists
 2. Include reproduction steps
 3. Provide environment details (OS, Node version, database)
@@ -1442,6 +1506,7 @@ UnionEyes uses open-source software under various licenses. See [package.json](p
 5. Describe expected vs. actual behavior
 
 **For Features**:
+
 1. Search existing feature requests
 2. Explain the use case and benefit
 3. Provide examples or mockups if applicable
@@ -1455,13 +1520,14 @@ UnionEyes uses open-source software under various licenses. See [package.json](p
 ### **Professional Support**
 
 For organizations requiring:
+
 - Custom feature development
 - Dedicated support
 - Training and onboarding
 - Data migration assistance
 - Security audits
 
-Please contact: enterprise@unioneyes.com
+Please contact: <enterprise@unioneyes.com>
 
 ---
 
@@ -1486,6 +1552,7 @@ UnionEyes is **production-ready** with a comprehensive feature set. Future enhan
 ### **Planned Enhancements**
 
 #### **Q1 2025 - Advanced Analytics**
+
 - 📊 Predictive analytics for claims volume forecasting
 - 📈 ML-powered trend analysis and anomaly detection
 - 🎯 Custom KPI tracking with configurable dashboards
@@ -1493,6 +1560,7 @@ UnionEyes is **production-ready** with a comprehensive feature set. Future enhan
 - 🤖 AI-powered insights and recommendations
 
 #### **Q2 2025 - Mobile Experience**
+
 - 📱 React Native mobile app (iOS/Android)
 - 📲 Offline-first architecture with sync
 - 📸 Mobile document capture with OCR
@@ -1500,6 +1568,7 @@ UnionEyes is **production-ready** with a comprehensive feature set. Future enhan
 - 🗣️ Voice-to-text claim submission
 
 #### **Q3 2025 - Integration Platform**
+
 - 🔌 REST API v2 with webhooks
 - 🔗 Integration marketplace (HRIS, payroll, benefits)
 - 📡 Real-time data sync with external systems
@@ -1507,6 +1576,7 @@ UnionEyes is **production-ready** with a comprehensive feature set. Future enhan
 - 🛠️ Custom integration builder (low-code)
 
 #### **Q4 2025 - AI Enhancements**
+
 - 🧠 Advanced RAG with vector embeddings
 - 🤖 AI-powered case recommendations
 - 📄 Automated document generation (contracts, letters, reports)
@@ -1514,6 +1584,7 @@ UnionEyes is **production-ready** with a comprehensive feature set. Future enhan
 - 🌐 Multilingual AI with 100+ language support
 
 #### **2026 - Advanced Features**
+
 - 🎥 Video conferencing for virtual hearings
 - 📋 E-signature integration for contracts
 - 🗳️ Voting and referendum management
@@ -1527,6 +1598,7 @@ UnionEyes is **production-ready** with a comprehensive feature set. Future enhan
 We actively incorporate feedback from unions using the platform. [Share your ideas](https://github.com/anungis437/union-claims-standalone/discussions) and help shape the future of UnionEyes!
 
 **Priority Areas** (based on community feedback):
+
 1. Mobile app development
 2. Enhanced reporting and analytics
 3. Third-party integrations
@@ -1542,6 +1614,7 @@ We actively incorporate feedback from unions using the platform. [Share your ide
 **Maintainers**: [Contributors](https://github.com/anungis437/union-claims-standalone/graphs/contributors)
 
 ### Recent Improvements (v1.1.0 - February 2026)
+
 - ✅ **Defensibility Pack System**: System-of-record exports for arbitration
 - ✅ **Wage Benchmarking**: Multi-dimensional compensation analytics (COL, CPI, industry, NOC)
 - ✅ **Visibility Controls**: Granular data access controls with 4 visibility levels
@@ -1568,4 +1641,3 @@ UnionEyes is built with incredible open-source technologies:
 - **[OpenAI](https://openai.com)**, **[Anthropic](https://anthropic.com)**, **[Google AI](https://ai.google)** - AI providers
 
 Special thanks to all [contributors](https://github.com/anungis437/union-claims-standalone/graphs/contributors) and the labor movement for inspiring this project.
-

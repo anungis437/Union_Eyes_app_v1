@@ -9,11 +9,13 @@
 ## Problem Analysis
 
 ### Issue 1: Confusing Navigation
+
 - **Symptom**: Clicking "Settings" goes to `/dashboard/settings` (basic user settings)
 - **Expected**: Super admins should have easy access to `/admin/settings` (admin control panel)
 - **Root Cause**: Only one "Settings" link in sidebar, no "Admin Panel" link
 
 ### Issue 2: Admin Panel Access Denied
+
 - **Symptom**: Clicking admin panel redirects to dashboard with `error=unauthorized`
 - **Root Cause**: Database UUID type mismatch
   - Database column `user_management.tenant_users.user_id` expects UUID format
@@ -27,6 +29,7 @@
 ### 1. Navigation Enhancement ✅
 
 **Added "Admin Panel" Link to Sidebar**:
+
 - **Location**: `components/sidebar.tsx`
 - **Position**: Between "Analytics" and "Settings"
 - **Icon**: Shield icon
@@ -35,6 +38,7 @@
 - **Roles**: Admin and Union Rep only
 
 **Navigation Structure** (for admins):
+
 ```
 Dashboard
 My Claims
@@ -49,6 +53,7 @@ Settings          ← Goes to /dashboard/settings (user settings)
 ### 2. Database Schema Fix ✅
 
 **Changed Column Type**:
+
 - **Table**: `user_management.tenant_users`
 - **Column**: `user_id`
 - **Before**: `uuid` (PostgreSQL UUID type)
@@ -58,6 +63,7 @@ Settings          ← Goes to /dashboard/settings (user settings)
   - `database/migrations/fix-user-id-type.sql` (migration script)
 
 **Migration Script** (`database/migrations/fix-user-id-type.sql`):
+
 - Backs up existing data to `tenant_users_backup`
 - Changes column type from UUID to VARCHAR(255)
 - Adds index for performance
@@ -76,11 +82,13 @@ Settings          ← Goes to /dashboard/settings (user settings)
 2. **Users** → Find your user
 3. Click user → **Metadata** tab
 4. Under **Public Metadata**, add:
+
    ```json
    {
      "role": "admin"
    }
    ```
+
 5. Save and refresh browser
 
 **Pros**: Instant, no DB access needed  
@@ -93,13 +101,15 @@ Settings          ← Goes to /dashboard/settings (user settings)
 **Time**: 5 minutes  
 **Permanent solution**
 
-#### Automated Script:
+#### Automated Script
+
 ```powershell
 cd d:\APPS\union-claims-standalone\UnionEyes
 .\scripts\setup-admin-access.ps1
 ```
 
-#### Manual Steps:
+#### Manual Steps
+
 ```powershell
 # 1. Connect to database
 psql "postgresql://unionadmin:UnionEyes2025!Staging@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require"
@@ -151,12 +161,14 @@ After implementing either solution:
 ### Route Protection
 
 **Admin Routes** (`/admin/*`):
+
 - **Middleware**: Checks `Permission.VIEW_ADMIN_PANEL`
 - **Layout**: `app/admin/layout.tsx` enforces role check
 - **Allowed Roles**: Admin, Union Rep
 - **Redirect**: `/dashboard?error=unauthorized` if denied
 
 **Dashboard Routes** (`/dashboard/*`):
+
 - **Middleware**: Basic authentication check
 - **Individual Pages**: May have additional role requirements
 - **Allowed**: All authenticated users (minimum)
@@ -168,6 +180,7 @@ After implementing either solution:
 ### 1. Sidebar Navigation (`components/sidebar.tsx`)
 
 **Added**:
+
 ```typescript
 { 
   href: "/admin/settings", 
@@ -184,11 +197,13 @@ After implementing either solution:
 ### 2. Database Schema (`db/schema/user-management-schema.ts`)
 
 **Before**:
+
 ```typescript
 userId: uuid("user_id").notNull().references(() => users.userId, { onDelete: "cascade" }),
 ```
 
 **After**:
+
 ```typescript
 userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Clerk IDs
 ```
@@ -200,6 +215,7 @@ userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Cle
 ### 3. Migration Script (`database/migrations/fix-user-id-type.sql`)
 
 **Operations**:
+
 1. Backup existing data
 2. Drop foreign key constraint
 3. Change column type to VARCHAR(255)
@@ -224,6 +240,7 @@ userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Cle
 
 1. **User authenticates** via Clerk
 2. **Server checks role**:
+
    ```typescript
    getUserRole(userId) {
      // 1. Try database lookup
@@ -238,18 +255,21 @@ userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Cle
      }
    }
    ```
+
 3. **Permission checked**: `hasPermission(role, Permission.VIEW_ADMIN_PANEL)`
 4. **Navigation filtered**: Sidebar only shows items user has permission for
 
 ### Database Schema Notes
 
 **Why VARCHAR instead of UUID?**
+
 - Clerk generates user IDs as strings: `user_2abc123xyz`
 - PostgreSQL UUID type only accepts standard UUID format: `123e4567-e89b-12d3-a456-426614174000`
 - VARCHAR(255) accommodates both formats for flexibility
 - Index added to maintain query performance
 
 **Foreign Key Removed**:
+
 - Original schema had FK to `users.userId` (UUID)
 - Removed because Clerk manages users externally
 - No need for FK constraint to internal users table
@@ -259,17 +279,20 @@ userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Cle
 ## Troubleshooting
 
 ### "Admin Panel" link not showing
+
 - **Check role**: Run `/api/auth/role` endpoint to see your current role
 - **Check logs**: Look for "Error fetching user role" in server output
 - **Verify DB**: Query `SELECT * FROM user_management.tenant_users WHERE user_id = 'your_clerk_id'`
 
 ### Still getting "unauthorized" error
+
 - **Clear browser cache**: Hard refresh (Ctrl+Shift+R)
 - **Restart dev server**: Stop and run `pnpm run dev` again
 - **Check Clerk metadata**: Verify role is set in Clerk dashboard
 - **Check database**: Verify user_id column is VARCHAR, not UUID
 
 ### UUID errors in logs
+
 - **Migration not run**: Execute `database/migrations/fix-user-id-type.sql`
 - **Schema not updated**: Check `db/schema/user-management-schema.ts` line 47
 - **Cache issue**: Restart dev server to reload schema
@@ -306,4 +329,3 @@ userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Cle
 - **How to add more admins?** Use admin panel once you have access
 - **Can union reps access admin panel?** Yes, but with limited permissions
 - **What about members?** Members cannot access admin panel
-

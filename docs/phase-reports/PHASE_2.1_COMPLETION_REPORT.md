@@ -20,6 +20,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 **File**: `lib/report-executor.ts` (550 lines)
 
 **Features Implemented**:
+
 - ✅ Dynamic SQL query builder using Drizzle ORM
 - ✅ ReportExecutor class with execute() method
 - ✅ DATA_SOURCES registry with 4 data sources:
@@ -50,46 +51,48 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 **File**: `db/queries/analytics-queries.ts` (Enhanced - added ~250 lines)
 
 **New Functions Added** (Phase 2 versions):
+
 1. ✅ **getReports()** - Get all reports with advanced filtering
    - Filters: category, isTemplate, isPublic, search
    - Share access checking
    - Tenant isolation
-   
+
 2. ✅ **getReportById()** - Get single report by ID
    - Tenant validation
    - Full report configuration
-   
+
 3. ✅ **createReport()** - Create new report
    - Full configuration support
    - Template linking
    - Audit fields (created_by, updated_by)
-   
+
 4. ✅ **updateReport()** - Update existing report
    - Partial updates
    - Audit tracking
-   
+
 5. ✅ **deleteReport()** - Delete report
    - Tenant validation
    - Soft delete support ready
-   
+
 6. ✅ **logReportExecution()** - Log execution history
    - Execution metrics (time, row count)
    - Status tracking (completed, failed)
    - Error logging
-   
+
 7. ✅ **getReportExecutions()** - Get execution history
    - Pagination support
    - Filtering by date range
-   
+
 8. ✅ **getReportTemplates()** - Get report templates
    - Category filtering
    - Pre-built configurations
-   
+
 9. ✅ **createReportFromTemplate()** - Create report from template
    - Template cloning
    - Configuration inheritance
 
 **Legacy Functions Maintained**:
+
 - getReportsLegacy() - Backwards compatibility
 - createReportLegacy() - Backwards compatibility
 
@@ -98,6 +101,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 **File**: `app/api/reports/[id]/execute/route.ts` (115 lines)
 
 **Features Implemented**:
+
 - ✅ POST handler for report execution
 - ✅ Permission checking:
   - Creator access
@@ -118,6 +122,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 **File**: `app/api/reports/route.ts` (Enhanced)
 
 **GET Handler Enhancements**:
+
 - ✅ Query parameter filtering:
   - category (string)
   - isTemplate (boolean)
@@ -127,6 +132,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 - ✅ Share access integration
 
 **POST Handler Enhancements**:
+
 - ✅ Default values for reportType and category
 - ✅ Improved error messages
 - ✅ Enhanced validation
@@ -136,6 +142,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 **File**: `app/api/reports/datasources/route.ts` (Enhanced - 85 lines)
 
 **Features Implemented**:
+
 - ✅ Integration with ReportExecutor.getAllDataSources()
 - ✅ Formatted response with:
   - Data source ID
@@ -151,12 +158,14 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 **File**: `app/api/reports/[id]/share/route.ts` (225 lines)
 
 **GET Handler**:
+
 - ✅ List all shares for a report
 - ✅ User details included (email, first_name, last_name)
 - ✅ Owner-only access
 - ✅ Tenant isolation
 
 **POST Handler**:
+
 - ✅ Share with single user or array of users
 - ✅ Permission levels:
   - canEdit (boolean)
@@ -167,6 +176,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 - ✅ Owner verification
 
 **DELETE Handler**:
+
 - ✅ Revoke share by shareId
 - ✅ Owner-only revocation
 - ✅ Tenant validation
@@ -176,6 +186,7 @@ Phase 2.1 focused on building the backend infrastructure for the Enhanced Analyt
 ## Database Integration
 
 ### Tables Used (from Phase 1.5+)
+
 All tables already deployed - no migrations needed:
 
 1. **reports** - Main reports table
@@ -208,29 +219,37 @@ All tables already deployed - no migrations needed:
 ## Technical Challenges & Resolutions
 
 ### Issue 1: Duplicate Function Names
+
 **Problem**: getReports and createReport defined twice in analytics-queries.ts
+
 - Original versions at lines 653, 688 (organizationId-based)
 - New versions at lines 854, 923 (tenantId-based with advanced filtering)
 
-**Resolution**: 
+**Resolution**:
+
 - Renamed original functions to getReportsLegacy, createReportLegacy
 - Kept new implementations as primary (Phase 2 versions)
 - Maintained backwards compatibility
 
 ### Issue 2: withTenantAuth Signature Mismatch
+
 **Problem**: Route handlers using old withTenantAuth signature
+
 - Expected: `(req, context, params?)`
 - Provided: `(req, { params })`
 
 **Resolution**:
+
 - Updated all Phase 2.1 route handlers to new signature
 - Extract params from `params?.id || context?.params?.id`
 - Files fixed: execute/route.ts, share/route.ts
 
 ### Issue 3: Type Safety in createReportFromTemplate
+
 **Problem**: Template fields (description, category) typed as `unknown`
 
 **Resolution**:
+
 - Added type guards: `typeof templateData.category === 'string' ? ... : undefined`
 - Made category optional in createReport interface
 - Added null coalescing in SQL: `${data.category || null}`
@@ -240,6 +259,7 @@ All tables already deployed - no migrations needed:
 ## Code Quality Metrics
 
 ### Lines of Code
+
 - **New Code**: ~1,150 lines
   - lib/report-executor.ts: 550 lines
   - db/queries/analytics-queries.ts: +250 lines
@@ -249,10 +269,13 @@ All tables already deployed - no migrations needed:
   - app/api/reports/datasources/route.ts
 
 ### Test Coverage
+
 ⏳ **Pending**: Unit tests for Phase 2.1 (scheduled for Phase 2.7)
 
 ### Build Status
+
 ✅ **Passing**: Build completed successfully
+
 - TypeScript compilation: ✅ Pass
 - Type checking: ✅ Pass
 - Warnings: Only dependency-related (Sentry, BullMQ - unrelated to Phase 2)
@@ -262,12 +285,14 @@ All tables already deployed - no migrations needed:
 ## API Endpoint Summary
 
 ### New Endpoints (Phase 2.1)
+
 1. `POST /api/reports/[id]/execute` - Execute report configuration
 2. `GET /api/reports/[id]/share` - List report shares
 3. `POST /api/reports/[id]/share` - Share report with users
 4. `DELETE /api/reports/[id]/share?shareId=xxx` - Revoke share
 
 ### Enhanced Endpoints (Phase 2.1)
+
 1. `GET /api/reports` - Added filtering (category, isTemplate, isPublic, search)
 2. `POST /api/reports` - Added defaults and validation
 3. `GET /api/reports/datasources` - Integrated with ReportExecutor
@@ -279,6 +304,7 @@ All tables already deployed - no migrations needed:
 **Estimated Duration**: 2 days
 
 ### Tasks
+
 1. **Enhance ReportBuilder.tsx** (825 → 1200 lines)
    - Add live preview panel
    - Improve formula builder
@@ -314,6 +340,7 @@ All tables already deployed - no migrations needed:
 ## Success Metrics
 
 ### Phase 2.1 Goals Achievement
+
 - ✅ Dynamic report execution engine: **100%**
 - ✅ Report management query layer: **100%**
 - ✅ Report execution API: **100%**
@@ -323,6 +350,7 @@ All tables already deployed - no migrations needed:
 - ⏳ Unit tests: **0%** (Phase 2.7)
 
 ### Performance Targets
+
 - Report execution time: Target <2s for typical queries
 - API response time: Target <500ms for CRUD operations
 - Database query optimization: Indexed on tenant_id, created_by, category
@@ -330,6 +358,7 @@ All tables already deployed - no migrations needed:
 ---
 
 ## Documentation Generated
+
 1. ✅ PHASE_2_ENHANCED_ANALYTICS.md - Full implementation plan (600+ lines)
 2. ✅ PHASE_2.1_COMPLETION_REPORT.md - This document
 

@@ -147,7 +147,7 @@ mobile/assets/
 
 ### Screenshot Generators
 
-- **App Store Screenshot Generator:** https://www.appscreens.io/
+- **App Store Screenshot Generator:** <https://www.appscreens.io/>
 - **Figma Templates:** Community templates
 - **Mockuuups:** Device frames
 

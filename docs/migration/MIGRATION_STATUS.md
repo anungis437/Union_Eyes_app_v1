@@ -3,6 +3,7 @@
 ## Applied Migrations
 
 ### Core Migrations (0000-0061)
+
 - **0000-0006**: Initial schema and phase migrations
 - **0051-0054**: RLS (Row-Level Security) policies for messaging, notifications, reports, calendar
 - **0055**: User ID alignment to Clerk authentication
@@ -14,13 +15,16 @@
 - **0061**: Defensibility packs (system-of-record exports)
 
 ### Manual Migrations
+
 Located in `db/migrations/manual/`:
 
 #### Recently Applied (February 2026)
+
 - **apply_0060_0061_consolidated.sql** - Consolidated migration for 0060 + 0061 (idempotent)
 - **0062_add_wage_benchmarks_only.sql** - Wage benchmarks tables (Statistics Canada integration)
 
 #### Historical Manual Migrations
+
 - 053-058: RLS policies and system features
 - 067-069: Advanced analytics, encrypted PII, feature flags
 - Various feature-specific migrations
@@ -28,11 +32,13 @@ Located in `db/migrations/manual/`:
 ## Active Migration Scripts
 
 ### PowerShell Scripts (`scripts/`)
+
 - **apply-migrations-now.ps1** - Apply migrations 0060 & 0061 (visibility scopes + defensibility packs)
 - **apply-wage-benchmarks.ps1** - Apply migration 0062 (wage benchmarks tables)
 - **apply-auth-wrappers.ps1** - Authentication wrapper utilities
 
 ### TypeScript Utilities (`scripts/`)
+
 - Various database management and seeding scripts
 - Migration CLI tools
 - Validation and verification utilities
@@ -42,16 +48,19 @@ Located in `db/migrations/manual/`:
 ### Tables Added (Recent Migrations)
 
 #### Migration 0060: Visibility Scopes
+
 - Added `visibility_scope` enum (member, staff, admin, system)
 - Modified `claim_updates` table (added visibility_scope column)
 - Modified `grievance_transitions` table (added visibility_scope column)
 
 #### Migration 0061: Defensibility Packs
+
 - `defensibility_packs` - Tamper-proof arbitration exports with SHA-256 integrity
 - `pack_download_log` - Audit trail of pack access
 - `pack_verification_log` - Tamper detection history
 
 #### Migration 0062: Wage Benchmarks
+
 - `wage_benchmarks` - Statistics Canada wage data by occupation (NOC codes)
 - `union_density` - Union membership rates by sector/region
 - `cost_of_living_data` - CPI and inflation for COLA calculations
@@ -61,6 +70,7 @@ Located in `db/migrations/manual/`:
 ## Migration Execution
 
 ### Recent Activity (February 9, 2026)
+
 1. ✅ Generated and applied migration 0060 (visibility scopes)
 2. ✅ Generated and applied migration 0061 (defensibility packs)
 3. ✅ Generated wage_benchmarks schema via drizzle-kit
@@ -69,6 +79,7 @@ Located in `db/migrations/manual/`:
 6. ✅ Verified all tables created successfully
 
 ### Verification Commands
+
 ```powershell
 # Verify migrations 0060 & 0061
 .\scripts\apply-migrations-now.ps1
@@ -83,6 +94,7 @@ psql -h <HOST> -U <USER> -d <DB> -c "SELECT tablename FROM pg_tables WHERE schem
 ## Dependencies Added
 
 ### npm Packages
+
 - **ioredis** v5.4.1 - Redis client for caching and session management
 
 ## Next Steps

@@ -19,6 +19,7 @@
    - Summary statistics
 
 3. **NPM Scripts** (added to `package.json`)
+
    ```json
    "validate:blind-spots": "npx tsx scripts/run-validators.ts",
    "validate:blind-spots:privacy": "npx tsx scripts/run-validators.ts --category=privacy",
@@ -28,36 +29,42 @@
 ## Validators Implemented (8/16)
 
 ### ✅ 1. Provincial Privacy Mismatch
+
 **File**: `scripts/validators/01-provincial-privacy.ts`  
 **Checks**: AB PIPA, BC PIPA, QC Law 25, ON PHIPA routing, 72h breach notification, province-specific consent  
 **Risk**: $50K+ fines per violation  
 **Scans**: Database schema, privacy services, breach handlers, consent management
 
 ### ✅ 2. OQLF Language Coverage
+
 **File**: `scripts/validators/02-oqlf-language.ts`  
 **Checks**: 100% fr-CA translation coverage, no hardcoded English, Quebec French terminology  
 **Risk**: $1,500-$30,000 fines per violation  
 **Scans**: `messages/en.json` vs `messages/fr-CA.json`, React components for hardcoded strings
 
 ### ✅ 3. Indigenous Data Sovereignty (OCAP®)
+
 **File**: `scripts/validators/03-indigenous-data.ts`  
 **Checks**: OCAP® compliance, on-reserve storage, Band Council consent, cultural protocols  
 **Risk**: Legal challenges, Band Council revocation  
 **Scans**: Indigenous services, on-premise configs, docker-compose, database schema
 
 ### ✅ 4. Strike Fund Tax Compliance
+
 **File**: `scripts/validators/04-strike-fund-tax.ts`  
 **Checks**: T4A/RL-1 generation, $500/week threshold, Quebec RL-1, Feb 28 deadline  
 **Risk**: CRA penalties for unreported income  
 **Scans**: Tax slip services, strike fund services, threshold logic
 
 ### ✅ 5. Geofence Privacy
+
 **File**: `scripts/validators/05-geofence-privacy.ts`  
 **Checks**: Opt-in only, 24h retention, no background tracking  
 **Risk**: Privacy Commissioner complaints  
 **Scans**: Location services, opt-in logic, retention policies
 
 ### ✅ 7. Cyber Insurance
+
 **File**: `scripts/validators/07-cyber-insurance.ts`  
 **Checks**: $50M+ policy documentation, crypto-ransom rider, SOC-2 Type II  
 **Risk**: Ransomware without coverage  
@@ -65,12 +72,14 @@
 **Note**: Returns WARN (manual verification required)
 
 ### ✅ 8. Open Source License Contamination
+
 **File**: `scripts/validators/08-open-source-license.ts`  
 **Checks**: AGPL-3.0, SSPL viral licenses in dependencies  
 **Risk**: Forced open-sourcing of entire SaaS  
 **Scans**: `package.json`, `node_modules/*/package.json`
 
 ### ✅ 12. Transfer Pricing & Currency
+
 **File**: `scripts/validators/12-transfer-pricing.ts`  
 **Checks**: CAD invoicing, Bank of Canada noon rate, T106 filing for >$1M  
 **Risk**: CRA transfer pricing audits  
@@ -79,14 +88,15 @@
 ## Validators Pending (8/16)
 
 Still need to implement:
-- 6. Joint-Trust FMV
-- 9. ESG Union-Washing
-- 10. Skill Succession
-- 11. Founder Conflict
-- 13. Force Majeure
-- 14. LMBP Immigration
-- 15. Carbon Exposure
-- 16. Golden Share Mission-Lock
+
+- 1. Joint-Trust FMV
+- 1. ESG Union-Washing
+- 1. Skill Succession
+- 1. Founder Conflict
+- 1. Force Majeure
+- 1. LMBP Immigration
+- 1. Carbon Exposure
+- 1. Golden Share Mission-Lock
 
 ## Documentation Created
 
@@ -123,12 +133,14 @@ pnpm run validate:blind-spots --category=taxation
 ## Integration Ready
 
 ### GitHub Actions
+
 ```yaml
 - name: Union Compliance Check
   run: pnpm run validate:blind-spots
 ```
 
 ### Pre-commit Hook
+
 ```bash
 # .husky/pre-commit
 pnpm run validate:blind-spots:critical

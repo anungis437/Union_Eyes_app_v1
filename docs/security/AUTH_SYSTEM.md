@@ -131,15 +131,18 @@ publicMetadata: {
 ### Troubleshooting
 
 **Issue:** User shows as unauthenticated
+
 - Check CLERK_SECRET_KEY is set
 - Verify ClerkProvider wraps app
 - Check middleware matcher patterns
 
 **Issue:** Wrong role permissions
+
 - Verify publicMetadata.role is set in Clerk dashboard
 - Check ROLE_HIERARCHY constants
 - Review hasRole() logic
 
 **Issue:** Token size errors (431)
+
 - Middleware handles this automatically
 - See middleware.ts token reduction logic

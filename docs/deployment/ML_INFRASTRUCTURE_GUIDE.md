@@ -7,9 +7,11 @@ This document covers the automated ML retraining pipeline and comprehensive plat
 **Location:** `scripts/ml-retraining-pipeline.ts`
 
 ### Purpose
+
 Monitors data drift and model performance, automatically triggering retraining when thresholds are exceeded. Implements validation gates before deployment to ensure quality and safety.
 
 ### Features
+
 - **Drift Detection**: PSI (Population Stability Index) monitoring triggers retraining when > 0.25
 - **Performance Monitoring**: Accuracy degradation below thresholds triggers retraining
 - **Automated Training**: Prepares data and trains models via Azure ML integration
@@ -18,6 +20,7 @@ Monitors data drift and model performance, automatically triggering retraining w
 - **Multi-Model Support**: Handles all 4 production models simultaneously
 
 ### Models Supported
+
 1. **Claim Outcome Prediction** - 85% accuracy threshold, 1000 min samples
 2. **Timeline Forecasting** - 78% accuracy threshold, 800 min samples
 3. **Churn Risk Prediction** - 85% accuracy threshold, 500 min samples
@@ -26,11 +29,13 @@ Monitors data drift and model performance, automatically triggering retraining w
 ### Usage
 
 **Retrain all models:**
+
 ```bash
 pnpm ml:retrain:all
 ```
 
 **Retrain specific model:**
+
 ```bash
 pnpm ml:retrain claim_outcome
 pnpm ml:retrain timeline
@@ -39,11 +44,13 @@ pnpm ml:retrain assignment
 ```
 
 **Direct script execution:**
+
 ```bash
 npx tsx scripts/ml-retraining-pipeline.ts [modelType]
 ```
 
 ### Pipeline Steps
+
 1. **Check Drift**: Calculate PSI scores for key features (member age, case complexity, union tenure)
 2. **Check Performance**: Query 7-day accuracy vs baseline thresholds
 3. **Prepare Data**: Validate sufficient training samples (12 months history)
@@ -53,19 +60,24 @@ npx tsx scripts/ml-retraining-pipeline.ts [modelType]
 7. **Notify**: Alert stakeholders via email/Slack/in-app
 
 ### Configuration
+
 Edit `MODEL_CONFIGS` in script to adjust:
+
 - `accuracyThreshold`: Minimum acceptable accuracy
 - `driftThreshold`: PSI threshold triggering retraining
 - `minTrainingSamples`: Required training data size
 - `validationSplit`: Train/validation split ratio (default 20%)
 
 ### Database Schema
+
 Run schema migration before first use:
+
 ```bash
 psql -U your_user -d your_database -f database/ml-retraining-schema.sql
 ```
 
 **Tables Created:**
+
 - `ml_model_training_runs` - Training execution history
 - `ml_retraining_notifications` - Stakeholder notification log
 - `model_feature_baselines` - Baseline distributions for drift detection
@@ -74,14 +86,17 @@ psql -U your_user -d your_database -f database/ml-retraining-schema.sql
 - `ml_alert_acknowledgments` - Alert acknowledgment tracking
 
 ### Scheduling
+
 For production deployment, schedule via cron or Azure Functions:
 
 **Daily at 2 AM (cron):**
+
 ```cron
 0 2 * * * cd /path/to/union-eyes && npx tsx scripts/ml-retraining-pipeline.ts
 ```
 
 **Azure Functions (time trigger):**
+
 ```json
 {
   "bindings": [{
@@ -100,9 +115,11 @@ For production deployment, schedule via cron or Azure Functions:
 **Location:** `scripts/seed-full-platform.ts`
 
 ### Purpose
+
 Seeds the entire Union Eyes platform with realistic data for development, testing, and demo environments. No external dependencies (faker.js) required.
 
 ### What Gets Seeded
+
 - ✅ Multi-tenant setup (configurable count)
 - ✅ Users and profiles (members 70%, stewards 25%, admins 5%)
 - ✅ Claims across all types and statuses
@@ -116,21 +133,25 @@ Seeds the entire Union Eyes platform with realistic data for development, testin
 ### Usage
 
 **Default seeding (3 tenants, 50 users, 200 claims per tenant):**
+
 ```bash
 pnpm seed:platform
 ```
 
 **Custom configuration:**
+
 ```bash
 npx tsx scripts/seed-full-platform.ts --tenants 5 --users 100 --claims 500
 ```
 
 **Reset database before seeding:**
+
 ```bash
 npx tsx scripts/seed-full-platform.ts --reset --tenants 3 --users 50 --claims 200
 ```
 
 ### Command Line Options
+
 - `--tenants <number>` - Number of tenants to create (default: 3)
 - `--users <number>` - Users per tenant (default: 50)
 - `--claims <number>` - Claims per tenant (default: 200)
@@ -139,6 +160,7 @@ npx tsx scripts/seed-full-platform.ts --reset --tenants 3 --users 50 --claims 20
 ### Data Generation Details
 
 **Realistic Data (No faker.js):**
+
 - **Names**: 36 first names, 35 last names (1,260 combinations)
 - **Union Locals**: 6 realistic union local names
 - **Departments**: 7 common workplace departments
@@ -147,23 +169,28 @@ npx tsx scripts/seed-full-platform.ts --reset --tenants 3 --users 50 --claims 20
 - **Descriptions**: Context-aware claim descriptions based on type
 
 **User Distribution:**
+
 - 70% members (regular union members)
 - 25% stewards (case handlers)
 - 5% admins (system administrators)
 
 **ML Predictions:**
+
 - Generated for 60% of claims
 - 4 model types per claim (claim_outcome, timeline, churn_risk, assignment)
 - 70-95% confidence scores
 - 80% prediction accuracy rate
 
 **Model Metadata:**
+
 - 4 models per tenant with baseline accuracy/confidence
 - Version 1 deployed 90 days ago
 - Active models marked for production use
 
 ### Database Requirements
+
 Ensure these tables exist before seeding:
+
 - `tenants` - Multi-tenant organization data
 - `profiles` - User profiles with roles
 - `claims` - Member claims and cases
@@ -175,11 +202,13 @@ Ensure these tables exist before seeding:
 - `member_ai_feedback` - Member feedback submissions
 
 Run migrations if needed:
+
 ```bash
 pnpm db:migrate
 ```
 
 ### Example Output
+
 ```
 🌱 Union Eyes - Comprehensive Platform Seeding
 ===============================================
@@ -231,12 +260,14 @@ Configuration:
 ```
 
 ### Safety Notes
+
 - ⚠️ **`--reset` flag is destructive** - deletes ALL data from seeded tables
 - Always backup production databases before running with `--reset`
 - Use separate development/staging databases for seeding
 - Seed data uses mock Clerk user IDs (not real authentication)
 
 ### Integration with CI/CD
+
 Add to GitHub Actions for automated test data setup:
 
 ```yaml
@@ -266,16 +297,19 @@ All tools accessible via convenient npm scripts:
 ## 🛠️ Development Workflow
 
 ### Initial Setup
+
 1. Run database migrations: `pnpm db:migrate`
 2. Seed platform: `pnpm seed:platform`
 3. Start development server: `pnpm dev`
 
 ### Daily Development
+
 1. Pull latest changes
 2. Run migrations if needed: `pnpm db:migrate`
 3. Reseed if schema changed: `pnpm seed:platform --reset`
 
 ### Testing ML Pipeline
+
 1. Seed platform with data: `pnpm seed:platform`
 2. Run retraining: `pnpm ml:retrain:all`
 3. Check logs for drift detection and training results
@@ -286,6 +320,7 @@ All tools accessible via convenient npm scripts:
 ## 📊 Monitoring & Observability
 
 ### Check Retraining History
+
 ```sql
 SELECT 
   model_type,
@@ -299,6 +334,7 @@ LIMIT 10;
 ```
 
 ### Check Active Models
+
 ```sql
 SELECT 
   model_type,
@@ -310,6 +346,7 @@ WHERE is_active = true;
 ```
 
 ### Check Drift Status
+
 ```sql
 SELECT 
   model_type,
@@ -321,6 +358,7 @@ WHERE is_active = true;
 ```
 
 ### Check Feedback Volume
+
 ```sql
 SELECT 
   feedback_category,

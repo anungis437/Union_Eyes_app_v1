@@ -44,7 +44,7 @@ Successfully enriched the UnionEyes public marketing site with **13 custom SVG i
     - `avatar-david.svg` - Orange gradient, "D"
     - `avatar-sarah.svg` - Purple gradient, "S"
 
-- **Background** 
+- **Background**
   - `pattern-subtle.svg` - Minimal dot grid pattern for subtle backgrounds
 
 ### 3. Attribution & Documentation
@@ -83,6 +83,7 @@ Successfully enriched the UnionEyes public marketing site with **13 custom SVG i
 ### Brand Consistency
 
 All images use UnionEyes brand colors:
+
 - Primary Indigo: `#4F46E5`
 - Primary Purple: `#7C3AED`
 - Accent Pink: `#EC4899`
@@ -95,6 +96,7 @@ All images use UnionEyes brand colors:
 ### New Files (15 total)
 
 **Components:**
+
 1. `components/ui/optimized-image.tsx` (165 lines)
 2. `components/ui/attribution-footer.tsx` (67 lines)
 
@@ -129,10 +131,12 @@ All images use UnionEyes brand colors:
 ### Immediate (Ready Now)
 
 1. **Test the marketing page**
+
    ```powershell
    cd apps/union-claims
    pnpm dev
    ```
+
    Navigate to `http://localhost:3001` to see the enriched site
 
 2. **Verify responsive behavior**
@@ -142,34 +146,34 @@ All images use UnionEyes brand colors:
 
 ### Short-term (Optional Enhancements)
 
-3. **Upgrade to real photos** (When budget allows)
+1. **Upgrade to real photos** (When budget allows)
    - Follow guide in `DOWNLOAD_GUIDE.md`
    - Use Pexels or Pixabay for free stock photos
    - Or hire photographer for authentic brand imagery
 
-4. **Add more visual elements**
+2. **Add more visual elements**
    - Call-to-action button icons
    - Section divider graphics
    - Animated logo variants
 
-5. **Optimize further**
+3. **Optimize further**
    - Add blur-up placeholders for JPG versions
    - Implement progressive image loading
    - Add image CDN if scaling globally
 
 ### Long-term (Production Considerations)
 
-6. **A/B test image variations**
+1. **A/B test image variations**
    - Test hero with different visual themes
    - Compare avatar styles (photos vs illustrations)
    - Measure engagement impact
 
-7. **Accessibility audit**
+2. **Accessibility audit**
    - Verify color contrast ratios
    - Test with screen readers
    - Add ARIA labels where needed
 
-8. **Performance monitoring**
+3. **Performance monitoring**
    - Track Core Web Vitals (LCP, CLS, FID)
    - Monitor image load times in production
    - Optimize based on real user data
@@ -190,6 +194,7 @@ While the original plan was to download real photos from Unsplash, API endpoints
 ### When to Upgrade
 
 Consider switching to real photos when:
+
 - Launching to production with real users
 - Building trust through authentic testimonials
 - Showcasing actual team members
@@ -213,12 +218,14 @@ For now, **these SVG images are production-ready** and provide excellent UX.
 ## Success Metrics
 
 **Before Implementation:**
+
 - Hero: Plain gradient background
 - Features: Generic lucide-react icons
 - Testimonials: Single user icon for all reviews
 - Attribution: None
 
 **After Implementation:**
+
 - Hero: Custom branded background with team theme
 - Features: 6 unique, context-specific illustrations
 - Testimonials: 5 distinct, colorful avatars

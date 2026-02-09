@@ -12,6 +12,7 @@
 UC-07 Churn Risk Prediction successfully identifies union members at risk of lapsing 90 days before it occurs, enabling proactive retention efforts. The system analyzes engagement patterns, case outcomes, communication frequency, and satisfaction scores to generate risk scores (0-100) and actionable intervention recommendations.
 
 ### Key Achievements
+
 - ✅ **Model Training:** 87% accuracy (exceeds 85% target)
 - ✅ **API Endpoint:** Real-time predictions in <500ms
 - ✅ **Dashboard:** Complete steward interface with intervention tracking
@@ -49,26 +50,31 @@ Member Activity Data → Feature Engineering → Risk Scoring → Predictions
 ### Features Extracted (14 dimensions)
 
 #### Engagement Features (30% weight)
+
 - `loginFrequency` - Logins per month (derived from case interactions)
 - `daysSinceLastActivity` - Days since last login/case
 - `caseInteractions` - Cases created/updated in last 90 days
 
 #### Case Outcome Features (25% weight)
+
 - `totalCases` - Total cases lifetime
 - `resolvedCases` - Successfully resolved cases
 - `resolutionRate` - % cases resolved favorably
 - `avgResolutionDays` - Average days to resolution
 
 #### Communication Features (20% weight)
+
 - `messagesPerMonth` - Average messages per month
 - `responseRate` - % messages responded to
 - `avgResponseTimeHours` - Average response time
 
 #### Satisfaction Features (25% weight)
+
 - `avgSatisfactionScore` - Average case satisfaction (1-5 scale)
 - `negativeFeedbackCount` - Count of negative feedback
 
 #### Demographics
+
 - `unionTenureYears` - Years as union member
 - `memberAge` - Member age
 - `caseComplexityAvg` - Average complexity of cases (1-5 scale)
@@ -87,6 +93,7 @@ riskScore =
 ```
 
 **Risk Levels:**
+
 - **Low Risk:** 0-39 (Healthy engagement)
 - **Medium Risk:** 40-69 (Proactive outreach recommended)
 - **High Risk:** 70-100 (Priority intervention required)
@@ -139,11 +146,13 @@ pnpm ml:train:churn
 **Endpoint:** `GET /api/ml/predictions/churn-risk`
 
 **Query Parameters:**
+
 - `riskLevel` (optional): Filter by 'low', 'medium', or 'high'
 - `limit` (optional): Max results (default: 50)
 - `tenantId` (optional): Tenant identifier
 
 **Response:**
+
 ```json
 {
   "predictions": [
@@ -184,6 +193,7 @@ pnpm ml:train:churn
 **Endpoint:** `POST /api/ml/predictions/churn-risk`
 
 **Request Body:**
+
 ```json
 {
   "memberId": "usr_123",
@@ -192,6 +202,7 @@ pnpm ml:train:churn
 ```
 
 **Response:**
+
 ```json
 {
   "prediction": {
@@ -210,6 +221,7 @@ pnpm ml:train:churn
 ```
 
 **Performance:**
+
 - Average response time: 250-400ms
 - 99th percentile: <500ms
 - Concurrent requests: 100+ supported
@@ -223,6 +235,7 @@ pnpm ml:train:churn
 ### Features
 
 #### Tab 1: At-Risk Members List
+
 - **Member Cards:** Risk score, level badge, activity stats
 - **Contributing Factors:** Top 3 reasons for risk
 - **Recommended Actions:** Contextual intervention suggestions
@@ -231,11 +244,13 @@ pnpm ml:train:churn
 - **Auto-refresh:** Every 5 minutes
 
 #### Tab 2: Risk Distribution
+
 - **Pie Chart:** Risk level breakdown (High/Medium/Low)
 - **Bar Chart:** Risk score distribution (0-20, 20-40, 40-60, 60-80, 80-100)
 - **Insights:** Visual patterns in member risk profiles
 
 #### Tab 3: Interventions
+
 - **Effectiveness Tracking:** Success rates per intervention type
   - Outreach Call: 84% success rate
   - Re-engagement Email: 56% success rate
@@ -360,12 +375,14 @@ Optionally, members can view their own churn risk if they opt-in:
 ### High Risk Members (Score 70-100)
 
 **Immediate Actions (48-hour response):**
+
 1. 🚨 Priority outreach call from dedicated steward
 2. 👥 Assign dedicated steward for personalized support
 3. 📧 Send personalized re-engagement email
 4. 🎉 Invite to exclusive member appreciation event
 
 **Follow-up Actions (7 days):**
+
 - Schedule face-to-face meeting if possible
 - Review all open cases and expedite resolutions
 - Conduct satisfaction survey with incentive
@@ -374,12 +391,14 @@ Optionally, members can view their own churn risk if they opt-in:
 ### Medium Risk Members (Score 40-69)
 
 **Proactive Outreach (1-week response):**
+
 1. 📧 Send re-engagement email with upcoming events
 2. 📊 Schedule satisfaction survey follow-up
 3. ⚡ Expedite pending cases with priority handling
 4. 📅 Provide case status updates and timeline clarity
 
 **Monitoring:**
+
 - Increase check-in frequency to bi-weekly
 - Track case resolution satisfaction
 - Monitor engagement metrics weekly
@@ -387,6 +406,7 @@ Optionally, members can view their own churn risk if they opt-in:
 ### Low Risk Members (Score 0-39)
 
 **Maintenance Mode:**
+
 1. Continue standard communication cadence
 2. Acknowledge positive engagement
 3. Invite to member events
@@ -397,6 +417,7 @@ Optionally, members can view their own churn risk if they opt-in:
 ## 7. Success Metrics
 
 ### Model Performance
+
 - ✅ **Accuracy:** 87.3% (Target: 85%)
 - ✅ **Precision:** 84.2% (Minimizes false positives)
 - ✅ **Recall:** 89.1% (Catches most at-risk members)
@@ -405,11 +426,13 @@ Optionally, members can view their own churn risk if they opt-in:
 ### Business Impact
 
 **Projected Retention Improvement:**
+
 - **Baseline Churn Rate:** 15% annually (industry standard)
 - **Target with UC-07:** 10% annually (-33% reduction)
 - **Member Lifetime Value:** $2,400 per member retained
 
 **ROI Calculation:**
+
 ```
 Implementation Cost: $85,000
 Members at Risk: 240/year (1,600 * 15%)
@@ -434,6 +457,7 @@ Net Benefit: $192K - $85K = $107,000 (126% ROI)
 ### Fairness & Bias Mitigation
 
 **Protected Attributes NOT Used:**
+
 - Race/ethnicity
 - Gender
 - Age (not used as direct feature weight)
@@ -441,6 +465,7 @@ Net Benefit: $192K - $85K = $107,000 (126% ROI)
 - Sexual orientation
 
 **Fairness Testing:**
+
 - Quarterly audits by external auditor
 - Bias detection across demographic groups
 - Equal treatment verification
@@ -449,12 +474,14 @@ Net Benefit: $192K - $85K = $107,000 (126% ROI)
 ### Transparency
 
 **Member Communication:**
+
 - Clear explanation of churn risk system in Member Portal
 - Opt-out option available
 - Contributing factors explained in plain language
 - No negative consequences for high-risk score
 
 **Steward Training:**
+
 - Risk scores are guidance, not mandates
 - Human judgment remains primary
 - Cultural sensitivity training
@@ -482,18 +509,21 @@ Net Benefit: $192K - $85K = $107,000 (126% ROI)
 ## 10. Future Enhancements
 
 ### Phase 2 (Q2 2026)
+
 - **Advanced Features:** Social network analysis, life event triggers
 - **Real-time Alerts:** Instant notifications for sudden risk increases
 - **A/B Testing:** Test intervention effectiveness with control groups
 - **Member Self-Service:** Members can view their own engagement score
 
 ### Phase 3 (Q3 2026)
+
 - **Predictive Interventions:** AI-suggested personalized retention strategies
 - **Integration with CRM:** Sync with Salesforce/HubSpot
 - **Mobile Alerts:** SMS/push notifications for stewards
 - **Multi-language Support:** Spanish, French translations
 
 ### Phase 4 (Q4 2026)
+
 - **Deep Learning Models:** LSTM networks for time-series analysis
 - **External Data Integration:** Economic indicators, industry trends
 - **Benchmarking:** Compare against other union locals
@@ -532,15 +562,18 @@ Net Benefit: $192K - $85K = $107,000 (126% ROI)
 ## 12. Support & Contacts
 
 **Technical Issues:**
-- AI Engineering Team: ai-engineering@unioneyes.com
+
+- AI Engineering Team: <ai-engineering@unioneyes.com>
 - Slack Channel: #uc07-churn-risk
 
 **Business Questions:**
-- AI Governance Committee: ai-governance@unioneyes.com
-- Product Owner: Lisa Martinez (lisa.martinez@unioneyes.com)
+
+- AI Governance Committee: <ai-governance@unioneyes.com>
+- Product Owner: Lisa Martinez (<lisa.martinez@unioneyes.com>)
 
 **Fairness Concerns:**
-- Ethics Officer: ethics@unioneyes.com
+
+- Ethics Officer: <ethics@unioneyes.com>
 - Anonymous Hotline: 1-800-UNION-AI
 
 ---
@@ -556,6 +589,7 @@ UC-07 Churn Risk Prediction successfully delivers on all objectives:
 ✅ **126% ROI** projected in Year 1
 
 **Next Steps:**
+
 1. Steward training rollout (February 2026)
 2. Member communication launch (March 2026)
 3. First fairness audit (Q1 2026)

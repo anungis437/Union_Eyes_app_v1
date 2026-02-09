@@ -3,6 +3,7 @@
 ## 🎉 What Was Set Up
 
 ### 1. ✅ Redis Docker Container
+
 ```bash
 Container: union-eyes-redis
 Status: Running
@@ -12,33 +13,40 @@ Auto-restart: Enabled
 ```
 
 **View container status:**
+
 ```bash
 docker ps --filter "name=union-eyes-redis"
 ```
 
 **View Redis logs:**
+
 ```bash
 docker logs union-eyes-redis
 ```
 
 **Stop Redis (if needed):**
+
 ```bash
 docker stop union-eyes-redis
 ```
 
 **Start Redis again:**
+
 ```bash
 docker start union-eyes-redis
 ```
 
 **Remove container (if needed):**
+
 ```bash
 docker stop union-eyes-redis
 docker rm union-eyes-redis
 ```
 
 ### 2. ✅ Environment Configuration Added
+
 Added to `.env` file:
+
 ```bash
 REDIS_HOST=localhost
 REDIS_PORT=6379
@@ -47,7 +55,9 @@ UPSTASH_REDIS_REST_TOKEN=
 ```
 
 ### 3. ✅ Connection Tested
+
 All Redis operations verified:
+
 - ✅ Basic connection
 - ✅ SET/GET/DEL operations
 - ✅ Pub/Sub (for real-time notifications)
@@ -61,6 +71,7 @@ pnpm dev
 ```
 
 **Expected output:**
+
 ```
 ✓ Scheduled daily-aggregation with pattern 0 2 * * *
 ✓ Scheduled cache-warming with pattern */30 * * * *
@@ -95,21 +106,25 @@ npx tsx scripts/test-redis-connection.ts
 
 For distributed caching across multiple server instances:
 
-1. **Sign up:** https://console.upstash.com
+1. **Sign up:** <https://console.upstash.com>
 2. **Create Redis database** (Free tier available)
 3. **Copy credentials** and add to `.env`:
+
    ```bash
    UPSTASH_REDIS_REST_URL=https://your-instance.upstash.io
    UPSTASH_REDIS_REST_TOKEN=your-token-here
    ```
+
 4. **Restart server:** `pnpm dev`
 
 **Note:** Upstash is optional for local development. The local Redis at localhost:6379 handles:
+
 - Job queues
 - Notification pub/sub
 - Basic caching
 
 Upstash adds:
+
 - Distributed caching across instances
 - Production-ready scalability
 - Automatic persistence
@@ -119,6 +134,7 @@ Upstash adds:
 ## 🔍 Troubleshooting
 
 ### Redis Container Not Starting
+
 ```bash
 # Check if port 6379 is already in use
 netstat -ano | findstr :6379
@@ -129,6 +145,7 @@ docker stop <other-redis-container>
 ```
 
 ### Connection Refused
+
 ```bash
 # Verify container is running
 docker ps --filter "name=union-eyes-redis"
@@ -141,6 +158,7 @@ docker restart union-eyes-redis
 ```
 
 ### Environment Variables Not Loading
+
 - Restart your terminal/IDE after modifying `.env`
 - Next.js will automatically load `.env` on startup
 - For scripts, ensure dotenv is configured
@@ -156,9 +174,10 @@ docker restart union-eyes-redis
 
 ---
 
-## ✅ Redis Setup Complete!
+## ✅ Redis Setup Complete
 
 Your Redis is ready! Run **`pnpm dev`** to start the application with:
+
 - ✅ Automated job scheduling
 - ✅ Real-time notification support
 - ✅ Redis-based features enabled

@@ -3,6 +3,7 @@
 ## Executive Summary
 
 **Current State**: union-claims-standalone is a comprehensive monolithic union claims management system with microservices architecture, built on:
+
 - React 18 + TypeScript + Vite frontend
 - 14 microservices deployed on Azure Kubernetes Service (AKS)
 - Supabase PostgreSQL database
@@ -11,6 +12,7 @@
 - OpenAI GPT-4 for AI analysis
 
 **Target State**: Migrate all functionality into UnionEyes (Next.js 14 App Router boilerplate) while maintaining:
+
 - All existing features and functionality
 - Microservices architecture
 - Database schema and data
@@ -24,12 +26,14 @@
 ### Frontend Application Structure
 
 #### Main Application (`src/`)
+
 - **Framework**: React 18 with Vite (port 5020)
 - **Routing**: React Router v6
 - **Styling**: Tailwind CSS + custom CSS
 - **Components**: 40+ specialized components
 
 **Key Pages:**
+
 - `/dashboard` - Overview metrics and AI insights
 - `/claims` - Claims list with filtering
 - `/claims/:id` - Detailed claim view
@@ -43,6 +47,7 @@
 - `/voting` - Union voting and conventions
 
 **Critical Components:**
+
 ```
 src/components/
 ├── AIWorkbenchDashboard.tsx - AI-powered claim analysis
@@ -63,6 +68,7 @@ src/components/
 ### Microservices Architecture (14 Services)
 
 #### 1. **Auth Service** ✅ Deployed
+
 - JWT-based authentication
 - User management
 - Role-based access control (RBAC)
@@ -70,6 +76,7 @@ src/components/
 - Container: `auth-service:latest`
 
 #### 2. **Claims Service** ✅ Deployed
+
 - CRUD operations for claims
 - Claims filtering and statistics
 - Integration with AI analysis
@@ -77,6 +84,7 @@ src/components/
 - Endpoints: `/api/claims/*`
 
 #### 3. **Notification Service** ✅ Deployed
+
 - Email/SMS delivery (SendGrid)
 - Notification queue management
 - Bulk notification support
@@ -84,6 +92,7 @@ src/components/
 - Endpoints: `/api/notifications/*`
 
 #### 4. **Document Service** ✅ Deployed
+
 - File upload/download
 - Document metadata management
 - Azure Blob Storage integration
@@ -91,6 +100,7 @@ src/components/
 - Endpoints: `/api/documents/*`
 
 #### 5. **Voice-to-Text Service**
+
 - Azure Speech Services integration
 - Real-time transcription
 - Audio file processing
@@ -99,6 +109,7 @@ src/components/
 - Directory: `services/voice-to-text/`
 
 #### 6. **Grievance Service**
+
 - Workflow management
 - Deadline tracking
 - Escalation rules
@@ -106,6 +117,7 @@ src/components/
 - Directory: `services/grievance-service/`
 
 #### 7. **AI Service**
+
 - OpenAI GPT-4 integration
 - Claim analysis and summarization
 - Threshold assessment
@@ -113,12 +125,14 @@ src/components/
 - Directory: `services/ai-service/`
 
 #### 8. **Search Service**
+
 - Full-text search
 - Document indexing
 - Claims search
 - Directory: `services/search-service/`
 
 #### 9-14. **Legal Services**
+
 - `business-law-service`
 - `employment-law-service`
 - `family-law-service`
@@ -126,6 +140,7 @@ src/components/
 - `grievance-management` (legacy)
 
 **Common Microservice Stack:**
+
 ```json
 {
   "runtime": "Node.js 18 Alpine",
@@ -143,6 +158,7 @@ src/components/
 ### Shared Packages (`packages/`)
 
 #### 1. **@unioneyes/auth** - Authentication utilities
+
 - Unified auth system
 - SSO support
 - Session management
@@ -150,31 +166,37 @@ src/components/
 - Audit logging
 
 #### 2. **@unioneyes/multi-tenant** - Multi-tenancy support
+
 - Tenant isolation
 - Data segregation
 - Configuration management
 
 #### 3. **@unioneyes/supabase** - Database client
+
 - Supabase client wrapper
 - Type-safe queries
 - Connection pooling
 
 #### 4. **@unioneyes/ui** - Shared UI components
+
 - Reusable React components
 - Design system
 - Tailwind utilities
 
 #### 5. **@unioneyes/workflow** - Workflow engine
+
 - Process definitions
 - State machines
 - Task orchestration
 
 #### 6. **@unioneyes/types** - Shared TypeScript types
+
 - Common interfaces
 - Domain models
 - API contracts
 
 #### 7. **@unioneyes/shared** - Utility functions
+
 - Common helpers
 - Validators
 - Formatters
@@ -182,11 +204,13 @@ src/components/
 ### Database Architecture
 
 **Primary Database**: Supabase PostgreSQL
+
 - Connection via Drizzle ORM (in UnionEyes)
 - Direct pg driver (in microservices)
 - Row Level Security (RLS) policies
 
 **Key Tables** (inferred from code):
+
 ```sql
 -- User & Authentication
 - profiles (user profiles, membership tiers)
@@ -230,6 +254,7 @@ backend/
 ### Infrastructure
 
 **Azure Resources:**
+
 - Azure Kubernetes Service (AKS) - Container orchestration
 - Azure Container Registry - Image storage
 - Azure Blob Storage - Document storage
@@ -237,6 +262,7 @@ backend/
 - Azure Application Insights - Monitoring (planned)
 
 **Kubernetes Deployments:**
+
 ```yaml
 # Each service has:
 - 2 replicas (high availability)
@@ -248,6 +274,7 @@ backend/
 ```
 
 **Monitoring Stack** (from `monitoring/`):
+
 ```typescript
 - Application Insights integration
 - Distributed tracing
@@ -263,6 +290,7 @@ backend/
 ### Phase 1: Core Features (Critical Priority)
 
 #### 1. **Claims Management**
+
 - ✅ Claims submission with voice-to-text
 - ✅ Real-time claim tracking
 - ✅ Document attachment (photos, audio, files)
@@ -271,6 +299,7 @@ backend/
 - ✅ Mobile-first design
 
 #### 2. **Voice-to-Text Integration**
+
 - ✅ Azure Speech Services SDK
 - ✅ Real-time transcription
 - ✅ Audio file upload & processing
@@ -280,6 +309,7 @@ backend/
 - ✅ React components (VoiceRecorder, AudioUploader)
 
 #### 3. **LRO Workbench**
+
 - ✅ Claim queue with priority sorting
 - ✅ AI-powered summarization (OpenAI GPT-4)
 - ✅ Evidence extraction
@@ -288,6 +318,7 @@ backend/
 - ✅ Access delegation
 
 #### 4. **Grievance Process Engine**
+
 - ✅ Configurable workflows
 - ✅ Collective agreement linking
 - ✅ Deadline tracking & escalation
@@ -295,6 +326,7 @@ backend/
 - ✅ Arbitration readiness checklists
 
 #### 5. **Authentication & Security**
+
 - ✅ Clerk authentication (already configured in UnionEyes)
 - ✅ AES-256-GCM encryption
 - ✅ GDPR compliance (right to erasure, data portability)
@@ -304,6 +336,7 @@ backend/
 ### Phase 2: Advanced Features (High Priority)
 
 #### 6. **AI-Powered Features**
+
 - ✅ AI Workbench Dashboard
 - ✅ Automated claim analysis
 - ✅ Threshold assessment
@@ -311,6 +344,7 @@ backend/
 - ✅ Union chatbot (natural language queries)
 
 #### 7. **Member Portal**
+
 - ✅ Self-service claim submission
 - ✅ Real-time status tracking
 - ✅ Document repository
@@ -318,6 +352,7 @@ backend/
 - ✅ Notification preferences
 
 #### 8. **Admin Features**
+
 - ✅ Union administration panel
 - ✅ Member import (bulk onboarding)
 - ✅ Protocol manager
@@ -326,6 +361,7 @@ backend/
 - ✅ Strategic file manager
 
 #### 9. **Union-Specific Tools**
+
 - ✅ Voting & conventions
 - ✅ Health & safety incident tracking
 - ✅ Seniority calculator
@@ -335,6 +371,7 @@ backend/
 ### Phase 3: Enterprise Features (Medium Priority)
 
 #### 10. **Analytics & Reporting**
+
 - ✅ Enhanced dashboards
 - ✅ Trend analysis
 - ✅ Performance metrics
@@ -342,12 +379,14 @@ backend/
 - ✅ Export capabilities
 
 #### 11. **White-Label Platform**
+
 - ✅ Multi-tenant architecture
 - ✅ Custom branding per union
 - ✅ Configurable workflows
 - ✅ Union-specific settings
 
 #### 12. **Integration & API**
+
 - ✅ RESTful API for all services
 - ✅ Webhook support
 - ✅ Email integration (Microsoft Graph)
@@ -359,11 +398,13 @@ backend/
 ## 🔄 Migration Strategy
 
 ### Option 1: Incremental Migration (RECOMMENDED)
+
 **Timeline**: 8-12 weeks  
 **Risk**: Low  
 **Downtime**: Minimal
 
 **Approach**:
+
 1. **Week 1-2**: Set up Next.js structure
    - Create App Router pages matching React Router routes
    - Set up API routes for backend logic
@@ -395,17 +436,20 @@ backend/
    - Documentation updates
 
 ### Option 2: Hybrid Approach (ALTERNATIVE)
+
 **Timeline**: 6-8 weeks  
 **Risk**: Medium  
 **Downtime**: Minimal
 
 **Approach**:
+
 1. Run UnionEyes (Next.js) as frontend
 2. Keep microservices as-is
 3. Use Next.js API routes as gateway
 4. Gradually migrate services to Next.js
 
 ### Option 3: Big Bang Migration (NOT RECOMMENDED)
+
 **Timeline**: 4-6 weeks  
 **Risk**: High  
 **Downtime**: Significant
@@ -415,6 +459,7 @@ backend/
 ## 📋 Migration Checklist
 
 ### Pre-Migration Tasks
+
 - [ ] Audit current features and functionality
 - [ ] Document all API endpoints
 - [ ] Map database schema
@@ -424,6 +469,7 @@ backend/
 - [ ] Establish rollback plan
 
 ### Phase 1: Foundation (Weeks 1-2)
+
 - [ ] Set up Next.js 14 project structure
 - [ ] Configure Supabase connection
 - [ ] Set up Drizzle ORM
@@ -433,6 +479,7 @@ backend/
 - [ ] Configure TypeScript paths
 
 ### Phase 2: Core Pages (Weeks 3-4)
+
 - [ ] Migrate Dashboard page
 - [ ] Migrate Claims pages
 - [ ] Migrate Member portal
@@ -442,6 +489,7 @@ backend/
 - [ ] Add error boundaries
 
 ### Phase 3: Components (Weeks 5-6)
+
 - [ ] Migrate UI components
 - [ ] Migrate chart components
 - [ ] Migrate form components
@@ -451,6 +499,7 @@ backend/
 - [ ] Test component library
 
 ### Phase 4: Services (Weeks 7-8)
+
 - [ ] Create Next.js API routes
 - [ ] Integrate claims service
 - [ ] Integrate notification service
@@ -460,6 +509,7 @@ backend/
 - [ ] Configure CORS
 
 ### Phase 5: Advanced Features (Weeks 9-10)
+
 - [ ] Integrate Azure Speech Services
 - [ ] Migrate VoiceRecorder component
 - [ ] Integrate OpenAI GPT-4
@@ -469,6 +519,7 @@ backend/
 - [ ] Add webhook handlers
 
 ### Phase 6: Finalization (Weeks 11-12)
+
 - [ ] End-to-end testing
 - [ ] Performance optimization
 - [ ] Security audit
@@ -482,6 +533,7 @@ backend/
 ## 🚨 Critical Considerations
 
 ### 1. **unioneyes Separation** ⚠️ **NEW ISSUE IDENTIFIED**
+
 - union-claims-standalone uses `@unioneyes` and `@unioneyes` scoped packages (7 packages)
 - **Good News**: All Azure resources already UnionEyes branded! ✅
   - Container Registry: `acrunionclaimsdev4x25.azurecr.io` ✅
@@ -493,12 +545,14 @@ backend/
 - **See**: `unioneyes_SEPARATION_PLAN.md` for detailed strategy
 
 ### 2. **Authentication Migration**
+
 - UnionEyes already has Clerk configured ✅
 - union-claims-standalone uses custom auth + JWT
 - **Decision needed**: Keep Clerk or migrate to Supabase Auth?
 - **Impact**: All user sessions, permissions, audit logs
 
 ### 3. **Database Compatibility**
+
 - UnionEyes uses Drizzle ORM ✅
 - Microservices use direct pg driver
 - **Action**: Create Drizzle schema matching existing tables
@@ -506,6 +560,7 @@ backend/
 - **Existing Database**: Can connect to `psql-union-claims-dev-4x25.postgres.database.azure.com` ✅
 
 ### 4. **Microservices Strategy**
+
 - **Option A**: Keep microservices, use Next.js as API gateway
 - **Option B**: Migrate to Next.js API routes gradually
 - **Option C**: Hybrid (keep complex services, migrate simple ones)
@@ -515,6 +570,7 @@ backend/
   - Document Service (ClusterIP: 10.0.224.199)
 
 ### 5. **Voice-to-Text Integration**
+
 - Azure Speech SDK is client-side JavaScript
 - Next.js supports both client and server components
 - **Action**: Wrap in "use client" directive
@@ -522,17 +578,20 @@ backend/
 - **Azure Resource**: Can use existing Azure Speech Services subscription ✅
 
 ### 6. **State Management**
+
 - union-claims-standalone: React Context + local state
 - UnionEyes: Can use React Server Components + Server Actions
 - **Opportunity**: Reduce client-side JavaScript
 
 ### 7. **Styling Consistency**
+
 - union-claims-standalone: Custom CSS + Tailwind
 - UnionEyes: Tailwind + shadcn/ui
 - **Action**: Map existing designs to shadcn/ui components
 - **Review**: Custom union imagery CSS
 
 ### 8. **Package Dependencies & Workspace**
+
 - union-claims-standalone: pnpm workspace with 7 packages
 - UnionEyes: Needs pnpm workspace setup
 - **Action**: Create `pnpm-workspace.yaml` and migrate packages
@@ -544,6 +603,7 @@ backend/
 ## 📊 Estimated Effort
 
 ### Development Time
+
 | Phase | Duration | Resources | Priority |
 |-------|----------|-----------|----------|
 | Foundation Setup | 2 weeks | 1-2 devs | Critical |
@@ -555,6 +615,7 @@ backend/
 | **Total** | **12 weeks** | **2-3 devs** | |
 
 ### Risk Assessment
+
 - **Technical Risk**: Medium (proven technologies, clear patterns)
 - **Timeline Risk**: Medium (scope is large but well-defined)
 - **Resource Risk**: Low (can be done incrementally)
@@ -565,6 +626,7 @@ backend/
 ## 🎯 Next Steps
 
 ### Immediate Actions (Week 1)
+
 1. ✅ Clone boilerplate (DONE)
 2. ✅ Rename to UnionEyes (DONE)
 3. ✅ Configure Supabase (DONE)
@@ -573,6 +635,7 @@ backend/
 6. ✅ Development server running (DONE)
 
 ### This Week (Planning Phase)
+
 1. **Review this analysis document** 📋 YOU ARE HERE
 2. **Make key decisions**:
    - Confirm migration strategy (Incremental recommended)
@@ -603,6 +666,7 @@ backend/
 ## 📚 References
 
 ### Documentation Files
+
 - `README.md` - Main project overview
 - `QUICK_START.md` - Development setup
 - `PHASE_2_DEVELOPMENT_ROADMAP.md` - Feature roadmap
@@ -612,6 +676,7 @@ backend/
 - `PRODUCTION_READINESS_REPORT.md` - Deployment status
 
 ### Key Directories
+
 - `src/` - React frontend application
 - `services/` - 14 microservices
 - `packages/` - 7 shared packages
@@ -626,6 +691,7 @@ backend/
 ## ✅ Conclusion
 
 The union-claims-standalone application is a **production-ready, enterprise-grade union claims management system** with:
+
 - Comprehensive feature set
 - Microservices architecture
 - Cloud-native deployment
@@ -634,12 +700,14 @@ The union-claims-standalone application is a **production-ready, enterprise-grad
 - Voice-to-text accessibility
 
 **Migration to UnionEyes is feasible and recommended** using an incremental approach over 12 weeks to ensure:
+
 - Zero data loss
 - Minimal downtime
 - Thorough testing
 - Smooth transition
 
 **The Next.js boilerplate (UnionEyes) provides an excellent foundation** with:
+
 - Modern App Router architecture
 - Clerk authentication (already configured)
 - Supabase + Drizzle ORM

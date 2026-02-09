@@ -17,6 +17,7 @@ PR-9 implements a flexible feature flag system enabling progressive rollout of L
 Centralized service for feature flag evaluation with multiple targeting strategies.
 
 **Core Functions:**
+
 ```typescript
 // Check if feature enabled for user
 const enabled = await isFeatureEnabled('lro_signals_ui', {
@@ -36,12 +37,14 @@ const result = await evaluateFeature('lro_signals_ui', context);
 ```
 
 **Targeting Strategies:**
+
 1. **Boolean**: Simple on/off toggle (all or nothing)
 2. **Percentage**: Deterministic hash-based rollout (0-100%)
 3. **Tenant**: Organization-specific allowlist
 4. **User**: User-specific allowlist
 
 **Evaluation Order:**
+
 1. Check if feature exists → default disabled if not found
 2. Check global enabled flag → disabled if false
 3. Apply targeting strategy based on type
@@ -83,6 +86,7 @@ if (flags.lro_signals_ui && flags.lro_auto_refresh) {
 ```
 
 **FeatureFlagProvider:**
+
 ```tsx
 // In layout or app component
 <FeatureFlagProvider>
@@ -99,6 +103,7 @@ REST endpoint for fetching user-specific feature flags.
 **Endpoint:** `GET /api/feature-flags`
 
 **Response:**
+
 ```json
 {
   "flags": {
@@ -113,6 +118,7 @@ REST endpoint for fetching user-specific feature flags.
 ```
 
 **Security:**
+
 - Requires authentication (Clerk)
 - Only returns flags for authenticated user
 - Fails safe (all features disabled on error)
@@ -120,15 +126,18 @@ REST endpoint for fetching user-specific feature flags.
 ### 4. Component Integration
 
 **CaseList** ([case-list.tsx](components/cases/case-list.tsx)):
+
 - `lro_signals_ui`: Enable/disable signal detection
 - `lro_case_list_filters`: Enable/disable severity/state filters
 - `lro_signal_details`: Enable/disable expandable signal details
 
 **DashboardSignalsWidget** ([signals-widget.tsx](components/dashboard/signals-widget.tsx)):
+
 - `lro_auto_refresh`: Enable/disable auto-refresh (60s interval)
 - `lro_dashboard_widget`: Enable/disable entire widget
 
 **Graceful Degradation:**
+
 - Features disabled → components render without LRO enhancements
 - Signal detection disabled → cases display without badges
 - Filters disabled → shows unfiltered case list
@@ -163,6 +172,7 @@ export const LRO_FEATURES = {
 ## Database Schema
 
 **featureFlags** table ([feature-flags-schema.ts](db/schema/feature-flags-schema.ts)):
+
 - `id`: UUID primary key
 - `name`: Unique feature identifier (e.g., 'lro_signals_ui')
 - `type`: 'boolean' | 'percentage' | 'tenant' | 'user'
@@ -177,6 +187,7 @@ export const LRO_FEATURES = {
 ## Progressive Rollout Strategy
 
 ### Phase 1: Internal Testing (5%)
+
 ```typescript
 await upsertFeatureFlag('lro_signals_ui', {
   type: 'percentage',
@@ -187,6 +198,7 @@ await upsertFeatureFlag('lro_signals_ui', {
 ```
 
 ### Phase 2: Pilot Unions (Specific Organizations)
+
 ```typescript
 await upsertFeatureFlag('lro_signals_ui', {
   type: 'tenant',
@@ -197,16 +209,19 @@ await upsertFeatureFlag('lro_signals_ui', {
 ```
 
 ### Phase 3: Beta Rollout (25%)
+
 ```typescript
 await setRolloutPercentage('lro_signals_ui', 25, 'admin_user_id');
 ```
 
 ### Phase 4: Wider Rollout (50%)
+
 ```typescript
 await setRolloutPercentage('lro_signals_ui', 50, 'admin_user_id');
 ```
 
 ### Phase 5: General Availability (100%)
+
 ```typescript
 await upsertFeatureFlag('lro_signals_ui', {
   type: 'boolean',
@@ -216,6 +231,7 @@ await upsertFeatureFlag('lro_signals_ui', {
 ```
 
 ### Emergency Rollback (Kill Switch)
+
 ```typescript
 await disableFeature('lro_signals_ui', 'admin_user_id');
 // Feature immediately disabled for all users
@@ -250,12 +266,14 @@ await upsertFeatureFlag('new_feature', {
 ## Hash-Based Percentage Rollout
 
 **Deterministic Hashing:**
+
 - Uses `userId` + `featureName` as input
 - Produces consistent hash → bucket (0-99)
 - User always sees same result for same feature
 - No database state needed for rollout percentage
 
 **Example:**
+
 ```typescript
 // User A with feature at 50%
 hash('user_A:lro_signals_ui') → 23 → ENABLED (< 50)
@@ -268,6 +286,7 @@ hash('user_A:lro_signals_ui') → always 23
 ```
 
 **Benefits:**
+
 - No database writes for evaluation
 - Instant rollout percentage changes
 - User experience consistent across sessions
@@ -276,6 +295,7 @@ hash('user_A:lro_signals_ui') → always 23
 ## Integration Points
 
 ### Server-Side (API Routes)
+
 ```typescript
 import { isFeatureEnabled } from '@/lib/services/feature-flags';
 
@@ -296,6 +316,7 @@ export async function GET(req: Request) {
 ```
 
 ### Client-Side (React Components)
+
 ```typescript
 import { useFeatureFlag } from '@/lib/hooks/use-feature-flags';
 
@@ -311,6 +332,7 @@ export function SignalBadge({ signal }: Props) {
 ```
 
 ### Page-Level (Server Components)
+
 ```typescript
 import { isFeatureEnabled } from '@/lib/services/feature-flags';
 import { getAuth } from '@clerk/nextjs/server';
@@ -339,6 +361,7 @@ export default async function CasesPage() {
 ## Fail-Safe Behavior
 
 **All error scenarios default to DISABLED:**
+
 - Feature flag not found in database → disabled
 - Database connection error → disabled
 - Missing required context (userId, organizationId) → disabled
@@ -346,6 +369,7 @@ export default async function CasesPage() {
 - JavaScript error during evaluation → disabled
 
 **Logging:**
+
 ```typescript
 console.error('[FeatureFlags] Evaluation error:', error);
 return {
@@ -362,6 +386,7 @@ return {
 **Monitoring:** Track flag evaluation rates and errors
 
 **Test Coverage:**
+
 - Boolean flags (on/off)
 - Percentage rollout (0%, 50%, 100%)
 - Tenant allowlists (in/out)
@@ -374,12 +399,14 @@ return {
 ## Business Value
 
 ### Before PR-9
+
 - Features deployed to 100% of users immediately
 - Risky rollouts with potential widespread impact
 - No ability to test in production with subset
 - Rollback requires code deployment
 
 ### After PR-9
+
 - Progressive rollout (5% → 25% → 50% → 100%)
 - Pilot specific organizations before wide release
 - Test in production with minimal risk
@@ -390,6 +417,7 @@ return {
 ## Monitoring & Analytics
 
 **Key Metrics to Track:**
+
 - Feature flag evaluation count (per feature)
 - Enabled vs. disabled rates
 - User distribution across rollout cohorts
@@ -401,16 +429,19 @@ return {
 ## Security Considerations
 
 **Authorization:**
+
 - Only admins can create/modify feature flags
 - Regular users can only check feature status
 - API enforces Clerk authentication
 
 **Audit Trail:**
+
 - `createdBy` and `lastModifiedBy` track actors
 - `createdAt` and `updatedAt` track changes
 - Future: Full audit log in separate table
 
 **Rate Limiting:**
+
 - Feature flag API should be cached (60s TTL)
 - Client-side caching via React Context
 - Consider Redis cache for high-traffic scenarios
@@ -418,6 +449,7 @@ return {
 ## Next Steps
 
 **PR-10: Metrics Instrumentation**
+
 - Track feature flag evaluation metrics
 - Monitor feature adoption rates
 - Measure impact of features on key metrics (case resolution time, SLA compliance)

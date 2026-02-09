@@ -100,6 +100,7 @@ az ad sp create-for-rbac \
 ```
 
 **Save the output:**
+
 - `appId` → `AZURE_CLIENT_ID`
 - `password` → `AZURE_CLIENT_SECRET`
 - `tenant` → `AZURE_TENANT_ID`
@@ -328,6 +329,7 @@ pnpm db:migrate
 ### T4A Slip (Federal Canada)
 
 **CRA Requirements:**
+
 - Box 028: Other Income > $500/week or $26,000/year
 - **SIN required** for all T4A slips
 - Deadline: February 28 following tax year
@@ -351,6 +353,7 @@ console.log(t4a);
 ### RL-1 Slip (Quebec)
 
 **Revenu Québec Requirements:**
+
 - Case O: Autres revenus (Other Income)
 - **NAS (NAS = SIN) required** for all RL-1 slips
 - Deadline: February 28 following tax year
@@ -416,6 +419,7 @@ validateEnv();
 ```
 
 **Validation Rules:**
+
 - Production: `AZURE_KEY_VAULT_URL` recommended
 - Fallback: `FALLBACK_ENCRYPTION_KEY` must be 32 bytes (base64)
 - Key name: Defaults to `pii-encryption-key`
@@ -523,6 +527,7 @@ pnpm test __tests__/lib/encryption.test.ts
 ```
 
 **Coverage:**
+
 - ✅ SIN encryption/decryption
 - ✅ Format validation
 - ✅ Masked display
@@ -599,6 +604,7 @@ FALLBACK_ENCRYPTION_KEY=generated-key-here
 #### 3. "Failed to decrypt SIN"
 
 **Possible Causes:**
+
 - Key changed (rotation without re-encryption)
 - Data corrupted
 - Wrong Key Vault key
@@ -682,6 +688,7 @@ WHERE user_id = 'member-id-here';
 ### Do's ✅
 
 1. **Always encrypt SIN before storage**
+
    ```typescript
    const encrypted = await encryptSIN(plainSIN);
    await db.insert(users).values({ encryptedSin: encrypted });
@@ -693,12 +700,14 @@ WHERE user_id = 'member-id-here';
    - Official union business
 
 3. **Use masked display for UI**
+
    ```typescript
    const masked = await formatSINForDisplay(encryptedSin, true);
    // Shows: ***-***-1234
    ```
 
 4. **Log decryption events**
+
    ```typescript
    logger.info('SIN decrypted for T4A', { memberId, taxYear });
    ```
@@ -709,6 +718,7 @@ WHERE user_id = 'member-id-here';
    - Compliance audit trail
 
 6. **Validate SIN format**
+
    ```typescript
    if (!/^\d{3}-?\d{3}-?\d{3}$/.test(sin)) {
      throw new Error('Invalid SIN format');
@@ -718,6 +728,7 @@ WHERE user_id = 'member-id-here';
 ### Don'ts ❌
 
 1. **Never log plaintext SIN**
+
    ```typescript
    // ❌ NEVER DO THIS
    logger.info('Processing SIN', { sin: plaintextSIN });
@@ -729,6 +740,7 @@ WHERE user_id = 'member-id-here';
    ```
 
 2. **Never expose plaintext SIN in API**
+
    ```typescript
    // ❌ NEVER DO THIS
    return { sin: decryptedSIN };
@@ -739,6 +751,7 @@ WHERE user_id = 'member-id-here';
    ```
 
 3. **Never store plaintext SIN**
+
    ```typescript
    // ❌ NEVER DO THIS
    await db.insert(users).values({ sin: plaintextSIN });
@@ -754,6 +767,7 @@ WHERE user_id = 'member-id-here';
    - ✅ AES-256-GCM with Azure Key Vault
 
 5. **Never skip audit logging**
+
    ```typescript
    // ✅ ALWAYS LOG DECRYPTION
    logger.info('SIN decrypted', {
@@ -801,11 +815,13 @@ WHERE user_id = 'member-id-here';
 ## Support
 
 ### Documentation
+
 - **Encryption API**: [lib/encryption.ts](../lib/encryption.ts)
 - **Tax Service**: [lib/services/strike-fund-tax-service.ts](../lib/services/strike-fund-tax-service.ts)
-- **Tests**: [__tests__/lib/encryption.test.ts](../__tests__/lib/encryption.test.ts)
+- **Tests**: [**tests**/lib/encryption.test.ts](../__tests__/lib/encryption.test.ts)
 
 ### Resources
+
 - [Azure Key Vault Documentation](https://docs.microsoft.com/azure/key-vault/)
 - [PIPEDA Compliance](https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda/)
 - [CRA T4A Guide](https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/completing-filing-information-returns/t4a-information-payers/t4a-slip.html)

@@ -10,6 +10,7 @@
 ## Executive Summary
 
 This implementation plan transforms the Union-OS platform from single-level tenant architecture to full CLC (Canadian Labour Congress) compliance with:
+
 - ✅ Multi-level organizational hierarchy (CLC → Federation → Union → Local)
 - ✅ Per-capita tax calculation and remittance system
 - ✅ PKI digital signatures for officer attestations
@@ -22,6 +23,7 @@ This implementation plan transforms the Union-OS platform from single-level tena
 ## Architecture Overview
 
 ### Existing Foundation (Already Implemented)
+
 - ✅ `organizations` table with hierarchy support (030_hierarchical_organizations.sql)
 - ✅ `per_capita_remittances` table with CLC chart mapping (044_clc_hierarchy_system_CLEAN.sql)
 - ✅ `digital_signatures` table with PKI infrastructure (045_pki_digital_signatures.sql)
@@ -29,6 +31,7 @@ This implementation plan transforms the Union-OS platform from single-level tena
 - ✅ Audit security schemas with comprehensive logging
 
 ### Critical Gaps to Address
+
 1. **RLS Policies**: All tables still use `tenant_id` - need hierarchical `organization_id` policies
 2. **Data Migration**: Existing `tenant_id` data needs migration to `organization_id`
 3. **API Layer**: Services hardcoded for flat tenancy - need hierarchical context
@@ -44,6 +47,7 @@ This implementation plan transforms the Union-OS platform from single-level tena
 **Objective**: Transform all RLS policies to support hierarchical data access where users can see their organization + all descendant organizations.
 
 #### Tables Requiring RLS Updates
+
 | Table | Current Policy | New Policy | Priority |
 |-------|---------------|------------|----------|
 | `claims` | `tenant_id = current_tenant` | `organization_id IN (get_descendant_org_ids(current_org))` | CRITICAL |
@@ -56,6 +60,7 @@ This implementation plan transforms the Union-OS platform from single-level tena
 | `collective_agreements` | `tenant_id = current_tenant` | `organization_id IN (get_descendant_org_ids(current_org))` | MEDIUM |
 
 **Implementation Strategy**:
+
 ```sql
 -- Example pattern for hierarchical RLS
 CREATE POLICY select_hierarchical_claims ON claims
@@ -70,11 +75,13 @@ CREATE POLICY select_hierarchical_claims ON claims
 ```
 
 **Performance Optimization**:
+
 - Materialized path on `organizations.hierarchy_path` (already exists)
 - GIN indexes on hierarchy paths for fast containment queries
 - Cache descendant org IDs in session context for repeated queries
 
 **Deliverables**:
+
 - [ ] Migration file: `050_hierarchical_rls_policies.sql`
 - [ ] Test suite: `__tests__/rls-hierarchy.test.ts`
 - [ ] Performance benchmarks: Query plans for 1K, 10K, 100K orgs
@@ -87,6 +94,7 @@ CREATE POLICY select_hierarchical_claims ON claims
 **Objective**: Automate monthly per-capita tax calculation, remittance generation, and CLC chart of accounts mapping.
 
 #### 2.1 Monthly Calculation Service
+
 ```typescript
 // services/clc/per-capita-calculator.ts
 class PerCapitaCalculator {
@@ -106,12 +114,15 @@ class PerCapitaCalculator {
 ```
 
 #### 2.2 Remittance File Export
+
 Formats:
+
 - **CSV**: For manual upload to CLC finance portal
 - **XML/EDI**: For automated API integration
 - **StatCan LAB-05302**: For Statistics Canada reporting
 
 #### 2.3 CLC Chart of Accounts Mapping
+
 ```sql
 -- Seed data for CLC standard chart
 INSERT INTO clc_chart_of_accounts (account_code, account_name, account_type, statcan_code) VALUES
@@ -123,6 +134,7 @@ INSERT INTO clc_chart_of_accounts (account_code, account_name, account_type, sta
 ```
 
 #### 2.4 Dashboard & Reporting
+
 - Pending remittances table (sortable, filterable)
 - Overdue remittances alert (red badge)
 - Annual remittance summary by org
@@ -130,6 +142,7 @@ INSERT INTO clc_chart_of_accounts (account_code, account_name, account_type, sta
 - Export buttons (CSV, Excel, PDF)
 
 **Deliverables**:
+
 - [ ] Service: `services/clc/per-capita-calculator.ts`
 - [ ] API Routes:
   - [ ] `GET /api/admin/clc/remittances` - List remittances
@@ -148,6 +161,7 @@ INSERT INTO clc_chart_of_accounts (account_code, account_name, account_type, sta
 **Objective**: Implement complete officer attestation system with cryptographic signatures and trusted certificate validation.
 
 #### 3.1 Certificate Management
+
 ```typescript
 // services/pki/certificate-manager.ts
 class CertificateManager {
@@ -172,6 +186,7 @@ class CertificateManager {
 ```
 
 #### 3.2 Document Signing Service
+
 ```typescript
 // services/pki/signature-service.ts
 class SignatureService {
@@ -199,6 +214,7 @@ class SignatureService {
 ```
 
 #### 3.3 Workflow Engine
+
 ```typescript
 // services/pki/workflow-engine.ts
 class WorkflowEngine {
@@ -222,12 +238,14 @@ class WorkflowEngine {
 ```
 
 #### 3.4 UI Components
+
 - **Certificate Upload Modal**: Drag-drop .pem/.cer file, validate, show details
 - **Signature Pad**: Display document, "Sign" button, signature metadata
 - **Workflow Status**: Progress bar showing 2/3 officers signed
 - **Audit Trail Table**: Who signed, when, certificate details, verification status
 
 **Deliverables**:
+
 - [ ] Service: `services/pki/certificate-manager.ts`
 - [ ] Service: `services/pki/signature-service.ts`
 - [ ] Service: `services/pki/workflow-engine.ts`
@@ -252,6 +270,7 @@ class WorkflowEngine {
 **Objective**: Prepare comprehensive documentation and tooling for SOC-2 Type II audit certification.
 
 #### 4.1 Security Policy Documentation
+
 - **Access Control Policy**: Role definitions, least privilege, MFA requirements
 - **Data Classification Policy**: PII handling, encryption standards, retention
 - **Incident Response Plan**: Detection, containment, eradication, recovery
@@ -259,6 +278,7 @@ class WorkflowEngine {
 - **Business Continuity Plan**: RTO/RPO targets, backup procedures, DR testing
 
 #### 4.2 Audit Log Analysis Dashboard
+
 ```typescript
 // components/admin/soc2-audit-dashboard.tsx
 <AuditDashboard>
@@ -276,6 +296,7 @@ class WorkflowEngine {
 ```
 
 #### 4.3 Compliance Report Generator
+
 ```typescript
 // services/compliance/soc2-reporter.ts
 class SOC2Reporter {
@@ -304,12 +325,14 @@ class SOC2Reporter {
 ```
 
 #### 4.4 Third-Party Audit Coordination
+
 - **Select Auditor**: Deloitte, EY, KPMG (SOC-2 certified)
 - **Audit Timeline**: 4-week engagement (1 week prep, 2 weeks audit, 1 week report)
 - **Deliverables**: SOC-2 Type II attestation letter, control testing results
 - **Cost**: $15,000 - $25,000 CAD
 
 **Deliverables**:
+
 - [ ] Documentation:
   - [ ] `docs/compliance/ACCESS_CONTROL_POLICY.md`
   - [ ] `docs/compliance/DATA_CLASSIFICATION_POLICY.md`
@@ -332,6 +355,7 @@ class SOC2Reporter {
 **Objective**: Build admin interface for managing CLC organizational hierarchy.
 
 #### 5.1 Organization Tree Visualization
+
 ```tsx
 // components/admin/organization-tree.tsx
 <OrganizationTree>
@@ -358,6 +382,7 @@ class SOC2Reporter {
 ```
 
 **Features**:
+
 - Drag-and-drop to move organizations (with confirmation)
 - Right-click context menu: Edit, Add Child, Delete, View Details
 - Color coding by type: Congress (purple), Federation (blue), Union (green), Local (gray)
@@ -365,6 +390,7 @@ class SOC2Reporter {
 - Search/filter: Find organization by name or CLC code
 
 #### 5.2 Create/Edit Organization Form
+
 ```tsx
 <OrganizationForm>
   <FieldGroup label="Basic Information">
@@ -393,6 +419,7 @@ class SOC2Reporter {
 ```
 
 #### 5.3 Hierarchy Audit Log Viewer
+
 ```tsx
 <HierarchyAuditTable>
   <Filter by="change_type" options={['parent_changed', 'level_changed', 'created', 'deleted']} />
@@ -413,6 +440,7 @@ class SOC2Reporter {
 ```
 
 **Deliverables**:
+
 - [ ] UI Components:
   - [ ] `components/admin/organization-tree.tsx`
   - [ ] `components/admin/organization-form.tsx`
@@ -435,6 +463,7 @@ class SOC2Reporter {
 **Objective**: Migrate existing tenant_id-based data to organization_id-based model.
 
 #### 6.1 Migration Strategy
+
 ```typescript
 // scripts/migration/tenant-to-org-migration.ts
 
@@ -475,6 +504,7 @@ async function validateMigration() {
 ```
 
 #### 6.2 Tables to Migrate
+
 | Table | Records (est.) | Priority | Notes |
 |-------|---------------|----------|-------|
 | `claims` | 50K | CRITICAL | Keep tenant_id for backward compat |
@@ -487,6 +517,7 @@ async function validateMigration() {
 | `collective_agreements` | 5K | MEDIUM | Legal contracts |
 
 #### 6.3 Rollback Plan
+
 ```sql
 -- Emergency rollback: revert to tenant_id
 UPDATE claims SET organization_id = NULL;
@@ -498,6 +529,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ```
 
 **Deliverables**:
+
 - [ ] Script: `scripts/migration/tenant-to-org-migration.ts`
 - [ ] Script: `scripts/migration/validate-migration.ts`
 - [ ] Script: `scripts/migration/rollback-migration.ts`
@@ -510,30 +542,35 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ## Testing Strategy
 
 ### Unit Tests (500+ tests)
+
 - Hierarchy functions: `get_descendant_org_ids()`, `get_ancestor_org_ids()`
 - Per-capita calculation logic
 - Certificate validation
 - RLS policy predicates
 
 ### Integration Tests (200+ tests)
+
 - Multi-level data access through RLS
 - Per-capita workflow end-to-end
 - PKI signature creation and verification
 - Migration scripts
 
 ### Performance Tests
+
 - Hierarchical query performance (1K, 10K, 100K orgs)
 - RLS policy overhead measurement
 - Per-capita calculation at scale (10K remittances)
 - Dashboard load time (100K audit log entries)
 
 ### Security Tests
+
 - RLS bypass attempts (horizontal privilege escalation)
 - Certificate chain validation (expired certs, revoked CAs)
 - SQL injection in hierarchy queries
 - Audit log tampering detection
 
 ### E2E Tests (50+ scenarios)
+
 - Officer signs financial report → workflow completes → audit log entry
 - Monthly per-capita calculation → remittance generated → treasurer notified
 - CLC admin views all affiliate data → local admin cannot see sibling locals
@@ -544,6 +581,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ## Deployment Plan
 
 ### Pre-Deployment Checklist
+
 - [ ] All 500+ unit tests passing
 - [ ] All 200+ integration tests passing
 - [ ] Performance benchmarks meet targets (<100ms p95 for hierarchy queries)
@@ -553,6 +591,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 - [ ] Rollback plan documented and rehearsed
 
 ### Blue-Green Deployment Strategy
+
 1. **Blue (Current)**: Existing production with tenant_id
 2. **Green (New)**: New deployment with organization_id
 3. **Data Sync**: Replicate production data to green, run migration
@@ -562,6 +601,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 7. **Decommission**: After 7 days, shut down blue
 
 ### Azure Canada East Infrastructure
+
 - **Primary Region**: Canada East (Quebec)
 - **DR Region**: Canada Central (Toronto)
 - **Database**: Azure PostgreSQL Flexible Server (HA enabled)
@@ -570,6 +610,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 - **Monitoring**: Application Insights + Log Analytics
 
 ### Post-Deployment Validation
+
 - [ ] CLC root admin can view all affiliate data
 - [ ] OFL admin can view Ontario affiliates only
 - [ ] CUPE 79 admin cannot view CUPE 3903 data
@@ -582,6 +623,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ## Risk Management
 
 ### Technical Risks
+
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
 | RLS performance degradation | MEDIUM | HIGH | Pre-compute descendant sets, cache in Redis |
@@ -590,6 +632,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 | SOC-2 audit delay | MEDIUM | MEDIUM | Engage auditor 2 weeks before code completion |
 
 ### Business Risks
+
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
 | CLC rejects certification | LOW | HIGH | Pre-validate with CLC CIO before formal submission |
@@ -597,6 +640,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 | Migration downtime exceeds window | LOW | HIGH | Blue-green deployment, <5min cutover |
 
 ### Legal Risks
+
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
 | Data residency violation | LOW | CRITICAL | Deploy to Azure Canada East/Central only |
@@ -608,6 +652,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ## Success Metrics
 
 ### Phase 1 Completion Criteria
+
 - [ ] **90%+ Compliance** in 8/13 CLC categories
 - [ ] **Zero CRITICAL bugs** in production
 - [ ] **<100ms p95 latency** for hierarchical queries
@@ -616,6 +661,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 - [ ] **100% data integrity** post-migration (checksums match)
 
 ### CLC Deployment Readiness
+
 - [ ] Multi-level tenant hierarchy operational
 - [ ] Per-capita remittances automated (day 15 monthly)
 - [ ] PKI signatures used for financial reports
@@ -624,6 +670,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 - [ ] CLC CIO attestation letter ready
 
 ### Business Impact
+
 - [ ] 2-3 pilot unions signed (UFCW 1006A, CUPE 3903, Unifor 444)
 - [ ] $5K-$15K MRR from pilots
 - [ ] 30K-100K total members under management
@@ -678,6 +725,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ## Next Steps (Immediate Actions)
 
 ### This Week
+
 1. **Architecture Review** (2 hours)
    - Validate existing schema alignment (030, 044, 045 migrations)
    - Confirm all hierarchy functions operational
@@ -699,6 +747,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
    - Configure CI/CD pipelines
 
 ### Week 1 Sprint Kickoff
+
 - **Monday**: RLS policy design session (4 hours)
 - **Tuesday**: Begin implementation of 050_hierarchical_rls_policies.sql
 - **Wednesday**: Write unit tests for hierarchy functions
@@ -710,6 +759,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 ## Appendices
 
 ### A. Schema Validation Checklist
+
 - [x] `organizations` table exists with hierarchy columns
 - [x] `per_capita_remittances` table exists
 - [x] `digital_signatures` table exists
@@ -720,6 +770,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 - [ ] Migration scripts tested
 
 ### B. CLC Compliance Matrix (Pre/Post Phase 1)
+
 | Category | Pre-Phase 1 | Post-Phase 1 | Target |
 |----------|-------------|--------------|--------|
 | Digital ID & Democracy | 85% | 90% | ✅ |
@@ -733,6 +784,7 @@ ALTER TABLE claims DROP COLUMN organization_id;
 | **OVERALL** | **65%** | **90%** | ✅ |
 
 ### C. Glossary
+
 - **CLC**: Canadian Labour Congress (umbrella for 3M+ workers)
 - **Per-Capita**: Monthly tax paid by locals to parent union
 - **PKI**: Public Key Infrastructure (for digital signatures)
@@ -752,4 +804,5 @@ ALTER TABLE claims DROP COLUMN organization_id;
 **Next Review**: Weekly (every Monday during Phase 1)
 
 **Change Log**:
+
 - v1.0 (Dec 3, 2025): Initial comprehensive plan

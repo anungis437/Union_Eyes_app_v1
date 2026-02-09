@@ -27,6 +27,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 **File:** `src/app/(dashboard)/analytics/claims/page.tsx` (632 lines)
 
 **Features:**
+
 - **KPI Cards**: Total claims, avg resolution time, win rate, open claims
 - **Trends & Forecasting Tab**:
   - Claims volume trend with ML-based linear regression forecast
@@ -48,12 +49,14 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
   - Automated alerts for anomalies
 
 **API Endpoints:**
+
 - `GET /api/analytics/claims` - Main analytics with period comparison
 - `GET /api/analytics/claims/trends` - Time-series with forecasting
 - `GET /api/analytics/claims/stewards` - Steward performance metrics
 - `GET /api/analytics/claims/categories` - Category breakdown with trends
 
 **Technical Highlights:**
+
 - Simple linear regression forecasting (least squares method)
 - Performance scoring algorithm (weighted metrics)
 - Period-over-period comparison
@@ -66,6 +69,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 **File:** `src/app/(dashboard)/analytics/members/page.tsx` (698 lines)
 
 **Features:**
+
 - **KPI Cards**: Total members, active members, retention rate, engagement score
 - **Overview Tab**:
   - Engagement distribution (high/medium/low/inactive)
@@ -86,12 +90,14 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
   - Active member trend
 
 **API Endpoints:**
+
 - `GET /api/analytics/members` - Main member analytics
 - `GET /api/analytics/members/cohorts` - Cohort-based retention analysis
 - `GET /api/analytics/members/churn-risk` - Churn prediction with risk scores
 - `GET /api/analytics/members/trends` - Monthly engagement trends
 
 **Technical Highlights:**
+
 - Cohort retention analysis by signup month
 - Churn risk scoring algorithm:
   - Days since last activity (50% weight)
@@ -105,6 +111,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 ### 3. Existing Infrastructure (Already Complete) ✅
 
 **Database Schema:**
+
 - `reports` table - Custom report configurations
 - `report_schedules` table - Automated report generation
 - `export_jobs` table - Export job tracking
@@ -115,10 +122,12 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
   - `mv_steward_performance` - Steward performance metrics
 
 **Analytics Queries:**
+
 - `analytics-queries.ts` (845 lines) - Comprehensive query functions
 - `AnalyticsMonitoringService.ts` (1,261 lines) - API monitoring service
 
 **Chart Components:**
+
 - `ChartComponents.tsx` - Recharts-based visualization library
   - TrendLineChart
   - BarChartComponent
@@ -128,6 +137,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
   - KPICard
 
 **Executive Dashboard:**
+
 - `src/app/(dashboard)/analytics/executive/page.tsx` (379 lines)
 - `/api/analytics/executive` - Executive summary API
 
@@ -138,6 +148,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 ### 3. Financial Dashboard (1-2 days)
 
 **Planned Features:**
+
 - **KPIs**: Total claim value, settlements, legal costs, ROI
 - **Financial Trends**: Claim values, settlements, costs over time
 - **Outcome Distribution**: Won/lost/settled with financial impact
@@ -146,12 +157,14 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 - **Budget Tracking**: Actual vs projected spending
 
 **Required Files:**
+
 - `src/app/(dashboard)/analytics/financial/page.tsx` (~600 lines)
 - `app/api/analytics/financial/route.ts` (~200 lines)
 - `app/api/analytics/financial/trends/route.ts` (~150 lines)
 - `app/api/analytics/financial/outcomes/route.ts` (~150 lines)
 
 **Key Metrics:**
+
 - Total claim value (monetary amounts from claims)
 - Total settlements (settlement amounts)
 - Legal costs (attorney fees, court costs)
@@ -164,6 +177,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 ### 4. Operational Dashboard (1-2 days)
 
 **Planned Features:**
+
 - **KPIs**: Queue size, avg wait time, workload balance, SLA compliance
 - **Queue Status**: Real-time queue visualization by priority
 - **Workload Distribution**: Claims by steward with balance score
@@ -172,12 +186,14 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 - **Bottleneck Analysis**: Identify process bottlenecks
 
 **Required Files:**
+
 - `src/app/(dashboard)/analytics/operational/page.tsx` (~550 lines)
 - `app/api/analytics/operational/route.ts` (~200 lines)
 - `app/api/analytics/operational/queues/route.ts` (~150 lines)
 - `app/api/analytics/operational/workload/route.ts` (~150 lines)
 
 **Key Metrics:**
+
 - Current queue size (open + in_progress claims)
 - Average wait time (time from open to assigned)
 - Workload balance score (standard deviation of caseloads)
@@ -190,6 +206,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 ### 5. Visual Report Builder (2-3 days)
 
 **Planned Features:**
+
 - **Drag-and-Drop Interface**: Visual report designer
 - **Data Source Selection**: Choose tables/views to query
 - **Field Selection**: Select columns to include
@@ -200,6 +217,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 - **Export Options**: PDF, Excel, CSV export
 
 **Required Files:**
+
 - `src/components/analytics/ReportBuilder.tsx` (~800 lines)
 - `src/components/analytics/FilterBuilder.tsx` (~400 lines)
 - `src/components/analytics/ChartSelector.tsx` (~300 lines)
@@ -207,6 +225,7 @@ Area 8 delivers a comprehensive analytics platform with 4 specialized dashboards
 - `app/api/reports/execute/route.ts` (~250 lines)
 
 **Technical Approach:**
+
 - React DnD or similar drag-and-drop library
 - JSON-based report configuration
 - Dynamic query generation from visual filters
@@ -253,6 +272,7 @@ Chart Components (Recharts visualizations)
 ## 🔍 Analytics Metrics Summary
 
 ### Claims Analytics
+
 - **Volume Metrics**: Total, open, resolved, denied claims
 - **Performance Metrics**: Avg resolution time, median resolution time
 - **Outcome Metrics**: Win rate, settlement rate, denial rate
@@ -260,6 +280,7 @@ Chart Components (Recharts visualizations)
 - **Trend Metrics**: Period-over-period growth, forecast
 
 ### Member Analytics
+
 - **Engagement Metrics**: Active members, engagement score
 - **Retention Metrics**: Retention rate, churn rate
 - **Cohort Metrics**: Cohort size, cohort retention, lifetime value
@@ -267,6 +288,7 @@ Chart Components (Recharts visualizations)
 - **Activity Metrics**: Claims per member, last activity date
 
 ### Financial Analytics (Planned)
+
 - **Value Metrics**: Total claim value, average claim value
 - **Settlement Metrics**: Total settlements, settlement rate
 - **Cost Metrics**: Legal costs, cost per claim
@@ -274,6 +296,7 @@ Chart Components (Recharts visualizations)
 - **Budget Metrics**: Actual vs projected, variance
 
 ### Operational Analytics (Planned)
+
 - **Queue Metrics**: Queue size, average wait time
 - **Workload Metrics**: Caseload distribution, balance score
 - **SLA Metrics**: On-time rate, overdue count, compliance trend
@@ -285,6 +308,7 @@ Chart Components (Recharts visualizations)
 ## 🎨 UI/UX Features
 
 ### Common Features Across Dashboards
+
 - **Date Range Selector**: 7/30/90/180/365 days
 - **View Mode Toggle**: Daily/weekly/monthly grouping
 - **Refresh Button**: Manual data refresh
@@ -296,6 +320,7 @@ Chart Components (Recharts visualizations)
 - **Error Handling**: User-friendly error messages
 
 ### Visualization Types Used
+
 - **Line Charts**: Trends over time
 - **Area Charts**: Volume trends with fill
 - **Bar Charts**: Comparisons (stewards, categories)
@@ -304,6 +329,7 @@ Chart Components (Recharts visualizations)
 - **Data Tables**: Detailed listings with sorting
 
 ### Color Coding
+
 - **Blue**: General/neutral metrics
 - **Green**: Positive metrics (resolved, active, won)
 - **Red**: Negative metrics (denied, churned, overdue)
@@ -315,18 +341,21 @@ Chart Components (Recharts visualizations)
 ## 🧪 Testing Considerations
 
 ### Unit Tests Needed
+
 - Analytics query functions
 - Forecasting algorithms
 - Score calculation functions
 - Data transformation utilities
 
 ### Integration Tests Needed
+
 - API endpoint responses
 - Database query performance
 - Materialized view refresh
 - Export functionality
 
 ### E2E Tests Needed
+
 - Dashboard navigation
 - Date range selection
 - Chart interactions
@@ -337,17 +366,20 @@ Chart Components (Recharts visualizations)
 ## 📦 Dependencies
 
 ### Frontend
+
 - `recharts` - Chart visualization library
 - `lucide-react` - Icon library
 - `date-fns` - Date formatting
 - `@/components/ui/*` - shadcn/ui components
 
 ### Backend
+
 - `@supabase/supabase-js` - Database client
 - `next` - API routes framework
 - Custom `sql` template tag for queries
 
 ### Database
+
 - PostgreSQL 14+
 - Materialized views feature
 - JSONB support for configs
@@ -358,6 +390,7 @@ Chart Components (Recharts visualizations)
 ## 🚀 Deployment Notes
 
 ### Environment Variables Required
+
 ```bash
 DATABASE_URL=postgresql://...
 NEXT_PUBLIC_SUPABASE_URL=https://...
@@ -365,17 +398,20 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 ### Database Migrations
+
 - Migration 010 already applied (analytics schema)
 - Materialized views created and indexed
 - Refresh function configured
 
 ### Initial Data Population
+
 ```sql
 -- Refresh all materialized views
 SELECT refresh_analytics_views();
 ```
 
 ### Cron Job Setup
+
 ```bash
 # Refresh materialized views daily at 2 AM
 0 2 * * * psql $DATABASE_URL -c "SELECT refresh_analytics_views();"
@@ -386,6 +422,7 @@ SELECT refresh_analytics_views();
 ## 📝 API Endpoints Summary
 
 ### Claims Analytics
+
 - `GET /api/analytics/claims` - Main analytics
 - `GET /api/analytics/claims/trends` - Time-series with forecast
 - `GET /api/analytics/claims/stewards` - Steward performance
@@ -393,6 +430,7 @@ SELECT refresh_analytics_views();
 - `POST /api/analytics/claims/export` - Export data
 
 ### Member Analytics
+
 - `GET /api/analytics/members` - Main analytics
 - `GET /api/analytics/members/cohorts` - Cohort analysis
 - `GET /api/analytics/members/churn-risk` - Churn prediction
@@ -400,21 +438,25 @@ SELECT refresh_analytics_views();
 - `POST /api/analytics/members/export` - Export data
 
 ### Financial Analytics (Planned)
+
 - `GET /api/analytics/financial` - Main financial metrics
 - `GET /api/analytics/financial/trends` - Financial trends
 - `GET /api/analytics/financial/outcomes` - Outcome distribution
 - `POST /api/analytics/financial/export` - Export data
 
 ### Operational Analytics (Planned)
+
 - `GET /api/analytics/operational` - Main operational metrics
 - `GET /api/analytics/operational/queues` - Queue status
 - `GET /api/analytics/operational/workload` - Workload distribution
 - `POST /api/analytics/operational/export` - Export data
 
 ### Executive Dashboard (Existing)
+
 - `GET /api/analytics/executive` - Executive summary
 
 ### Utility Endpoints
+
 - `POST /api/analytics/refresh` - Refresh materialized views
 
 ---
@@ -435,16 +477,19 @@ SELECT refresh_analytics_views();
 ## 📊 Success Metrics
 
 ### Performance
+
 - Dashboard load time: < 2 seconds
 - Query execution time: < 500ms (with materialized views)
 - Chart render time: < 100ms
 
 ### Accuracy
+
 - Forecast accuracy: ±15% for 7-day forecast
 - Retention calculation: 90-day activity window
 - Churn risk: 75%+ precision for high-risk category
 
 ### Adoption
+
 - Daily active users on analytics: Target 50+ (stewards + admins)
 - Reports generated per week: Target 20+
 - Export frequency: Target 10+ per week
@@ -454,11 +499,13 @@ SELECT refresh_analytics_views();
 ## 🔮 Future Enhancements
 
 ### Short-term (Phase 3 Extension)
+
 - Financial Dashboard completion
 - Operational Dashboard completion
 - Visual Report Builder MVP
 
 ### Medium-term (Phase 4)
+
 - Advanced ML models (LSTM for forecasting)
 - Anomaly detection (statistical outliers)
 - Natural language insights (AI-generated summaries)
@@ -466,6 +513,7 @@ SELECT refresh_analytics_views();
 - Dashboard sharing (embeddable widgets)
 
 ### Long-term (Phase 5+)
+
 - Predictive analytics (outcome prediction before filing)
 - Sentiment analysis (member feedback analysis)
 - Benchmarking (compare with industry standards)
@@ -486,6 +534,7 @@ SELECT refresh_analytics_views();
 ## ✅ Completion Checklist
 
 **Completed:**
+
 - [x] Claims Analytics Dashboard (frontend + backend)
 - [x] Member Engagement Dashboard (frontend + backend)
 - [x] Claims API endpoints (4 routes)
@@ -498,10 +547,12 @@ SELECT refresh_analytics_views();
 - [x] Export functionality stubs
 
 **In Progress:**
+
 - [ ] Financial Dashboard (30% - planning complete)
 - [ ] Operational Dashboard (30% - planning complete)
 
 **Not Started:**
+
 - [ ] Visual Report Builder
 - [ ] Advanced export implementations (PDF generation)
 - [ ] Scheduled report automation

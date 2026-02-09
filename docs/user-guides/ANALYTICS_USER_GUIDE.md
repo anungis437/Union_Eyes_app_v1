@@ -82,24 +82,28 @@ All dashboards feature consistent controls:
 #### Tabs
 
 **📊 Overview**
+
 - **Trend Chart**: Claim volume over time
 - **Status Distribution**: Pie chart of claim statuses
 - **Category Breakdown**: Claims by type
 - **Use Case**: Identify patterns and seasonal trends
 
 **📈 Performance**
+
 - **Resolution Metrics**: Time-to-close analysis
 - **Steward Performance**: Individual productivity
 - **SLA Compliance**: On-time resolution tracking
 - **Use Case**: Monitor team efficiency
 
 **📅 Timeline**
+
 - **Monthly Trends**: Long-term pattern analysis
 - **Year-over-Year Comparison**: Growth tracking
 - **Forecast**: Predictive modeling
 - **Use Case**: Strategic planning
 
 **🎯 Priorities**
+
 - **High-Priority Cases**: Critical claim tracking
 - **Aging Analysis**: Overdue case identification
 - **Alert Dashboard**: Urgent action items
@@ -125,18 +129,21 @@ All dashboards feature consistent controls:
 #### Tabs
 
 **👥 Overview**
+
 - **Growth Chart**: Membership trends
 - **Status Distribution**: Active/inactive split
 - **Demographics**: Age, location, occupation
 - **Use Case**: Understand member base composition
 
 **📊 Engagement**
+
 - **Activity Heatmap**: Engagement patterns
 - **Claim Frequency**: Average claims per member
 - **High-Activity Members**: Top claimants
 - **Use Case**: Identify engagement opportunities
 
 **📍 Demographics**
+
 - **Geographic Distribution**: Member locations
 - **Occupation Breakdown**: Job categories
 - **Age Demographics**: Member age ranges
@@ -164,6 +171,7 @@ All dashboards feature consistent controls:
 #### Tabs
 
 **💰 Financial Overview**
+
 - **Claim Values Trend**: Value over time (area chart)
 - **Settlements Trend**: Recoveries timeline
 - **Costs Trend**: Spending analysis
@@ -171,18 +179,21 @@ All dashboards feature consistent controls:
 - **Use Case**: Monitor overall financial health
 
 **🎯 Settlement Analysis**
+
 - **Distribution by Outcome**: Win/loss breakdown (pie chart)
 - **Settlement by Time**: Resolution speed vs value (bar chart)
 - **Recovery Rate**: Percentage of claimed value recovered
 - **Use Case**: Evaluate case outcomes
 
 **💸 Cost Analysis**
+
 - **Cost Breakdown**: Legal vs court vs admin (pie chart)
 - **Category Costs**: Spending by claim type (bar chart)
 - **Efficiency Metrics**: Cost per case, cost per resolution
 - **Use Case**: Control and optimize spending
 
 **📊 Category Performance**
+
 - **ROI by Category**: Most profitable claim types (bar chart)
 - **Profitability Comparison**: Category-wise profit margins
 - **Trend Analysis**: Category performance over time
@@ -191,23 +202,29 @@ All dashboards feature consistent controls:
 #### Financial Calculations Explained
 
 **Return on Investment (ROI)**
+
 ```
 ROI = ((Settlements - Costs) / Costs) × 100
 ```
+
 Example: $50,000 settlements - $20,000 costs = $30,000 net  
 ROI = ($30,000 / $20,000) × 100 = 150%
 
 **Recovery Rate**
+
 ```
 Recovery Rate = (Settlements / Claim Value) × 100
 ```
+
 Example: $50,000 recovered from $100,000 claimed  
 Recovery Rate = ($50,000 / $100,000) × 100 = 50%
 
 **Cost Efficiency**
+
 ```
 Cost Efficiency = Total Costs / Resolved Claims
 ```
+
 Example: $100,000 costs / 50 resolved claims  
 Cost Efficiency = $2,000 per claim
 
@@ -231,6 +248,7 @@ Cost Efficiency = $2,000 per claim
 #### Tabs
 
 **📋 Queue Status**
+
 - **Priority Distribution**: Claims by urgency (bar chart)
 - **Aging Analysis**: Time in queue (bar chart)
 - **Queue Details Table**: Detailed claim list with alerts
@@ -238,6 +256,7 @@ Cost Efficiency = $2,000 per claim
 - **Use Case**: Prioritize work and identify bottlenecks
 
 **👷 Workload Distribution**
+
 - **Steward Distribution**: Cases per steward (bar chart)
 - **Utilization Table**: Capacity vs assigned (table with color coding)
 - **Color Coding**: Red >90%, Yellow >75%, Green <75%
@@ -245,6 +264,7 @@ Cost Efficiency = $2,000 per claim
 - **Use Case**: Balance workload and identify overload
 
 **⏱️ SLA Tracking**
+
 - **Compliance Trend**: Daily SLA performance (line chart)
 - **On-Time vs Overdue**: Stacked area chart
 - **Target Variance**: Distance from goal
@@ -252,6 +272,7 @@ Cost Efficiency = $2,000 per claim
 - **Use Case**: Monitor service level compliance
 
 **🚨 Bottleneck Detection**
+
 - **Automated Detection**: AI-identified slowdowns
 - **Severity Indicators**: High/medium/low flags
 - **Process Stages**: Where delays occur
@@ -261,34 +282,42 @@ Cost Efficiency = $2,000 per claim
 #### Operational Calculations Explained
 
 **SLA Compliance**
+
 ```
 SLA Compliance = (Claims Resolved ≤ 30 Days / Total Resolved) × 100
 ```
+
 Target: ≥ 85% compliance
 
 **Workload Balance**
+
 ```
 Balance = 100 - (Standard Deviation / Mean × 100)
 ```
+
 - 100% = Perfectly balanced
 - 80-100% = Well balanced
 - 60-80% = Moderately balanced
 - <60% = Unbalanced, needs redistribution
 
 **Utilization**
+
 ```
 Utilization = (Active Cases / Capacity) × 100
 ```
+
 - <75% = Healthy capacity
 - 75-90% = Busy but manageable
 - >90% = Overloaded, needs help
 
 **Bottleneck Detection Algorithm**
+
 ```
 IF avg_duration > P75 × 1.5 THEN severity = HIGH
 IF avg_duration > P75 × 1.2 THEN severity = MEDIUM
 ELSE severity = LOW
 ```
+
 (P75 = 75th percentile duration for that stage)
 
 ---
@@ -316,18 +345,21 @@ Automatically compares current period vs previous equal period:
 ### Export Capabilities
 
 **PDF Export**
+
 - Full dashboard snapshot
 - Includes all charts and KPIs
 - Date range and filters applied
 - Use: Executive reports, presentations
 
 **Excel Export**
+
 - Raw data tables
 - Pivot-ready format
 - Includes formulas
 - Use: Deep analysis, custom reporting
 
 **CSV Export**
+
 - Lightweight data export
 - Import into other tools
 - Comma-separated values
@@ -349,11 +381,13 @@ Automatically compares current period vs previous equal period:
 The platform uses intelligent caching for fast performance:
 
 **Cache TTL (Time To Live)**
+
 - Dashboard metrics: 2 minutes
 - Detailed analytics: 5 minutes
 - Historical data: 15 minutes
 
 **Cache Invalidation**
+
 - Automatic: When data changes
 - Manual: Click "Refresh" button
 - Scheduled: Nightly cache warming
@@ -361,11 +395,13 @@ The platform uses intelligent caching for fast performance:
 ### Pre-Computed Aggregations
 
 Daily aggregations run at 2 AM:
+
 - Previous day metrics computed
 - Materialized views refreshed
 - Database statistics updated
 
 **Benefits**:
+
 - Faster query performance
 - Reduced database load
 - Consistent response times
@@ -373,15 +409,18 @@ Daily aggregations run at 2 AM:
 ### Database Optimization
 
 **Indexes Created**:
+
 - Tenant + date combinations
 - Status + category lookups
 - Composite indexes for common queries
 
 **Materialized Views**:
+
 - `analytics_daily_summary`: Daily claim aggregations
 - `analytics_member_summary`: Member statistics
 
 **Performance Targets**:
+
 - Page load: <2 seconds
 - API response: <500ms (cached), <2s (uncached)
 - Chart rendering: <1 second
@@ -393,21 +432,25 @@ Daily aggregations run at 2 AM:
 ### Common Issues
 
 **Dashboard Not Loading**
+
 - **Cause**: Network timeout or server error
 - **Solution**: Refresh page, check internet connection
 - **Escalate**: If persists >5 minutes, contact support
 
 **Data Seems Outdated**
+
 - **Cause**: Cache not refreshed
 - **Solution**: Click manual refresh button
 - **Note**: Cache updates every 5 minutes automatically
 
 **Export Not Working**
+
 - **Cause**: Browser popup blocker or large dataset
 - **Solution**: Allow popups, try smaller date range
 - **Alternative**: Use CSV export for large datasets
 
 **Slow Performance**
+
 - **Cause**: Large date range, uncached data
 - **Solution**: Use smaller date ranges (30-90 days)
 - **Optimization**: Wait for cache warm-up (first query slower)
@@ -438,17 +481,20 @@ See [API Documentation](./API_DOCUMENTATION.md) for complete endpoint reference.
 ### Quick Reference
 
 **Claims Analytics**
+
 - `GET /api/analytics/claims` - Summary metrics
 - `GET /api/analytics/claims/trends` - Time-series data
 - `GET /api/analytics/claims/by-category` - Category breakdown
 - `GET /api/analytics/claims/by-status` - Status distribution
 
 **Member Analytics**
+
 - `GET /api/analytics/members` - Member summary
 - `GET /api/analytics/members/growth` - Growth trends
 - `GET /api/analytics/members/engagement` - Activity metrics
 
 **Financial Analytics**
+
 - `GET /api/analytics/financial` - Financial summary
 - `GET /api/analytics/financial/trends` - Financial time-series
 - `GET /api/analytics/financial/outcomes` - Settlement analysis
@@ -456,6 +502,7 @@ See [API Documentation](./API_DOCUMENTATION.md) for complete endpoint reference.
 - `GET /api/analytics/financial/costs` - Cost breakdown
 
 **Operational Analytics**
+
 - `GET /api/analytics/operational` - Operational summary
 - `GET /api/analytics/operational/queues` - Queue metrics
 - `GET /api/analytics/operational/workload` - Steward utilization
@@ -470,14 +517,15 @@ See [API Documentation](./API_DOCUMENTATION.md) for complete endpoint reference.
 
 - **Documentation**: This guide + API docs
 - **In-App Help**: Click "?" icon on any dashboard
-- **Email Support**: analytics@unionclaims.com
+- **Email Support**: <analytics@unionclaims.com>
 - **Response Time**: 24-48 hours
 
 ### Feature Requests
 
 Submit enhancement requests through:
+
 1. In-app feedback form
-2. Email: features@unionclaims.com
+2. Email: <features@unionclaims.com>
 3. Include use case and priority
 
 ---

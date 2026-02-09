@@ -112,11 +112,11 @@ We may update this policy. We'll notify you of significant changes via app notif
 
 For privacy questions or to exercise your rights:
 
-- Email: privacy@unioneyes.com
+- Email: <privacy@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 - Mail: UnionEyes Privacy Team, [Address]
 
-Data Protection Officer: dpo@unioneyes.com
+Data Protection Officer: <dpo@unioneyes.com>
 
 ## Compliance
 

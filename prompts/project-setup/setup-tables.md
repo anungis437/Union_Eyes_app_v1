@@ -6,12 +6,12 @@ Follow these instructions to create a new table in the database.
 
 To keep our database organized, we use different schemas for different parts of the application.
 
--   **Public Schema (default):** For general-purpose tables like `profiles`, `projects`, etc.
-    -   Schema files go in: `db/schema/`
-    -   Query files go in: `db/queries/`
--   **Validation Schema:** For tables related to idea validation features (e.g., Reddit analysis, keyword validation).
-    -   Schema files go in: `db/schema/validation/`
-    -   Query files go in: `db/queries/validation/`
+- **Public Schema (default):** For general-purpose tables like `profiles`, `projects`, etc.
+  - Schema files go in: `db/schema/`
+  - Query files go in: `db/queries/`
+- **Validation Schema:** For tables related to idea validation features (e.g., Reddit analysis, keyword validation).
+  - Schema files go in: `db/schema/validation/`
+  - Query files go in: `db/queries/validation/`
 
 When creating a new table, first decide which schema it belongs to.
 
@@ -84,8 +84,8 @@ Our database configuration uses `import * as schema from './schema'` which requi
 
 The location of your query file should match the location of your schema file.
 
--   For `public` schema tables, query files go in `db/queries/`.
--   For `validation` schema tables, query files go in `db/queries/validation/`.
+- For `public` schema tables, query files go in `db/queries/`.
+- For `validation` schema tables, query files go in `db/queries/validation/`.
 
 The code inside the query file remains the same, just ensure your imports point to the correct schema file location.
 
@@ -210,7 +210,7 @@ When applying RLS to a table in a specific schema, you must prefix the table nam
 
 **Important:** Execute these SQL commands in your Supabase SQL editor.
 
-1.  **Enable RLS on your table:**
+1. **Enable RLS on your table:**
     Replace `your_table_name` with the actual name of your table. For a table in a schema, use `schema_name.table_name`.
 
     ```sql
@@ -221,7 +221,7 @@ When applying RLS to a table in a specific schema, you must prefix the table nam
     ALTER TABLE validation.your_table_name ENABLE ROW LEVEL SECURITY;
     ```
 
-2.  **Policy for SELECT operations:**
+2. **Policy for SELECT operations:**
 
     ```sql
     -- Example for a table in the validation schema
@@ -238,7 +238,7 @@ When applying RLS to a table in a specific schema, you must prefix the table nam
     );
     ```
 
-3.  **Policy for INSERT operations:**
+3. **Policy for INSERT operations:**
     Allows authenticated users to insert new records, automatically associating the record with their `user_id`. Replace `your_table_name` and `user_id_column`.
 
     ```sql
@@ -248,7 +248,7 @@ When applying RLS to a table in a specific schema, you must prefix the table nam
     WITH CHECK (auth.uid() = user_id_column);
     ```
 
-4.  **Policy for UPDATE operations:**
+4. **Policy for UPDATE operations:**
     Allows authenticated users to update only their own existing records. Replace `your_table_name` and `user_id_column`.
 
     ```sql
@@ -259,7 +259,7 @@ When applying RLS to a table in a specific schema, you must prefix the table nam
     WITH CHECK (auth.uid() = user_id_column);
     ```
 
-5.  **Policy for DELETE operations:**
+5. **Policy for DELETE operations:**
     Allows authenticated users to delete only their own records. Replace `your_table_name` and `user_id_column`.
 
     ```sql
@@ -271,11 +271,11 @@ When applying RLS to a table in a specific schema, you must prefix the table nam
 
 **Notes on RLS:**
 
-*   **`auth.uid()`**: This Supabase function returns the ID of the currently authenticated user.
-*   **`auth.role()`**: This can be used to check roles, e.g., `auth.role() = 'authenticated'` or `auth.role() = 'anon'`.
-*   **Specificity is Key**: The policies above are common for user-owned data. Adjust them based on your application's specific requirements. For example:
-    *   Some tables might allow all authenticated users to read all data (`USING (auth.role() = 'authenticated')`).
-    *   Some public data tables might allow anonymous read access (`FOR SELECT USING (auth.role() = 'anon' OR auth.role() = 'authenticated')`).
-    *   The `webinar_analytics` table, for instance, has a policy to allow anonymous inserts: `CREATE POLICY "Allow public insert access for webinar analytics" ON webinar_analytics FOR INSERT WITH CHECK (true);`
-*   **Default Deny**: Once RLS is enabled, access is denied unless a policy explicitly grants it. Ensure you have policies for all intended operations.
-*   **Test Thoroughly**: After implementing RLS policies, test them rigorously to ensure they behave as expected and don't inadvertently block legitimate access or allow unauthorized access.
+- **`auth.uid()`**: This Supabase function returns the ID of the currently authenticated user.
+- **`auth.role()`**: This can be used to check roles, e.g., `auth.role() = 'authenticated'` or `auth.role() = 'anon'`.
+- **Specificity is Key**: The policies above are common for user-owned data. Adjust them based on your application's specific requirements. For example:
+  - Some tables might allow all authenticated users to read all data (`USING (auth.role() = 'authenticated')`).
+  - Some public data tables might allow anonymous read access (`FOR SELECT USING (auth.role() = 'anon' OR auth.role() = 'authenticated')`).
+  - The `webinar_analytics` table, for instance, has a policy to allow anonymous inserts: `CREATE POLICY "Allow public insert access for webinar analytics" ON webinar_analytics FOR INSERT WITH CHECK (true);`
+- **Default Deny**: Once RLS is enabled, access is denied unless a policy explicitly grants it. Ensure you have policies for all intended operations.
+- **Test Thoroughly**: After implementing RLS policies, test them rigorously to ensure they behave as expected and don't inadvertently block legitimate access or allow unauthorized access.

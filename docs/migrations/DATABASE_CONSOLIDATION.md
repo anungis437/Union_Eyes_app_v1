@@ -47,6 +47,7 @@ db/
 ```
 
 **Migration steps:**
+
 1. Move `database/seeds/` → `db/seeds/`
 2. Keep `database/migrations/` as archive unless using raw SQL approach
 3. Regenerate migrations with: `pnpm db:generate`
@@ -65,6 +66,7 @@ database/
 ```
 
 **Migration steps:**
+
 1. Move `db/schema/*` → `database/schema/`
 2. Move `db/db.ts` → `database/client.ts`
 3. Update `tsconfig.json` paths
@@ -102,6 +104,7 @@ Rename-Item -Path "database\migrations" -NewName "migrations-archive-raw-sql"
 ### Step 3: Update Documentation (10 minutes)
 
 Update README to clarify:
+
 - `db/` is the source of truth
 - `database/migrations-archive-raw-sql/` kept for reference
 - All new schemas go in `db/schema/`
@@ -151,6 +154,7 @@ import * from '@/database/schema';            // ❌ Wrong directory
 ## Roll-back Plan
 
 If consolidation causes issues:
+
 1. Revert import changes via git
 2. Restore original directory structure
 3. Keep both directories temporarily with clear docs

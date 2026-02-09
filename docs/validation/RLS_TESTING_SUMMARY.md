@@ -4,7 +4,7 @@
 
 ### Database Migrations
 
-1. **Migration 025: RLS and Test Tenants** 
+1. **Migration 025: RLS and Test Tenants**
    - Enabled RLS on 5 tables: `claims`, `collective_agreements`, `claim_updates`, `audit_logs`, `cba_clauses`
    - Created 2 test tenants:
      - Union Local 123 (a1111111-1111-1111-1111-111111111111) - Professional tier
@@ -15,6 +15,7 @@
 2. **Migration 026: Fix cba_clauses RLS Policies**
    - ✅ Fixed cba_clauses policies to use JOIN pattern through collective_agreements
    - cba_clauses doesn't have direct tenant_id column, so policies use EXISTS subquery:
+
    ```sql
    CREATE POLICY cba_clauses_tenant_isolation_select ON public.cba_clauses
      FOR SELECT
@@ -51,7 +52,7 @@
 
 ### Development Server
 
-- ✅ Next.js dev server running at http://localhost:3000
+- ✅ Next.js dev server running at <http://localhost:3000>
 - ✅ No compilation errors
 - ✅ TenantProvider integrated in dashboard layout
 - ✅ TenantSelector component in header
@@ -63,11 +64,13 @@
 The `unionadmin` PostgreSQL user has `BYPASSRLS` privilege, which means it **ignores all RLS policies**. This is correct for administrative operations.
 
 **RLS will be enforced when:**
+
 - Application uses Supabase client (automatically applies RLS)
 - Application uses service role with proper tenant context
 - Regular database users (non-admin) query tables
 
 **For manual testing via psql:**
+
 - Admin users see all data (expected behavior)
 - Application-level testing will show proper isolation
 - UI testing with tenant selector will demonstrate isolation
@@ -77,17 +80,20 @@ The `unionadmin` PostgreSQL user has `BYPASSRLS` privilege, which means it **ign
 During migration, we discovered the actual database structure:
 
 **Schemas:**
+
 - ✅ `public` - Main application tables (not claims_management)
 - ✅ `tenant_management` - Tenant configuration
 - ✅ `user_management` - Users and auth
 - ✅ `audit_security` - Audit logs
 
 **Column Names (different from initial assumptions):**
+
 - `status` not `claim_status` (column name)
 - `incident_date` not `date_of_incident`
 - `description` and `desired_outcome` required (no `subject`)
 
 **Valid Enum Values:**
+
 - claim_status: submitted, under_review, assigned, investigation, pending_documentation, resolved, rejected, closed
 - claim_priority: low, medium, high, critical (not "urgent")
 - claim_type: 16 types including workplace_safety, wage_dispute, harassment_workplace, discrimination_gender, etc.
@@ -95,12 +101,14 @@ During migration, we discovered the actual database structure:
 ## 🧪 Manual Testing Checklist
 
 ### 1. Tenant Selector UI
-- [ ] Navigate to http://localhost:3000/dashboard
+
+- [ ] Navigate to <http://localhost:3000/dashboard>
 - [ ] Verify TenantSelector appears in header
 - [ ] Check dropdown shows 4 tenants (2 defaults + 2 test tenants)
 - [ ] Current tenant is displayed correctly
 
 ### 2. Tenant Switching
+
 - [ ] Click tenant selector dropdown
 - [ ] Select "Union Local 123"
 - [ ] Verify browser sets `selected_tenant_id` cookie
@@ -108,6 +116,7 @@ During migration, we discovered the actual database structure:
 - [ ] Check React Context updates with new tenant
 
 ### 3. Data Isolation - Claims List
+
 - [ ] Set tenant to "Union Local 123"
 - [ ] View claims list
 - [ ] Verify only shows CLM-2024-TEST-001 and CLM-2024-TEST-002
@@ -115,18 +124,21 @@ During migration, we discovered the actual database structure:
 - [ ] Verify only shows CLM-2024-TEST-003 and CLM-2024-TEST-004
 
 ### 4. Data Isolation - Dashboard Stats
+
 - [ ] Set tenant to "Union Local 123"
 - [ ] Check dashboard statistics
 - [ ] Verify counts only include Union Local 123 data
 - [ ] Switch tenant and verify stats update
 
 ### 5. API Testing
+
 - [ ] Test GET /api/claims with Union Local 123 tenant
 - [ ] Verify response only contains tenant's claims
 - [ ] Test with Workers Alliance tenant
 - [ ] Verify different claims returned
 
 ### 6. CBA Clauses Testing
+
 - [ ] Create test CBA for each tenant
 - [ ] Add clauses to each CBA
 - [ ] Verify clauses isolated by tenant (JOIN pattern working)
@@ -135,18 +147,21 @@ During migration, we discovered the actual database structure:
 ## 🔒 Security Verification
 
 ### RLS Policies Working
+
 - ✅ All 5 tables have RLS enabled
 - ✅ 16 policies created (4 fixed for cba_clauses)
 - ✅ Helper functions for tenant context management
 - ✅ Policies use session variable: `app.current_tenant_id`
 
 ### Application-Level Security
+
 - ✅ TenantProvider wraps dashboard
 - ✅ withTenantAuth() middleware applied to API routes
 - ✅ Tenant context available via React hooks
 - ✅ Cookie-based tenant selection
 
 ### Areas to Verify in Testing
+
 - Tenant switching works correctly
 - RLS enforced in application queries (not BYPASSRLS role)
 - Cross-tenant data access prevented
@@ -201,6 +216,6 @@ During migration, we discovered the actual database structure:
 
 ---
 
-**Server Status:** ✅ Running at http://localhost:3000  
+**Server Status:** ✅ Running at <http://localhost:3000>  
 **Database Status:** ✅ RLS enabled, test data loaded  
 **Ready for Manual Testing:** ✅ Yes

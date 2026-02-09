@@ -1,6 +1,7 @@
 # Q1 2025 Advanced Analytics - Schema Corrections Applied
 
 ## Overview
+
 Successfully migrated Q1 2025 Advanced Analytics from Supabase-designed schema to Azure PostgreSQL + Clerk authentication.
 
 ---
@@ -8,9 +9,11 @@ Successfully migrated Q1 2025 Advanced Analytics from Supabase-designed schema t
 ## Issues Encountered
 
 ### 1. Missing Users Table
+
 **Error**: `ERROR: relation "users" does not exist`
 
 **Original Code**:
+
 ```sql
 created_by UUID NOT NULL REFERENCES users(id)
 acknowledged_by UUID REFERENCES users(id)
@@ -19,6 +22,7 @@ acknowledged_by UUID REFERENCES users(id)
 **Issue**: Original migration assumed Supabase `auth.users` table exists. Azure PostgreSQL with Clerk doesn't have this table.
 
 **Fix**: Changed to TEXT columns storing Clerk user IDs
+
 ```sql
 created_by TEXT NOT NULL, -- Clerk user ID (e.g., user_2NlrrNcfTv0DMh2kzBHyXZRtpb)
 acknowledged_by TEXT, -- Clerk user ID
@@ -27,9 +31,11 @@ acknowledged_by TEXT, -- Clerk user ID
 ---
 
 ### 2. Missing Auth Schema
+
 **Error**: `ERROR: schema "auth" does not exist`
 
 **Original Code**:
+
 ```sql
 WHERE user_id = auth.uid()
 ```
@@ -37,6 +43,7 @@ WHERE user_id = auth.uid()
 **Issue**: Supabase's `auth.uid()` function doesn't exist in Azure PostgreSQL.
 
 **Fix**: Used session variable approach
+
 ```sql
 WHERE user_id = current_setting('app.current_user_id', TRUE)
 ```
@@ -44,9 +51,11 @@ WHERE user_id = current_setting('app.current_user_id', TRUE)
 ---
 
 ### 3. Wrong Column Name in RLS
+
 **Error**: `ERROR: column "clerk_user_id" does not exist`
 
 **Original Code (First Correction Attempt)**:
+
 ```sql
 SELECT organization_id FROM organization_members 
 WHERE clerk_user_id = current_setting('app.current_user_id', TRUE)
@@ -55,12 +64,14 @@ WHERE clerk_user_id = current_setting('app.current_user_id', TRUE)
 **Issue**: Assumed column was named `clerk_user_id`, but actual column is `user_id`.
 
 **Fix**: Used correct column name
+
 ```sql
 SELECT organization_id FROM organization_members 
 WHERE user_id = current_setting('app.current_user_id', TRUE)
 ```
 
 **Schema Discovery**:
+
 ```sql
 \d organization_members
 -- Found: user_id | text | not null
@@ -69,21 +80,25 @@ WHERE user_id = current_setting('app.current_user_id', TRUE)
 ---
 
 ### 4. Type Mismatch in Organization ID
+
 **Error**: `ERROR: operator does not exist: uuid = text`
 
 **Original Code (Second Correction Attempt)**:
+
 ```sql
 WHERE organization_id IN (
   SELECT organization_id FROM organization_members
 )
 ```
 
-**Issue**: 
+**Issue**:
+
 - `kpi_configurations.organization_id` is UUID
 - `organization_members.organization_id` is TEXT (UUID string)
 - PostgreSQL won't auto-cast between UUID and TEXT
 
 **Fix**: Added explicit type cast
+
 ```sql
 WHERE organization_id::text IN (
   SELECT organization_id FROM organization_members
@@ -93,9 +108,11 @@ WHERE organization_id::text IN (
 ---
 
 ### 5. Invalid Role Value
+
 **Error**: `ERROR: invalid input value for enum member_role: "manager"`
 
 **Original Code**:
+
 ```sql
 WHERE om.role IN ('admin', 'manager')
 ```
@@ -103,12 +120,14 @@ WHERE om.role IN ('admin', 'manager')
 **Issue**: The `member_role` enum doesn't have 'manager' value.
 
 **Schema Discovery**:
+
 ```sql
 SELECT unnest(enum_range(NULL::member_role));
 -- Results: member, steward, officer, admin
 ```
 
 **Fix**: Used 'officer' instead of 'manager'
+
 ```sql
 WHERE om.role IN ('admin', 'officer')
 ```
@@ -116,9 +135,11 @@ WHERE om.role IN ('admin', 'officer')
 ---
 
 ### 6. Missing Supabase Roles
+
 **Error**: `ERROR: role "authenticated" does not exist`
 
 **Original Code**:
+
 ```sql
 GRANT SELECT ON analytics_metrics TO authenticated;
 GRANT ALL ON analytics_metrics TO service_role;
@@ -133,21 +154,27 @@ GRANT ALL ON analytics_metrics TO service_role;
 ## Migration Files Created
 
 ### 1. Original Migration (Failed)
+
 **File**: `db/migrations/067_advanced_analytics_q1_2025.sql` (461 lines)
+
 - Designed for Supabase
 - Created 3 of 6 tables (analytics_metrics, ml_predictions, trend_analyses)
 - Failed on kpi_configurations, insight_recommendations, comparative_analyses
 - All RLS policies failed
 
 ### 2. Azure/Clerk Migration (Partial Success)
+
 **File**: `db/migrations/067_advanced_analytics_q1_2025_azure.sql` (301 lines)
+
 - Fixed user references (UUID → TEXT)
 - Fixed auth schema references (auth.uid() → session variables)
 - Created all 6 tables successfully
 - All RLS policies failed (wrong column name)
 
 ### 3. RLS Policies Fix (Success)
+
 **File**: `db/migrations/067_advanced_analytics_rls_fix.sql` (139 lines)
+
 - Fixed column name (clerk_user_id → user_id)
 - Fixed type casting (added organization_id::text)
 - Fixed role values (manager → officer)
@@ -195,6 +222,7 @@ GRANT ALL ON analytics_metrics TO service_role;
 ### RLS Policies Applied (11 total)
 
 **KPI Configurations** (4 policies):
+
 1. ✅ Users can view KPIs for their organization
 2. ✅ Admins and officers can create KPIs
 3. ✅ Admins and officers can update KPIs
@@ -216,22 +244,26 @@ GRANT ALL ON analytics_metrics TO service_role;
 ## Key Learnings
 
 ### Schema Compatibility
+
 - Always check existing schema before assuming table/column names
 - Query `\d table_name` to see actual structure
 - Query `SELECT unnest(enum_range(NULL::enum_type))` for enum values
 - Check data types carefully (UUID vs TEXT, etc.)
 
 ### Type Casting
+
 - PostgreSQL won't auto-cast between UUID and TEXT in comparisons
 - Use `::text` or `::uuid` for explicit casting
 - Be consistent with type usage across foreign keys
 
 ### Authentication Models
+
 - Supabase: Built-in `auth.users` table, `auth.uid()` function
 - Clerk: External authentication, user IDs stored as TEXT in application tables
 - Use session variables for user context in RLS policies
 
 ### RLS Best Practices
+
 - Test RLS policies with actual user context
 - Use `current_setting('app.current_user_id', TRUE)` for user ID
 - Add status checks (`status = 'active'`) to prevent deleted user access
@@ -260,7 +292,8 @@ psql -c "\d comparative_analyses"
 
 All database schema corrections applied successfully. System ready for testing.
 
-**Next Steps**: 
+**Next Steps**:
+
 1. Test API endpoints
 2. Test cron job
 3. Test UI components

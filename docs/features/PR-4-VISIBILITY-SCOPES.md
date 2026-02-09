@@ -1,12 +1,15 @@
 # PR-4: Visibility Scopes (Dual-Surface Enforcement)
 
 ## Overview
+
 **Goal:** Same events, different views - members see status, LROs see process.
 
 This PR implements the "One system. Two surfaces. One truth." principle by ensuring that the same canonical event data is filtered differently based on the viewer's role. Members see public status updates, while Labour Relations Officers (LROs) see full process details including internal notes and strategic discussions.
 
 ## Key Principle
+>
 > "One system. Two surfaces. One truth."
+>
 > - **Member surface:** Status updates only (what happened)
 > - **LRO surface:** Full process details (why, how, next steps)
 > - **Same data source:** Both read from the same event tables
@@ -14,6 +17,7 @@ This PR implements the "One system. Two surfaces. One truth." principle by ensur
 ## Changes Implemented
 
 ### 1. Database Schema (Migration 0060)
+
 **File:** `db/migrations/0060_add_visibility_scopes.sql`
 
 - Added `visibility_scope` enum with 4 levels:
@@ -31,26 +35,32 @@ This PR implements the "One system. Two surfaces. One truth." principle by ensur
   - `idx_grievance_transitions_visibility`
 
 ### 2. TypeScript Schema Updates
+
 **Files:**
+
 - `db/schema/claims-schema.ts`: Added `visibilityScopeEnum` and `visibilityScope` column to `claimUpdates`
 - `db/schema/grievance-workflow-schema.ts`: Imported enum and added `visibilityScope` column to `grievanceTransitions`
 
 ### 3. Case Timeline Service
+
 **File:** `lib/services/case-timeline-service.ts`
 
 Created a new service with three core functions:
 
 #### `getMemberVisibleTimeline(claimId, memberId): Promise<TimelineEvent[]>`
+
 - Fetches only `member` scope events
 - Members see: status updates, public communications, claim submissions
 - Members DO NOT see: internal notes, strategy discussions, admin actions
 
 #### `getLroVisibleTimeline(claimId, organizationId): Promise<TimelineEvent[]>`
+
 - Fetches `member`, `staff`, and `admin` scope events (excludes `system`)
 - LROs see: everything members see PLUS internal process details
 - Combines claim updates and grievance transitions into single timeline
 
 #### `addCaseEvent(payload): Promise<string>`
+
 - Creates new timeline events with automatic scope assignment
 - Rules:
   - `status_change` → `member` (visible to member)
@@ -59,6 +69,7 @@ Created a new service with three core functions:
   - `isInternal: true` → `staff` (default for internal)
 
 #### Helper: `getVisibleScopesForRole(role): VisibilityScope[]`
+
 - Returns which scopes a role can see
 - member → [`member`]
 - steward/officer → [`member`, `staff`]
@@ -66,9 +77,11 @@ Created a new service with three core functions:
 - system → [`member`, `staff`, `admin`, `system`]
 
 ### 4. Integration Tests
+
 **File:** `__tests__/services/case-timeline.test.ts`
 
 Comprehensive test suite proving:
+
 - ✅ Members only see `member` scope events (2 of 5 events)
 - ✅ LROs see `member` + `staff` + `admin` events (5 of 5 events)
 - ✅ Automatic scope assignment works correctly
@@ -79,6 +92,7 @@ Comprehensive test suite proving:
 ## Examples
 
 ### Member View (Limited)
+
 ```typescript
 const timeline = await getMemberVisibleTimeline(claimId, memberId);
 // Returns:
@@ -92,6 +106,7 @@ const timeline = await getMemberVisibleTimeline(claimId, memberId);
 ```
 
 ### LRO View (Full)
+
 ```typescript
 const timeline = await getLroVisibleTimeline(claimId, orgId);
 // Returns ALL 5 events:
@@ -103,6 +118,7 @@ const timeline = await getLroVisibleTimeline(claimId, orgId);
 ```
 
 ### Adding Events with Automatic Scope
+
 ```typescript
 // Status change visible to member
 await addCaseEvent({
@@ -169,12 +185,14 @@ pnpm db:migrate
 ## API Integration (Future Work)
 
 ### Next Steps
+
 - Update claim detail API routes to use timeline service:
   - `GET /api/claims/[id]/timeline` → use `getMemberVisibleTimeline` or `getLroVisibleTimeline` based on role
 - Add timeline endpoint for member dashboard
 - Add full timeline endpoint for LRO dashboard
 
 ### Example API Route Implementation
+
 ```typescript
 // app/api/claims/[id]/timeline/route.ts
 import { requireApiAuth } from '@/lib/api-auth-guard';
@@ -221,6 +239,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 **Implementation Date:** 2025-01-11  
 **Status:** ✅ Complete and tested  
 **Key Files:**
+
 - Migration: `db/migrations/0060_add_visibility_scopes.sql`
 - Service: `lib/services/case-timeline-service.ts`
 - Tests: `__tests__/services/case-timeline.test.ts`

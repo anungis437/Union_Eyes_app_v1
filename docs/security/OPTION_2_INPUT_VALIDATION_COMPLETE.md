@@ -9,6 +9,7 @@
 ## Executive Summary
 
 Successfully implemented comprehensive input validation hardening across critical API endpoints using Zod schemas. Replaced manual validation with type-safe, declarative schemas featuring:
+
 - **Comprehensive field validation** with descriptive error messages
 - **Conditional validation logic** for dependent fields
 - **Type safety** through Zod type inference
@@ -22,12 +23,14 @@ Successfully implemented comprehensive input validation hardening across critica
 ### Files Modified: 9
 
 #### Validation Library: 1 file
+
 1. **`lib/validation.ts`** (363 lines)
    - Enhanced 3 existing schemas
    - Added 7 new validation schemas
    - Added 1 domain-specific schema group
 
 #### API Endpoints: 8 files
+
 1. **`app/api/voting/sessions/route.ts`**
 2. **`app/api/claims/route.ts`**
 3. **`app/api/organizations/route.ts`**
@@ -42,9 +45,11 @@ Successfully implemented comprehensive input validation hardening across critica
 ### 1. Enhanced Validation Schemas
 
 #### A. **createVotingSession** Schema
+
 **Location:** `lib/validation.ts` lines 83-114
 
 **Fields Added:**
+
 - `type`: Enum validation (`convention` | `ratification` | `special_vote`) with custom error map
 - `meetingType`: Enum validation (`convention` | `ratification` | `emergency` | `special`)
 - `startTime`: DateTime validation with format checking
@@ -56,6 +61,7 @@ Successfully implemented comprehensive input validation hardening across critica
 - `options`: Enhanced array validation (2-20 items, max 500 chars each)
 
 **Conditional Validation:**
+
 ```typescript
 .refine(
   (data) => {
@@ -73,9 +79,11 @@ Successfully implemented comprehensive input validation hardening across critica
 ---
 
 #### B. **createClaim** Schema
+
 **Location:** `lib/validation.ts` lines 116-162
 
 **Fields Enhanced:**
+
 - `claimType`: Expanded enum from 7 to 10 types (added `discrimination`, `working_conditions`, `retaliation`)
 - `incidentDate`: DateTime validation
 - `location`: String 1-500 chars
@@ -92,6 +100,7 @@ Successfully implemented comprehensive input validation hardening across critica
 - `metadata`: Record for additional data
 
 **Conditional Validations (2):**
+
 ```typescript
 // Validation 1: Witness details required when witnesses present
 .refine(
@@ -121,9 +130,11 @@ Successfully implemented comprehensive input validation hardening across critica
 ---
 
 #### C. **createOrganization** Schema
+
 **Location:** `lib/validation.ts` lines 169-185
 
 **Fields:**
+
 - `name`: String 2-200 chars
 - `slug`: String 1-100 chars with regex validation (`/^[a-z0-9-_]+$/`)
 - `type`: Enum (`congress` | `federation` | `union` | `local` | `region` | `district`)
@@ -180,9 +191,11 @@ Successfully implemented comprehensive input validation hardening across critica
 ### 2. Endpoint Implementations
 
 #### A. Voting Sessions Creation
+
 **File:** `app/api/voting/sessions/route.ts`
 
 **Before (Lines 130-156):**
+
 ```typescript
 const body = await request.json();
 const {
@@ -228,6 +241,7 @@ if (!validMeetingTypes.includes(meetingType)) {
 ```
 
 **After (Lines 130-140):**
+
 ```typescript
 // Validate request body with Zod schema
 const validated = await validateBody(request, bodySchemas.createVotingSession);
@@ -252,6 +266,7 @@ const {
 ```
 
 **Improvements:**
+
 - ✅ Reduced from 30+ lines to 11 lines
 - ✅ Type safety through Zod inference
 - ✅ Comprehensive field validation (not just presence checking)
@@ -262,9 +277,11 @@ const {
 ---
 
 #### B. Claims Creation
+
 **File:** `app/api/claims/route.ts`
 
 **Before (Lines 108-118):**
+
 ```typescript
 const body = await request.json();
 
@@ -281,6 +298,7 @@ for (const field of required) {
 ```
 
 **After (Lines 108-110):**
+
 ```typescript
 // Validate request body with Zod schema
 const validated = await validateBody(request, bodySchemas.createClaim);
@@ -288,6 +306,7 @@ if (validated instanceof NextResponse) return validated;
 ```
 
 **Database Insert Updated (Lines 125-145):**
+
 ```typescript
 // Before: Using body directly
 memberId: userId,
@@ -327,6 +346,7 @@ metadata: validated.metadata || {},
 ```
 
 **Improvements:**
+
 - ✅ Type-safe object destructuring
 - ✅ No manual null coalescing needed (handled by schema defaults)
 - ✅ Comprehensive validation (format, length, conditional requirements)
@@ -335,9 +355,11 @@ metadata: validated.metadata || {},
 ---
 
 #### C. Organization Creation
+
 **File:** `app/api/organizations/route.ts`
 
 **Before (Lines 166-196):**
+
 ```typescript
 const body = await request.json();
 
@@ -370,6 +392,7 @@ if (!slugRegex.test(slug)) {
 ```
 
 **After (Lines 166-168):**
+
 ```typescript
 // Validate request body with Zod schema
 const validated = await validateBody(request, bodySchemas.createOrganization);
@@ -377,6 +400,7 @@ if (validated instanceof NextResponse) return validated;
 ```
 
 **Database Insert Updated (Lines 170-184):**
+
 ```typescript
 // Using validated object with proper types
 const newOrganization = await createOrganization({
@@ -399,6 +423,7 @@ const newOrganization = await createOrganization({
 ```
 
 **Improvements:**
+
 - ✅ Reduced from 40+ lines to 3 lines
 - ✅ Added validation for 10+ optional fields (email, phone, website, logo, color)
 - ✅ URL validation for website and logo
@@ -432,7 +457,9 @@ const newOrganization = await createOrganization({
 ### 1. XSS Prevention
 
 #### Search Query Protection
+
 **Location:** `lib/validation.ts` lines 35-38
+
 ```typescript
 searchQuery: z.string()
   .max(200, 'Search query too long')
@@ -443,7 +470,9 @@ searchQuery: z.string()
 **Protection:** Only allows alphanumeric characters, spaces, hyphens, underscores, periods, commas, and @ symbols. Blocks all potential XSS vectors.
 
 #### String Length Limits
+
 All text fields have maximum length constraints:
+
 - **Short text:** 50-200 characters (names, titles)
 - **Medium text:** 500-2000 characters (descriptions, locations)
 - **Long text:** 5000-10,000 characters (detailed descriptions, outcomes)
@@ -451,7 +480,9 @@ All text fields have maximum length constraints:
 **Protection:** Prevents buffer overflow attacks and excessive data storage
 
 #### URL Validation
+
 All URL fields use Zod's built-in `.url()` validator:
+
 ```typescript
 website: z.string().url('Invalid website URL').optional(),
 logo: z.string().url('Invalid logo URL').optional(),
@@ -465,6 +496,7 @@ attachments: z.array(z.string().url('Invalid attachment URL')).max(10),
 ### 2. SQL Injection Prevention
 
 #### Parameterized Queries (Drizzle ORM)
+
 All database operations use Drizzle ORM, which automatically uses parameterized queries:
 
 ```typescript
@@ -485,7 +517,9 @@ const [newClaim] = await db
 **Protection:** Zero raw SQL queries in validated endpoints. All values are properly escaped by the ORM.
 
 #### UUID Validation
+
 All IDs use UUID v4 validation:
+
 ```typescript
 uuid: z.string().uuid('Invalid UUID format'),
 ```
@@ -497,6 +531,7 @@ uuid: z.string().uuid('Invalid UUID format'),
 ### 3. Type Safety
 
 #### Zod Type Inference
+
 All validated objects have TypeScript types automatically inferred:
 
 ```typescript
@@ -506,6 +541,7 @@ const validated = await validateBody(request, bodySchemas.createVotingSession);
 ```
 
 **Benefits:**
+
 - Compile-time type checking
 - IDE autocomplete for validated fields
 - Impossible to access non-validated fields
@@ -516,21 +552,25 @@ const validated = await validateBody(request, bodySchemas.createVotingSession);
 ### 4. Input Sanitization Patterns
 
 #### Email Validation
+
 ```typescript
 email: z.string().email('Invalid email format'),
 ```
 
 #### Phone Validation
+
 ```typescript
 phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
 ```
 
 #### Hex Color Validation
+
 ```typescript
 primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format (use #RRGGBB)'),
 ```
 
 #### Enum Validation
+
 ```typescript
 type: z.enum(['convention', 'ratification', 'special_vote'], {
   errorMap: () => ({ message: 'Invalid type. Must be convention, ratification, or special_vote' })
@@ -564,6 +604,7 @@ All validation errors return consistent 400 responses:
 ```
 
 **Implementation:** `lib/validation.ts` lines 262-287
+
 ```typescript
 export function formatValidationError(error: ZodError): NextResponse {
   const formattedErrors = error.errors.map((err) => ({
@@ -582,6 +623,7 @@ export function formatValidationError(error: ZodError): NextResponse {
 ```
 
 **Benefits:**
+
 - Clear indication of which fields failed validation
 - Descriptive error messages for each field
 - Easy to parse for frontend error display
@@ -625,11 +667,13 @@ export function formatValidationError(error: ZodError): NextResponse {
 ## Performance Impact
 
 ### Validation Overhead
+
 - **Zod parsing:** ~0.5-2ms per request (negligible)
 - **Type inference:** Zero runtime cost (compile-time only)
 - **Error formatting:** ~0.1ms per validation error
 
 ### Code Reduction
+
 - **Lines of manual validation removed:** ~150+ lines
 - **Lines of validation code added:** ~100 lines (schemas)
 - **Net reduction:** 50+ lines
@@ -640,6 +684,7 @@ export function formatValidationError(error: ZodError): NextResponse {
 ## Testing Recommendations
 
 ### 1. Schema Validation Tests
+
 ```typescript
 describe('createVotingSession schema', () => {
   it('should validate correct data', () => {
@@ -669,6 +714,7 @@ describe('createVotingSession schema', () => {
 ```
 
 ### 2. Endpoint Integration Tests
+
 ```typescript
 describe('POST /api/claims', () => {
   it('should create claim with valid data', async () => {
@@ -710,6 +756,7 @@ describe('POST /api/claims', () => {
 ## Next Steps for Additional Hardening
 
 ### 1. Rate Limiting (Recommended)
+
 Add rate limiting middleware to prevent abuse:
 
 ```typescript
@@ -731,6 +778,7 @@ export async function withRateLimit(request: NextRequest, limits: { windowMs: nu
 ```
 
 **Apply to:**
+
 - `/api/claims` POST - 10 requests per minute
 - `/api/voting/sessions` POST - 5 requests per minute
 - `/api/organizations` POST - 3 requests per minute
@@ -738,6 +786,7 @@ export async function withRateLimit(request: NextRequest, limits: { windowMs: nu
 ---
 
 ### 2. File Upload Validation
+
 For endpoints handling file uploads:
 
 ```typescript
@@ -762,6 +811,7 @@ export const fileValidation = {
 ### 3. Additional Endpoints to Validate
 
 High-priority endpoints not yet validated:
+
 1. `/api/organizing/campaigns` POST
 2. `/api/strike/funds` POST
 3. `/api/pension/plans` POST
@@ -769,6 +819,7 @@ High-priority endpoints not yet validated:
 5. `/api/tax/t4a` POST
 
 Medium-priority:
+
 1. `/api/notifications/test` POST
 2. `/api/upload` POST (file validation)
 3. `/api/voice/transcribe` POST
@@ -778,25 +829,30 @@ Medium-priority:
 ## Validation Best Practices Applied
 
 ### 1. Declarative Over Imperative
+
 ✅ **Before:** 30+ lines of if-statements and manual checks  
 ✅ **After:** 20 lines of declarative Zod schema
 
 ### 2. Type Safety Throughout
+
 ✅ TypeScript types automatically inferred from Zod schemas  
 ✅ No type assertions needed  
 ✅ Compile-time errors for incorrect field access
 
 ### 3. Descriptive Error Messages
+
 ✅ Every field has custom error messages  
 ✅ Error messages indicate exact validation failure  
 ✅ Structured error responses for easy frontend integration
 
 ### 4. Conditional Validation
+
 ✅ Cross-field validation (e.g., quorum threshold required when quorum enabled)  
 ✅ Business rule enforcement at validation layer  
 ✅ Clear error paths for conditional failures
 
 ### 5. Security by Default
+
 ✅ All text fields have length limits  
 ✅ All URLs validated for format  
 ✅ All enums restricted to allowed values  
@@ -804,6 +860,7 @@ Medium-priority:
 ✅ Search queries sanitized with regex
 
 ### 6. Consistent Patterns
+
 ✅ Same validation helpers used everywhere (`validateBody`, `validateParams`, `validateQuery`)  
 ✅ Same error format across all endpoints  
 ✅ Same structure for all schemas (common, param, body, query)
@@ -813,17 +870,20 @@ Medium-priority:
 ## Metrics
 
 ### Code Quality
+
 - **Manual validation removed:** 150+ lines
 - **Type-safe schemas added:** 95+ fields
 - **Conditional validations:** 4 rules
 - **Security enhancements:** 10+ regex patterns, length limits, enum constraints
 
 ### Endpoint Coverage
+
 - **Critical endpoints validated:** 6/6 (100%)
 - **High-priority endpoints remaining:** 5
 - **Medium-priority endpoints remaining:** 3
 
 ### Security Improvements
+
 - **XSS prevention:** ✅ Search query sanitization, length limits
 - **SQL injection prevention:** ✅ Parameterized queries (Drizzle ORM), UUID validation
 - **Type safety:** ✅ Full TypeScript inference from Zod schemas

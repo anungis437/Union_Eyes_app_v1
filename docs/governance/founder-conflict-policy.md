@@ -23,12 +23,14 @@ A founder MUST establish a **blind trust** for their Union Eyes shares if they:
 ### Blind Trust Structure
 
 **Definition**: A legal arrangement where:
+
 - Founder transfers Union Eyes shares to an independent trustee
 - Trustee has **sole discretion** over voting rights
 - Founder receives only **financial distributions** (no control)
 - Founder **cannot influence** company decisions during trust period
 
 **Requirements**:
+
 - **Independent trustee**: No family, business, or union ties to founder
 - **Licensed professional**: Lawyer, accountant, or registered trust company
 - **Bonded and insured**: $5M minimum professional liability coverage
@@ -36,6 +38,7 @@ A founder MUST establish a **blind trust** for their Union Eyes shares if they:
 - **Annual reporting**: Reports to Union Eyes Board and Union Member Representative Council
 
 **Trust Duration**:
+
 - **Minimum**: 5 years from union office resignation OR from start of Union Eyes role
 - **Extension**: Automatically renews if founder re-enters union office
 - **Termination**: Only after 5 consecutive years with zero conflicts
@@ -43,6 +46,7 @@ A founder MUST establish a **blind trust** for their Union Eyes shares if they:
 ### Current Founder Status (2026)
 
 #### Founder A
+
 - **Background**: Former shop steward, CUPE Local 123 (2015-2020)
 - **Conflict**: Held union office within 5 years of Union Eyes founding
 - **Status**: ✅ **Blind trust established**
@@ -54,6 +58,7 @@ A founder MUST establish a **blind trust** for their Union Eyes shares if they:
 - **Voting Rights**: Zero (trustee votes on all matters)
 
 #### Founder B  
+
 - **Background**: Software engineer, no union or management background
 - **Conflict**: None identified
 - **Status**: ✅ **No blind trust required**
@@ -63,6 +68,7 @@ A founder MUST establish a **blind trust** for their Union Eyes shares if they:
 - **Board Seat**: Yes (Class A shareholder representative)
 
 #### Founder C
+
 - **Background**: Former HR manager, non-unionized tech company
 - **Conflict**: Management background, but no union-management conflicts
 - **Status**: ✅ **Enhanced disclosure required** (no blind trust)
@@ -77,12 +83,14 @@ A founder MUST establish a **blind trust** for their Union Eyes shares if they:
 ### Resignation Requirement
 
 Founders MUST resign from **ALL union positions** before:
+
 1. Taking operational role at Union Eyes
 2. Joining Union Eyes Board of Directors
 3. Receiving any compensation from Union Eyes
 4. Receiving any equity in Union Eyes
 
 **Prohibited Union Positions**:
+
 - Elected officer (president, treasurer, secretary)
 - Appointed officer (business agent, organizer, steward)
 - Committee member (bargaining, grievance, strike)
@@ -92,17 +100,20 @@ Founders MUST resign from **ALL union positions** before:
 ### Cooling-Off Period
 
 **12-month waiting period** between union office resignation and Union Eyes role:
+
 - Prevents perception of "selling out" to tech company
 - Allows clean break from union responsibilities
 - Ensures founder isn't using union connections for personal gain
 
 **Exceptions**:
+
 - Advisory roles (uncompensated, no equity)
 - Union member (non-officer) status: Permitted and encouraged
 
 ### Succession Planning
 
 If founder returns to union office:
+
 1. Immediate resignation from Union Eyes operational role
 2. Shares automatically placed in blind trust (if not already)
 3. Board seat vacated (automatic)
@@ -113,6 +124,7 @@ If founder returns to union office:
 ### Prohibited Transactions
 
 Founders CANNOT:
+
 1. Negotiate contracts with their **current or former union local**
 2. Offer **preferential pricing** to unions where they have connections
 3. Influence union local's **purchase decisions** (sales, steering)
@@ -122,6 +134,7 @@ Founders CANNOT:
 ### Permitted Transactions (with safeguards)
 
 Transactions with unions are permitted IF:
+
 1. **Fair market value pricing** (independently verified)
 2. **Independent Board approval** (founder recused from vote)
 3. **Public disclosure** (published on website within 30 days)
@@ -149,6 +162,7 @@ Result: Transaction approved ✅
 **Due**: January 31 each year
 
 All founders must certify:
+
 1. **Current union memberships** (if any)
 2. **Current union offices held** (none permitted during Union Eyes role)
 3. **Family members in union leadership** (disclosure required)
@@ -161,12 +175,14 @@ All founders must certify:
 ### Quarterly Reviews
 
 **Ethics Committee** (subset of Board) reviews:
+
 - All founder transactions with unions
 - Any new conflicts that arose
 - Compliance with blind trust requirements
 - Member complaints or concerns
 
 **Committee Composition**:
+
 - 1 Independent Director (Chair)
 - 1 Union Member Representative (from golden share Council)
 - 1 External ethics advisor (lawyer or accountant)
@@ -174,6 +190,7 @@ All founders must certify:
 ### External Audit (Every 3 Years)
 
 **Independent auditor** reviews:
+
 - All founder-related transactions
 - Blind trust compliance
 - Conflict disclosure accuracy
@@ -187,12 +204,14 @@ All founders must certify:
 
 ### Minor Violations (unintentional, disclosed promptly)
 
-**Examples**: 
+**Examples**:
+
 - Missed annual declaration deadline
 - Failed to disclose minor conflict
 - Unintentional participation in conflicted vote
 
 **Penalties**:
+
 - Written warning from Board
 - Mandatory ethics training (8 hours)
 - Increased monitoring (quarterly check-ins)
@@ -201,12 +220,14 @@ All founders must certify:
 ### Major Violations (intentional, concealed, or repeated)
 
 **Examples**:
+
 - Steering union contracts for personal gain
 - Failing to establish required blind trust
 - Voting on conflicted transactions
 - Using union connections to enrich self
 
 **Penalties**:
+
 - **Removal from operational role** (immediate)
 - **Forced sale of shares** (fair market value)
 - **Disgorgement of profits** (return ill-gotten gains)
@@ -216,6 +237,7 @@ All founders must certify:
 ### Member-Initiated Enforcement
 
 Union members can trigger investigation by:
+
 1. Submitting written complaint to Ethics Committee
 2. Providing evidence of conflict
 3. Requesting specific Board action
@@ -227,12 +249,14 @@ Union members can trigger investigation by:
 ### Anonymous Reporting
 
 Union members can report conflicts anonymously:
-- **Email**: ethics@unioneyes.ca (monitored by external counsel)
+
+- **Email**: <ethics@unioneyes.ca> (monitored by external counsel)
 - **Hotline**: 1-800-UNION-EYES (staffed by third-party service)
-- **Web Form**: https://unioneyes.ca/report-conflict (encrypted, anonymous)
+- **Web Form**: <https://unioneyes.ca/report-conflict> (encrypted, anonymous)
 - **Mail**: Ethics Committee, c/o [External Counsel], [Address]
 
-**Response Time**: 
+**Response Time**:
+
 - Acknowledgment within 48 hours
 - Investigation completed within 30 days
 - Member updated on outcome (if identity disclosed)
@@ -240,6 +264,7 @@ Union members can report conflicts anonymously:
 ### Transparency Commitments
 
 **Public Disclosures** (on website):
+
 1. All founder conflict declarations (annual)
 2. All blind trust annual reports (summary)
 3. All transactions with founders' former/current union locals
@@ -247,6 +272,7 @@ Union members can report conflicts anonymously:
 5. All external audit results (full report)
 
 **Member Access**:
+
 - Any union member can request full conflict files
 - Provided within 10 business days
 - No cost, no questions asked
@@ -254,6 +280,7 @@ Union members can report conflicts anonymously:
 ### Whistleblower Protection
 
 **Prohibited Retaliation**:
+
 - Termination or demotion
 - Harassment or intimidation
 - Lawsuit or legal threats
@@ -261,6 +288,7 @@ Union members can report conflicts anonymously:
 - Blacklisting from other unions
 
 **Penalties for Retaliation**:
+
 - Immediate termination of retaliating party
 - $50,000 compensation to whistleblower
 - Public apology
@@ -269,12 +297,14 @@ Union members can report conflicts anonymously:
 ## Legal Framework
 
 This policy complies with:
+
 - **Canada Corporations Act**: Fiduciary duty of directors/officers
 - **Provincial union financial oversight regulations**: Conflict of interest rules
 - **CRA non-profit governance guidelines**: Arm's-length transaction requirements
 - **Provincial labour codes**: Union democracy and member protection
 
-**Legal Review**: 
+**Legal Review**:
+
 - Last reviewed by McCarthy Tétrault LLP: December 2025
 - Next review: December 2026
 
@@ -285,11 +315,13 @@ This policy complies with:
 This policy coordinates with the **golden share mission-lock** governance:
 
 **Reserved Matters** requiring Union Member Representative Council approval:
+
 1. Waivers of this conflict policy (requires unanimous Council vote)
 2. Changes to blind trust requirements (requires 4 of 5 Council votes)
 3. Removal of founder for conflict violations (Council initiates)
 
 **Non-Reserved Matters** (Board decides):
+
 - Minor conflict declaration procedures
 - Ethics Committee composition
 - Investigation procedures
@@ -297,6 +329,7 @@ This policy coordinates with the **golden share mission-lock** governance:
 ### Board Oversight
 
 **Board Responsibilities**:
+
 1. Enforce this policy (Ethics Committee)
 2. Review annual conflict declarations
 3. Approve or deny conflicted transactions
@@ -304,6 +337,7 @@ This policy coordinates with the **golden share mission-lock** governance:
 5. Report to Union Member Representative Council (quarterly)
 
 **Board Authority**:
+
 - Remove founder from operational role (simple majority)
 - Force founder share sale (2/3 majority)
 - Amend policy (subject to golden share Reserved Matters)
@@ -311,6 +345,7 @@ This policy coordinates with the **golden share mission-lock** governance:
 ## Policy Amendments
 
 **Amendment Process**:
+
 1. Board proposes amendment
 2. Ethics Committee reviews
 3. Union Member Representative Council approves (if Reserved Matter)
@@ -328,4 +363,4 @@ This policy coordinates with the **golden share mission-lock** governance:
 **Last Updated**: January 15, 2026  
 **Next Review**: January 15, 2027
 
-**Questions?** Email: governance@unioneyes.ca
+**Questions?** Email: <governance@unioneyes.ca>

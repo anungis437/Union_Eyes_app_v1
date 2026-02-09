@@ -11,6 +11,7 @@
 This plan outlines the integration of public Canadian and international labor data sources into the Union Eyes platform to enrich CBA Intelligence, arbitration precedents, and wage benchmarking features.
 
 **Goals:**
+
 - Enrich 200+ CBA records with external wage data
 - Enable real-time arbitration decision lookup
 - Provide union density and coverage benchmarking
@@ -101,6 +102,7 @@ This plan outlines the integration of public Canadian and international labor da
 ```
 
 **Environment Variables:**
+
 ```bash
 STATCAN_API_KEY=your_api_key
 STATCAN_BASE_URL=https://api.statcan.gc.ca
@@ -615,12 +617,14 @@ export class LRBUnifiedService {
 #### 3.1 Partnership Requirements
 
 **Data to Request:**
+
 1. Per-capita rate schedules by affiliate
 2. Benchmark data (average dues, coverage rates)
 3. Compliance threshold indicators
 4. CLC Convention resolutions database
 
 **Technical Requirements:**
+
 - OAuth 2.0 authentication
 - VPN or secure tunnel for sensitive data
 - Data processing agreement (DPA)

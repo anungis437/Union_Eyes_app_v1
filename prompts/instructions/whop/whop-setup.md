@@ -1,6 +1,7 @@
 # Whop Payments Integration PRD: NextJS Web App (Updated)
 
 ## Overview
+
 This document outlines the enhanced implementation for integrating Whop payment processing into our NextJS web application. The updated approach addresses previous issues with user identification and provides a comprehensive system for tracking usage credits and payment cycles.
 
 ## Current Implementation
@@ -193,6 +194,7 @@ Test the system with:
    - Verify the alert banner appears
 
 ## Timeline
+
 1. **Environment Configuration**: 1 day
 2. **Whop Dashboard Setup**: 1 day
 3. **Code Implementation**: 3 days
@@ -204,6 +206,7 @@ Test the system with:
 5. **Deployment and Verification**: 1 day
 
 ## Success Criteria
+
 1. Users complete checkout and are automatically redirected back to the app
 2. User profiles are properly updated in Supabase after payment
 3. Membership status changes are reflected in the app immediately

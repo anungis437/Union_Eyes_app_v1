@@ -8,9 +8,11 @@
 ## ✅ What Was Accomplished
 
 ### 1. Azure Infrastructure Provisioned (100% Complete)
+
 Successfully created 16 Azure resources across staging and production environments:
 
 **Staging Environment (7 resources):**
+
 - Resource Group: `unioneyes-staging-rg` (Canada Central)
 - Container Registry: `unioneyesstagingacr` (Basic SKU)
 - App Service Plan: `unioneyes-staging-plan` (B1)
@@ -21,6 +23,7 @@ Successfully created 16 Azure resources across staging and production environmen
 - OpenAI Service: `unioneyes-staging-openai` (S0)
 
 **Production Environment (7 resources):**
+
 - Resource Group: `unioneyes-prod-rg` (Canada Central)
 - Container Registry: `unioneyesprodacr` (Basic SKU)
 - App Service Plan: `unioneyes-prod-plan` (P1V3)
@@ -31,39 +34,47 @@ Successfully created 16 Azure resources across staging and production environmen
 - OpenAI Service: `unioneyes-prod-openai` (S0)
 
 **Verification:**
+
 ```bash
 az resource list --resource-group unioneyes-staging-rg --output table
 az resource list --resource-group unioneyes-prod-rg --output table
 ```
 
 ### 2. Credentials Retrieved and Documented
+
 All Azure service credentials extracted and saved:
 
 ✅ **Database Connection Strings** (both environments)
+
 - Server: unioneyes-{env}-db.postgres.database.azure.com
 - Admin User: unionadmin
 - Database: unioneyes
 - Port: 5432
 
 ✅ **Azure Container Registry Credentials**
+
 - Staging: unioneyesstagingacr.azurecr.io
 - Production: unioneyesprodacr.azurecr.io
 - Usernames and passwords retrieved
 
 ✅ **Storage Account Keys**
+
 - Staging: unioneyesstagingstorage
 - Production: unioneyesprodstorage
 - Access keys retrieved for both
 
 ✅ **Speech Service Keys**
+
 - Both environments: Canada Central region
 - Key1 and Key2 retrieved
 
 ✅ **Azure OpenAI Keys and Endpoints**
-- Endpoint: https://canadacentral.api.cognitive.microsoft.com/
+
+- Endpoint: <https://canadacentral.api.cognitive.microsoft.com/>
 - Keys retrieved for both environments
 
 ### 3. Environment Configuration Files Created
+
 Created complete configuration for all environments:
 
 ✅ `.env.staging` - All staging credentials configured
@@ -71,6 +82,7 @@ Created complete configuration for all environments:
 ✅ `AZURE_CREDENTIALS.md` - Complete credential reference (DO NOT COMMIT)
 
 ### 4. Docker Configuration Enhanced
+
 Optimized Docker setup for monorepo structure:
 
 ✅ `Dockerfile` - Multi-stage build (deps → builder → runner)
@@ -80,9 +92,11 @@ Optimized Docker setup for monorepo structure:
 ✅ `docker-compose.prod.yml` - Production environment overrides
 
 ### 5. CI/CD Pipeline Configured
+
 Complete GitHub Actions workflow ready:
 
 ✅ `.github/workflows/azure-deploy.yml` - Automated deployments
+
 - Build and test job (lint, type-check, build)
 - Staging deployment (on push to `staging` branch)
 - Production deployment (on push to `main` branch)
@@ -90,6 +104,7 @@ Complete GitHub Actions workflow ready:
 - Web App deployment with environment variables
 
 ### 6. Documentation Created
+
 Comprehensive guides for deployment:
 
 ✅ `AZURE_DEPLOYMENT.md` - Complete deployment guide
@@ -104,12 +119,15 @@ Comprehensive guides for deployment:
 ## 🔄 Currently In Progress
 
 ### Docker Image Build
+
 **Status:** Building locally (295MB context transfer in progress)
+
 - Command: `docker build -t unioneyes:latest .`
 - Stage: Transferring build context
 - Expected completion: 5-10 more minutes
 
 **Once complete, test with:**
+
 ```bash
 docker-compose up
 # Verify at http://localhost:3000
@@ -120,9 +138,11 @@ docker-compose up
 ## ⏳ Next Immediate Steps
 
 ### Step 1: Deploy GPT-4 Models (MANUAL - 10-15 minutes)
+
 **Why Manual?** Azure CLI doesn't support model deployment in Canada Central region
 
 **Action Required:**
+
 1. Open [Azure Portal](https://portal.azure.com)
 2. Navigate to **unioneyes-staging-openai**
 3. Click "Model deployments" → "Create new deployment"
@@ -134,6 +154,7 @@ docker-compose up
 **Reference:** `docs/AZURE_OPENAI_DEPLOYMENT.md`
 
 ### Step 2: Complete Docker Build and Push (30-45 minutes)
+
 ```bash
 # Wait for current build to finish, then test
 docker-compose up
@@ -150,12 +171,15 @@ docker push unioneyesprodacr.azurecr.io/unioneyes:latest
 ```
 
 **Or use automated script:**
+
 ```bash
 .\scripts\deploy-to-azure.ps1
 ```
 
 ### Step 3: Configure Web App Environment Variables (20-30 minutes)
+
 Set all environment variables in Azure Portal for both Web Apps:
+
 - DATABASE_URL (with actual passwords)
 - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 - CLERK_SECRET_KEY
@@ -164,6 +188,7 @@ Set all environment variables in Azure Portal for both Web Apps:
 **Location:** Azure Portal → Web App → Configuration → Application settings
 
 ### Step 4: Run Database Migrations (15-20 minutes per environment)
+
 ```bash
 # Staging
 DATABASE_URL="postgresql://unionadmin:YOUR_PASSWORD@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require" pnpm db:push
@@ -173,6 +198,7 @@ DATABASE_URL="postgresql://unionadmin:YOUR_PASSWORD@unioneyes-prod-db.postgres.d
 ```
 
 ### Step 5: Setup GitHub Actions (30-60 minutes)
+
 1. Create Azure service principals for staging and production
 2. Add 30+ GitHub secrets (see AZURE_CREDENTIALS.md)
 3. Create `staging` branch
@@ -183,18 +209,22 @@ DATABASE_URL="postgresql://unionadmin:YOUR_PASSWORD@unioneyes-prod-db.postgres.d
 ## 📊 Resource Inventory
 
 ### URLs
-- **Staging App:** https://unioneyes-staging-app.azurewebsites.net
-- **Production App:** https://unioneyes-prod-app.azurewebsites.net
+
+- **Staging App:** <https://unioneyes-staging-app.azurewebsites.net>
+- **Production App:** <https://unioneyes-prod-app.azurewebsites.net>
 - **Staging DB:** unioneyes-staging-db.postgres.database.azure.com:5432
 - **Production DB:** unioneyes-prod-db.postgres.database.azure.com:5432
 
 ### Access
-- **Azure Portal:** https://portal.azure.com
+
+- **Azure Portal:** <https://portal.azure.com>
 - **Azure Subscription:** Azure subscription 1 Nzila (5d819f33-d16f-429c-a3c0-5b0e94740ba3)
 - **Tenant:** One Lab Technologies Corp. (onelabtech.com)
 
 ### Credentials
+
 All credentials documented in:
+
 - `AZURE_CREDENTIALS.md` (⚠️ DO NOT COMMIT)
 - `.env.staging`
 - `.env.production`
@@ -204,6 +234,7 @@ All credentials documented in:
 ## 💰 Estimated Monthly Costs
 
 ### Staging Environment
+
 - App Service Plan (B1): ~$13/month
 - PostgreSQL (Standard_B2s): ~$30/month
 - Storage Account: ~$1/month
@@ -213,6 +244,7 @@ All credentials documented in:
 **Total: ~$50-60/month** + API usage
 
 ### Production Environment
+
 - App Service Plan (P1V3): ~$100/month
 - PostgreSQL (Standard_B2s): ~$30/month
 - Storage Account: ~$2/month
@@ -250,6 +282,7 @@ All credentials documented in:
 ## 📝 Important Notes
 
 ### ⚠️ PostgreSQL Passwords
+
 If you didn't save the PostgreSQL passwords from the setup script output, you can reset them:
 
 ```bash
@@ -262,6 +295,7 @@ az postgres flexible-server update \
 Then update `.env.staging` and `.env.production` accordingly.
 
 ### ⚠️ Firewall Rules
+
 Azure PostgreSQL databases have firewall rules. To connect from your local machine:
 
 ```bash
@@ -277,13 +311,16 @@ az postgres flexible-server firewall-rule create \
 Or enable "Allow public access from any Azure service" for Web App connectivity.
 
 ### ⚠️ GitHub Secrets Required
+
 Before CI/CD works, add these secrets to your GitHub repository:
 
 **Shared (2):**
+
 - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 - CLERK_SECRET_KEY
 
 **Staging (10):**
+
 - AZURE_CREDENTIALS_STAGING
 - STAGING_ACR_LOGIN_SERVER
 - STAGING_ACR_USERNAME
@@ -298,6 +335,7 @@ Before CI/CD works, add these secrets to your GitHub repository:
 - STAGING_AZURE_OPENAI_KEY
 
 **Production (10):**
+
 - (Same as staging but with PROD_ prefix)
 
 ---
@@ -305,6 +343,7 @@ Before CI/CD works, add these secrets to your GitHub repository:
 ## 🎯 Success Criteria
 
 ### Phase 1: Infrastructure (✅ COMPLETE)
+
 - [x] All Azure resources created
 - [x] Credentials retrieved and documented
 - [x] Environment files configured
@@ -313,6 +352,7 @@ Before CI/CD works, add these secrets to your GitHub repository:
 - [x] Documentation complete
 
 ### Phase 2: Deployment (⏳ IN PROGRESS)
+
 - [ ] GPT-4 models deployed
 - [ ] Docker image built and tested
 - [ ] Images pushed to both ACRs
@@ -321,6 +361,7 @@ Before CI/CD works, add these secrets to your GitHub repository:
 - [ ] Applications accessible at azurewebsites.net URLs
 
 ### Phase 3: Integration (⏳ PENDING)
+
 - [ ] GitHub Actions automated deployments working
 - [ ] Azure Blob Storage integrated for file uploads
 - [ ] Azure Speech-to-Text integrated for voice claims
@@ -333,6 +374,7 @@ Before CI/CD works, add these secrets to your GitHub repository:
 ## 📞 Support & References
 
 ### Key Documents
+
 - **Deployment Guide:** AZURE_DEPLOYMENT.md
 - **Current Status:** DEPLOYMENT_STATUS.md
 - **OpenAI Setup:** docs/AZURE_OPENAI_DEPLOYMENT.md
@@ -340,6 +382,7 @@ Before CI/CD works, add these secrets to your GitHub repository:
 - **Session Summary:** This file
 
 ### Useful Commands
+
 ```bash
 # View app logs
 az webapp log tail --name unioneyes-staging-app --resource-group unioneyes-staging-rg
@@ -355,6 +398,7 @@ az webapp deployment list-publishing-profiles --name unioneyes-staging-app --res
 ```
 
 ### Quick Links
+
 - [Azure Portal](https://portal.azure.com)
 - [Azure OpenAI Studio](https://oai.azure.com)
 - [GitHub Actions](https://github.com/YOUR_ORG/union-claims-standalone/actions)

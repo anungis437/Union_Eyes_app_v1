@@ -12,6 +12,7 @@
 > "Transformation of how the fundamentals of a union work... unions were born out of conflict... we're here to fix conflict internally"
 
 **Key Insight**: UnionEyes exists to resolve **internal union conflict** caused by:
+
 - Archaic operational modes
 - Inconsistent claim handling across regional offices
 - Loss of corporate knowledge when experienced staff leave
@@ -20,11 +21,13 @@
 ### The Three Pillars
 
 #### 1. **Conflict Resolution Through Standardization**
+
 - **Problem**: Different regional offices handle claims differently → members lose fair representation
 - **Solution**: Normalize claim handling nationally with streamlined processes
 - **Goal**: Unions become effective at solving external conflict by first fixing internal inefficiencies
 
 #### 2. **Corporate Knowledge Preservation**
+
 - **Problem**: When experienced LROs (like "Mike with 10 years") leave, institutional knowledge disappears
 - **Current Reality**: "Can't find emails" or "versions 22 and 23 rationale is lost"
 - **Solution**: Transform collective bargaining notes into **hyperlinked footnotes** in collective agreements
@@ -32,6 +35,7 @@
 - **Impact**: Corporate knowledge becomes permanent, accessible, and contextual
 
 #### 3. **Generational Technology Bridge**
+
 - **Old Guard**: Truck driver/president with grade 10, one-finger texting, resistant to Microsoft Office
 - **New Guard**: 30-year-old tech-savvy Gen Z labor relations officers
 - **Challenge**: Platform must serve BOTH without alienating either
@@ -74,7 +78,8 @@
 **Vision from Notes**:
 > "We take your collective bargaining notes and transform them into hyperlinks and footnotes in your current collective agreement... corporate knowledge becomes hyperlinked on a platform"
 
-**Current State**: 
+**Current State**:
+
 - ❌ No collective agreement management module
 - ❌ No bargaining notes capture system
 - ❌ No hyperlink/footnote functionality
@@ -83,21 +88,22 @@
 **Impact**: **Missing the revolutionary feature** that differentiates UnionEyes from competitors
 
 **Required Features**:
+
 1. **Collective Agreement Repository**
    - Upload CA documents (PDF/Word)
    - Parse and structure articles/clauses
    - Version control across bargaining rounds
-   
+
 2. **Bargaining Notes System**
    - Capture negotiations context (why clause X was worded that way)
    - Link notes to specific CA articles
    - Track changes across rounds 22, 23, 24, etc.
-   
+
 3. **Hyperlinked Knowledge Graph**
    - Click any CA clause → see bargaining history
    - View emails, proposals, counter-proposals
    - "Bible Gateway for collective agreements"
-   
+
 4. **Corporate Knowledge Extraction**
    - Interview departing LROs (voice-to-text)
    - Tag knowledge to relevant CA sections
@@ -109,22 +115,24 @@
 > "Normalize how claims are handled... fix the conflict internally... difference in how a claim is treated between regional offices"
 
 **Current State**:
+
 - ✅ Claims system exists
 - ⚠️ No regional office tracking
 - ❌ No standardization metrics/dashboards
 - ❌ No process templates for consistent handling
 
 **Required Features**:
+
 1. **Regional Office Management**
    - Assign members/claims to regions
    - Track handling patterns per region
    - Compare outcomes across offices
-   
+
 2. **Process Templates**
    - Define standard claim workflows
    - Enforce steps for consistency
    - Alert when deviations occur
-   
+
 3. **Standardization Dashboard**
    - Show variance in processing times
    - Highlight inconsistencies
@@ -136,26 +144,28 @@
 > "User friendly for the truck driver who taps with one finger... BUT ALSO mindful of the 30-year-old born in technology looking for tools to help them do their job like it's 2025"
 
 **Current State**:
+
 - ✅ Clean modern UI (Tailwind, Shadcn components)
 - ⚠️ Voice-to-text planned but not implemented
 - ❌ No simplified "one-tap" flows for low-tech users
 - ❌ No advanced power-user features for tech-savvy LROs
 
 **Required Features**:
+
 1. **Simplified Mode (One-Finger Truck Driver)**
    - Large tap targets (mobile-first)
    - Voice-first claim submission
    - Minimal text input required
    - Visual progress indicators
    - SMS-based notifications
-   
+
 2. **Power User Mode (Tech-Savvy Gen Z LRO)**
    - Keyboard shortcuts
    - Bulk operations
    - Advanced search/filters
    - API access for integrations
    - Data export capabilities
-   
+
 3. **Adaptive Interface**
    - Detect user proficiency level
    - Adjust complexity automatically
@@ -167,20 +177,22 @@
 > "Public employees don't have the greatest ability to write... text-to-speech function that allows them to take voice notes that transform into text"
 
 **Current State**:
+
 - 🚧 Planned for Phase 2
 - ❌ Not integrated into core workflows yet
 
 **Required Features**:
+
 1. **Voice-First Claim Submission**
    - Record grievance by speaking
    - AI transcription + summarization
    - Optional text edit after transcription
-   
+
 2. **Voice Notes Throughout**
    - Add voice updates to claims
    - Voice comments on documents
    - Voice-to-email for correspondence
-   
+
 3. **Multilingual Voice Support**
    - English, French, Spanish (Canadian unions)
    - Automatic language detection
@@ -201,17 +213,17 @@
 
 ### Short-Term (Next Month)
 
-5. 🆕 **Bargaining Notes System** - Capture and link to CA clauses
-6. 🆕 **Hyperlinked Knowledge Graph** - Bible Gateway-style footnotes
-7. 🆕 **Simplified Mobile UI** - One-tap flows for low-tech users
-8. ⏳ **AI Analysis** - OpenAI integration for claim summarization
+1. 🆕 **Bargaining Notes System** - Capture and link to CA clauses
+2. 🆕 **Hyperlinked Knowledge Graph** - Bible Gateway-style footnotes
+3. 🆕 **Simplified Mobile UI** - One-tap flows for low-tech users
+4. ⏳ **AI Analysis** - OpenAI integration for claim summarization
 
 ### Medium-Term (2-3 Months)
 
-9. 🆕 **Corporate Knowledge Extraction Tool** - Interview departing staff
-10. 🆕 **Standardization Dashboard** - Regional comparison metrics
-11. 🆕 **Process Templates** - Enforce consistent claim handling
-12. 🆕 **Power User Mode** - Advanced features for tech-savvy LROs
+1. 🆕 **Corporate Knowledge Extraction Tool** - Interview departing staff
+2. 🆕 **Standardization Dashboard** - Regional comparison metrics
+3. 🆕 **Process Templates** - Enforce consistent claim handling
+4. 🆕 **Power User Mode** - Advanced features for tech-savvy LROs
 
 ---
 
@@ -220,9 +232,11 @@
 ### Phase 2 (Current) - REVISED
 
 **Original Plan**:
+
 - Claims Management + Voice-to-Text
 
 **Updated Plan**:
+
 1. Voice-to-Text Integration (Azure Speech)
 2. Collective Agreement Upload Module
 3. Regional Office Management
@@ -233,6 +247,7 @@
 **Duration**: 4-6 weeks
 
 **Features**:
+
 1. Bargaining Notes Capture System
 2. CA Parsing and Structuring
 3. Hyperlink/Footnote Infrastructure
@@ -246,6 +261,7 @@
 **Duration**: 4-6 weeks
 
 **Features**:
+
 1. Process Template Engine
 2. Regional Comparison Dashboard
 3. Fairness Metrics and Reporting
@@ -269,7 +285,8 @@
 ### 2. **Value Proposition Not Clear**
 
 **Current Focus**: Claims management with voice-to-text
-**Missing Focus**: 
+**Missing Focus**:
+
 - Conflict resolution through standardization
 - Corporate knowledge preservation
 - Generational technology bridge
@@ -282,7 +299,8 @@
 ### 3. **Feature Priority Mismatch**
 
 **Current Priority**: Claims CRUD, Member Portal, Analytics
-**Should Be Priority**: 
+**Should Be Priority**:
+
 1. Voice-first submission (accessibility)
 2. Collective agreement knowledge management
 3. Regional standardization tools
@@ -299,6 +317,7 @@
 **Who**: Assign dedicated developer for 4-6 weeks
 
 **Deliverables**:
+
 - CA document upload and parsing
 - Bargaining notes capture interface
 - Hyperlink engine for footnotes
@@ -307,6 +326,7 @@
 ### 2. Update Platform Messaging
 
 **Update Files**:
+
 - `README.md` - Add mission statement about transformation
 - `package.json` - Update description
 - Marketing site (`app/(marketing)/page.tsx`) - Rewrite hero section
@@ -322,6 +342,7 @@
 ### 4. Add Regional Office Schema
 
 **Database Changes**:
+
 ```sql
 CREATE TABLE regional_offices (
   id TEXT PRIMARY KEY,
@@ -338,6 +359,7 @@ ALTER TABLE profiles ADD COLUMN regional_office_id TEXT REFERENCES regional_offi
 ### 5. Build Corporate Knowledge Archive
 
 **New Module**: "Knowledge Library"
+
 - Voice-recorded interviews with departing staff
 - Linked to CA clauses and claims
 - Searchable by topic/keyword
@@ -379,40 +401,44 @@ ALTER TABLE profiles ADD COLUMN regional_office_id TEXT REFERENCES regional_offi
 
 ### This Sprint (Next 2 Weeks)
 
-6. Implement voice-to-text for claim submission
-7. Create CA document upload endpoint
-8. Build regional office management UI
-9. Design simplified mobile submission flow
-10. Add corporate knowledge section to admin panel
+1. Implement voice-to-text for claim submission
+2. Create CA document upload endpoint
+3. Build regional office management UI
+4. Design simplified mobile submission flow
+5. Add corporate knowledge section to admin panel
 
 ### Next Sprint (Weeks 3-4)
 
-11. Build hyperlink engine for CA footnotes
-12. Create bargaining notes interface
-13. Implement knowledge graph visualization
-14. Add standardization metrics dashboard
-15. Launch beta to first union client
+1. Build hyperlink engine for CA footnotes
+2. Create bargaining notes interface
+3. Implement knowledge graph visualization
+4. Add standardization metrics dashboard
+5. Launch beta to first union client
 
 ---
 
 ## 📈 Success Metrics (Aligned with Vision)
 
 ### Corporate Knowledge Preservation
+
 - ✅ 100% of departing LRO knowledge captured and linked
 - ✅ Average 30 seconds to find historical bargaining context
 - ✅ Zero "we can't find that email" incidents
 
 ### Standardization
+
 - ✅ <10% variance in claim processing time across regions
 - ✅ 95% adherence to standard workflows
 - ✅ 90% member satisfaction with fairness of process
 
 ### Generational Bridge
+
 - ✅ 80% adoption rate among low-tech users
 - ✅ 95% adoption rate among tech-savvy users
 - ✅ <5 minutes average training time for basic flows
 
 ### Business Impact
+
 - ✅ 60% reduction in claim submission time
 - ✅ 40% faster grievance resolution
 - ✅ 50% reduction in internal process disputes
@@ -424,12 +450,14 @@ ALTER TABLE profiles ADD COLUMN regional_office_id TEXT REFERENCES regional_offi
 **Current Alignment Score**: 6/10
 
 **Strong Areas**:
+
 - ✅ Technical foundation is solid
 - ✅ UI/UX is modern and professional
 - ✅ Azure infrastructure ready for scale
 - ✅ Role-based access control implemented
 
 **Weak Areas**:
+
 - ❌ Missing collective bargaining module (core differentiator)
 - ❌ No corporate knowledge preservation system
 - ❌ Limited standardization enforcement

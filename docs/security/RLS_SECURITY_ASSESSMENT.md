@@ -12,17 +12,20 @@
 The current RLS implementation has **critical security gaps** that block production deployment:
 
 ### 🔴 Critical Issues (Immediate Action Required)
+
 1. **Training Tables Inaccessible**: 3 tables have RLS enabled with NO policies → deny-all behavior breaks application
 2. **User Management Unprotected**: 4 tables have NO RLS → no row-level security for authentication data
 3. **Incomplete CRUD Coverage**: Claims table missing DELETE policy
 4. **No Audit Protection**: Audit logs lack RLS, enabling unauthorized access to security events
 
 ### ✅ Good Practices Found
+
 - Organization-based multi-tenancy isolation on some tables
 - Hierarchical permission checks using `organization_members`
 - Proper indexes supporting policy predicates
 
 ### 📊 Security Score: **32/100**
+
 - RLS Enablement: 7/11 tables (64%)
 - Policy Coverage: 10/44 required policies (23%)
 - World-Class Standard: **90+ required for production**
@@ -42,6 +45,7 @@ The current RLS implementation has **critical security gaps** that block product
 | `program_enrollments` | ✅ Yes | ❌ 0 | **BLOCKING** |
 
 **Impact**:
+
 ```sql
 -- Current behavior: ALL queries fail!
 SELECT * FROM course_registrations WHERE member_id = 'user_123';
@@ -70,6 +74,7 @@ SELECT * FROM course_registrations WHERE member_id = 'user_123';
 | `user_sessions` | ❌ No | 0 | **HIGH** |
 
 **Impact**:
+
 ```sql
 -- Current behavior: Users can see ALL records!
 SELECT * FROM user_management.users;
@@ -98,6 +103,7 @@ SELECT * FROM user_management.users;
 | `security_events` | ❌ | ❌ | ❌ | ❌ | No RLS |
 
 **Impact**:
+
 - Claims cannot be deleted (even by admins)
 - Claim updates table has deny-all (RLS enabled, no policies)
 - Audit logs accessible by anyone (no RLS)
@@ -117,12 +123,14 @@ CREATE POLICY users_own_record ON users
 ```
 
 **Problems**:
+
 - ✅ Allows SELECT (good)
 - ⚠️ Allows UPDATE of ALL fields (including `is_system_admin`)
 - ⚠️ Allows DELETE (users shouldn't delete themselves)
 - ⚠️ Allows INSERT (should be system-only via Clerk webhook)
 
 **Attack Vector**:
+
 ```sql
 -- User can promote themselves to admin!
 UPDATE users SET is_system_admin = true WHERE user_id = 'attacker_id';
@@ -189,6 +197,7 @@ CREATE POLICY table_delete ON table
 ## Remediation Plan: Migration 0058
 
 ### 🎯 **Objectives**
+
 1. Fix deny-all training tables (immediate unblock)
 2. Enable RLS + add policies to user management tables
 3. Add missing CRUD policies to claims/audit tables
@@ -220,31 +229,37 @@ CREATE POLICY table_delete ON table
 ## Security Features Implemented
 
 ### ✅ **Defense-in-Depth**
+
 - **Least Privilege**: Users only see their own data by default
 - **Granular CRUD**: Separate policies for each operation
 - **Field Protection**: Prevents unauthorized modification of sensitive fields (e.g., `is_system_admin`)
 
 ### ✅ **Role-Based Access Control (RBAC)**
+
 - **Admin**: Can manage all data within their organization
 - **Super Admin**: Cross-organization access
 - **Training Coordinator**: Can manage training records
 - **Member**: Self-service access only
 
 ### ✅ **Multi-Tenancy Isolation**
+
 - **Organization-Based**: All queries filtered by `organization_id`
 - **Hierarchical Check**: Uses `organization_members` table for membership validation
 - **Cross-Tenant Protection**: Prevents data leakage between organizations
 
 ### ✅ **Self-Service + Admin Override**
+
 - **Pattern**: Users can manage their own records, admins can override
 - **Example**: User can update their profile, admin can update any profile in their org
 
 ### ✅ **Audit Trail Protection**
+
 - **Immutable Logs**: Audit logs are insert-only (no UPDATE/DELETE policies)
 - **Admin Visibility**: System admins can see all audit events
 - **User Privacy**: Users can see their own audit trail
 
 ### ✅ **Clerk JWT Integration**
+
 - **Primary Auth**: Uses `request.jwt.claims->>'sub'` for JWT-based auth
 - **Fallback**: Uses `app.current_user_id` for session-based auth
 - **Flexible**: Supports both Clerk webhooks and direct API access
@@ -463,12 +478,14 @@ pnpm test:rls
 ### 🎯 **Production Deployment**
 
 **Prerequisites**:
+
 - ✅ Staging validation complete
 - ✅ All tests passing
 - ✅ Performance benchmarks acceptable (<15ms overhead)
 - ✅ Rollback plan tested
 
 **Steps**:
+
 1. Create read-only maintenance window (5 minutes)
 2. Backup production policies
 3. Apply migration 0058
@@ -478,6 +495,7 @@ pnpm test:rls
 7. Document completion
 
 **Rollback Plan**:
+
 ```sql
 -- Emergency rollback (restore original policies)
 BEGIN;
@@ -546,11 +564,13 @@ CREATE TRIGGER log_users_violations
 ## Conclusion
 
 ### ❌ **Current State: NOT World-Class**
+
 - 7/11 tables with RLS enabled (64%)
 - 10/44 required policies (23%)
 - Critical vulnerabilities blocking production
 
 ### ✅ **After Migration 0058: World-Class**
+
 - 11/11 tables with RLS enabled (100%)
 - 61/61 required policies (100%)
 - Defense-in-depth, RBAC, multi-tenancy isolation
@@ -558,6 +578,7 @@ CREATE TRIGGER log_users_violations
 - **Production-ready security posture**
 
 ### 🎯 **Security Score After Remediation: 95/100**
+
 - ✅ Comprehensive enablement
 - ✅ Complete CRUD coverage
 - ✅ Granular role-based policies
@@ -569,10 +590,10 @@ CREATE TRIGGER log_users_violations
 
 ## References
 
-- **PostgreSQL RLS Docs**: https://www.postgresql.org/docs/current/ddl-rowsecurity.html
-- **Azure PostgreSQL RLS**: https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-security
-- **Clerk + RLS Integration**: https://clerk.com/docs/authentication/row-level-security
-- **OWASP Data Access Control**: https://owasp.org/www-community/Access_Control
+- **PostgreSQL RLS Docs**: <https://www.postgresql.org/docs/current/ddl-rowsecurity.html>
+- **Azure PostgreSQL RLS**: <https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-security>
+- **Clerk + RLS Integration**: <https://clerk.com/docs/authentication/row-level-security>
+- **OWASP Data Access Control**: <https://owasp.org/www-community/Access_Control>
 
 ---
 

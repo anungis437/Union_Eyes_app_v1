@@ -1,4 +1,5 @@
 # Authentication Migration Report
+
 **Date:** February 9, 2026  
 **Status:** ✅ ENTERPRISE FEATURES CONSOLIDATED - Ready for Migration
 
@@ -7,6 +8,7 @@
 **All enterprise-role-middleware features have been successfully consolidated into `lib/api-auth-guard.ts`**
 
 The canonical authentication module now includes:
+
 - ✅ Multi-role support (`withEnhancedRoleAuth`)
 - ✅ Permission-based auth (`withPermission`)
 - ✅ Scoped role auth (`withScopedRoleAuth`)
@@ -33,6 +35,7 @@ The codebase has **two functional authentication systems** with different capabi
 **Date Completed:** February 9, 2026
 
 ### Phase 1: Core Consolidation ✅ DONE
+
 - [x] Added `EnhancedRoleContext` interface to api-auth-guard
 - [x] Added `withEnhancedRoleAuth()` wrapper function
 - [x] Added `withPermission()` wrapper function
@@ -44,6 +47,7 @@ The codebase has **two functional authentication systems** with different capabi
 - [x] Added deprecation notice to enterprise-role-middleware.ts
 
 ### Phase 2: Migration Tools ✅ DONE
+
 - [x] Created comprehensive migration guide: [ENTERPRISE_TO_CANONICAL_MIGRATION.md](./ENTERPRISE_TO_CANONICAL_MIGRATION.md)
 - [x] Created automated PowerShell migration script: [scripts/migrate-enterprise-to-canonical.ps1](../../scripts/migrate-enterprise-to-canonical.ps1)
 - [x] Documented all API changes (none - just import path changes)
@@ -51,6 +55,7 @@ The codebase has **two functional authentication systems** with different capabi
 - [x] Defined testing strategy
 
 ### Phase 3: File Migration 🔄 READY TO START
+
 - [ ] Run migration script: `.\scripts\migrate-enterprise-to-canonical.ps1`
 - [ ] Verify type check passes: `pnpm tsc --noEmit`
 - [ ] Run test suite: `pnpm test`
@@ -84,6 +89,7 @@ The codebase has **two functional authentication systems** with different capabi
 These files import from deprecated `lib/auth/*` modules and need migration:
 
 #### Using `requireUser` from `lib/auth/unified-auth` (19 files)
+
 - ✅ **Easy Migration**: Already re-exports canonical module
 - **Action**: Change import to `@/lib/api-auth-guard`
 
@@ -96,6 +102,7 @@ import { requireUser } from '@/lib/api-auth-guard';
 ```
 
 **Files:**
+
 - `app/api/whop/create-checkout/route.ts`
 - `app/api/organizations/[id]/children/route.ts`
 - `app/api/organizations/[id]/descendants/route.ts`
@@ -114,6 +121,7 @@ import { requireUser } from '@/lib/api-auth-guard';
 - (+ 4 more)
 
 #### Using functions from `lib/auth` (23 files)
+
 - ⚠️ **Moderate Migration**: Need pattern updates
 
 ```typescript
@@ -125,6 +133,7 @@ import { getCurrentUser } from '@/lib/api-auth-guard';
 ```
 
 **Files:**
+
 - `app/api/communications/templates/[id]/duplicate/route.ts`
 - `app/api/communications/distribution-lists/[id]/export/route.ts`
 - `app/api/extensions/[id]/route.ts`
@@ -135,6 +144,7 @@ import { getCurrentUser } from '@/lib/api-auth-guard';
 - (+ 16 more)
 
 #### Using `requireAdmin` from `lib/auth/rbac-server` (1 file)
+
 - `actions/admin-actions.ts` - Migrate to `withAdminAuth()`
 
 ---

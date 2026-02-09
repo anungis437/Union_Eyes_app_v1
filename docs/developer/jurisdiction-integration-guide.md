@@ -136,6 +136,7 @@ export default async function ULPDetailPage({
 ```
 
 **Result:** The page now displays:
+
 - Jurisdiction badge (e.g., "🇨🇦 Federal EN/FR")
 - Filing deadline calculation (e.g., "25 business days → February 19, 2025")
 - Urgency indicator (red/orange/yellow/green)
@@ -297,6 +298,7 @@ export default async function LockoutPage({ params }: { params: { lockoutId: str
 **Endpoint:** `GET /api/jurisdiction/list`
 
 **Usage:**
+
 ```typescript
 // Fetch all 14 jurisdictions
 const response = await fetch('/api/jurisdiction/list');
@@ -311,6 +313,7 @@ console.log(data.jurisdictions);
 ```
 
 **Response Schema:**
+
 ```typescript
 {
   jurisdictions: Array<{
@@ -329,6 +332,7 @@ console.log(data.jurisdictions);
 **Endpoint:** `GET /api/jurisdiction/rules?jurisdiction={code}&category={category}`
 
 **Usage:**
+
 ```typescript
 // Get Federal grievance filing rules
 const response = await fetch(
@@ -346,10 +350,12 @@ console.log(data.rules[0]);
 ```
 
 **Query Parameters:**
+
 - `jurisdiction` (required): CAJurisdiction code (e.g., "CA-FED", "CA-ON")
 - `category` (required): Rule category (see enum below)
 
 **Rule Categories:**
+
 ```typescript
 type RuleCategory =
   | 'grievance_filing'
@@ -370,6 +376,7 @@ type RuleCategory =
 **Endpoint:** `POST /api/jurisdiction/calculate-deadline`
 
 **Usage:**
+
 ```typescript
 // Calculate Federal grievance deadline from Jan 15, 2025
 const response = await fetch('/api/jurisdiction/calculate-deadline', {
@@ -395,6 +402,7 @@ console.log(data);
 ```
 
 **Request Body:**
+
 ```typescript
 {
   jurisdiction: CAJurisdiction;
@@ -404,6 +412,7 @@ console.log(data);
 ```
 
 **Response Schema:**
+
 ```typescript
 {
   deadline: string; // ISO format YYYY-MM-DD
@@ -424,6 +433,7 @@ console.log(data);
 **Endpoint:** `POST /api/jurisdiction/business-days`
 
 **Usage - Add Days:**
+
 ```typescript
 // Add 25 business days to Jan 15, 2025 (Federal jurisdiction)
 const response = await fetch('/api/jurisdiction/business-days', {
@@ -442,6 +452,7 @@ console.log(data.resultDate); // "2025-02-19"
 ```
 
 **Usage - Count Days:**
+
 ```typescript
 // Count business days between Jan 15 - Feb 19, 2025
 const response = await fetch('/api/jurisdiction/business-days', {
@@ -460,6 +471,7 @@ console.log(data.businessDays); // 25
 ```
 
 **Operations:**
+
 - `add`: Add business days to start date → returns `resultDate`
 - `subtract`: Subtract business days from start date → returns `resultDate`
 - `count`: Count business days between start and end → returns `businessDays`
@@ -471,6 +483,7 @@ console.log(data.businessDays); // 25
 **Endpoint:** `GET /api/jurisdiction/holidays?jurisdiction={code}&year={year}`
 
 **Usage:**
+
 ```typescript
 // Get Federal holidays for 2025
 const response = await fetch('/api/jurisdiction/holidays?jurisdiction=CA-FED&year=2025');
@@ -485,6 +498,7 @@ console.log(data.holidays);
 ```
 
 **Optional Query Parameters:**
+
 - `startDate`: Filter holidays >= this date (ISO format)
 - `endDate`: Filter holidays <= this date (ISO format)
 
@@ -533,6 +547,7 @@ function displayDeadlineAlert(daysRemaining: number) {
 ```
 
 **Returns:**
+
 ```typescript
 {
   level: 'critical' | 'high' | 'medium' | 'low';
@@ -783,6 +798,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 ### ✅ DO
 
 1. **Always handle null jurisdictions gracefully**
+
    ```typescript
    const jurisdiction = await getTenantJurisdiction(tenantId);
    if (!jurisdiction) {
@@ -791,6 +807,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
    ```
 
 2. **Cache jurisdiction lookups per session**
+
    ```typescript
    // Use React Query or SWR for caching
    const { data: jurisdiction } = useQuery(['jurisdiction', tenantId], () =>
@@ -799,12 +816,14 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
    ```
 
 3. **Implement loading and error states**
+
    ```typescript
    if (loading) return <LoadingSpinner />;
    if (error) return <ErrorMessage error={error} />;
    ```
 
 4. **Use TypeScript types for jurisdiction codes**
+
    ```typescript
    // ✅ Type-safe
    const jurisdiction: CAJurisdiction = 'CA-FED';
@@ -818,6 +837,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 ### ❌ DON'T
 
 1. **Don't hardcode jurisdiction logic**
+
    ```typescript
    // ❌ Bad
    if (jurisdiction === 'CA-FED') {
@@ -832,6 +852,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
    ```
 
 2. **Don't calculate deadlines manually**
+
    ```typescript
    // ❌ Bad
    const deadline = new Date(startDate);
@@ -845,6 +866,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
    ```
 
 3. **Don't forget error handling**
+
    ```typescript
    // ❌ Bad
    const data = await fetch('/api/jurisdiction/rules').then(r => r.json());
@@ -869,6 +891,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 **Symptom:** Component shows "Loading..." indefinitely
 
 **Solution:**
+
 ```typescript
 // Check tenant has jurisdiction configured in database
 const tenant = await db.query.tenants.findFirst({
@@ -890,11 +913,13 @@ await db.update(tenants)
 **Symptom:** Calculated deadline doesn't match expected date
 
 **Common Causes:**
+
 - Not excluding holidays correctly
 - Using calendar days instead of business days
 - Start date is a weekend (system auto-adjusts to Monday)
 
 **Solution:**
+
 ```typescript
 // Debug with detailed API response
 const response = await fetch('/api/jurisdiction/calculate-deadline', {
@@ -919,6 +944,7 @@ console.log('Calculated deadline:', data.deadline);
 **Symptom:** Federal/Quebec/NB jurisdiction not showing "EN/FR" indicator
 
 **Solution:**
+
 ```typescript
 // Verify requiresBilingualSupport returns true
 import { requiresBilingualSupport } from '@/lib/jurisdiction-helpers';
@@ -944,8 +970,9 @@ console.log(requiresBilingualSupport('CA-NB'));  // Should be true
 ## Questions or Support
 
 For developer support:
+
 - **GitHub Issues**: Report bugs or feature requests
-- **Email**: dev-support@unionclaims.ca
+- **Email**: <dev-support@unionclaims.ca>
 - **Slack**: #jurisdiction-framework channel
 
 ---

@@ -9,6 +9,7 @@ The financial microservice is now fully implemented with all 7 core routes, comp
 ### 1. Database Migrations
 
 **Migration 013: Dues Management System**
+
 - `dues_rules` - Calculation rule definitions (percentage, flat_rate, hourly, tiered, formula)
 - `member_dues_assignments` - Member-to-rule mappings with effective dates
 - `dues_transactions` - Individual dues records with payment tracking
@@ -16,6 +17,7 @@ The financial microservice is now fully implemented with all 7 core routes, comp
 - `arrears_cases` - Collections management with payment plans
 
 **Migration 014: Strike Fund System**
+
 - `strike_funds` - Fund definitions with targets and balances
 - `fund_eligibility` - Member eligibility criteria
 - `picket_attendance` - NFC/QR/GPS check-in tracking (PostGIS)
@@ -24,6 +26,7 @@ The financial microservice is now fully implemented with all 7 core routes, comp
 - `hardship_applications` - Emergency assistance requests
 
 Both migrations include:
+
 - Row-Level Security (RLS) policies for tenant isolation
 - Indexes for performance optimization
 - Materialized views for reporting
@@ -35,6 +38,7 @@ Both migrations include:
 **Location:** `packages/financial/src/calculation-engine.ts`
 
 **Features:**
+
 - 5 calculation types: percentage, flat_rate, hourly, tiered, formula
 - Batch processing with progress tracking
 - Late fee calculations with grace periods
@@ -43,6 +47,7 @@ Both migrations include:
 - TypeScript with full type safety
 
 **Key Classes:**
+
 - `DuesCalculationEngine` - Main calculator
 - `CalculationInput` - Input data structure
 - `CalculationResult` - Output with breakdown
@@ -53,6 +58,7 @@ Both migrations include:
 #### Dues Management
 
 **1. dues-rules.ts (299 lines)**
+
 - GET / - List all rules with filters
 - GET /:id - Single rule fetch
 - POST / - Create new rule (admin only)
@@ -62,6 +68,7 @@ Both migrations include:
 - Authorization: Admin/financial_admin required for modifications
 
 **2. dues-assignments.ts (241 lines)**
+
 - GET / - List assignments with member/rule filters
 - GET /:id - Single assignment fetch
 - POST / - Assign rule to member
@@ -71,6 +78,7 @@ Both migrations include:
 - Date range: Effective/expiration date support
 
 **3. dues-transactions.ts (370 lines)**
+
 - POST /calculate - Preview calculation without saving
 - POST /batch - Batch calculate and create transactions
 - GET / - List transactions with filters (member, status, dates)
@@ -81,6 +89,7 @@ Both migrations include:
 #### Remittance Processing
 
 **4. remittances.ts (408 lines)**
+
 - GET / - List remittances with filters (employer, status, batch)
 - GET /:id - Single remittance with matched transactions
 - POST / - Create remittance record
@@ -92,6 +101,7 @@ Both migrations include:
 #### Collections Management
 
 **5. arrears.ts (533 lines)**
+
 - GET / - List arrears cases with filters
 - GET /:id - Single case with related transactions
 - POST / - Create arrears case
@@ -104,6 +114,7 @@ Both migrations include:
 #### Strike Fund Operations
 
 **6. strike-funds.ts (347 lines)**
+
 - POST /:fundId/check-in - NFC/QR/GPS/manual check-in
 - POST /:fundId/check-out - Calculate hours and check out
 - GET /:fundId/attendance - List attendance with filters
@@ -117,6 +128,7 @@ Both migrations include:
 #### Public Donations
 
 **7. donations.ts (357 lines)**
+
 - POST / - Create donation with Stripe payment intent
 - POST /webhooks/stripe - Handle Stripe webhook events
 - GET /campaigns/:fundId - Public campaign page
@@ -128,12 +140,14 @@ Both migrations include:
 ### 4. Database Integration
 
 **Connection Module:** `src/db/index.ts`
+
 - PostgreSQL with Drizzle ORM
 - Connection pooling (max 10 connections)
 - Health checks with retry logic
 - Graceful shutdown handling
 
 **Schema Definitions:** `src/db/schema.ts`
+
 - Drizzle ORM table definitions for all tables
 - Type-safe query builders
 - Relation definitions for joins
@@ -141,6 +155,7 @@ Both migrations include:
 ### 5. Stripe Integration
 
 **Features:**
+
 - Payment Intent creation with metadata
 - Webhook signature verification
 - Event handling: succeeded, failed, canceled
@@ -150,6 +165,7 @@ Both migrations include:
 - Real-time balance updates
 
 **Security:**
+
 - Raw body parsing for webhook endpoint
 - Signature verification with `stripe.webhooks.constructEvent()`
 - Metadata tracking for audit trail
@@ -158,16 +174,19 @@ Both migrations include:
 ### 6. Testing Infrastructure
 
 **Documentation:**
+
 - `STRIPE_TESTING.md` (180 lines) - Comprehensive testing guide
 - `STRIPE_INTEGRATION_COMPLETE.md` (260 lines) - Implementation summary
 
 **PowerShell Scripts:**
+
 - `setup-stripe-testing.ps1` - Interactive setup wizard
 - `start-webhook-listener.ps1` - Webhook forwarding helper
 - `test-donations.ps1` - Automated API testing
 - `validate-setup.ps1` - Component validation checker
 
 **Test Coverage:**
+
 - Health endpoint verification
 - Campaign information retrieval
 - Anonymous donation creation
@@ -220,12 +239,14 @@ financial-service/
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```powershell
 cd services/financial-service
 pnpm install
 ```
 
 ### 2. Configure Environment
+
 ```powershell
 # Copy example and edit
 cp .env.example .env
@@ -238,18 +259,21 @@ cp .env.example .env
 ```
 
 ### 3. Run Database Migrations
+
 ```powershell
 psql $env:DATABASE_URL -f database/migrations/013_dues_management_system.sql
 psql $env:DATABASE_URL -f database/migrations/014_strike_fund_system.sql
 ```
 
 ### 4. Start Service
+
 ```powershell
 pnpm dev
 # Service starts on http://localhost:3007
 ```
 
 ### 5. Test with Stripe CLI
+
 ```powershell
 # Terminal 1: Service running
 pnpm dev
@@ -281,18 +305,21 @@ pnpm dev
 ## 🎓 Next Steps
 
 ### Immediate (Ready Now)
+
 1. ✅ Run database migrations
 2. ✅ Install Stripe CLI and configure webhooks
 3. ✅ Test all endpoints with provided scripts
 4. ✅ Verify tenant isolation and RLS policies
 
 ### Short-term (1-2 weeks)
+
 1. ⏳ Build frontend components for donations
 2. ⏳ Create admin dashboard for dues management
 3. ⏳ Implement email notifications (receipts, reminders)
 4. ⏳ Add unit tests for calculation engine
 
 ### Medium-term (2-4 weeks)
+
 1. 📋 Automated workflows (monthly dues runs, arrears escalation)
 2. 📋 Reporting dashboards (fund balances, collection rates)
 3. 📋 Integration with existing member management
@@ -320,6 +347,7 @@ pnpm dev
 ## 🏆 Conclusion
 
 The financial microservice is production-ready with:
+
 - Robust architecture supporting multi-tenant SaaS
 - Secure payment processing via Stripe
 - Flexible dues calculation system

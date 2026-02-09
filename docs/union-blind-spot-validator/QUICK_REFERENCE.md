@@ -63,39 +63,47 @@ scripts/
 ## 🔍 What Each Validator Scans
 
 ### 1. Provincial Privacy ✅
+
 - `db/schema/**/*.ts` → Province field?
 - `lib/services/**/*privacy*.ts` → Privacy handlers?
 - `lib/services/**/*breach*.ts` → 72h notification?
 
 ### 2. OQLF Language ✅
+
 - `messages/en.json` vs `messages/fr-CA.json` → Coverage?
 - `components/**/*.tsx` → Hardcoded strings?
 - Quebec French vs France French terminology
 
 ### 3. Indigenous Data ✅
+
 - `lib/services/**/*indigenous*.ts` → OCAP® service?
 - `.env*` → On-premise DB config?
 - `db/schema/**/*.ts` → Band Council consent?
 
 ### 4. Strike Fund Tax ✅
+
 - `lib/services/**/*tax*.ts` → T4A/RL-1 service?
 - `lib/services/**/*strike*.ts` → $500 threshold?
 - Year-end processing logic (Feb 28)?
 
 ### 5. Geofence Privacy ✅
+
 - `lib/**/*location*.ts` → Opt-in logic?
 - 24-hour retention policy?
 - Background tracking safeguards?
 
 ### 7. Cyber Insurance ✅
+
 - `docs/**/*insurance*.{md,pdf}` → Policy docs?
 - `docs/**/*soc*.{md,pdf}` → SOC-2 cert?
 
 ### 8. Open Source License ✅
+
 - `package.json` → Dependencies
 - `node_modules/*/package.json` → AGPL/SSPL?
 
 ### 12. Transfer Pricing ✅
+
 - `lib/**/*billing*.ts` → CAD enforcement?
 - `lib/**/*currency*.ts` → BoC rate logic?
 - `lib/**/*t106*.ts` → T106 filing?
@@ -103,16 +111,19 @@ scripts/
 ## 💡 Common Patterns
 
 ### Pass a Validator
+
 ```typescript
 return this.pass('All checks passed');
 ```
 
 ### Warn (Manual Verification)
+
 ```typescript
 return this.warn('Manual check needed', findings, fixCode);
 ```
 
 ### Fail with Findings
+
 ```typescript
 findings.push({
   file: 'path/to/file.ts',
@@ -147,7 +158,7 @@ export class MyValidator extends BlindSpotValidator {
 }
 ```
 
-2. **Register**: Add to `scripts/run-validators.ts`
+1. **Register**: Add to `scripts/run-validators.ts`
 
 ```typescript
 import { MyValidator } from './validators/99-my-validator';
@@ -161,6 +172,7 @@ runner.addValidator(new MyValidator());
 - **1** = One or more failed ❌
 
 Use in CI/CD:
+
 ```yaml
 - run: pnpm run validate:blind-spots
 ```

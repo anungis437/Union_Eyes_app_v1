@@ -19,9 +19,10 @@ A comprehensive export system generating arbitration-ready case summaries.
 #### Core Components
 
 **DefensibilityPack Structure:**
+
 - **Metadata:** Export version, timestamp, generator, case ID
 - **Case Summary:** Title, member info, current state, dates, type, priority
-- **Dual-Surface Timeline:** 
+- **Dual-Surface Timeline:**
   - Member-visible (member + staff scopes)
   - Staff-visible (member + staff + admin scopes)
 - **Audit Trail:** Complete log of all privileged actions
@@ -48,10 +49,12 @@ integrity: {
 #### Visibility Scopes (Dual-Surface Enforcement)
 
 **Member-Visible Timeline:**
+
 - `member` scope: Status updates, communications
 - `staff` scope: Investigation milestones, responses
 
 **Staff-Visible Timeline:**
+
 - All member-visible events
 - `admin` scope: Internal strategy, officer notes
 - Excludes `system` scope: Infrastructure logs
@@ -293,6 +296,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 ## Business Value
 
 ### Before PR-6
+
 - Manual case summary preparation (hours of work)
 - Inconsistent arbitration documentation
 - No integrity verification
@@ -300,6 +304,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 - Manual timeline reconstruction
 
 ### After PR-6
+
 - Automated defensibility pack generation (< 1 second)
 - Standardized arbitration format
 - Cryptographic integrity verification
@@ -313,6 +318,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 ### Cryptographic Hashing
 
 **SHA-256 (256-bit):** Industry-standard cryptographic hash function
+
 - **Collision Resistance:** Virtually impossible to create two inputs with same hash
 - **Tamper Evidence:** Any modification changes the hash
 - **One-Way:** Cannot reverse hash to recover original data
@@ -329,16 +335,19 @@ export async function POST(request: Request, { params }: { params: { id: string 
 ### Visibility Scope Enforcement
 
 **Member Requests:**
+
 - Only `member` scope events visible
 - No internal strategy or admin notes
 - Protects union deliberation privilege
 
 **Arbitration Exports:**
+
 - Member + staff scopes visible
 - Demonstrates union process and response
 - Excludes internal strategy (admin scope)
 
 **Compliance Audits:**
+
 - All scopes visible (except system infrastructure)
 - Complete transparency for regulatory review
 - `includeSensitiveData: true` flag
@@ -371,25 +380,30 @@ export async function POST(request: Request, { params }: { params: { id: string 
 ## Integration with Previous PRs
 
 ### PR-3: Evidence & Audit Baseline
+
 - **Uses:** `AuditTrailService` for complete audit trail
 - **Benefit:** Every privileged action captured in export
 
 ### PR-4: Visibility Scopes
+
 - **Uses:** `visibility_scope` enum for timeline filtering
 - **Benefit:** Dual-surface enforcement (member vs staff views)
 
 ### PR-5: Opinionated Workflow Rules
+
 - **Uses:** `calculateCaseSlaStatus()` for SLA compliance
 - **Benefit:** Automated SLA tracking in export
 
 ## Next Steps
 
 **PR-7: LRO Signals API**
+
 - Build real-time alert system for at-risk cases
 - Webhook notifications for SLA breaches
 - Dashboard widgets for urgent case list
 
 **PR-8: Minimal UI Panel**
+
 - Case list with urgency indicators
 - One-click defensibility export
 - Timeline viewer with dual-surface toggle

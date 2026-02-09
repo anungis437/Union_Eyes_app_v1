@@ -3,6 +3,7 @@
 ## Database Schema
 
 ### Table: `recognition_programs`
+
 Container for recognition initiatives within an organization.
 
 ```typescript
@@ -23,6 +24,7 @@ Container for recognition initiatives within an organization.
 ---
 
 ### Table: `recognition_award_types`
+
 Templates for different types of recognition.
 
 ```typescript
@@ -45,6 +47,7 @@ Templates for different types of recognition.
 ---
 
 ### Table: `recognition_awards`
+
 Individual award instances (requests, approvals, issuances).
 
 ```typescript
@@ -66,7 +69,8 @@ Individual award instances (requests, approvals, issuances).
 }
 ```
 
-**RLS Policy**: 
+**RLS Policy**:
+
 - Members can read awards where `recipient_user_id = current_user_id`
 - Admins can read all awards within `org_id`
 - Insert/update restricted to admins
@@ -74,6 +78,7 @@ Individual award instances (requests, approvals, issuances).
 ---
 
 ### Table: `reward_wallet_ledger`
+
 Append-only ledger for all credit transactions.
 
 ```typescript
@@ -92,6 +97,7 @@ Append-only ledger for all credit transactions.
 ```
 
 **RLS Policy**:
+
 - Users can read only their own ledger (`user_id = current_user_id`)
 - Admins can read all ledger entries within `org_id`
 - Insert via service layer only (no direct INSERT grants)
@@ -101,6 +107,7 @@ Append-only ledger for all credit transactions.
 ---
 
 ### Table: `reward_budget_envelopes`
+
 Time-bound credit pools for controlling recognition spending.
 
 ```typescript
@@ -128,6 +135,7 @@ Time-bound credit pools for controlling recognition spending.
 ---
 
 ### Table: `reward_redemptions`
+
 Tracks member redemption requests and Shopify order lifecycle.
 
 ```typescript
@@ -148,12 +156,14 @@ Tracks member redemption requests and Shopify order lifecycle.
 ```
 
 **RLS Policy**:
+
 - Users can read only their own redemptions (`user_id = current_user_id`)
 - Admins can read all redemptions within `org_id`
 
 ---
 
 ### Table: `shopify_config`
+
 Per-organization Shopify integration settings.
 
 ```typescript
@@ -176,6 +186,7 @@ Per-organization Shopify integration settings.
 ---
 
 ### Table: `webhook_receipts`
+
 Idempotency tracking for external webhooks (Shopify, etc.).
 
 ```typescript
@@ -224,11 +235,13 @@ shopify_config
 ## Denormalization Strategy
 
 ### Wallet Balance
+
 - **Calculated field**: `balance_after` in `reward_wallet_ledger`
 - **Rationale**: Avoid SUM() queries on every wallet view
 - **Consistency**: Updated transactionally with each ledger entry
 
 ### Budget Usage
+
 - **Calculated field**: `amount_used` in `reward_budget_envelopes`
 - **Rationale**: Fast budget checks without aggregating ledger
 - **Consistency**: Incremented on award issuance, decremented on revocation/refund
@@ -259,6 +272,7 @@ shopify_config
 ## Query Patterns
 
 ### Get User Wallet Balance
+
 ```sql
 SELECT balance_after
 FROM reward_wallet_ledger
@@ -268,6 +282,7 @@ LIMIT 1;
 ```
 
 ### List User Ledger Entries (Paginated)
+
 ```sql
 SELECT *
 FROM reward_wallet_ledger
@@ -277,6 +292,7 @@ LIMIT 20 OFFSET $3;
 ```
 
 ### Check Budget Availability
+
 ```sql
 SELECT (amount_limit - amount_used) AS available
 FROM reward_budget_envelopes
@@ -287,6 +303,7 @@ WHERE org_id = $1
 ```
 
 ### Pending Awards for Approval
+
 ```sql
 SELECT a.*, at.name AS award_type_name, u.name AS recipient_name
 FROM recognition_awards a

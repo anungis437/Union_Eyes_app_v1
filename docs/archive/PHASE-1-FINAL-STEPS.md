@@ -7,6 +7,7 @@ All Phase 1 code is implemented, tested, and build-validated. Only **database de
 ## What's Ready
 
 ### ✅ Completed
+
 - **Phase 1.1**: 31 accessibility fixes
 - **Phase 1.2**: 5 CSS block/flex conflicts resolved
 - **Phase 1.3**: Portal dashboard (dues balance, documents, activity feed)
@@ -26,6 +27,7 @@ All Phase 1 code is implemented, tested, and build-validated. Only **database de
 **Location**: `db/migrations/0004_messages_only.sql` (145 lines)
 
 **What it creates**:
+
 - 2 enums: `message_status`, `message_type`
 - 5 tables: `message_threads`, `messages`, `message_read_receipts`, `message_participants`, `message_notifications`
 - 5 foreign key constraints (with CASCADE deletes)
@@ -34,17 +36,20 @@ All Phase 1 code is implemented, tested, and build-validated. Only **database de
 ### Deployment Options
 
 #### Option 1: Command Line (Recommended)
+
 ```bash
 psql -U <username> -d <database> -f db/migrations/0004_messages_only.sql
 ```
 
 #### Option 2: Database GUI
+
 1. Open pgAdmin, DBeaver, or your preferred PostgreSQL client
 2. Connect to production database
 3. Open `db/migrations/0004_messages_only.sql`
 4. Execute the SQL
 
 #### Option 3: Programmatic
+
 ```javascript
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
@@ -57,6 +62,7 @@ await db.execute(sql.raw(migrationSQL));
 ### Safety Features
 
 The migration file includes:
+
 - ✅ `IF NOT EXISTS` checks for all tables
 - ✅ `EXCEPTION WHEN duplicate_object` handlers for enums
 - ✅ Exception handling for foreign keys
@@ -69,26 +75,33 @@ The migration file includes:
 After deploying the migration:
 
 ### 1. Verify Tables Created
+
 ```sql
 \dt message*
 ```
+
 Expected output: 5 tables (message_threads, messages, message_read_receipts, message_participants, message_notifications)
 
 ### 2. Verify Enums
+
 ```sql
 SELECT enumlabel FROM pg_enum 
 JOIN pg_type ON pg_enum.enumtypid = pg_type.oid 
 WHERE typname IN ('message_status', 'message_type');
 ```
+
 Expected: 6 enum values (sent/delivered/read for status, text/file/system for type)
 
 ### 3. Verify Indexes
+
 ```sql
 \di message*
 ```
+
 Expected: 7 indexes for performance optimization
 
 ### 4. Test API Endpoints
+
 ```bash
 # Test thread creation
 curl -X POST https://your-domain.com/api/messages/threads \
@@ -98,7 +111,9 @@ curl -X POST https://your-domain.com/api/messages/threads \
 ```
 
 ### 5. Test Frontend
+
 Visit `/[locale]/portal/messages` and verify:
+
 - Thread list displays
 - Can create new thread
 - Can send messages
@@ -106,6 +121,7 @@ Visit `/[locale]/portal/messages` and verify:
 - Real-time polling updates (5s for messages, 30s for notifications)
 
 ### 6. Run Test Suite
+
 ```bash
 pnpm test __tests__/phase-1-messages-integration.test.ts
 ```
@@ -124,6 +140,7 @@ pnpm test __tests__/phase-1-messages-integration.test.ts
    - Generated migration (0003) included unwanted changes to existing tables
 
 **Solution**: Created standalone migration (`0004_messages_only.sql`) that:
+
 - ✅ Only touches messages schema (no existing tables)
 - ✅ Uses safe deployment patterns (IF NOT EXISTS, exception handling)
 - ✅ Isolated from the 79 existing tables in production database
@@ -131,6 +148,7 @@ pnpm test __tests__/phase-1-messages-integration.test.ts
 ## Environment Variables
 
 Ensure these are set:
+
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/database
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxxxxx
@@ -139,6 +157,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxxxxx
 ## Timeline
 
 **Estimated time to deploy**: 10-15 minutes
+
 1. Execute migration SQL (2 min)
 2. Verify tables created (3 min)
 3. Test API endpoints (5 min)
@@ -156,6 +175,7 @@ Once migration is deployed and validated:
 ## Rollback Plan (If Needed)
 
 If something goes wrong:
+
 ```sql
 DROP TABLE IF EXISTS message_notifications CASCADE;
 DROP TABLE IF EXISTS message_participants CASCADE;
@@ -171,6 +191,7 @@ This removes all messages tables and enums, restoring database to pre-migration 
 ## Questions?
 
 Review these files for details:
+
 - **Migration SQL**: `db/migrations/0004_messages_only.sql`
 - **Schema definition**: `db/schema/messages-schema.ts`
 - **Deployment guide**: `PHASE-1-DEPLOYMENT.md`

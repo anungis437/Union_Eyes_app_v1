@@ -50,6 +50,7 @@ Since Azure OpenAI model deployments cannot be automated via CLI in Canada Centr
 If you prefer CLI deployment, you can create the OpenAI service in a supported region like **East US** or **West Europe**:
 
 ### Check Supported Regions
+
 ```bash
 az cognitiveservices account list-skus \
   --kind OpenAI \
@@ -58,6 +59,7 @@ az cognitiveservices account list-skus \
 ```
 
 ### Redeploy in Supported Region (Optional)
+
 ```bash
 # Delete existing (if needed)
 az cognitiveservices account delete \
@@ -85,6 +87,7 @@ az cognitiveservices account deployment create \
 ```
 
 **Note:** If you change regions, update the environment variables:
+
 - `AZURE_OPENAI_ENDPOINT` will change to the new region
 - `AZURE_SPEECH_REGION` should match for consistency (or keep canadacentral if Speech Service stays there)
 
@@ -110,16 +113,19 @@ After deploying the model, test it using Azure OpenAI Studio:
 ## Cost Estimates
 
 ### gpt-4o-mini
+
 - Input: $0.15 per 1M tokens
 - Output: $0.60 per 1M tokens
 - **Example:** 1M requests with 500 tokens each ≈ $375
 
 ### gpt-4o
+
 - Input: $2.50 per 1M tokens
 - Output: $10.00 per 1M tokens
 - **Example:** 1M requests with 500 tokens each ≈ $6,250
 
 ### gpt-4 (0613)
+
 - Input: $30.00 per 1M tokens
 - Output: $60.00 per 1M tokens
 - **Example:** 1M requests with 500 tokens each ≈ $45,000
@@ -138,16 +144,19 @@ The deployment name must match exactly what you entered in the Azure Portal.
 ## Troubleshooting
 
 ### "Deployment not found" error
+
 - Verify deployment name is exactly "gpt-4"
 - Check the OpenAI resource name matches your environment variables
 - Ensure the API key and endpoint are correct
 
 ### "Quota exceeded" error
+
 - Check your subscription's quota in Azure Portal
 - Request quota increase: Azure Portal → Quotas → Cognitive Services
 - May take 24-48 hours for approval
 
 ### "Model not available" error
+
 - Model may not be available in your region yet
 - Try a different model (gpt-4o-mini is most widely available)
 - Consider switching to a supported region (East US, West Europe)

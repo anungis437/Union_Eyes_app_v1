@@ -39,6 +39,7 @@ This document summarizes the complete implementation of Union Eyes v2.0 **Priori
 **Location**: `db/schema/ai-chatbot-schema.ts` (424 lines)
 
 **Tables**:
+
 1. `chat_sessions` - Conversation threads with AI provider settings
 2. `chat_messages` - Individual messages with RAG context and citations
 3. `knowledge_base` - Vector-embedded documents with pgvector support
@@ -47,12 +48,14 @@ This document summarizes the complete implementation of Union Eyes v2.0 **Priori
 6. `ai_safety_filters` - Content moderation audit log
 
 **Enums**:
+
 - `chat_session_status`: active, archived, deleted
 - `message_role`: user, assistant, system, function
 - `ai_provider`: openai, anthropic, google, internal
 - `knowledge_document_type`: collective_agreement, union_policy, labor_law, precedent, faq, guide, other
 
 **Key Features**:
+
 - Vector embeddings (1536 dimensions for OpenAI ada-002)
 - RAG document retrieval with similarity scores
 - Full conversation history with token tracking
@@ -64,6 +67,7 @@ This document summarizes the complete implementation of Union Eyes v2.0 **Priori
 **Location**: `lib/ai/chatbot-service.ts` (687 lines)
 
 **Classes**:
+
 1. **OpenAIProvider** - GPT-4 and embedding integration
 2. **AnthropicProvider** - Claude integration
 3. **GoogleAIProvider** - Gemini integration
@@ -72,6 +76,7 @@ This document summarizes the complete implementation of Union Eyes v2.0 **Priori
 6. **ChatbotService** - Main service coordinator
 
 **Key Methods**:
+
 ```typescript
 // Create chat session
 await sessionManager.createSession({
@@ -93,11 +98,13 @@ await chatbot.sendMessage({
 ```
 
 **Providers**:
+
 - **OpenAI**: GPT-4, GPT-3.5 Turbo, text-embedding-ada-002
 - **Anthropic**: Claude 3 Opus, Claude 3 Sonnet
 - **Google**: Gemini Pro
 
 **Safety Features**:
+
 - OpenAI Moderation API for content filtering
 - Input/output sanitization
 - Rate limiting
@@ -108,6 +115,7 @@ await chatbot.sendMessage({
 **Location**: `components/ai/ai-chatbot.tsx` (474 lines)
 
 **Features**:
+
 - Chat history sidebar with session management
 - Real-time messaging interface
 - Source citation display with relevance scores
@@ -118,6 +126,7 @@ await chatbot.sendMessage({
 - Responsive design for mobile and desktop
 
 **Interactions**:
+
 - Send message with Enter key (Shift+Enter for new line)
 - Click suggestions for quick questions
 - Thumbs up/down for response feedback
@@ -135,6 +144,7 @@ await chatbot.sendMessage({
 #### Configuration
 
 **Environment Variables** (11 variables):
+
 ```bash
 OPENAI_API_KEY                 # OpenAI API key
 ANTHROPIC_API_KEY              # Anthropic API key
@@ -149,12 +159,14 @@ CONTENT_SAFETY_ENABLED         # Enable safety filter (true)
 ```
 
 **Cost Estimates** (monthly):
+
 - **GPT-4**: 1,000 users × 5 conv × 10 msg = ~$4,000-7,500
 - **GPT-3.5**: Same usage = ~$500-1,500
 - **Gemini Pro**: Same usage = ~$250-1,000
 - **Embeddings** (OpenAI ada-002): ~$10-50
 
 **Knowledge Base Seeding**:
+
 - Extract CBA clauses as knowledge documents
 - Import union policies and procedures
 - Add labor law references
@@ -172,6 +184,7 @@ CONTENT_SAFETY_ENABLED         # Enable safety filter (true)
 **Location**: `db/schema/accessibility-schema.ts` (518 lines)
 
 **Tables**:
+
 1. `accessibility_audits` - Audit sessions with summary metrics
 2. `accessibility_issues` - Individual WCAG violations with fix suggestions
 3. `wcag_success_criteria` - Reference table for WCAG 2.2 criteria
@@ -179,12 +192,14 @@ CONTENT_SAFETY_ENABLED         # Enable safety filter (true)
 5. `accessibility_user_testing` - Manual testing sessions with real users
 
 **Enums**:
+
 - `wcag_level`: A, AA, AAA
 - `audit_status`: pending, in_progress, completed, failed
 - `a11y_issue_severity`: critical, serious, moderate, minor
 - `a11y_issue_status`: open, in_progress, resolved, wont_fix, duplicate
 
 **Key Features**:
+
 - Automated audit tracking with tool integration
 - Issue classification by WCAG criteria (1.4.3, 2.1.1, etc.)
 - Severity-based prioritization
@@ -197,11 +212,13 @@ CONTENT_SAFETY_ENABLED         # Enable safety filter (true)
 **Location**: `lib/accessibility/accessibility-service.ts` (639 lines)
 
 **Classes**:
+
 1. **AccessibilityAuditManager** - Audit lifecycle and issue management
 2. **WCAGChecker** - Specific WCAG criteria validators
 3. **AccessibilityReportGenerator** - Compliance reporting
 
 **Automated Checks**:
+
 ```typescript
 // Color contrast (WCAG 1.4.3)
 checker.checkColorContrast(foreground, background, fontSize, isBold);
@@ -218,6 +235,7 @@ checker.checkHeadingHierarchy([{ level: 1, text: "Title" }, ...]);
 ```
 
 **Run Audit**:
+
 ```typescript
 const manager = new AccessibilityAuditManager();
 
@@ -231,6 +249,7 @@ await manager.runAutomatedAudit(audit.id);
 ```
 
 **Compliance Report**:
+
 ```typescript
 const generator = new AccessibilityReportGenerator();
 
@@ -245,6 +264,7 @@ const report = await generator.generateComplianceReport(tenantId, {
 **Location**: `components/accessibility/accessibility-dashboard.tsx` (616 lines)
 
 **Features**:
+
 - Accessibility score gauge (0-100)
 - Issue breakdown by severity (critical, serious, moderate, minor)
 - Open issues list with filtering
@@ -254,6 +274,7 @@ const report = await generator.generateComplianceReport(tenantId, {
 - Quick actions: Run audit, resolve issue, view WCAG docs
 
 **Visualizations**:
+
 - Real-time score trending
 - Issue severity distribution
 - WCAG criteria coverage percentage
@@ -270,6 +291,7 @@ const report = await generator.generateComplianceReport(tenantId, {
 #### Configuration
 
 **Environment Variables** (13 variables):
+
 ```bash
 ACCESSIBILITY_AXE_ENABLED            # Enable axe-core (true)
 ACCESSIBILITY_AXE_RULES              # Rules (wcag21aa,wcag22aa)
@@ -285,6 +307,7 @@ ACCESSIBILITY_BLOCK_DEPLOY_ON_CRITICAL # Block deploy (true)
 ```
 
 **WCAG 2.2 Coverage**:
+
 - ✅ All Level A criteria (30 criteria)
 - ✅ All Level AA criteria (20 criteria)
 - ✅ New WCAG 2.2 criteria (8 criteria):
@@ -298,6 +321,7 @@ ACCESSIBILITY_BLOCK_DEPLOY_ON_CRITICAL # Block deploy (true)
   - 3.3.9 Accessible Authentication (Enhanced) - AAA
 
 **CI/CD Integration**:
+
 - GitHub Actions workflow for PR checks
 - Automated audit on deployment
 - Fail build if score < 80 or critical issues found
@@ -314,16 +338,19 @@ ACCESSIBILITY_BLOCK_DEPLOY_ON_CRITICAL # Block deploy (true)
 **Location**: `db/schema/international-address-schema.ts` (452 lines)
 
 **Tables**:
+
 1. `international_addresses` - Flexible address records supporting 23+ countries
 2. `country_address_formats` - Country-specific configuration and rules
 3. `address_validation_cache` - Cached validation results (30-day TTL)
 4. `address_change_history` - Address modification audit trail
 
 **Enums**:
+
 - `address_type`: mailing, residential, business, billing, shipping, temporary
 - `address_status`: active, inactive, unverified, invalid
 
 **Key Features**:
+
 - Flexible schema supporting all country formats
 - Geocoding (latitude/longitude)
 - Validation metadata (confidence, deliverability)
@@ -336,18 +363,21 @@ ACCESSIBILITY_BLOCK_DEPLOY_ON_CRITICAL # Block deploy (true)
 **Location**: `lib/address/address-service.ts` (737 lines)
 
 **Classes**:
+
 1. **GoogleMapsProvider** - Google Maps validation and geocoding
 2. **SmartyStreetsProvider** - US address validation (USPS)
 3. **AddressService** - Main address management service
 4. **PostalCodeValidator** - Country-specific postal code validation
 
 **Supported Countries** (23 countries):
+
 - North America: US, CA, MX
 - Europe: GB, IE, DE, FR, IT, ES, NL, BE, CH, AT, SE, NO, DK, FI
 - Asia-Pacific: AU, NZ, JP, KR, IN
 - South America: BR, AR
 
 **Validation**:
+
 ```typescript
 const addressService = new AddressService();
 
@@ -369,12 +399,14 @@ const saved = await addressService.saveAddress({
 ```
 
 **Postal Code Patterns** (regex):
+
 - US: `^\d{5}(-\d{4})?$` (ZIP, ZIP+4)
 - CA: `^[A-Z]\d[A-Z]\s?\d[A-Z]\d$` (K1A 0B1)
 - GB: `^[A-Z]{1,2}\d{1,2}\s?\d[A-Z]{2}$` (SW1A 2AA)
 - And 20+ more countries
 
 **Caching**:
+
 - 30-day validation cache (reduces API costs by ~70%)
 - MD5 hash-based cache key
 - Hit count tracking
@@ -385,6 +417,7 @@ const saved = await addressService.saveAddress({
 **Location**: `components/address/international-address-input.tsx` (472 lines)
 
 **Features**:
+
 - Country selector (23+ countries)
 - Address type selector (mailing, residential, business, etc.)
 - Dynamic field labels based on country (City vs Locality, State vs Province)
@@ -396,6 +429,7 @@ const saved = await addressService.saveAddress({
 - Geocoded map preview (optional)
 
 **Country-Specific Behavior**:
+
 - US: State dropdown, ZIP code validation
 - CA: Province dropdown, postal code formatting (K1A 0B1)
 - GB: Postcode validation (SW1A 2AA)
@@ -412,6 +446,7 @@ const saved = await addressService.saveAddress({
 #### Configuration
 
 **Environment Variables** (16 variables):
+
 ```bash
 # Google Maps API
 GOOGLE_MAPS_API_KEY              # API key
@@ -439,12 +474,14 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 ```
 
 **Cost Estimates** (monthly):
+
 - **Google Maps**: $5/1000 requests (validation + geocoding)
 - **SmartyStreets**: $0.50-2.00/1000 (US only)
 - **HERE**: $1-3/1000 (global)
 - **Example**: 10,000 addresses/month = $100 (Google) → $30 with cache
 
 **Country Format Seeding**:
+
 - Pre-configured formats for 23 countries
 - Administrative area lists (US states, Canadian provinces, etc.)
 - Postal code patterns and examples
@@ -456,29 +493,35 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 ## 🗂️ File Inventory
 
 ### Database Schemas (3 files, 1,394 lines)
+
 1. `db/schema/ai-chatbot-schema.ts` - 424 lines
 2. `db/schema/accessibility-schema.ts` - 518 lines
 3. `db/schema/international-address-schema.ts` - 452 lines
 
 ### Service Layer (3 files, 2,063 lines)
+
 1. `lib/ai/chatbot-service.ts` - 687 lines
 2. `lib/accessibility/accessibility-service.ts` - 639 lines
 3. `lib/address/address-service.ts` - 737 lines
 
 ### UI Components (3 files, 1,562 lines)
+
 1. `components/ai/ai-chatbot.tsx` - 474 lines
 2. `components/accessibility/accessibility-dashboard.tsx` - 616 lines
 3. `components/address/international-address-input.tsx` - 472 lines
 
 ### Documentation (2 files, 1,500+ lines)
+
 1. `docs/PRIORITY_2_FEATURES.md` - 1,100+ lines (comprehensive guide)
 2. `docs/IMPLEMENTATION_SUMMARY.md` - This file
 
 ### Configuration (2 files)
+
 1. `db/schema/index.ts` - Updated with 3 new schema exports
 2. `.env.example` - Updated with 40+ new environment variables
 
 ### Updated Files
+
 1. `README.md` - Added Priority 2 features section
 
 ---
@@ -488,6 +531,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 ### Total Tables: 16 new tables
 
 #### AI Chatbot (6 tables)
+
 1. `chat_sessions` - Conversation threads
 2. `chat_messages` - Individual messages
 3. `knowledge_base` - Vector-embedded documents
@@ -496,17 +540,19 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 6. `ai_safety_filters` - Content moderation log
 
 #### Accessibility (5 tables)
-7. `accessibility_audits` - Audit sessions
-8. `accessibility_issues` - WCAG violations
-9. `wcag_success_criteria` - WCAG 2.2 reference
-10. `accessibility_test_suites` - Test configurations
-11. `accessibility_user_testing` - Manual testing sessions
+
+1. `accessibility_audits` - Audit sessions
+2. `accessibility_issues` - WCAG violations
+3. `wcag_success_criteria` - WCAG 2.2 reference
+4. `accessibility_test_suites` - Test configurations
+5. `accessibility_user_testing` - Manual testing sessions
 
 #### International Addresses (4 tables)
-12. `international_addresses` - Address records
-13. `country_address_formats` - Country configurations
-14. `address_validation_cache` - Validation cache
-15. `address_change_history` - Change audit trail
+
+1. `international_addresses` - Address records
+2. `country_address_formats` - Country configurations
+3. `address_validation_cache` - Validation cache
+4. `address_change_history` - Change audit trail
 
 ### Total Enums: 13 new enums
 
@@ -526,6 +572,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 ## 🔌 API Endpoints
 
 ### AI Chatbot (5 endpoints)
+
 - POST `/api/chatbot/sessions` - Create session
 - GET `/api/chatbot/sessions` - List sessions
 - GET `/api/chatbot/sessions/:id/messages` - Get messages
@@ -533,6 +580,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 - POST `/api/chatbot/messages/:id/feedback` - Provide feedback
 
 ### Accessibility (5 endpoints)
+
 - POST `/api/accessibility/audits` - Start audit
 - GET `/api/accessibility/audits/:id` - Get results
 - GET `/api/accessibility/issues` - List issues
@@ -540,6 +588,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 - GET `/api/accessibility/compliance-report` - Get report
 
 ### International Addresses (5 endpoints)
+
 - GET `/api/address/country-format` - Get country format
 - POST `/api/address/validate` - Validate address
 - POST `/api/address/geocode` - Geocode address
@@ -557,14 +606,17 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 **Total**: 40+ new variables
 
 #### AI Chatbot (11 variables)
+
 - 3 API keys (OpenAI, Anthropic, Google)
 - 8 configuration variables
 
 #### Accessibility (13 variables)
+
 - 8 testing configuration variables
 - 5 notification/threshold variables
 
 #### International Addresses (16 variables)
+
 - 10 provider API keys/tokens
 - 6 configuration variables
 
@@ -573,6 +625,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 ## 🧪 Testing Checklist
 
 ### AI Chatbot
+
 - [ ] Create chat session
 - [ ] Send message to OpenAI (GPT-4)
 - [ ] Send message to Anthropic (Claude)
@@ -585,6 +638,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 - [ ] Test session history
 
 ### Accessibility
+
 - [ ] Run automated audit
 - [ ] Check color contrast validator
 - [ ] Check keyboard accessibility validator
@@ -597,6 +651,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 - [ ] Test CI/CD integration
 
 ### International Addresses
+
 - [ ] Test US address validation (SmartyStreets)
 - [ ] Test Canadian address validation (Google)
 - [ ] Test UK address validation (Google)
@@ -613,6 +668,7 @@ ADDRESS_CHANGE_HISTORY_RETENTION # Retention (2555 days = 7 years)
 ## 🚀 Deployment Steps
 
 ### 1. Database Migration
+
 ```bash
 # Generate migration from schemas
 pnpm drizzle-kit generate
@@ -633,6 +689,7 @@ psql -d union_eyes -c "\d+ international_addresses"
 ```
 
 ### 2. Seed Reference Data
+
 ```bash
 # Seed WCAG 2.2 success criteria
 pnpm seed:wcag-criteria
@@ -645,6 +702,7 @@ pnpm seed:knowledge-base
 ```
 
 ### 3. Configure Environment
+
 ```bash
 # Copy new variables from .env.example
 # At minimum, configure:
@@ -657,6 +715,7 @@ pnpm test:config
 ```
 
 ### 4. Deploy to Staging
+
 ```bash
 # Build and deploy
 pnpm build
@@ -667,6 +726,7 @@ pnpm test:smoke --env=staging
 ```
 
 ### 5. Production Deployment
+
 ```bash
 # Final pre-deployment checks
 pnpm test:integration
@@ -686,6 +746,7 @@ pnpm logs:follow
 ### Before Priority 2: 9.5/10
 
 #### Strengths (9.5/10)
+
 - ✅ Enterprise infrastructure (10/10)
 - ✅ Security & compliance (10/10)
 - ✅ Performance at scale (10/10)
@@ -693,6 +754,7 @@ pnpm logs:follow
 - ✅ Core features complete (10/10)
 
 #### Gaps Identified (0.5 deduction)
+
 - ⚠️ **AI Capabilities**: No AI assistant for member support
 - ⚠️ **Accessibility**: No automated WCAG compliance testing
 - ⚠️ **Internationalization**: Limited to North American address formats
@@ -700,11 +762,13 @@ pnpm logs:follow
 ### After Priority 2: **9.7/10**
 
 #### New Strengths
+
 - ✅ **AI Chatbot**: Multi-provider AI with RAG, knowledge base integration
 - ✅ **Accessibility**: WCAG 2.2 AA compliance monitoring with automated testing
 - ✅ **Global Support**: 23+ countries with address validation and geocoding
 
 #### Remaining Gaps (0.3 deduction)
+
 - ⚠️ **Observability**: No OpenTelemetry tracing (Priority 3)
 - ⚠️ **Event Architecture**: No event bus (Kafka/EventBridge) (Priority 3)
 - ⚠️ **GraphQL**: No GraphQL layer for flexible data fetching (Priority 3)
@@ -718,6 +782,7 @@ pnpm logs:follow
 ### Monthly Cost Estimates (1,000 active users)
 
 #### AI Chatbot
+
 - **GPT-4**: $4,000-7,500/month (premium experience)
 - **GPT-3.5 Turbo**: $500-1,500/month (cost-optimized)
 - **Gemini Pro**: $250-1,000/month (most economical)
@@ -726,12 +791,14 @@ pnpm logs:follow
 **Recommendation**: Start with GPT-3.5, upgrade high-value users to GPT-4
 
 #### Address Validation
+
 - **Google Maps**: $100/month (10,000 addresses)
 - **With 30-day cache**: ~$30/month (70% reduction)
 
 **Recommendation**: Use Google Maps with caching enabled
 
 #### Accessibility Testing
+
 - **axe-core**: Free (open source)
 - **Lighthouse**: Free (open source)
 - **Pa11y**: Free (open source)
@@ -739,6 +806,7 @@ pnpm logs:follow
 **Cost**: $0/month
 
 ### Total Additional Monthly Cost
+
 - **Minimum**: ~$280/month (Gemini Pro + Google Maps with cache + Free accessibility)
 - **Recommended**: ~$1,530/month (GPT-3.5 + Google Maps + Free accessibility)
 - **Premium**: ~$7,530/month (GPT-4 + Google Maps + Free accessibility)
@@ -748,18 +816,21 @@ pnpm logs:follow
 ## 📝 Maintenance & Monitoring
 
 ### AI Chatbot
+
 - **Token Usage**: Monitor daily token consumption, set budget alerts
 - **Response Quality**: Track helpful/unhelpful ratio (target: >80% helpful)
 - **RAG Accuracy**: Monitor citation click-through (target: >50%)
 - **Cost Optimization**: Review model usage, consider caching common queries
 
 ### Accessibility
+
 - **Audit Frequency**: Daily automated audits on staging, weekly on production
 - **Issue Resolution**: Target MTTR <7 days for critical, <30 days for serious
 - **Score Target**: Maintain >80 accessibility score
 - **WCAG Compliance**: 100% Level A, >95% Level AA
 
 ### Address Validation
+
 - **Cache Hit Rate**: Target >80% cache hit rate
 - **Validation Success**: Target >95% validation success rate
 - **Geocoding Accuracy**: Monitor accuracy by provider
@@ -770,18 +841,21 @@ pnpm logs:follow
 ## 🎯 Success Metrics
 
 ### AI Chatbot
+
 - [ ] **Adoption**: >50% of active users try chatbot within first month
 - [ ] **Engagement**: >5 messages per conversation on average
 - [ ] **Satisfaction**: >75% helpful feedback rate
 - [ ] **Deflection**: 30% reduction in support tickets for common questions
 
 ### Accessibility
+
 - [ ] **Compliance**: WCAG 2.2 AA certification achieved
 - [ ] **Score**: Accessibility score >85
 - [ ] **Zero Critical**: No critical accessibility issues in production
 - [ ] **MTTR**: Mean time to resolution <7 days for serious issues
 
 ### International Addresses
+
 - [ ] **Coverage**: Support for all member locations (target: 95%+)
 - [ ] **Validation Rate**: >90% of addresses successfully validated
 - [ ] **Accuracy**: <2% address correction rate after validation
@@ -794,18 +868,21 @@ pnpm logs:follow
 ### New Certifications Enabled
 
 #### WCAG 2.2 Level AA ✅
+
 - Union Eyes is now eligible for WCAG 2.2 Level AA certification
 - All automated checks implemented
 - Manual testing workflow in place
 - Continuous monitoring enabled
 
 #### AI Ethics & Safety ✅
+
 - Content moderation implemented (OpenAI Moderation API)
 - User consent for AI interactions
 - Data privacy for chat history
 - Transparent AI usage disclosure
 
 #### Data Protection (Enhanced) ✅
+
 - Global address handling with proper data residency
 - Address change audit trail (7-year retention for compliance)
 - Geocoding data privacy controls
@@ -848,6 +925,7 @@ pnpm logs:follow
 ## ✅ Completion Checklist
 
 ### Phase 1: Implementation ✅
+
 - [x] AI Chatbot database schema
 - [x] AI Chatbot service layer
 - [x] AI Chatbot UI component
@@ -859,12 +937,14 @@ pnpm logs:follow
 - [x] Address input component
 
 ### Phase 2: Documentation ✅
+
 - [x] Comprehensive feature guide
 - [x] Implementation summary
 - [x] README updates
 - [x] Environment variable documentation
 
 ### Phase 3: Testing (User Facing)
+
 - [ ] Run database migration
 - [ ] Seed reference data
 - [ ] Configure environment variables
@@ -875,6 +955,7 @@ pnpm logs:follow
 - [ ] Load testing
 
 ### Phase 4: Deployment (User Facing)
+
 - [ ] Deploy to staging
 - [ ] Smoke tests
 - [ ] Deploy to production
@@ -899,21 +980,25 @@ After successful deployment of Priority 2, the following Priority 3 features are
 ## 📞 Support & Contact
 
 ### For Technical Issues
+
 - **Slack**: #union-eyes-support
-- **Email**: dev-team@unioneyes.com
-- **GitHub Issues**: https://github.com/unioneyes/platform/issues
+- **Email**: <dev-team@unioneyes.com>
+- **GitHub Issues**: <https://github.com/unioneyes/platform/issues>
 
 ### For AI Chatbot
+
 - **API Keys**: Contact AI provider support
 - **Knowledge Base**: Contact data team for document ingestion
 - **Cost Concerns**: Contact finance team for budget review
 
 ### For Accessibility
+
 - **WCAG Certification**: Contact accessibility team
 - **Manual Testing**: Schedule user testing sessions
 - **Remediation**: Contact development team for fix implementation
 
 ### For Address Validation
+
 - **API Keys**: Contact DevOps for provider credentials
 - **Country Support**: Request new country format via GitHub issue
 - **Validation Failures**: Review logs, contact provider support

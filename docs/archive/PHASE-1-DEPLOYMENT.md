@@ -1,9 +1,11 @@
 # Phase 1: Deployment Guide
 
 ## Overview
+
 This document provides step-by-step instructions for deploying the Phase 1 Messages System to production.
 
 ## Prerequisites
+
 - PostgreSQL database access (connection string in `DATABASE_URL`)
 - Vercel Blob storage configured (`BLOB_READ_WRITE_TOKEN`)
 - All Phase 1 code deployed and build-validated
@@ -79,6 +81,7 @@ SENTRY_DSN=https://xxxx@sentry.io/xxxx
 Test each API route to ensure functionality:
 
 #### Thread Management
+
 ```bash
 # List threads (GET)
 curl -X GET https://your-domain.com/api/messages/threads \
@@ -111,6 +114,7 @@ curl -X DELETE https://your-domain.com/api/messages/threads/[threadId] \
 ```
 
 #### Messages
+
 ```bash
 # Send text message (POST)
 curl -X POST https://your-domain.com/api/messages/threads/[threadId]/messages \
@@ -130,6 +134,7 @@ curl -X POST https://your-domain.com/api/messages/threads/[threadId]/messages \
 ```
 
 #### Notifications
+
 ```bash
 # Get notifications (GET)
 curl -X GET https://your-domain.com/api/messages/notifications \
@@ -239,12 +244,14 @@ All tests should pass.
 ## Phase 1 Complete Checklist
 
 ### Database
+
 - [x] Phase 1.4: Dues SQL functions deployed
 - [ ] Phase 1.5: Messages schema deployed (5 tables, 2 enums, 7 indexes)
 - [ ] All foreign keys and constraints working
 - [ ] Indexes created for performance
 
 ### Backend APIs
+
 - [x] Phase 1.3: Portal dashboard APIs (`/api/portal/*`)
 - [x] Phase 1.4: Dues payment API (`/api/dues-payments`)
 - [x] Phase 1.4: Receipt generation working
@@ -254,6 +261,7 @@ All tests should pass.
 - [ ] Phase 1.5: Notifications API (`/api/messages/notifications`)
 
 ### Frontend
+
 - [x] Phase 1.1: 31 accessibility fixes applied
 - [x] Phase 1.2: 5 CSS conflicts resolved
 - [x] Phase 1.3: Portal dashboard UI
@@ -263,12 +271,14 @@ All tests should pass.
 - [ ] Phase 1.5: Notification badge component
 
 ### Testing
+
 - [x] Build validation passed (195 static pages)
 - [ ] Integration tests passed
 - [ ] Authorization tests passed
 - [ ] Performance tests passed
 
 ### Documentation
+
 - [x] Code implementation documented
 - [ ] Deployment guide reviewed
 - [ ] Environment variables configured

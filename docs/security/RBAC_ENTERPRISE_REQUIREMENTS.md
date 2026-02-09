@@ -30,11 +30,13 @@
 #### 1. **Insufficient Role Granularity**
 
 **Current Problem:**
+
 ```typescript
 type MemberRole = "member" | "steward" | "officer" | "admin" | "super_admin";
 ```
 
 **Real Union Requirements:**
+
 ```
 International Union
 ├── International President (elected)
@@ -64,6 +66,7 @@ Committee Roles (temporary assignments)
 ```
 
 **Required Enhancements:**
+
 - Hierarchical role trees (not flat list)
 - Role scoping (department, local, region, international)
 - Elected vs. appointed role tracking
@@ -73,10 +76,12 @@ Committee Roles (temporary assignments)
 #### 2. **No Multi-Level Jurisdiction Support**
 
 **Current Problem:**
+
 - Single tenant = entire union
 - No concept of locals, regions, districts
 
 **Real Union Structure:**
+
 ```
 International Union (AFT, UAW, SEIU, etc.)
 ├── Region 1 (Northeast)
@@ -93,6 +98,7 @@ International Union (AFT, UAW, SEIU, etc.)
 ```
 
 **Required Enhancements:**
+
 - Hierarchical tenant structure (international → region → local → chapter)
 - Role inheritance up/down hierarchy
 - Cross-jurisdiction visibility rules
@@ -101,15 +107,18 @@ International Union (AFT, UAW, SEIU, etc.)
 #### 3. **Missing Department/Sector Scoping**
 
 **Current Problem:**
+
 - Steward has access to ALL members
 - No department boundaries
 
 **Real Scenario:**
+
 - Manufacturing steward should only see manufacturing workers
 - Healthcare steward only sees healthcare members
 - Chief steward sees all departments
 
 **Schema Needed:**
+
 ```typescript
 interface Member {
   department: string; // "Manufacturing", "Healthcare", "Admin"
@@ -127,6 +136,7 @@ interface RoleAssignment {
 ```
 
 **Access Rules:**
+
 ```typescript
 // Department steward can only access their department
 if (role === "steward" && scope.type === "department") {
@@ -142,11 +152,13 @@ if (role === "chief_steward") {
 #### 4. **No Temporal/Conditional Permissions**
 
 **Current Problem:**
+
 - Roles are permanent until manually changed
 - No automatic term expirations
 - No election cycle management
 
 **Real Requirements:**
+
 ```typescript
 interface RoleAssignment {
   role: string;
@@ -173,6 +185,7 @@ interface RoleAssignment {
 ```
 
 **Business Logic:**
+
 - Auto-expire roles when term ends
 - Send notifications 90/60/30 days before election
 - Flag expired officers (still seated but term ended)
@@ -181,10 +194,12 @@ interface RoleAssignment {
 #### 5. **No Delegation/Acting Roles**
 
 **Current Problem:**
+
 - President goes on medical leave → no one has authority
 - No temporary authority transfer
 
 **Required Features:**
+
 ```typescript
 interface Delegation {
   fromMemberId: string;
@@ -211,11 +226,13 @@ interface ActingRole {
 #### 6. **Weak Audit Requirements**
 
 **Current Problem:**
+
 - No logging of permission usage
 - Can't answer: "Who approved this grievance settlement?"
 - Union governance requires detailed audit trails
 
 **Required Audit System:**
+
 ```typescript
 interface AuditLog {
   id: string;
@@ -249,6 +266,7 @@ interface AuditLog {
 ```
 
 **Compliance Queries:**
+
 ```sql
 -- Who approved settlements over $10K in last year?
 SELECT actor, COUNT(*) 
@@ -269,10 +287,12 @@ ORDER BY timestamp;
 #### 7. **No Permission Exceptions**
 
 **Current Problem:**
+
 - Rigid hierarchy: steward OR not steward
 - No case-by-case exceptions
 
 **Real Scenarios:**
+
 ```
 1. Member Jones needs to see Claim #123 even though not their steward
    → Grievance involves their department, they're key witness
@@ -290,6 +310,7 @@ ORDER BY timestamp;
 ```
 
 **Required: Exception System:**
+
 ```typescript
 interface PermissionException {
   id: string;
@@ -347,6 +368,7 @@ async function hasPermission(
 ### Phase 1: Enhanced Role Model (Immediate - 1 week)
 
 **Database Schema:**
+
 ```sql
 -- Role definitions (organizational structure)
 CREATE TABLE role_definitions (
@@ -469,6 +491,7 @@ CREATE INDEX idx_audit_actor ON rbac_audit_log(actor_id);
 ### Phase 2: Middleware Enhancement (1 week)
 
 **New Middleware Functions:**
+
 ```typescript
 // Enhanced role checking with scope
 export async function withScopedRoleAuth(
@@ -560,6 +583,7 @@ export async function withPermission(
 ### Phase 3: UI Components (1 week)
 
 **Role Management Admin:**
+
 ```typescript
 // components/admin/RoleAssignmentManager.tsx
 interface RoleAssignment {
@@ -606,6 +630,7 @@ function RoleAssignmentManager() {
 ### Phase 4: Compliance & Reporting (1 week)
 
 **Audit Reporting:**
+
 ```typescript
 // Generate compliance report
 async function generateComplianceReport(
@@ -645,22 +670,26 @@ async function generateComplianceReport(
 ## Migration Strategy
 
 ### Phase 1: Parallel Systems (Month 1)
+
 - Keep current simple RBAC for basic operations
 - Build new enhanced RBAC alongside
 - Migrate one feature at a time (start with member management)
 
 ### Phase 2: Feature Parity (Month 2)
+
 - All features support both systems
 - Admin can choose which to use per tenant
 - Small unions stay on simple system
 - Large unions opt into enhanced system
 
 ### Phase 3: Full Migration (Month 3)
+
 - All new tenants use enhanced RBAC
 - Existing tenants migrated with assistance
 - Simple RBAC becomes "compatibility layer"
 
 ### Phase 4: Advanced Features (Month 4+)
+
 - Election management module
 - Delegation workflows
 - Cross-local reporting
@@ -673,12 +702,14 @@ async function generateComplianceReport(
 ### Example 1: UAW (United Auto Workers) - 400K members
 
 **Structure:**
+
 - International Union
 - 8 Regions
 - ~600 Locals
 - Departments: Skilled Trades, Production, Parts & Service
 
 **RBAC Needs:**
+
 - Regional directors with region-wide visibility
 - Local presidents with local-only admin
 - Skilled trades stewards with department scope
@@ -688,12 +719,14 @@ async function generateComplianceReport(
 ### Example 2: AFT (American Federation of Teachers) - 1.7M members
 
 **Structure:**
+
 - National AFT
 - State federations (all 50 states)
 - ~3,000 local unions
 - Sectors: K-12, Higher Ed, Healthcare
 
 **RBAC Needs:**
+
 - State president can see all locals in state
 - Local president isolated to their local
 - Higher ed representatives different from K-12
@@ -703,12 +736,14 @@ async function generateComplianceReport(
 ### Example 3: SEIU (Service Employees International Union) - 2M members
 
 **Structure:**
+
 - International Union
 - Multiple sectors (healthcare, public services, property services)
 - State and regional councils
 - Local unions
 
 **RBAC Needs:**
+
 - Healthcare locals need HIPAA-compliant access controls
 - Public sector locals need sunshine law compliance
 - Property services has multiple shifts (day/night/weekend)
@@ -720,17 +755,20 @@ async function generateComplianceReport(
 ## Performance Considerations
 
 **Current Simple RBAC:**
+
 - 1 DB query per request (getMemberByUserId)
 - ~5ms overhead
 - Works for 10K members
 
 **Enhanced RBAC:**
+
 - Multiple role queries needed
 - Exception checking
 - Audit logging on every action
 - Potential: 20-50ms overhead
 
 **Optimization Strategies:**
+
 ```typescript
 // 1. Cache active roles per session
 const roleCache = new Map<string, CachedRoles>();
@@ -761,6 +799,7 @@ await logPermissionCheck(data); // Non-blocking
 ## Estimated Development Time
 
 **Minimum Viable Enterprise RBAC:**
+
 - Phase 1 (Schema + queries): 1 week
 - Phase 2 (Middleware): 1 week
 - Phase 3 (UI): 1 week
@@ -770,6 +809,7 @@ await logPermissionCheck(data); // Non-blocking
 **Total: 5-6 weeks for production-ready enterprise RBAC**
 
 **ROI:**
+
 - Large unions (50K+ members): Essential, will pay for itself
 - Medium unions (5K-50K): Nice to have, simpler version may suffice
 - Small unions (<5K): Overkill, current system adequate
@@ -786,12 +826,14 @@ await logPermissionCheck(data); // Non-blocking
 ❌ Inadequate audit trail for compliance
 
 **Recommendation:**
+
 1. Keep current system as "Simple Mode"
 2. Build enhanced system as "Enterprise Mode"
 3. Let tenants choose based on complexity
 4. Provide migration path as unions grow
 
 **Priority Order:**
+
 1. **HIGH**: Multi-role assignments (needed by 80% of unions)
 2. **HIGH**: Term expiration tracking (union elections)
 3. **HIGH**: Audit logging (compliance requirement)

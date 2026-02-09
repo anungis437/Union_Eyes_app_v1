@@ -11,12 +11,14 @@ Before making any changes, I've analyzed how the current payment flow works:
 ## Phase 1: Preparation Tasks
 
 ### Task 1: Modify Profiles Schema (No Changes Needed)
+
 - The existing schema already has what we need:
   - `email` field for storing email before ClerkID
   - `status` field can handle our new "paid_pending_account" status
   - `whopUserId` and `whopMembershipId` fields exist for Whop details
 
 ### Task 2: Add Email Lookup Function to profiles-queries.ts
+
 ```typescript
 // Implement in: db/queries/profiles-queries.ts
 export const getProfileByEmail = async (email: string) => {
@@ -34,6 +36,7 @@ export const getProfileByEmail = async (email: string) => {
 ## Phase 2: Create Pay Page
 
 ### Task 3: Create Pay Page Component
+
 ```typescript
 // Create file: app/pay/page.tsx
 // Mimic the existing pricing card structure from whop-pricing-card.tsx
@@ -46,7 +49,7 @@ export async function POST(req: Request) {
   try {
     // Get auth state but don't require it
     const { userId } = auth();
-    
+
     // Parse request body
     const { planId, redirectUrl, email } = await req.json();
     
@@ -104,7 +107,7 @@ const handleCheckout = async () => {
         redirectUrl: '/signup?payment=success'
       }),
     });
-    
+
     // Rest of checkout handling
   } catch (error) {
     // Error handling
@@ -114,6 +117,7 @@ const handleCheckout = async () => {
 ## Phase 3: Update Webhook Handlers
 
 ### Task 5: Modify payment-handlers.ts
+
 ```typescript
 // Modify: app/api/whop/webhooks/utils/payment-handlers.ts
 // Update handlePaymentSuccess to handle email-based payments
@@ -143,6 +147,7 @@ export async function handlePaymentSuccess(data: any) {
 ```
 
 ### Task 6: Add Helper Function for Profile Creation
+
 ```typescript
 // Add to: app/api/whop/webhooks/utils/payment-handlers.ts
 async function createOrUpdatePendingProfile(data: any) {
@@ -158,6 +163,7 @@ async function createOrUpdatePendingProfile(data: any) {
 ## Phase 4: Implement Account Claiming
 
 ### Task 7: Add Profile Claiming to whop-actions.ts
+
 ```typescript
 // Add to: actions/whop-actions.ts
 export async function claimPendingProfile(userId: string, email: string) {
@@ -182,6 +188,7 @@ export async function claimPendingProfile(userId: string, email: string) {
 ```
 
 ### Task 8: Modify Signup Page to Handle Claiming
+
 ```typescript
 // Modify: app/(auth)/signup/[[...signup]]/page.tsx
 // Add URL parameter handling for email and token
@@ -191,6 +198,7 @@ export async function claimPendingProfile(userId: string, email: string) {
 ## Phase 5: Edge Case Handling
 
 ### Task 9: Add Account Recovery Component
+
 ```typescript
 // Create: components/account/claim-purchase.tsx
 // Form for users to enter email used for purchase if different from signup

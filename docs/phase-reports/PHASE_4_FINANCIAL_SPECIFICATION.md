@@ -1,4 +1,5 @@
 # Phase 4: Financial & Dues Management Module
+
 **Technical Specification v1.0**
 
 ## Executive Summary
@@ -14,6 +15,7 @@
 ## Database Schema
 
 ### 1. Dues Rules Table
+
 ```sql
 CREATE TABLE dues_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -78,6 +80,7 @@ CREATE INDEX idx_dues_rules_active ON dues_rules(is_active, effective_from, effe
 ```
 
 ### 2. Member Dues Assignments
+
 ```sql
 CREATE TABLE member_dues_assignments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -109,6 +112,7 @@ CREATE INDEX idx_member_dues_rule ON member_dues_assignments(rule_id);
 ```
 
 ### 3. Dues Transactions
+
 ```sql
 CREATE TABLE dues_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -163,6 +167,7 @@ CREATE INDEX idx_dues_trans_due_date ON dues_transactions(due_date);
 ```
 
 ### 4. Employer Remittances
+
 ```sql
 CREATE TABLE employer_remittances (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -223,6 +228,7 @@ CREATE INDEX idx_remittances_status ON employer_remittances(reconciliation_statu
 ```
 
 ### 5. Arrears Management
+
 ```sql
 CREATE TABLE arrears_cases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -279,6 +285,7 @@ CREATE INDEX idx_arrears_age ON arrears_cases(months_in_arrears);
 ## API Endpoints
 
 ### Dues Rules Management
+
 ```
 POST   /api/dues/rules                    - Create dues rule
 GET    /api/dues/rules                    - List rules for tenant
@@ -289,6 +296,7 @@ POST   /api/dues/rules/:id/calculate      - Test calculation
 ```
 
 ### Member Dues
+
 ```
 POST   /api/dues/members/:id/assign       - Assign rule to member
 GET    /api/dues/members/:id/statement    - Get dues statement
@@ -298,6 +306,7 @@ POST   /api/dues/members/:id/waiver       - Request waiver
 ```
 
 ### Transactions
+
 ```
 POST   /api/dues/transactions             - Create transaction
 GET    /api/dues/transactions             - List transactions
@@ -307,6 +316,7 @@ POST   /api/dues/transactions/bulk        - Bulk create/update
 ```
 
 ### Remittances
+
 ```
 POST   /api/remittances                   - Create remittance
 POST   /api/remittances/upload            - Upload remittance file
@@ -317,6 +327,7 @@ POST   /api/remittances/:id/post-to-gl    - Post to GL
 ```
 
 ### Arrears
+
 ```
 GET    /api/arrears                       - List all arrears cases
 GET    /api/arrears/members/:id           - Member arrears details
@@ -330,6 +341,7 @@ POST   /api/arrears/:id/write-off         - Write off debt
 ## Calculation Engine
 
 ### TypeScript Interface
+
 ```typescript
 interface DuesCalculationInput {
   memberId: string;
@@ -365,6 +377,7 @@ interface DuesCalculationResult {
 ```
 
 ### Calculation Logic
+
 ```typescript
 async function calculateMemberDues(
   input: DuesCalculationInput
@@ -440,6 +453,7 @@ async function calculateMemberDues(
 ## Stripe Integration
 
 ### Payment Processing
+
 ```typescript
 // Create payment intent for member
 async function createPaymentIntent(
@@ -480,6 +494,7 @@ async function handleStripeWebhook(event: Stripe.Event) {
 ## Workflows
 
 ### Monthly Dues Calculation Workflow
+
 ```yaml
 trigger: schedule (1st of month, 2am)
 steps:
@@ -494,6 +509,7 @@ steps:
 ```
 
 ### Payment Collection Workflow
+
 ```yaml
 trigger: payment_received
 steps:
@@ -506,6 +522,7 @@ steps:
 ```
 
 ### Arrears Management Workflow
+
 ```yaml
 trigger: schedule (weekly)
 steps:
@@ -522,6 +539,7 @@ steps:
 ## Testing Requirements
 
 ### Unit Tests
+
 - Calculation engine accuracy (all methods)
 - Rule validation logic
 - Override and exemption handling
@@ -529,6 +547,7 @@ steps:
 - Arrears accumulation
 
 ### Integration Tests
+
 - End-to-end payment flow
 - Remittance file processing
 - Stripe webhook handling
@@ -536,6 +555,7 @@ steps:
 - GL posting
 
 ### Load Tests
+
 - 10,000 member calculation batch
 - Concurrent payment processing
 - Large remittance file upload (50MB+)
@@ -546,18 +566,21 @@ steps:
 ## Security & Compliance
 
 ### Data Protection
+
 - PCI DSS compliance for payment data
 - Encryption at rest for financial records
 - Audit trail for all transactions
 - Role-based access to financial data
 
 ### SOC-2 Requirements
+
 - Immutable transaction records
 - Automated reconciliation
 - Variance reporting
 - Fraud detection alerts
 
 ### Financial Audit Trail
+
 ```sql
 CREATE TABLE financial_audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,6 +1,7 @@
 # Email Notification Testing - Quick Start
 
 ## ✅ Configuration Status
+
 All email components are configured and ready to test!
 
 ```
@@ -16,21 +17,27 @@ All email components are configured and ready to test!
 ## 📧 Email Recipients
 
 ### Test Claims
-- **CLM-2025-003**: Assigned to LRO (info@nzilaventures.com)
-- **CLM-2025-004**: Assigned to LRO (info@nzilaventures.com)
+
+- **CLM-2025-003**: Assigned to LRO (<info@nzilaventures.com>)
+- **CLM-2025-004**: Assigned to LRO (<info@nzilaventures.com>)
 
 ### Member Email
+
 The **member** who submitted these claims will receive email notifications.
+
 - Member ID: UUID from claims.member_id field
 - Email: Fetched from Clerk user via memberId
 
 **Important**: To find the actual member email:
+
 1. Check Clerk dashboard for user associated with the claim's member_id
 2. OR check server console logs when email is sent
 3. OR check Resend dashboard after sending to see recipient
 
 ### LRO/Steward Email
-You (info@nzilaventures.com) will receive emails for certain status changes:
+
+You (<info@nzilaventures.com>) will receive emails for certain status changes:
+
 - ✓ Assigned
 - ✓ Investigation
 - ✓ Pending Documentation
@@ -39,12 +46,14 @@ You (info@nzilaventures.com) will receive emails for certain status changes:
 ## 🚀 Quick Test Steps
 
 ### Step 1: Start Dev Server
+
 ```powershell
 pnpm dev
 ```
 
 ### Step 2: Update Claim Status
-1. Navigate to: http://localhost:3000/dashboard/workbench
+
+1. Navigate to: <http://localhost:3000/dashboard/workbench>
 2. Click "View Full Details" on CLM-2025-003
 3. In StatusUpdate component:
    - Select status: "Under Review"
@@ -52,25 +61,31 @@ pnpm dev
    - Click "Update Status"
 
 ### Step 3: Check Server Console
+
 Look for this log in the terminal running `pnpm dev`:
+
 ```
 Notification sent for claim [UUID]: under_review
 ```
 
 OR check for errors:
+
 ```
 Failed to send email notification: [error message]
 ```
 
 ### Step 4: Check Email Inbox
+
 - **Member inbox**: Check email of member who submitted claim
-- **Your inbox** (info@nzilaventures.com): You'll receive email if status is one of:
+- **Your inbox** (<info@nzilaventures.com>): You'll receive email if status is one of:
   - assigned, investigation, pending_documentation, resolved
 
 ### Step 5: Verify Email Content
+
 Email should include:
+
 - ✓ Subject: "Claim Under Review - [Claim Type] Claim"
-- ✓ From: noreply@unionclaims.com
+- ✓ From: <noreply@unionclaims.com>
 - ✓ Greeting with member name
 - ✓ Status change: "from [old] to Under Review"
 - ✓ Claim details box (ID, Title, Type)
@@ -82,6 +97,7 @@ Email should include:
 ## 🎯 Test Scenarios
 
 ### Scenario 1: Basic Email (Member Only)
+
 ```
 Status: Submitted → Under Review
 Notes: "Initial review started"
@@ -89,6 +105,7 @@ Recipient: Member only
 ```
 
 ### Scenario 2: Steward Notification
+
 ```
 Status: Under Review → Investigation
 Notes: "Escalating to investigation team"
@@ -96,6 +113,7 @@ Recipients: Member + Steward (you)
 ```
 
 ### Scenario 3: Multiple Transitions
+
 ```
 1. Investigation → Pending Documentation
 2. Pending Documentation → Under Review
@@ -105,6 +123,7 @@ Each should send separate email with correct status
 ```
 
 ### Scenario 4: Resolved Status
+
 ```
 Status: Under Review → Resolved
 Notes: "Claim resolved in member's favor"
@@ -115,17 +134,21 @@ Email: Green "Resolved" badge
 ## 🔍 Troubleshooting
 
 ### No Email Received?
+
 1. **Check server console**: Look for "Notification sent" or error message
 2. **Check spam folder**: Email might be filtered
 3. **Verify Resend API key**: Should be 36 characters starting with "re_"
-4. **Check Resend dashboard**: https://resend.com/emails
+4. **Check Resend dashboard**: <https://resend.com/emails>
 5. **Verify member email**: Check Clerk user has valid email address
 
 ### Email Sends But Status Update Fails?
+
 **This should NOT happen!** Email is async and won't block status update.
+
 - If it does, check workflow-engine.ts error handling
 
 ### Status Updates But No Email?
+
 1. Check console for "Failed to send email notification"
 2. Common causes:
    - Invalid member_id in claims table
@@ -134,6 +157,7 @@ Email: Green "Resolved" badge
    - RESEND_API_KEY invalid or expired
 
 ### Want to Test Without Sending Real Emails?
+
 ```powershell
 # Stop dev server
 # Comment out RESEND_API_KEY in .env.local
@@ -148,7 +172,8 @@ pnpm dev
 
 ## 📊 Resend Dashboard
 
-Check sent emails at: https://resend.com/emails
+Check sent emails at: <https://resend.com/emails>
+
 - See all emails sent from your API key
 - View delivery status (Sent/Delivered/Failed)
 - Preview email HTML
@@ -158,6 +183,7 @@ Check sent emails at: https://resend.com/emails
 ## ✅ Success Criteria
 
 Mark "Test email notifications end-to-end" complete when:
+
 - [x] Email configuration verified (test-email-config.js passed)
 - [ ] Status update triggers email (console confirms)
 - [ ] Email received in member's inbox
@@ -188,6 +214,7 @@ Run through these tests:
 ## 🎉 Next Todo After Completion
 
 Once all tests pass:
+
 ```powershell
 # Update todo list
 # Mark "Test email notifications end-to-end" as complete
@@ -195,6 +222,7 @@ Once all tests pass:
 ```
 
 ## 📚 Documentation Files
+
 - **Detailed test plan**: `test-email-notifications.md`
 - **Config test script**: `test-email-config.js` (already run ✓)
 - **This quick reference**: `email-test-quickstart.md`

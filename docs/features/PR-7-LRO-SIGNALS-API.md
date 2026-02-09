@@ -31,18 +31,22 @@ A comprehensive signal detection system analyzing cases and generating prioritiz
 #### Severity Levels
 
 **CRITICAL (immediate action):**
+
 - SLA already breached - union is out of compliance
 - Acknowledgment overdue - violates 2-day standard
 
 **URGENT (priority action):**
+
 - SLA at risk - window for action closing rapidly
 - Member waiting - service quality concern
 - Escalation needed - case should progress to next stage
 
 **WARNING (attention needed):**
+
 - Case stale - potential for member dissatisfaction
 
 **INFO (awareness only):**
+
 - Urgent state - situational awareness, no breach or deadline
 
 #### Configuration Constants
@@ -376,6 +380,7 @@ function SignalCard({ signal }: { signal: Signal }) {
 ## Business Value
 
 ### Before PR-7
+
 - Manual case review (30+ minutes daily)
 - Reactive breach detection (after member complaint)
 - No systematic prioritization
@@ -383,6 +388,7 @@ function SignalCard({ signal }: { signal: Signal }) {
 - Inconsistent follow-up on stale cases
 
 ### After PR-7
+
 - Automated case prioritization (< 1 second)
 - Proactive breach prevention (80% threshold)
 - Systematic urgency ranking (critical → urgent → warning)
@@ -413,21 +419,26 @@ function SignalCard({ signal }: { signal: Signal }) {
 ### Signal Suppression Rules
 
 **Urgent State (info):** Only shown if no other signals present
+
 - Purpose: Avoid noise when case already has higher-severity signals
 
 **At-Risk vs Breached:** At-risk signals suppressed if any SLA breached
+
 - Purpose: Focus on most critical issue (breach) first
 
 **Multiple Breaches:** Combined into single "SLA Breached" signal
+
 - Purpose: Avoid overwhelming officer with 3 separate breach signals
 
 ### Integration with Previous PRs
 
 **PR-5: Opinionated Workflow Rules**
+
 - Uses `calculateCaseSlaStatus()` for SLA assessment
 - Enforces workflow state classification (urgent vs normal)
 
 **PR-6: Defensibility Pack Exports**
+
 - Signal detection can trigger automatic defensibility export
 - Critical signals documented in audit trail
 
@@ -461,6 +472,7 @@ export const SIGNAL_CONFIG = {
 ```
 
 **Common Adjustments:**
+
 - High-volume unions: Increase stale threshold to 10-14 days
 - Low-staffing: Decrease thresholds to catch issues earlier
 - Specific agreements: Adjust acknowledgment deadline per contract
@@ -468,12 +480,14 @@ export const SIGNAL_CONFIG = {
 ## Next Steps
 
 **PR-8: Minimal UI Panel**
+
 - Build case list with urgency indicators
 - Implement signal-based filtering
 - Add one-click signal resolution
 - Create case detail view with signal history
 
 **PR-9: Pilot Mode Feature Flags**
+
 - Enable signals progressively (by union/local)
 - A/B test signal thresholds
 - Collect feedback on signal usefulness

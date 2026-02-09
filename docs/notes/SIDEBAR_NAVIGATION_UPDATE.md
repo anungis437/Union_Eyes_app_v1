@@ -1,9 +1,11 @@
 # Sidebar Navigation Update - UnionEyes
 
 ## Summary
+
 Updated the sidebar navigation component to support role-based access for UnionEyes union management stakeholders.
 
 ## Date
+
 Current session
 
 ## Changes Made
@@ -11,7 +13,9 @@ Current session
 ### 1. Sidebar Component (`components/sidebar.tsx`)
 
 #### Updated Imports
+
 Added union-specific icons:
+
 - `FileText` - Claims documentation
 - `Vote` - Voting system
 - `BookOpen` - Collective agreements
@@ -23,6 +27,7 @@ Added union-specific icons:
 - `Scale` - Grievances
 
 #### Updated Interface
+
 ```typescript
 interface SidebarProps {
   profile: SelectProfile | null;
@@ -36,6 +41,7 @@ interface SidebarProps {
 #### Role-Based Navigation Structure
 
 **Member Level** (5 items - All users see these):
+
 - Dashboard (`/dashboard`) - Home overview
 - My Claims (`/dashboard/claims`) - Personal claim history
 - Submit Claim (`/dashboard/claims/new`) - Voice-enabled submission
@@ -43,21 +49,25 @@ interface SidebarProps {
 - Agreements (`/dashboard/agreements`) - Collective bargaining agreements
 
 **Steward Level** (+3 items - Stewards, Officers, Admins):
+
 - LRO Workbench (`/dashboard/workbench`) - Claim queue & AI analysis
 - Members (`/dashboard/members`) - Member directory
 - Analytics (`/dashboard/analytics`) - Union metrics & reporting
 
 **Officer Level** (+2 items - Officers, Admins):
+
 - Grievances (`/dashboard/grievances`) - Formal grievance process
 - Notifications (`/dashboard/notifications`) - Alerts & communications
 
 **Admin Level** (+2 items - Admins only):
+
 - Administration (`/dashboard/admin`) - System settings
 - Settings (`/dashboard/settings`) - User preferences (visible to all)
 
 **Total**: 12 navigation items with hierarchical visibility
 
 #### Logo Update
+
 - Changed from generic "App Name" to "UnionEyes" with Shield icon
 - Blue gradient styling matching union theme
 - Responsive design (icon only on mobile, full logo on desktop)
@@ -65,6 +75,7 @@ interface SidebarProps {
 ### 2. Dashboard Layout (`app/dashboard/layout.tsx`)
 
 #### Added Role Support
+
 ```typescript
 // TODO: Implement role fetching from tenantUsers table
 // For now, default to "member" role for all users
@@ -72,6 +83,7 @@ const userRole: "member" | "steward" | "officer" | "admin" = "member";
 ```
 
 #### Updated Sidebar Props
+
 ```typescript
 <Sidebar 
   profile={profile} 
@@ -85,6 +97,7 @@ const userRole: "member" | "steward" | "officer" | "admin" = "member";
 ## Features Preserved
 
 All existing sidebar features remain intact:
+
 - ✅ Glassmorphism design with backdrop blur
 - ✅ Credit usage display (desktop & mobile views)
 - ✅ Upgrade popup integration
@@ -96,6 +109,7 @@ All existing sidebar features remain intact:
 ## Database Schema Reference
 
 ### Tenant Users Table
+
 Location: `db/schema/user-management-schema.ts`
 
 ```typescript
@@ -113,11 +127,13 @@ export const tenantUsers = userManagementSchema.table("tenant_users", {
 ## Future Implementation Tasks
 
 ### Priority 1: Role Query Implementation
+
 - [ ] Create query function in `db/queries/` to fetch user role from `tenantUsers` table
 - [ ] Update dashboard layout to call role query instead of defaulting to "member"
 - [ ] Consider caching role in session or profile for performance
 
 Example implementation needed:
+
 ```typescript
 // db/queries/tenant-users-queries.ts
 export async function getTenantUserRole(
@@ -138,7 +154,9 @@ export async function getTenantUserRole(
 ```
 
 ### Priority 2: Route Verification
+
 Verify/create these dashboard pages:
+
 - [ ] `/dashboard/claims` - Claims history page
 - [ ] `/dashboard/claims/new` - Claim submission form
 - [ ] `/dashboard/voting` - Voting interface
@@ -150,11 +168,13 @@ Verify/create these dashboard pages:
 - [ ] `/dashboard/admin` - System administration
 
 ### Priority 3: Role Management UI
+
 - [ ] Create admin interface for assigning roles
 - [ ] Add role change audit logging
 - [ ] Implement role-based permissions beyond navigation
 
 ### Priority 4: Testing
+
 - [ ] Test navigation visibility with each role type
 - [ ] Verify role hierarchy (officers see steward items, admins see all)
 - [ ] Test mobile responsive behavior
@@ -163,6 +183,7 @@ Verify/create these dashboard pages:
 ## Technical Notes
 
 ### Navigation Filtering Logic
+
 ```typescript
 const getVisibleNavItems = () => {
   const allItems = [
@@ -178,13 +199,16 @@ const navItems = getVisibleNavItems();
 ```
 
 ### Role Hierarchy
+
 - `member` → Sees 5 items (member items only)
 - `steward` → Sees 8 items (member + steward items)
 - `officer` → Sees 10 items (member + steward + officer items)
 - `admin` → Sees all 12 items (full access)
 
 ### Icon Sizing
+
 All icons use consistent 16px size for uniformity:
+
 ```typescript
 {React.cloneElement(item.icon, { size: 16 })}
 ```

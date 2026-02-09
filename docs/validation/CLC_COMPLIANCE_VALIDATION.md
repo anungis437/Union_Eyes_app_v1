@@ -1,4 +1,5 @@
 # CLC Compliance Validation Report
+
 **Union-OS Platform Assessment Against Canadian Labour Congress Requirements**
 
 **Date:** November 24, 2025  
@@ -38,12 +39,14 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Turnout dashboard** | ✅ **IMPLEMENTED** | Real-time `turnoutPercentage`, `totalVotes`, `totalEligibleVoters` | None |
 
 **Database Evidence:**
+
 - ✅ `voting_sessions` with `allow_anonymous`, `requires_quorum`
 - ✅ `votes` table with anonymized `voter_id`, `voter_hash`
 - ✅ `voter_eligibility` with `is_eligible`, `verification_status`
 - ✅ API endpoints for session results with quorum validation
 
 **Missing Components:**
+
 - ❌ End-to-end encryption (E2EE) for vote submission
 - ❌ Third-party auditor integration (blockchain hash)
 - ❌ Mobile credential system (NFT/QR)
@@ -67,6 +70,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **PKI signature** | ⚠️ **MISSING** | No PKI signature system found | Requires certificate authority integration |
 
 **Database Evidence:**
+
 - ✅ `dues_rules` - Configurable calculation types (flat_rate, percentage, tiered, hours_based)
 - ✅ `dues_transactions` - Full breakdown (base_dues, cope_amount, pac_amount, arrears, late_fees)
 - ✅ `employer_remittances` - Batch tracking, reconciliation status, file upload
@@ -75,6 +79,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ✅ Compliance reporting service with SOC-2, GDPR frameworks
 
 **Missing Components:**
+
 - ❌ CLC-specific chart of accounts mapping
 - ❌ PKI digital signature system
 - ⚠️ Formal SOX attestation workflow
@@ -98,6 +103,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **VR retirement planner** | ❌ **NOT IMPLEMENTED** | No VR/3D features | Future enhancement |
 
 **Database Evidence:**
+
 - ❌ No `pension_plans` table
 - ❌ No `hours_banks` table
 - ❌ No `trustee_board` or `trustee_meetings` tables
@@ -105,6 +111,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ❌ No `actuarial_valuations` table
 
 **Missing Components:**
+
 - ❌ Complete pension/H&W administration module
 - ❌ Trustee governance portal
 - ❌ Hours-bank tracking system
@@ -114,6 +121,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ❌ Blockchain contribution tracking
 
 **Recommendation:** **CRITICAL PRIORITY** - Requires 10-12 weeks of dedicated development. Consider phased approach:
+
 1. **Phase 1:** Hours-bank + contribution reconciliation (4 weeks)
 2. **Phase 2:** Trustee portal + minute management (3 weeks)
 3. **Phase 3:** Pension estimator (3 weeks)
@@ -136,6 +144,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Convention screen projection** | ⚠️ **PARTIAL** | Results API exists; public display mode needed | Requires presentation view |
 
 **Database Evidence:**
+
 - ✅ `shared_clause_library` - Tagged clauses by type (wages, benefits, hours, overtime, vacation)
 - ✅ `bargaining_notes` - Session tracking with proposals and counterproposals
 - ✅ `voting_sessions` - Ratification votes with quorum and results
@@ -143,6 +152,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ✅ i18n system (`messages/en-CA.json`)
 
 **Missing Components:**
+
 - ❌ CPI/economic data API integration
 - ❌ Auto-costing against CPI-W, provincial wage data
 - ⚠️ French (fr-CA) translations
@@ -164,6 +174,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Precedent analysis** | ⚠️ **PARTIAL** | `claim_precedent_analysis` table exists; AI analysis missing | Requires LLM integration |
 
 **Database Evidence:**
+
 - ✅ `claims` - Full lifecycle tracking (new, in_review, in_progress, resolved, rejected, withdrawn)
 - ✅ `claim_deadlines` - SLA monitoring with `status`, `priority`, `days_remaining`
 - ✅ `claim_escalations` - Auto-escalation to officers
@@ -171,6 +182,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ✅ Deadline alerting system with configurable rules
 
 **Missing Components:**
+
 - ❌ AI-powered similarity search (vector embeddings)
 - ⚠️ CLC national precedent database integration
 - ⚠️ Automated precedent matching in grievance workflow
@@ -193,6 +205,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **PDF evidence attachment** | ✅ **IMPLEMENTED** | File upload support in multiple modules | None |
 
 **Database Evidence:**
+
 - ✅ `strike_funds` - Fund management with balance, target, contribution rules
 - ✅ `picket_attendance` - QR check-in, GPS verification, hours tracking
 - ✅ `stipend_disbursements` - Payment tracking with tax information
@@ -200,6 +213,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ✅ `strike_fund_donations` - Anonymous donation support
 
 **Missing Components:**
+
 - ⚠️ CRA T4A XML generation
 - ⚠️ CLC Defence Fund export format
 - ⚠️ Automatic CRA wage limit enforcement
@@ -222,12 +236,14 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Male-benchmark overlay** | ❌ **NOT IMPLEMENTED** | No pay-equity analysis tools | Requires statistical analysis |
 
 **Database Evidence:**
+
 - ⚠️ `members` table has basic fields (name, email, phone, department, position)
 - ❌ No demographic/equity fields in schema
 - ⚠️ Claims system exists but no pay-equity specific tracking
 - ⚠️ Meeting notes system exists but no caucus support
 
 **Missing Components:**
+
 - ❌ Demographic data collection (with consent)
 - ❌ Equity analytics dashboard
 - ❌ Statistics Canada census integration
@@ -252,12 +268,14 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **CLC draw-down report** | ❌ **NOT IMPLEMENTED** | No CLC-specific reporting | Requires grant reporting format |
 
 **Database Evidence:**
+
 - ❌ No `education_programs` table
 - ❌ No `course_completions` table
 - ❌ No `credentials` or `certifications` table
 - ⚠️ Generic financial tracking exists but not education-specific
 
 **Missing Components:**
+
 - ❌ Complete learning management system (LMS)
 - ❌ Course catalog and enrollment
 - ❌ Completion tracking and transcripts
@@ -283,6 +301,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Privacy-compliant auto-dialer** | ❌ **NOT IMPLEMENTED** | No dialer integration | Requires TCPA/CASL compliance |
 
 **Database Evidence:**
+
 - ❌ No `organizing_campaigns` table
 - ❌ No `card_sign_tracking` table
 - ❌ No `employer_intelligence` table
@@ -290,6 +309,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ⚠️ Basic analytics framework exists but not organizing-specific
 
 **Missing Components:**
+
 - ❌ Complete organizing/certification module
 - ❌ Labour board form generation (provincial)
 - ❌ Campaign tracking and metrics
@@ -315,6 +335,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **CLC analytics feed** | ❌ **NOT IMPLEMENTED** | No data sharing with CLC | Requires API integration |
 
 **Database Evidence:**
+
 - ✅ `dues_transactions` with `cope_amount`, `pac_amount` fields
 - ⚠️ Financial tracking exists but no COPE-specific module
 - ❌ No `political_campaigns` table
@@ -322,6 +343,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ❌ No `endorsed_candidates` table
 
 **Missing Components:**
+
 - ❌ COPE module with separate ledger
 - ⚠️ Opt-in/opt-out preference management
 - ❌ Political contribution receipts
@@ -347,6 +369,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Offline encrypted export** | ⚠️ **MISSING** | No offline export mode | Requires emergency export feature |
 
 **Database Evidence:**
+
 - ✅ `security_audit_log` - Comprehensive audit trail
 - ✅ `data_access_log` - All data access logged
 - ✅ `compliance_reporting_service` - SOC-2, GDPR frameworks
@@ -355,6 +378,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ✅ JSONB encryption support in schema
 
 **Missing Components:**
+
 - ⚠️ Formal SOC-2 Type II certification
 - ⚠️ Third-party penetration test results
 - ⚠️ Disaster recovery plan documentation
@@ -378,6 +402,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **XML & Excel export** | ✅ **IMPLEMENTED** | Multiple export formats supported | None |
 
 **Database Evidence:**
+
 - ✅ `employer_remittances` - Batch tracking with file upload/export
 - ✅ `dues_transactions` - Detailed transaction tracking
 - ✅ Remittance parser supporting CSV, Excel, XML/EDI
@@ -385,6 +410,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ⚠️ No CLC-specific export format found
 
 **Missing Components:**
+
 - ⚠️ CLC finance portal API integration
 - ⚠️ Statistics Canada LAB-05302 XML format
 - ⚠️ Scheduled remittance to CLC (day 15)
@@ -408,6 +434,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 | **Feed national analytics** | ⚠️ **PARTIAL** | Analytics exist; CLC data sharing API needed | Requires aggregation API |
 
 **Technical Evidence:**
+
 - ✅ Multi-tenant architecture with RLS
 - ✅ Modular monorepo structure (packages/)
 - ✅ Standard tech stack (Next.js, PostgreSQL, Drizzle ORM)
@@ -415,6 +442,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 - ✅ Tenant isolation for self-hosting
 
 **Missing Components:**
+
 - ⚠️ Strike-based billing pause logic
 - ⚠️ Open-source licensing clarity
 - ⚠️ CLC national analytics aggregation API
@@ -427,6 +455,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 ## 🎯 Priority Roadmap for CLC Readiness
 
 ### **PHASE 1: Critical Blockers (4-6 weeks)**
+
 **Must-Have for CLC Affiliation**
 
 1. **Multi-Level Tenant Hierarchy** (2 weeks)
@@ -455,6 +484,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 ---
 
 ### **PHASE 2: High-Value Features (6-8 weeks)**
+
 **Significant CLC Value-Add**
 
 1. **Pension/H&W Trust Module** (4 weeks)
@@ -479,6 +509,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 ---
 
 ### **PHASE 3: Strategic Growth (8-10 weeks)**
+
 **Union Movement Advancement**
 
 1. **Organizing Module** (6 weeks)
@@ -599,16 +630,19 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 **Verdict:** The Union-OS platform is **NOT ready for immediate CLC deployment** without substantial development work.
 
 **Required Investment:**
+
 - **Minimum:** $80K-$120K CAD (Phase 1 blockers) - 4-6 weeks
 - **Recommended:** $200K-$300K CAD (Phases 1-2) - 10-14 weeks
 - **Full CLC Alignment:** $300K-$450K CAD (Phases 1-3) - 18-24 weeks
 
 **Alternative Strategy:**
+
 1. **Target Individual Affiliates First** - Deploy to 2-3 mid-sized locals (10K-50K members) to validate architecture
 2. **Prove Multi-Tenant Hierarchy** - Build federation model with pilot affiliates
 3. **Secure CLC Endorsement** - Present pilot results for national rollout
 
 **Best-Case Timeline:**
+
 - **Q1 2026:** Phase 1 complete, 2-3 pilot locals onboarded
 - **Q2 2026:** Phase 2 complete, CLC evaluation begins
 - **Q3 2026:** CLC endorsement secured
@@ -649,6 +683,7 @@ The Union-OS platform demonstrates **strong foundational capabilities** in core 
 ---
 
 **Distribution:**
+
 - CLC Executive Council
 - Union-OS Development Team
 - Affiliate Union Presidents (Upon Request)

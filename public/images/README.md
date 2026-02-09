@@ -16,13 +16,15 @@ public/images/
 ## 🎨 Image Sources
 
 ### Hero Images
-- **Source**: Unsplash (https://unsplash.com)
+
+- **Source**: Unsplash (<https://unsplash.com>)
 - **License**: Unsplash License (free for commercial use)
 - **Dimensions**: 1920x1080 (optimized for web)
 - **Format**: JPG (quality 90)
 
 ### Feature Illustrations
-- **Source**: unDraw (https://undraw.co)
+
+- **Source**: unDraw (<https://undraw.co>)
 - **License**: Open source, free to use
 - **Format**: SVG (customizable colors)
 - **Illustrations**:
@@ -34,6 +36,7 @@ public/images/
   - `support.svg` - Support
 
 ### Testimonial Avatars
+
 - **Source**: Unsplash (various professional photographers)
 - **License**: Unsplash License
 - **Dimensions**: 400x400 (square)
@@ -46,6 +49,7 @@ public/images/
   - `avatar-sarah.jpg` - Sarah P., Union Secretary
 
 ### Background Patterns
+
 - **Source**: Unsplash
 - **License**: Unsplash License
 - **Usage**: Subtle texture overlays
@@ -62,6 +66,7 @@ cd UnionEyes
 ```
 
 This will:
+
 1. Download hero images from Unsplash
 2. Download testimonial avatars from Unsplash
 3. Download feature illustrations from unDraw
@@ -106,6 +111,7 @@ The project includes optimized image components in `components/ui/optimized-imag
 ## ⚡ Performance
 
 All images are optimized using Next.js Image component:
+
 - Automatic lazy loading
 - Responsive sizing
 - WebP format when supported
@@ -115,12 +121,14 @@ All images are optimized using Next.js Image component:
 ## 📜 Attribution
 
 Per licensing requirements, all images are credited in:
+
 1. `/public/images/ATTRIBUTIONS.md` - Full detailed credits
 2. Attribution footer on public pages - Visible credits
 
 ## 🔄 Updating Images
 
 To replace an image:
+
 1. Add new image to appropriate directory
 2. Update component references
 3. Update ATTRIBUTIONS.md with new credits
@@ -129,13 +137,17 @@ To replace an image:
 ## 🎨 Customization
 
 ### Changing Brand Colors in SVG Illustrations
+
 unDraw illustrations can be customized:
+
 1. Edit SVG files directly
 2. Or use unDraw's color picker when downloading
 3. Match to your brand's primary color (#6366f1 - Indigo)
 
 ### Image Dimensions
+
 Recommended dimensions:
+
 - Hero: 1920x1080 (landscape)
 - Avatars: 400x400 (square)
 - Features: SVG (scalable)
@@ -144,6 +156,7 @@ Recommended dimensions:
 ## 📄 Licenses Summary
 
 All images use permissive licenses:
+
 - **Unsplash License**: Free for commercial use, attribution appreciated
 - **unDraw**: Open source, no attribution required
 
@@ -152,6 +165,7 @@ See ATTRIBUTIONS.md for detailed credits and license information.
 ## 🚀 Next Steps
 
 After downloading images:
+
 1. ✅ Run build to generate optimized versions
 2. ✅ Test responsive behavior on mobile/tablet
 3. ✅ Verify all images load correctly

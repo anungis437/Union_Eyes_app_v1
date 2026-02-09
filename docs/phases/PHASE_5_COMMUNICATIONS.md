@@ -10,6 +10,7 @@
 ## 🎯 Objectives
 
 ### Current State (40% Complete)
+
 - ✅ Email notifications (Resend integration)
 - ✅ Basic notification system with queue
 - ✅ In-app notifications
@@ -17,6 +18,7 @@
 - ✅ User preferences per notification type
 
 ### Target State (75-80% Complete)
+
 - ✅ Email notifications (existing)
 - ➕ **SMS/text messaging** (Twilio integration)
 - ➕ **Survey and polling tools** (member feedback)
@@ -35,6 +37,7 @@
 ### Week 1: SMS Integration (Twilio)
 
 #### Database Schema
+
 ```sql
 -- SMS configuration and templates
 CREATE TABLE sms_templates (
@@ -106,6 +109,7 @@ CREATE INDEX idx_sms_conversations_tenant_phone ON sms_conversations(tenant_id, 
 ```
 
 #### Environment Variables
+
 ```env
 # Twilio Configuration
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxx
@@ -115,6 +119,7 @@ TWILIO_WEBHOOK_URL=https://yourdomain.com/api/webhooks/twilio
 ```
 
 #### API Routes
+
 1. **POST /api/communications/sms/send** - Send single SMS
 2. **POST /api/communications/sms/bulk** - Send bulk SMS
 3. **GET /api/communications/sms/templates** - List SMS templates
@@ -124,6 +129,7 @@ TWILIO_WEBHOOK_URL=https://yourdomain.com/api/webhooks/twilio
 7. **POST /api/webhooks/twilio** - Handle Twilio webhooks (delivery status, incoming SMS)
 
 #### Service Implementation
+
 ```typescript
 // services/sms-service.ts
 import twilio from 'twilio';
@@ -210,11 +216,13 @@ export async function handleTwilioWebhook(data: any): Promise<void> {
 ```
 
 #### UI Components
+
 - SMS template editor (`components/communications/sms-template-editor.tsx`)
 - SMS campaign builder (`components/communications/sms-campaign-builder.tsx`)
 - SMS conversation viewer (`components/communications/sms-conversations.tsx`)
 
 **Deliverables:**
+
 - ✅ Twilio integration working
 - ✅ SMS templates created
 - ✅ Bulk SMS sending
@@ -227,6 +235,7 @@ export async function handleTwilioWebhook(data: any): Promise<void> {
 ### Week 2: Survey & Polling System
 
 #### Database Schema
+
 ```sql
 -- Survey definitions
 CREATE TABLE surveys (
@@ -306,6 +315,7 @@ CREATE INDEX idx_poll_votes_poll ON poll_votes(poll_id);
 ```
 
 #### API Routes
+
 1. **POST /api/communications/surveys** - Create survey
 2. **GET /api/communications/surveys** - List surveys
 3. **GET /api/communications/surveys/:id** - Get survey details
@@ -317,6 +327,7 @@ CREATE INDEX idx_poll_votes_poll ON poll_votes(poll_id);
 9. **GET /api/communications/polls/:id/results** - Get poll results
 
 #### UI Components
+
 - Survey builder with drag-drop questions (`components/communications/survey-builder.tsx`)
 - Survey response form (`components/communications/survey-form.tsx`)
 - Survey results dashboard (`components/communications/survey-results.tsx`)
@@ -324,6 +335,7 @@ CREATE INDEX idx_poll_votes_poll ON poll_votes(poll_id);
 - Poll widget for embedding (`components/communications/poll-widget.tsx`)
 
 **Deliverables:**
+
 - ✅ Survey creation UI
 - ✅ 6 question types (multiple choice, checkbox, text, rating, yes/no, scale)
 - ✅ Response collection
@@ -336,6 +348,7 @@ CREATE INDEX idx_poll_votes_poll ON poll_votes(poll_id);
 ### Week 3: Newsletter Builder
 
 #### Database Schema
+
 ```sql
 -- Newsletter templates
 CREATE TABLE newsletter_templates (
@@ -405,6 +418,7 @@ CREATE INDEX idx_distribution_lists_tenant ON distribution_lists(tenant_id);
 ```
 
 #### API Routes
+
 1. **GET /api/communications/newsletters/templates** - List templates
 2. **POST /api/communications/newsletters/templates** - Create template
 3. **POST /api/communications/newsletters** - Create newsletter
@@ -418,6 +432,7 @@ CREATE INDEX idx_distribution_lists_tenant ON distribution_lists(tenant_id);
 11. **GET /api/communications/distribution-lists** - List distribution lists
 
 #### Service Implementation
+
 ```typescript
 // services/newsletter-service.ts
 import { Resend } from 'resend';
@@ -524,6 +539,7 @@ export async function trackNewsletterClick(
 ```
 
 #### UI Components
+
 - WYSIWYG newsletter editor with blocks (`components/communications/newsletter-editor.tsx`)
 - Template gallery (`components/communications/template-gallery.tsx`)
 - Recipient list builder (`components/communications/recipient-list-builder.tsx`)
@@ -531,6 +547,7 @@ export async function trackNewsletterClick(
 - Newsletter preview (`components/communications/newsletter-preview.tsx`)
 
 **Deliverables:**
+
 - ✅ WYSIWYG editor (drag-drop blocks)
 - ✅ Template library (5+ professional templates)
 - ✅ Distribution list management
@@ -545,6 +562,7 @@ export async function trackNewsletterClick(
 #### Communication Analytics
 
 **Database Schema:**
+
 ```sql
 -- Communication analytics aggregates
 CREATE TABLE communication_analytics (
@@ -578,6 +596,7 @@ CREATE INDEX idx_member_engagement_tenant_score ON member_engagement_scores(tena
 ```
 
 **API Routes:**
+
 1. **GET /api/communications/analytics/overview** - Overall stats
 2. **GET /api/communications/analytics/emails** - Email campaign performance
 3. **GET /api/communications/analytics/sms** - SMS campaign performance
@@ -585,6 +604,7 @@ CREATE INDEX idx_member_engagement_tenant_score ON member_engagement_scores(tena
 5. **GET /api/communications/analytics/trends** - Engagement trends over time
 
 **UI Component:**
+
 - Analytics dashboard (`app/[locale]/dashboard/communications/analytics/page.tsx`)
   - Channel comparison charts (email vs SMS vs push)
   - Campaign performance table
@@ -595,6 +615,7 @@ CREATE INDEX idx_member_engagement_tenant_score ON member_engagement_scores(tena
 #### Mobile Push Notifications
 
 **Database Schema:**
+
 ```sql
 -- Device tokens for push notifications
 CREATE TABLE device_tokens (
@@ -630,6 +651,7 @@ CREATE INDEX idx_push_notifications_tenant_user ON push_notifications(tenant_id,
 ```
 
 **Environment Variables:**
+
 ```env
 # Firebase Cloud Messaging
 FIREBASE_PROJECT_ID=your-project-id
@@ -638,6 +660,7 @@ FIREBASE_CLIENT_EMAIL=your-client-email
 ```
 
 **Service Implementation:**
+
 ```typescript
 // services/push-notification-service.ts
 import admin from 'firebase-admin';
@@ -709,11 +732,13 @@ export async function sendPushNotification(
 ```
 
 **API Routes:**
+
 1. **POST /api/communications/push/register** - Register device token
 2. **POST /api/communications/push/send** - Send push notification
 3. **POST /api/communications/push/unregister** - Remove device token
 
 **Deliverables:**
+
 - ✅ Firebase Cloud Messaging setup
 - ✅ Device token registration
 - ✅ Push notification sending
@@ -726,6 +751,7 @@ export async function sendPushNotification(
 ## 📊 Success Metrics
 
 ### Feature Completion
+
 - ✅ SMS integration (Twilio) → +10% feature parity
 - ✅ Survey/polling tools → +10% feature parity
 - ✅ Newsletter builder → +10% feature parity
@@ -735,15 +761,19 @@ export async function sendPushNotification(
 **Total Improvement:** 40% → 80% = **+40% feature parity**
 
 ### Competitive Position
+
 **Before Phase 5:**
+
 - Member Communications: 40% complete
 - Overall Feature Parity: 87%
 
 **After Phase 5:**
+
 - Member Communications: 80% complete
 - Overall Feature Parity: 91%
 
 ### Usage Metrics (Track After Launch)
+
 - Email open rate: Target 25-35%
 - SMS delivery rate: Target 95%+
 - Survey response rate: Target 20-30%
@@ -755,6 +785,7 @@ export async function sendPushNotification(
 ## 🚀 Launch Checklist
 
 ### Pre-Launch (Week 4)
+
 - [ ] All database migrations tested
 - [ ] Twilio account configured and verified
 - [ ] Firebase project set up for FCM
@@ -766,6 +797,7 @@ export async function sendPushNotification(
 - [ ] Admin training materials prepared
 
 ### Launch (Week 5)
+
 - [ ] Deploy to staging
 - [ ] Full integration testing
 - [ ] Load testing (1000+ recipients)
@@ -776,6 +808,7 @@ export async function sendPushNotification(
 - [ ] Monitor error rates
 
 ### Post-Launch (Week 6)
+
 - [ ] User feedback collected
 - [ ] Performance metrics reviewed
 - [ ] Bug fixes prioritized
@@ -787,6 +820,7 @@ export async function sendPushNotification(
 ## 💰 Cost Estimate
 
 ### Development Time
+
 - SMS Integration: 40 hours
 - Survey System: 40 hours
 - Newsletter Builder: 40 hours
@@ -796,6 +830,7 @@ export async function sendPushNotification(
 **Total:** 180 hours (4.5 weeks at 40 hours/week)
 
 ### Third-Party Services
+
 - **Twilio:** $0.0075 per SMS (US/Canada)
   - 10,000 SMS/month = $75/month
 - **Resend:** Included in existing plan (50,000 emails/month)
@@ -808,6 +843,7 @@ export async function sendPushNotification(
 ## 🔄 Future Enhancements (Phase 6)
 
 ### Not Included in Phase 5 (Deferred)
+
 - ❌ Social media integration (Facebook, Twitter, Instagram)
 - ❌ Two-way SMS conversation UI
 - ❌ A/B testing for campaigns
@@ -817,6 +853,7 @@ export async function sendPushNotification(
 - ❌ WhatsApp/Telegram integration
 
 ### Rationale for Deferral
+
 - Social media integration requires complex OAuth flows and ongoing API maintenance
 - Two-way SMS conversation UI is low priority (webhook handling implemented)
 - A/B testing needs statistical significance engine (complex)
@@ -829,18 +866,21 @@ export async function sendPushNotification(
 ## 📝 Notes
 
 ### Architecture Decisions
+
 1. **SMS Provider:** Twilio chosen over Nexmo/MessageBird for better documentation and reliability
 2. **Email Provider:** Continue using Resend (already integrated, excellent API)
 3. **Push Provider:** Firebase Cloud Messaging (industry standard, free tier)
 4. **Survey Storage:** PostgreSQL (not separate SaaS tool) for data ownership and RLS security
 
 ### Security Considerations
+
 1. **SMS Injection Prevention:** Validate phone numbers, sanitize message content
 2. **Email Spam Prevention:** Rate limiting, unsubscribe links, SPF/DKIM/DMARC
 3. **Push Notification Security:** Device token validation, tenant isolation
 4. **Survey Privacy:** Anonymous responses option, RLS policies on all tables
 
 ### Performance Optimization
+
 1. **Bulk Sending:** Batch API calls (100 emails/SMS per batch)
 2. **Rate Limiting:** Respect provider limits (Twilio: 1/sec, Resend: 100/min)
 3. **Analytics:** Materialized views for aggregations (refresh daily)
@@ -851,6 +891,7 @@ export async function sendPushNotification(
 ## ✅ Definition of Done
 
 Phase 5 is complete when:
+
 1. ✅ SMS can be sent to individual members and bulk lists
 2. ✅ Surveys can be created, shared, and responses collected
 3. ✅ Newsletters can be built, scheduled, and sent with tracking
@@ -863,4 +904,3 @@ Phase 5 is complete when:
 10. ✅ Competitive analysis document updated (40% → 80%)
 
 **Target Completion:** January 10, 2026 (4 weeks from Dec 6, 2025)
-

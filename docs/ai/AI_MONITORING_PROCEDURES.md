@@ -26,30 +26,35 @@ This document establishes comprehensive procedures for monitoring AI model perfo
 ### Monitoring Layers
 
 **Layer 1: Real-Time Automated Monitoring**
+
 - Metrics calculated continuously (every 5 minutes)
 - Automated alerts for threshold violations
 - Dashboard visualization
 - 24/7 operational monitoring
 
 **Layer 2: Daily Reviews**
+
 - CTO or Data Science Lead reviews dashboards
 - Spot-check anomalies
 - Identify emerging trends
 - 15-minute daily review
 
 **Layer 3: Weekly Deep Dives**
+
 - Data Science team analyzes metrics
 - Investigate anomalies
 - Model performance trends
 - 1-hour weekly meeting
 
 **Layer 4: Monthly Reporting**
+
 - Comprehensive metrics report to AI Governance Committee
 - Comparisons to baselines and targets
 - Incident summary
 - Recommendation for actions
 
 **Layer 5: Quarterly Audits**
+
 - Full fairness audits (see [FAIRNESS_AUDIT_FRAMEWORK.md](FAIRNESS_AUDIT_FRAMEWORK.md))
 - Third-party validation (annual)
 - Deep-dive performance analysis
@@ -70,11 +75,13 @@ This document establishes comprehensive procedures for monitoring AI model perfo
 | **UC-06** | Steward Recommender | Suggest steward assignments | v1.2 | Nov 2025 | Medium |
 
 **Monitoring Priority:**
+
 - **High:** High-stakes decisions (predictions affecting case strategy, member outcomes)
 - **Medium:** Lower-stakes (research, informational features)
 - **Low:** Non-critical (UI suggestions, search optimization)
 
 **Future Models (2026+):**
+
 - UC-07: Churn Risk Predictor (Q1 2026)
 - UC-08: Workload Forecaster (Q1 2026)
 - UC-09: Grievance Drafter (Q2 2026)
@@ -102,20 +109,24 @@ $$\text{Accuracy} = \frac{\text{Correct Predictions}}{\text{Total Predictions}}$
 
 **Precision:** Of predictions we said "positive", how many were correct?
 $$\text{Precision} = \frac{\text{True Positives}}{\text{True Positives + False Positives}}$$
+
 - **Target:** ≥80%
 - **Alert:** <75%
 
 **Recall:** Of actual positives, how many did we catch?
 $$\text{Recall} = \frac{\text{True Positives}}{\text{True Positives + False Negatives}}$$
+
 - **Target:** ≥80%
 - **Alert:** <75%
 
 **F1-Score:** Harmonic mean of precision and recall
 $$\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision + Recall}}$$
+
 - **Target:** ≥0.80
 - **Alert:** <0.75
 
 **Example Dashboard Visualization:**
+
 ```
 Claim Outcome Predictor (UC-01) - Last 7 Days
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -136,6 +147,7 @@ Incorrect:   159
 $$\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|\text{Predicted}_i - \text{Actual}_i|$$
 
 **For Timeline Forecaster:**
+
 - **Baseline:** ±10 days MAE (test set)
 - **Target:** ±7 days MAE
 - **Alert:** >12 days MAE
@@ -147,10 +159,12 @@ $$\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|\text{Predicted}_i - \text{Actual}_i|$$
 $$\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(\text{Predicted}_i - \text{Actual}_i)^2}$$
 
 **R-Squared:** How much variance explained by model?
+
 - **Target:** ≥0.75 (75% of variance explained)
 - **Alert:** <0.70
 
 **Percentage Within Acceptable Range:**
+
 - **Definition:** % of predictions within ±7 days (or ±10% for dollar amounts)
 - **Target:** ≥80%
 - **Alert:** <75%
@@ -161,16 +175,19 @@ $$\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(\text{Predicted}_i - \text{Actua
 $$\text{MRR} = \frac{1}{n}\sum_{i=1}^{n}\frac{1}{\text{rank of first relevant result}_i}$$
 
 **For Precedent Search:**
+
 - **Target:** MRR ≥0.85 (relevant result in top 2 on average)
 - **Alert:** MRR <0.75
 
 **Secondary Metrics:**
 
 **Precision@K:** Of top K results, how many are relevant?
+
 - **Target:** Precision@5 ≥0.80 (4 of top 5 results relevant)
 - **Alert:** <0.70
 
 **Normalized Discounted Cumulative Gain (NDCG):** Relevance-weighted ranking quality
+
 - **Target:** NDCG@10 ≥0.85
 - **Alert:** <0.75
 
@@ -179,11 +196,13 @@ $$\text{MRR} = \frac{1}{n}\sum_{i=1}^{n}\frac{1}{\text{rank of first relevant re
 **Purpose:** Ensure predicted confidence scores match actual probabilities.
 
 **Metric: Expected Calibration Error (ECE)**
+
 - Divide predictions into bins by confidence (0-10%, 10-20%, ..., 90-100%)
 - For each bin, compare average predicted confidence to actual accuracy
 - ECE = weighted average of differences
 
 **Example:**
+
 - Bin 80-90%: Average predicted confidence = 85%, actual accuracy = 82%
 - Difference: |85% - 82%| = 3%
 - Repeat for all bins, average weighted by bin size
@@ -193,6 +212,7 @@ $$\text{MRR} = \frac{1}{n}\sum_{i=1}^{n}\frac{1}{\text{rank of first relevant re
 **Frequency:** Weekly
 
 **Visualization: Calibration Curve**
+
 ```
 Claim Outcome Predictor - Calibration Curve
 100% ┤                                      •
@@ -222,6 +242,7 @@ Actual: ••• (close to diagonal = well-calibrated)
 $$\text{Override Rate} = \frac{\text{# of AI Recommendations Overridden}}{\text{Total AI Recommendations}}$$
 
 **Interpretation:**
+
 - Low override (5-10%): Users generally trust AI ✅
 - Moderate override (10-20%): Some skepticism, investigate patterns ⚠️
 - High override (>20%): Users don't trust AI, significant issue ❌
@@ -235,11 +256,13 @@ $$\text{Acceptance Rate} = \frac{\text{# of Recommendations Accepted}}{\text{Tot
 **Alert:** <60%
 
 **User Feedback Scores:**
+
 - Thumbs up/down on predictions
 - **Target:** ≥70% thumbs up
 - **Alert:** <60% thumbs up
 
 **NPS (Net Promoter Score):** "How likely are you to recommend AI features to other stewards?"
+
 - Scale: 0-10 (Detractors: 0-6, Passives: 7-8, Promoters: 9-10)
 - **NPS = % Promoters - % Detractors**
 - **Target:** NPS ≥50
@@ -259,6 +282,7 @@ $$\text{Acceptance Rate} = \frac{\text{# of Recommendations Accepted}}{\text{Tot
 $$\text{Disparate Impact Ratio} = \frac{\text{Positive Prediction Rate (Protected Group)}}{\text{Positive Prediction Rate (Reference Group)}}$$
 
 **Calculated For:**
+
 - Gender: Female vs. Male
 - Race: Each minority group vs. White
 - Age: Each age group vs. 35-44 (middle age)
@@ -271,6 +295,7 @@ $$\text{Disparate Impact Ratio} = \frac{\text{Positive Prediction Rate (Protecte
 **Frequency:** Daily calculation, alert if < 0.75
 
 **Dashboard Example:**
+
 ```
 Fairness Monitoring - Claim Outcome Predictor
 Last 7 Days (N=1,247 predictions)
@@ -290,6 +315,7 @@ Overall Status: ⚠️ 2 Warnings (Monitor Closely)
 ```
 
 **Alert Actions:**
+
 - Ratio <0.75: Automated email/Slack to Data Science Lead + CTO
 - Ratio <0.70: PagerDuty alert (off-hours)
 - Ratio <0.60: Emergency AI Governance Committee meeting
@@ -297,14 +323,17 @@ Overall Status: ⚠️ 2 Warnings (Monitor Closely)
 ### Weekly Fairness Analysis
 
 **Trend Analysis:**
+
 - Plot disparate impact ratios over time (last 30 days)
 - Identify: Is bias increasing, stable, or decreasing?
 
 **Subgroup Analysis:**
+
 - Intersectional fairness (Gender × Race, Age × Disability)
 - Identify compounded bias
 
 **Feature Correlation:**
+
 - Monitor correlation between input features and protected attributes
 - Alert if correlation increases (proxy features emerging)
 
@@ -315,10 +344,12 @@ Overall Status: ⚠️ 2 Warnings (Monitor Closely)
 ### What is Model Drift?
 
 **Model Drift:** Model performance degrades over time because:
+
 1. **Data Drift:** Input data distribution changes (world changes)
 2. **Concept Drift:** Relationship between inputs and outputs changes (patterns evolve)
 
 **Example:**
+
 - Training data: 60% grievances win (2020-2023)
 - Production data: 40% grievances win (2024+) → employers getting tougher
 - Model predicts based on old 60% win rate → overestimates current win probability
@@ -328,6 +359,7 @@ Overall Status: ⚠️ 2 Warnings (Monitor Closely)
 **Metric: Population Stability Index (PSI)**
 
 **How it Works:**
+
 1. Compare current data distribution to training data distribution
 2. For each feature, calculate how much distribution shifted
 3. PSI score indicates magnitude of shift
@@ -335,6 +367,7 @@ Overall Status: ⚠️ 2 Warnings (Monitor Closely)
 $$\text{PSI} = \sum_{i=1}^{n}(\text{Actual}_i - \text{Expected}_i) \times \ln\left(\frac{\text{Actual}_i}{\text{Expected}_i}\right)$$
 
 **Interpretation:**
+
 - PSI < 0.10: No significant shift ✅
 - PSI 0.10-0.25: Moderate shift, monitor ⚠️
 - PSI > 0.25: Significant shift, retrain model ❌
@@ -343,6 +376,7 @@ $$\text{PSI} = \sum_{i=1}^{n}(\text{Actual}_i - \text{Expected}_i) \times \ln\le
 **Frequency:** Weekly calculation
 
 **Example:**
+
 ```
 Data Drift Analysis - Claim Outcome Predictor
 Feature: Average Claim Duration
@@ -361,11 +395,13 @@ Recommendation: Retrain model with recent data
 **Other Drift Metrics:**
 
 **Kolmogorov-Smirnov (KS) Test:**
+
 - Statistical test: Are two distributions different?
 - p-value < 0.05 → distributions differ significantly
 - Alert if p < 0.01 (strong evidence of drift)
 
 **Chi-Square Test (for categorical features):**
+
 - Test if category frequencies changed
 - p-value < 0.05 → significant shift
 - Alert if p < 0.01
@@ -375,11 +411,13 @@ Recommendation: Retrain model with recent data
 **Metric: Accuracy Trend Analysis**
 
 **How it Works:**
+
 - Plot accuracy over time (daily)
 - Identify: Is accuracy declining?
 - Statistical test: Is decline significant?
 
 **Example:**
+
 ```
 Accuracy Trend - Claim Outcome Predictor
 Last 90 Days
@@ -403,6 +441,7 @@ Action: Schedule model retraining
 ```
 
 **Alert Triggers:**
+
 - Accuracy drops >5% from baseline
 - Statistically significant declining trend (p < 0.05)
 - Accuracy below target threshold 3 consecutive days
@@ -446,6 +485,7 @@ Action: Schedule model retraining
 ### API Performance
 
 **Response Time:**
+
 - **Metric:** 95th percentile response time (milliseconds)
 - **Target:** <2000 ms (2 seconds)
 - **Warning:** >3000 ms
@@ -453,17 +493,20 @@ Action: Schedule model retraining
 - **Frequency:** Real-time (every 5 minutes)
 
 **Throughput:**
+
 - **Metric:** Requests per minute
 - **Target:** Handle expected load (500 req/min peak)
 - **Alert:** Error rate >1% or response time degradation under load
 
 **Error Rate:**
+
 - **Metric:** % of API calls resulting in error (5xx, 4xx excluding 401/403)
 - **Target:** <0.5%
 - **Alert:** >1%
 - **Frequency:** Real-time
 
 **Dashboard:**
+
 ```
 AI API Health - Last Hour
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -479,35 +522,42 @@ Status: ✅ HEALTHY
 ### System Uptime
 
 **Metric: Availability (% uptime)**
+
 - **Target:** 99.5% monthly (≈3.6 hours downtime/month allowed)
 - **Alert:** <99.0% (>7 hours downtime)
 - **Frequency:** Continuous health checks (every 1 minute)
 
 **Health Check Endpoints:**
+
 - `/health` - Basic liveness check (server responding?)
 - `/health/db` - Database connectivity
 - `/health/ai` - AI models loaded and functional
 - `/health/integrations` - External dependencies (Azure OpenAI)
 
 **Incident Tracking:**
+
 - All downtime incidents logged (start time, end time, root cause)
 - Monthly uptime report to AI Governance Committee
 
 ### Resource Utilization
 
 **CPU Usage:**
+
 - **Target:** <70% average
 - **Alert:** >85% sustained (>5 min)
 
 **Memory Usage:**
+
 - **Target:** <80%
 - **Alert:** >90%
 
 **Disk Space:**
+
 - **Target:** <70% used
 - **Alert:** >85% used
 
 **Azure OpenAI API Quota:**
+
 - **Limit:** 40,000 tokens/minute (production), 10,000 tokens/min (staging)
 - **Alert:** >80% quota usage (approaching limit)
 - **Action:** Request quota increase or throttle non-critical requests
@@ -519,19 +569,23 @@ Status: ✅ HEALTHY
 ### Alert Channels
 
 **Slack:**
+
 - Channel: #ai-monitoring
 - All alerts posted (P4, P3, P2, P1)
 - Categorized by severity (emojis: 🟢 🟡 🟠 🔴)
 
 **Email:**
+
 - P3+: Data Science Lead, CTO
 - P1: + AI Governance Committee Chair
 
 **PagerDuty (Critical Alerts Only):**
+
 - P1 only (off-hours, weekends)
 - On-call: CTO (primary), Data Science Lead (backup)
 
 **Dashboard:**
+
 - Real-time dashboard accessible 24/7
 - URL: [monitoring.unioneyes.internal/ai-dashboard]
 - Access: AI team, CTO, AI Governance Committee
@@ -548,6 +602,7 @@ Status: ✅ HEALTHY
 | **Data Drift (PSI)** | 0.10-0.25 | >0.25 | N/A |
 
 **Escalation Timeline:**
+
 - P3: Review within 24 hours
 - P2: Investigate within 4 hours
 - P1: Immediate response (<1 hour), page on-call
@@ -590,29 +645,36 @@ Status: ✅ HEALTHY
 **Key Widgets:**
 
 **1. Overall System Status**
+
 - Traffic light: 🟢 Healthy | 🟡 Degraded | 🔴 Down
 - Current status for each AI model
 
 **2. API Performance**
+
 - Response time chart (last 24 hours)
 - Error rate gauge
 - Requests/min timeline
 
 **3. Model Accuracy**
+
 - Accuracy for each model (last 7 days)
 - Trend arrow (↑ improving, → stable, ↓ declining)
 
 **4. Fairness Snapshot**
+
 - Disparate impact ratios (latest)
 - Color-coded: Green (≥0.85), Yellow (0.75-0.84), Red (<0.75)
 
 **5. Active Alerts**
+
 - List of unresolved alerts (severity, time, description)
 
 **6. Recent Incidents**
+
 - Last 5 incidents (ID, type, status, time)
 
 **Mockup:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Union Eyes AI Monitoring Dashboard    🟢 ALL SYSTEMS GO    │
@@ -658,28 +720,34 @@ Status: ✅ HEALTHY
 **Key Sections:**
 
 **1. Accuracy Trends**
+
 - Line chart: Accuracy over last 30 days for each model
 - Comparison to baseline and target
 
 **2. Fairness Trends**
+
 - Disparate impact ratios over last 30 days
 - Identify: Improving, stable, or worsening?
 
 **3. Drift Analysis**
+
 - PSI scores for key features
 - Recommendation: Retrain? Monitor? No action?
 
 **4. User Behavior**
+
 - Override rates
 - Thumbs up/down feedback
 - Most common user complaints
 
 **5. System Performance**
+
 - Uptime %
 - Average response time
 - Peak load handled
 
 **6. Incidents Summary**
+
 - Number of incidents (by severity)
 - Resolution time
 - Recurring issues?
@@ -695,35 +763,42 @@ Status: ✅ HEALTHY
 **Key Sections:**
 
 **1. Executive Summary**
+
 - Overall AI system health: 🟢 Healthy | 🟡 Needs Attention | 🔴 Critical Issues
 - Key achievements (new features, improvements)
 - Key concerns (incidents, risks)
 
 **2. Model Performance**
+
 - Accuracy for each model (current vs. target)
 - Models meeting SLAs? (Yes/No)
 
 **3. Fairness & Bias**
+
 - Fairness audit summary (if conducted this month)
 - Any bias incidents? (details)
 - Trend: Improving or worsening?
 
 **4. Incidents**
+
 - Total incidents (P1, P2, P3, P4)
 - Average resolution time
 - Lessons learned
 
 **5. User Adoption**
+
 - Active users (stewards using AI features)
 - Adoption rate (% of stewards)
 - User satisfaction (NPS)
 
 **6. Compliance**
+
 - Privacy incidents? (breaches, complaints)
 - Regulatory inquiries?
 - Policy adherence (audits passed?)
 
 **7. Recommendations**
+
 - Actions needed (e.g., model retraining, policy update)
 - Approvals required (new use cases, budget)
 
@@ -738,12 +813,14 @@ Status: ✅ HEALTHY
 **When:** 9:00 AM daily
 
 **Review:**
+
 - Check real-time dashboard
 - Any active alerts?
 - Any new incidents overnight?
 - System uptime status
 
 **Actions:**
+
 - Acknowledge/snooze non-critical alerts
 - Escalate issues if needed
 - Brief team if necessary
@@ -755,6 +832,7 @@ Status: ✅ HEALTHY
 **When:** Monday 10:00 AM
 
 **Agenda:**
+
 1. Review weekly dashboard (15 min)
 2. Accuracy trends analysis (10 min)
 3. Fairness review (10 min)
@@ -771,6 +849,7 @@ Status: ✅ HEALTHY
 **When:** First Wednesday of each month, 2:00 PM
 
 **Agenda:**
+
 1. CTO presents monthly dashboard (20 min)
 2. Fairness audit review (if conducted) (15 min)
 3. Incident review (10 min)
@@ -788,6 +867,7 @@ Status: ✅ HEALTHY
 **When:** End of each quarter (March, June, Sept, Dec)
 
 **Agenda:**
+
 1. Comprehensive fairness audit presentation (45 min)
 2. Model performance deep dive (45 min)
 3. User adoption analysis (30 min)
@@ -804,27 +884,32 @@ Status: ✅ HEALTHY
 ### Monitoring Stack
 
 **Application Performance Monitoring (APM):**
+
 - **Tool:** Azure Application Insights or equivalent
 - **Metrics:** Response time, error rate, throughput, dependencies
 - **Alerts:** Integrated with Slack and PagerDuty
 
 **Custom AI Metrics:**
+
 - **Tool:** Python scripts + PostgreSQL/ClickHouse (time-series DB)
 - **Metrics:** Accuracy, fairness, drift, calibration
 - **Dashboard:** Grafana or Metabase
 
 **Log Aggregation:**
+
 - **Tool:** Azure Log Analytics or ELK Stack (Elasticsearch, Logstash, Kibana)
 - **Logs:** AI prediction logs, application logs, audit logs
 - **Retention:** 90 days hot, 1 year warm, 7 years cold (archived)
 
 **Alerting:**
+
 - **Tool:** PagerDuty (critical alerts), Slack (all alerts), Email
 - **Configuration:** Alert rules defined in monitoring tool, escalation policies
 
 ### Data Pipeline
 
 **Prediction Logging:**
+
 - Every AI prediction logged to database:
   - Timestamp
   - User ID (pseudonymized)
@@ -835,11 +920,13 @@ Status: ✅ HEALTHY
   - User action (accepted, overridden, ignored)
 
 **Daily Metrics Calculation:**
+
 - Scheduled job (runs 2:00 AM daily)
 - Calculates: Accuracy, precision, recall, F1, fairness ratios, drift metrics
 - Stores results in metrics database
 
 **Dashboard Data Refresh:**
+
 - Real-time dashboard: Every 5 minutes
 - Weekly dashboard: Every Monday 7:00 AM
 - Monthly dashboard: First of month 8:00 AM
@@ -853,6 +940,7 @@ Status: ✅ HEALTHY
 **Purpose:** Optimize monitoring effectiveness.
 
 **Questions:**
+
 1. Did we catch all issues before they caused harm? (effectiveness)
 2. Were alerts actionable? (alert quality)
 3. Did we get too many false positives? (alert fatigue)
@@ -860,6 +948,7 @@ Status: ✅ HEALTHY
 5. Do we need new metrics? (coverage gaps)
 
 **Actions:**
+
 - Adjust alert thresholds
 - Add/remove metrics
 - Improve dashboards
@@ -867,21 +956,25 @@ Status: ✅ HEALTHY
 ### Quarterly Monitoring Roadmap
 
 **Q1 2026:**
+
 - Implement real-time fairness monitoring (currently daily)
 - Automate drift detection alerts
 - Expand dashboard to include UC-07, UC-08 (new models)
 
 **Q2 2026:**
+
 - Add model explainability metrics (SHAP value consistency over time)
 - Implement A/B testing dashboard (compare model versions)
 - Enhanced user feedback analytics (NLP on comments)
 
 **Q3 2026:**
+
 - Predictive monitoring (forecast when retraining needed)
 - Anomaly detection (ML for monitoring ML - meta!)
 - Multi-tenancy monitoring (per-union metrics)
 
 **Q4 2026:**
+
 - Third-party monitoring validation (audit our monitoring)
 - Industry benchmarking (compare to peers)
 - Public transparency dashboard (member-facing metrics)
@@ -903,6 +996,7 @@ Status: ✅ HEALTHY
 Continuous monitoring is essential for responsible AI. By tracking performance, fairness, and system health in real-time, we can detect issues early, maintain high quality, and build trust with members.
 
 **Key Principles:**
+
 - **Proactive:** Catch issues before harm (real-time alerts)
 - **Comprehensive:** Monitor accuracy, fairness, drift, and system health
 - **Actionable:** Alerts lead to investigation and remediation
@@ -918,6 +1012,7 @@ Contact: [ai-monitoring@unioneyes.org](mailto:ai-monitoring@unioneyes.org)
 ---
 
 **Document Control:**
+
 - **Version:** 1.0 (Draft)
 - **Status:** Pending AI Governance Committee Approval (Q1 2026)
 - **Next Review:** May 2026 (Quarterly)

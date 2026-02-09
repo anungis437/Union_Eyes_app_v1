@@ -18,6 +18,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 ### Scope
 
 **Applies to all AI-related incidents:**
+
 - Prediction errors causing member harm
 - Algorithmic bias or discrimination
 - AI hallucinations (false information)
@@ -45,6 +46,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** AI makes demonstrably incorrect prediction causing harm or bad decision.
 
 **Examples:**
+
 - Claim outcome prediction: AI predicts 85% win probability, grievance loses badly (actual merits indicated 20% win chance)
 - Timeline forecast: AI predicts 30-day resolution, takes 120 days (no unusual circumstances)
 - Settlement recommendation: AI suggests $5K, case worth $50K (member accepts lowball)
@@ -56,6 +58,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** AI systematically discriminates based on protected characteristics (race, gender, age, disability, etc.).
 
 **Examples:**
+
 - Churn prediction: AI overpredicts churn for women (disparate impact ratio 0.65)
 - Steward assignment: AI consistently assigns minority members to less-experienced stewards
 - Claim outcome: AI predicts lower win rates for older workers (age bias)
@@ -67,6 +70,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** AI generates false information presented as fact (fake case law, made-up statistics, non-existent precedents).
 
 **Examples:**
+
 - Legal precedent search: AI cites "Smith v. Acme Corp (2018)" which doesn't exist
 - Contract analysis: AI claims "California law requires 30-day notice" (actually 7 days)
 - Grievance drafting: AI invents contractual language not in actual CBA
@@ -78,6 +82,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** Unauthorized access to member data via AI system or AI inadvertently leaks private information.
 
 **Examples:**
+
 - Prompt injection: User crafts query to extract PII from training data
 - Access control failure: Steward accesses predictions for members outside their local
 - Data leakage: AI response includes member SSN or medical information
@@ -89,6 +94,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** AI system hacked, compromised, or subject to adversarial attack.
 
 **Examples:**
+
 - Model poisoning: Attacker manipulates training data to degrade AI
 - Adversarial attack: Crafted inputs cause AI to make specific wrong predictions
 - API breach: Unauthorized access to AI prediction API
@@ -101,6 +107,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** AI used in prohibited way (surveillance, discipline automation, union-busting, etc.).
 
 **Examples:**
+
 - Surveillance: AI used to monitor organizing activities or steward behavior
 - Discipline automation: AI recommends disciplinary action for member without human review
 - Coercion: AI used to pressure members into accepting unfavorable outcomes
@@ -112,6 +119,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Definition:** AI system down, slow, or degraded (not producing results).
 
 **Examples:**
+
 - Azure OpenAI outage: External provider unavailable (>1 hour)
 - Database failure: Cannot retrieve data for predictions
 - Performance degradation: Response times >10 seconds (normally <2 seconds)
@@ -148,6 +156,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Who:** CTO (default), Data Science Lead (backup)
 
 **Responsibilities:**
+
 - Overall incident coordination
 - Severity assessment
 - Stakeholder communication (committee, Board, members)
@@ -161,6 +170,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Who:** Data Science Lead (default), Senior ML Engineer (backup)
 
 **Responsibilities:**
+
 - Technical investigation (root cause analysis)
 - Remediation implementation (model retraining, code fixes)
 - Validation testing (verify fix works)
@@ -171,6 +181,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Who:** Union Communications Director or designated staff
 
 **Responsibilities:**
+
 - Member communication (if affected)
 - Internal communication (staff, stewards)
 - External communication (media, regulators if required)
@@ -181,6 +192,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Who:** Union Legal Counsel
 
 **Responsibilities:**
+
 - Regulatory obligations (breach notification, GDPR/PIPEDA)
 - Liability assessment
 - Public statement review
@@ -191,6 +203,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Who:** Senior Steward or Union Officer
 
 **Responsibilities:**
+
 - Member perspective (how are members affected?)
 - Remediation fairness assessment
 - Member communication review (clarity, empathy)
@@ -219,6 +232,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 #### Detection Channels
 
 **Automated Alerts:**
+
 - Model accuracy drops >5% from baseline
 - Disparate impact ratio <0.75 (bias detection)
 - Error rate >2% (quality threshold)
@@ -226,12 +240,14 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 - System downtime (health checks fail)
 
 **User Reports:**
+
 - "Report Incorrect Information" button in UI
 - Support ticket submission
 - Email to [ai-incidents@unioneyes.org](mailto:ai-incidents@unioneyes.org)
 - Escalation from steward or supervisor
 
 **Audit Findings:**
+
 - Fairness audit identifies bias
 - Security audit reveals vulnerability
 - Compliance audit finds policy violation
@@ -268,6 +284,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
    - **Goal:** Stop harm immediately, even if feature unavailable
 
 **Triage Meeting (P1/P2 only):**
+
 - Convene: Incident Commander, Technical Lead, Legal Advisor
 - Duration: 15-30 minutes
 - Outcome: Confirmed severity, containment plan, investigation plan, communication plan
@@ -283,34 +300,40 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Investigation Steps:**
 
 **Step 1: Reproduce Incident (if possible)**
+
 - [ ] Collect example cases where AI failed
 - [ ] Re-run predictions to see if error persists
 - [ ] Document: Input data, AI output, expected output
 
 **Step 2: Examine System Logs**
+
 - [ ] AI prediction logs (timestamps, user, input, output, confidence)
 - [ ] Application logs (errors, warnings, stack traces)
 - [ ] Database logs (queries, data accessed)
 - [ ] Security logs (authentication, authorization, anomalies)
 
 **Step 3: Data Analysis**
+
 - [ ] Training data audit (is bias or error in training data?)
 - [ ] Model drift analysis (has data distribution changed?)
 - [ ] Feature correlation (proxy attributes for protected classes?)
 - [ ] Statistical tests (is error systematic or random?)
 
 **Step 4: Model Inspection**
+
 - [ ] Model version (which version was deployed?)
 - [ ] Model performance metrics (accuracy on test set vs. production)
 - [ ] Feature importance (which features drive predictions?)
 - [ ] Decision boundaries (visualize how model makes decisions)
 
 **Step 5: Code Review**
+
 - [ ] Recent code changes (bug introduced in recent deployment?)
 - [ ] Integration points (error in API call, data pipeline?)
 - [ ] Configuration (incorrect thresholds, API keys, endpoints?)
 
 **Step 6: Stakeholder Interviews**
+
 - [ ] User who reported incident (what did they observe?)
 - [ ] Affected members (what harm did they experience?)
 - [ ] Stewards (have they noticed similar issues?)
@@ -348,6 +371,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Fix Types:**
 
 **1. Hotfix (P1/P2, <24 hours)**
+
 - **When:** Critical issue, must fix immediately
 - **How:** Minimal code change to stop harm (may not be perfect long-term solution)
 - **Example:** Add validation to reject prompt injection patterns
@@ -355,6 +379,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 - **Approval:** Incident Commander (no committee approval due to urgency)
 
 **2. Code Patch (P3, <7 days)**
+
 - **When:** Bug in application code (not model itself)
 - **How:** Fix bug, test thoroughly, deploy via standard pipeline
 - **Example:** Fix integration error between AI service and UI
@@ -362,6 +387,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 - **Approval:** CTO approval
 
 **3. Model Retraining (P2/P3, 7-14 days)**
+
 - **When:** Issue in model itself (bias, drift, data quality)
 - **How:** Apply bias mitigation, collect better data, retrain model, validate
 - **Example:** Rebalance training data to fix gender bias
@@ -369,6 +395,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 - **Approval:** AI Governance Committee (for bias fixes)
 
 **4. Feature Redesign (P3/P4, 14-30 days)**
+
 - **When:** Fundamental flaw in AI feature design
 - **How:** Redesign approach, develop new model, thorough testing
 - **Example:** Replace single model with ensemble to improve accuracy
@@ -389,6 +416,7 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 - [ ] **Monitoring:** Enhanced monitoring first 48 hours post-deployment
 
 **Rollback Capability:**
+
 - Always have ability to rollback if fix causes new issues
 - Test rollback procedure before deployment
 - Monitor key metrics first 2 hours after deployment (can quickly rollback if problems)
@@ -398,12 +426,14 @@ This playbook provides step-by-step procedures for responding to AI-related inci
 **Notification Criteria:**
 
 **Must Notify if:**
+
 - Privacy breach (member data accessed/leaked)
 - Prediction error caused material harm (lost grievance, bad settlement)
 - Bias incident affected member's outcomes
 - Regulatory requirement (GDPR, PIPEDA breach notification)
 
 **May Notify if:**
+
 - Error detected and fixed before member affected
 - System outage (explain service interruption)
 - Transparency commitment (proactive communication)
@@ -458,6 +488,7 @@ In solidarity,
 ```
 
 **Notification Approval:**
+
 - Communications Lead drafts
 - Legal Advisor reviews (compliance, liability)
 - Incident Commander approves
@@ -472,6 +503,7 @@ In solidarity,
 **Timing:** Within 7 days of incident closure (fix deployed and validated)
 
 **Participants:**
+
 - Incident Commander (facilitator)
 - Technical Lead
 - Incident Response Team members
@@ -483,30 +515,36 @@ In solidarity,
 **PIR Agenda:**
 
 **1. Timeline Review (15 min)**
+
 - Walk through incident from detection to resolution
 - Note: When was it detected? Contained? Fixed? Validated?
 
 **2. What Went Well (15 min)**
+
 - What worked in our response?
 - Example: "Automated alert caught bias within 2 hours" or "Rollback executed smoothly"
 
 **3. What Went Wrong (30 min)**
+
 - What didn't work?
 - What took longer than expected?
 - What did we miss?
 - Be honest and blameless (focus on systems, not individuals)
 
 **4. Root Cause (15 min)**
+
 - Technical root cause (why did incident occur?)
 - Process root cause (why didn't we prevent it?)
 - Example: "Bias in training data" (technical) + "No pre-deployment fairness audit" (process)
 
 **5. Action Items (20 min)**
+
 - What will we change to prevent recurrence?
 - Assign owners and deadlines
 - Example: "Implement mandatory pre-deployment fairness audit (Owner: Data Science Lead, Due: Jan 31)"
 
 **6. Lessons Learned (10 min)**
+
 - What did we learn?
 - How will we share learnings with broader team?
 
@@ -589,18 +627,22 @@ NEXT STEPS:
 #### Process Improvements
 
 **Policy Updates:**
+
 - Does incident reveal gap in [AI_ETHICS_POLICY.md](AI_ETHICS_POLICY.md), [RESPONSIBLE_AI_POLICY.md](RESPONSIBLE_AI_POLICY.md), or other policies?
 - Propose policy amendments to AI Governance Committee
 
 **Tool Enhancements:**
+
 - Do we need better monitoring, alerting, or dashboards?
 - Request features from engineering team
 
 **Training Needs:**
+
 - Does team need additional training (fairness, security, etc.)?
 - Schedule workshops or external training
 
 **Documentation:**
+
 - Update [AI_INCIDENT_RESPONSE_PLAYBOOK.md] with new procedures
 - Add to incident case library (anonymized examples for training)
 
@@ -613,16 +655,19 @@ NEXT STEPS:
 **Incident Transparency Requirements:**
 
 **P1/P2 Incidents:**
+
 - [ ] Incident summary published within 30 days
 - [ ] Includes: What happened, why, how we fixed it, what we learned
 - [ ] Anonymized (no member names or case details)
 - [ ] Published: Union Eyes website [unioneyes.org/ai-transparency](https://unioneyes.org/ai-transparency)
 
 **P3/P4 Incidents:**
+
 - [ ] Aggregated in quarterly report
 - [ ] No individual incident summaries (unless significant learning)
 
 **Annual AI Transparency Report:**
+
 - [ ] All incidents summarized (anonymized)
 - [ ] Lessons learned
 - [ ] Process improvements implemented
@@ -673,10 +718,12 @@ For questions or to report AI concerns: [ai-transparency@unioneyes.org]
 - [ ] Lessons learned shared with team
 
 **Closure Approval:**
+
 - Incident Commander declares incident closed
 - AI Governance Committee acknowledges closure (P1/P2 only)
 
 **Incident Archive:**
+
 - All incident documentation stored in secure repository
 - Accessible to: AI Governance Committee, CTO, Legal, Auditors
 - Retention: 7 years (legal requirement for labor disputes)
@@ -688,21 +735,25 @@ For questions or to report AI concerns: [ai-transparency@unioneyes.org]
 ### Prediction Error Incident
 
 **Detection:**
+
 - User reports incorrect prediction ("Report Incorrect Information" button)
 - Accuracy monitoring alert (accuracy drops >5%)
 - Member complaint (bad outcome attributed to AI prediction)
 
 **Immediate Actions:**
+
 1. Validate error: Re-run prediction, compare to ground truth
 2. Check scope: Is this isolated or systematic?
 3. Containment: If systematic, disable feature or add human review gate
 
 **Investigation:**
+
 - Root cause: Data quality? Model drift? Code bug?
 - Historical analysis: Have similar errors occurred?
 - Impact: How many members affected?
 
 **Remediation:**
+
 - Fix and redeploy (hours to days depending on severity)
 - Notify affected members if harm occurred
 - Offer remedy (e.g., refile grievance, reassess case)
@@ -710,27 +761,32 @@ For questions or to report AI concerns: [ai-transparency@unioneyes.org]
 ### Bias Incident
 
 **Detection:**
+
 - Fairness audit identifies disparate impact ratio <0.80
 - User reports bias perception ("This seems unfair")
 - Statistical anomaly (one group has much worse outcomes)
 
 **Immediate Actions:**
+
 1. Confirm bias: Run statistical tests (chi-square, t-test)
 2. Assess severity: Critical (<0.60), High (0.60-0.79), Medium (0.80-0.84)
 3. Containment: P1: Disable feature, P2: Human review gate
 
 **Investigation:**
+
 - Root cause: Training data imbalance? Proxy features? Historical bias?
 - Intersectional analysis: Multiple protected attributes?
 - Legal consultation: Potential discrimination liability?
 
 **Remediation:**
+
 - Apply bias mitigation (data rebalancing, fairness constraints, etc.)
 - Retrain model and validate (re-run fairness audit)
 - Deploy and monitor closely
 - Transparent communication (why it happened, how we fixed it)
 
 **Special Considerations:**
+
 - Legal sensitivity (potential discrimination lawsuit)
 - Member trust impact (transparency critical)
 - Regulatory notification (if EEOC, OFCCP, or Canadian HRC inquiry)
@@ -738,27 +794,32 @@ For questions or to report AI concerns: [ai-transparency@unioneyes.org]
 ### Hallucination Incident
 
 **Detection:**
+
 - User reports false information ("This case law doesn't exist")
 - Fact-checking pipeline flags inconsistency
 - Attorney or legal expert catches error
 
 **Immediate Actions:**
+
 1. Validate: Is information actually false?
 2. Containment: Retract information, correct any filed documents
 3. Notify users: "Do not rely on this information"
 
 **Investigation:**
+
 - Root cause: LLM hallucination (common in generative AI)
 - Scope: What other hallucinations may have occurred?
 - Impact: Were decisions made based on false info?
 
 **Remediation:**
+
 - Implement hallucination detection (citations required, fact-checking)
 - Add confidence thresholds (low confidence = flag for human review)
 - User training (how to verify AI-provided info)
 - Consider human-in-the-loop for all legal research (AI suggests, human verifies)
 
 **Special Considerations:**
+
 - Legal malpractice risk (if false legal advice provided)
 - Embarrassment risk (if filed with arbitrator or court)
 - Trust impact (members may lose confidence in all AI features)
@@ -766,27 +827,32 @@ For questions or to report AI concerns: [ai-transparency@unioneyes.org]
 ### Privacy Breach Incident
 
 **Detection:**
+
 - Security alert (unauthorized access attempt)
 - User reports PII in AI response (shouldn't be there)
 - Audit discovers access control violation
 
 **Immediate Actions:**
+
 1. Contain breach: Disable feature, revoke access, isolate compromised system
 2. Assess scope: What data was accessed? By whom? When?
 3. Legal notification: Inform Legal Counsel immediately (regulatory obligations)
 
 **Investigation:**
+
 - Root cause: Security vulnerability? Prompt injection? Access control failure?
 - Affected members: Who's data was compromised?
 - Regulatory requirements: GDPR (72 hours), PIPEDA (ASAP), state laws
 
 **Remediation:**
+
 - Fix security vulnerability (patch, access controls, input validation)
 - Member notification (required by law)
 - Credit monitoring if SSNs or financial data compromised
 - Regulatory notification (if required)
 
 **Special Considerations:**
+
 - **URGENT:** Regulatory deadlines (GDPR: 72 hours to notify)
 - Legal liability (fines, lawsuits)
 - Reputation damage (media attention likely)
@@ -826,28 +892,33 @@ Data Privacy Officer: [Name, Email, Phone]
 ### Security Incident
 
 **Detection:**
+
 - Intrusion detection system alert
 - Anomalous API traffic (DDoS, scraping)
 - Failed login attempts (brute force attack)
 - Vulnerability scan finding
 
 **Immediate Actions:**
+
 1. Contain attack: Block IP, disable service, isolate system
 2. Assess: Active attack or past breach?
 3. Notify: CISO, CTO, Legal (if data compromised)
 
 **Investigation:**
+
 - Attacker: Who? Why? How did they gain access?
 - Scope: What systems compromised? Data accessed?
 - Vulnerability: What weakness did they exploit?
 
 **Remediation:**
+
 - Patch vulnerability
 - Implement security controls (MFA, rate limiting, WAF)
 - Penetration testing (ensure no other vulnerabilities)
 - Monitor for recurrence
 
 **Special Considerations:**
+
 - May overlap with privacy breach (if data accessed)
 - Law enforcement (FBI, local police if criminal activity)
 - Insurance (cyber insurance claim)
@@ -855,26 +926,31 @@ Data Privacy Officer: [Name, Email, Phone]
 ### Ethical Violation Incident
 
 **Detection:**
+
 - Whistleblower report
 - Audit discovers prohibited use
 - Member complaint
 
 **Immediate Actions:**
+
 1. Stop prohibited activity immediately
 2. Preserve evidence (logs, communications)
 3. Notify AI Governance Committee and Legal
 
 **Investigation:**
+
 - Who authorized? (intentional or mistake?)
 - Scope: How long? How many members affected?
 - Harm: What damage caused?
 
 **Remediation:**
+
 - Disciplinary action (if intentional violation)
 - Policy reinforcement (training, audits)
 - Member communication (apologize, explain corrective actions)
 
 **Special Considerations:**
+
 - Whistleblower protection (no retaliation)
 - Union values (ethical violations undermine trust)
 - Potential litigation (if member harmed)
@@ -882,25 +958,30 @@ Data Privacy Officer: [Name, Email, Phone]
 ### System Failure Incident
 
 **Detection:**
+
 - Health check fails (AI service down)
 - User reports ("AI not working")
 - Performance monitoring alert (response time >10 seconds)
 
 **Immediate Actions:**
+
 1. Triage: Severity? (Complete outage vs. degraded performance)
 2. Containment: Failover to backup? Scale up resources?
 3. Communication: Notify users (expected restoration time)
 
 **Investigation:**
+
 - Root cause: Azure outage? Database issue? Code bug? Traffic spike?
 - Scope: Which features affected? All users or subset?
 
 **Remediation:**
+
 - Fix and restore service
 - Post-mortem (why did it fail? How to prevent?)
 - Infrastructure improvements (redundancy, scaling)
 
 **Special Considerations:**
+
 - Lower urgency than other incident types (inconvenience vs. harm)
 - Communicate transparently (users appreciate honesty)
 - Opportunity to test disaster recovery procedures
@@ -1003,32 +1084,39 @@ Contact: [Communications Director Name, Email, Phone]
 ### Incident Management Tools
 
 **Incident Tracking:**
+
 - Jira or equivalent (incident tickets, workflow, assignments)
 - Slack channel: #ai-incidents (real-time coordination)
 
 **On-Call:**
+
 - PagerDuty or equivalent (IC and Technical Lead paging)
 - 24/7 coverage for P1/P2 incidents
 
 **Communication:**
+
 - Email templates (see section 6)
 - Member notification tool (bulk email + tracking)
 
 **Monitoring:**
+
 - AI monitoring dashboard (accuracy, fairness, performance)
 - Security monitoring (SIEM, intrusion detection)
 
 ### External Resources
 
 **Regulatory Guidance:**
+
 - GDPR Breach Notification: [https://gdpr-info.eu/art-33-gdpr/](https://gdpr-info.eu/art-33-gdpr/)
 - PIPEDA Breach Reporting: [https://www.priv.gc.ca/en/privacy-topics/business-privacy/safeguards-and-breaches/privacy-breaches/respond-to-a-privacy-breach-at-your-business/gd_pb_201810/](https://www.priv.gc.ca/en/privacy-topics/business-privacy/safeguards-and-breaches/privacy-breaches/respond-to-a-privacy-breach-at-your-business/gd_pb_201810/)
 
 **Incident Response Frameworks:**
+
 - NIST Incident Response Guide: [https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf)
 - SANS Incident Handler's Handbook: [https://www.sans.org/white-papers/33901/](https://www.sans.org/white-papers/33901/)
 
 **AI-Specific:**
+
 - AI Incident Database: [https://incidentdatabase.ai/](https://incidentdatabase.ai/)
 - Partnership on AI Incident Response: [https://partnershiponai.org/](https://partnershiponai.org/)
 
@@ -1037,17 +1125,20 @@ Contact: [Communications Director Name, Email, Phone]
 ## 8. Training Requirements
 
 **Incident Response Training (8 hours, annual):**
+
 - Who: Incident Response Team, AI/Data Science team, AI Governance Committee
 - Topics: Incident classification, response phases, communication, PIR facilitation
 - Format: Workshop with tabletop exercises (simulate incidents)
 
 **Tabletop Exercise Scenarios:**
+
 1. Bias incident (claim outcome predictor favors one demographic)
 2. Privacy breach (prompt injection extracts PII)
 3. Hallucination (AI cites non-existent case law used in arbitration)
 4. System outage (Azure OpenAI unavailable for 4 hours)
 
 **User Training (included in 4-hour "Understanding AI" workshop):**
+
 - How to report AI issues ("Report Incorrect Information" button)
 - When to escalate (immediate harm vs. minor inconvenience)
 - What to expect (timeline, communication, remediation)
@@ -1071,6 +1162,7 @@ Contact: [Communications Director Name, Email, Phone]
 Effective incident response requires preparation, coordination, and continuous learning. This playbook provides structured procedures to minimize harm, restore service quickly, and prevent recurrence.
 
 **Key Principles:**
+
 - **Speed:** Rapid detection and containment (stop harm immediately)
 - **Transparency:** Honest communication with members, committee, and public
 - **Learning:** Every incident is an opportunity to improve
@@ -1088,6 +1180,7 @@ Phone: 1-800-XXX-XXXX (24/7 for P1/P2)
 ---
 
 **Document Control:**
+
 - **Version:** 1.0 (Draft)
 - **Status:** Pending AI Governance Committee Approval (Q1 2026)
 - **Next Review:** August 2026 (6 months)

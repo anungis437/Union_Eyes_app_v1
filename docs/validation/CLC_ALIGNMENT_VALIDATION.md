@@ -1,4 +1,5 @@
 # Canadian Labour Congress (CLC) Alignment Validation
+
 **Before Phase 5: Strategic Trajectory Analysis**
 
 **Date:** November 18, 2025  
@@ -10,9 +11,11 @@
 ## 🎯 Executive Summary
 
 ### Current State
+
 Your **UnionEyes** platform is **80% aligned** with general union operations but has **CRITICAL GAPS** for Canadian Labour Congress requirements:
 
 **✅ Strong Alignment (80%)**
+
 - Multi-tenant architecture ✓
 - Claims/grievance management ✓
 - Member directory ✓
@@ -21,6 +24,7 @@ Your **UnionEyes** platform is **80% aligned** with general union operations but
 - Financial/strike fund systems ✓
 
 **❌ Critical Gaps (20%)**
+
 - ❌ **No affiliate/local union hierarchy** (CLC has 50+ affiliated unions with 1000s of locals)
 - ❌ **No provincial federation structure** (CLC operates through 13 provincial/territorial federations)
 - ❌ **No sector/industry categorization** (unions span healthcare, trades, education, public service, etc.)
@@ -74,7 +78,7 @@ Canadian Labour Congress (National)
    - Grievance procedures
    - Financial systems
    - Leadership structures
-   
+
 2. **Shared Services Needed:**
    - Policy advocacy coordination
    - Training programs
@@ -112,6 +116,7 @@ Canadian Labour Congress (National)
 ### Gap #1: Hierarchical Tenant Model
 
 **Current State:**
+
 ```typescript
 // Your current schema
 tenants {
@@ -123,6 +128,7 @@ tenants {
 ```
 
 **CLC Requirements:**
+
 ```typescript
 // What CLC needs
 organizations {
@@ -143,6 +149,7 @@ CLC (type: congress, parent: null)
 ```
 
 **Business Impact:**
+
 - ❌ Cannot model CLC's actual organizational structure
 - ❌ Cannot aggregate data across union families
 - ❌ Cannot implement federation-level reporting
@@ -171,6 +178,7 @@ CLC (type: congress, parent: null)
    - Requires: Shared task management, donor tracking
 
 **Current System:**
+
 - ✅ Perfect tenant isolation (security)
 - ❌ Zero cross-tenant visibility (even with permission)
 
@@ -190,11 +198,13 @@ CLC (type: congress, parent: null)
 | **Retail/Service** | UFCW, UNITE HERE | Tips, scheduling, breaks |
 
 **Why This Matters:**
+
 - Wage comparisons only meaningful within sector
 - Safety protocols vary dramatically by industry
 - Different sectors have different regulatory frameworks
 
 **Current System:**
+
 - ❌ No sector field in tenant or member tables
 - ❌ Cannot filter claims by industry type
 - ❌ Analytics don't account for sector differences
@@ -204,18 +214,21 @@ CLC (type: congress, parent: null)
 ### Gap #4: Bilingual Requirements
 
 **Federal Legal Requirement:**
+
 - All federal unions MUST provide services in English AND French
 - CLC headquarters in Ottawa (bilingual city)
 - Quebec unions operate primarily in French
 - New Brunswick is officially bilingual province
 
 **Current System:**
+
 - ❌ UI strings hardcoded in English
 - ❌ No i18n framework implemented
 - ❌ Email templates English-only
 - ❌ Document generation English-only
 
 **What's Required:**
+
 ```typescript
 // Need full i18n support
 import { useTranslations } from 'next-intl';
@@ -238,6 +251,7 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
 ### Gap #5: Provincial/Territorial Variations
 
 **Canadian Labour Law Structure:**
+
 - **Federal:** 10% of workforce (banking, telecom, federal public service)
   - Governed by Canada Labour Code
   - Overseen by CIRB (Canadian Industrial Relations Board)
@@ -249,6 +263,7 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
   - Different strike/lockout requirements
 
 **Your Current System:**
+
 - ✅ Flexible workflow engine (can adapt)
 - ❌ No jurisdiction tracking
 - ❌ No jurisdiction-specific templates
@@ -275,7 +290,9 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
 **ROI:** High - Access to 3M+ workers, 50+ paying unions
 
 #### Phase 5A: Hierarchical Multi-Tenancy (4 weeks)
+
 1. **Database Migration:**
+
    ```sql
    CREATE TABLE organizations (
      id UUID PRIMARY KEY,
@@ -306,6 +323,7 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
    - Migrate existing tenants to organization model
 
 3. **New RLS Policies:**
+
    ```sql
    -- Allow users to see data from their org + children
    CREATE POLICY org_hierarchical_select ON claims
@@ -317,6 +335,7 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
    ```
 
 #### Phase 5B: Inter-Union Features (3 weeks)
+
 1. **Shared Clause Library:**
    - Opt-in sharing of CBA clauses
    - Anonymization options (hide employer names)
@@ -333,12 +352,15 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
    - Sector comparisons
 
 #### Phase 5C: Bilingual Support (2 weeks)
+
 1. **Implement next-intl:**
+
    ```bash
    pnpm add next-intl
    ```
 
 2. **Create translation files:**
+
    ```
    messages/
      en-CA.json
@@ -350,6 +372,7 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
 4. **Add language switcher** to navigation
 
 #### Phase 5D: Jurisdiction Framework (2 weeks)
+
 1. **Add jurisdiction metadata:**
    - Province/territory
    - Federal vs provincial
@@ -371,10 +394,12 @@ formatDate(date, locale) // Nov 18, 2025 vs 18 nov 2025
 **ROI:** Medium - CLC as add-on, existing clients unaffected
 
 #### Keep Your Current Single-Tenant Model
+
 - Each union remains isolated tenant
 - No changes to existing functionality
 
 #### Add "CLC Hub" as Separate Service
+
 ```typescript
 // New microservice
 clc-hub-service/
@@ -387,12 +412,14 @@ clc-hub-service/
   └── auth/ (federation-level permissions)
 ```
 
-#### Benefits:
+#### Benefits
+
 - ✅ No disruption to existing clients
 - ✅ Faster to market
 - ✅ CLC features optional upgrade
 
-#### Drawbacks:
+#### Drawbacks
+
 - ❌ Duplicate data storage
 - ❌ Sync complexity between systems
 - ❌ Two codebases to maintain
@@ -411,6 +438,7 @@ clc-hub-service/
 | **Local Unions** | 10,000+ | 20-5,000 each | $500-$5K/year each |
 
 **Total Addressable Market (Canada):**
+
 - **50 national/international unions:** $250K-$2.5M/year
 - **13 provincial federations:** $130K-$390K/year
 - **10,000 locals:** $5M-$50M/year (if 10% convert)
@@ -442,6 +470,7 @@ clc-hub-service/
    - Weakness: No grievance workflows
 
 **Your Competitive Advantage:**
+
 - ✅ Modern tech stack (Next.js 14, React Server Components)
 - ✅ AI-powered features (workbench, document analysis)
 - ✅ Mobile-first design
@@ -455,6 +484,7 @@ clc-hub-service/
 ### Primary Target: Individual Affiliate Unions (Not CLC Directly)
 
 **Rationale:**
+
 1. **CLC doesn't directly manage members** - affiliates do
 2. **Affiliates control budgets** - independent purchasing decisions
 3. **Easier sales cycle** - fewer stakeholders than CLC-wide adoption
@@ -462,39 +492,47 @@ clc-hub-service/
 **Go-to-Market Strategy:**
 
 #### Phase 1: Pilot with 2-3 Mid-Size Unions (Next 3 months)
+
 **Target Profile:**
+
 - 10,000 - 50,000 members
 - Multiple locals/chapters
 - Currently using legacy system or spreadsheets
 - Progressive leadership open to technology
 
 **Ideal Pilot Candidates:**
+
 1. **UFCW Local 1006A** (Ontario, 50K members, retail/food)
 2. **CUPE 3903** (York University, 3K members, education)
 3. **Unifor Local 444** (Windsor, 9K members, auto sector)
 
 **Pilot Offer:**
+
 - 6-month free trial
 - Dedicated onboarding support
 - Feature requests prioritized
 - Case study for marketing
 
 #### Phase 2: Prove Value, Get Testimonials (Months 4-9)
+
 - Track metrics: time saved, claims resolved faster, member satisfaction
 - Video testimonials from union presidents
 - Present at CLC convention
 
 #### Phase 3: Expand to Sister Locals (Months 10-18)
+
 - If UFCW 1006A succeeds → approach UFCW 175, 333, 401
 - Offer "family plan" pricing for unions in same federation
 - Build network effects
 
 #### Phase 4: Approach Provincial Federations (Year 2)
+
 - OFL, BCFED offer UnionEyes to all affiliates
 - Federation pays for locals under 500 members
 - Larger unions pay individually
 
 #### Phase 5: CLC National Partnership (Year 3)
+
 - CLC recommends UnionEyes to all affiliates
 - CLC Hub for cross-union collaboration
 - Revenue share model
@@ -504,27 +542,32 @@ clc-hub-service/
 ## ✅ Immediate Action Plan (Before Phase 5)
 
 ### Week 1-2: Market Validation
+
 - [ ] Interview 5 union leaders (UFCW, CUPE, Unifor, PSAC, SEIU)
 - [ ] Ask: Current pain points, budget, decision process
 - [ ] Document: Must-have vs nice-to-have features
 
 ### Week 3: Architecture Decision
+
 - [ ] Choose: Option A (full refactor) vs Option B (CLC module)
 - [ ] Create technical design doc
 - [ ] Estimate timeline and resources
 
 ### Week 4: Pilot Partnership Outreach
+
 - [ ] Draft pilot program proposal
 - [ ] Reach out to 10 target unions
 - [ ] Secure 2-3 commitments
 
 ### Month 2: Build Phase 5
+
 - [ ] If Option A: Implement hierarchical tenancy
 - [ ] If Option B: Build CLC Hub service
 - [ ] Add bilingual support (at minimum: major pages)
 - [ ] Add sector classification
 
 ### Month 3: Pilot Launch
+
 - [ ] Onboard pilot unions
 - [ ] Migrate their data
 - [ ] Train their staff
@@ -535,17 +578,20 @@ clc-hub-service/
 ## 🚩 Red Flags to Watch
 
 ### Technical Risks
+
 1. **Scale:** Single union with 700K members = different than 700 unions with 1K each
 2. **Data Migration:** Moving unions from legacy systems is HARD
 3. **Customization Requests:** Each union will want "just one more feature"
 
 ### Business Risks
+
 1. **Long Sales Cycles:** Union decisions are democratic (vote at conventions)
 2. **Budget Constraints:** Many unions financially stressed post-pandemic
 3. **Resistance to Change:** "We've always done it this way"
 4. **Privacy Concerns:** Member data is politically sensitive
 
 ### Mitigations
+
 - Start with **growth-minded unions** (expanding membership)
 - Focus on **cost savings** messaging (reduce LRO admin time)
 - **Emphasize security** (ISO 27001 compliance, encryption)
@@ -570,18 +616,21 @@ clc-hub-service/
 ## 📚 Research Resources
 
 ### Must-Read Documents
-1. **CLC Constitution** - https://canadianlabour.ca/who-we-are/conventions/
-2. **OFL Affiliates Directory** - https://ofl.ca/about-ofl/affiliates/
+
+1. **CLC Constitution** - <https://canadianlabour.ca/who-we-are/conventions/>
+2. **OFL Affiliates Directory** - <https://ofl.ca/about-ofl/affiliates/>
 3. **CIRB Annual Report** - Understand federal grievance patterns
 4. **CUPE National Convention Resolutions** - See what issues matter
 
 ### Key Contacts for Validation
-1. **CLC Policy Department** - policy@clcctc.ca
+
+1. **CLC Policy Department** - <policy@clcctc.ca>
 2. **OFL Secretary-Treasurer** - (handles tech procurement)
 3. **CUPE National Servicing Department**
 4. **Unifor IT Director**
 
 ### Competitive Intelligence
+
 1. **UnionWare User Conference** - Attend to see pain points
 2. **CUPE Tech Survey** - Published every 2 years
 3. **Labour Notes Conference** - Network with tech-savvy stewards
@@ -594,20 +643,23 @@ clc-hub-service/
 
 **Current Alignment: 80%**
 
-### What You Built is EXCELLENT for:
+### What You Built is EXCELLENT for
+
 ✅ Individual union locals (under 5,000 members)  
 ✅ Independent unions (not CLC-affiliated)  
 ✅ U.S. unions (no bilingual requirement)  
 ✅ Private sector unions (fewer regulatory variations)
 
-### To Successfully Target CLC Affiliates, You MUST Add:
+### To Successfully Target CLC Affiliates, You MUST Add
+
 1. ⚠️ **Hierarchical tenancy** (union → locals structure)
 2. ⚠️ **Bilingual UI** (non-negotiable for federal/Quebec)
 3. ⚠️ **Sector classification** (for meaningful comparisons)
 4. ⚠️ **Jurisdiction framework** (13 different provincial rules)
 5. ⚠️ **Inter-union features** (optional, but differentiating)
 
-### Recommended Next Step:
+### Recommended Next Step
+
 **🎯 Option A with Pilot-First Approach**
 
 1. **Don't refactor everything yet**
@@ -616,7 +668,8 @@ clc-hub-service/
 4. **Validate with real users**
 5. **Then decide on full CLC strategy**
 
-### Estimated Timeline to CLC-Ready:
+### Estimated Timeline to CLC-Ready
+
 - **Fast Track (Pilot-Driven):** 3-4 months
 - **Full Refactor (Option A):** 8-12 months
 - **Modular Approach (Option B):** 4-6 months
@@ -625,17 +678,20 @@ clc-hub-service/
 
 ## 📞 Next Actions
 
-### This Week:
+### This Week
+
 1. **Review this document** with your team
 2. **Pick 5 unions to interview** (I can help with intros if needed)
 3. **Draft pilot program terms** (pricing, duration, deliverables)
 
-### This Month:
+### This Month
+
 1. **Secure 1 pilot commitment**
 2. **Decide: Option A vs Option B**
 3. **Start Phase 5 development**
 
-### This Quarter:
+### This Quarter
+
 1. **Launch pilot with real union**
 2. **Gather testimonials**
 3. **Refine product-market fit**

@@ -7,6 +7,7 @@ After the successful build of the tenantId → organizationId migration, discove
 ## Root Cause
 
 The seed script was:
+
 1. Creating entries in legacy `tenants` table ✅
 2. Creating users in legacy `profiles` table ✅  
 3. **NOT** creating entries in new `organizations` table ❌
@@ -19,26 +20,33 @@ This meant that while the application code was migrated to use `organizationId` 
 ### 1. Updated `scripts/seed-full-platform.ts`
 
 #### Added Imports
+
 ```typescript
 import { organizationMembers, organizations } from '../db/schema-organizations';
 ```
 
 #### Updated `seedTenants()` Function
+
 Now creates both legacy `tenants` AND new `organizations`:
+
 - Uses same ID for 1:1 mapping between tenant and organization
 - Sets organization type to 'local'
 - Populates required fields (name, slug, hierarchyPath, etc.)
 - Links via `legacyTenantId` for backward compatibility
 
 #### Updated `seedUsers()` Function  
+
 Now creates entries in `organization_members` for each user:
+
 - Maps userId to organizationId
 - Preserves role (admin/steward/member)
 - Sets status to 'active'
 - Records joinedAt timestamp
 
 #### Updated `resetDatabase()` Function
+
 Added cleanup for new tables:
+
 ```typescript
 await db.execute(sql`DELETE FROM organization_members`);
 await db.execute(sql`DELETE FROM organizations`);
@@ -47,6 +55,7 @@ await db.execute(sql`DELETE FROM organizations`);
 ### 2. Created `scripts/verify-user-access.ts`
 
 New verification script to check organization membership:
+
 - Can check specific user: `npx tsx scripts/verify-user-access.ts YOUR_USER_ID`
 - Can check all memberships: `npx tsx scripts/verify-user-access.ts`
 - Shows organization name, role, status, joined date
@@ -55,6 +64,7 @@ New verification script to check organization membership:
 ## How to Use
 
 ### Re-seed Database (Recommended)
+
 ```bash
 # Full reset and re-seed with proper organization structure
 npx tsx scripts/seed-full-platform.ts --reset
@@ -64,6 +74,7 @@ npx tsx scripts/seed-full-platform.ts --tenants 3 --users 50 --claims 200 --rese
 ```
 
 ### Verify User Access
+
 ```bash
 # Check a specific user
 npx tsx scripts/verify-user-access.ts user_2a3b4c5d6e7f8g9h
@@ -75,11 +86,13 @@ npx tsx scripts/verify-user-access.ts
 ## Database Structure
 
 ### Organizations Table
+
 - **Purpose**: Hierarchical organization structure
 - **Key Fields**: id, name, slug, organizationType, hierarchyPath
 - **Migration**: Maps 1:1 with tenants via legacyTenantId
 
 ### Organization Members Table
+
 - **Purpose**: User-to-organization access control
 - **Key Fields**: userId, organizationId, role, status
 - **Migration**: Replaces tenant_id lookups in profiles
@@ -97,16 +110,19 @@ npx tsx scripts/verify-user-access.ts
 ## Next Steps
 
 1. **Run the seed script** to populate test data:
+
    ```bash
    npx tsx scripts/seed-full-platform.ts --reset --tenants 3 --users 20 --claims 50
    ```
 
 2. **Verify organization memberships**:
+
    ```bash
    npx tsx scripts/verify-user-access.ts
    ```
 
 3. **Test with your Clerk user ID**:
+
    ```bash
    npx tsx scripts/verify-user-access.ts YOUR_CLERK_USER_ID
    ```
@@ -125,6 +141,7 @@ npx tsx scripts/verify-user-access.ts
 ## Migration Compatibility
 
 The seed script maintains backward compatibility:
+
 - Legacy `tenants` table still populated
 - Legacy `profiles` table with tenant_id still populated
 - New `organizations` table populated with legacyTenantId link
@@ -135,6 +152,7 @@ This ensures both old and new code paths work during transition period.
 ## Security & Access Control
 
 With these changes, the application now properly enforces:
+
 - ✅ User must have organizationMember record to access organization
 - ✅ Role-based permissions (admin/steward/member)
 - ✅ Multi-tenant data isolation via organizationId

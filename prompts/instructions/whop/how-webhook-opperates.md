@@ -8,7 +8,7 @@ The Whop webhook system is a critical component that handles payment and members
 
 - **`app/api/whop/webhooks/route.ts`**: The main webhook handler that receives and processes events from Whop
 - **`actions/whop-actions.ts`**: Contains functions for managing Whop membership status changes
-- **`db/queries/profiles-queries.ts`**: Database operations for user profiles 
+- **`db/queries/profiles-queries.ts`**: Database operations for user profiles
 - **`actions/credits-actions.ts`**: Manages the credit system for premium features
 - **`app/api/user/status/route.ts`**: API endpoint for checking user subscription status
 - **`app/api/whop/create-checkout/route.ts`**: Creates checkout sessions with proper metadata
@@ -22,6 +22,7 @@ const CREDIT_RENEWAL_DAYS = 28; // Used credits reset every 4 weeks (28 days)
 ```
 
 These constants define the credit allocation model:
+
 - Pro users receive 1000 credits per subscription cycle
 - Credits reset every 28 days (independent of billing cycle)
 
@@ -130,6 +131,7 @@ export async function POST(req: Request) {
 ```
 
 The function:
+
 1. Logs the raw webhook data
 2. Checks database connection health
 3. Passes the request to the Whop SDK webhook handler
@@ -247,7 +249,7 @@ When refactoring this system into multiple utility files:
 
 The most critical code paths are:
 
-1. **Payment Success Flow**: 
+1. **Payment Success Flow**:
    - Verifies user identity
    - Updates membership status
    - Allocates credits

@@ -11,6 +11,7 @@ Successfully converted all user identifier columns from UUID to varchar(255) to 
 ## Migration Approach
 
 ### Strategy
+
 1. **Root-first conversion**: Converted `user_management.users.user_id` FIRST (the root table)
 2. **Cascading updates**: Then converted all referencing columns
 3. **Complete dependency cleanup**: Dropped ALL views, RLS policies, and FK constraints before alterations
@@ -19,6 +20,7 @@ Successfully converted all user identifier columns from UUID to varchar(255) to 
 ### Tables Modified
 
 #### Core User Management (user_management schema)
+
 - ✅ `users.user_id` - UUID → varchar(255) **(ROOT TABLE)**
 - ✅ `oauth_providers.user_id` - UUID → varchar(255)
 - ✅ `tenant_users.user_id` - Already varchar(255) ✓
@@ -26,27 +28,32 @@ Successfully converted all user identifier columns from UUID to varchar(255) to 
 - ✅ `user_sessions.user_id` - UUID → varchar(255)
 
 #### Audit & Security (audit_security schema)
+
 - ✅ `audit_logs.user_id` - UUID → varchar(255)
 - ✅ `security_events.user_id` - UUID → varchar(255)
 - ✅ `security_events.resolved_by` - UUID → varchar(255)
 
 #### Claims System (public schema)
+
 - ✅ `claims.member_id` - UUID → varchar(255) - **27,309 rows converted**
 - ✅ `claims.assigned_to` - UUID → varchar(255)
 - ✅ `claim_updates.created_by` - UUID → varchar(255)
 
 #### Education & Training (public schema)
+
 - ✅ `course_registrations.member_id` - UUID → varchar(255)
 - ✅ `member_certifications.member_id` - UUID → varchar(255)
 - ✅ `member_certifications.verified_by` - UUID → varchar(255)
 - ✅ `program_enrollments.member_id` - UUID → varchar(255)
 
 #### Tenant Management (tenant_management schema)
+
 - ✅ `tenant_configurations.updated_by` - UUID → varchar(255)
 
 ## Data Integrity Verification
 
 ### Row Count Validation
+
 ```
 ✅ user_management.users: 8 rows
 ✅ claims: 27,309 rows (preserved)
@@ -57,16 +64,20 @@ Successfully converted all user identifier columns from UUID to varchar(255) to 
 ```
 
 ### Join Test Results
+
 Tested claims → users join:
+
 ```sql
 SELECT c.claim_id, c.member_id, u.email 
 FROM claims c 
 LEFT JOIN user_management.users u ON c.member_id = u.user_id 
 LIMIT 5;
 ```
+
 ✅ **Result:** Joins work correctly with varchar(255) user IDs
 
 ### Sample Data
+
 ```
 member_id: 00000000-0000-0000-0000-000000000101 (varchar)
 member_email: info@nzilaventures.com
@@ -94,9 +105,11 @@ All 9 FK constraints referencing `user_management.users.user_id` successfully re
 Essential Row-Level Security policies restored:
 
 ### users table
+
 - ✅ `users_own_record` (ALL) - Users can only access their own record
 
 ### claims table
+
 - ✅ `claims_hierarchical_select` - Organization-based read access
 - ✅ `claims_hierarchical_insert` - Organization-based write access  
 - ✅ `claims_hierarchical_update` - Organization-based update access
@@ -106,6 +119,7 @@ Essential Row-Level Security policies restored:
 ## Views Dropped (Not Recreated Yet)
 
 The following 9 views were dropped to allow column type changes:
+
 - `v_member_training_transcript`
 - `v_member_education_summary`
 - `v_member_certification_status`
@@ -121,6 +135,7 @@ The following 9 views were dropped to allow column type changes:
 ## Tables Not Found (Expected)
 
 Validation script identified these tables as missing (not deployed to staging):
+
 - `grievance_assignments`
 - `grievance_documents`
 - `grievance_settlements`
@@ -138,7 +153,8 @@ Validation script identified these tables as missing (not deployed to staging):
 
 ## Verification Commands
 
-### Check column types:
+### Check column types
+
 ```sql
 SELECT table_schema, table_name, column_name, data_type, character_maximum_length 
 FROM information_schema.columns 
@@ -146,14 +162,16 @@ WHERE column_name IN ('user_id', 'member_id', 'assigned_to', 'verified_by', 'cre
   AND table_schema IN ('user_management', 'audit_security', 'public', 'tenant_management');
 ```
 
-### Check FK constraints:
+### Check FK constraints
+
 ```sql
 SELECT conname, conrelid::regclass AS table_name, confrelid::regclass AS referenced_table 
 FROM pg_constraint 
 WHERE confrelid = 'user_management.users'::regclass AND contype = 'f';
 ```
 
-### Check RLS policies:
+### Check RLS policies
+
 ```sql
 SELECT schemaname, tablename, policyname, cmd 
 FROM pg_policies 
@@ -163,22 +181,28 @@ WHERE tablename IN ('users', 'claims', 'claim_updates');
 ## Known Issues and Limitations
 
 ### 1. Member Tables Ambiguity
+
 **Issue:** Three tables (course_registrations, member_certifications, program_enrollments) use `member_id` column.  
 **Question:** Should these reference:
+
 - `user_management.users.user_id` (Clerk users) OR
 - `members.id` (Member entity records)?
 
 **Current State:** FK constraints dropped, no referential integrity enforced yet.
 
-**Recommendation:** 
+**Recommendation:**
+
 - If these represent member entity associations → Update migration to reference `members.id` and keep as UUID
 - If these represent Clerk user associations → Keep as varchar(255) and add FK to `users.user_id`
 
 ### 2. Views Not Recreated
+
 All training/certification views were dropped and need manual recreation with updated column types.
 
 ### 3. Minimal RLS Policies
+
 Only essential RLS policies were recreated. Application may need additional policies for:
+
 - INSERT operations on course_registrations, member_certifications, program_enrollments
 - UPDATE/DELETE operations on various tables
 - Admin-specific access patterns
@@ -187,6 +211,7 @@ Only essential RLS policies were recreated. Application may need additional poli
 ## Next Steps
 
 ### Immediate (Required)
+
 1. ✅ Migration completed
 2. **TODO:** Run application smoke tests:
    - Clerk authentication flow
@@ -197,19 +222,21 @@ Only essential RLS policies were recreated. Application may need additional poli
 4. **TODO:** Decide on member_id FK strategy (users vs members table)
 
 ### Short-term (Important)
+
 5. **TODO:** Add comprehensive RLS policies for:
    - Course registrations (INSERT/UPDATE/DELETE)
    - Member certifications (INSERT/UPDATE/DELETE)
    - Program enrollments (INSERT/UPDATE/DELETE)
-6. **TODO:** Test multi-tenant data isolation
-7. **TODO:** Validate Clerk webhook handling with varchar user IDs
-8. **TODO:** Update any application code that hardcoded UUID type expectations
+2. **TODO:** Test multi-tenant data isolation
+3. **TODO:** Validate Clerk webhook handling with varchar user IDs
+4. **TODO:** Update any application code that hardcoded UUID type expectations
 
 ### Long-term (Optimization)
+
 9. **TODO:** Consider converting `members.id` to varchar(255) for full Clerk alignment
-10. **TODO:** Add database indexes on commonly-queried varchar user ID columns if performance testing shows need
-11. **TODO:** Deploy missing schemas (grievance_*, traditional_knowledge_registry) to staging
-12. **TODO:** FK validation audit across ALL schemas (not just core/financial)
+2. **TODO:** Add database indexes on commonly-queried varchar user ID columns if performance testing shows need
+3. **TODO:** Deploy missing schemas (grievance_*, traditional_knowledge_registry) to staging
+4. **TODO:** FK validation audit across ALL schemas (not just core/financial)
 
 ## Success Criteria Met
 
@@ -226,6 +253,7 @@ Only essential RLS policies were recreated. Application may need additional poli
 **Staging Status:** ✅ **READY FOR TESTING**
 
 **Before Production Deployment:**
+
 1. Complete application smoke testing (auth, claims, users)
 2. Recreate essential views
 3. Add missing RLS policies

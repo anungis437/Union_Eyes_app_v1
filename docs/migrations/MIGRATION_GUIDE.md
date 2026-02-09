@@ -56,6 +56,7 @@ psql -d your_database -f database/migrations/tenant-to-org-migration-schema.sql
 ```
 
 This creates:
+
 - `tenant_org_mappings` - Maps legacy tenant IDs to new organization IDs
 - `migration_audit_log` - Tracks all migration operations
 - Helper functions: `get_migration_progress()`, `validate_migration_readiness()`
@@ -92,6 +93,7 @@ node scripts/migration-cli.ts validate --export validation-report.json
 ```
 
 **What it checks:**
+
 - All tenant_id values have organization mappings
 - No orphaned records (invalid foreign keys)
 - No null tenant_id where required
@@ -188,6 +190,7 @@ node scripts/migration-cli.ts status --detailed
 ```
 
 Example output:
+
 ```
 📊 Migration Status
 
@@ -259,6 +262,7 @@ node scripts/migration-cli.ts verify --post --export post-migration-report.json
 ```
 
 **What it verifies:**
+
 - All migrated rows have organization_id
 - organization_id references valid organizations
 - Mapping consistency (same tenant → same org)
@@ -444,6 +448,7 @@ SELECT * FROM get_migration_progress();
 ```
 
 Returns:
+
 ```
 table_name                  | total_rows | migrated_rows | percentage
 ----------------------------|------------|---------------|------------
@@ -460,6 +465,7 @@ SELECT * FROM validate_migration_readiness();
 ```
 
 Returns:
+
 ```
 check_name              | status | details
 ------------------------|--------|------------------------------------------
@@ -514,6 +520,7 @@ private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 ### Slow Migration Performance
 
 **Solutions**:
+
 1. Increase `batchSize` in table config
 2. Run during low-traffic hours
 3. Disable indexes temporarily (advanced)
@@ -523,13 +530,15 @@ private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 **Cause**: Invalid foreign key references
 
-**Solution**: 
+**Solution**:
+
 1. Fix orphaned records before migration
 2. Or update validation to skip these records
 
 ### Out of Memory Errors
 
 **Solutions**:
+
 1. Reduce `batchSize`
 2. Increase Node.js memory: `NODE_OPTIONS=--max-old-space-size=4096 node scripts/migration-cli.ts migrate`
 3. Migrate table by table instead of all at once
@@ -539,6 +548,7 @@ private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 **Cause**: Insufficient disk space or permissions
 
 **Solution**:
+
 1. Check disk space: `df -h`
 2. Check PostgreSQL permissions
 3. Use `--skip-backup` if backups already exist
@@ -575,6 +585,7 @@ Typical performance on moderate hardware:
 - **Verification**: ~20-30 seconds for 100K records
 
 Factors affecting performance:
+
 - Database server specs
 - Network latency
 - Batch size configuration
@@ -584,6 +595,7 @@ Factors affecting performance:
 ## Support
 
 For issues or questions:
+
 1. Check validation reports for specific error messages
 2. Review `migration_audit_log` table for operation history
 3. Check database logs for SQL errors

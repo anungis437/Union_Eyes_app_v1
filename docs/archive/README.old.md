@@ -14,29 +14,33 @@ pnpm install
 pnpm dev
 ```
 
-Visit: **http://localhost:5020**
+Visit: **<http://localhost:5020>**
 
 ## 🎯 Phase 2 Focus Areas
 
 ### 1. Claims Submission Portal (Week 1)
+
 - **Voice-to-Text Integration** - Azure Speech Services for accessibility
 - **Anonymous Submission** - Privacy-first claim filing
 - **Multi-language Support** - EN/FR/ES for Canadian unions
 - **Mobile-First Design** - Optimized for union member smartphones
 
 ### 2. Real-Time Claim Tracking (Week 2)
+
 - **Member Portal** - Live claim status updates
 - **Timeline View** - Visual progress tracking
 - **Notification System** - Email/SMS/in-app alerts
 - **Document Repository** - Per-claim file management
 
 ### 3. LRO Workbench (Week 3)
+
 - **Claim Queue** - Priority sorting and assignment
 - **AI-powered Analysis** - Automatic claim summarization
 - **Document Annotation** - Private LRO notes on member documents
 - **Email Integration** - Auto-copy correspondence to platform
 
 ### 4. Grievance Process Engine (Week 4)
+
 - **Configurable Workflows** - Union-specific process templates
 - **Collective Agreement Linking** - Tie claims to CA clauses
 - **Deadline Tracking** - Automated alerts and escalation
@@ -69,6 +73,7 @@ Visit: **http://localhost:5020**
 ## 🎙️ Voice-to-Text Features
 
 ### Why Voice-First Design?
+>
 > "Public employees... don't have the greatest ability to write... text-to-speech function that allows them to take voice notes that transform into text"
 
 - Union members with varying literacy levels
@@ -77,6 +82,7 @@ Visit: **http://localhost:5020**
 - Lower barrier to entry for filing grievances
 
 ### Technical Implementation
+
 - **Azure Speech Services** - Multi-language real-time transcription
 - **Mobile Recording** - Direct smartphone audio capture
 - **Voice Notes** - Attach audio recordings to claims
@@ -85,6 +91,7 @@ Visit: **http://localhost:5020**
 ## 📝 Document Annotation
 
 ### LRO Private Notes
+>
 > "You get something in writing from a member... want to highlight, circle, and make a comment. Not make it visible on the member's side."
 
 - **Track Changes** - Basic revision functionality
@@ -95,12 +102,14 @@ Visit: **http://localhost:5020**
 ## 🔐 Security & Privacy
 
 ### Phase 1 Complete ✅
+
 - **AES-256-GCM Encryption** - Sensitive data protection
 - **GDPR Compliance** - Right to erasure and data portability
 - **Audit Logging** - Comprehensive action tracking
 - **Field-level Encryption** - PII protection
 
 ### Anonymous Claims
+
 - **Privacy Toggle** - Optional member anonymization
 - **Secure Routing** - Claims assigned without exposing identity
 - **Data Minimization** - Collect only necessary information
@@ -108,11 +117,13 @@ Visit: **http://localhost:5020**
 ## 📊 Success Metrics (Phase 2 Goals)
 
 ### User Adoption
+
 - **80%+ member portal usage** within 30 days
 - **90%+ LRO daily active usage** within first week
 - **50%+ claims via voice-to-text** within 60 days
 
 ### Efficiency Gains
+
 - **60% reduction** in claim submission time
 - **40% faster** LRO initial assessment
 - **30% reduction** in email volume
@@ -130,6 +141,7 @@ Phase 4: White-label Platform       ░░░░░░░░░░░░░░�
 ## 📋 Next Actions
 
 ### Week 1 Priorities (Oct 25 - Nov 1)
+
 - [ ] Set up Azure Speech Services integration
 - [ ] Build voice recording interface  
 - [ ] Implement real-time transcription
@@ -138,6 +150,7 @@ Phase 4: White-label Platform       ░░░░░░░░░░░░░░�
 - [ ] Test mobile responsiveness
 
 ### Development Commands
+
 ```bash
 # Start development server
 pnpm dev
@@ -155,11 +168,13 @@ pnpm type-check
 ## 🎯 Competitive Advantage
 
 ### Built by Former LRO
+
 - Deep understanding of union workflows
 - Credibility with Labor Relations Officers
 - Real-world grievance process experience
 
 ### Market Opportunity
+
 - **Target**: National/provincial unions (100-10,000 members)
 - **Pricing**: $5-$15 per member/year
 - **Competition**: Minimal (most using SharePoint/Excel)
@@ -190,6 +205,7 @@ World-class security infrastructure implemented:
 - **Browser-Compatible**: CryptoJS implementation for client-side encryption
 
 **Files Created**:
+
 - `src/services/SecurityService.ts` - Node.js crypto (600+ lines)
 - `src/services/BrowserSecurityService.ts` - Browser crypto (450+ lines)
 - `src/config/security.config.ts` - Security headers, CORS, rate limits (200+ lines)
@@ -208,16 +224,19 @@ Enterprise integrations fully implemented, awaiting API key configuration:
 - **OpenAI** ✅: GPT-4o-mini claim analysis, embeddings, insights generation
 
 **Files Created**:
+
 - `src/services/IntegrationServices.ts` - All 5 integration services (500+ lines)
 - `.env.example` - Complete environment variable template (100+ lines)
 
 **Next Steps**:
+
 1. Copy `.env.example` to `.env`
 2. Add API keys (Stripe test keys, OpenAI, Twilio, SendGrid, Sentry)
 3. Test each integration
 4. Create backend webhook endpoints
 
 **Usage Example**:
+
 ```typescript
 // Stripe payment
 const intent = await stripeService.createPaymentIntent(5000, 'usd', customerId, { claimId: 'CLM-123' });
@@ -237,12 +256,14 @@ const analysis = await openAIService.analyzeClaimMerit({
 Real Chart.js visualizations with interactive features:
 
 **Implemented Charts**:
+
 1. **Claims Trend** (Line Chart): 7 months data, submitted vs resolved
 2. **Claims by Type** (Bar Chart): 8 categories with horizontal bars
 3. **Success Rate** (Doughnut Chart): 4 outcomes (resolved, pending, withdrawn, rejected)
 4. **Quarterly Distribution** (Pie Chart): Q1-Q4 breakdown
 
 **Features**:
+
 - Date range filtering (7 days, 30 days, 3 months, 6 months, 1 year, all time)
 - Category filtering (8 claim types)
 - Export buttons (CSV, PDF, Excel) - UI complete, export logic pending
@@ -250,11 +271,13 @@ Real Chart.js visualizations with interactive features:
 - Real Chart.js animations and tooltips
 
 **Files Created**:
+
 - `src/pages/AdvancedAnalytics.tsx` - Interactive charts (450+ lines)
 
 **Route**: `/advanced-analytics`
 
 **Next Steps**:
+
 1. Connect charts to real API data (replace mock data)
 2. Implement D3.js network graph (claim relationships)
 3. Implement D3.js sunburst chart (hierarchical data)
@@ -291,11 +314,13 @@ Real Chart.js visualizations with interactive features:
 ## 🔐 Environment Setup
 
 1. **Copy environment template**:
+
    ```bash
    cp .env.example .env
    ```
 
 2. **Add required API keys** to `.env`:
+
    ```env
    # Security
    JWT_SECRET=your-jwt-secret-here
@@ -325,6 +350,7 @@ Real Chart.js visualizations with interactive features:
    ```
 
 3. **Restart dev server**:
+
    ```bash
    pnpm dev
    ```

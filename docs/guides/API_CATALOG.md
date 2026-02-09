@@ -1,9 +1,11 @@
 # API Catalog & Integration Map
+
 **Union Claims Platform - Complete Reference**
 
 ## Authentication & Authorization
 
 ### Clerk Authentication (Primary)
+
 - **Provider:** Clerk.com
 - **Flow:** OAuth 2.0 / JWT
 - **Endpoints:**
@@ -12,6 +14,7 @@
   - User management: Clerk Dashboard API
 
 ### JWT Token Structure
+
 ```typescript
 interface ClerkJWT {
   sub: string;              // User ID
@@ -26,6 +29,7 @@ interface ClerkJWT {
 ```
 
 ### Authorization Middleware
+
 ```typescript
 // All protected routes require:
 headers: {
@@ -39,6 +43,7 @@ headers: {
 ## Core API Services
 
 ### 1. Claims Management API
+
 **Base URL:** `/api/claims`
 
 | Method | Endpoint | Description | Auth Required |
@@ -56,6 +61,7 @@ headers: {
 | POST | `/api/claims/:id/documents` | Upload document | Yes |
 
 **Query Parameters:**
+
 ```typescript
 interface ClaimQueryParams {
   status?: 'open' | 'in_progress' | 'resolved' | 'closed';
@@ -70,6 +76,7 @@ interface ClaimQueryParams {
 ```
 
 ### 2. Member Management API
+
 **Base URL:** `/api/members`
 
 | Method | Endpoint | Description | Auth Required |
@@ -84,6 +91,7 @@ interface ClaimQueryParams {
 | POST | `/api/members/bulk-import` | Import from CSV | Admin |
 
 ### 3. Deadlines API
+
 **Base URL:** `/api/deadlines`
 
 | Method | Endpoint | Description | Auth Required |
@@ -98,6 +106,7 @@ interface ClaimQueryParams {
 | GET | `/api/deadlines/overdue` | Overdue list | Yes |
 
 ### 4. Documents API
+
 **Base URL:** `/api/documents`
 
 | Method | Endpoint | Description | Auth Required |
@@ -110,6 +119,7 @@ interface ClaimQueryParams {
 | GET | `/api/documents/:id/preview` | Get preview URL | Yes |
 
 **Upload Format:**
+
 ```typescript
 // multipart/form-data
 {
@@ -125,6 +135,7 @@ interface ClaimQueryParams {
 ```
 
 ### 5. Notifications API
+
 **Base URL:** `/api/notifications`
 
 | Method | Endpoint | Description | Auth Required |
@@ -141,6 +152,7 @@ interface ClaimQueryParams {
 ## AI Services
 
 ### 1. AI Service API
+
 **Base URL:** `http://localhost:3005/api/ai`
 
 | Method | Endpoint | Description | Internal Only |
@@ -156,6 +168,7 @@ interface ClaimQueryParams {
 | GET | `/api/ai/health` | Health check | Yes |
 
 **Document Analysis Request:**
+
 ```typescript
 interface DocumentAnalysisRequest {
   documentText: string;
@@ -170,6 +183,7 @@ interface DocumentAnalysisRequest {
 ```
 
 **Prediction Request:**
+
 ```typescript
 interface OutcomePredictionRequest {
   claimId: string;
@@ -183,6 +197,7 @@ interface OutcomePredictionRequest {
 ```
 
 ### 2. Workflow Service API
+
 **Base URL:** `http://localhost:3006/api`
 
 | Method | Endpoint | Description | Auth Required |
@@ -204,6 +219,7 @@ interface OutcomePredictionRequest {
 | POST | `/api/approvals/:id/respond` | Approve/reject | Yes |
 
 **Workflow Definition:**
+
 ```typescript
 interface WorkflowDefinition {
   name: string;
@@ -232,9 +248,11 @@ interface WorkflowNode {
 ## External Integrations
 
 ### 1. Stripe Payment Processing
+
 **Purpose:** Subscription billing, donations, payment processing
 
 **Webhooks:**
+
 ```
 POST /api/webhooks/stripe
 Events:
@@ -248,6 +266,7 @@ Events:
 ```
 
 **API Calls (Backend):**
+
 ```typescript
 // Create subscription
 stripe.subscriptions.create({
@@ -270,15 +289,18 @@ stripe.refunds.create({
 ```
 
 ### 2. Supabase Backend
+
 **Purpose:** Database, authentication, storage, real-time subscriptions
 
 **Services Used:**
+
 - PostgreSQL Database (Supabase Postgres)
 - Storage (S3-compatible)
 - Real-time subscriptions (WebSocket)
 - Row Level Security (RLS)
 
 **Connection:**
+
 ```typescript
 import { createClient } from '@supabase/supabase-js';
 
@@ -289,6 +311,7 @@ const supabase = createClient(
 ```
 
 **Real-time Subscriptions:**
+
 ```typescript
 // Subscribe to claim updates
 supabase
@@ -301,15 +324,18 @@ supabase
 ```
 
 ### 3. Twilio Communications (Optional)
+
 **Purpose:** SMS notifications, voice calls
 
 **Endpoints:**
+
 ```
 POST /api/integrations/twilio/sms
 POST /api/integrations/twilio/voice-call
 ```
 
 **Configuration:**
+
 ```typescript
 interface TwilioConfig {
   accountSid: string;
@@ -319,9 +345,11 @@ interface TwilioConfig {
 ```
 
 ### 4. SendGrid Email (Optional)
+
 **Purpose:** Transactional emails, marketing
 
 **Templates:**
+
 - Claim status update
 - Deadline reminder
 - Weekly digest
@@ -333,6 +361,7 @@ interface TwilioConfig {
 ## Webhooks & Events
 
 ### Outbound Webhooks
+
 ```typescript
 interface WebhookEvent {
   event: string;
@@ -356,6 +385,7 @@ interface WebhookEvent {
 ```
 
 ### Inbound Webhooks
+
 ```
 POST /api/webhooks/stripe          - Stripe events
 POST /api/webhooks/github          - GitHub Actions (CI/CD)
@@ -367,6 +397,7 @@ POST /api/webhooks/custom          - Custom integrations
 ## Real-time Channels
 
 ### WebSocket Subscriptions
+
 ```typescript
 // Claims updates
 ws://localhost:3000/realtime/claims?tenant_id={id}
@@ -386,6 +417,7 @@ ws://localhost:3000/realtime/analytics?tenant_id={id}
 ## Rate Limiting
 
 ### Global Limits
+
 ```yaml
 Tier: Free
   - 100 requests/minute per IP
@@ -400,6 +432,7 @@ Tier: Enterprise
 ```
 
 ### Specific Endpoints
+
 ```yaml
 POST /api/ai/*:
   - 50 requests/hour (Free)
@@ -417,6 +450,7 @@ POST /api/documents/upload:
 ## Error Handling
 
 ### Standard Error Response
+
 ```typescript
 interface ErrorResponse {
   error: {
@@ -440,6 +474,7 @@ interface ErrorResponse {
 ```
 
 ### HTTP Status Codes
+
 ```
 200 - OK
 201 - Created
@@ -460,12 +495,14 @@ interface ErrorResponse {
 ## API Versioning
 
 ### Current Version: v1
+
 ```
 Base URL: /api/v1/*
 Header: Accept: application/vnd.unionclaims.v1+json
 ```
 
 ### Deprecation Policy
+
 - 6 months notice before deprecation
 - 12 months support for deprecated endpoints
 - Migration guide provided
@@ -475,6 +512,7 @@ Header: Accept: application/vnd.unionclaims.v1+json
 ## SDK & Client Libraries
 
 ### JavaScript/TypeScript
+
 ```typescript
 import { UnionClaimsClient } from '@unionclaims/sdk';
 
@@ -487,6 +525,7 @@ await client.claims.list({ status: 'open' });
 ```
 
 ### Python (Future)
+
 ```python
 from unionclaims import Client
 
@@ -499,6 +538,7 @@ claims = client.claims.list(status="open")
 ## Health & Monitoring
 
 ### Health Check Endpoints
+
 ```
 GET /health                    - Overall health
 GET /health/db                 - Database connectivity
@@ -508,6 +548,7 @@ GET /health/storage            - Storage service status
 ```
 
 ### Metrics Endpoint (Prometheus)
+
 ```
 GET /metrics
 ```
@@ -517,6 +558,7 @@ GET /metrics
 ## Security Headers
 
 ### Required for All Requests
+
 ```
 Content-Security-Policy: default-src 'self'
 X-Frame-Options: DENY
@@ -526,6 +568,7 @@ X-XSS-Protection: 1; mode=block
 ```
 
 ### CORS Configuration
+
 ```yaml
 Allowed Origins:
   - https://app.unionclaims.com

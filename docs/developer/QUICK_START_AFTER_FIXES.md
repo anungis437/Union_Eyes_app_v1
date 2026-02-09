@@ -10,6 +10,7 @@ pnpm install
 ```
 
 **New dependencies added:**
+
 - `ioredis` ^5.4.1 - Redis client for notifications
 - `node-cron` ^3.0.3 - Job scheduler
 - `@types/node-cron` ^3.0.11 - Type definitions
@@ -35,6 +36,7 @@ UPSTASH_REDIS_REST_TOKEN=your-token-here
 ### Setup Options
 
 **Option A: Local Redis (Development)**
+
 ```bash
 # Using Docker (Recommended)
 docker run -d --name redis -p 6379:6379 redis:alpine
@@ -44,7 +46,8 @@ docker ps | grep redis
 ```
 
 **Option B: Upstash (Production/Staging)**
-1. Go to https://console.upstash.com
+
+1. Go to <https://console.upstash.com>
 2. Create new Redis database
 3. Copy REST URL and Token
 4. Add to environment variables
@@ -54,6 +57,7 @@ docker ps | grep redis
 ## 🧪 Step 3: Verify Installation
 
 ### Test 1: Check Environment
+
 ```bash
 # Start dev server
 pnpm dev
@@ -68,6 +72,7 @@ pnpm dev
 ```
 
 ### Test 2: Verify Redis Connection
+
 ```bash
 # Should NOT see these errors:
 # ❌ Error: REDIS_HOST is not configured
@@ -75,6 +80,7 @@ pnpm dev
 ```
 
 ### Test 3: Test Organization Switch API
+
 ```bash
 # In browser console (must be logged in)
 fetch('/api/organizations/switch', {
@@ -93,6 +99,7 @@ fetch('/api/organizations/switch', {
 ### Analytics Cache - Now Async
 
 **Before:**
+
 ```typescript
 import { analyticsCache, invalidateAnalyticsCache } from '@/lib/analytics-cache';
 
@@ -102,6 +109,7 @@ invalidateAnalyticsCache(tenantId);
 ```
 
 **After:**
+
 ```typescript
 import { analyticsCache, invalidateAnalyticsCache } from '@/lib/analytics-cache';
 
@@ -113,11 +121,13 @@ await invalidateAnalyticsCache(tenantId);
 ### Import Paths - Use @/db
 
 **Deprecated (still works):**
+
 ```typescript
 import { db } from '@/lib/db';
 ```
 
 **Preferred:**
+
 ```typescript
 import { db } from '@/db';
 ```
@@ -142,10 +152,13 @@ import { db } from '@/db';
 ## 🔍 Troubleshooting
 
 ### Error: REDIS_HOST is not configured
+
 **Solution:** Add `REDIS_HOST` and `REDIS_PORT` to `.env.local`
 
 ### Error: Module has no exported member 'clcGroupsHierarchy'
+
 **Solution:** Already fixed - clear TypeScript cache:
+
 ```bash
 # Delete .next and restart
 rm -rf .next
@@ -153,13 +166,17 @@ pnpm dev
 ```
 
 ### Jobs not showing in logs
+
 **Solution:** Jobs only initialize server-side. Check:
+
 1. Not in browser (client-side won't see jobs)
 2. Look in terminal where `pnpm dev` is running
 3. Search for "Scheduled" in output
 
 ### Cache always misses
+
 **Solution:** Verify Upstash credentials:
+
 ```bash
 # Test Redis connection
 curl -H "Authorization: Bearer YOUR_TOKEN" YOUR_URL/get/test-key

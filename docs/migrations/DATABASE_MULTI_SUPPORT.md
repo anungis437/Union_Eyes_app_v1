@@ -5,18 +5,21 @@ This application is designed to work with multiple database systems, providing f
 ## Supported Databases
 
 ### 1. PostgreSQL (Default)
+
 - **Use Case**: Supabase, Local development, Heroku Postgres
 - **Driver**: `postgres-js`
 - **Dialect**: `postgresql`
 - **Features**: Full-text search, JSONB, Arrays, Advanced indexing
 
 ### 2. Azure SQL Server
+
 - **Use Case**: Enterprise deployments on Microsoft Azure
 - **Driver**: `tedious` (via node-postgres)
 - **Dialect**: `mssql`
 - **Features**: Full-text search, JSON support, Enterprise security
 
 ### 3. Microsoft SQL Server
+
 - **Use Case**: On-premises deployments, Local SQL Server
 - **Driver**: `tedious`
 - **Dialect**: `mssql`
@@ -75,6 +78,7 @@ The application uses a unified database abstraction layer (`lib/database/multi-d
 ### Key Features
 
 #### Full-Text Search
+
 ```typescript
 // Automatically uses appropriate syntax
 const results = createFullTextSearchQuery(
@@ -87,6 +91,7 @@ const results = createFullTextSearchQuery(
 ```
 
 #### Date/Time Functions
+
 ```typescript
 // Returns current timestamp for any database
 const now = getCurrentTimestamp(dbType);
@@ -96,6 +101,7 @@ const now = getCurrentTimestamp(dbType);
 ```
 
 #### Array Operations
+
 ```typescript
 // Works with both array types and JSON arrays
 const updated = arrayAppend('tags', 'new-tag');
@@ -105,6 +111,7 @@ const updated = arrayAppend('tags', 'new-tag');
 ```
 
 #### Case-Insensitive Search
+
 ```typescript
 // Unified case-insensitive pattern matching
 const query = createLikeQuery(column, '%search%');
@@ -118,6 +125,7 @@ const query = createLikeQuery(column, '%search%');
 ### Drizzle ORM Schema
 
 The application uses Drizzle ORM which provides:
+
 - Type-safe database queries
 - Automatic schema generation
 - Migration management
@@ -174,11 +182,13 @@ export async function getDocuments(tenantId: string) {
 ## Performance Considerations
 
 ### PostgreSQL
+
 - **Strengths**: Advanced indexing, JSONB performance, Array operations
 - **Optimization**: Use GIN indexes for full-text search and JSONB
 - **Pooling**: Recommended max connections: 10-20
 
 ### Azure SQL
+
 - **Strengths**: Enterprise features, Automatic tuning, Scalability
 - **Optimization**: Use columnstore indexes for analytics
 - **Pooling**: Recommended max connections: 50-100 (depending on tier)
@@ -188,22 +198,26 @@ export async function getDocuments(tenantId: string) {
 ### PostgreSQL to Azure SQL
 
 1. **Export Data**:
+
 ```bash
 pg_dump -h host -U user -d database > backup.sql
 ```
 
-2. **Update Configuration**:
+1. **Update Configuration**:
+
 ```bash
 DATABASE_TYPE=azure-sql
 DATABASE_URL=mssql://...
 ```
 
-3. **Run Migrations**:
+1. **Run Migrations**:
+
 ```bash
 pnpm drizzle-kit push
 ```
 
-4. **Import Data**:
+1. **Import Data**:
+
 ```bash
 # Convert PostgreSQL dump to SQL Server format
 # Import using Azure Data Studio or sqlcmd
@@ -212,22 +226,26 @@ pnpm drizzle-kit push
 ### Azure SQL to PostgreSQL
 
 1. **Export Data**:
+
 ```bash
 # Use Azure Data Studio or SSMS to export
 ```
 
-2. **Update Configuration**:
+1. **Update Configuration**:
+
 ```bash
 DATABASE_TYPE=postgresql
 DATABASE_URL=postgresql://...
 ```
 
-3. **Run Migrations**:
+1. **Run Migrations**:
+
 ```bash
 pnpm drizzle-kit push
 ```
 
-4. **Import Data**:
+1. **Import Data**:
+
 ```bash
 psql -h host -U user -d database < converted_data.sql
 ```
@@ -269,6 +287,7 @@ DATABASE_TYPE=azure-sql pnpm test
 ### Connection Issues
 
 **PostgreSQL**:
+
 ```typescript
 // Check connection
 const health = await checkDatabaseHealth();
@@ -276,6 +295,7 @@ console.log(health);
 ```
 
 **Azure SQL**:
+
 - Verify firewall rules
 - Check SSL/TLS configuration
 - Confirm authentication credentials
@@ -283,6 +303,7 @@ console.log(health);
 ### Query Syntax Errors
 
 If you encounter syntax errors:
+
 1. Check database type in environment
 2. Verify abstraction layer is being used
 3. Test query on specific database manually
@@ -290,11 +311,13 @@ If you encounter syntax errors:
 ### Performance Issues
 
 **PostgreSQL**:
+
 - Enable query logging: `log_statement = 'all'`
 - Analyze queries: `EXPLAIN ANALYZE`
 - Check indexes: `\di` in psql
 
 **Azure SQL**:
+
 - Use Query Performance Insight
 - Enable Query Store
 - Check execution plans

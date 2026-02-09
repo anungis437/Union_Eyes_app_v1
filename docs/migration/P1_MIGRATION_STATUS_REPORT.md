@@ -1,6 +1,7 @@
 # Migration 0059: User ID Column Conversion Status Report
 
 ## Executive Summary
+
 **Goal**: Convert all UUID user ID columns to VARCHAR(255) to align with Clerk authentication  
 **Status**: Migration script created and tested on staging - 38/54 tables successfully converted before hitting RLS policy dependencies  
 **Blocker**: Row Level Security (RLS) policies with cross-table dependencies prevent ALTER COLUMN operations  
@@ -10,6 +11,7 @@
 ## What Was Accomplished
 
 ### ✅ P0 Fixes (Completed - Previous Session)
+
 - Removed deprecated stub authentication code
 - Updated 31 schema field definitions to VARCHAR(255)
 - Files modified:
@@ -21,6 +23,7 @@
   - `db/schema/recognition-rewards-schema.ts` (1 field)
 
 ### ✅ P1 Migration Script (Created & Tested)
+
 - **File**: `db/migrations/0059D_convert_user_ids_dynamic.sql`
 - **Approach**: Dynamic discovery of existing columns (handles schema-database mismatches)
 - **Features**:
@@ -33,8 +36,10 @@
   - Provides detailed logging and validation
 
 ### ✅ Testing Results
+
 **Testing Environment**: unioneyes-staging-db (Azure PostgreSQL 16.11)  
 **Tables Successfully Converted**: 38/54 (70%)
+
 - arbitration_precedents,  attestation_templates
 - bargaining_notes, cba_footnotes, cba_version_history
 - certification_applications, claim_deadlines
@@ -52,9 +57,11 @@
 ## Current Blocker: Cross-Table RLS Policy Dependencies
 
 ### The Problem
+
 PostgreSQL does not allow ALTER COLUMN when a column is referenced in an RLS policy - including policies on OTHER tables that reference this table via joins or subqueries.
 
 **Example Blocking Case**:
+
 ```sql
 -- Policy on notification_log table
 CREATE POLICY notification_log_own_notifications ON notification_log
@@ -70,6 +77,7 @@ ALTER TABLE notification_queue ALTER COLUMN user_id TYPE varchar(255);
 ```
 
 ### Scale of theProblem
+
 - **Total RLS Policies in staging**: 263 policies
 - **Remaining tables with UUID columns**: 44 tables
 - **Cross-table dependencies**: Multiple tables have policies that reference other tables' user_id columns
@@ -79,6 +87,7 @@ ALTER TABLE notification_queue ALTER COLUMN user_id TYPE varchar(255);
 ## Proposed Solutions
 
 ### Option 1: Temporary RLS Disable (Recommended for Staging)
+
 **Safest and fastest for non-production environments**
 
 ```sql
@@ -116,18 +125,21 @@ COMMIT;
 ```
 
 **Pros**:
+
 - ✅ Guaranteed to work
 - ✅ Fast execution (~2-5 minutes)
 - ✅ RLS policies remain intact (just temporarily disabled)
 - ✅ Can test thoroughly in staging before production
 
 **Cons**:
+
 - ⚠️ Requires brief RLS downtime (acceptable for staging, needs planning for production)
 - ⚠️ Need to verify no concurrent users accessing the database during migration
 
 ---
 
 ### Option 2: Drop All Policies, Convert, Recreate (Higher Risk)
+
 **Complete policy management**
 
 ```sql
@@ -158,10 +170,12 @@ END $$;
 ```
 
 **Pros**:
+
 - ✅ Clean approach
 - ✅ Exportable for audit trail
 
 **Cons**:
+
 - ❌ Requires recreating 263 policies (time-consuming)
 - ❌ Must update policy definitions to cast VARCHAR to get_current_user_id() result
 - ❌ Higher risk of policy recreation errors
@@ -169,16 +183,19 @@ END $$;
 ---
 
 ### Option 3: Manual Table-by-Table Conversion (Lowest Risk)
+
 **Most controlled approach**
 
 Convert problematic tables individually with custom policy handling for each.
 
 **Pros**:
+
 - ✅ Lowest risk
 - ✅ Can be done incrementally
 - ✅ Fine-grained control
 
 **Cons**:
+
 - ❌ Time-consuming (44 tables × ~10 min each = 7+ hours)
 - ❌ Requires deep knowledge of each table's policy dependencies
 - ❌ Tedious and error-prone
@@ -188,6 +205,7 @@ Convert problematic tables individually with custom policy handling for each.
 ## Recommended Action Plan
 
 ### For Staging Database (Immediate)
+
 1. ✅ **Use Option 1 (Temporary RLS Disable)**
    - Schedule during low-usage window
    - Announce brief maintenance window
@@ -196,7 +214,9 @@ Convert problematic tables individually with custom policy handling for each.
    - Re-enable RLS and test functionality
 
 ### For Production Database (Future)
+
 Wait until after staging validation, then choose based on requirements:
+
 - **If brief downtime acceptable**: Use Option 1 (fastest, safest)
 - **If zero-downtime required**: Use Option 3 (table-by-table during maintenance windows)
 
@@ -240,17 +260,20 @@ INSERT INTO reports (title, created_by) VALUES ('Test Report', 'user_2abc123def4
 ## Files Created
 
 ✅ **Migration Scripts**:
+
 - `db/migrations/0059D_convert_user_ids_dynamic.sql` - Final working version (70% success rate)
 - `db/migrations/0059_convert_remaining_user_ids.sql` - Initial version (targeted non-existent tables)
 - `db/migrations/0059B_convert_existing_user_ids.sql` - Conditional version (dynamic SQL bugs)
 - `db/migrations/0059C_convert_existing_user_ids_explicit.sql` - Explicit version (view issues)
 
 ✅ **Documentation**:
+
 - `db/migrations/0059_MIGRATION_GUIDE.md` - Original execution guide
 - `scripts/audit-route-auth.ts` - Route authorization audit tool
 - `P1_IMPLEMENTATION_PROGRESS.md` - Progress tracking document
 
 ✅ **Test Outputs**:
+
 - `migration_0059D_final.txt` - Complete migration log with detailed step-by-step output
 - Pre-migration baseline: 60 UUID columns identified
 - Post-attempt status: 38 tables converted, 16 blocked by RLS

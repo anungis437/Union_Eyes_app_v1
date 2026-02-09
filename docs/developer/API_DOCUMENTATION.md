@@ -25,9 +25,11 @@ Tenant isolation is automatically enforced based on authenticated user's tenant.
 Get summary metrics for claims analytics.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days to analyze (default: 30)
 
 **Response**:
+
 ```json
 {
   "current": {
@@ -55,6 +57,7 @@ Get summary metrics for claims analytics.
 ```
 
 **Metrics**:
+
 - `totalClaims`: Total claim count
 - `activeClaims`: Claims in progress
 - `resolvedClaims`: Closed claims
@@ -68,10 +71,12 @@ Get summary metrics for claims analytics.
 Get time-series claim data.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 - `groupBy` (optional): 'daily' | 'weekly' | 'monthly' (default: 'weekly')
 
 **Response**:
+
 ```json
 [
   {
@@ -98,9 +103,11 @@ Get time-series claim data.
 Get claim breakdown by category.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 30)
 
 **Response**:
+
 ```json
 [
   {
@@ -127,9 +134,11 @@ Get claim breakdown by category.
 Get claim distribution by status.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 30)
 
 **Response**:
+
 ```json
 [
   {
@@ -156,9 +165,11 @@ Get claim distribution by status.
 Get member analytics summary.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 30)
 
 **Response**:
+
 ```json
 {
   "current": {
@@ -183,6 +194,7 @@ Get member analytics summary.
 ```
 
 **Metrics**:
+
 - `totalMembers`: Active member count
 - `newMembers`: New signups in period
 - `activeMembers`: Members with claims filed
@@ -195,10 +207,12 @@ Get member analytics summary.
 Get member growth trends.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 180)
 - `groupBy` (optional): 'daily' | 'weekly' | 'monthly' (default: 'monthly')
 
 **Response**:
+
 ```json
 [
   {
@@ -225,9 +239,11 @@ Get member growth trends.
 Get member engagement metrics.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 
 **Response**:
+
 ```json
 {
   "byActivity": [
@@ -262,9 +278,11 @@ Get member engagement metrics.
 Get financial summary metrics.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 
 **Response**:
+
 ```json
 {
   "current": {
@@ -301,6 +319,7 @@ Get financial summary metrics.
 ```
 
 **Calculations**:
+
 - `netValue = settlements - costs`
 - `winRate = (won / resolved) × 100`
 - `recoveryRate = (settlements / claimValue) × 100`
@@ -312,10 +331,12 @@ Get financial summary metrics.
 Get financial time-series data.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 - `groupBy` (optional): 'daily' | 'weekly' | 'monthly' (default: 'weekly')
 
 **Response**:
+
 ```json
 [
   {
@@ -342,9 +363,11 @@ Get financial time-series data.
 Get settlement analysis by resolution outcome.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 
 **Response**:
+
 ```json
 [
   {
@@ -384,9 +407,11 @@ Get settlement analysis by resolution outcome.
 Get financial performance by claim category with ROI.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 
 **Response**:
+
 ```json
 [
   {
@@ -413,6 +438,7 @@ Get financial performance by claim category with ROI.
 ```
 
 **Calculations**:
+
 - `roi = ((settlements - costs) / costs) × 100`
 - `change`: Percentage change vs previous period
 
@@ -423,9 +449,11 @@ Get financial performance by claim category with ROI.
 Get detailed cost breakdown and efficiency metrics.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 90)
 
 **Response**:
+
 ```json
 [
   {
@@ -460,9 +488,11 @@ Get detailed cost breakdown and efficiency metrics.
 Get operational efficiency summary.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 30)
 
 **Response**:
+
 ```json
 {
   "current": {
@@ -487,6 +517,7 @@ Get operational efficiency summary.
 ```
 
 **Metrics**:
+
 - `queueSize`: Active claims count
 - `avgWaitTime`: Hours in queue (average)
 - `slaCompliance`: Percentage resolved within 30 days
@@ -501,6 +532,7 @@ Get queue metrics by priority level.
 **Query Parameters**: None
 
 **Response**:
+
 ```json
 [
   {
@@ -541,6 +573,7 @@ Get steward workload distribution and utilization.
 **Query Parameters**: None
 
 **Response**:
+
 ```json
 [
   {
@@ -563,10 +596,12 @@ Get steward workload distribution and utilization.
 ```
 
 **Metrics**:
+
 - `utilization = (activeCases / capacity) × 100`
 - `avgResponseTime`: Hours to first action
 
 **Color Coding**:
+
 - Red: utilization > 90%
 - Yellow: utilization > 75%
 - Green: utilization ≤ 75%
@@ -578,9 +613,11 @@ Get steward workload distribution and utilization.
 Get SLA compliance tracking over time.
 
 **Query Parameters**:
+
 - `days` (optional): Number of days (default: 30)
 
 **Response**:
+
 ```json
 [
   {
@@ -611,6 +648,7 @@ Get automated bottleneck detection results.
 **Query Parameters**: None
 
 **Response**:
+
 ```json
 [
   {
@@ -629,11 +667,13 @@ Get automated bottleneck detection results.
 ```
 
 **Detection Algorithm**:
+
 - **High**: avg_duration > P75 × 1.5
 - **Medium**: avg_duration > P75 × 1.2
 - **Low**: Otherwise
 
 **Filters**:
+
 - Minimum 5 claims in stage
 - Minimum 48 hours average duration
 
@@ -652,6 +692,7 @@ All endpoints return consistent error formats:
 ```
 
 **Common Status Codes**:
+
 - `200`: Success
 - `400`: Bad Request (invalid parameters)
 - `401`: Unauthorized (missing/invalid token)
@@ -684,6 +725,7 @@ All endpoints return consistent error formats:
 ## Changelog
 
 ### v1.0 (November 15, 2025)
+
 - Initial release
 - 17 endpoints across 4 categories
 - Full authentication and tenant isolation
@@ -691,5 +733,5 @@ All endpoints return consistent error formats:
 
 ---
 
-**Support**: api@unionclaims.com  
+**Support**: <api@unionclaims.com>  
 **Documentation Updated**: November 15, 2025

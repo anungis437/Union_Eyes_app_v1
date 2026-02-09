@@ -5,7 +5,9 @@ This directory contains all utility scripts organized by purpose.
 ## Directory Structure
 
 ### `/database`
+
 Database inspection, validation, and schema management scripts:
+
 - `add-clause-history-column.ts` - Add clause history tracking
 - `check-columns.ts` - Column verification
 - `check-enums.ts` - Enum type validation
@@ -23,7 +25,9 @@ Database inspection, validation, and schema management scripts:
 - `VALIDATION_TEST_SUITE.sql` - Comprehensive validation suite
 
 ### `/migration`
+
 Database migration and data transformation scripts:
+
 - `apply-cba-migration.ps1` - CBA migration application
 - `fix-security.ts` - API security migration codemod
 - `fix-relations.ps1` - Relationship fixes
@@ -39,7 +43,9 @@ Database migration and data transformation scripts:
 - `run-sql-script.js` - SQL script executor
 
 ### `/testing`
+
 Testing utilities and verification scripts:
+
 - `check-org-members.js` - Organization member verification
 - `check-tables.js` - Table structure verification
 - `check-tenants-table.js` - Tenant table validation
@@ -55,7 +61,9 @@ Testing utilities and verification scripts:
 - `verify-user-access.js` - User access verification
 
 ### `/setup`
+
 Environment setup and configuration scripts:
+
 - `cleanup-docs-simple.ps1` - Simple documentation cleanup
 - `cleanup-docs.ps1` - Full documentation cleanup
 - `fix-i18n-routing.ps1` - i18n routing fixes
@@ -66,6 +74,7 @@ Environment setup and configuration scripts:
 ## Usage Examples
 
 ### Running Database Migrations
+
 ```bash
 # Run all migrations
 tsx scripts/migration/run-full-migration.ts
@@ -75,6 +84,7 @@ tsx scripts/migration/run-phase1-3-migrations.ts
 ```
 
 ### Testing
+
 ```bash
 # Test database connection
 tsx scripts/testing/test-database-connection.ts
@@ -87,6 +97,7 @@ tsx scripts/testing/test-ai-endpoints.ts
 ```
 
 ### Database Validation
+
 ```bash
 # Validate full schema
 tsx scripts/database/validate-database-schema.ts
@@ -99,6 +110,7 @@ tsx scripts/database/get-full-schema.ts
 ```
 
 ### Setup
+
 ```bash
 # Setup financial service
 .\scripts\setup\setup-financial-service.ps1

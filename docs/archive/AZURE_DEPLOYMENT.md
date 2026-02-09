@@ -14,12 +14,14 @@
 Choose your operating system:
 
 **Windows (PowerShell):**
+
 ```powershell
 cd scripts
 .\azure-setup.ps1
 ```
 
 **Linux/Mac:**
+
 ```bash
 cd scripts
 chmod +x azure-setup.sh
@@ -27,6 +29,7 @@ chmod +x azure-setup.sh
 ```
 
 This script will create:
+
 - Resource Groups (staging & prod)
 - Azure Container Registry
 - App Service Plans
@@ -69,10 +72,12 @@ az cognitiveservices account deployment create \
 Add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
 
 #### Shared Secrets
+
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - From Clerk dashboard
 - `CLERK_SECRET_KEY` - From Clerk dashboard
 
 #### Staging Secrets
+
 - `AZURE_CREDENTIALS_STAGING` - Azure service principal JSON
 - `STAGING_ACR_LOGIN_SERVER` - `unioneyesstagingacr.azurecr.io`
 - `STAGING_ACR_USERNAME` - From Azure Container Registry
@@ -87,6 +92,7 @@ Add the following secrets to your GitHub repository (Settings → Secrets and va
 - `STAGING_AZURE_OPENAI_KEY` - From setup script
 
 #### Production Secrets
+
 - `AZURE_CREDENTIALS_PROD` - Azure service principal JSON
 - `PROD_ACR_LOGIN_SERVER` - `unioneyesprodacr.azurecr.io`
 - `PROD_ACR_USERNAME` - From Azure Container Registry
@@ -165,6 +171,7 @@ pnpm db:push
 ## Deployment Workflow
 
 ### Staging Deployment
+
 1. Push to `staging` branch
 2. GitHub Actions automatically:
    - Builds the application
@@ -173,6 +180,7 @@ pnpm db:push
    - Deploys to Azure Web App (staging)
 
 ### Production Deployment
+
 1. Merge to `main` branch
 2. GitHub Actions automatically:
    - Builds the application
@@ -206,6 +214,7 @@ az webapp config container set \
 ## Monitoring and Logs
 
 ### View application logs
+
 ```bash
 # Staging
 az webapp log tail --name unioneyes-staging-app --resource-group unioneyes-staging-rg
@@ -215,11 +224,13 @@ az webapp log tail --name unioneyes-prod-app --resource-group unioneyes-prod-rg
 ```
 
 ### View container logs
+
 ```bash
 docker-compose logs -f app
 ```
 
 ### View resource list
+
 ```bash
 # Staging
 az resource list --resource-group unioneyes-staging-rg --output table
@@ -231,6 +242,7 @@ az resource list --resource-group unioneyes-prod-rg --output table
 ## Database Management
 
 ### Connect to Azure PostgreSQL
+
 ```bash
 # Staging
 psql "postgresql://unionadmin:<password>@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require"
@@ -240,11 +252,13 @@ psql "postgresql://unionadmin:<password>@unioneyes-prod-db.postgres.database.azu
 ```
 
 ### Backup database
+
 ```bash
 pg_dump "postgresql://unionadmin:<password>@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require" > backup.sql
 ```
 
 ### Restore database
+
 ```bash
 psql "postgresql://unionadmin:<password>@unioneyes-staging-db.postgres.database.azure.com:5432/unioneyes?sslmode=require" < backup.sql
 ```
@@ -252,20 +266,24 @@ psql "postgresql://unionadmin:<password>@unioneyes-staging-db.postgres.database.
 ## Troubleshooting
 
 ### Container won't start
+
 1. Check logs: `docker-compose logs app`
 2. Verify environment variables are set
 3. Check database connectivity
 
 ### Build fails
+
 1. Clear Docker cache: `docker system prune -a`
 2. Rebuild: `docker-compose up --build --force-recreate`
 
 ### Database connection issues
+
 1. Verify DATABASE_URL is correct
 2. Check firewall rules in Azure PostgreSQL
 3. Ensure IP is whitelisted
 
 ### Azure deployment fails
+
 1. Check GitHub Actions logs
 2. Verify secrets are set correctly
 3. Check Azure Web App logs
@@ -273,6 +291,7 @@ psql "postgresql://unionadmin:<password>@unioneyes-staging-db.postgres.database.
 ## Cost Estimation
 
 ### Staging Environment (Monthly)
+
 - App Service Plan (B1): ~$13
 - PostgreSQL (Standard_B2s): ~$30
 - Storage Account: ~$1
@@ -282,6 +301,7 @@ psql "postgresql://unionadmin:<password>@unioneyes-staging-db.postgres.database.
 **Total: ~$50/month** + usage
 
 ### Production Environment (Monthly)
+
 - App Service Plan (P1V3): ~$100
 - PostgreSQL (Standard_B2s): ~$30
 - Storage Account: ~$2

@@ -9,6 +9,7 @@
 ## 📁 FILE STRUCTURE VALIDATION
 
 ### ✅ Created & Verified
+
 ```
 lib/
 ├── auth/
@@ -26,6 +27,7 @@ lib/
 ```
 
 ### 📦 Stub Files Added
+
 - **lib/auth/types.ts**: Centralized auth type definitions
   - UserContext, OrganizationContext, AuthResult interfaces
   - PermissionCheckOptions, RoleCheckOptions
@@ -55,10 +57,12 @@ lib/
 ## 🔍 DETECTED ISSUES
 
 ### ✅ P0: user.id Property Access (Resolved)
+
 **Found**: 0 runtime usages in `app/api`  
 **Residual**: 2 string/comment hits (query key + comment)
 
 **Pattern**:
+
 ```typescript
 // ❌ WRONG - user.id doesn't exist on Clerk User type
 const user = await getCurrentUser();
@@ -74,13 +78,16 @@ userId: context.userId,
 ---
 
 ### 🟡 P0: Duplicate auth() Calls
+
 **Status**: Need comprehensive scan  
 **Action**: Run migration script to detect dual auth patterns
 
 ---
 
 ### 🔴 P1: Schema Field Name Inconsistencies
+
 **Examples from Type-Check**:
+
 - `matter_id` vs `matterId` (packages/types tests)
 - `taskCategory` vs `category` (TimeEntry type)
 - `entryType` vs `entry_type` (KnowledgeEntry type)
@@ -136,6 +143,7 @@ userId: context.userId,
 ## 📈 MIGRATION PROGRESS
 
 ### Phase 1: Infrastructure ✅ COMPLETE
+
 - ✅ Created `lib/auth/unified-auth.ts`
 - ✅ Created `lib/auth/types.ts`
 - ✅ Created `lib/auth/permissions.ts`
@@ -144,10 +152,12 @@ userId: context.userId,
 - ✅ Consolidated `lib/tenant-middleware.ts`
 
 ### Phase 2: Route Migration 🔄 IN PROGRESS
+
 - ✅ userId runtime bug eliminated in `app/api`
 - 🔴 121 route blocks still use legacy user object pattern
 
 ### Phase 3: Testing & Validation 🔴 NOT STARTED
+
 - Schema field name standardization
 - Comprehensive integration tests
 - Database-backed audit logging
@@ -158,42 +168,52 @@ userId: context.userId,
 ## 🎯 NEXT ACTIONS (Priority Order)
 
 ### 1. **P0: Fix user.id Bugs** [COMPLETE]
+
 ```bash
 # Run targeted fix script
 pnpm tsx scripts/fix-user-id-bugs.ts --target app/api --apply
 ```
+
 **Estimated Impact**: Fixed runtime crashes tied to `user.id` access  
 **Time**: Complete
 
 ### 2. **P0: Detect & Remove Duplicate auth() Calls**
+
 ```bash
 # Scan for duplicate patterns
 pnpm tsx scripts/scan-duplicate-auth.ts --report
 ```
+
 **Estimated Impact**: Reduce auth overhead, improve performance  
 **Time**: 2-4 hours
 
 ### 3. **P2: Mass Route Migration**
+
 ```bash
 # Apply unified auth to all 373 routes
 pnpm tsx scripts/migrate-routes-ast.ts --apply --dry-run=false
 ```
+
 **Estimated Impact**: Standardize remaining 121 legacy user object blocks  
 **Time**: 1-2 days (requires careful testing)
 
 ### 4. **P1: Schema Field Name Fixes**
+
 ```bash
 # Fix snake_case vs camelCase inconsistencies
 pnpm tsx scripts/fix-schema-field-names.ts --scan --apply
 ```
+
 **Estimated Impact**: Resolve 20+ type errors  
 **Time**: 4-8 hours
 
 ### 5. **P2: Integration Tests**
+
 ```typescript
 // Add comprehensive auth flow tests
 __tests__/integration/auth-flows.test.ts
 ```
+
 **Estimated Impact**: Prevent regressions  
 **Time**: 1 day
 
@@ -202,6 +222,7 @@ __tests__/integration/auth-flows.test.ts
 ## 🏁 DEFINITION OF DONE
 
 Migration is **COMPLETE** when:
+
 1. ✅ All 373 routes use unified auth pattern
 2. ✅ Zero `user.id` property access violations
 3. ✅ Zero duplicate auth() calls
@@ -218,6 +239,7 @@ Migration is **COMPLETE** when:
 **Question**: Are we aligned on this migration plan?
 
 **Key Decisions Needed**:
+
 1. Approve P0 mass fixes for `user.id` bugs?
 2. Approve P2 mass route migration to unified auth?
 3. Prioritize schema fixes vs. route migration?

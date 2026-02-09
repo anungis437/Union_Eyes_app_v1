@@ -81,19 +81,19 @@ mobile/
 cd mobile
 ```
 
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-3. Copy environment variables:
+1. Copy environment variables:
 
 ```bash
 cp .env.example .env
 ```
 
-4. Configure your environment variables in `.env`:
+1. Configure your environment variables in `.env`:
 
 ```bash
 API_URL=https://your-api-url.com
@@ -131,19 +131,19 @@ pnpm web
 npm install -g eas-cli
 ```
 
-2. Login to Expo:
+1. Login to Expo:
 
 ```bash
 eas login
 ```
 
-3. Configure your project:
+1. Configure your project:
 
 ```bash
 eas build:configure
 ```
 
-4. Build for production:
+1. Build for production:
 
 ```bash
 # iOS

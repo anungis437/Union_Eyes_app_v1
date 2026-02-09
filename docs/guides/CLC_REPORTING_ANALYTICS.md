@@ -250,35 +250,41 @@ The Analytics Dashboard provides real-time visualization of remittance data with
 ### Dashboard Features
 
 #### 1. Overview Tab
+
 - **Summary Cards**: Total remittances, revenue, compliance rate, trends
 - **12-Month Chart**: Remittances and revenue over time (dual Y-axis)
 - **Organization Distribution**: Pie chart of organizations by status
 
 #### 2. Multi-Year Trends
+
 - **3/5/10 Year Selector**: Choose analysis period
 - **Trend Line Chart**: Multi-year comparison
 - **Growth Metrics**: Year-over-year percentage changes
 - **Trend Direction**: Visual indicators (↑ increasing, → stable, ↓ decreasing)
 
 #### 3. Organization Performance
+
 - **Performance Table**: Sortable, filterable organization list
 - **Compliance Scores**: 0-100 scale with color coding
 - **Benchmark Comparison**: Percentile rankings
 - **Drill-Down**: Click for detailed organization view
 
 #### 4. Payment Patterns
+
 - **Monthly Heatmap**: Visual payment timing patterns
 - **Average Days to Payment**: Trend over time
 - **Seasonal Analysis**: Identify peak/slow periods
 - **Early/On-Time/Late Breakdown**: Payment distribution
 
 #### 5. Anomaly Alerts
+
 - **Severity Badges**: Critical, high, medium, low
 - **Alert List**: Sortable by severity, date, organization
 - **Recommended Actions**: Quick action buttons
 - **Dismiss/Snooze**: Alert management
 
 #### 6. Forecast View
+
 - **12-Month Forecast**: Predicted remittances
 - **Confidence Intervals**: Upper/lower bounds visualization
 - **R² Score**: Model accuracy indicator
@@ -788,6 +794,7 @@ import { CLCApprovalWorkflow } from '@/components/admin/clc-approval-workflow';
 ```
 
 Component features:
+
 - Visual workflow progress indicator
 - Approval history timeline
 - Action buttons (Approve/Reject) with permissions
@@ -805,9 +812,11 @@ Component features:
 Multi-year trend analysis.
 
 **Query Parameters:**
+
 - `years` (required): Number of years (3, 5, or 10)
 
 **Response:**
+
 ```json
 {
   "years": 5,
@@ -828,9 +837,11 @@ Multi-year trend analysis.
 Organization performance comparison.
 
 **Query Parameters:**
+
 - `year` (required): Analysis year
 
 **Response:**
+
 ```json
 {
   "organizations": [...],
@@ -844,9 +855,11 @@ Organization performance comparison.
 Remittance forecasting.
 
 **Query Parameters:**
+
 - `months` (optional): Forecast period (default: 12)
 
 **Response:**
+
 ```json
 [
   {
@@ -866,9 +879,11 @@ Remittance forecasting.
 Anomaly detection.
 
 **Query Parameters:**
+
 - `year` (required): Analysis year
 
 **Response:**
+
 ```json
 [
   {
@@ -890,6 +905,7 @@ Anomaly detection.
 Manually trigger overdue alerts.
 
 **Body:**
+
 ```json
 {
   "remittanceId": "remittance-123",
@@ -902,6 +918,7 @@ Manually trigger overdue alerts.
 Send monthly reminders to all organizations.
 
 **Body:**
+
 ```json
 {
   "period": "2024-02"
@@ -915,6 +932,7 @@ Send monthly reminders to all organizations.
 Sync single organization.
 
 **Body:**
+
 ```json
 {
   "organizationId": "org-123"
@@ -932,6 +950,7 @@ Sync all organizations (admin only).
 Submit remittance for approval.
 
 **Body:**
+
 ```json
 {
   "remittanceId": "remittance-123"
@@ -943,6 +962,7 @@ Submit remittance for approval.
 Approve remittance at current level.
 
 **Body:**
+
 ```json
 {
   "remittanceId": "remittance-123",
@@ -956,6 +976,7 @@ Approve remittance at current level.
 Reject remittance.
 
 **Body:**
+
 ```json
 {
   "remittanceId": "remittance-123",
@@ -1376,10 +1397,12 @@ export function handleAPIError(error: unknown) {
 #### Issue: Notifications Not Sending
 
 **Symptoms:**
+
 - Organizations not receiving overdue alerts
 - Payment confirmations missing
 
 **Diagnosis:**
+
 ```typescript
 // Check notification logs
 const logs = await db
@@ -1395,6 +1418,7 @@ logs.forEach(log => {
 ```
 
 **Solutions:**
+
 1. Verify email service configuration (Resend API key)
 2. Check SMS service credentials (Twilio)
 3. Ensure contact information is up-to-date
@@ -1403,10 +1427,12 @@ logs.forEach(log => {
 #### Issue: CLC Sync Failures
 
 **Symptoms:**
+
 - Organization data out of sync
 - Sync logs show errors
 
 **Diagnosis:**
+
 ```typescript
 // Check recent sync failures
 const failures = await db
@@ -1418,6 +1444,7 @@ const failures = await db
 ```
 
 **Solutions:**
+
 1. Verify CLC API credentials
 2. Check network connectivity
 3. Review rate limiting (10 req/sec max)
@@ -1426,10 +1453,12 @@ const failures = await db
 #### Issue: Approval Workflow Stuck
 
 **Symptoms:**
+
 - Remittance stuck in approval state
 - No approver assigned
 
 **Diagnosis:**
+
 ```typescript
 // Find stuck workflows
 const stuck = await db
@@ -1442,6 +1471,7 @@ const stuck = await db
 ```
 
 **Solutions:**
+
 1. Assign approver manually
 2. Check approver permissions
 3. Escalate to next level if needed
@@ -1450,10 +1480,12 @@ const stuck = await db
 #### Issue: Analytics Dashboard Loading Slowly
 
 **Symptoms:**
+
 - Dashboard takes >10 seconds to load
 - Timeout errors
 
 **Solutions:**
+
 1. Enable caching (Redis or in-memory)
 2. Reduce date range
 3. Optimize database queries (add indexes)
@@ -1495,9 +1527,9 @@ export async function GET() {
 
 ### Support Contacts
 
-- **Technical Issues**: tech-support@union-platform.ca
-- **CLC API Issues**: api-support@clc-ctc.ca
-- **General Questions**: help@union-platform.ca
+- **Technical Issues**: <tech-support@union-platform.ca>
+- **CLC API Issues**: <api-support@clc-ctc.ca>
+- **General Questions**: <help@union-platform.ca>
 
 ---
 
@@ -1509,7 +1541,7 @@ See `emails/clc-*.tsx` for full HTML templates.
 
 ### Appendix B: CLC API Specification
 
-See CLC API documentation at https://api.clc-ctc.ca/docs
+See CLC API documentation at <https://api.clc-ctc.ca/docs>
 
 ### Appendix C: StatCan LAB-05302 Format
 

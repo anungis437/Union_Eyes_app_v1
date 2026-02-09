@@ -13,6 +13,7 @@ Phase 3 Area 11 (Enhanced AI & ML Integration) is now **100% complete**, extendi
 ### What Was Built
 
 This area builds upon Area 6 (AI Workbench) by adding:
+
 - ✅ **Production ML API Endpoints** (4 routes)
 - ✅ **Natural Language Query Interface** (interactive UI)
 - ✅ **Smart Recommendations Engine** (4 recommendation types)
@@ -97,6 +98,7 @@ ML Insights Dashboard
 ### 1. Predictive Analytics API (100%)
 
 **Claim Outcome Prediction** (`/api/ml/predictions/claim-outcome`)
+
 - Predicts: favorable | unfavorable | settlement | withdrawal
 - Probability and confidence scores (0-1 scale)
 - Key factors with positive/negative impact analysis
@@ -107,6 +109,7 @@ ML Insights Dashboard
 - Integrates with AI service predictive analytics engine
 
 **Timeline Forecast** (`/api/ml/predictions/timeline`)
+
 - Estimated completion date with confidence
 - Key milestone predictions with probabilities
 - Risk factor identification
@@ -116,6 +119,7 @@ ML Insights Dashboard
 ### 2. Natural Language Query Interface (100%)
 
 **Query API** (`/api/ml/query`)
+
 - Natural language to SQL conversion
 - Intent classification (analytical | informational | procedural)
 - Safety checks for read-only queries
@@ -130,6 +134,7 @@ ML Insights Dashboard
   - "Which employer has the most claims?"
 
 **UI Component** (`NLQueryInterface.tsx`)
+
 - Interactive chat-like interface
 - Example query suggestions (5 pre-defined)
 - Real-time result display with answer text
@@ -148,6 +153,7 @@ ML Insights Dashboard
 **Four Recommendation Types:**
 
 **a) Steward Assignment Recommendations**
+
 - Identifies unassigned claims needing stewards
 - Calculates average workload per steward
 - Detects overloaded stewards (>10 claims threshold)
@@ -155,6 +161,7 @@ ML Insights Dashboard
 - Priority: high (>5 unassigned) or medium
 
 **b) Deadline Recommendations**
+
 - Upcoming deadlines (within 3 days) with high priority
 - Overdue deadlines with critical priority
 - SLA compliance warnings
@@ -162,6 +169,7 @@ ML Insights Dashboard
 - Confidence: 1.0 (factual data)
 
 **c) Strategy Recommendations**
+
 - Analyzes claim patterns by type
 - Identifies low win rate claim types (<50% with ≥5 claims)
 - Suggests strategy adjustments or training
@@ -169,6 +177,7 @@ ML Insights Dashboard
 - Confidence: 0.75
 
 **d) Priority Recommendations**
+
 - Identifies claims open for 30+ days
 - Suggests escalation for long-running claims
 - Calculates claim age in days
@@ -176,10 +185,12 @@ ML Insights Dashboard
 - Confidence: 0.8
 
 **Recommendation Sorting:**
+
 - Sorted by (priority_weight × confidence)
 - Priority weights: high=3, medium=2, low=1
 
 **UI Component** (`SmartRecommendations.tsx`)
+
 - Type filtering (steward | deadline | strategy | priority | all)
 - Auto-refresh capability
 - Priority badges with icons (high=AlertTriangle, medium=TrendingUp, low=CheckCircle)
@@ -192,6 +203,7 @@ ML Insights Dashboard
 ### 4. Prediction Viewer Component (100%)
 
 **Features:**
+
 - **Outcome Prediction Display**
   - Large outcome card with icon and color coding
   - Probability percentage (0-100%)
@@ -219,6 +231,7 @@ ML Insights Dashboard
 ### 5. ML Insights Dashboard (100%)
 
 **Page Structure** (`/ml-insights`)
+
 - Tabbed interface with 3 sections:
   - **Query Tab**: Natural language query interface
   - **Recommendations Tab**: 2×2 grid of recommendation widgets
@@ -229,6 +242,7 @@ ML Insights Dashboard
   - **Trends Tab**: Placeholder for future ML trend analysis
 
 **Design Features:**
+
 - Icon-driven navigation (Sparkles, Lightbulb, TrendingUp)
 - Responsive layout (desktop: 2-column grid, mobile: stacked)
 - Consistent styling with existing dashboard
@@ -241,6 +255,7 @@ ML Insights Dashboard
 ### Leverages Existing AI Workbench Infrastructure
 
 **From Area 6 (services/ai-service/):**
+
 - ✅ **Predictive Analytics Engine** (`engines/predictive-analytics.ts`)
   - `predictClaimOutcome()` - 466 lines
   - `predictTimeline()` - integrated
@@ -265,6 +280,7 @@ ML Insights Dashboard
   - Job tracking and status updates
 
 **Area 11 Adds:**
+
 - ✅ Production API endpoints with tenant auth
 - ✅ Interactive UI components
 - ✅ Smart recommendation logic
@@ -277,23 +293,27 @@ ML Insights Dashboard
 ## 🎓 Key Technical Decisions
 
 ### 1. API Design
+
 - **RESTful structure** under `/api/ml/` namespace
 - **Tenant isolation** via Clerk auth + orgId
 - **Request validation** with explicit error messages
 - **AI service integration** via HTTP (not direct import for microservice separation)
 
 ### 2. Natural Language Query Safety
+
 - **500 character limit** to prevent injection attacks
 - **Read-only SQL** enforcement via AI prompts
 - **SQL transparency** shown to users for trust
 - **Follow-up suggestions** generated server-side for accuracy
 
 ### 3. Recommendation Scoring
+
 - **Confidence-based sorting** (priority weight × confidence)
 - **Threshold-based alerts** (e.g., >10 claims = overloaded)
 - **Factual data confidence** (1.0 for deadlines, 0.75-0.9 for predictions)
 
 ### 4. UI/UX Patterns
+
 - **Progressive disclosure** (click to generate predictions)
 - **Loading states** for all async operations
 - **Empty states** with helpful messaging
@@ -305,16 +325,19 @@ ML Insights Dashboard
 ## 📈 Success Metrics
 
 ### Performance
+
 - ✅ Prediction API response time: < 3 seconds (AI service dependent)
 - ✅ Query API response time: < 2 seconds (simple queries)
 - ✅ Recommendations API: < 500ms (database queries only)
 
 ### Accuracy
+
 - ✅ Prediction confidence: 70-95% range (AI model dependent)
 - ✅ Query intent classification: 90%+ accuracy expected
 - ✅ Recommendation relevance: 100% (factual data)
 
 ### Adoption
+
 - Target: 20+ daily queries via NL interface
 - Target: 50+ prediction views per week
 - Target: 100% of users see recommendations daily
@@ -324,6 +347,7 @@ ML Insights Dashboard
 ## 🚀 Usage Examples
 
 ### Natural Language Query
+
 ```typescript
 // User asks: "Show me top 5 stewards by win rate this month"
 // System:
@@ -341,6 +365,7 @@ ML Insights Dashboard
 ```
 
 ### Claim Outcome Prediction
+
 ```typescript
 // User clicks "Generate Prediction" on claim detail page
 // System:
@@ -363,6 +388,7 @@ ML Insights Dashboard
 ```
 
 ### Smart Recommendations
+
 ```typescript
 // User opens dashboard or ML insights page
 // System:
@@ -391,18 +417,21 @@ ML Insights Dashboard
 ## 🔗 API Integration Points
 
 ### Main App → AI Service
+
 - Area 11 APIs call AI service via HTTP at `AI_SERVICE_URL`
 - Authentication: `AI_SERVICE_TOKEN` bearer token
 - Tenant ID passed via `X-Tenant-ID` header
 - Area 6 engines handle actual AI/ML logic
 
 ### Database Integration
+
 - Smart recommendations query Drizzle ORM directly
 - Queries: claims, users, deadlines tables
 - Tenant filtering on all queries
 - Aggregations: COUNT, SUM, AVG, GROUP BY
 
 ### Frontend → Backend APIs
+
 - Fetch API with JSON payloads
 - Clerk auth handled automatically (session cookies)
 - Error handling with user-friendly messages
@@ -413,23 +442,27 @@ ML Insights Dashboard
 ## 🎨 UI/UX Highlights
 
 ### Responsive Design
+
 - Desktop: 2-column grid for recommendations
 - Tablet: Stacked layout
 - Mobile: Full-width cards
 
 ### Visual Hierarchy
+
 - Primary actions: Blue buttons
 - Outcome indicators: Color-coded (green/red/blue/gray)
 - Priority badges: Red (high), Yellow (medium), Gray (low)
 - Confidence: Outline badges with percentages
 
 ### Accessibility
+
 - Icon + text labels for all actions
 - ARIA attributes on interactive elements
 - Keyboard navigation support
 - Color + icon for status (not color alone)
 
 ### Loading States
+
 - Spinner icons for async operations
 - Disabled buttons during loading
 - Skeleton loaders (optional enhancement)
@@ -439,6 +472,7 @@ ML Insights Dashboard
 ## 🧪 Testing Recommendations
 
 ### Unit Tests
+
 ```typescript
 // API route tests
 describe('POST /api/ml/predictions/claim-outcome', () => {
@@ -467,6 +501,7 @@ describe('GET /api/ml/recommendations', () => {
 ```
 
 ### Integration Tests
+
 ```typescript
 // Test full flow from UI to AI service
 describe('Prediction flow', () => {
@@ -481,6 +516,7 @@ describe('Prediction flow', () => {
 ```
 
 ### E2E Tests
+
 ```typescript
 // Test user journey
 describe('ML Insights Page', () => {
@@ -506,6 +542,7 @@ describe('ML Insights Page', () => {
 ## 📝 Future Enhancements (Post-Phase 3)
 
 ### Short-term (Phase 4)
+
 - **Model Training Pipeline**
   - Collect prediction feedback (was prediction accurate?)
   - Store feedback in ai_prediction_feedback table
@@ -523,6 +560,7 @@ describe('ML Insights Page', () => {
   - Snooze recommendations
 
 ### Medium-term (6 months)
+
 - **Anomaly Detection Dashboard**
   - Real-time pattern detection
   - Unusual activity alerts
@@ -539,6 +577,7 @@ describe('ML Insights Page', () => {
   - Counterfactual examples ("If X changed, outcome would be Y")
 
 ### Long-term (12+ months)
+
 - **AutoML Pipeline**
   - Automatic model selection
   - Hyperparameter tuning
@@ -554,6 +593,7 @@ describe('ML Insights Page', () => {
 ## ✅ Completion Checklist
 
 **Backend:**
+
 - [x] Claim outcome prediction API
 - [x] Timeline forecast API
 - [x] Natural language query API
@@ -563,6 +603,7 @@ describe('ML Insights Page', () => {
 - [x] AI service integration
 
 **Frontend:**
+
 - [x] NLQueryInterface component
 - [x] SmartRecommendations component
 - [x] PredictionViewer component
@@ -573,12 +614,14 @@ describe('ML Insights Page', () => {
 - [x] Query history
 
 **Integration:**
+
 - [x] Area 6 AI service connection
 - [x] Database queries (Drizzle ORM)
 - [x] Clerk authentication
 - [x] Component exports
 
 **Documentation:**
+
 - [x] Implementation summary
 - [x] API documentation
 - [x] Component usage guide
@@ -601,10 +644,12 @@ describe('ML Insights Page', () => {
 ## 📊 Area 11 Impact
 
 **Phase 3 Status Update:**
+
 - **Before Area 11**: 50% complete (4 of 8 areas)
 - **After Area 11**: 62.5% complete (5 of 8 areas)
 
 **Capabilities Added:**
+
 - Natural language interface for non-technical users
 - Proactive recommendations for steward workload and deadlines
 - Predictive analytics for claim outcomes and timelines
@@ -612,6 +657,7 @@ describe('ML Insights Page', () => {
 - Centralized AI hub for all ML features
 
 **Lines of Code:**
+
 - Area 11: ~2,100 lines
 - Phase 3 Total: ~26,460 lines (24,360 + 2,100)
 - Files: 69+ files (67 + 2 new directories)

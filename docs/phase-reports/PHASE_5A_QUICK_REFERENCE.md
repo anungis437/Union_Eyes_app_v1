@@ -50,10 +50,12 @@ node run-phase5a-migrations.js
 ## 📊 Key Database Changes
 
 ### New Tables
+
 - `organizations` - Hierarchical org structure (replaces flat tenants)
 - `organization_relationships` - Explicit relationship tracking
 
 ### Updated Tables (Added `organization_id` column)
+
 - claims
 - members
 - strike_funds
@@ -64,6 +66,7 @@ node run-phase5a-migrations.js
 - organization_members
 
 ### New Functions
+
 - `get_ancestor_org_ids(uuid)` - Get all parents
 - `get_descendant_org_ids(uuid)` - Get all children
 - `get_user_visible_orgs(text)` - RLS visibility
@@ -288,16 +291,19 @@ WHERE hierarchy_path IS NULL;
 ## 📞 Need Help?
 
 **Documentation:**
+
 - Full roadmap: `PHASE_5A_PROGRESS.md`
 - Day 1 summary: `docs/PHASE_5A_DAY1_SUMMARY.md`
 - This guide: `docs/PHASE_5A_QUICK_REFERENCE.md`
 
 **SQL Files:**
+
 - Schema: `database/migrations/030_hierarchical_organizations.sql`
 - Data: `database/migrations/031_migrate_tenant_data.sql`
 - RLS: `database/migrations/032_update_rls_policies.sql`
 
 **Type Definitions:**
+
 - TypeScript: `types/organization.ts`
 - Drizzle: `db/schema-organizations.ts`
 

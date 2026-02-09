@@ -21,6 +21,7 @@ pnpm encrypt:generate-key --write
 **Output**: Base64-encoded encryption key to add to `.env.local`
 
 **When to use**:
+
 - Setting up local development environment
 - Creating new test environments
 - Rotating development keys
@@ -41,6 +42,7 @@ pnpm encrypt:test
 ```
 
 **Tests**:
+
 - ✅ Environment configuration
 - ✅ Encryption service initialization
 - ✅ SIN encryption/decryption round-trips
@@ -51,6 +53,7 @@ pnpm encrypt:test
 - ✅ Performance benchmarks
 
 **When to use**:
+
 - After setting up encryption for the first time
 - After changing encryption configuration
 - Before deploying to production
@@ -62,6 +65,7 @@ pnpm encrypt:test
 
 **Script**: `migrate-sin-to-encrypted.ts`  
 **Commands**:
+
 - `pnpm encrypt:migrate:dry-run` - Preview migration without changes
 - `pnpm encrypt:migrate` - Perform actual migration
 
@@ -82,16 +86,19 @@ pnpm encrypt:migrate --force
 ```
 
 **Options**:
+
 - `--dry-run` - Show what would be migrated without making changes
 - `--batch-size=N` - Process N records at a time (default: 100)
 - `--force` - Skip confirmation prompt
 
 **When to use**:
+
 - After deploying encryption system to existing database
 - During initial rollout of PII encryption
 - When migrating from legacy systems
 
-⚠️ **Important**: 
+⚠️ **Important**:
+
 - Backup database before running
 - Run dry-run first to preview changes
 - Monitor for errors during migration
@@ -103,21 +110,25 @@ pnpm encrypt:migrate --force
 ### First-Time Setup
 
 1. **Generate encryption key**:
+
    ```bash
    pnpm encrypt:generate-key
    ```
 
 2. **Add key to `.env.local`**:
+
    ```bash
    FALLBACK_ENCRYPTION_KEY=<generated-key>
    ```
 
 3. **Test encryption**:
+
    ```bash
    pnpm encrypt:test
    ```
 
 4. **Run migration** (if you have existing data):
+
    ```bash
    pnpm encrypt:migrate:dry-run
    pnpm encrypt:migrate
@@ -150,21 +161,25 @@ scripts/
 ## Troubleshooting
 
 ### "Cannot find module '@azure/keyvault-keys'"
+
 ```bash
 pnpm install -w @azure/keyvault-keys
 ```
 
 ### "Fallback encryption key must be 32 bytes"
+
 ```bash
 pnpm encrypt:generate-key
 ```
 
 ### "Failed to decrypt SIN"
+
 - Verify `FALLBACK_ENCRYPTION_KEY` is in `.env.local`
 - Run `pnpm encrypt:test` to diagnose issues
 - Check if data was encrypted with a different key
 
 ### Migration fails
+
 - Ensure database migration 068 is applied
 - Check database connection
 - Review error logs for specific issues
@@ -178,6 +193,7 @@ For production deployments:
 
 1. **Do NOT use `FALLBACK_ENCRYPTION_KEY`**
 2. **Configure Azure Key Vault**:
+
    ```bash
    AZURE_KEY_VAULT_URL=https://your-vault.vault.azure.net/
    AZURE_CLIENT_ID=your-client-id
@@ -185,6 +201,7 @@ For production deployments:
    AZURE_TENANT_ID=your-tenant-id
    ENCRYPTION_KEY_NAME=pii-encryption-key
    ```
+
 3. **Test with production credentials** (on staging first!)
 4. **Run migration with backups**
 5. **Monitor audit logs**

@@ -41,7 +41,7 @@ To use the App, you must:
 - You agree not to share your account credentials
 - We are not liable for losses due to unauthorized use
 
-##5. Acceptable Use
+## 5. Acceptable Use
 
 You agree NOT to:
 
@@ -168,7 +168,7 @@ These Terms are governed by the laws of [State/Country], without regard to confl
 ### 15.1 Informal Resolution
 
 - Contact us first to resolve disputes informally
-- Email: support@unioneyes.com
+- Email: <support@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 
 ### 15.2 Arbitration
@@ -198,10 +198,10 @@ For questions about these Terms:
 
 **UnionEyes Support**
 
-- Email: support@unioneyes.com
+- Email: <support@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 - Mail: [Company Address]
-- Support Portal: https://unioneyes.com/support
+- Support Portal: <https://unioneyes.com/support>
 
 ## 19. Special Provisions
 
@@ -238,6 +238,6 @@ Failure to enforce any right does not waive that right.
 
 **Last reviewed:** February 9, 2026
 
-For the most current version, visit: https://unioneyes.com/terms
+For the most current version, visit: <https://unioneyes.com/terms>
 
 **By using UnionEyes, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.**

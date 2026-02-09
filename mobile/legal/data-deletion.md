@@ -16,7 +16,7 @@ Your account and personal data will be deleted within 30 days.
 
 ## Option 2: Email Request
 
-Send an email to: **privacy@unioneyes.com**
+Send an email to: **<privacy@unioneyes.com>**
 
 **Subject:** Account Deletion Request
 
@@ -171,7 +171,7 @@ After deletion:
 
 If you have questions or need assistance:
 
-**Email:** privacy@unioneyes.com  
+**Email:** <privacy@unioneyes.com>  
 **Phone:** 1-800-UNION-EYE  
 **Hours:** Monday-Friday, 9 AM - 5 PM EST
 
@@ -184,7 +184,7 @@ If you're unsatisfied with how we handle your deletion request:
 **US Residents:**
 
 - File a complaint with the Federal Trade Commission (FTC)
-- Website: https://www.ftc.gov/
+- Website: <https://www.ftc.gov/>
 
 **EU Residents:**
 
@@ -214,4 +214,4 @@ We respect your rights and will process all requests in accordance with applicab
 
 For more information, see our [Privacy Policy](https://unioneyes.com/privacy).
 
-**Questions?** Contact us at privacy@unioneyes.com
+**Questions?** Contact us at <privacy@unioneyes.com>

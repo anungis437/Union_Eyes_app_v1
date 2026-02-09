@@ -22,6 +22,7 @@ Both systems share the **same Redis instance** for cost efficiency and simplifie
 ### 1. Get Upstash Redis Credentials
 
 **Create Account & Database:**
+
 ```bash
 # Visit https://upstash.com
 # Create a free account
@@ -30,6 +31,7 @@ Both systems share the **same Redis instance** for cost efficiency and simplifie
 ```
 
 **Get Credentials:**
+
 - Navigate to your database
 - Copy REST API credentials:
   - REST URL: `https://[database-id].upstash.io`
@@ -79,6 +81,7 @@ curl http://localhost:3000/api/health
 ### Purpose
 
 Protect expensive operations from abuse:
+
 - AI query endpoints (Azure OpenAI costs)
 - ML prediction services
 - Voice transcription (Azure Speech API)
@@ -204,11 +207,13 @@ ratelimit:{identifier}:{key}
 ```
 
 **Examples:**
+
 - `ratelimit:ai-query:user_123` - AI queries for user_123
 - `ratelimit:exports:org_456` - Exports for organization 456
 - `ratelimit:auth:192.168.1.1` - Auth attempts from IP
 
 **Data Structure:**
+
 ```typescript
 // Sorted set with timestamp scores
 ZADD ratelimit:ai-query:user_123 1738848000123 "1738848000123-0.123456"
@@ -227,6 +232,7 @@ EXPIRE ratelimit:ai-query:user_123 3610
 ### Purpose
 
 Track query performance to:
+
 - Identify slow queries
 - Monitor cache hit rates
 - Track tenant-specific performance
@@ -369,37 +375,47 @@ console.log({
 Analytics uses multiple data structures:
 
 #### 1. Endpoint Metrics (Sorted Set)
+
 ```
 analytics:metrics:{endpoint}:{date}
 ```
+
 Example: `analytics:metrics:/api/analytics/queries:2026-02-06`
 
 #### 2. Slow Queries (Sorted Set)
+
 ```
 analytics:slow:{date}
 ```
+
 Example: `analytics:slow:2026-02-06`
 
 #### 3. Daily Summary (Hash)
+
 ```
 analytics:summary:{date}
 ```
+
 Fields: `totalQueries`, `totalDuration`, `cachedQueries`, `slowQueries`
 
 #### 4. Unique Endpoints (Set)
+
 ```
 analytics:endpoints:{date}
 ```
 
 #### 5. Unique Tenants (Set)
+
 ```
 analytics:tenants:{date}
 ```
 
 #### 6. Tenant-Specific Metrics (Sorted Set)
+
 ```
 analytics:tenant:{tenantId}:{date}
 ```
+
 Example: `analytics:tenant:org_123:2026-02-06`
 
 ---
@@ -415,6 +431,7 @@ curl http://localhost:3000/api/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -439,6 +456,7 @@ curl http://localhost:3000/api/health
 ```
 
 **Status Codes:**
+
 - `200 OK` - Redis healthy (response time < 200ms)
 - `200 OK` with `degraded` - Redis slow (response time > 200ms)
 - `503 Service Unavailable` - Redis failed or not configured
@@ -450,6 +468,7 @@ curl http://localhost:3000/api/health
 Both rate limiting and analytics degrade gracefully without Redis:
 
 ### Rate Limiting Fallback
+
 ```typescript
 if (!redis) {
   logger.warn('Redis not configured for rate limiting - allowing request');
@@ -466,6 +485,7 @@ if (!redis) {
 **Behavior:** All requests allowed, warnings logged
 
 ### Analytics Fallback
+
 ```typescript
 if (!redis) {
   logger.warn('Redis not configured - analytics disabled');
@@ -481,11 +501,13 @@ if (!redis) {
 ### Latency
 
 **Rate Limiting:**
+
 - Single check: ~20-50ms (Redis REST API)
 - Adds minimal overhead to API requests
 - Non-blocking on failure
 
 **Analytics:**
+
 - Recording: Fire-and-forget (0ms blocking)
 - Queries: ~50-200ms depending on data size
 - Reports: ~100-500ms for full endpoint aggregation
@@ -493,11 +515,13 @@ if (!redis) {
 ### Throughput
 
 **Upstash Limits:**
+
 - Free tier: 10,000 commands/day
 - Pro tier: 1M commands/day included
 - Pay-as-you-go: $0.20 per 100K commands
 
 **Estimated Usage:**
+
 - Rate limit check: 1 command per API request
 - Analytics recording: 8-10 commands per query
 - 10K API requests/day = ~100K Redis commands
@@ -506,10 +530,12 @@ if (!redis) {
 ### Storage
 
 **Rate Limiting:**
+
 - Minimal: ~1KB per active rate limit bucket
 - Auto-expires with TTL (no accumulation)
 
 **Analytics:**
+
 - ~200 bytes per recorded metric
 - 10K queries/day × 200 bytes × 30 days = ~60 MB
 - Upstash free tier: 256 MB storage (plenty)
@@ -523,6 +549,7 @@ if (!redis) {
 Access at [console.upstash.com](https://console.upstash.com)
 
 **Features:**
+
 - Real-time metrics (requests/sec, latency)
 - Data browser (inspect keys and values)
 - Command history
@@ -605,6 +632,7 @@ const relaxedLimit = {
 ### 4. Use Free Tier
 
 Upstash free tier is sufficient for:
+
 - Small deployments (<1000 users)
 - Development/staging environments
 - Prototypes and MVPs
@@ -645,11 +673,14 @@ Upstash free tier is sufficient for:
 **Symptoms:** Logs show `Redis not configured` warnings
 
 **Solution:**
+
 1. Check environment variables are set:
+
    ```bash
    echo $UPSTASH_REDIS_REST_URL
    echo $UPSTASH_REDIS_REST_TOKEN
    ```
+
 2. Verify variables are not empty strings
 3. Restart application after setting variables
 
@@ -658,6 +689,7 @@ Upstash free tier is sufficient for:
 **Symptoms:** All requests pass through, no 429 responses
 
 **Solution:**
+
 1. Check `/api/health` shows Redis as healthy
 2. Verify `checkRateLimit` is actually being called
 3. Check logs for rate limit warnings
@@ -668,12 +700,15 @@ Upstash free tier is sufficient for:
 **Symptoms:** `getSummary()` returns null, no metrics visible
 
 **Solution:**
+
 1. Verify `recordQuery()` is being called (add log)
 2. Check Redis health endpoint
 3. Inspect Redis keys in Upstash dashboard:
+
    ```bash
    KEYS analytics:summary:*
    ```
+
 4. Verify date format (YYYY-MM-DD)
 
 ### Issue: High Latency
@@ -681,6 +716,7 @@ Upstash free tier is sufficient for:
 **Symptoms:** Slow API responses, Redis commands timing out
 
 **Solution:**
+
 1. Check Upstash region (should match deployment)
 2. Upgrade to Pro tier (higher performance)
 3. Enable multi-region replication
@@ -691,11 +727,14 @@ Upstash free tier is sufficient for:
 **Symptoms:** Unexpected Upstash charges
 
 **Solution:**
+
 1. Check command count in Upstash dashboard
 2. Reduce analytics retention:
+
    ```bash
    ANALYTICS_RETENTION_DAYS=7
    ```
+
 3. Sample high-volume endpoints (don't record every query)
 4. Review rate limit configurations (too aggressive?)
 
@@ -709,6 +748,7 @@ Upstash free tier is sufficient for:
 **After:** Rate limiting enforced, analytics persisted
 
 **Steps:**
+
 1. Set environment variables (see Quick Start)
 2. Deploy application (no code changes needed)
 3. Verify health endpoint shows Redis healthy
@@ -799,7 +839,7 @@ await performanceMonitor.exportMetrics(
 ## Support Resources
 
 - **Upstash Documentation:** [docs.upstash.com](https://docs.upstash.com)
-- **Upstash Support:** support@upstash.com
+- **Upstash Support:** <support@upstash.com>
 - **Redis Commands:** [redis.io/commands](https://redis.io/commands)
 - **UnionEyes Health Check:** `/api/health`
 
@@ -808,6 +848,7 @@ await performanceMonitor.exportMetrics(
 **Last Updated:** February 6, 2026  
 **Redis Version:** Upstash (Redis 7.x compatible)  
 **Implementation Files:**
+
 - `lib/rate-limiter.ts`
 - `lib/analytics-performance.ts`
 - `app/api/health/route.ts`

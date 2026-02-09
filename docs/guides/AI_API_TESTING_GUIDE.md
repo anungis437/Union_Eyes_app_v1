@@ -1,6 +1,7 @@
 # AI API Testing Guide
 
 ## Overview
+
 Testing guide for the three AI API endpoints after schema migration.
 
 **Date**: 2024-01-XX  
@@ -9,20 +10,26 @@ Testing guide for the three AI API endpoints after schema migration.
 ## Prerequisites
 
 ### 1. Environment Setup
+
 Add to `.env.local`:
+
 ```bash
 OPENAI_API_KEY=sk-proj-...  # Required for AI responses
 OPENAI_MODEL=gpt-4-turbo-preview  # Optional, defaults to this
 ```
 
 ### 2. Database Tables
+
 Ensure these migrations are applied:
+
 - ✅ **019_ai_tables_simplified.sql** - AI core tables (deployed)
 - ✅ **019_fix_hash_function.sql** - MD5 hash fix (deployed)
 - ⬜ **020_case_summaries.sql** - Case summaries table (needs deployment)
 
 ### 3. Test Data
+
 You need:
+
 - Valid Clerk authentication (orgId, userId)
 - Test claims in the `claims` table
 - Test documents in the `ai_documents` table
@@ -30,9 +37,11 @@ You need:
 ## API Endpoints
 
 ### 1. POST /api/ai/feedback
+
 **Purpose**: Submit user feedback on AI responses
 
 **Request**:
+
 ```bash
 curl -X POST http://localhost:5173/api/ai/feedback \
   -H "Content-Type: application/json" \
@@ -45,6 +54,7 @@ curl -X POST http://localhost:5173/api/ai/feedback \
 ```
 
 **Response**:
+
 ```json
 {
   "feedback_id": "123e4567-e89b-12d3-a456-426614174000",
@@ -53,6 +63,7 @@ curl -X POST http://localhost:5173/api/ai/feedback \
 ```
 
 **Test Cases**:
+
 - ✅ Valid query_id with rating 'good' or 'bad'
 - ✅ Rating without comment
 - ✅ Rating with comment
@@ -63,15 +74,18 @@ curl -X POST http://localhost:5173/api/ai/feedback \
 ---
 
 ### 2. GET /api/ai/feedback?query_id={id}
+
 **Purpose**: Get all feedback for a specific query
 
 **Request**:
+
 ```bash
 curl -X GET "http://localhost:5173/api/ai/feedback?query_id=7ba567db-5c19-4f61-b492-385ca10d8ba0" \
   -H "Authorization: Bearer YOUR_CLERK_TOKEN"
 ```
 
 **Response**:
+
 ```json
 {
   "feedback": [
@@ -89,6 +103,7 @@ curl -X GET "http://localhost:5173/api/ai/feedback?query_id=7ba567db-5c19-4f61-b
 ```
 
 **Test Cases**:
+
 - ✅ Valid query_id with feedback
 - ✅ Valid query_id with no feedback (empty array)
 - ❌ Missing query_id parameter (should return 400)
@@ -97,9 +112,11 @@ curl -X GET "http://localhost:5173/api/ai/feedback?query_id=7ba567db-5c19-4f61-b
 ---
 
 ### 3. POST /api/ai/search
+
 **Purpose**: Smart case & precedent search (RAG)
 
 **Request**:
+
 ```bash
 curl -X POST http://localhost:5173/api/ai/search \
   -H "Content-Type: application/json" \
@@ -115,6 +132,7 @@ curl -X POST http://localhost:5173/api/ai/search \
 ```
 
 **Response** (with OPENAI_API_KEY):
+
 ```json
 {
   "answer": "Based on the cases in our database...",
@@ -133,6 +151,7 @@ curl -X POST http://localhost:5173/api/ai/search \
 ```
 
 **Response** (without OPENAI_API_KEY):
+
 ```json
 {
   "answer": "Found relevant cases based on your search terms.",
@@ -142,6 +161,7 @@ curl -X POST http://localhost:5173/api/ai/search \
 ```
 
 **Test Cases**:
+
 - ✅ Simple query without filters
 - ✅ Query with employer filter
 - ✅ Query with date range filter
@@ -152,6 +172,7 @@ curl -X POST http://localhost:5173/api/ai/search \
 - ⚠️ Without OPENAI_API_KEY (works but returns generic message)
 
 **Current Limitations**:
+
 - 🔴 **No vector search**: Using keyword search via `search_ai_chunks_text()` until pgvector enabled
 - 🟡 **Lower accuracy**: Keyword matching less precise than semantic search
 - 🟡 **Fixed confidence**: Always returns "medium" confidence for keyword results
@@ -159,9 +180,11 @@ curl -X POST http://localhost:5173/api/ai/search \
 ---
 
 ### 4. POST /api/ai/summarize
+
 **Purpose**: Generate AI summary/brief for a claim
 
 **Request**:
+
 ```bash
 curl -X POST http://localhost:5173/api/ai/summarize \
   -H "Content-Type: application/json" \
@@ -173,6 +196,7 @@ curl -X POST http://localhost:5173/api/ai/summarize \
 ```
 
 **Response**:
+
 ```json
 {
   "summary_id": "789e4567-e89b-12d3-a456-426614174000",
@@ -191,6 +215,7 @@ curl -X POST http://localhost:5173/api/ai/summarize \
 ```
 
 **Test Cases**:
+
 - ✅ Valid claim_id with purpose="arbitration"
 - ✅ Valid claim_id with purpose="internal"
 - ✅ Valid claim_id without purpose (defaults to "internal")
@@ -200,6 +225,7 @@ curl -X POST http://localhost:5173/api/ai/summarize \
 - ❌ OPENAI_API_KEY not set (should return 503)
 
 **Prerequisites**:
+
 - ⬜ `case_summaries` table must be created (run migration 020)
 - ⬜ OPENAI_API_KEY must be configured
 - ⬜ Valid claims must exist in database
@@ -207,15 +233,18 @@ curl -X POST http://localhost:5173/api/ai/summarize \
 ---
 
 ### 5. GET /api/ai/summarize?claim_id={id}
+
 **Purpose**: Get all AI-generated summaries for a claim
 
 **Request**:
+
 ```bash
 curl -X GET "http://localhost:5173/api/ai/summarize?claim_id=550e8400-e29b-41d4-a716-446655440000" \
   -H "Authorization: Bearer YOUR_CLERK_TOKEN"
 ```
 
 **Response**:
+
 ```json
 {
   "summaries": [
@@ -237,6 +266,7 @@ curl -X GET "http://localhost:5173/api/ai/summarize?claim_id=550e8400-e29b-41d4-
 ```
 
 **Test Cases**:
+
 - ✅ Valid claim_id with summaries
 - ✅ Valid claim_id with no summaries (empty array)
 - ❌ Missing claim_id parameter (should return 400)
@@ -247,24 +277,28 @@ curl -X GET "http://localhost:5173/api/ai/summarize?claim_id=550e8400-e29b-41d4-
 ## Testing Workflow
 
 ### Step 1: Deploy case_summaries Table
+
 ```bash
 # Deploy migration 020
 psql $DATABASE_URL -f database/migrations/020_case_summaries.sql
 ```
 
 ### Step 2: Add OPENAI_API_KEY
+
 ```bash
 # Add to .env.local
 echo "OPENAI_API_KEY=sk-proj-YOUR_KEY" >> .env.local
 ```
 
 ### Step 3: Test Feedback Endpoints
+
 ```bash
 # 1. Post feedback (should work immediately)
 # 2. Get feedback (should return posted feedback)
 ```
 
 ### Step 4: Test Search Endpoint
+
 ```bash
 # 1. Without OPENAI_API_KEY: Should return keyword results
 # 2. With OPENAI_API_KEY: Should return AI-enhanced results
@@ -272,6 +306,7 @@ echo "OPENAI_API_KEY=sk-proj-YOUR_KEY" >> .env.local
 ```
 
 ### Step 5: Test Summarize Endpoints
+
 ```bash
 # 1. Create a summary (requires OPENAI_API_KEY)
 # 2. Retrieve summaries (should show created summary)
@@ -296,24 +331,28 @@ All API routes updated to use new schema:
 ## Known Issues & Limitations
 
 ### 1. Vector Search Not Available
+
 - **Status**: 🔴 Blocking for semantic search
 - **Workaround**: Using keyword search temporarily
 - **Fix**: Request pgvector extension from Azure admin
 - **Impact**: Lower search quality, no semantic similarity
 
 ### 2. Case Summaries Table Missing
+
 - **Status**: 🟡 Migration created, needs deployment
 - **Workaround**: None (endpoint will fail)
 - **Fix**: Run migration 020
 - **Impact**: Summarize endpoint unavailable
 
 ### 3. OPENAI_API_KEY Required
+
 - **Status**: 🟡 Configuration needed
 - **Workaround**: Search endpoint returns keyword results without key
 - **Fix**: Add to environment variables
 - **Impact**: No AI-enhanced responses
 
 ### 4. Test Data Needed
+
 - **Status**: 🟡 Manual setup required
 - **Workaround**: Use existing test data from migration
 - **Fix**: Create ingestion endpoint or manual inserts
@@ -324,35 +363,40 @@ All API routes updated to use new schema:
 ## Next Steps
 
 ### Immediate (Required for Basic Testing)
+
 1. ⬜ Deploy migration 020 (case_summaries table)
 2. ⬜ Add OPENAI_API_KEY to environment
 3. ⬜ Test feedback endpoints (simplest, no dependencies)
 4. ⬜ Test search endpoint (keyword search mode)
 
 ### Short-term (Required for Full Functionality)
-5. ⬜ Insert test documents and chunks
-6. ⬜ Test search with actual content
-7. ⬜ Create test claims for summarization
-8. ⬜ Test summarize endpoints end-to-end
+
+1. ⬜ Insert test documents and chunks
+2. ⬜ Test search with actual content
+3. ⬜ Create test claims for summarization
+4. ⬜ Test summarize endpoints end-to-end
 
 ### Long-term (Production Readiness)
-9. ⬜ Request pgvector extension enablement
-10. ⬜ Migrate to vector-based search
-11. ⬜ Add rate limiting (100 queries/hour/tenant)
-12. ⬜ Set up monitoring using analytics views
-13. ⬜ Create document ingestion endpoint
+
+1. ⬜ Request pgvector extension enablement
+2. ⬜ Migrate to vector-based search
+3. ⬜ Add rate limiting (100 queries/hour/tenant)
+4. ⬜ Set up monitoring using analytics views
+5. ⬜ Create document ingestion endpoint
 
 ---
 
 ## Success Criteria
 
 ### Feedback API ✅
+
 - [x] POST creates feedback records
 - [x] GET retrieves feedback by query_id
 - [x] Tenant isolation working
 - [x] No RLS errors
 
 ### Search API ⏳
+
 - [x] Keyword search returns results
 - [ ] Filters work correctly
 - [ ] AI enhancement works (requires OPENAI_API_KEY)
@@ -360,6 +404,7 @@ All API routes updated to use new schema:
 - [x] Graceful fallback without OpenAI
 
 ### Summarize API ⏳
+
 - [ ] POST creates summaries (requires case_summaries table)
 - [ ] GET retrieves summaries
 - [ ] AI drafts marked correctly
@@ -371,18 +416,23 @@ All API routes updated to use new schema:
 ## Troubleshooting
 
 ### Error: "extension 'vector' is not allow-listed"
+
 **Solution**: This is expected. Vector search disabled until pgvector approved.
 
 ### Error: "relation 'case_summaries' does not exist"
+
 **Solution**: Run migration 020: `psql $DB -f database/migrations/020_case_summaries.sql`
 
 ### Error: "AI service not configured" (503)
+
 **Solution**: Add OPENAI_API_KEY to .env.local
 
 ### Error: "Claim not found" (404)
+
 **Solution**: Verify claim_id exists and belongs to your tenant_id
 
 ### Error: "Unauthorized" (401)
+
 **Solution**: Ensure Clerk authentication token is valid
 
 ---
@@ -390,6 +440,7 @@ All API routes updated to use new schema:
 ## Appendix: Test Data
 
 ### Insert Test Document
+
 ```sql
 INSERT INTO ai_documents (id, tenant_id, title, content, metadata)
 VALUES (
@@ -402,6 +453,7 @@ VALUES (
 ```
 
 ### Insert Test Chunk
+
 ```sql
 INSERT INTO ai_chunks (document_id, tenant_id, content, chunk_index)
 SELECT 
@@ -415,6 +467,7 @@ LIMIT 1;
 ```
 
 ### Check Existing Test Data
+
 ```sql
 -- Check queries logged during testing
 SELECT * FROM ai_queries ORDER BY created_at DESC LIMIT 5;

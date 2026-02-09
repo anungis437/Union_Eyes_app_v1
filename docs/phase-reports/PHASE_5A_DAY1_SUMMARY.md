@@ -13,6 +13,7 @@
 Created 3 comprehensive migration files:
 
 #### `030_hierarchical_organizations.sql` (450 lines)
+
 - 3 enums: organization_type, ca_jurisdiction, labour_sector
 - `organizations` table with 25+ columns supporting full CLC hierarchy
 - `organization_relationships` table for explicit relationship tracking
@@ -22,6 +23,7 @@ Created 3 comprehensive migration files:
 - CLC root organization seed data
 
 #### `031_migrate_tenant_data.sql` (350 lines)
+
 - Migrates existing tenants to organizations table
 - Transforms test tenants to real unions:
   - CUPE Local 123
@@ -33,6 +35,7 @@ Created 3 comprehensive migration files:
 - Comprehensive verification queries
 
 #### `032_update_rls_policies.sql` (380 lines)
+
 - Updates 8 tables with organization_id column
 - Rewrites all RLS policies for hierarchical access
 - Implements "view down, not up" visibility model
@@ -46,12 +49,14 @@ Created 3 comprehensive migration files:
 **File:** `types/organization.ts`
 
 Complete type system for hierarchical organizations:
+
 - 16 TypeScript interfaces
 - 5 type unions (enums)
 - 8 utility functions
 - Full JSDoc documentation
 
 Highlights:
+
 - `Organization` - Main model with hierarchy fields
 - `OrganizationWithRelations` - For tree navigation
 - `OrganizationTreeNode` - For UI rendering
@@ -64,6 +69,7 @@ Highlights:
 **File:** `db/schema-organizations.ts`
 
 Drizzle schema matching SQL exactly:
+
 - All pgEnum definitions
 - Organizations table with relations
 - Organization relationships table
@@ -76,6 +82,7 @@ Drizzle schema matching SQL exactly:
 **File:** `run-phase5a-migrations.js`
 
 Production-ready migration runner:
+
 - Executes all 3 SQL files in order
 - 5-second warning before production
 - Detailed error reporting with SQL context
@@ -88,6 +95,7 @@ Production-ready migration runner:
 **File:** `PHASE_5A_PROGRESS.md`
 
 Complete project documentation:
+
 - What we completed today (detailed)
 - 3-4 week roadmap ahead
 - Architecture decisions explained
@@ -151,9 +159,11 @@ Complete project documentation:
 ### Immediate (Next Session)
 
 1. **Execute Migrations**
+
    ```bash
    node run-phase5a-migrations.js
    ```
+
    - Backup database first
    - Run on staging
    - Verify hierarchy created
@@ -176,41 +186,41 @@ Complete project documentation:
 
 ### Week 1 (Rest of This Week)
 
-4. **Update Existing Queries**
+1. **Update Existing Queries**
    - claims-queries.ts (tenant_id → organization_id)
    - members-queries.ts (add hierarchy support)
    - All other query files
 
-5. **Update API Routes**
+2. **Update API Routes**
    - All routes using tenant context
    - Add organization hierarchy filters
 
-6. **Create Organization Context**
+3. **Create Organization Context**
    - lib/organization-context.tsx
    - Replace useTenantId with useOrganizationId
    - Support parent chain access
 
 ### Week 2
 
-7. **Update UI Components**
+1. **Update UI Components**
    - Replace tenant selector with org selector
    - Update ~30 components
    - Add hierarchy breadcrumbs
 
-8. **Build Management UI**
+2. **Build Management UI**
    - Organization list page
    - Organization tree page
    - Create/edit forms
 
 ### Week 3-4
 
-9. **Testing & Polish**
+1. **Testing & Polish**
    - RLS tests
    - UI tests
    - Performance tests
    - Documentation
 
-10. **CLC Demo Prep**
+2. **CLC Demo Prep**
     - Seed realistic data
     - Demo script
     - Training materials
@@ -291,18 +301,21 @@ GROUP BY relationship_type;
 ## 📝 Notes for Team
 
 ### What Changed
+
 - Database schema now hierarchical (not flat)
 - Every table has organization_id (replaces tenant_id)
 - RLS policies updated for hierarchy
 - New types exported from types/organization.ts
 
 ### What's Compatible
+
 - Legacy tenant_id still exists (deprecate in 6 months)
 - Backward compatibility views created
 - Existing data migrated automatically
 - No breaking API changes (yet)
 
 ### What to Watch
+
 - Performance of recursive queries
 - RLS policy execution time
 - Migration rollback procedure tested

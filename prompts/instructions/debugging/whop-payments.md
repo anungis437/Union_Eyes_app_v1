@@ -22,6 +22,7 @@
 5. **Subscription Performance Issue**
    - When buying a subscription, it takes too long to process
    - Request logs:
+
    ```
    Mar 27 13:23:26.55
    GET
@@ -68,14 +69,16 @@
    ```
 
    ### Checkout Process Flow
-   
+
    After checkout is created:
+
    ```
    Received Whop webhook event
    Raw webhook body: {"data":{"id":"mem_h1MVOnEnSIzrmw","product_id":"prod_f9LX8sLFarMR9","user_id":"user_XTg1QCfhwvToU","plan_id":"plan_Fd5UBpraUWKMH","page_id":"biz_xccbH7e5UNfLvd","created_at":1743081755,"expires_at":null,"renewal_period_start":1743081755,"renewal_period_end":1745673755,"quantity":1,"status":"active","valid":true,"cancel_at_period_end":false,"license_key":"T-9DDDBB-4551CA1E-D266EBW","metadata":{"clerkUserId":"user_2utx6gCKPBkL4RtCvMAuUHZw9S1"},"checkout_id":"4t9yDAZhMTcMWn9tM5-r8PS-9cBj-ylwt-Sz0RvnWkHgu8","affiliate_username":null,"manage_url":"https://whop.com/orders/mem_h1MVOnEnSIzrmw/manage/","company_buyer_id":null,"marketplace":false,"status_reason":"created"},"api_version":"v5","action":"membership.went_valid"}
    ```
 
    Processing flow:
+
    ```
    Processing 'membershipWentValid' event
    Event action: membership.went_valid
@@ -111,6 +114,7 @@
    ```
 
    Data extraction:
+
    ```
    Extracting Clerk userId from webhook data
    Data keys: [
@@ -136,8 +140,9 @@
    ```
 
    ### Billing Cycle Setup
-   
+
    Setting up billing cycle end:
+
    ```
    Logs
    7 Total
@@ -147,6 +152,7 @@
    ```
 
    Payment processing:
+
    ```
    Processing 'paymentSucceeded' event
    Event action: payment.succeeded
@@ -203,15 +209,16 @@
    Successfully updated profile for Clerk user user_2utx6gCKPBkL4RtCvMAuUHZw9S1 with Whop data
    ```
 
-7. **Billing Cycle Date Issues**
+6. **Billing Cycle Date Issues**
    - All credits are set, but billing cycle start date is missing
    - End date is set to: `1970-01-21 04:54:33.755` (in the past)
    - This is for the monthly plan
    - Issue: End date is incorrectly set to a date in 1970
 
-8. **Plan Downgrade Behavior**
+7. **Plan Downgrade Behavior**
    - When downgrading from Pro to Free in the database:
      - Subscription canceled popup appears:
+
      ```
      Subscription Canceled
      Here's what happens next with your account.
@@ -220,18 +227,19 @@
      Free plan includes 5 credits every 4 weeks
      Resubscribe anytime to regain full access
      ```
+
      - Status correctly set to "canceled"
      - Credit usage reset to 5 credits with 0 used
      - Issue: Credit usage should remain unchanged until end of billing cycle
 
-9. **Database Settings Test**
+8. **Database Settings Test**
    - Changes made to database:
      - Plan set to Pro
      - Cycle end date changed from `1970-01-21 04:54:33.755` to `2025-03-27 13:35:00` (5 minutes from test time)
      - Renewal date changed from `2025-04-24 13:22:43.789` to match cycle end date
      - Credits kept at 34/1000 used with status as active
      - Billing cycle start remained empty
-   
+
    - Results after time passed:
      - Web page: No immediate changes, still on Pro plan
      - After refresh: Credits changed to 0/1000
@@ -242,19 +250,19 @@
        - Next credit renewal: `2025-04-24 13:35:27.808`
      - Conclusion: Test was successful
 
-10. **Plan Limits UI Issue**
+9. **Plan Limits UI Issue**
     - When 1000/1000 credits used, upgrade plan popup correctly appears
     - Issue: Cannot close the popup - it attempts to close but reappears
     - Expected behavior: Popup should close when dismissed
     - Cannot test sidebar nav buttons due to popup issue
 
-11. **Plan Cancellation Test**
+10. **Plan Cancellation Test**
     - Setup:
       - Next credit renewal and billing cycle end set to: `2025-04-24 13:35:27.808`
       - Status: active
       - Membership: Pro
       - Credits used: 100/1000
-    
+
     - Expected behavior upon cancellation:
       - Canceled plan popup should appear immediately
       - Database dates should remain unchanged
@@ -262,26 +270,29 @@
       - Status should remain active
       - Usage should stay at 100/1000
       - Upon renewal date, usage should reset to 0/5 (Free plan)
-    
+
     - Actual behavior:
       - Whop displayed: "Your membership has been canceled"
       - Logs showed multiple 404 errors for webhook endpoints:
+
       ```
       Raw webhook body: {"data":{"id":"mem_h1MVOnEnSIzrmw",...,"action":"membership.cancel_at_period_end_changed"}
       ```
+
       - UI still showed 100/1000 credits and Free plan
       - Database still showed: Pro, active, 100/1000
       - After refresh: no change
       - Whop dashboard showed "cancels in 29d 23hrs"
       - After admin cancellation: No change, still showed cancellation pending
       - After admin termination: No change
-    
+
     - Issue: Webhook not properly receiving cancellation events
     - Question: Does webhook only trigger at end of billing cycle?
 
-12. **Required Webhook Setup**
+11. **Required Webhook Setup**
     - Need to set up webhook and action to reset credits to 0/5 at end of billing cycle for refunded users
     - Available webhook events:
+
     ```
     app_membership_cancel_at_period_end_changed
     app_membership_went_invalid
@@ -301,7 +312,7 @@
     refund_created
     refund_updated
     ```
+
     - Likely needed events:
       - `refund_created`
       - `refund_updated`
-

@@ -1,6 +1,7 @@
 # Dues Collection System - Implementation Progress
 
 ## Overview
+
 This document tracks the implementation of the comprehensive dues collection and payment processing system for UnionEyes. This system addresses the critical competitive gap identified in the competitive analysis (30% complete → 100% target).
 
 ## Completed Components
@@ -10,6 +11,7 @@ This document tracks the implementation of the comprehensive dues collection and
 **Created: January 2025**
 
 #### Calculation Engine (`lib/dues-calculation-engine.ts`)
+
 - **DuesCalculationEngine class** with support for 5 calculation types:
   - **Percentage-based**: Calculates dues as percentage of member's gross wages or salary
   - **Flat rate**: Fixed dollar amount per billing period
@@ -31,6 +33,7 @@ This document tracks the implementation of the comprehensive dues collection and
   - Metadata tracking (calculation breakdown, rule details)
 
 #### Member Payment Portal UI
+
 **Location**: `app/[locale]/dashboard/dues/` and `components/dues/`
 
 1. **Landing Page** (`page.tsx`):
@@ -109,6 +112,7 @@ This document tracks the implementation of the comprehensive dues collection and
 **Created: January 2025**
 
 #### Billing Scheduler (`scripts/billing-scheduler.ts`)
+
 Comprehensive automated billing system with 4 main tasks:
 
 1. **Billing Cycle Generation**:
@@ -138,6 +142,7 @@ Comprehensive automated billing system with 4 main tasks:
    - Email delivery (requires email service integration)
 
 #### GitHub Actions Workflow (`.github/workflows/billing-scheduler.yml`)
+
 - **4 Daily Cron Schedules**:
   - 2:00 AM UTC: Billing cycle generation
   - 3:00 AM UTC: AutoPay processing
@@ -169,11 +174,13 @@ Comprehensive automated billing system with 4 main tasks:
    - Unique constraint on stripe_payment_method_id
 
 **Added Enums**:
+
 - `payment_method_type`: card, bank_account, ach
 
 ## In Progress
 
 ### 8. 🔄 Additional Features (50%)
+
 - ✅ Database schema (autopay_settings, payment_methods tables)
 - ⏳ Stripe SetupIntent integration
 - ⏳ Webhook handler enhancement (payment_intent.succeeded/failed)
@@ -184,9 +191,11 @@ Comprehensive automated billing system with 4 main tasks:
 ## Remaining Work
 
 ### 3. ⏳ PAC Contribution Handling (0%)
+
 **Estimated Effort**: 2-3 hours
 
 **Tasks**:
+
 - Create `pac_contributions` table with fields:
   - member_id, amount, date, election_cycle, committee_name, fec_compliant, opt_in_date
 - Build PAC donation UI (separate from dues - must be voluntary)
@@ -201,6 +210,7 @@ Comprehensive automated billing system with 4 main tasks:
   - GET `/api/pac/fec-report` (admin)
 
 **Compliance Requirements**:
+
 - Voluntary contributions only (no automatic deductions)
 - Clear opt-in consent with disclosure
 - Separate from dues accounting
@@ -208,9 +218,11 @@ Comprehensive automated billing system with 4 main tasks:
 - Member contribution limits tracking
 
 ### 4. ⏳ Per Capita Tax System (0%)
+
 **Estimated Effort**: 2-3 hours
 
 **Tasks**:
+
 - Create `per_capita_invoices` table with fields:
   - parent_union_id, period_start, period_end, member_count, rate, total_amount, payment_status, invoice_number, due_date
 - Build calculation logic (count active members × per capita rate)
@@ -229,15 +241,18 @@ Comprehensive automated billing system with 4 main tasks:
   - GET `/api/per-capita/download/{id}` (PDF download)
 
 **Integration Points**:
+
 - Member count from active members in period
 - Configurable per capita rate per parent union
 - Email notification to parent union contact
 - Accounting integration for revenue tracking
 
 ### 5. ⏳ Arrears Management Module (0%)
+
 **Estimated Effort**: 3-4 hours
 
 **Tasks**:
+
 - Build admin dashboard at `/dashboard/arrears`
 - **Table View**:
   - Member name, total owed, days overdue, current status, last contact, actions
@@ -276,15 +291,18 @@ Comprehensive automated billing system with 4 main tasks:
   - POST `/api/arrears/resolve/{caseId}` (mark resolved)
 
 **Integration Points**:
+
 - Uses existing `arrears_cases` table from schema
 - Links to `dues_transactions` for payment history
 - Email/SMS notification service
 - Document storage for letters and attachments
 
 ### 6. ⏳ Payment Reconciliation System (0%)
+
 **Estimated Effort**: 4-5 hours
 
 **Tasks**:
+
 - Build employer remittance upload UI at `/dashboard/reconciliation`:
   - Drag-and-drop file upload (CSV/Excel)
   - File format validation
@@ -325,15 +343,18 @@ Comprehensive automated billing system with 4 main tasks:
   - GET `/api/reconciliation/bank` (bank reconciliation report)
 
 **Integration Points**:
+
 - Uses existing `employer_remittances` table
 - Links to `dues_transactions` for matching
 - CSV/Excel parsing library (e.g., papaparse, xlsx)
 - Stripe Payout API for bank reconciliation
 
 ### 7. ⏳ Billing Templates (0%)
+
 **Estimated Effort**: 2-3 hours
 
 **Tasks**:
+
 - Create `billing_templates` table with fields:
   - tenant_id, name, description, template_html, template_text (plain text version), variables (JSON array), is_default, category (invoice, reminder, statement), created_by, updated_by
 - **Template Editor UI** at `/dashboard/billing/templates`:
@@ -376,15 +397,18 @@ Comprehensive automated billing system with 4 main tasks:
   - POST `/api/billing/send-batch` (batch send)
 
 **Integration Points**:
+
 - PDF generation library (puppeteer, react-pdf)
 - Email service (SendGrid, AWS SES, Resend)
 - File storage (S3, Cloudflare R2, local)
 - Template rendering engine (Handlebars, Mustache, or custom)
 
 ### 8. ⏳ Complete Additional Features (50%)
+
 **Estimated Effort**: 2-3 hours
 
 **Remaining Tasks**:
+
 - **Stripe SetupIntent**:
   - Create POST `/api/dues/setup-intent` endpoint
   - Generate SetupIntent for saving payment method without charging
@@ -424,6 +448,7 @@ Comprehensive automated billing system with 4 main tasks:
 ## Testing Checklist
 
 ### Calculation Engine Testing
+
 - [ ] Test percentage calculation with various wage amounts
 - [ ] Test flat rate calculation
 - [ ] Test hourly calculation with different hours worked
@@ -434,6 +459,7 @@ Comprehensive automated billing system with 4 main tasks:
 - [ ] Test duplicate transaction prevention
 
 ### Payment Portal Testing
+
 - [ ] Test balance display (current, overdue, next due)
 - [ ] Test payment form with different amount options
 - [ ] Test Stripe Elements integration (once implemented)
@@ -443,6 +469,7 @@ Comprehensive automated billing system with 4 main tasks:
 - [ ] Test receipt download
 
 ### Automated Billing Testing
+
 - [ ] Test billing cycle cron job (manual trigger first)
 - [ ] Test AutoPay processing (once implemented)
 - [ ] Test late fee cron job
@@ -450,6 +477,7 @@ Comprehensive automated billing system with 4 main tasks:
 - [ ] Test GitHub Actions workflow
 
 ### API Endpoint Testing
+
 - [ ] Test `/api/dues/balance` with various member states
 - [ ] Test `/api/dues/calculate` with different calculation types
 - [ ] Test `/api/dues/create-payment-intent` with Stripe
@@ -460,6 +488,7 @@ Comprehensive automated billing system with 4 main tasks:
 ## Integration Requirements
 
 ### Required Services
+
 1. **Stripe**: Payment processing, customer management, webhooks
 2. **Email Service**: SendGrid, AWS SES, or Resend for transactional emails
 3. **PDF Generation**: Puppeteer or react-pdf for invoice/receipt PDFs
@@ -467,6 +496,7 @@ Comprehensive automated billing system with 4 main tasks:
 5. **Cron Service**: GitHub Actions or external cron service for scheduled tasks
 
 ### Environment Variables
+
 ```
 DATABASE_URL=
 STRIPE_SECRET_KEY=
@@ -487,6 +517,7 @@ AWS_SECRET_ACCESS_KEY=
 ## Deployment Steps
 
 1. **Database Migration**:
+
    ```bash
    pnpm drizzle-kit generate
    pnpm drizzle-kit migrate
@@ -518,10 +549,12 @@ AWS_SECRET_ACCESS_KEY=
 ## Success Metrics
 
 ### Competitive Parity Goals
+
 - **Current State**: 30% feature complete vs competitors
 - **Target State**: 100% feature complete
 
 **Feature Completion Progress**:
+
 - ✅ Dues calculation engine: 100% (5 calculation types)
 - ✅ Member payment portal: 100% (view, pay, manage methods, history)
 - ✅ Automated billing: 100% (scheduled generation, late fees, reminders)
@@ -535,6 +568,7 @@ AWS_SECRET_ACCESS_KEY=
 **Overall Progress**: 3.5 of 8 tasks complete = **44% complete** (up from 30%)
 
 ### Business Impact Metrics (to track post-launch)
+
 - Dues collection rate (target: >95%)
 - Average days to payment (target: <15 days)
 - AutoPay adoption rate (target: >60%)
@@ -546,6 +580,7 @@ AWS_SECRET_ACCESS_KEY=
 ## Next Steps
 
 **Immediate Priority** (Complete Task 8):
+
 1. Implement Stripe SetupIntent for saving payment methods
 2. Enhance webhook handler for payment_intent events
 3. Complete Stripe Elements integration in payment form
@@ -553,6 +588,7 @@ AWS_SECRET_ACCESS_KEY=
 5. Create payment method CRUD API endpoints
 
 **Next Priority** (Tasks 3-7 in order):
+
 1. PAC contribution handling (2-3 hours) - Compliance requirement
 2. Per capita tax system (2-3 hours) - Parent union invoicing
 3. Arrears management module (3-4 hours) - Revenue protection
@@ -562,6 +598,7 @@ AWS_SECRET_ACCESS_KEY=
 **Estimated Time to 100% Complete**: 18-22 hours of development work
 
 ## Notes
+
 - All file paths are relative to workspace root: `d:\APPS\union-claims-standalone`
 - Schema changes require database migration via Drizzle Kit
 - Multi-tenant architecture: All queries must filter by `tenantId`

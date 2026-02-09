@@ -1,4 +1,5 @@
 # Remittance Processing System
+
 **Automated File Upload, Parsing & Reconciliation**
 
 ## Overview
@@ -10,11 +11,13 @@ The Remittance Processing System automates the handling of employer bulk payment
 ### 1. Multi-Format File Parsing
 
 **Supported Formats:**
+
 - **CSV** (.csv) - Comma or custom delimited
 - **Excel** (.xlsx, .xls) - Microsoft Excel workbooks
 - **XML** (.xml) - XML/EDI formats
 
 **Parser Features:**
+
 - Configurable field mapping
 - Flexible date format parsing
 - Currency symbol handling ($, commas)
@@ -39,22 +42,26 @@ The reconciliation engine uses a confidence-based scoring system:
 ### 3. Variance Detection
 
 **Variance Types:**
+
 - **Overpayment**: Remittance amount exceeds transaction amount
 - **Underpayment**: Remittance amount below transaction amount
 - **Missing Transaction**: Remittance record has no matching transaction
 - **Unmatched Remittance**: Transaction exists but no remittance record
 
 **Tolerance Settings:**
+
 - Absolute tolerance: Default $0.01 (configurable)
 - Percentage tolerance: Default 0.5% (configurable)
 
 ### 4. Reconciliation Reporting
 
 **Report Formats:**
+
 - **JSON**: Structured data for API consumption
 - **Text**: Human-readable plain text report
 
 **Report Contents:**
+
 - Summary statistics (total amounts, variance, match rate)
 - Detailed match list with confidence scores
 - Variance breakdown with descriptions
@@ -71,16 +78,19 @@ The reconciliation engine uses a confidence-based scoring system:
 Upload and parse a remittance file.
 
 **Headers:**
+
 ```
 X-Test-User: {"userId":"...", "tenantId":"...", "role":"admin"}
 Content-Type: multipart/form-data
 ```
 
 **Body (multipart form):**
+
 - `file`: The remittance file (CSV, Excel, or XML)
 - `config` (optional): JSON parser configuration
 
 **Parser Config Example:**
+
 ```json
 {
   "csvDelimiter": ",",
@@ -100,6 +110,7 @@ Content-Type: multipart/form-data
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -146,6 +157,7 @@ Content-Type: multipart/form-data
 Create a remittance record after parsing.
 
 **Request Body:**
+
 ```json
 {
   "employerId": "uuid",
@@ -162,6 +174,7 @@ Create a remittance record after parsing.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -183,6 +196,7 @@ Create a remittance record after parsing.
 Auto-reconcile remittance records with dues transactions.
 
 **Request Body:**
+
 ```json
 {
   "records": [...], // Parsed records from upload
@@ -193,6 +207,7 @@ Auto-reconcile remittance records with dues transactions.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -251,9 +266,11 @@ Auto-reconcile remittance records with dues transactions.
 Generate a reconciliation report.
 
 **Query Parameters:**
+
 - `format`: `json` (default) or `text`
 
 **JSON Response:**
+
 ```json
 {
   "success": true,
@@ -270,6 +287,7 @@ Generate a reconciliation report.
 ```
 
 **Text Response:**
+
 ```
 === REMITTANCE REPORT ===
 
@@ -305,6 +323,7 @@ EMP003,Bob Johnson,M003,4500.00,90.00,2024-10-01,2024-10-31,160
 ```
 
 **Field Mapping:**
+
 - `employee_id` → Employee identifier
 - `employee_name` → Full name (optional)
 - `member_number` → Union member number (optional, used for matching)
@@ -337,6 +356,7 @@ EMP003,Bob Johnson,M003,4500.00,90.00,2024-10-01,2024-10-31,160
 ### Excel Format
 
 Same structure as CSV but in `.xlsx` format. Supports:
+
 - Multiple sheets (uses first sheet)
 - Header row detection
 - Formula evaluation
@@ -347,16 +367,19 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ## Reconciliation Workflow
 
 ### Step 1: Upload File
+
 1. Admin uploads remittance file via API
 2. Parser validates and extracts records
 3. System returns parsed data with summary
 
 ### Step 2: Create Remittance
+
 1. Admin creates remittance record
 2. System stores metadata (batch number, employer, totals)
 3. Initial status: `pending`
 
 ### Step 3: Auto-Reconcile
+
 1. System fetches dues transactions for billing period
 2. Reconciliation engine matches records:
    - Scores each potential match (0-100 confidence)
@@ -369,6 +392,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 4. Returns reconciliation result with matches and variances
 
 ### Step 4: Review & Resolve
+
 1. Admin reviews reconciliation report
 2. For variances:
    - **Overpayment**: Manual refund or credit forward
@@ -385,6 +409,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ### Parser Configuration
 
 **CSV Options:**
+
 ```typescript
 {
   csvDelimiter: ',',           // Column separator
@@ -394,6 +419,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ```
 
 **Field Mapping:**
+
 ```typescript
 {
   fieldMapping: {
@@ -411,6 +437,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ```
 
 **Validation Rules:**
+
 ```typescript
 {
   minDuesAmount: 0,            // Minimum valid dues amount
@@ -429,6 +456,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ```
 
 **Examples:**
+
 - Transaction: $100.00, Remittance: $100.01 → Exact match (within $0.01)
 - Transaction: $1000.00, Remittance: $1004.00 → Exact match (0.4% < 0.5%)
 - Transaction: $100.00, Remittance: $105.00 → Fuzzy match (5% variance flagged)
@@ -440,6 +468,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ### Parse Errors
 
 **Invalid Amount:**
+
 ```json
 {
   "line": 45,
@@ -450,6 +479,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ```
 
 **Missing Required Field:**
+
 ```json
 {
   "line": 67,
@@ -459,6 +489,7 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ```
 
 **Date Parse Error:**
+
 ```json
 {
   "line": 89,
@@ -471,16 +502,19 @@ Same structure as CSV but in `.xlsx` format. Supports:
 ### Reconciliation Issues
 
 **No Matches Found:**
+
 - Check member IDs are correct
 - Verify billing period alignment
 - Confirm transactions exist in system
 
 **Low Match Rate:**
+
 - Review field mapping configuration
 - Check for data quality issues
 - Adjust tolerance settings
 
 **High Variance Count:**
+
 - Investigate employer calculation errors
 - Review dues rule changes
 - Check for manual adjustments
@@ -497,6 +531,7 @@ cd services/financial-service
 ```
 
 **Test Coverage:**
+
 1. ✓ Create CSV file
 2. ✓ Upload and parse CSV
 3. ✓ Create remittance record
@@ -540,6 +575,7 @@ cd services/financial-service
 ## Future Enhancements
 
 **Phase 5 (Planned):**
+
 - GL (General Ledger) posting integration
 - Duplicate detection across batches
 - Partial reconciliation (match subset of records)
@@ -607,6 +643,7 @@ cd services/financial-service
 ## Support
 
 For issues or questions:
+
 1. Check test suite output: `./test-remittances.ps1`
 2. Review parser errors in API response
 3. Verify file format matches documentation

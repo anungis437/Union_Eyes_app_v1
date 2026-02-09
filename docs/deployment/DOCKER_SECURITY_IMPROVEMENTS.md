@@ -15,20 +15,24 @@ Implemented critical security improvements to Docker configuration to prevent se
 ### **Problem: Secrets Visible in Docker Image History**
 
 **Original Issue:**
+
 - Build arguments (`ARG`) containing sensitive data were visible in `docker history`
 - Environment variables were set during build, baking secrets into image layers
 - Anyone with access to the Docker image could extract secrets using:
+
   ```bash
   docker history <image-id>
   docker image inspect <image-id>
   ```
 
 **Affected Secrets:**
+
 - `DATABASE_URL` - PostgreSQL connection string with credentials
 - `WHOP_WEBHOOK_KEY` - Payment webhook authentication
 - Other runtime secrets
 
 **Security Risk:** **HIGH** - Exposed secrets could lead to:
+
 - Unauthorized database access
 - Payment fraud (webhook replay attacks)
 - Lateral movement to other services
@@ -55,6 +59,7 @@ ENV WHOP_WEBHOOK_KEY=placeholder_whop_webhook_key
 ```
 
 **Key Changes:**
+
 1. **Removed** `ARG DATABASE_URL` - not needed at build time
 2. **Removed** `ARG WHOP_WEBHOOK_KEY` - only needed at runtime
 3. **Added** placeholder values to prevent build errors
@@ -90,6 +95,7 @@ services:
 ```
 
 **Added Complete Environment Variable Documentation:**
+
 - ✅ Categorized by function (Database, Auth, Payments, Redis, Azure, Email)
 - ✅ Marked required vs optional variables
 - ✅ Default values for non-sensitive settings
@@ -110,6 +116,7 @@ services:
    - Secrets only in container memory
 
 **Verification:**
+
 ```bash
 # Build image
 docker build -t unioneyes:latest .
@@ -165,6 +172,7 @@ docker-compose -f docker-compose.prod.yml up
 All secrets must be configured in your deployment platform:
 
 **Azure App Service:**
+
 ```bash
 az webapp config appsettings set \
   --name unioneyes-prod \
@@ -177,6 +185,7 @@ az webapp config appsettings set \
 ```
 
 **Docker Compose:**
+
 ```bash
 # .env.prod (NEVER commit to git)
 PROD_DATABASE_URL=postgresql://...
@@ -189,6 +198,7 @@ docker-compose -f docker-compose.prod.yml up
 ```
 
 **Kubernetes:**
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -213,12 +223,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 ```
 
 **Benefits:**
+
 - ✅ Container orchestrators can detect unhealthy containers
 - ✅ Automatic restart of failed containers
 - ✅ Load balancers remove unhealthy instances
 - ✅ Monitoring alerts on health check failures
 
 **Test Health Check:**
+
 ```bash
 docker ps  # Check HEALTH status column
 # Should show: healthy
@@ -267,15 +279,18 @@ docker inspect <container-id> | jq '.[0].State.Health'
 ## 🚀 Production Readiness
 
 **Security Score Improvement:**
+
 - **Before:** Medium Risk - Secrets in image history
 - **After:** ✅ **Low Risk** - Industry-standard secret management
 
 **Compliance:**
+
 - ✅ Meets PCI DSS requirements (no card data in code/images)
 - ✅ Satisfies SOC 2 controls (secret management)
 - ✅ Follows CIS Docker Benchmark recommendations
 
 **Deployment Ready:**
+
 - ✅ Safe to push images to public/private registries
 - ✅ No risk of credential leak from image inspection
 - ✅ Compatible with all major deployment platforms
@@ -310,6 +325,7 @@ Lower priority improvements for future consideration:
 ✅ **P1 Priority Item COMPLETE**
 
 Docker security has been hardened to production standards:
+
 - No secrets in image layers
 - Comprehensive runtime secret injection
 - Health check monitoring

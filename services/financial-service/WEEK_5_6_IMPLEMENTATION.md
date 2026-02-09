@@ -1,6 +1,7 @@
 # Financial Service - Week 5-6 Implementation Complete
 
 ## Overview
+
 This document summarizes the implementation of **Week 5: Picket Tracking System** and **Week 6: Stipend Calculation & Disbursement** for the Phase 4 Financial Management roadmap.
 
 ---
@@ -8,6 +9,7 @@ This document summarizes the implementation of **Week 5: Picket Tracking System*
 ## Week 5: Picket Tracking System ✅
 
 ### 🎯 Objectives Completed
+
 - NFC/QR code check-in system
 - GPS location verification
 - Attendance tracking and reporting
@@ -17,7 +19,9 @@ This document summarizes the implementation of **Week 5: Picket Tracking System*
 ### 📦 Deliverables
 
 #### 1. **Picket Tracking Service** (`src/services/picket-tracking.ts` - 476 lines)
+
 **Core Features:**
+
 - **GPS Verification**: Haversine formula for distance calculation (100m accuracy threshold)
 - **QR Code System**: Base64 encoded JSON with 5-minute expiry window
 - **NFC Support**: Tag UID tracking for member check-ins
@@ -26,6 +30,7 @@ This document summarizes the implementation of **Week 5: Picket Tracking System*
 - **Coordinator Override**: Manual attendance entry with approval workflow
 
 **Key Functions:**
+
 ```typescript
 calculateDistance(lat1, lon1, lat2, lon2) // Haversine formula
 verifyGPSLocation(memberLat, memberLon, picketLat, picketLon, radiusMeters)
@@ -40,6 +45,7 @@ coordinatorOverride(tenantId, strikeFundId, memberId, verifiedBy, reason, hours)
 ```
 
 #### 2. **API Endpoints** (`src/routes/picket-tracking.ts` - 444 lines)
+
 **10 REST Endpoints:**
 
 | Method | Endpoint | Description |
@@ -56,19 +62,23 @@ coordinatorOverride(tenantId, strikeFundId, memberId, verifiedBy, reason, hours)
 | `GET` | `/api/picket/distance` | GET version of distance calculator |
 
 #### 3. **Database Schema** (`src/db/schema.ts`)
+
 **3 New Tables:**
 
 ##### `check_in_method` enum
+
 ```typescript
 ['nfc', 'qr_code', 'gps', 'manual']
 ```
 
 ##### `strike_funds` table
+
 - Strike fund configuration and eligibility rules
 - Weekly stipend amounts and minimum hours requirements
 - Start/end dates for strike periods
 
 ##### `picket_attendance` table
+
 - Check-in/check-out timestamps
 - GPS coordinates (lat/long) with 8 decimal precision
 - Hours worked calculation (numeric 4,2)
@@ -77,13 +87,16 @@ coordinatorOverride(tenantId, strikeFundId, memberId, verifiedBy, reason, hours)
 - Coordinator override tracking
 
 ##### `stipend_disbursements` table
+
 - Payment tracking (pending → approved → paid)
 - Week range tracking (start/end dates)
 - Transaction IDs for reconciliation
 - Payment methods (direct_deposit, check, cash, paypal)
 
 #### 4. **Test Suite** (`test-picket-tracking.ps1`)
+
 **10 Comprehensive Tests:**
+
 1. ✅ Generate QR code for member
 2. ✅ Validate QR code data
 3. ⚠️ GPS check-in at valid location (DB pending)
@@ -96,12 +109,14 @@ coordinatorOverride(tenantId, strikeFundId, memberId, verifiedBy, reason, hours)
 10. ✅ Distance calculation utility
 
 **Test Results:**
+
 - 5/10 tests passing (QR generation, validation, GPS rejection, summary, distance calc)
 - 5/10 tests pending database setup
 
 ### 🔧 Technical Implementation
 
 **GPS Distance Calculation:**
+
 ```typescript
 export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Earth radius in kilometers
@@ -120,6 +135,7 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 ```
 
 **QR Code Expiry System:**
+
 ```typescript
 export function generateQRCodeData(strikeFundId: string, memberId: string, timestamp = new Date()): string {
   const data = {
@@ -133,12 +149,14 @@ export function generateQRCodeData(strikeFundId: string, memberId: string, times
 ```
 
 ### ⚠️ Known Issues
+
 1. **TypeScript Compilation Errors**: Library dependency conflicts (Drizzle ORM, dom-webcodecs)
 2. **Database Migration Pending**: Tables need to be created in PostgreSQL
 3. **Route Loading**: Picket endpoints not appearing in service startup logs
 4. **End-to-End Testing**: Requires database setup to complete testing
 
 ### 📋 Next Steps for Week 5
+
 1. Run database migration: `database/migrations/014_strike_fund_adapted.sql`
 2. Resolve TypeScript library conflicts (consider tsconfig adjustments)
 3. Verify route imports and module resolution
@@ -150,6 +168,7 @@ export function generateQRCodeData(strikeFundId: string, memberId: string, times
 ## Week 6: Stipend Calculation & Disbursement ✅
 
 ### 🎯 Objectives Completed
+
 - Automated weekly stipend calculations
 - Eligibility verification based on minimum hours
 - Three-stage approval workflow (pending → approved → paid)
@@ -161,6 +180,7 @@ export function generateQRCodeData(strikeFundId: string, memberId: string, times
 #### 1. **Stipend Calculation Service** (`src/services/stipend-calculation.ts` - 417 lines)
 
 **Core Features:**
+
 - **Weekly Calculations**: Aggregate attendance hours by member
 - **Eligibility Rules**: Minimum hours threshold (default: 20 hours/week)
 - **Hourly Rate**: Configurable stipend rate (default: $15/hour)
@@ -169,6 +189,7 @@ export function generateQRCodeData(strikeFundId: string, memberId: string, times
 - **Payment Tracking**: Transaction IDs and payment method recording
 
 **Key Functions:**
+
 ```typescript
 calculateWeeklyStipends(request) // Calculate eligibility for all members
 createDisbursement(request) // Create pending disbursement record
@@ -181,6 +202,7 @@ batchCreateDisbursements(request) // Bulk create for all eligible
 ```
 
 **Stipend Calculation Algorithm:**
+
 ```typescript
 1. Query picket_attendance table for date range
 2. Aggregate hours by member (SUM(hours_worked))
@@ -191,6 +213,7 @@ batchCreateDisbursements(request) // Bulk create for all eligible
 ```
 
 #### 2. **API Endpoints** (`src/routes/stipends.ts` - 294 lines)
+
 **8 REST Endpoints:**
 
 | Method | Endpoint | Description |
@@ -205,7 +228,9 @@ batchCreateDisbursements(request) // Bulk create for all eligible
 | `GET` | `/api/stipends/summary/:strikeFundId` | Get summary statistics |
 
 #### 3. **Database Integration**
+
 Uses existing `stipend_disbursements` table from Week 5:
+
 - `status` column workflow: 'pending' → 'approved' → 'paid'
 - Audit trail: `approved_by`, `approved_at`, `paid_by`, `paid_at`
 - Payment methods: direct_deposit, check, cash, paypal
@@ -214,6 +239,7 @@ Uses existing `stipend_disbursements` table from Week 5:
 #### 4. **API Request/Response Examples**
 
 **Calculate Weekly Stipends:**
+
 ```json
 POST /api/stipends/calculate
 {
@@ -245,6 +271,7 @@ Response:
 ```
 
 **Batch Create Disbursements:**
+
 ```json
 POST /api/stipends/disbursements/batch
 {
@@ -266,6 +293,7 @@ Response:
 ```
 
 **Approve Disbursement:**
+
 ```json
 POST /api/stipends/disbursements/{id}/approve
 {
@@ -279,6 +307,7 @@ Response:
 ```
 
 **Mark as Paid:**
+
 ```json
 POST /api/stipends/disbursements/{id}/paid
 {
@@ -294,6 +323,7 @@ Response:
 ### 🎨 Features
 
 #### Eligibility Calculation
+
 - Queries `picket_attendance` table for week range
 - Groups by `member_id` and sums `hours_worked`
 - Compares against `minimum_hours_per_week` from strike fund config
@@ -301,6 +331,7 @@ Response:
 - Returns detailed eligibility report with reasons
 
 #### Approval Workflow
+
 ```
 CREATE → pending
    ↓
@@ -310,19 +341,23 @@ PAY → paid (requires transaction ID)
 ```
 
 #### Batch Processing
+
 - Single API call processes all eligible members
 - Creates individual disbursement records
 - Returns summary: created count, skipped count, error list
 - Atomic operations with rollback on failure
 
 #### Payment Reconciliation
+
 - Transaction IDs stored for each payment
 - Payment method tracking (direct_deposit, check, cash, paypal)
 - Approved/paid timestamps for audit trail
 - `approved_by` and `paid_by` user IDs captured
 
 ### 📊 Summary Statistics
+
 The `/api/stipends/summary/:strikeFundId` endpoint provides:
+
 - `totalPending`: Sum of all pending disbursements
 - `totalApproved`: Sum of approved but unpaid disbursements
 - `totalPaid`: Sum of paid disbursements
@@ -333,6 +368,7 @@ The `/api/stipends/summary/:strikeFundId` endpoint provides:
 ## 🎉 Combined Achievement: Week 5 + Week 6
 
 ### System Flow
+
 ```
 1. Member checks in to picket line (NFC/QR/GPS)
    ↓
@@ -354,6 +390,7 @@ The `/api/stipends/summary/:strikeFundId` endpoint provides:
 ```
 
 ### Key Metrics
+
 - **Total Lines of Code**: ~1,631 lines
   - Picket Tracking Service: 476 lines
   - Picket Tracking Routes: 444 lines
@@ -370,6 +407,7 @@ The `/api/stipends/summary/:strikeFundId` endpoint provides:
   - `stipend_disbursements`
 
 ### Technology Stack
+
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js
 - **Database**: PostgreSQL with Drizzle ORM
@@ -383,12 +421,14 @@ The `/api/stipends/summary/:strikeFundId` endpoint provides:
 ## 🚀 Production Readiness Checklist
 
 ### Immediate (Before Testing)
+
 - [ ] Run database migration for Week 5 tables
 - [ ] Resolve TypeScript library conflicts
 - [ ] Fix route import issues
 - [ ] Complete end-to-end testing with database
 
 ### Short-Term (Before MVP Launch)
+
 - [ ] Add database indexes for performance (member_id, strike_fund_id, check_in_time)
 - [ ] Implement transaction rollback on errors
 - [ ] Add request rate limiting for public endpoints
@@ -396,6 +436,7 @@ The `/api/stipends/summary/:strikeFundId` endpoint provides:
 - [ ] Implement Stripe/ACH integration for payments
 
 ### Medium-Term (Post-MVP)
+
 - [ ] Mobile app frontend (React Native)
 - [ ] Real-time check-in notifications (WebSocket)
 - [ ] Geofencing for automatic check-ins
@@ -411,6 +452,7 @@ The `/api/stipends/summary/:strikeFundId` endpoint provides:
 ### Manual API Testing (PowerShell)
 
 **1. Calculate Weekly Stipends:**
+
 ```powershell
 $headers = @{
   'Content-Type'='application/json'
@@ -430,6 +472,7 @@ Invoke-RestMethod -Uri 'http://localhost:3007/api/stipends/calculate' `
 ```
 
 **2. Batch Create Disbursements:**
+
 ```powershell
 $body = @{
   strikeFundId = "22222222-2222-2222-2222-222222222222"
@@ -443,6 +486,7 @@ Invoke-RestMethod -Uri 'http://localhost:3007/api/stipends/disbursements/batch' 
 ```
 
 **3. Get Pending Disbursements:**
+
 ```powershell
 Invoke-RestMethod -Uri 'http://localhost:3007/api/stipends/disbursements/pending/22222222-2222-2222-2222-222222222222' `
   -Method Get -Headers $headers
@@ -462,18 +506,21 @@ Invoke-RestMethod -Uri 'http://localhost:3007/api/stipends/disbursements/pending
 ## 👥 Team Notes
 
 ### For Backend Developers
+
 - All services use Drizzle ORM with postgres-js driver
 - Numeric fields stored as strings (precision requirements)
 - Zod validation on all request bodies
 - Authentication via `(req as any).user` with Clerk bypass
 
 ### For Frontend Developers
+
 - All endpoints require `X-Test-User` header in development
 - GPS coordinates use decimal degrees (8 decimal precision)
 - QR codes expire after 5 minutes
 - Disbursement workflow: pending → approved → paid
 
 ### For Database Administrators
+
 - Run migration before testing: `014_strike_fund_adapted.sql`
 - Add indexes for: `member_id`, `strike_fund_id`, `check_in_time`
 - Consider partitioning `picket_attendance` by date range

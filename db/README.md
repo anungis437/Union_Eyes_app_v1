@@ -88,6 +88,7 @@ export const db = drizzle(client, { schema });
 ### Adding New Tables
 
 1. Create schema file in `db/schema/`:
+
    ```typescript
    // db/schema/my-feature-schema.ts
    import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
@@ -100,16 +101,19 @@ export const db = drizzle(client, { schema });
    ```
 
 2. Export from `db/schema/index.ts`:
+
    ```typescript
    export * from "./my-feature-schema";
    ```
 
 3. Generate migration:
+
    ```bash
    pnpm db:generate
    ```
 
 4. Apply migration:
+
    ```bash
    pnpm db:migrate
    ```
@@ -265,8 +269,9 @@ pnpm db:migrate
 ## Support
 
 For database-related issues:
+
 - Check error logs in `latest-logs/`
-- Review Drizzle documentation: https://orm.drizzle.team
+- Review Drizzle documentation: <https://orm.drizzle.team>
 - Contact: [Database admin contact]
 
 ---

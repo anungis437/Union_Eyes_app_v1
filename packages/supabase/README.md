@@ -5,6 +5,7 @@ This package provides the complete Supabase database configuration, types, and h
 ## Overview
 
 The CourtLens Supabase package includes:
+
 - **Complete PostgreSQL database schema** with 15+ tables for billing operations
 - **Multi-tenant architecture** with organization-based row-level security
 - **IOLTA compliance** for Canadian legal trust accounting requirements

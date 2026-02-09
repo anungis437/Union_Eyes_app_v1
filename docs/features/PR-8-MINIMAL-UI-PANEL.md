@@ -17,6 +17,7 @@ PR-8 builds the user interface layer that surfaces the LRO Signals API. Instead 
 A comprehensive case list with integrated signal detection and filtering.
 
 **Features:**
+
 - **Real-time signal detection**: Automatically detects signals for all cases on load
 - **Visual severity indicators**: Color-coded badges (🔴 Critical, 🟠 Urgent, 🟡 Warning, 🔵 Info)
 - **Smart filtering**: By severity, state, and search query
@@ -48,11 +49,13 @@ export default async function CasesPage() {
 ```
 
 **Filter Options:**
+
 - **Severity**: All / Critical / Urgent / Warning
 - **State**: All States / Submitted / Acknowledged / Investigating / Pending Response / Negotiating
 - **Search**: Filter by case title, member name, or case ID
 
 **Count Badges:**
+
 - "All Cases (47)"
 - "Critical (3)"
 - "Urgent (8)"
@@ -63,6 +66,7 @@ export default async function CasesPage() {
 Real-time dashboard widget displaying signal statistics and high-priority alerts.
 
 **Features:**
+
 - **Auto-refresh**: Updates every 60 seconds (configurable)
 - **Statistics grid**: 4 primary stats (Critical, Urgent, At Risk, Breached)
 - **Detailed counts**: 3 secondary stats (Awaiting Acknowledgment, Member Waiting, Stale Cases)
@@ -92,6 +96,7 @@ export default async function DashboardPage() {
 ```
 
 **Statistics Displayed:**
+
 - **Critical**: 🔴 Immediate action required
 - **Urgent**: 🟠 Priority action needed
 - **At Risk**: ⚠️ SLA approaching breach (>80%)
@@ -103,6 +108,7 @@ export default async function DashboardPage() {
 ### 3. Signal Badge Components
 
 **SignalBadge** (`components/cases/signal-badge.tsx`)
+
 - Full badge with icon and text
 - 3 sizes: sm, md (default), lg
 - 4 severity levels with color coding
@@ -113,6 +119,7 @@ export default async function DashboardPage() {
 ```
 
 **SignalDot**
+
 - Minimal colored dot indicator
 - For compact displays
 - Aria-label for accessibility
@@ -122,6 +129,7 @@ export default async function DashboardPage() {
 ```
 
 **SignalTypeBadge**
+
 - Shows specific signal type (e.g., "SLA Breached", "Ack Overdue")
 - Color-coded by severity
 - Compact design for detail views
@@ -135,6 +143,7 @@ export default async function DashboardPage() {
 Expandable detail view for signal information.
 
 **Features:**
+
 - **Signal type badge**: Identifies specific signal
 - **Full description**: Complete explanation of issue
 - **Context details**: Member name, state, priority, days elapsed, SLA info
@@ -142,6 +151,7 @@ Expandable detail view for signal information.
 - **Smart routing**: Directs to appropriate workflow step
 
 **Context Display:**
+
 ```
 Context
 Member: Jane Doe
@@ -153,6 +163,7 @@ SLA Type: investigation
 ```
 
 **Action Routing:**
+
 - `acknowledgment_overdue` → `/cases/:id?action=acknowledge`
 - `member_waiting` → `/cases/:id?action=send_update`
 - `escalation_needed` → `/cases/:id?action=escalate`
@@ -165,24 +176,28 @@ SLA Type: investigation
 ### Color Palette
 
 **Critical (Red):**
+
 - Background: `bg-red-100` (#FEE2E2)
 - Text: `text-red-800` (#991B1B)
 - Border: `border-red-300`
 - Icon: 🔴
 
 **Urgent (Orange):**
+
 - Background: `bg-orange-100` (#FFEDD5)
 - Text: `text-orange-800` (#9A3412)
 - Border: `border-orange-300`
 - Icon: 🟠
 
 **Warning (Yellow):**
+
 - Background: `bg-yellow-100` (#FEF3C7)
 - Text: `text-yellow-800` (#854D0E)
 - Border: `border-yellow-300`
 - Icon: 🟡
 
 **Info (Blue):**
+
 - Background: `bg-blue-100` (#DBEAFE)
 - Text: `text-blue-800` (#1E40AF)
 - Border: `border-blue-300`
@@ -252,6 +267,7 @@ SLA Type: investigation
 ## Business Value
 
 ### Before PR-8
+
 - Raw case lists with manual triage (30+ min/day)
 - No visual indication of urgency
 - Officers must remember which cases are critical
@@ -259,6 +275,7 @@ SLA Type: investigation
 - Manual tracking of SLA status
 
 ### After PR-8
+
 - Automatic signal-based prioritization (< 1 second)
 - Visual severity indicators at a glance
 - Critical cases automatically at top of list
@@ -270,18 +287,21 @@ SLA Type: investigation
 ## Responsive Design
 
 **Desktop (>1024px):**
+
 - 4-column statistics grid
 - Full filters expanded
 - Large signal badges
 - Expanded case cards
 
 **Tablet (768-1024px):**
+
 - 2-column statistics grid
 - Filters collapsed to dropdowns
 - Medium signal badges
 - Compact case cards
 
 **Mobile (<768px):**
+
 - 1-column statistics grid
 - Essential filters only
 - Small signal badges
@@ -292,6 +312,7 @@ SLA Type: investigation
 ### Page Integration
 
 **Cases List Page:**
+
 ```typescript
 // app/cases/page.tsx
 import { CaseList } from '@/components/cases/case-list';
@@ -307,6 +328,7 @@ export default async function CasesPage() {
 ```
 
 **Dashboard Page:**
+
 ```typescript
 // app/dashboard/page.tsx
 import { DashboardSignalsWidget } from '@/components/dashboard/signals-widget';
@@ -350,6 +372,7 @@ export async function GET() {
 ✅ **Alt Text**: Descriptive labels for all icons
 
 **Keyboard Shortcuts:**
+
 - `Tab`: Navigate between filters and cases
 - `Enter`: Expand/collapse signal details
 - `Escape`: Close expanded details
@@ -358,16 +381,19 @@ export async function GET() {
 ## Performance Optimizations
 
 **Client-Side:**
+
 - `useMemo` for signal detection (prevents re-calculation on re-render)
 - `useCallback` for event handlers (prevents unnecessary re-renders)
 - Virtualized lists for 100+ cases (future enhancement)
 
 **Server-Side:**
+
 - Server-side signal detection before hydration
 - Static case count badges (no JS required)
 - Progressive enhancement (filters work without JS)
 
 **Bundle Size:**
+
 - Signal badge components: ~2KB gzipped
 - Case list component: ~8KB gzipped
 - Dashboard widget: ~6KB gzipped
@@ -376,14 +402,17 @@ export async function GET() {
 ## Integration with Previous PRs
 
 **PR-5: Opinionated Workflow Rules**
+
 - Uses FSM state display (capitalized, readable)
 - Respects workflow state urgency classification
 
 **PR-6: Defensibility Pack Exports**
+
 - Links to export action from critical signals
 - Includes export integrity in case detail view
 
 **PR-7: LRO Signals API**
+
 - **Primary integration**: All components consume signals API
 - Real-time signal detection on all case displays
 - Dashboard statistics from `getDashboardStats()`
@@ -408,12 +437,14 @@ export async function GET() {
 ## Next Steps
 
 **PR-9: Pilot Mode Feature Flags**
+
 - Enable signal UI progressively (by union/local)
 - A/B test filter configurations
 - Collect feedback on signal usefulness
 - Toggle auto-refresh on/off per user
 
 **PR-10: Metrics Instrumentation**
+
 - Track filter usage patterns
 - Measure time-to-action from signal
 - Monitor signal resolution rates

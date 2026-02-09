@@ -15,6 +15,7 @@ Implemented comprehensive Cross-Site Request Forgery (CSRF) protection using the
 CSRF attacks trick authenticated users into executing unwanted actions on a web application. An attacker crafts a malicious request that appears to come from the user.
 
 **Example Attack:**
+
 ```html
 <!-- Malicious website -->
 <form action="https://unioneyes.com/api/users/delete" method="POST">
@@ -242,6 +243,7 @@ export default api;
 ```
 
 Then use anywhere:
+
 ```typescript
 import api from '@/lib/axios';
 
@@ -371,6 +373,7 @@ const token = crypto.randomBytes(32).toString('base64url');
 ### 2. **Constant-Time Comparison**
 
 Prevents timing attacks:
+
 ```typescript
 const valid = crypto.timingSafeEqual(
   Buffer.from(storedToken),
@@ -381,6 +384,7 @@ const valid = crypto.timingSafeEqual(
 ### 3. **Short Token Lifetime**
 
 Tokens expire after 1 hour:
+
 ```typescript
 const TOKEN_TTL = 3600; // seconds
 ```
@@ -410,6 +414,7 @@ const CSRF_COOKIE_NAME = '__Host-csrf-token';
 ```
 
 The `__Host-` prefix enforces:
+
 - Must be set with `secure` flag
 - Must be set from HTTPS origin
 - Must not include `domain` attribute
@@ -457,10 +462,12 @@ const TOKEN_TTL = 3600;                        // 1 hour
 ```
 
 **Causes:**
+
 - Client didn't include `x-csrf-token` header
 - Cookie expired or was cleared
 
 **Solution:**
+
 - Ensure `fetchWithCSRF` is used for all POST/PUT/DELETE requests
 - Check cookie exists: `document.cookie.includes('__Host-csrf-token')`
 
@@ -474,11 +481,13 @@ const TOKEN_TTL = 3600;                        // 1 hour
 ```
 
 **Causes:**
+
 - Token mismatch (cookie vs header)
 - Token expired in Redis
 - Token was invalidated (logout)
 
 **Solution:**
+
 - Refresh page to get new token
 - Re-authenticate user
 
@@ -498,6 +507,7 @@ if (!redis) {
 ```
 
 **Behavior:**
+
 - ⚠️ Less secure (no server-side token storage)
 - ✅ Still protects against basic CSRF attacks
 - ✅ Prevents application breakage
@@ -598,12 +608,14 @@ describe('CSRF Protection', () => {
 ### Issue: "CSRF token required" on all requests
 
 **Diagnosis:**
+
 ```typescript
 import { hasCSRFToken } from '@/lib/csrf-client';
 console.log('Has CSRF token:', hasCSRFToken());
 ```
 
 **Solutions:**
+
 1. Ensure server is setting cookie with `setCSRFCookie()`
 2. Check cookies in DevTools → Application → Cookies
 3. Verify `__Host-csrf-token` exists
@@ -612,12 +624,14 @@ console.log('Has CSRF token:', hasCSRFToken());
 ### Issue: Token exists but validation fails
 
 **Diagnosis:**
+
 ```typescript
 import { getToken } from '@/lib/csrf-client';
 console.log('Token from cookie:', getToken());
 ```
 
 **Solutions:**
+
 1. Check Redis is configured and healthy (`/api/health`)
 2. Verify token hasn't expired (1 hour TTL)
 3. Check session ID extraction matches client and server
@@ -638,6 +652,7 @@ const CSRF_EXEMPT_PATHS = [
 ### Issue: Different session ID on client vs server
 
 **Diagnosis:**
+
 ```typescript
 // Server side
 console.log('Server session:', req.headers.get('x-session-id'));
@@ -647,6 +662,7 @@ console.log('Client session:', getSessionId());
 ```
 
 **Solution:** Ensure consistent session ID extraction:
+
 - Use Clerk JWT from cookies
 - Or custom session header
 - Must match on both sides
@@ -658,6 +674,7 @@ console.log('Client session:', getSessionId());
 ### Latency Added
 
 **Per Protected Request:**
+
 - Redis token lookup: ~20-50ms
 - Constant-time comparison: <1ms
 - **Total overhead: ~25-50ms**
@@ -665,10 +682,12 @@ console.log('Client session:', getSessionId());
 ### Redis Usage
 
 **Commands per request:**
+
 - Token generation: 1 SET + 1 EXPIRE = 2 commands
 - Token validation: 1 GET = 1 command
 
 **Estimated cost:**
+
 - 10K protected requests/day = ~30K commands
 - Upstash free tier: 10K commands/day (may need upgrade)
 - Pay-as-you-go: ~$0.06/day ($1.80/month)
@@ -713,6 +732,7 @@ console.log('Client session:', getSessionId());
 ### CWE-352 (CSRF)
 
 Protection against:
+
 - ✅ CWE-352: Cross-Site Request Forgery
 - ✅ CWE-284: Improper Access Control
 - ✅ CWE-346: Origin Validation Error
@@ -757,6 +777,7 @@ if (!valid) {
 
 **Implementation Complete:** February 6, 2026  
 **Files Created:**
+
 - `lib/csrf-protection.ts` - Server-side protection
 - `lib/csrf-client.ts` - Client-side utilities
 

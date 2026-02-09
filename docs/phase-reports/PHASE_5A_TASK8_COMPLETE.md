@@ -19,6 +19,7 @@ Successfully migrated all frontend components, middleware, and infrastructure fr
 ### 1. Infrastructure Files (Task 7 - Previously Completed)
 
 **contexts/organization-context.tsx** (289 lines)
+
 - ✅ OrganizationProvider with full state management
 - ✅ Cookie persistence (selected_organization_id)
 - ✅ Organization resolution chain (cookie → isPrimary → first → default)
@@ -26,6 +27,7 @@ Successfully migrated all frontend components, middleware, and infrastructure fr
 - ✅ Fixed React Hook dependency warning
 
 **lib/hooks/use-organization.ts**
+
 - ✅ Convenience re-exports:
   - `useOrganization()` - full context
   - `useOrganizationId()` - just current org ID
@@ -33,22 +35,26 @@ Successfully migrated all frontend components, middleware, and infrastructure fr
   - `useSwitchOrganization()` - switch function
 
 **app/api/users/me/organizations/route.ts**
+
 - ✅ GET endpoint for user's organizations and memberships
 - ✅ Clerk authentication
 - ✅ Returns: `{ organizations: [], memberships: [] }`
 
 **components/organization/organization-selector.tsx**
+
 - ✅ Combobox dropdown with org type icons
 - ✅ Search functionality
 - ✅ Access validation before switching
 - ✅ 280px width, professional styling
 
 **components/organization/organization-breadcrumb.tsx**
+
 - ✅ Hierarchy display (CLC > CUPE > Local 1000)
 - ✅ ChevronRight separators
 - ✅ Highlights current organization
 
 **app/layout.tsx**
+
 - ✅ OrganizationProvider integrated at root level
 - ✅ Wrapped inside ClerkProvider for authentication
 
@@ -57,9 +63,11 @@ Successfully migrated all frontend components, middleware, and infrastructure fr
 ### 2. Component Migration Files (Task 8)
 
 #### **A. Dashboard Layout**
+
 **File**: `app/dashboard/layout.tsx`
 
 **Changes**:
+
 ```typescript
 // REMOVED imports:
 - import { TenantProvider } from "@/lib/tenant-context"
@@ -71,6 +79,7 @@ Successfully migrated all frontend components, middleware, and infrastructure fr
 ```
 
 **Structure Updates**:
+
 - Removed `<TenantProvider>` wrapper (now in root layout)
 - Updated sticky header from single right-aligned TenantSelector
 - To: OrganizationBreadcrumb (left) + OrganizationSelector (right) with `justify-between`
@@ -81,9 +90,11 @@ Successfully migrated all frontend components, middleware, and infrastructure fr
 ---
 
 #### **B. Members Page**
+
 **File**: `app/dashboard/members/page.tsx`
 
 **Changes**:
+
 ```typescript
 // OLD:
 import { useTenantId } from "@/lib/tenant-context";
@@ -97,6 +108,7 @@ const { data } = useSWR(`/api/organization/members?organization=${organizationId
 ```
 
 **Updates**:
+
 - Hook: `useTenantId()` → `useOrganizationId()`
 - Variable: `tenantId` → `organizationId`
 - API parameter: `tenant=${tenantId}` → `organization=${organizationId}`
@@ -107,9 +119,11 @@ const { data } = useSWR(`/api/organization/members?organization=${organizationId
 ---
 
 #### **C. Tenant Selector (Deprecated)**
+
 **File**: `components/tenant-selector.tsx`
 
 **Changes**:
+
 ```typescript
 /**
  * @deprecated Use OrganizationSelector from @/components/organization/organization-selector instead
@@ -121,6 +135,7 @@ export function TenantSelector() {
 ```
 
 **Implementation**:
+
 - Marked with `@deprecated` JSDoc tags
 - Now wraps and returns `<OrganizationSelector />`
 - Removed 70+ lines of legacy dropdown code
@@ -131,9 +146,11 @@ export function TenantSelector() {
 ---
 
 #### **D. Role Middleware**
+
 **File**: `lib/role-middleware.ts`
 
 **Changes**:
+
 ```typescript
 // REMOVED:
 - import { withTenantAuth, TenantContext } from "@/lib/tenant-middleware"
@@ -152,6 +169,7 @@ export function TenantSelector() {
 **Functions Updated** (2 functions):
 
 1. **withRoleAuth**:
+
 ```typescript
 // OLD:
 return withTenantAuth<T>(async (request, tenantContext, params) => {
@@ -168,16 +186,18 @@ return withOrganizationAuth<T>(async (request, orgContext, params) => {
 });
 ```
 
-2. **withAnyRole**: Same pattern as withRoleAuth
+1. **withAnyRole**: Same pattern as withRoleAuth
 
 **Status**: ✅ Complete (2/2 functions updated)
 
 ---
 
 #### **E. Enterprise Role Middleware**
+
 **File**: `lib/enterprise-role-middleware.ts` (646 lines)
 
 **Changes**:
+
 ```typescript
 // REMOVED:
 - import { withTenantAuth, type TenantContext } from './tenant-middleware'
@@ -200,6 +220,7 @@ return withOrganizationAuth<T>(async (request, orgContext, params) => {
 **Functions Updated** (4 main functions + 3 helpers):
 
 1. **withEnhancedRoleAuth** (lines 82-206):
+
 ```typescript
 // OLD:
 return withTenantAuth(async (request: NextRequest, context: TenantContext) => {
@@ -215,18 +236,18 @@ return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
 });
 ```
 
-2. **withPermission** (lines 215-310):
+1. **withPermission** (lines 215-310):
    - Changed wrapper: `withTenantAuth` → `withOrganizationAuth`
    - Updated context destructuring: `const { organizationId, userId } = orgContext`
    - Replaced all `context.tenantId` → `organizationId`
    - Updated audit logs: `{ ...context, memberId }` → `{ organizationId, userId, memberId }`
 
-3. **withScopedRoleAuth** (lines 328-430):
+2. **withScopedRoleAuth** (lines 328-430):
    - Same pattern as withPermission
    - Updated all `context.tenantId` → `organizationId`
    - Updated context construction
 
-4. **Helper Functions**:
+3. **Helper Functions**:
    - `logAuditDenial()`: `context.tenantId` → `context.organizationId`
    - `requirePermission()`: `context.tenantId` → `context.organizationId`
    - `requireRoleLevel()`: `context.tenantId` → `context.organizationId`
@@ -240,6 +261,7 @@ return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
 ### Code Quality Checks
 
 **1. No TypeScript Compilation Errors**
+
 ```bash
 ✅ 0 TypeScript errors related to tenant → organization migration
 ✅ All type interfaces properly updated
@@ -247,6 +269,7 @@ return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
 ```
 
 **2. No Tenant Context Imports**
+
 ```bash
 ✅ 0 matches for "from '@/lib/tenant-context'" in active code
 ✅ 0 matches for "useTenantId" in components/
@@ -254,6 +277,7 @@ return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
 ```
 
 **3. No Tenant Middleware Usage**
+
 ```bash
 ✅ 0 matches for "withTenantAuth" in app/api/
 ✅ 0 matches for "TenantContext" in lib/*.ts (except legacy tenant-middleware.ts)
@@ -261,6 +285,7 @@ return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
 ```
 
 **4. Database Schema References**
+
 ```
 ℹ️ TypeScript interfaces (DbClaim.tenantId) remain unchanged - correct for database schema
 ℹ️ Workflow/AI components in src/components/ accept tenantId as props (not yet used in app)
@@ -271,17 +296,20 @@ return withOrganizationAuth(async (request: NextRequest, orgContext: any) => {
 ## 📊 Migration Statistics
 
 ### Files Modified
+
 - **Total Files Updated**: 7 files
 - **Lines Changed**: ~300+ lines
 - **Successful Replacements**: 21 operations (100% success rate)
 
 ### Breakdown by Category
+
 1. **Dashboard Layout**: 2 edits (header + wrapper removal)
 2. **Pages**: 2 edits (members page)
 3. **Components**: 2 edits (tenant-selector deprecation)
 4. **Middleware**: 15 edits (role-middleware + enterprise-role-middleware)
 
 ### Migration Pattern Applied
+
 ```typescript
 // Import Changes:
 useTenantId/TenantContext → useOrganizationId/useOrganization
@@ -303,21 +331,25 @@ tenantContext → orgContext
 ## 🎯 Achievement Highlights
 
 ### 1. Zero Breaking Changes
+
 - TenantSelector deprecated but wrapped for backwards compatibility
 - No API contract changes (backend already migrated in Tasks 1-6)
 - All existing functionality preserved
 
 ### 2. Clean Code Architecture
+
 - Explicit property definitions (no `extends TenantContext`)
 - Clear context destructuring (`const { organizationId, userId }`)
 - Consistent naming conventions throughout
 
 ### 3. Type Safety Maintained
+
 - All TypeScript interfaces properly updated
 - No `any` types except transitional orgContext parameters
 - Full IDE autocomplete support
 
 ### 4. Performance Optimization
+
 - Cookie persistence prevents unnecessary API calls
 - Organization resolution chain optimized
 - React Hook dependencies properly configured
@@ -329,6 +361,7 @@ tenantContext → orgContext
 ### For Frontend Developers
 
 **Import Organization Context**:
+
 ```typescript
 import { useOrganizationId } from "@/lib/hooks/use-organization";
 
@@ -341,6 +374,7 @@ export default function MyPage() {
 ```
 
 **Switch Organizations**:
+
 ```typescript
 import { useSwitchOrganization } from "@/lib/hooks/use-organization";
 
@@ -349,6 +383,7 @@ await switchOrg(newOrgId); // Triggers page reload
 ```
 
 **Access Full Context**:
+
 ```typescript
 import { useOrganization } from "@/lib/hooks/use-organization";
 
@@ -364,6 +399,7 @@ const {
 ### For API Route Developers
 
 **Use Organization Middleware**:
+
 ```typescript
 import { withOrganizationAuth } from "@/lib/organization-middleware";
 
@@ -378,6 +414,7 @@ export const GET = withOrganizationAuth(async (request, orgContext) => {
 ```
 
 **Use Role Middleware**:
+
 ```typescript
 import { withRoleAuth } from "@/lib/role-middleware";
 
@@ -394,7 +431,9 @@ export const POST = withRoleAuth("steward", async (request, roleContext) => {
 ## 🚀 Next Steps
 
 ### Immediate (Task 9)
+
 Build organization management UI:
+
 - [x] OrganizationSelector (COMPLETE)
 - [x] OrganizationBreadcrumb (COMPLETE)
 - [ ] Organization CRUD pages (`/dashboard/admin/organizations`)
@@ -403,21 +442,27 @@ Build organization management UI:
 - [ ] Member management interface
 
 ### Short-term (Task 10)
+
 Add sector and jurisdiction support:
+
 - [ ] Sector dropdown (16 Canadian sectors)
 - [ ] Jurisdiction multi-select (14 regions)
 - [ ] Filtering by sector/jurisdiction
 - [ ] Analytics by sector/jurisdiction
 
 ### Medium-term (Task 11)
+
 Integration testing:
+
 - [ ] Test hierarchical access (federation→union→local→chapter)
 - [ ] Verify RLS policies (sibling isolation, descendant access)
 - [ ] Test organization switching (cookie persistence, UI updates)
 - [ ] Validate analytics aggregation
 
 ### Final (Task 12)
+
 CLC demo environment:
+
 - [ ] Seed realistic hierarchy data
 - [ ] Create demo users at each level
 - [ ] Populate sample claims across hierarchy
@@ -448,6 +493,7 @@ CLC demo environment:
 ## 📞 Support
 
 For questions about the organization context system:
+
 - **Documentation**: See `docs/PHASE_5A_QUICK_REFERENCE.md`
 - **Architecture**: See `docs/PHASE_5A_MIGRATION_SUCCESS.md`
 - **API Reference**: See `API_CATALOG.md`

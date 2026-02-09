@@ -17,30 +17,35 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 13
 
 ### ..\app\api\carbon\dashboard\route.ts
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 14
 
 ### ..\app\api\carbon\infrastructure\route.ts
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 14
 
 ### ..\app\api\carbon\validate\route.ts
 
 **Methods:** POST  
 **Line Numbers:**
+
 - POST: Line 14
 
 ### ..\app\api\communications\campaigns\route.ts
 
 **Methods:** GET, POST  
 **Line Numbers:**
+
 - GET: Line 34
 - POST: Line 75
 
@@ -48,6 +53,7 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET, POST  
 **Line Numbers:**
+
 - GET: Line 26
 - POST: Line 95
 
@@ -55,6 +61,7 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET, PUT, DELETE  
 **Line Numbers:**
+
 - GET: Line 21
 - PUT: Line 87
 - DELETE: Line 184
@@ -63,12 +70,14 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** POST  
 **Line Numbers:**
+
 - POST: Line 34
 
 ### ..\app\api\communications\surveys\route.ts
 
 **Methods:** GET, POST  
 **Line Numbers:**
+
 - GET: Line 45
 - POST: Line 114
 
@@ -76,12 +85,14 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 8
 
 ### ..\app\api\communications\surveys\[surveyId]\responses\route.ts
 
 **Methods:** GET, POST  
 **Line Numbers:**
+
 - GET: Line 24
 - POST: Line 104
 
@@ -89,12 +100,14 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 16
 
 ### ..\app\api\communications\surveys\[surveyId]\route.ts
 
 **Methods:** GET, PUT, DELETE  
 **Line Numbers:**
+
 - GET: Line 26
 - PUT: Line 77
 - DELETE: Line 206
@@ -103,18 +116,21 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 10
 
 ### ..\app\api\deadlines\upcoming\route.ts
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 10
 
 ### ..\app\api\education\notification-preferences\route.ts
 
 **Methods:** GET, POST, PATCH  
 **Line Numbers:**
+
 - GET: Line 24
 - POST: Line 240
 - PATCH: Line 109
@@ -123,24 +139,28 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 14
 
 ### ..\app\api\emergency\pipeda\route.ts
 
 **Methods:** POST  
 **Line Numbers:**
+
 - POST: Line 15
 
 ### ..\app\api\emergency\recovery\route.ts
 
 **Methods:** POST  
 **Line Numbers:**
+
 - POST: Line 15
 
 ### ..\app\api\graphql\route.ts
 
 **Methods:** GET, POST  
 **Line Numbers:**
+
 - GET: Line 29
 - POST: Line 30
 
@@ -148,6 +168,7 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET, POST, DELETE  
 **Line Numbers:**
+
 - GET: Line 55
 - POST: Line 12
 - DELETE: Line 80
@@ -156,6 +177,7 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** GET, POST  
 **Line Numbers:**
+
 - GET: Line 63
 - POST: Line 11
 
@@ -163,18 +185,21 @@ These routes have no authentication middleware and should be reviewed:
 
 **Methods:** POST  
 **Line Numbers:**
+
 - POST: Line 10
 
 ### ..\app\api\profile\roles\route.ts
 
 **Methods:** POST  
 **Line Numbers:**
+
 - POST: Line 6
 
 ### ..\app\api\v1\claims\route.ts
 
 **Methods:** GET  
 **Line Numbers:**
+
 - GET: Line 71
 
 ---
@@ -184,6 +209,7 @@ These routes have no authentication middleware and should be reviewed:
 ### withEnhancedRoleAuth (230 routes)
 
 **Role Level Distribution:**
+
 - Level 10 (Viewer): 102 routes
 - Level 20 (Member): 55 routes
 - Level 50 (Admin): 4 routes
@@ -489,11 +515,13 @@ These routes have no authentication middleware and should be reviewed:
 ## 📋 Recommendations
 
 ### High Priority
+
 1. **Review unprotected routes** - 25 routes without auth middleware
    - Verify these routes should be public
    - Add appropriate auth middleware if sensitive data is exposed
 
 ### Best Practices
+
 1. **Use enterprise-role-middleware.ts** for all new routes
 2. **Prefer role-based auth** over permission-based when possible
 3. **Document public routes** in PUBLIC_ROUTES array
@@ -513,4 +541,3 @@ These routes have no authentication middleware and should be reviewed:
 | 50 | Admin | Organization administrator |
 | 60 | Super Admin | Elevated admin access |
 | 70 | System Admin | System-level access |
-

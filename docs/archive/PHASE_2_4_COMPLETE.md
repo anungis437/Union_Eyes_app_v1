@@ -19,6 +19,7 @@ Phase 2.4 implements a complete automated report scheduling system with email de
 **File:** `db/queries/scheduled-reports-queries.ts` (465 lines)
 
 **Functions:**
+
 - `getScheduledReports()` - List all schedules with filters
 - `getScheduledReportById()` - Get single schedule with report details
 - `createScheduledReport()` - Create new schedule with next run calculation
@@ -31,6 +32,7 @@ Phase 2.4 implements a complete automated report scheduling system with email de
 - `calculateNextRunAt()` - Smart next run calculation based on schedule type
 
 **Features:**
+
 - Full CRUD operations with tenant isolation
 - Automatic next run time calculation
 - Execution tracking (run_count, failure_count)
@@ -40,6 +42,7 @@ Phase 2.4 implements a complete automated report scheduling system with email de
 ### 2. API Routes ✅
 
 **Files:**
+
 - `app/api/reports/scheduled/route.ts` (130 lines)
 - `app/api/reports/scheduled/[id]/route.ts` (160 lines)
 
@@ -54,16 +57,19 @@ DELETE /api/reports/scheduled/:id          Delete schedule
 ```
 
 **Query Parameters:**
+
 - `reportId` - Filter by report
 - `isActive` - Filter by status (true/false)
 - `scheduleType` - Filter by type (daily/weekly/monthly/quarterly)
 - `includeHistory` - Include execution history (true/false)
 
 **Special Actions:**
+
 - `{ action: 'pause' }` - Pause schedule
 - `{ action: 'resume' }` - Resume schedule
 
 **Security:**
+
 - Uses `withTenantAuth` middleware
 - Tenant isolation on all operations
 - Validates all required fields
@@ -73,6 +79,7 @@ DELETE /api/reports/scheduled/:id          Delete schedule
 **File:** `lib/scheduled-report-executor.ts` (470 lines)
 
 **Core Functions:**
+
 - `executeScheduledReport()` - Main execution orchestrator
 - `fetchReportData()` - Query data based on report config
 - `generateExportFile()` - Create PDF/Excel/CSV/JSON exports
@@ -81,22 +88,26 @@ DELETE /api/reports/scheduled/:id          Delete schedule
 - `retryFailedExecution()` - Retry with max attempts limit
 
 **Report Query Builders:**
+
 - `buildClaimsQuery()` - Claims-specific reports
 - `buildAnalyticsQuery()` - Analytics with grouping/aggregation
 - `buildDefaultQuery()` - Fallback query
 
 **Export Generators:**
+
 - `generateCSV()` - CSV with proper escaping
 - `generateJSON()` - JSON with metadata
 - `generateExcel()` - Excel format (stub, TODO: implement with exceljs)
 - `generatePDF()` - PDF format (stub, TODO: implement with pdfkit)
 
 **Delivery Methods:**
+
 - `deliverViaEmail()` - Email with attachment
 - `deliverViaWebhook()` - POST to webhook URL
 - Dashboard/Storage - File URL access
 
 **Tracking:**
+
 - Creates `export_jobs` record for each execution
 - Updates schedule run counts and failure counts
 - Calculates processing duration
@@ -114,16 +125,19 @@ GET  /api/cron/scheduled-reports          Health check
 ```
 
 **Security:**
+
 - Requires `CRON_SECRET` in Authorization header
 - Format: `Bearer YOUR_SECRET`
 
 **Execution Flow:**
+
 1. Fetch all schedules where `next_run_at <= NOW()` and `is_active = true`
 2. Execute each schedule sequentially
 3. Track successes and failures
 4. Return execution summary
 
 **Response:**
+
 ```json
 {
   "message": "Execution complete",
@@ -137,6 +151,7 @@ GET  /api/cron/scheduled-reports          Health check
 **Setup Instructions:**
 
 **Vercel Cron:**
+
 ```json
 // vercel.json
 {
@@ -148,6 +163,7 @@ GET  /api/cron/scheduled-reports          Health check
 ```
 
 **GitHub Actions:**
+
 ```yaml
 # .github/workflows/cron-reports.yml
 name: Scheduled Reports
@@ -169,6 +185,7 @@ jobs:
 **File:** `lib/email/report-email-templates.ts` (280 lines)
 
 **Functions:**
+
 - `sendScheduledReportEmail()` - Main email sending function
 - `sendViaResend()` - Resend integration
 - `sendViaSendGrid()` - SendGrid integration
@@ -176,6 +193,7 @@ jobs:
 - `sendTestEmail()` - Testing function
 
 **Email Features:**
+
 - Professional HTML design with inline CSS
 - Report details: name, schedule type, next run
 - Attached export file (PDF/Excel/CSV/JSON)
@@ -183,6 +201,7 @@ jobs:
 - Branded footer with unsubscribe message
 
 **Email Template Includes:**
+
 - Header with report icon and badge
 - Schedule information panel
 - Execution details (generated time, format, next run)
@@ -190,11 +209,13 @@ jobs:
 - Professional footer with branding
 
 **Supported Providers:**
+
 - **Resend** (recommended)
 - **SendGrid**
 - Console log fallback (development)
 
 **Environment Variables:**
+
 ```bash
 EMAIL_PROVIDER=resend          # or 'sendgrid'
 RESEND_API_KEY=re_xxxx        # Resend API key
@@ -205,18 +226,21 @@ EMAIL_FROM=reports@domain.com  # Sender email
 ### 6. Admin UI ✅
 
 **Files:**
+
 - `app/[locale]/dashboard/admin/scheduled-reports/page.tsx` (370 lines)
 - `components/admin/ScheduledReportForm.tsx` (350 lines)
 
 **Page Features:**
 
 **Dashboard Stats:**
+
 - Total schedules count
 - Active schedules count
 - Total runs across all schedules
 - Total failures count
 
 **Schedule List:**
+
 - Filter by: All / Active / Inactive
 - Display: Report name, status badge, schedule type
 - Details: Next run, last run (with status icon), delivery method, export format
@@ -226,6 +250,7 @@ EMAIL_FROM=reports@domain.com  # Sender email
 **Form Features:**
 
 **Fields:**
+
 - Report selection (dropdown of all reports)
 - Schedule type: Daily / Weekly / Monthly / Quarterly
 - Time picker (HH:MM format)
@@ -237,12 +262,14 @@ EMAIL_FROM=reports@domain.com  # Sender email
 - Active checkbox (enable/disable schedule)
 
 **Validation:**
+
 - All required fields checked
 - At least one recipient required
 - Email format validation
 - Report must exist
 
 **UI/UX:**
+
 - Animated cards with Framer Motion
 - Status icons (CheckCircle, XCircle, AlertCircle)
 - Loading states with spinners
@@ -256,6 +283,7 @@ EMAIL_FROM=reports@domain.com  # Sender email
 ### Tables Used
 
 **report_schedules** (from migration 010_analytics_reporting_system.sql)
+
 ```sql
 CREATE TABLE report_schedules (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -284,6 +312,7 @@ CREATE INDEX idx_report_schedules_active ON report_schedules(is_active, next_run
 ```
 
 **export_jobs** (from migration 010_analytics_reporting_system.sql)
+
 ```sql
 CREATE TABLE export_jobs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -332,6 +361,7 @@ AWS_REGION=us-east-1
 **Option 1: Vercel Cron (Recommended for Vercel deployments)**
 
 Add to `vercel.json`:
+
 ```json
 {
   "crons": [
@@ -346,6 +376,7 @@ Add to `vercel.json`:
 **Option 2: GitHub Actions**
 
 Create `.github/workflows/cron-scheduled-reports.yml`:
+
 ```yaml
 name: Execute Scheduled Reports
 on:
@@ -363,8 +394,9 @@ jobs:
 ```
 
 **Option 3: External Cron Services**
-- **EasyCron**: https://www.easycron.com
-- **Cron-job.org**: https://cron-job.org
+
+- **EasyCron**: <https://www.easycron.com>
+- **Cron-job.org**: <https://cron-job.org>
 - Setup: POST to your endpoint with Authorization header
 
 ---
@@ -452,6 +484,7 @@ PATCH /api/reports/scheduled/:id
 ### Manual Testing
 
 1. **Create a test schedule:**
+
    ```bash
    # Navigate to Admin > Scheduled Reports
    # Click "Create Schedule"
@@ -461,12 +494,14 @@ PATCH /api/reports/scheduled/:id
    ```
 
 2. **Trigger execution manually:**
+
    ```bash
    curl -X POST http://localhost:3000/api/cron/scheduled-reports \
      -H "Authorization: Bearer YOUR_CRON_SECRET"
    ```
 
 3. **Check execution:**
+
    ```sql
    SELECT * FROM export_jobs ORDER BY created_at DESC LIMIT 10;
    SELECT * FROM report_schedules WHERE id = 'your-schedule-id';
@@ -694,21 +729,25 @@ export_jobs
 **All Phase 2 Tasks Complete! 🎉**
 
 ### Phase 2.1: Report Builder Backend ✅
+
 - Custom report builder API
 - Advanced analytics queries
 - Report templates
 
 ### Phase 2.2: Report Builder UI Enhancement ✅
+
 - Interactive report builder interface
 - Real-time preview
 - Template library
 
 ### Phase 2.3: Advanced Visualizations ✅
+
 - 10 chart types integrated
 - Interactive dashboards
 - Data visualization engine
 
 ### Phase 2.4: Scheduled Reports System ✅
+
 - Automated report scheduling
 - Email delivery system
 - Cron job execution
@@ -721,6 +760,7 @@ export_jobs
 ## Next Steps
 
 ### Immediate (Production Readiness)
+
 1. Configure cron service (Vercel Cron or GitHub Actions)
 2. Set up email provider (Resend or SendGrid)
 3. Add CRON_SECRET to environment variables
@@ -728,6 +768,7 @@ export_jobs
 5. Monitor first scheduled executions
 
 ### Short Term
+
 1. Implement proper Excel generation with `exceljs`
 2. Implement proper PDF generation with `pdfkit` or `puppeteer`
 3. Add S3/Azure Blob Storage integration
@@ -735,6 +776,7 @@ export_jobs
 5. Add execution monitoring dashboard
 
 ### Long Term
+
 1. Advanced scheduling (custom cron expressions)
 2. Report parameterization
 3. Conditional execution
@@ -748,4 +790,3 @@ export_jobs
 **Total Lines of Code:** ~2,400 lines  
 **Files Created:** 8 files  
 **Test Status:** Manual testing required before production use
-

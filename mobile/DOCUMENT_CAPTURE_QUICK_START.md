@@ -259,7 +259,7 @@ export enum DocumentType {
 }
 ```
 
-2. Add to scanner UI in `mobile/app/scanner/index.tsx`:
+1. Add to scanner UI in `mobile/app/scanner/index.tsx`:
 
 ```typescript
 const documentTypes = [

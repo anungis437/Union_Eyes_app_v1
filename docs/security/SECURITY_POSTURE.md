@@ -11,6 +11,7 @@
 This document outlines the security assessment findings, remediation actions, and current security posture of the Union Eyes application. All Priority 0 (P0) blockers have been addressed through code changes, automation, and tooling. Additional manual steps are required for complete security (see §8).
 
 **Current State:**
+
 - ✅ **Secrets Protection:** .gitignore hardened, pre-commit hooks active, CI scanning enabled
 - 🟡 **API Authentication:** 309/373 routes (82.8%) protected; 43 routes pending wrapper application
 - ✅ **Docker Security:** Non-reproducible builds eliminated, all Dockerfiles build from source
@@ -22,6 +23,7 @@ This document outlines the security assessment findings, remediation actions, an
 ## 1. Architecture Validation
 
 ### 1.1 Verified Claims
+
 All architectural security claims from the original assessment were validated:
 
 | Component | Verified Status | Evidence |
@@ -33,7 +35,9 @@ All architectural security claims from the original assessment were validated:
 | Sentry Observability | ✅ Confirmed | `sentry.server.config.ts`, `instrumentation.ts` active |
 
 ### 1.2 Critical Discovery
+
 **Finding:** Middleware explicitly skips all `/api/*` routes (line 34 of `middleware.ts`):
+
 ```typescript
 ignoredRoutes: ["/api(.*)", "/(calendar|deadlines|pay)(.*)", ...]
 ```
@@ -46,7 +50,9 @@ ignoredRoutes: ["/api(.*)", "/(calendar|deadlines|pay)(.*)", ...]
 ## 2. P0 Blocker #1: Secrets in Repository
 
 ### 2.1 Findings
+
 **Files Exposed:**
+
 - `.env` (DATABASE_URL, all service keys)
 - `.env.production` (production credentials)
 - `.env.staging` (staging credentials)
@@ -54,6 +60,7 @@ ignoredRoutes: ["/api(.*)", "/(calendar|deadlines|pay)(.*)", ...]
 - `docs/deployment/AZURE_CREDENTIALS.md` (Azure Container Registry passwords, OpenAI keys, Storage keys, Speech Service keys)
 
 **Compromised Credentials:**
+
 - PostgreSQL connection strings with passwords
 - Azure Container Registry admin passwords
 - Azure OpenAI API keys (4 endpoints)
@@ -66,13 +73,16 @@ ignoredRoutes: ["/api(.*)", "/(calendar|deadlines|pay)(.*)", ...]
 ### 2.2 Remediation Actions
 
 #### Immediate Fixes (✅ COMPLETED)
+
 1. **Git Tracking Removed:**
+
    ```bash
    git rm --cached .env .env.production .env.staging .env.10-10-excellence
    git rm --cached docs/deployment/AZURE_CREDENTIALS.md
    ```
 
 2. **`.gitignore` Hardening:**
+
    ```gitignore
    # Environment files - NEVER commit these
    .env
@@ -106,9 +116,11 @@ ignoredRoutes: ["/api(.*)", "/(calendar|deadlines|pay)(.*)", ...]
    - Runs on every push and PR
 
 #### Manual Steps Required (⚠️ CRITICAL)
+
 These actions MUST be performed by the repository owner:
 
 1. **Git History Purging:**
+
    ```bash
    # Option A: Using git-filter-repo (recommended)
    git filter-repo --path .env --path .env.production --path .env.staging \
@@ -134,10 +146,12 @@ These actions MUST be performed by the repository owner:
    - ✅ Whop API keys
 
 3. **Force Push to Remote (after history cleanup):**
+
    ```bash
    git push --force --all
    git push --force --tags
    ```
+
    **⚠️ WARNING:** This rewrites history. Coordinate with all team members.
 
 ---
@@ -145,7 +159,9 @@ These actions MUST be performed by the repository owner:
 ## 3. P0 Blocker #2: Inconsistent API Authentication
 
 ### 3.1 Findings
+
 **Initial Scan Results:**
+
 - Total API routes: **373**
 - Authenticated routes: 306 (82.0%)
 - Public routes: 12 (health checks, webhooks)
@@ -157,10 +173,13 @@ These actions MUST be performed by the repository owner:
 ### 3.2 Remediation Actions
 
 #### Solution Architecture (✅ COMPLETED)
+
 **File:** `lib/api-auth-guard.ts`
 
 **Key Components:**
+
 1. **`PUBLIC_API_ROUTES` Allowlist:**
+
    ```typescript
    const PUBLIC_API_ROUTES = new Set([
      '/api/health',
@@ -173,11 +192,13 @@ These actions MUST be performed by the repository owner:
    ```
 
 2. **`withApiAuth<TContext>()` Wrapper:**
+
    ```typescript
    export function withApiAuth<TContext extends Record<string, any> = {}>(
      handler: AuthenticatedRouteHandler<TContext>
    ): NextApiHandler<TContext>
    ```
+
    - Checks if route is public (allowlist match)
    - Validates user authentication via `currentUser()`
    - Handles cron job authentication (x-cron-secret header)
@@ -191,14 +212,17 @@ These actions MUST be performed by the repository owner:
    - Outputs detailed report with file paths
 
 #### Application Progress (🟡 IN PROGRESS)
+
 **Current Status:** 309/373 routes (82.8%) protected
 
 **Recently Fixed Routes (3 examples):**
+
 1. `app/api/communications/campaigns/route.ts`
 2. `app/api/location/track/route.ts`
 3. `app/api/deadlines/dashboard/route.ts`
 
 **Pattern Applied:**
+
 ```typescript
 // BEFORE
 export async function GET(request: Request) {
@@ -227,9 +251,11 @@ export const GET = withApiAuth(async (request, { user, userId }) => {
 | Miscellaneous | 14 routes (auth/role, extensions/[id], graphql, privacy/consent, etc.) | VARIES |
 
 #### Next Steps (⚠️ REQUIRED)
+
 Apply `withApiAuth` wrapper to all 43 remaining routes. Estimated effort: 2-3 hours.
 
 **Batch Application Strategy:**
+
 1. Group routes by directory (communications, deadlines, etc.)
 2. Use `multi_replace_string_in_file` for batch changes
 3. Run `pnpm tsx scripts/scan-api-auth.ts` after each batch
@@ -240,13 +266,16 @@ Apply `withApiAuth` wrapper to all 43 remaining routes. Estimated effort: 2-3 ho
 ## 4. P0 Blocker #3: Non-Reproducible Docker Builds
 
 ### 4.1 Findings
+
 **File:** `Dockerfile` (line 66-68)
+
 ```dockerfile
 # ❌ PROBLEMATIC: Copies pre-built .next from local machine
 COPY --chown=nextjs:nodejs .next ./.next
 ```
 
 **Impact:**
+
 - Builds depend on developer's local environment
 - Different developers get different production artifacts
 - Can't reproduce builds from source control alone
@@ -255,9 +284,11 @@ COPY --chown=nextjs:nodejs .next ./.next
 ### 4.2 Remediation (✅ COMPLETED)
 
 **Changes Made:**
+
 1. **Removed local `.next` copy from `Dockerfile`:**
    - Deleted lines 66-68
    - Now uses `.next` built in the multi-stage builder:
+
      ```dockerfile
      COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
      ```
@@ -278,7 +309,9 @@ COPY --chown=nextjs:nodejs .next ./.next
 ## 5. P1 Issue #1: Security Headers
 
 ### 5.1 Findings
+
 Original headers configuration was minimal, lacking modern security controls:
+
 - CSP allowed `unsafe-inline` and `unsafe-eval`
 - Missing Cross-Origin policies (CORP, COEP, COOP)
 - Incomplete Permissions-Policy
@@ -354,6 +387,7 @@ Original headers configuration was minimal, lacking modern security controls:
 ```
 
 **Coverage:**
+
 - ✅ XSS Protection (CSP, X-XSS-Protection)
 - ✅ Clickjacking Protection (X-Frame-Options, frame-ancestors)
 - ✅ MIME Sniffing Protection (X-Content-Type-Options)
@@ -366,7 +400,9 @@ Original headers configuration was minimal, lacking modern security controls:
 ## 6. P1 Issue #2: CI/CD Security Validation
 
 ### 6.1 Findings
+
 No automated security checks in CI pipeline. Developers could merge code that:
+
 - Exposes new secrets
 - Lacks API authentication
 - Has vulnerable dependencies
@@ -381,6 +417,7 @@ No automated security checks in CI pipeline. Developers could merge code that:
 **Pipeline Jobs (6 total):**
 
 #### Job 1: API Auth Coverage
+
 ```yaml
 - name: Check API Auth Coverage
   run: |
@@ -392,32 +429,40 @@ No automated security checks in CI pipeline. Developers could merge code that:
       exit 1
     fi
 ```
+
 **Purpose:** Fails build if any API routes lack authentication.
 
 #### Job 2: Secret Scanning
+
 ```yaml
 - name: Gitleaks Secret Scanning
   uses: gitleaks/gitleaks-action@v2
 ```
+
 **Purpose:** Detects hardcoded secrets in commits.
 
 #### Job 3: Dependency Audit
+
 ```yaml
 - name: Audit Dependencies
   run: pnpm audit --audit-level=high
 ```
+
 **Purpose:** Blocks high/critical vulnerability dependencies.
 
 #### Job 4: Docker Build Test
+
 ```yaml
 - name: Test Main Dockerfile
   run: docker build -f Dockerfile -t test:main .
 - name: Test Simple Dockerfile
   run: docker build -f Dockerfile.simple -t test:simple .
 ```
+
 **Purpose:** Ensures all Dockerfiles build successfully from source.
 
 #### Job 5: Security Headers Test
+
 ```yaml
 - name: Check Security Headers Config
   run: |
@@ -430,16 +475,20 @@ No automated security checks in CI pipeline. Developers could merge code that:
       exit 1
     fi
 ```
+
 **Purpose:** Validates presence of critical security headers.
 
 #### Job 6: TypeScript Strict Mode
+
 ```yaml
 - name: TypeScript Type Check
   run: pnpm tsc --noEmit
 ```
+
 **Purpose:** Enforces type safety, catches type errors before merge.
 
 **Trigger Configuration:**
+
 ```yaml
 on:
   push:
@@ -458,6 +507,7 @@ on:
 **Installation:** Run `.\scripts\setup-security.ps1`
 
 **Checks Performed:**
+
 1. **`.env` File Block:**
    - Prevents any `.env*` file commits (except `.example`/`.template`)
    - Exits with error message showing attempted files
@@ -478,6 +528,7 @@ on:
    - Generic secrets: `api[_-]?key`, `secret[_-]?key`, `access[_-]?token`
 
 **Example Output:**
+
 ```
 ❌ COMMIT REJECTED: .env file detected!
 Found .env files:
@@ -494,6 +545,7 @@ Remove these files from the commit: git restore --staged <file>
 **File:** `scripts/setup-security.ps1`
 
 **Actions:**
+
 1. Installs pre-commit hook to `.git/hooks/`
 2. Verifies `.gitignore` patterns
 3. Scans for existing secrets in repo
@@ -502,6 +554,7 @@ Remove these files from the commit: git restore --staged <file>
 6. Outputs security recommendations
 
 **Usage:**
+
 ```powershell
 .\scripts\setup-security.ps1
 ```
@@ -564,6 +617,7 @@ Remove these files from the commit: git restore --staged <file>
 ### 9.2 Improvement Tracking
 
 **Week 1 (Initial Assessment):**
+
 - Secrets in repo: 5 files ❌
 - API auth coverage: 82.0% (306/373) 🟡
 - Docker reproducibility: 66.7% (2/3) 🟡
@@ -571,6 +625,7 @@ Remove these files from the commit: git restore --staged <file>
 - CI security: 0 jobs ❌
 
 **Week 2 (After Remediation):**
+
 - Secrets in repo: 0 tracked ✅ (history pending)
 - API auth coverage: 82.8% (309/373) 🟡 (+3 routes)
 - Docker reproducibility: 100% (3/3) ✅
@@ -578,6 +633,7 @@ Remove these files from the commit: git restore --staged <file>
 - CI security: 6 jobs active ✅
 
 **Target State (Week 3):**
+
 - Secrets in repo: 0 everywhere ✅
 - API auth coverage: 100% (373/373) ✅
 - Docker reproducibility: 100% (maintained) ✅
@@ -591,6 +647,7 @@ Remove these files from the commit: git restore --staged <file>
 ### 10.1 Local Testing
 
 **Secret Protection:**
+
 ```powershell
 # Try to commit a .env file
 echo "DATABASE_URL=test" > .env
@@ -599,12 +656,14 @@ git commit -m "test"  # Should be BLOCKED by pre-commit hook
 ```
 
 **API Auth Scanner:**
+
 ```bash
 pnpm tsx scripts/scan-api-auth.ts
 # Expected output: detailed route categorization
 ```
 
 **Docker Build:**
+
 ```bash
 # Test reproducibility
 docker build -f Dockerfile -t union-eyes:test1 .
@@ -613,6 +672,7 @@ docker build -f Dockerfile -t union-eyes:test2 .
 ```
 
 **Security Headers:**
+
 ```bash
 npm run dev
 curl -I http://localhost:3000
@@ -622,6 +682,7 @@ curl -I http://localhost:3000
 ### 10.2 CI/CD Testing
 
 **Merge a PR and verify:**
+
 1. ✅ `security-checks` workflow runs
 2. ✅ All 6 jobs pass
 3. ✅ Gitleaks scans commits
@@ -630,6 +691,7 @@ curl -I http://localhost:3000
 6. ✅ TypeScript compiles without errors
 
 **Intentionally fail checks (for testing):**
+
 ```bash
 # Add unprotected API route
 echo 'export async function GET() { return Response.json({}) }' > app/api/test-unprotected/route.ts
@@ -646,6 +708,7 @@ git push
 ### 11.1 If Secrets Are Exposed Again
 
 **Immediate Actions (< 1 hour):**
+
 1. Identify which secrets were exposed (audit git history)
 2. Rotate ALL exposed credentials immediately
 3. Review access logs for suspicious activity
@@ -653,6 +716,7 @@ git push
 5. Block the exposed credentials in cloud provider
 
 **Short-term (< 24 hours):**
+
 1. Run BFG/git-filter-repo to purge from history
 2. Force push to remove from remote
 3. Audit all team member local clones
@@ -660,6 +724,7 @@ git push
 5. File incident report
 
 **Long-term (< 1 week):**
+
 1. Review how the exposure occurred
 2. Update pre-commit hooks if needed
 3. Add additional CI checks
@@ -669,6 +734,7 @@ git push
 ### 11.2 If Unauthorized API Access Detected
 
 **Immediate Actions:**
+
 1. Identify the unprotected endpoint
 2. Apply `withApiAuth` wrapper immediately
 3. Audit access logs for the endpoint
@@ -676,12 +742,14 @@ git push
 5. Notify affected users if PII was exposed
 
 **Short-term:**
+
 1. Run full API auth scan
 2. Fix any other unprotected routes found
 3. Update CI to fail builds with unprotected routes
 4. Review similar endpoints for same issue
 
 **Long-term:**
+
 1. Complete 100% API auth coverage
 2. Add integration tests for auth on all routes
 3. Implement API gateway rate limiting
@@ -708,6 +776,7 @@ git push
 ### 12.2 Audit Trail
 
 All security changes are documented in git:
+
 - Commit: `fix: harden .gitignore for secrets`
 - Commit: `fix: remove non-reproducible Docker build patterns`
 - Commit: `feat: implement centralized API auth guard`
@@ -722,6 +791,7 @@ Review with: `git log --all --grep="security\|secrets\|auth" --oneline`
 ## 13. Resources & References
 
 ### 13.1 Internal Documentation
+
 - API Auth Guard: [lib/api-auth-guard.ts](../lib/api-auth-guard.ts)
 - Auth Scanner: [scripts/scan-api-auth.ts](../scripts/scan-api-auth.ts)
 - Pre-Commit Hook: [scripts/pre-commit](../scripts/pre-commit)
@@ -729,22 +799,25 @@ Review with: `git log --all --grep="security\|secrets\|auth" --oneline`
 - CI Pipeline: [.github/workflows/security-checks.yml](../.github/workflows/security-checks.yml)
 
 ### 13.2 External Tools
-- **BFG Repo-Cleaner:** https://rtyley.github.io/bfg-repo-cleaner/
-- **git-filter-repo:** https://github.com/newren/git-filter-repo
-- **Gitleaks:** https://github.com/gitleaks/gitleaks
-- **OWASP Top 10:** https://owasp.org/Top10/
-- **Security Headers Guide:** https://securityheaders.com/
+
+- **BFG Repo-Cleaner:** <https://rtyley.github.io/bfg-repo-cleaner/>
+- **git-filter-repo:** <https://github.com/newren/git-filter-repo>
+- **Gitleaks:** <https://github.com/gitleaks/gitleaks>
+- **OWASP Top 10:** <https://owasp.org/Top10/>
+- **Security Headers Guide:** <https://securityheaders.com/>
 
 ### 13.3 Next.js Security Best Practices
-- Authentication: https://nextjs.org/docs/app/building-your-application/authentication
-- Security Headers: https://nextjs.org/docs/app/api-reference/next-config-js/headers
-- Environment Variables: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
+
+- Authentication: <https://nextjs.org/docs/app/building-your-application/authentication>
+- Security Headers: <https://nextjs.org/docs/app/api-reference/next-config-js/headers>
+- Environment Variables: <https://nextjs.org/docs/app/building-your-application/configuring/environment-variables>
 
 ---
 
 ## 14. Conclusion
 
 ### 14.1 Summary
+
 The Union Eyes application has undergone comprehensive security hardening. All P0 blockers have been addressed through code changes, automation, and tooling. The application now has:
 
 - ✅ **Defense in Depth:** Pre-commit hooks + CI pipeline + runtime protections
@@ -754,7 +827,9 @@ The Union Eyes application has undergone comprehensive security hardening. All P
 - 🟡 **API Protection:** 82.8% complete, remaining routes identified
 
 ### 14.2 Outstanding Work
+
 **Critical Work Remaining:**
+
 1. Complete API auth coverage (43 routes)
 2. Purge git history of secrets
 3. Rotate all exposed credentials

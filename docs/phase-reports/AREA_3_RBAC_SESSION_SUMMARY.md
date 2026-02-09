@@ -14,6 +14,7 @@
 Created a production-ready role-based authorization system that extends the existing tenant middleware.
 
 **Key Components:**
+
 - `withRoleAuth(requiredRole, handler)` - Enforce minimum role requirement
 - `withAnyRole(allowedRoles[], handler)` - Allow multiple roles (OR logic)
 - `hasRolePermission(userRole, requiredRole)` - Check role hierarchy
@@ -21,6 +22,7 @@ Created a production-ready role-based authorization system that extends the exis
 - `requireAdmin(context)` - Admin-only assertion
 
 **Role Hierarchy:**
+
 ```
 admin (4) → Full control
   ↓
@@ -32,6 +34,7 @@ member (1) → Self-service access
 ```
 
 **Context Enhancement:**
+
 ```typescript
 // Before: Only tenant context
 { tenantId, userId }
@@ -53,6 +56,7 @@ Applied role-based authorization to all member management endpoints:
 | `/api/members/[id]/claims` | GET | member | View member's claims |
 
 **Security Features:**
+
 - Non-members get `403 Forbidden` with clear message
 - Insufficient role gets `403` with user's current role shown
 - All checks happen after tenant validation
@@ -61,6 +65,7 @@ Applied role-based authorization to all member management endpoints:
 ### 3. Comprehensive Documentation
 
 **Created: `docs/RBAC_IMPLEMENTATION.md`**
+
 - 400+ lines of detailed documentation
 - Architecture diagrams and request flow
 - Usage examples for common patterns
@@ -70,6 +75,7 @@ Applied role-based authorization to all member management endpoints:
 - Security considerations
 
 **Updated: `PHASE_2_ROADMAP.md`**
+
 - Marked Area 3 Phase 1 as complete
 - Updated progress: 20% → 25%
 - Documented implementation details
@@ -97,6 +103,7 @@ Applied role-based authorization to all member management endpoints:
 ### Database Integration
 
 **Existing Schema:**
+
 ```typescript
 organization_members {
   id: uuid
@@ -108,6 +115,7 @@ organization_members {
 ```
 
 **Query Used:**
+
 ```typescript
 getMemberByUserId(tenantId, userId): Promise<Member | undefined>
 ```
@@ -117,6 +125,7 @@ No schema changes needed - role field already existed!
 ### Error Handling
 
 **Non-Member Error:**
+
 ```json
 {
   "success": false,
@@ -125,6 +134,7 @@ No schema changes needed - role field already existed!
 ```
 
 **Insufficient Role Error:**
+
 ```json
 {
   "success": false,
@@ -139,18 +149,21 @@ Clear, actionable error messages that don't expose internal system details.
 ## What This Enables
 
 ### Security Benefits
+
 - ✅ **Zero unauthorized access** - Middleware enforces all routes automatically
 - ✅ **Tenant isolation maintained** - Role checks happen after tenant validation
 - ✅ **Clear audit trail** - All requests include user role in context
 - ✅ **Defense in depth** - Multiple layers of validation (auth → tenant → role)
 
 ### Developer Experience
+
 - ✅ **Simple API** - One-line protection: `export const POST = withRoleAuth('steward', handler)`
 - ✅ **Type-safe context** - RoleContext interface ensures correct usage
 - ✅ **Helpful errors** - Clear messages when role requirements not met
 - ✅ **Extensible** - Easy to add more middleware variants (withPermission, etc.)
 
 ### User Experience
+
 - ✅ **Appropriate access** - Members see/do what their role allows
 - ✅ **Clear feedback** - Know why access was denied and current role
 - ✅ **Multi-tenant roles** - Can be admin in one org, member in another
@@ -160,16 +173,19 @@ Clear, actionable error messages that don't expose internal system details.
 ## Code Statistics
 
 **Files Created:**
+
 - `lib/role-middleware.ts` - 150 lines (core middleware)
 - `docs/RBAC_IMPLEMENTATION.md` - 430 lines (documentation)
 
 **Files Modified:**
+
 - `app/api/organization/members/route.ts` - Added withRoleAuth (2 changes)
 - `app/api/members/[id]/route.ts` - Added withRoleAuth (2 changes)
 - `app/api/members/[id]/claims/route.ts` - Added withRoleAuth (1 change)
 - `PHASE_2_ROADMAP.md` - Updated Area 3 status and progress
 
 **Total Changes:**
+
 - ~600 lines of new code and documentation
 - 5 API routes protected
 - 2 middleware functions created
@@ -182,18 +198,21 @@ Clear, actionable error messages that don't expose internal system details.
 ### Manual Testing Checklist
 
 **Role Hierarchy:**
+
 - [x] Admin can access all endpoints
 - [x] Officer can access steward and member endpoints
 - [x] Steward can access member endpoints
 - [x] Member can only access member endpoints
 
 **Error Cases:**
+
 - [x] Non-member gets 403 with clear message
 - [x] Insufficient role gets 403 with role info
 - [x] Cross-tenant access blocked
 - [x] Soft-deleted members denied access
 
 **Integration:**
+
 - [x] Tenant middleware still works
 - [x] Role checks happen after tenant validation
 - [x] Context includes all expected fields
@@ -201,6 +220,7 @@ Clear, actionable error messages that don't expose internal system details.
 ### Automated Testing (To Do)
 
 **Unit Tests Needed:**
+
 ```typescript
 describe('hasRolePermission', () => {
   test('admin can access member endpoints')
@@ -211,6 +231,7 @@ describe('hasRolePermission', () => {
 ```
 
 **Integration Tests Needed:**
+
 ```typescript
 describe('POST /api/organization/members', () => {
   test('allows steward to create members')
@@ -242,19 +263,19 @@ describe('POST /api/organization/members', () => {
 
 ### Short Term (Next 2 Weeks)
 
-4. **Frontend Integration** - Build:
+1. **Frontend Integration** - Build:
    - `useRole()` hook for client-side role checking
    - Role-based component hiding (buttons, menus, pages)
    - Current role indicator in dashboard header
    - Permission-based feature flags
 
-5. **Audit Logging** - Add:
+2. **Audit Logging** - Add:
    - Log all role-based actions
    - Track role changes with timestamp + actor
    - Compliance reporting for access audits
    - Failed authorization attempt tracking
 
-6. **Testing** - Create:
+3. **Testing** - Create:
    - Unit tests for role hierarchy
    - Integration tests for all protected routes
    - E2E tests for role-based flows
@@ -262,7 +283,7 @@ describe('POST /api/organization/members', () => {
 
 ### Medium Term (Phase 3)
 
-7. **Advanced Features** - Implement:
+1. **Advanced Features** - Implement:
    - Temporary role delegation (steward → officer for 24h)
    - Fine-grained permissions (integrate packages/auth/rbac)
    - Custom role creation (tenant-specific roles)
@@ -273,17 +294,20 @@ describe('POST /api/organization/members', () => {
 ## Success Metrics
 
 ### Achieved ✅
+
 - ✅ **< 5ms overhead** - Single DB query for role check
 - ✅ **100% coverage** - All member routes protected
 - ✅ **Zero auth bypass** - Middleware enforces before handler runs
 - ✅ **Clear errors** - Includes user role in 403 responses
 
 ### In Progress 🔄
+
 - ⏳ **Claims routes protected** - Next priority
 - ⏳ **Audit trail** - Role changes logged
 - ⏳ **Frontend integration** - Role-aware UI components
 
 ### Planned ⏳
+
 - ⏳ **Test coverage** - Unit + integration tests
 - ⏳ **Performance optimization** - Role caching if needed
 - ⏳ **Advanced permissions** - Fine-grained control
@@ -293,18 +317,21 @@ describe('POST /api/organization/members', () => {
 ## Lessons Learned
 
 ### What Went Well
+
 1. **Found existing role field** - Database already had role enum, no migration needed
 2. **Clean architecture** - Middleware pattern makes it easy to extend
 3. **Good error messages** - Including user's role helps debugging
 4. **Comprehensive docs** - 400+ lines cover all use cases
 
 ### Challenges
+
 1. **Two role systems exist** - Database enum vs. application enum (packages/auth/rbac)
    - Solution: Using database enum for now, can integrate permission system later
 2. **Self-access patterns** - Need additional logic for "edit own" vs "edit any"
    - Solution: Defer to Phase 2 with explicit handler checks
 
 ### Design Decisions
+
 1. **Hierarchical roles** - Simpler than permission-based initially
 2. **Middleware-based** - Cleaner than decorator pattern for Next.js
 3. **Tenant-specific roles** - User can be admin in one org, member in another
@@ -317,11 +344,13 @@ describe('POST /api/organization/members', () => {
 ### Security Posture: **Significantly Improved** 🔒
 
 **Before RBAC:**
+
 - Any authenticated tenant member could perform any action
 - No distinction between regular members and admins
 - Potential for data breaches or accidental modifications
 
 **After RBAC:**
+
 - Granular role-based access control
 - Hierarchical permission inheritance
 - Clear authorization errors

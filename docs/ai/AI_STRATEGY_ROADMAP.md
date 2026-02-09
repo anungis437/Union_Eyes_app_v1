@@ -15,6 +15,7 @@ Union Eyes is building a value-driven AI strategy to transform labor union opera
 **Strategic Vision:** Leverage AI to enhance union effectiveness, improve member outcomes, and reduce administrative burden while maintaining human oversight and democratic decision-making.
 
 **Key Outcomes:**
+
 - **Reduce Costs:** Automate routine tasks, optimize resource allocation (-30% admin time)
 - **Enhance Revenue:** Improve member retention through predictive interventions (+15% retention)
 - **Drive Innovation:** AI-powered insights for better negotiation strategies
@@ -31,6 +32,7 @@ Union Eyes is building a value-driven AI strategy to transform labor union opera
 Based on OECD principles and adapted for labor union values:
 
 #### 1. **Validity & Reliability**
+
 - **Commitment:** AI systems must perform consistently and accurately in union contexts
 - **Implementation:**
   - 95%+ accuracy requirement for claim outcome predictions
@@ -40,6 +42,7 @@ Based on OECD principles and adapted for labor union values:
 - **Labor Context:** Predictions guide, not dictate, steward decisions
 
 #### 2. **Accountability**
+
 - **Commitment:** Clear ownership and auditability for all AI decisions
 - **Implementation:**
   - Detailed audit logs for every AI recommendation
@@ -49,6 +52,7 @@ Based on OECD principles and adapted for labor union values:
 - **Labor Context:** Stewards retain final authority, AI provides support
 
 #### 3. **Fairness & Bias Detection**
+
 - **Commitment:** Ensure AI systems are fair across member demographics
 - **Implementation:**
   - Regular fairness audits by demographic categories
@@ -58,6 +62,7 @@ Based on OECD principles and adapted for labor union values:
 - **Labor Context:** AI must not perpetuate workplace discrimination
 
 #### 4. **Safety & Security**
+
 - **Commitment:** Protect member data and ensure system resilience
 - **Implementation:**
   - End-to-end encryption for all AI data flows
@@ -68,6 +73,7 @@ Based on OECD principles and adapted for labor union values:
 - **Labor Context:** Member privacy is non-negotiable
 
 #### 5. **Data Privacy**
+
 - **Commitment:** Anonymity, confidentiality, and control over member data
 - **Implementation:**
   - Data minimization principle (only collect what's needed)
@@ -78,6 +84,7 @@ Based on OECD principles and adapted for labor union values:
 - **Labor Context:** Union confidentiality is paramount
 
 #### 6. **Explainability & Transparency**
+
 - **Commitment:** AI decisions must be understandable to stewards and members
 - **Implementation:**
   - Natural language explanations for all predictions
@@ -106,6 +113,7 @@ Based on OECD principles and adapted for labor union values:
 #### Technology Readiness: **Incorporation** (Deploying functional AI)
 
 **Current Capabilities:**
+
 - ✅ Azure OpenAI GPT-4o integration (production)
 - ✅ Predictive analytics engine (claim outcomes, timelines)
 - ✅ Natural language query interface
@@ -115,6 +123,7 @@ Based on OECD principles and adapted for labor union values:
 - ✅ Automated summarization
 
 **Deployed AI Features:**
+
 1. **AI Workbench** (Phase 3, Area 6) - Legal research and precedent matching
 2. **Predictive Analytics** (Phase 3, Area 11) - Claim outcome predictions
 3. **Natural Language Queries** (Phase 3, Area 11) - Chat-based data access
@@ -122,6 +131,7 @@ Based on OECD principles and adapted for labor union values:
 5. **Document Intelligence** - Contract analysis and clause extraction
 
 **Infrastructure:**
+
 - Azure OpenAI Service (East US region)
 - GPT-4o model deployed (production)
 - GPT-4o-mini model deployed (staging)
@@ -131,6 +141,7 @@ Based on OECD principles and adapted for labor union values:
 #### Data Infrastructure: **Optimization** (Clean, structured, accessible)
 
 **Data Assets:**
+
 - 50,000+ historical grievances/claims (structured)
 - 1,000+ collective bargaining agreements (semi-structured)
 - 10,000+ legal precedents (unstructured text)
@@ -139,12 +150,14 @@ Based on OECD principles and adapted for labor union values:
 - Communication logs and sentiment data
 
 **Data Quality:**
+
 - Structured claim data: 95% complete
 - Historical outcomes: 80% labeled (win/loss/settlement)
 - Member data: High quality, regularly updated
 - CBA text: Requires OCR for older documents
 
 **Data Governance:**
+
 - Tenant isolation enforced
 - Role-based access controls (RBAC)
 - Audit logging enabled
@@ -153,12 +166,14 @@ Based on OECD principles and adapted for labor union values:
 #### AI Governance: **Exploration** (Establishing policies)
 
 **Current State:**
+
 - Informal AI usage guidelines
 - No dedicated AI governance committee
 - Ad-hoc ethical reviews
 - Limited AI literacy training
 
 **Needed:**
+
 - Formal AI governance framework
 - Responsible AI policy document
 - AI risk assessment process
@@ -167,17 +182,20 @@ Based on OECD principles and adapted for labor union values:
 #### Organizational Adoption: **Exploration** (Early adopters testing)
 
 **User Segments:**
+
 - **Power Users (10%):** Regularly use AI features (stewards, organizers)
 - **Occasional Users (30%):** Tried AI features, not habitual
 - **Non-Users (60%):** Unaware or skeptical of AI capabilities
 
 **Adoption Barriers:**
+
 - Lack of AI literacy
 - Trust concerns ("Will AI replace stewards?")
 - Change resistance in traditional unions
 - Limited training resources
 
 **Success Stories:**
+
 - 40% faster claim analysis with AI Workbench
 - 25% improvement in settlement predictions
 - Natural language queries reduce data team requests by 50%
@@ -209,6 +227,7 @@ Based on OECD principles and adapted for labor union values:
 ### Prioritization Framework
 
 **Evaluation Criteria:**
+
 1. **Business Alignment:** Does it align with core union mission? (Weight: 30%)
 2. **Value Creation:** Measurable impact on outcomes? (Weight: 25%)
 3. **Feasibility:** Technical readiness and data availability? (Weight: 20%)
@@ -216,6 +235,7 @@ Based on OECD principles and adapted for labor union values:
 5. **Responsible AI Fit:** Meets fairness/transparency principles? (Weight: 10%)
 
 **Priority Tiers:**
+
 - **P1 (Critical):** Core operations, high value, low risk → Deploy immediately
 - **P2 (High):** Significant value, moderate complexity → 3-6 months
 - **P3 (Medium):** Strategic value, higher complexity → 6-12 months
@@ -228,18 +248,21 @@ Based on OECD principles and adapted for labor union values:
 ### 🎯 Priority 1 Use Cases (Deployed)
 
 #### UC-01: Claim Outcome Prediction
+
 **Business Problem:** Stewards spend hours analyzing cases without clear outcome visibility  
 **AI Solution:** Predict win/loss probability with 85%+ accuracy  
 **Value:** 3 hours saved per case analysis, better settlement negotiations  
 **Technology:** Azure OpenAI GPT-4o + historical claim data  
 **Status:** ✅ Production (Phase 3, Area 11)  
 **Responsible AI:**
+
 - Explainable predictions with factor analysis
 - Confidence scores displayed prominently
 - Human steward makes final decisions
 - Bias auditing for protected attributes
 
 **Estimated Outcomes:**
+
 - **Time Savings:** 120 hours/month across all stewards
 - **Financial Impact:** $15,000/month in labor cost savings
 - **Outcome Improvement:** 12% increase in favorable outcomes
@@ -247,18 +270,21 @@ Based on OECD principles and adapted for labor union values:
 ---
 
 #### UC-04: Legal Precedent Search (AI Workbench)
+
 **Business Problem:** Finding relevant case law is time-consuming and requires expertise  
 **AI Solution:** Semantic search across 10,000+ precedents with GPT-4 analysis  
 **Value:** 75% faster legal research, better argumentation  
 **Technology:** Vector embeddings + Azure OpenAI  
 **Status:** ✅ Production (Phase 3, Area 6)  
 **Responsible AI:**
+
 - Citations provided for all precedents
 - Transparency about data sources
 - No hallucinated case law
 - Steward reviews AI-suggested precedents
 
 **Estimated Outcomes:**
+
 - **Time Savings:** 200 hours/month in legal research
 - **Quality Improvement:** 30% more relevant precedents cited
 - **Member Impact:** Stronger grievance cases
@@ -268,18 +294,21 @@ Based on OECD principles and adapted for labor union values:
 ### 🎯 Priority 2 Use Cases (In Progress)
 
 #### UC-07: Member Churn Prediction
+
 **Business Problem:** 15% annual member turnover, late intervention  
 **AI Solution:** Predict members at risk of leaving 90 days in advance  
 **Value:** Proactive retention campaigns, reduced churn by 20%  
 **Technology:** Machine learning model (engagement data, dues payments, interactions)  
 **Status:** 🔄 In Progress (Q1 2026 target)  
 **Responsible AI:**
+
 - Privacy-preserving (no personal info exposed)
 - Opt-out option for members
 - Transparent scoring methodology
 - Human review before outreach
 
 **Risk Factors Analyzed:**
+
 - Dues arrears patterns
 - Declining event attendance
 - Reduced service usage
@@ -287,6 +316,7 @@ Based on OECD principles and adapted for labor union values:
 - Job changes or workplace issues
 
 **Ethical Considerations:**
+
 - ⚠️ **Bias Risk:** May overpredict churn for certain demographics
 - ✅ **Mitigation:** Regular fairness audits, demographic stratification
 - ⚠️ **Privacy Risk:** Sensitive member behavior data
@@ -295,24 +325,28 @@ Based on OECD principles and adapted for labor union values:
 ---
 
 #### UC-09: Automated Grievance Drafting (Planned Q1 2026)
+
 **Business Problem:** Grievance writing is time-intensive for stewards  
 **AI Solution:** Generate draft grievances from brief descriptions  
 **Value:** 2 hours saved per grievance, consistent formatting  
 **Technology:** Fine-tuned GPT-4 model on union grievance templates  
 **Status:** 📋 Planned Q1 2026  
 **Responsible AI:**
+
 - Steward always reviews and edits draft
 - Templates based on past successful grievances
 - Includes relevant CBA clauses automatically
 - Flags missing information
 
 **Training Approach:**
+
 - Fine-tune on 5,000+ successful grievances
 - Include CBA clause library
 - Jurisdiction-specific templates
 - Steward approval workflow
 
 **Risk Mitigation:**
+
 - ⚠️ **Hallucination Risk:** AI may invent facts or clauses
 - ✅ **Mitigation:** Fact-checking pipeline, clause verification
 - ⚠️ **Quality Risk:** Generic grievances lacking specific details
@@ -323,18 +357,21 @@ Based on OECD principles and adapted for labor union values:
 ### 🎯 Priority 3 Use Cases (High Strategic Value)
 
 #### UC-10: Negotiation Strategy Assistant (Planned Q2 2026)
+
 **Business Problem:** Collective bargaining requires deep analysis of industry trends  
 **AI Solution:** AI-powered negotiation intelligence and strategy recommendations  
 **Value:** Stronger contract outcomes, data-driven proposals  
 **Technology:** Multi-agent AI system + external data integration  
 **Status:** 📋 Planned Q2 2026  
 **Responsible AI:**
+
 - Recommendations, not decisions
 - Transparency about data sources
 - Union negotiators retain full control
 - Bias-free comparative analysis
 
 **Features:**
+
 - Analyze comparable contracts across sectors
 - Benchmark wages, benefits, working conditions
 - Identify employer financial capacity (public data)
@@ -342,6 +379,7 @@ Based on OECD principles and adapted for labor union values:
 - Simulate negotiation scenarios
 
 **Data Sources:**
+
 - Industry wage surveys
 - Government labor statistics
 - Public financial filings (for public sector)
@@ -349,6 +387,7 @@ Based on OECD principles and adapted for labor union values:
 - Economic indicators
 
 **Ethical Considerations:**
+
 - ⚠️ **Transparency Risk:** May disadvantage if employers use similar tools
 - ✅ **Mitigation:** Focus on worker-centric analysis, not adversarial tactics
 - ⚠️ **Copyright Risk:** Using proprietary contract databases
@@ -359,30 +398,35 @@ Based on OECD principles and adapted for labor union values:
 ### 🎯 Priority 4 Use Cases (Exploratory)
 
 #### UC-13: Organizing Campaign Intelligence (Research Phase)
+
 **Business Problem:** Union organizing is resource-intensive with low success rates  
 **AI Solution:** Predictive models for campaign viability and strategy optimization  
 **Value:** Higher organizing success rates, efficient resource allocation  
 **Technology:** Predictive analytics + external labor market data  
 **Status:** 🔬 Research Phase (Q3 2026+)  
 **Responsible AI:**
+
 - ⚠️ **HIGH ETHICAL RISK** - Worker surveillance concerns
 - Privacy-first design required
 - Worker consent mandatory
 - No coercive tactics
 
 **Potential Features:**
+
 - Predict organizing receptivity by workplace
 - Identify influential workers (opinion leaders)
 - Optimize campaign messaging
 - Resource allocation recommendations
 
 **Why Exploratory:**
+
 - High ethical complexity
 - Regulatory uncertainty (labor law implications)
 - Technology maturity uncertain
 - Potential for misuse
 
 **Required Safeguards:**
+
 - Independent ethics review board
 - Labor law compliance verification
 - Worker data rights protection
@@ -414,11 +458,13 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 **Definition:** AI generates plausible but false information (fake case law, invented contract clauses)
 
 **Union Context Impact:**
+
 - ⚠️ Grievances citing non-existent precedents = case dismissal
 - ⚠️ Contract negotiations using false industry data = bad outcomes
 - ⚠️ Legal advice based on hallucinated law = malpractice risk
 
 **Mitigation:**
+
 1. **Citation Requirements:** All legal references must link to source documents
 2. **Fact-Checking Pipeline:** Automated verification against knowledge base
 3. **Human Review Gates:** Stewards review all AI-generated legal content
@@ -426,6 +472,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 5. **Training on Reliable Sources:** Fine-tune models on verified union data only
 
 **Monitoring:**
+
 - Track hallucination incident rate (target: <0.5%)
 - User reporting mechanism for false information
 - Quarterly model accuracy audits
@@ -437,11 +484,13 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 **Definition:** Malicious actors targeting AI systems through prompt injection, data poisoning, or model theft
 
 **Union Context Impact:**
+
 - ⚠️ Stolen member data = privacy breach, reputational damage
 - ⚠️ Poisoned training data = biased predictions against workers
 - ⚠️ Model manipulation = sabotaged grievances
 
 **Mitigation:**
+
 1. **Secure Infrastructure:** Azure security features, network isolation
 2. **Input Validation:** Sanitize all user inputs to prevent prompt injection
 3. **Rate Limiting:** Prevent abuse and DoS attacks
@@ -449,6 +498,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 5. **Model Security:** Encrypted model weights, secure deployment pipelines
 
 **Incident Response:**
+
 - Immediate model rollback capability
 - Forensic analysis of AI attacks
 - Member notification protocol for breaches
@@ -460,11 +510,13 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 **Definition:** AI systems perpetuate or amplify discrimination against protected groups
 
 **Union Context Impact:**
+
 - ⚠️ Biased claim predictions = unfair treatment of members
 - ⚠️ Discriminatory steward assignments = equity violations
 - ⚠️ Skewed churn predictions = neglecting marginalized members
 
 **Mitigation:**
+
 1. **Fairness Audits:** Quarterly analysis by demographic categories
    - Test for disparate impact on: gender, age, race, disability, seniority
    - Compare AI recommendations vs. actual outcomes
@@ -486,11 +538,13 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
    - Steward training on bias recognition
 
 **Monitoring:**
+
 - Monthly fairness dashboards
 - Bias incident reporting hotline
 - Annual equity impact assessments
 
 **Example Bias Scenario:**
+
 - **Problem:** AI predicts older workers' grievances have lower win rates
 - **Root Cause:** Historical age discrimination in arbitration outcomes
 - **Mitigation:** Adjust model to ignore age, flag historical bias, train stewards
@@ -502,11 +556,13 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 **Definition:** Unauthorized access, use, or disclosure of sensitive member information
 
 **Union Context Impact:**
+
 - ⚠️ Privacy breaches = loss of member trust, legal liability
 - ⚠️ Data leaks to employers = retaliation risks
 - ⚠️ Cross-tenant contamination = union confidentiality violations
 
 **Mitigation:**
+
 1. **Data Minimization:** Only collect necessary data for AI features
 2. **Anonymization:** Remove PII from AI training datasets
 3. **Tenant Isolation:** Strict separation of union data (enforced at DB level)
@@ -515,12 +571,14 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 6. **Access Logging:** Audit trails for all data access
 
 **Compliance:**
+
 - GDPR (European members)
 - PIPEDA (Canadian members)
 - State privacy laws (California, Virginia, etc.)
 - Union-specific data handling policies
 
 **Data Retention:**
+
 - AI training data: 7 years (labor law statute of limitations)
 - Prediction logs: 3 years (for audit and fairness analysis)
 - Member PII: As required by union bylaws
@@ -533,11 +591,13 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 **Definition:** Workers fear AI will replace union stewards or staff
 
 **Union Context Impact:**
+
 - ⚠️ Low AI adoption due to fear
 - ⚠️ Resistance from union leadership
 - ⚠️ Undermining solidarity values
 
 **Mitigation:**
+
 1. **AI Augmentation Philosophy:**
    - **"AI assists, humans decide"** - Core principle
    - AI handles routine analysis, stewards focus on relationships
@@ -559,6 +619,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
    - Job protection clauses in staff agreements
 
 **Measuring Success:**
+
 - Steward satisfaction with AI tools (target: >80%)
 - Member services capacity increase (target: +25% cases handled)
 - Staff retention rates (target: maintain or improve)
@@ -572,6 +633,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### AI Governance Committee
 
 **Composition:**
+
 - Union Executive Board representative (Chair)
 - Chief Technology Officer
 - Legal Counsel (labor law expert)
@@ -581,6 +643,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 - External AI ethicist (advisory role)
 
 **Responsibilities:**
+
 - Approve new AI use cases
 - Conduct quarterly fairness reviews
 - Investigate AI-related complaints
@@ -588,6 +651,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 - Oversee AI risk management
 
 **Decision-Making:**
+
 - Majority vote required for AI approvals
 - Veto power for legal/ethical concerns
 - Escalation to Union Executive Board for major decisions
@@ -599,6 +663,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### 1. AI Ethics Policy
 
 **Core Principles:**
+
 - **Human Dignity:** AI serves people, not replaces them
 - **Democracy:** Member oversight and consent
 - **Solidarity:** No AI use that pits workers against each other
@@ -606,6 +671,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 - **Accountability:** Clear responsibility for AI outcomes
 
 **Prohibited AI Uses:**
+
 - Surveillance or monitoring of individual members without consent
 - Automated disciplinary decisions (e.g., suspending members)
 - Predictive policing of union dissent or organizing
@@ -617,18 +683,21 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### 2. Data Use & Consent Policy
 
 **Data Collection:**
+
 - Only collect data necessary for specific AI features
 - Obtain explicit consent for optional AI features
 - Allow opt-out without penalty
 - Provide data access and correction rights
 
 **AI Training Data:**
+
 - Anonymize all training data (remove PII)
 - No cross-tenant training (each union's data isolated)
 - Exclude data from minors or vulnerable populations
 - Periodic data audits for compliance
 
 **External Data:**
+
 - License commercial datasets legally
 - Verify data provenance and quality
 - Document data sources in AI documentation
@@ -639,6 +708,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### 3. AI Deployment & Approval Policy
 
 **Approval Process:**
+
 - **Stage 1 - Proposal:** Use case business case and risk assessment
 - **Stage 2 - Ethics Review:** AI Governance Committee evaluation
 - **Stage 3 - Pilot Testing:** Limited deployment with monitoring
@@ -646,6 +716,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 - **Stage 5 - Production Approval:** Committee vote for full rollout
 
 **Deployment Requirements:**
+
 - User training materials (stewards and members)
 - Explainability documentation
 - Incident response plan
@@ -657,18 +728,21 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### 4. AI Transparency & Explainability Policy
 
 **Disclosure Requirements:**
+
 - Prominently label AI-generated content
 - Explain how AI predictions are made (in plain language)
 - Provide confidence scores for all predictions
 - Document model limitations
 
 **Explainability Standards:**
+
 - Natural language explanations (no technical jargon)
 - Factor-based reasoning (e.g., "Based on X, Y, Z...")
 - Comparison to similar cases
 - Ability to drill down into reasoning
 
 **Training:**
+
 - Steward training on AI tools (4-hour workshop)
 - Member education materials (FAQs, videos)
 - Ongoing support (help desk, documentation)
@@ -682,12 +756,14 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### **Q1 2026: Governance & Foundation**
 
 **Goals:**
+
 - Establish AI Governance Committee
 - Finalize AI policies and ethics framework
 - Conduct fairness audits on deployed AI features
 - Launch steward AI literacy training
 
 **Deliverables:**
+
 - [ ] AI Governance Charter (January 2026)
 - [ ] AI Ethics Policy v1.0 (January 2026)
 - [ ] Fairness Audit Report: Claim Predictions (February 2026)
@@ -701,12 +777,14 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### **Q2 2026: Advanced Use Cases**
 
 **Goals:**
+
 - Deploy Member Churn Prediction (UC-07)
 - Launch Automated Grievance Drafting (UC-09)
 - Pilot Negotiation Strategy Assistant (UC-10)
 - Implement Real-Time CBA Compliance Checking (UC-12)
 
 **Deliverables:**
+
 - [ ] Churn Prediction Model (April 2026)
 - [ ] Grievance Drafting AI (May 2026)
 - [ ] Negotiation Assistant Pilot (June 2026)
@@ -715,6 +793,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 **Budget:** $150,000 (development, Azure OpenAI costs, pilot testing)
 
 **Success Metrics:**
+
 - Churn prediction accuracy: >75%
 - Grievance drafting time savings: >50%
 - Negotiation assistant pilot satisfaction: >80%
@@ -724,12 +803,14 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### **Q3 2026: Scaling & Optimization**
 
 **Goals:**
+
 - Scale AI features to all unions in platform
 - Optimize model performance (reduce latency, improve accuracy)
 - Launch multilingual support (English/French)
 - Implement voice-to-text grievance intake
 
 **Deliverables:**
+
 - [ ] Multi-Tenancy AI Scaling (July 2026)
 - [ ] Model Performance Optimization (August 2026)
 - [ ] French Language Support (August 2026)
@@ -742,12 +823,14 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 #### **Q4 2026: Innovation & Research**
 
 **Goals:**
+
 - Research Organizing Campaign Intelligence (UC-13)
 - Explore advanced AI capabilities (GPT-5, multimodal AI)
 - Conduct year-end fairness and impact assessments
 - Plan 2027 AI roadmap
 
 **Deliverables:**
+
 - [ ] Organizing Intelligence Feasibility Study (October 2026)
 - [ ] AI Ethics Review Board Recommendations (November 2026)
 - [ ] Annual AI Impact Report (December 2026)
@@ -760,6 +843,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 ### 2027-2028 Vision (Strategic Horizon)
 
 **Transformational Goals:**
+
 - **AI-Powered Union Operations:** 50%+ of routine tasks automated
 - **Predictive Member Services:** Proactive interventions before problems arise
 - **Real-Time Bargaining Intelligence:** Live data during negotiations
@@ -768,6 +852,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 - **AI Literacy:** 100% of stewards trained and confident with AI tools
 
 **Emerging Technologies:**
+
 - Large Language Models (LLMs): Next-gen GPT models
 - Agentic AI: Autonomous AI assistants for routine tasks
 - Multimodal AI: Process text, images, audio, video
@@ -810,24 +895,28 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 ### Adoption Strategy
 
 #### Phase 1: Awareness (Q1 2026)
+
 - Launch internal communications campaign: "AI for Union Power"
 - Success stories from pilot users
 - Myth-busting: "AI won't replace stewards"
 - Testimonials from respected union leaders
 
 #### Phase 2: Education (Q1-Q2 2026)
+
 - Mandatory steward training: AI Tools 101 (4 hours)
 - Optional deep dives: Advanced AI features (8 hours)
 - Member education: FAQs, videos, webinars
 - Lunch & learns: Demo AI features in action
 
 #### Phase 3: Engagement (Q2-Q3 2026)
+
 - Gamification: "AI Power User" badges
 - Incentives: Early access to new features
 - Feedback loops: User surveys, feature requests
 - Champions program: Stewards who advocate for AI
 
 #### Phase 4: Optimization (Q3-Q4 2026)
+
 - Iterative improvements based on feedback
 - Advanced training for power users
 - Cross-union knowledge sharing
@@ -836,6 +925,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 ### Resistance Mitigation
 
 **Common Objections:**
+
 1. "AI will replace stewards" → **Response:** "AI augments, not replaces. We've created 5 new steward roles."
 2. "I don't trust AI" → **Response:** "You always have final say. AI provides options, you decide."
 3. "Too complex to learn" → **Response:** "Training is provided. Most features are intuitive (chat interface)."
@@ -843,6 +933,7 @@ Based on ITRG AI Strategy guidelines and labor-specific concerns:
 5. "AI is biased" → **Response:** "We conduct quarterly fairness audits. Report any concerns immediately."
 
 **Tactics:**
+
 - Address concerns transparently
 - Pilot with trusted stewards first
 - Provide ample training and support
@@ -952,6 +1043,7 @@ Union Eyes will become the **AI-powered labor management platform** that demonst
 - Technology adoption can be democratic and worker-centered
 
 **By 2030, we envision:**
+
 - 90%+ of unions using AI features confidently
 - Zero bias incidents in AI predictions
 - Industry leadership in responsible AI for labor tech
@@ -966,9 +1058,11 @@ Union Eyes will become the **AI-powered labor management platform** that demonst
 **Review Frequency:** Quarterly  
 **Next Review:** March 31, 2026  
 **Version History:**
+
 - v1.0 (December 13, 2025) - Initial strategic roadmap
 
 **Contact:**
+
 - AI Governance Committee: [ai-governance@unioneyes.org](mailto:ai-governance@unioneyes.org)
 - Ethics Inquiries: [ai-ethics@unioneyes.org](mailto:ai-ethics@unioneyes.org)
 - General AI Questions: [support@unioneyes.org](mailto:support@unioneyes.org)

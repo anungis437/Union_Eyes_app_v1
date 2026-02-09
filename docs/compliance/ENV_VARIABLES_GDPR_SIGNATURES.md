@@ -118,6 +118,7 @@ GDPR_EXPORT_RATE_LIMIT_MONTHLY=5
 ## Development vs Production
 
 ### Development (`.env.local`)
+
 ```bash
 DOCUSIGN_ENVIRONMENT=sandbox
 HELLOSIGN_API_KEY=test_key_here
@@ -125,6 +126,7 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 ### Production (Vercel/Platform)
+
 ```bash
 DOCUSIGN_ENVIRONMENT=production
 HELLOSIGN_API_KEY=live_key_here
@@ -136,7 +138,8 @@ NEXT_PUBLIC_BASE_URL=https://yourunion.com
 ## Getting API Keys
 
 ### DocuSign
-1. Create account at https://developers.docusign.com/
+
+1. Create account at <https://developers.docusign.com/>
 2. Go to Apps & Keys
 3. Create new Integration Key
 4. Note down:
@@ -146,13 +149,15 @@ NEXT_PUBLIC_BASE_URL=https://yourunion.com
 6. Configure webhook URL in Connect settings
 
 ### HelloSign
-1. Create account at https://www.hellosign.com/
+
+1. Create account at <https://www.hellosign.com/>
 2. Go to Settings > API
 3. Create API key → `HELLOSIGN_API_KEY`
 4. Configure webhook URL in API settings
 
 ### Adobe Sign
-1. Create account at https://acrobat.adobe.com/us/en/sign.html
+
+1. Create account at <https://acrobat.adobe.com/us/en/sign.html>
 2. Go to Account > Adobe Sign API
 3. Create Integration Key → `ADOBE_SIGN_API_KEY`
 4. Note your API access point (e.g., api.na1.adobesign.com)
@@ -162,6 +167,7 @@ NEXT_PUBLIC_BASE_URL=https://yourunion.com
 ## Storage Configuration
 
 ### AWS S3 (Recommended)
+
 ```bash
 # Create bucket: union-eyes-signatures
 # Enable encryption at rest
@@ -170,6 +176,7 @@ NEXT_PUBLIC_BASE_URL=https://yourunion.com
 ```
 
 ### Cloudflare R2 (Cost-effective)
+
 ```bash
 # Create R2 bucket
 # Generate API tokens
@@ -195,6 +202,7 @@ curl -X GET "https://api.hellosign.com/v3/account" \
 ### Test Webhooks
 
 Use ngrok for local testing:
+
 ```bash
 ngrok http 3000
 # Use HTTPS URL as webhook endpoint
@@ -217,6 +225,7 @@ ngrok http 3000
 ## Vercel Deployment
 
 Add environment variables in Vercel Dashboard:
+
 1. Go to Project Settings
 2. Navigate to Environment Variables
 3. Add all variables from above
@@ -227,6 +236,7 @@ Add environment variables in Vercel Dashboard:
 ## Support
 
 Missing an API key? Check:
-- DocuSign: https://developers.docusign.com/
-- HelloSign: https://www.hellosign.com/api
-- Adobe Sign: https://www.adobe.io/apis/documentcloud/sign.html
+
+- DocuSign: <https://developers.docusign.com/>
+- HelloSign: <https://www.hellosign.com/api>
+- Adobe Sign: <https://www.adobe.io/apis/documentcloud/sign.html>

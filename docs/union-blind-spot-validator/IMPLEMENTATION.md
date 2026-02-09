@@ -21,6 +21,7 @@ pnpm run validate:blind-spots --only=1,3,8
 ✅ **16 of 16 validators implemented** (100% COMPLETE)
 
 ### All Validators Implemented ✅
+
 1. Provincial Privacy Mismatch
 2. OQLF Language Coverage
 3. Indigenous Data Sovereignty (OCAP®)
@@ -45,11 +46,13 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: $50K+ fines per violation
 
 **What it checks**:
+
 - Province/territory field exists in user tables
 - 72-hour breach notification handlers
 - Province-specific consent management (AB PIPA, BC PIPA, QC Law 25, ON PHIPA)
 
 **Files scanned**:
+
 - `db/schema/**/*.ts` - Database schema
 - `lib/services/**/*privacy*.ts` - Privacy services
 - `lib/services/**/*breach*.ts` - Breach handlers
@@ -62,11 +65,13 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: $1,500-$30,000 fines per violation (Bill 101)
 
 **What it checks**:
+
 - All English translations have French (fr-CA) equivalents
 - No hardcoded English strings in components
 - Quebec French terminology (not France French)
 
 **Files scanned**:
+
 - `messages/en.json` vs `messages/fr-CA.json`
 - `components/**/*.{ts,tsx}` - React components
 - Detects: "email" → should be "courriel", "weekend" → "fin de semaine"
@@ -78,12 +83,14 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: Legal challenges, Band Council revocation
 
 **What it checks**:
+
 - OCAP® compliance service exists
 - On-reserve/on-premise storage configured
 - Band Council consent tracking
 - Cultural sensitivity protocols
 
 **Files scanned**:
+
 - `lib/services/**/*{indigenous,ocap,first-nations}*.ts`
 - `.env*` for on-premise database configs
 - `docker-compose*.yml` for local storage
@@ -96,12 +103,14 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: CRA penalties for unreported income
 
 **What it checks**:
+
 - T4A/RL-1 generation service
 - $500/week threshold logic
 - Quebec RL-1 support
 - Year-end processing (Feb 28 deadline)
 
 **Files scanned**:
+
 - `lib/services/**/*{tax,t4a,rl1,slip}*.ts`
 - `lib/services/**/*strike*.ts` for threshold logic
 - Checks for "500" or "threshold" mentions
@@ -113,11 +122,13 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: Privacy Commissioner complaints
 
 **What it checks**:
+
 - Explicit opt-in mechanism (not opt-out)
 - 24-hour location data retention
 - No background tracking safeguards
 
 **Files scanned**:
+
 - `lib/**/*location*.ts`
 - Looks for "opt-in", "24 hour", "retention", "foreground only"
 
@@ -128,11 +139,13 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: Ransomware without coverage
 
 **What it checks**:
+
 - $50M+ policy documentation exists
 - Crypto-ransom rider mentioned
 - SOC-2 Type II certification
 
 **Files scanned**:
+
 - `docs/**/*{cyber,insurance,coverage}*.{md,pdf}`
 - `docs/**/*soc*.{md,pdf}`
 
@@ -145,10 +158,12 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: Forced open-sourcing of entire SaaS
 
 **What it checks**:
+
 - Scans `node_modules/*/package.json` for licenses
 - Detects: AGPL-3.0, AGPL-3.0-only, AGPL-3.0-or-later, SSPL, SSPL-1.0
 
 **Files scanned**:
+
 - `package.json` dependencies
 - `node_modules/*/package.json` for license field
 
@@ -161,11 +176,13 @@ pnpm run validate:blind-spots --only=1,3,8
 **Risk**: CRA transfer pricing audits
 
 **What it checks**:
+
 - CAD currency enforcement
 - Bank of Canada noon rate for FX conversions
 - T106 filing process for >$1M cross-border transactions
 
 **Files scanned**:
+
 - `lib/**/*{billing,invoice,payment}*.ts`
 - `lib/**/*{tax,t106,transfer-pricing}*.ts`
 - `lib/**/*{currency,exchange,fx}*.ts`
@@ -175,6 +192,7 @@ pnpm run validate:blind-spots --only=1,3,8
 ## How Validators Work
 
 Each validator:
+
 1. Scans specific files/patterns
 2. Checks for compliance indicators
 3. Returns status: PASS ✅, WARN ⚠️, or FAIL ❌
@@ -187,6 +205,7 @@ pnpm run validate:blind-spots --only=8
 ```
 
 **Output**:
+
 ```
 🔍 Union Blind-Spot Validator
 
@@ -279,7 +298,7 @@ export class MyValidator extends BlindSpotValidator {
 }
 ```
 
-2. Register in `scripts/run-validators.ts`:
+1. Register in `scripts/run-validators.ts`:
 
 ```typescript
 import { MyValidator } from './validators/99-my-validator';

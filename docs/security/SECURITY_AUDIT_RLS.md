@@ -12,6 +12,7 @@
 ### Overall Assessment: ⚠️ **NEEDS IMMEDIATE ATTENTION**
 
 While your database has **extensive RLS policies** on most tables (~70+ tables with RLS enabled), there are **critical security gaps** in several high-sensitivity tables that handle:
+
 - ✅ **Personal communications** (messages, notifications)
 - ✅ **Financial reports** (reports, scheduled_reports)
 - ✅ **Calendar data** (calendar_events, calendars)
@@ -86,7 +87,7 @@ These tables contain sensitive data but have **NO row-level security policies**:
 
 ## World-Class Security Standards Comparison
 
-### What World-Class Systems Have:
+### What World-Class Systems Have
 
 ✅ **1. Zero Trust Architecture** - Every query validated  
 ✅ **2. Defense in Depth** - Multiple security layers  
@@ -99,7 +100,7 @@ These tables contain sensitive data but have **NO row-level security policies**:
 ✅ **9. Automated Security Testing** - CI/CD security scans  
 ✅ **10. Incident Response Plan** - Breach procedures documented  
 
-### Your System Status:
+### Your System Status
 
 | Security Feature | Status | Notes |
 |------------------|--------|-------|
@@ -123,6 +124,7 @@ These tables contain sensitive data but have **NO row-level security policies**:
 ### ✅ Excellent Implementations (Examples to Follow)
 
 #### 1. **Claims Table** - Hierarchical Organization Access
+
 ```sql
 POLICY "claims_hierarchical_select" ON claims
 FOR SELECT
@@ -136,12 +138,15 @@ USING (
   )
 )
 ```
+
 **Grade**: ⭐⭐⭐⭐⭐ **Excellent**  
+
 - Uses hierarchical function to traverse org tree
 - Supports both JWT and session-based auth
 - Allows parent orgs to see child data
 
 #### 2. **Dues Transactions** - Tenant Isolation
+
 ```sql
 POLICY "transactions_tenant_isolation" ON dues_transactions
 FOR ALL
@@ -150,12 +155,15 @@ USING (
   tenant_id::text = current_setting('app.current_tenant_id', true)
 )
 ```
+
 **Grade**: ⭐⭐⭐⭐⭐ **Excellent**  
+
 - Simple, effective tenant isolation
 - Covers all operations (SELECT, INSERT, UPDATE, DELETE)
 - Cannot accidentally access other tenants' financial data
 
 #### 3. **COPE Contributions** - Role-Based + Self-Access
+
 ```sql
 POLICY "manage_cope_contributions" ON cope_contributions
 FOR ALL
@@ -175,13 +183,16 @@ USING (
   OR member_id = current_setting('app.current_user_id', true)::uuid
 )
 ```
+
 **Grade**: ⭐⭐⭐⭐⭐ **Excellent**  
+
 - Separate policies for management vs viewing
 - Members can see their own contributions
 - Only authorized roles can modify financial data
 - Organization-scoped with role verification
 
 #### 4. **Digital Signatures** - Signer + Admin Access
+
 ```sql
 POLICY "update_signatures" ON digital_signatures
 FOR UPDATE
@@ -196,7 +207,9 @@ USING (
   )
 )
 ```
+
 **Grade**: ⭐⭐⭐⭐⭐ **Excellent**  
+
 - Signers can update their own signatures
 - Admins/officers have override capability
 - Org-scoped for multi-tenancy
@@ -211,6 +224,7 @@ USING (
 **Risk**: Any authenticated user can query all messages across all organizations
 
 **Recommended Policy**:
+
 ```sql
 -- Enable RLS
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
@@ -273,6 +287,7 @@ USING (
 **Risk**: Users can see each other's notifications system-wide
 
 **Recommended Policy**:
+
 ```sql
 -- Enable RLS
 ALTER TABLE in_app_notifications ENABLE ROW LEVEL SECURITY;
@@ -295,6 +310,7 @@ USING (user_id = get_current_user_id());
 **Risk**: Tax slips, certifications, personal IDs accessible across organizations
 
 **Recommended Policy**:
+
 ```sql
 -- Enable RLS
 ALTER TABLE member_documents ENABLE ROW LEVEL SECURITY;
@@ -348,6 +364,7 @@ WITH CHECK (
 **Risk**: Financial reports visible across organizations
 
 **Recommended Policies**:
+
 ```sql
 -- Enable RLS on all report tables
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
@@ -767,6 +784,7 @@ USING (
 ## Implementation Priority
 
 ### 🔥 Phase 1: IMMEDIATE (This Week)
+
 1. ✅ **Migration 061**: Enable RLS on `in_app_notifications` (10 minutes)
 2. ✅ **Migration 063**: Enable RLS on `member_documents` (15 minutes)
 3. ✅ **Migration 060**: Enable RLS on Messages System (30 minutes)
@@ -777,8 +795,9 @@ USING (
 ---
 
 ### 🟠 Phase 2: HIGH PRIORITY (Next Week)
-4. ✅ **Migration 062**: Enable RLS on Reports System (30 minutes)
-5. ✅ **Migration 064**: Enable RLS on Calendar System (20 minutes)
+
+1. ✅ **Migration 062**: Enable RLS on Reports System (30 minutes)
+2. ✅ **Migration 064**: Enable RLS on Calendar System (20 minutes)
 
 **Total Time**: ~1 hour  
 **Risk Mitigation**: Closes remaining high-severity gaps
@@ -786,9 +805,10 @@ USING (
 ---
 
 ### 🟢 Phase 3: MEDIUM PRIORITY (This Month)
-6. Enable RLS on remaining tables (deadline systems, ML predictions, etc.)
-7. Add audit logging for security-sensitive operations
-8. Implement automated security testing in CI/CD
+
+1. Enable RLS on remaining tables (deadline systems, ML predictions, etc.)
+2. Add audit logging for security-sensitive operations
+3. Implement automated security testing in CI/CD
 
 ---
 
@@ -910,27 +930,27 @@ USING (
 
 ### Short Term (This Month)
 
-6. Implement column-level encryption for PII fields (SSN, SIN, bank accounts)
-7. Add pgAudit extension for comprehensive audit logging
-8. Create security test suite for RLS policies
-9. Implement automated security scanning in CI/CD
-10. Document data classification levels
+1. Implement column-level encryption for PII fields (SSN, SIN, bank accounts)
+2. Add pgAudit extension for comprehensive audit logging
+3. Create security test suite for RLS policies
+4. Implement automated security scanning in CI/CD
+5. Document data classification levels
 
 ### Medium Term (This Quarter)
 
-11. Conduct formal penetration testing
-12. Implement rate limiting at database level
-13. Create incident response playbook
-14. Develop data retention/deletion policies
-15. Implement GDPR data export functionality
-16. Add security awareness training for developers
+1. Conduct formal penetration testing
+2. Implement rate limiting at database level
+3. Create incident response playbook
+4. Develop data retention/deletion policies
+5. Implement GDPR data export functionality
+6. Add security awareness training for developers
 
 ### Long Term (This Year)
 
-17. Achieve SOC 2 Type II certification
-18. Implement SIEM (Security Information and Event Management)
-19. Add anomaly detection for unusual query patterns
-20. Implement automated policy compliance checking
+1. Achieve SOC 2 Type II certification
+2. Implement SIEM (Security Information and Event Management)
+3. Add anomaly detection for unusual query patterns
+4. Implement automated policy compliance checking
 
 ---
 
@@ -939,6 +959,7 @@ USING (
 ### Current Security Level: **7/10** ⭐⭐⭐⭐⭐⭐⭐☆☆☆
 
 **Strengths:**
+
 - ✅ Excellent RLS coverage on financial and claims data (70+ tables)
 - ✅ Strong hierarchical organization access model
 - ✅ Role-based access control properly implemented
@@ -947,13 +968,14 @@ USING (
 - ✅ Good separation of duties and RBAC
 
 **Weaknesses:**
+
 - ❌ Critical tables without RLS (messages, notifications, documents)
 - ❌ No formal data classification system
 - ❌ No column-level encryption for PII
 - ❌ Limited security testing automation
 - ❌ No documented incident response procedures
 
-### Path to World-Class (10/10):
+### Path to World-Class (10/10)
 
 **With Migrations 060-064 Implemented**: **8.5/10** ⭐⭐⭐⭐⭐⭐⭐⭐☆☆  
 **With All Recommendations**: **10/10** ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
@@ -967,6 +989,7 @@ Your database security has a **strong foundation** with excellent RLS coverage o
 However, there are **critical gaps** in high-sensitivity tables (messages, notifications, member documents) that must be addressed immediately. These tables contain private communications and personal information that should never be accessible across organizational boundaries.
 
 **Immediate action required:**
+
 - Run Migrations 060-064 (estimated 2-3 hours total)
 - Test access patterns after migrations
 - Document security changes
@@ -974,6 +997,7 @@ However, there are **critical gaps** in high-sensitivity tables (messages, notif
 **With these migrations implemented, you'll achieve ~85-90% world-class security standards.**
 
 The remaining gap to world-class (10/10) involves:
+
 - Formal security testing and monitoring
 - Column-level encryption for PII
 - Comprehensive incident response procedures

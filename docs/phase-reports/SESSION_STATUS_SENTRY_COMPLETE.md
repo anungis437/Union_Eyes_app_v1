@@ -9,16 +9,19 @@
 ## ✅ Completed Tasks
 
 ### 1. Sentry Application Monitoring (100% Complete)
+
 **Time:** 3 hours
 **Status:** ✅ Production-ready
 
 **Installation & Configuration:**
+
 - ✅ Installed `@sentry/nextjs` package (6.7.0)
 - ✅ Ran Sentry wizard for Next.js integration
 - ✅ Connected to Sentry project: `nzila-ventures/union_eyes`
 - ✅ Configured DSN: `https://3a27b790762b741291334c39f6e330bb@o4509395283542016.ingest.de.sentry.io/4510423943544912`
 
 **Files Created:**
+
 ```
 sentry.server.config.ts          # Server-side Sentry config
 sentry.edge.config.ts            # Edge runtime config
@@ -32,6 +35,7 @@ app/api/sentry-example-api/route.ts # Test API endpoint
 ```
 
 **Features Enabled:**
+
 - ✅ Error tracking (client & server)
 - ✅ Performance monitoring (100% trace sample rate)
 - ✅ Session replay for debugging
@@ -40,15 +44,18 @@ app/api/sentry-example-api/route.ts # Test API endpoint
 - ✅ Next.js request routing through server (bypass ad blockers)
 
 **Next.js Integration:**
+
 - ✅ Updated `next.config.mjs` with Sentry webpack plugin
 - ✅ Added trace metadata to `app/[locale]/layout.tsx`
 - ✅ Configured MCP server for VS Code integration
 
 ### 2. Environment Variables Configuration (100% Complete)
+
 **Time:** 30 minutes
 **Status:** ✅ Ready for testing
 
 **Added to `.env`:**
+
 ```env
 # Financial Service Integration
 FINANCIAL_SERVICE_URL=http://localhost:3007
@@ -63,18 +70,21 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 **Verified Existing:**
+
 - ✅ DATABASE_URL (Azure PostgreSQL)
 - ✅ CLERK_SECRET_KEY
 - ✅ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 - ✅ Financial service has matching Stripe keys
 
 ### 3. Error Boundaries (100% Complete)
+
 **Time:** 1 hour
 **Status:** ✅ Production-ready
 
 **Created Error Handlers:**
 
 **`app/[locale]/error.tsx`** (Root-level error boundary):
+
 - Catches app-level errors
 - Logs to Sentry automatically
 - Shows user-friendly error page with AlertTriangle icon
@@ -83,6 +93,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Development mode shows full error stack
 
 **`app/[locale]/portal/error.tsx`** (Portal-specific error boundary):
+
 - Catches portal-level errors
 - Logs to Sentry automatically
 - Shows user-friendly error page with AlertCircle icon
@@ -91,6 +102,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Development mode shows full error stack
 
 **Features:**
+
 - ✅ Automatic Sentry error capture via `useEffect`
 - ✅ User-friendly error messages
 - ✅ Error ID display for support tickets
@@ -101,10 +113,12 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - ✅ Lucide React icons
 
 ### 4. Documentation (100% Complete)
+
 **Time:** 30 minutes
 **Status:** ✅ Ready for handoff
 
 **Created `PORTAL_TESTING_LAUNCH_GUIDE.md`:**
+
 - Complete setup verification checklist
 - Step-by-step testing guide
 - Manual API testing instructions
@@ -114,6 +128,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Support resources
 
 **Contents:**
+
 - ✅ Sentry setup validation steps
 - ✅ Quick start instructions (2 terminals)
 - ✅ 50+ testing checklist items
@@ -143,7 +158,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ## 🎯 Immediate Next Steps
 
 ### Ready for Testing (Next Session)
+
 1. **Start both services:**
+
    ```powershell
    # Terminal 1
    cd services/financial-service
@@ -154,9 +171,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    ```
 
 2. **Test Sentry integration:**
-   - Visit http://localhost:3000/sentry-example-page
+   - Visit <http://localhost:3000/sentry-example-page>
    - Trigger client and server errors
-   - Verify in Sentry dashboard: https://nzila-ventures.sentry.io/issues/
+   - Verify in Sentry dashboard: <https://nzila-ventures.sentry.io/issues/>
 
 3. **Test portal E2E:**
    - Sign in and access /portal
@@ -176,11 +193,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ## 🔧 Technical Details
 
 ### Sentry Configuration
+
 **Trace Sample Rate:** 100% (adjust to 0.1-0.2 in production)
 **Features:** Errors, Performance, Session Replay, Logs
 **Integration:** Vercel deployment recommended via Sentry integration
 
 ### Error Boundary Architecture
+
 ```
 app/
 ├── global-error.tsx          # Top-level fallback (Sentry auto-generated)
@@ -191,6 +210,7 @@ app/
 ```
 
 ### Environment Variables Flow
+
 ```
 Main App (.env)
 ├── FINANCIAL_SERVICE_URL → Portal API routes
@@ -239,6 +259,7 @@ Financial Service (services/financial-service/.env)
 **ETA to MVP:** 2-3 days
 
 **Critical Path:**
+
 1. ✅ Sentry setup (DONE)
 2. ✅ Environment config (DONE)
 3. ✅ Error boundaries (DONE)
@@ -248,6 +269,7 @@ Financial Service (services/financial-service/.env)
 7. ⏭️ Production deployment
 
 **Optional Enhancements:**
+
 - Document upload backend (2-3 hours)
 - Messages system (8-10 hours)
 - Notifications center (8-10 hours)
@@ -258,15 +280,19 @@ Financial Service (services/financial-service/.env)
 ## 📝 Notes for Next Session
 
 ### Test Sentry First
+
 Visit `/sentry-example-page` to validate monitoring is working before proceeding with portal testing.
 
 ### Financial Service Required
+
 The dues page (`/portal/dues`) requires the financial service running on port 3007. Start it first before testing payment flows.
 
 ### Stripe Test Mode
+
 All Stripe keys are in test mode. Use test card `4242 4242 4242 4242` for payment testing.
 
 ### Error Monitoring
+
 All errors are now automatically captured in Sentry with full context, session replays, and performance data.
 
 ---

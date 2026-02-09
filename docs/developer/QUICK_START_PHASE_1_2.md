@@ -15,27 +15,35 @@
 ## 🎨 What You Can Do Now
 
 ### 1. View System Status
+
 ```
 Visit: http://localhost:3000/status
 ```
+
 Monitor all services in real-time with auto-refresh
 
 ### 2. Browse API Documentation
+
 ```
 Visit: http://localhost:3000/api/docs
 ```
+
 Interactive Swagger UI with all endpoints documented
 
 ### 3. Test Onboarding Flow
+
 ```
 Visit: http://localhost:3000/onboarding
 ```
+
 4-step wizard for new organizations
 
 ### 4. Manage Feature Flags
+
 ```
 Visit: http://localhost:3000/admin/feature-flags
 ```
+
 Toggle features, view rollout percentages
 
 ---
@@ -43,6 +51,7 @@ Toggle features, view rollout percentages
 ## 🔧 Using the New Features
 
 ### Feature Flags
+
 ```typescript
 import { features } from '@/lib/feature-flags';
 
@@ -63,6 +72,7 @@ if (features.memberPortalV2.isEnabledForTenant(orgId)) {
 ```
 
 ### Circuit Breakers
+
 ```typescript
 import { CircuitBreaker } from '@/lib/resilience';
 
@@ -78,6 +88,7 @@ const result = await breaker.execute(async () => {
 ```
 
 ### Event Bus
+
 ```typescript
 import { eventBus, AppEvents } from '@/lib/events';
 
@@ -96,6 +107,7 @@ eventBus.emit(AppEvents.CLAIM_CREATED, {
 ```
 
 ### Onboarding Tours
+
 ```tsx
 import { OnboardingTour, tourSteps } from '@/components/onboarding';
 
@@ -120,6 +132,7 @@ export default function ClaimsPage() {
 ## 📊 Current Status
 
 ### ✅ Fully Implemented
+
 - Feature Flags (19 flags defined)
 - Circuit Breaker Pattern
 - Retry Logic (4 policies)
@@ -130,6 +143,7 @@ export default function ClaimsPage() {
 - Self-Serve Onboarding
 
 ### ⏳ Pending
+
 - Database migration (run when DB configured)
 
 ---
@@ -147,6 +161,7 @@ psql -U user -d database < db/migrations/apply-feature-flags.sql
 ```
 
 This creates:
+
 - `feature_flags` table
 - Indexes for performance
 - Trigger for updated_at
@@ -177,6 +192,7 @@ Target:  10/10  █████████████████████�
 ## 🚀 Ready to Deploy
 
 All features are production-ready:
+
 - ✅ TypeScript strict mode
 - ✅ Error handling
 - ✅ Logging & monitoring

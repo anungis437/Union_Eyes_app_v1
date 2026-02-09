@@ -4,8 +4,8 @@ This guide covers testing the Stripe donation integration for the financial serv
 
 ## Prerequisites
 
-1. **Stripe Account**: Sign up at https://stripe.com if you don't have an account
-2. **Stripe CLI**: Install from https://stripe.com/docs/stripe-cli
+1. **Stripe Account**: Sign up at <https://stripe.com> if you don't have an account
+2. **Stripe CLI**: Install from <https://stripe.com/docs/stripe-cli>
 3. **Test API Keys**: Get from Stripe Dashboard → Developers → API keys
 
 ## Environment Setup
@@ -24,6 +24,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 ### 2. Install Stripe CLI
 
 **Windows (PowerShell):**
+
 ```powershell
 # Using Scoop
 scoop install stripe
@@ -32,6 +33,7 @@ scoop install stripe
 ```
 
 **Mac/Linux:**
+
 ```bash
 # Using Homebrew
 brew install stripe/stripe-cli/stripe
@@ -72,6 +74,7 @@ stripe listen --forward-to localhost:3007/api/donations/webhooks/stripe
 ```
 
 This command will:
+
 - Listen for Stripe events
 - Forward them to your local webhook endpoint
 - Display a webhook signing secret (starts with `whsec_`)
@@ -114,11 +117,13 @@ stripe payment_intents confirm $clientSecret --payment-method=pm_card_visa
 Create a simple HTML test page or use the Stripe Dashboard:
 
 **Test Card Numbers:**
+
 - Success: `4242 4242 4242 4242`
 - Decline: `4000 0000 0000 0002`
 - Requires authentication: `4000 0025 0000 3155`
 
 **Card Details:**
+
 - Expiry: Any future date (e.g., 12/34)
 - CVC: Any 3 digits (e.g., 123)
 - ZIP: Any 5 digits (e.g., 12345)
@@ -162,6 +167,7 @@ GROUP BY payment_status;
 #### Check Service Logs
 
 The service logs will show:
+
 - Payment intent creation
 - Webhook event reception
 - Payment status updates
@@ -186,6 +192,7 @@ Invoke-RestMethod -Uri "http://localhost:3007/api/donations" `
 ```
 
 **Expected Result:**
+
 - Donation created with `payment_status = 'pending'`
 - Stripe payment intent created
 - Client secret returned
@@ -210,6 +217,7 @@ Invoke-RestMethod -Uri "http://localhost:3007/api/donations" `
 ```
 
 **Expected Result:**
+
 - Donation visible in public campaign page
 - Email receipt sent to donor
 - Name appears in recent donations list
@@ -222,6 +230,7 @@ stripe payment_intents confirm $clientSecret --payment-method=pm_card_chargeDecl
 ```
 
 **Expected Result:**
+
 - Webhook receives `payment_intent.payment_failed`
 - Donation status → `failed`
 - Fund balance unchanged
@@ -234,6 +243,7 @@ Invoke-RestMethod -Uri "http://localhost:3007/api/donations/campaigns/your-fund-
 ```
 
 **Expected Result:**
+
 ```json
 {
   "success": true,
@@ -287,6 +297,7 @@ Invoke-RestMethod -Uri "http://localhost:3007/api/donations/campaigns/your-fund-
 ### Issue: Webhook signature verification fails
 
 **Solution:**
+
 1. Ensure webhook secret in `.env` matches the one from `stripe listen` command
 2. Restart service after updating webhook secret
 3. Check that raw body parsing is enabled for webhook endpoint
@@ -294,6 +305,7 @@ Invoke-RestMethod -Uri "http://localhost:3007/api/donations/campaigns/your-fund-
 ### Issue: Payment intent creation fails
 
 **Possible causes:**
+
 - Invalid Stripe secret key (check `.env`)
 - Stripe API version mismatch
 - Invalid fund ID (fund doesn't exist or is inactive)
@@ -301,6 +313,7 @@ Invoke-RestMethod -Uri "http://localhost:3007/api/donations/campaigns/your-fund-
 ### Issue: Database updates not happening
 
 **Check:**
+
 1. Database connection is working (`GET /health`)
 2. Webhook is actually being received (check service logs)
 3. Tenant ID matches between fund and expected tenant

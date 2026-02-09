@@ -7,9 +7,11 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 ## User Roles
 
 ### 1. Admin
+
 **Highest privilege level** - Full system access
 
 **Capabilities:**
+
 - All claims management (view, create, edit, delete, approve)
 - Full member management (view, edit, delete, invite)
 - Complete voting administration (create, manage, view results)
@@ -20,14 +22,17 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 - Access to admin panel
 
 **Use Cases:**
+
 - Union Executive Board members
 - System administrators
 - IT staff
 
 ### 2. Union Rep (union_rep)
+
 **High privilege level** - Broad operational access
 
 **Capabilities:**
+
 - All claims management (view, create, edit, approve)
 - Full member management (view, edit, invite)
 - Voting administration (create, manage, view results)
@@ -37,14 +42,17 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 - Cannot manage user roles
 
 **Use Cases:**
+
 - Union representatives
 - Shop stewards
 - Labor Relations Officers (LRO)
 
 ### 3. Staff Rep (staff_rep)
+
 **Moderate privilege level** - Departmental support
 
 **Capabilities:**
+
 - View all claims and own claims management
 - View all members and own profile
 - View and participate in voting
@@ -55,14 +63,17 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 - Cannot create votes
 
 **Use Cases:**
+
 - Department representatives
 - Union stewards
 - Committee members
 
 ### 4. Member
+
 **Standard privilege level** - Self-service access
 
 **Capabilities:**
+
 - View and manage own claims only
 - Create new claims
 - View own profile
@@ -73,18 +84,22 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 - Cannot view analytics
 
 **Use Cases:**
+
 - Regular union members
 - Employees represented by the union
 
 ### 5. Guest
+
 **Minimal privilege level** - Limited read-only access
 
 **Capabilities:**
+
 - View own profile only
 - No access to claims, voting, or other features
 - Used for temporary or pending accounts
 
 **Use Cases:**
+
 - Newly registered users pending approval
 - Temporary observers
 - Accounts pending activation
@@ -130,6 +145,7 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 ## Route Access Control
 
 ### Dashboard Routes
+
 - `/dashboard` - All authenticated users
 - `/dashboard/claims` - Member and above
 - `/dashboard/members` - Staff Rep and above
@@ -139,6 +155,7 @@ The UnionEyes RBAC system provides fine-grained access control for union managem
 - `/dashboard/settings` - All authenticated users
 
 ### Admin Routes (Union Rep and above)
+
 - `/admin` - Union Rep, Admin
 - `/admin/claims` - Union Rep, Admin
 - `/admin/members` - Admin only
@@ -322,18 +339,21 @@ WHERE role IS NULL OR role = '';
 ## Troubleshooting
 
 ### User sees "Unauthorized" error
+
 - Check user's role in database: `SELECT * FROM user_management.tenant_users WHERE user_id = 'xxx'`
 - Verify role is set correctly (lowercase: admin, union_rep, staff_rep, member, guest)
 - Check Clerk metadata if database role is missing
 - Confirm user is authenticated
 
 ### Navigation items not showing
+
 - Verify role is loaded: Check browser console for role fetch errors
 - Check API route `/api/auth/role` returns correct role
 - Ensure navigation component is using `useUserRole()` hook
 - Clear browser cache and reload
 
 ### Permission denied on API routes
+
 - Verify API route uses `requirePermission()` guard
 - Check permission matches role (see permission matrix above)
 - Confirm authentication token is valid
@@ -416,6 +436,7 @@ describe('RBAC System', () => {
 ## Support
 
 For questions or issues with the RBAC system:
+
 - Review this documentation
 - Check server logs for detailed error messages
 - Verify database schema is up to date

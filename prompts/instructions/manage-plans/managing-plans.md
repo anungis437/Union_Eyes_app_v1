@@ -158,8 +158,8 @@ await updateProfile(userId, updateData);
 
 A core feature of this system is how we handle credit usage:
 
-1. **Fixed Credit Allocation**: 
-   - Pro users get 1000 total credits (`usageCredits`) 
+1. **Fixed Credit Allocation**:
+   - Pro users get 1000 total credits (`usageCredits`)
    - Free users get 5 total credits
    - This total credit amount (`usageCredits`) remains unchanged unless a user changes plan tier
 
@@ -262,7 +262,7 @@ function AiGenerator() {
 
 A key innovation in our system is the "just-in-time" approach to handling subscription cancellations. This provides a seamless user experience without requiring complex cron jobs or scheduled tasks:
 
-1. **Initial Cancellation**: 
+1. **Initial Cancellation**:
    - When a user cancels their subscription, the webhook handler sets their membership to "free"
    - **We preserve their existing credits until the end of their billing cycle**
    - This ensures users get the full value of what they paid for
@@ -278,6 +278,7 @@ A key innovation in our system is the "just-in-time" approach to handling subscr
 
 3. **Implementation**:
    In the webhook handler:
+
    ```typescript
    if (profile.membership === "free" && profile.billingCycleEnd) {
      const billingCycleEnd = new Date(profile.billingCycleEnd);
@@ -304,8 +305,9 @@ A key innovation in our system is the "just-in-time" approach to handling subscr
      }
    }
    ```
-   
+
    In the `checkCredits()` function:
+
    ```typescript
    // Just-in-time check for free users with expired billing cycles
    if (profile.membership === "free" && profile.billingCycleEnd) {
@@ -351,6 +353,7 @@ Our system handles billing cycles with these key components:
    - Future enhancement: Store the plan type (monthly/yearly) to calculate accurate dates
 
 2. **Fallback Billing Calculation**:
+
    ```typescript
    // Handle billing cycle end date
    if (data.renewal_period_end) {
@@ -442,7 +445,7 @@ export async function myPremiumFeature(param1: string, param2: number) {
 }
 ```
 
-2. Create a client component that uses the action:
+1. Create a client component that uses the action:
 
 ```tsx
 "use client";

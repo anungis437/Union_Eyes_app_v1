@@ -9,6 +9,7 @@ The system now supports professional PDF receipt generation for completed dues p
 ### 1. Receipt Template (`components/pdf/receipt-template.tsx`)
 
 Professional PDF template built with `@react-pdf/renderer` that includes:
+
 - Union branding (logo, name, contact information)
 - Member information
 - Payment details with itemized breakdown
@@ -21,6 +22,7 @@ Professional PDF template built with `@react-pdf/renderer` that includes:
 **GET** `/api/dues/receipt/[transactionId]`
 
 Query parameters:
+
 - `format` (optional): Response format
   - `json` (default): Returns receipt data as JSON
   - `pdf`: Returns PDF file for direct download
@@ -46,6 +48,7 @@ const { pdfUrl } = await response.json();
 **POST** `/api/billing/send-invoice`
 
 Request body:
+
 ```json
 {
   "templateId": "template_id",
@@ -59,6 +62,7 @@ Request body:
 ```
 
 When `includePdf: true` is set and a completed transaction is provided, the system will:
+
 1. Generate a PDF receipt using the transaction data
 2. Attach the PDF to the email automatically
 3. Send the email with the template content + PDF attachment
@@ -108,6 +112,7 @@ interface ReceiptData {
 ### PDF Generation
 
 Uses `@react-pdf/renderer` library for server-side PDF generation:
+
 - Professional layout with A4 page size
 - Responsive styling with flexbox
 - Section-based organization
@@ -117,6 +122,7 @@ Uses `@react-pdf/renderer` library for server-side PDF generation:
 ### Storage
 
 PDFs generated with `format=pdf-url` are stored in Vercel Blob Storage:
+
 - Path: `receipts/{tenantId}/{receiptNumber}.pdf`
 - Access: Public (shareable URLs)
 - Content-Type: `application/pdf`
@@ -149,6 +155,7 @@ To test the PDF generation:
 
 1. Complete a payment transaction
 2. Generate receipt in different formats:
+
    ```bash
    # Get JSON data
    curl http://localhost:3000/api/dues/receipt/txn_123
@@ -161,6 +168,7 @@ To test the PDF generation:
    ```
 
 3. Send invoice with PDF attachment:
+
    ```bash
    curl -X POST http://localhost:3000/api/billing/send-invoice \
      -H "Content-Type: application/json" \
@@ -175,16 +183,19 @@ To test the PDF generation:
 ## Troubleshooting
 
 **PDF generation fails:**
+
 - Verify `@react-pdf/renderer` is installed: `pnpm list @react-pdf/renderer`
 - Check transaction exists and has status='completed'
 - Verify all required receipt data fields are populated
 
 **PDF email attachment fails:**
+
 - Check Resend API key is configured: `process.env.RESEND_API_KEY`
 - Verify recipient email address is valid
 - Check email attachments size limit (Resend supports up to 10MB total)
 
 **Blob storage upload fails:**
+
 - Verify Vercel Blob token is configured
 - Check blob storage quota and limits
 - Ensure PDF buffer is properly generated before upload

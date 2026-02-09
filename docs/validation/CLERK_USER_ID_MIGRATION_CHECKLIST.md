@@ -6,17 +6,21 @@
 **Success Report:** [0055_MIGRATION_SUCCESS_REPORT.md](../../db/migrations/0055_MIGRATION_SUCCESS_REPORT.md)
 
 ## Goal
+
 Ensure all user identifier columns migrated from UUID to Clerk string IDs (`varchar(255)`) are aligned and data remains valid.
 
 ## Before Migration
+
 - ✅ Confirm backup completed for the target database.
 - ✅ Verify application is running the target schema branch.
 - ⚠️ Pause background jobs that write to claims, grievance, and training tables. (Not applicable for staging)
 
 ## Apply Migration
+
 - ✅ Apply core migration: `db/migrations/0055_align_user_ids_to_clerk.sql` - **COMMITTED successfully**
 
 ## Schema Validation
+
 - ✅ Run validation script:
   - `pnpm tsx scripts/validate-clerk-user-ids.ts`
 - ✅ Ensure all expected columns report `character varying` (and arrays report `_varchar`).
@@ -24,6 +28,7 @@ Ensure all user identifier columns migrated from UUID to Clerk string IDs (`varc
   - **Missing tables:** grievance_*, traditional_knowledge_registry (not deployed to staging - expected)
 
 ## Data Quality Checks
+
 Run these checks and resolve any failures:
 
 ```sql
@@ -51,6 +56,7 @@ WHERE to_user_ids IS NOT NULL
 ```
 
 ## Application Validation
+
 - [ ] Run targeted integration tests or smoke tests for:
   - Claims creation and updates
   - Grievance assignment/document upload flows
@@ -58,5 +64,6 @@ WHERE to_user_ids IS NOT NULL
 - [ ] Verify audit logs capture Clerk user IDs in new writes.
 
 ## Rollback Plan
+
 - [ ] If rollback is needed, restore from backup.
 - [ ] Log any manual corrections and re-run the validation script after restore.

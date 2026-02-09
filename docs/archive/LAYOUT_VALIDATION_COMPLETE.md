@@ -5,9 +5,11 @@
 ### Navigation Structure Implemented
 
 #### 1. **Dashboard Topbar** (NEW)
+
 **File**: `components/dashboard-topbar.tsx`
 
 **Features**:
+
 - ✅ Breadcrumb navigation showing current location
 - ✅ Global search bar (desktop & mobile)
 - ✅ Notifications bell with badge count
@@ -19,9 +21,11 @@
 **Integration**: Added to `app/dashboard/layout.tsx` and `components/dashboard-layout.tsx`
 
 #### 2. **Sidebar Navigation** (UPDATED)
+
 **File**: `components/sidebar.tsx`
 
 **Changes Made**:
+
 - ✅ Replaced template references with UnionEyes branding
 - ✅ Updated navigation items to union-specific sections:
   - Dashboard
@@ -36,9 +40,11 @@
 - ✅ Kept upgrade and billing buttons
 
 #### 3. **Admin Layout** (VALIDATED)
+
 **File**: `app/admin/layout.tsx`
 
 **Status**: ✅ Already properly configured
+
 - Dedicated admin header with "Admin Panel" branding
 - Shield icon for security emphasis
 - Navigation sidebar with admin-specific sections:
@@ -53,7 +59,8 @@
 
 ### Branding Updates
 
-#### Template References Removed:
+#### Template References Removed
+
 1. ✅ `components/sidebar.tsx` - Changed "Template App" to "UnionEyes"
 2. ✅ `components/sidebar.tsx` - Changed "App Name" logo to "UnionEyes" with icon
 3. ✅ `components/dashboard-layout.tsx` - Updated file header comments
@@ -61,7 +68,8 @@
 5. ✅ `app/dashboard/members/page.tsx` - Updated file header comments
 6. ✅ `app/(marketing)/page.tsx` - Changed footer "Template App" to "UnionEyes"
 
-#### Icons Updated:
+#### Icons Updated
+
 - ✅ Database → FileText (for Claims)
 - ✅ Target → Vote (for Voting)
 - ✅ Added TrendingUp (for Analytics)
@@ -109,6 +117,7 @@ Root Layout (app/layout.tsx)
 **File**: `app/layout.tsx`
 
 **What Was Removed**:
+
 ```tsx
 // OLD - Generic header in root layout
 <header className="flex justify-end items-center p-4 gap-4 h-16">
@@ -122,7 +131,8 @@ Root Layout (app/layout.tsx)
 </header>
 ```
 
-**Why**: 
+**Why**:
+
 - Dashboard has its own topbar with full navigation
 - Marketing pages have their own header via `components/header.tsx`
 - Root layout header was redundant and created double headers
@@ -149,7 +159,8 @@ app/
 
 ### Design System
 
-#### Colors & Styling:
+#### Colors & Styling
+
 - **Primary**: Red/Union red (#dc2626)
 - **Glassmorphism**: `bg-white/80 backdrop-blur-xl`
 - **Borders**: `border-gray-200/50`
@@ -157,14 +168,16 @@ app/
 - **Icons**: Lucide React icons throughout
 - **Typography**: Inter font family
 
-#### Responsive Breakpoints:
+#### Responsive Breakpoints
+
 - **Mobile**: < 768px (60px sidebar, stacked topbar)
 - **Tablet**: 768px - 1024px (220px sidebar)
 - **Desktop**: > 1024px (full layout with search)
 
 ### Navigation Items Mapping
 
-#### Dashboard Sidebar:
+#### Dashboard Sidebar
+
 1. **Dashboard** → `/dashboard` (Home icon)
 2. **My Claims** → `/dashboard/claims` (FileText icon)
 3. **Voting** → `/dashboard/voting` (Vote icon)
@@ -172,7 +185,8 @@ app/
 5. **Analytics** → `/dashboard/analytics` (TrendingUp icon)
 6. **Settings** → `/dashboard/settings` (Settings icon)
 
-#### Admin Sidebar:
+#### Admin Sidebar
+
 1. **Overview** → `/admin` (LayoutDashboard icon)
 2. **Claims Management** → `/admin/claims` (FileText icon)
 3. **Members** → `/admin/members` (Users icon)
@@ -182,7 +196,8 @@ app/
 
 ### Features Working
 
-#### ✅ Implemented & Tested:
+#### ✅ Implemented & Tested
+
 1. **Breadcrumb Navigation**: Shows user's location in the app
 2. **Global Search**: Available on all dashboard pages
 3. **Role-Based UI**: Admin badge shows for super_admin users
@@ -194,7 +209,8 @@ app/
 9. **Upgrade Flow**: Links to pricing/billing
 10. **Logout**: Clerk UserButton with after-sign-out redirect
 
-#### ⏳ To Be Implemented (Backend):
+#### ⏳ To Be Implemented (Backend)
+
 1. **Search Functionality**: UI ready, needs API integration
 2. **Notifications System**: UI ready, needs backend
 3. **Analytics Pages**: Navigation ready, pages need content
@@ -203,7 +219,8 @@ app/
 
 ### Validation Checklist
 
-#### Layout Structure:
+#### Layout Structure
+
 - [x] Dashboard has sidebar + topbar
 - [x] Admin panel has header + sidebar
 - [x] Marketing pages have dedicated header
@@ -211,7 +228,8 @@ app/
 - [x] Responsive mobile navigation
 - [x] Proper z-index layering
 
-#### Branding:
+#### Branding
+
 - [x] "UnionEyes" name used throughout
 - [x] Eye icon in logo
 - [x] Union-specific terminology
@@ -219,7 +237,8 @@ app/
 - [x] No "App Name" placeholders
 - [x] Proper copyright footer
 
-#### Navigation:
+#### Navigation
+
 - [x] All nav items have proper icons
 - [x] Active state highlighting works
 - [x] Hover animations smooth
@@ -227,7 +246,8 @@ app/
 - [x] Admin panel accessible to super_admin
 - [x] Breadcrumbs update per page
 
-#### User Experience:
+#### User Experience
+
 - [x] User profile visible in topbar
 - [x] Role displayed (super_admin, member, etc.)
 - [x] Credit usage shown in sidebar
@@ -248,6 +268,7 @@ app/
 ### Next Steps for Full Implementation
 
 #### Priority 1: Dashboard Pages
+
 1. Create `/dashboard/claims` page with claim list
 2. Create `/dashboard/voting` page with active sessions
 3. Create `/dashboard/analytics` page with charts
@@ -255,7 +276,9 @@ app/
 5. Build notifications system
 
 #### Priority 2: Admin Pages
+
 All admin pages exist but need full implementation:
+
 - Claims management (CRUD operations)
 - Member management (role assignment)
 - Voting administration (create sessions)
@@ -263,6 +286,7 @@ All admin pages exist but need full implementation:
 - Settings configuration
 
 #### Priority 3: Backend Integration
+
 1. Connect search to database
 2. Real-time notifications
 3. Claims workflow engine
@@ -271,18 +295,21 @@ All admin pages exist but need full implementation:
 
 ### Testing Recommendations
 
-#### Visual Testing:
+#### Visual Testing
+
 ```bash
 cd UnionEyes
 pnpm dev
 ```
 
 **Test URLs**:
-1. http://localhost:3000 - Marketing page (check header)
-2. http://localhost:3000/dashboard - Dashboard (check sidebar + topbar)
-3. http://localhost:3000/admin - Admin panel (check admin header)
+
+1. <http://localhost:3000> - Marketing page (check header)
+2. <http://localhost:3000/dashboard> - Dashboard (check sidebar + topbar)
+3. <http://localhost:3000/admin> - Admin panel (check admin header)
 
 **Check For**:
+
 - ✅ UnionEyes branding visible
 - ✅ No "Template App" text
 - ✅ No "App Name" text
@@ -293,8 +320,9 @@ pnpm dev
 - ✅ Smooth animations
 - ✅ Responsive on mobile
 
-#### Functional Testing:
-1. Log in as super_admin (info@nzilaventures.com)
+#### Functional Testing
+
+1. Log in as super_admin (<info@nzilaventures.com>)
 2. Verify "Admin Panel" badge appears in topbar
 3. Click Admin Panel → should navigate to /admin
 4. Test sidebar navigation items
@@ -305,7 +333,8 @@ pnpm dev
 
 ### Production Deployment
 
-#### Before Deploying:
+#### Before Deploying
+
 1. ✅ All template references removed
 2. ✅ UnionEyes branding applied
 3. ✅ Navigation structure complete
@@ -314,13 +343,15 @@ pnpm dev
 6. ⏳ Search functionality (UI only)
 7. ⏳ Notifications system (UI only)
 
-#### Azure Web Apps Status:
-- **Staging**: https://unioneyes-staging-app.azurewebsites.net
-- **Production**: https://unioneyes-prod-app.azurewebsites.net
+#### Azure Web Apps Status
+
+- **Staging**: <https://unioneyes-staging-app.azurewebsites.net>
+- **Production**: <https://unioneyes-prod-app.azurewebsites.net>
 - **Docker Image**: Latest includes all layout updates
 - **Database**: Super admin access configured
 
-#### To Deploy Updates:
+#### To Deploy Updates
+
 ```bash
 # Rebuild Docker image with new layout
 cd UnionEyes

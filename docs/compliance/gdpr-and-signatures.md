@@ -9,18 +9,21 @@ Union Eyes v2.0 now includes comprehensive GDPR compliance features and full e-s
 ### GDPR Compliance (Articles 6, 7, 13-21, 30)
 
 #### 1. Cookie Consent Management
+
 - **Granular consent controls** (Essential, Functional, Analytics, Marketing)
 - **12-month consent expiration** with automatic renewal prompts
 - **Multi-device tracking** via unique consent IDs
 - **User-friendly banner** with customization options
 
 **Files:**
+
 - Schema: [`db/schema/gdpr-compliance-schema.ts`](db/schema/gdpr-compliance-schema.ts)
 - Service: [`lib/gdpr/consent-manager.ts`](lib/gdpr/consent-manager.ts)
 - Component: [`components/gdpr/cookie-consent-banner.tsx`](components/gdpr/cookie-consent-banner.tsx)
 - API: [`app/api/gdpr/cookie-consent/route.ts`](app/api/gdpr/cookie-consent/route.ts)
 
 **Usage:**
+
 ```tsx
 import { CookieConsentBanner } from "@/components/gdpr/cookie-consent-banner";
 
@@ -28,12 +31,14 @@ import { CookieConsentBanner } from "@/components/gdpr/cookie-consent-banner";
 ```
 
 #### 2. Data Export (Article 15 - Right of Access)
+
 - **Complete data export** in JSON/CSV/XML formats
 - **30-day response deadline** tracking
 - **Automatic or manual processing**
 - **Secure download links** with 7-day expiration
 
 **API Endpoints:**
+
 ```bash
 # Request data export
 POST /api/gdpr/data-export
@@ -47,6 +52,7 @@ GET /api/gdpr/data-export?requestId=req-123&tenantId=tenant-123
 ```
 
 #### 3. Right to be Forgotten (Article 17 - Data Erasure)
+
 - **User-initiated erasure requests**
 - **Admin verification and approval**
 - **Comprehensive anonymization** across all tables
@@ -54,6 +60,7 @@ GET /api/gdpr/data-export?requestId=req-123&tenantId=tenant-123
 - **Legal retention checks** (active claims, ongoing disputes)
 
 **API Endpoints:**
+
 ```bash
 # Request data erasure
 POST /api/gdpr/data-erasure
@@ -73,6 +80,7 @@ DELETE /api/gdpr/data-erasure
 ```
 
 #### 4. Additional GDPR Features
+
 - **Consent versioning** - Track policy changes
 - **Processing records** (Article 30)
 - **Data retention policies** - Automatic deletion/archiving
@@ -83,11 +91,13 @@ DELETE /api/gdpr/data-erasure
 ### E-Signature Integration
 
 #### Supported Providers
+
 1. **DocuSign** - Enterprise-grade e-signatures
 2. **HelloSign (Dropbox Sign)** - Simple, developer-friendly
 3. **Internal System** - Built-in signature capability (no external API)
 
 **Files:**
+
 - Schema: [`db/schema/e-signature-schema.ts`](db/schema/e-signature-schema.ts)
 - Providers: [`lib/signature/providers.ts`](lib/signature/providers.ts)
 - Service: [`lib/signature/signature-service.ts`](lib/signature/signature-service.ts)
@@ -97,6 +107,7 @@ DELETE /api/gdpr/data-erasure
 #### Key Features
 
 ##### 1. Document Signing Workflow
+
 ```typescript
 // Create signature request
 const document = await SignatureService.createSignatureRequest({
@@ -117,12 +128,14 @@ const document = await SignatureService.createSignatureRequest({
 ```
 
 ##### 2. Signature Types
+
 - **Electronic** - Standard e-signature
 - **Digital** - Certificate-based (PKI)
 - **Wet** - Physical signature (uploaded)
 - **Clickwrap** - Click-to-accept agreements
 
 ##### 3. Authentication Methods
+
 - Email verification
 - SMS code
 - Phone call verification
@@ -131,7 +144,9 @@ const document = await SignatureService.createSignatureRequest({
 - Multi-factor authentication (MFA)
 
 ##### 4. Comprehensive Audit Trail
+
 Every action is logged with:
+
 - Timestamp
 - Actor (user ID, email)
 - IP address
@@ -147,11 +162,14 @@ const report = await AuditTrailService.generateAuditReport(documentId);
 ```
 
 ##### 5. Webhook Support
+
 Automatically sync document status from providers:
+
 - DocuSign webhook: [`app/api/signatures/webhooks/docusign/route.ts`](app/api/signatures/webhooks/docusign/route.ts)
 - HelloSign webhook: (similar pattern)
 
 Events handled:
+
 - `envelope-sent` - Document sent to signers
 - `envelope-delivered` - Email delivered
 - `recipient-completed` - Signer completed
@@ -190,6 +208,7 @@ pnpm drizzle-kit push
 ```
 
 This creates:
+
 - `user_consents`
 - `cookie_consents`
 - `gdpr_data_requests`
@@ -248,29 +267,37 @@ SignatureProviderFactory.initialize({
 ### GDPR Tables
 
 #### `user_consents`
+
 Tracks all consent decisions (functional, analytics, marketing, etc.)
 
 #### `cookie_consents`
+
 Granular cookie preferences per user/device
 
 #### `gdpr_data_requests`
+
 Data access, erasure, portability requests
 
 #### `data_anonymization_log`
+
 Complete audit of anonymization operations
 
 ### E-Signature Tables
 
 #### `signature_documents`
+
 Main document records with provider integration
 
 #### `document_signers`
+
 Individual signer status, authentication, geolocation
 
 #### `signature_audit_trail`
+
 Immutable event log for legal compliance
 
 #### `signature_templates`
+
 Reusable document templates with field mappings
 
 ---
@@ -280,17 +307,20 @@ Reusable document templates with field mappings
 ### GDPR Components
 
 #### Cookie Consent Banner
+
 ```tsx
 <CookieConsentBanner tenantId="tenant-123" userId="user-123" />
 ```
 
 Features:
+
 - Simple banner view
 - Detailed settings dialog
 - Category-by-category control
 - Links to privacy/cookie policies
 
 #### Cookie Consent Hook
+
 ```tsx
 const { preferences, updatePreferences } = useCookieConsent();
 
@@ -303,6 +333,7 @@ if (preferences.analytics) {
 ### E-Signature Components
 
 #### Signature Request Form
+
 ```tsx
 <SignatureRequestForm 
   tenantId="tenant-123"
@@ -311,6 +342,7 @@ if (preferences.analytics) {
 ```
 
 Features:
+
 - File upload (PDF, DOC, DOCX)
 - Multiple signers
 - Sequential signing
@@ -318,17 +350,20 @@ Features:
 - Provider selection
 
 #### Documents List
+
 ```tsx
 <DocumentsList tenantId="tenant-123" />
 ```
 
 Shows:
+
 - Documents sent by user
 - Documents awaiting signature
 - Status badges
 - Quick actions
 
 #### Signature Pad
+
 ```tsx
 <SignaturePad 
   onSave={(dataUrl) => saveSignature(dataUrl)}
@@ -344,6 +379,7 @@ Canvas-based signature drawing with clear/save.
 ## 🔒 Security Features
 
 ### GDPR
+
 - **IP address logging** for consent
 - **SHA-256 file hashing** for integrity
 - **Audit trails** for all operations
@@ -351,6 +387,7 @@ Canvas-based signature drawing with clear/save.
 - **Legal retention checks** before erasure
 
 ### E-Signatures
+
 - **HMAC signature verification** for webhooks
 - **Geolocation capture** for all signatures
 - **Device fingerprinting** (IP + User Agent)
@@ -441,6 +478,7 @@ POST   /api/signatures/webhooks/hellosign
 ## 🧪 Testing
 
 ### Test Cookie Consent
+
 1. Open app in incognito
 2. Cookie banner should appear
 3. Test "Accept All", "Reject All", "Customize"
@@ -448,12 +486,14 @@ POST   /api/signatures/webhooks/hellosign
 5. Check `/api/gdpr/cookie-consent` in Network tab
 
 ### Test Data Export
+
 1. POST to `/api/gdpr/data-export`
 2. Check response for `downloadUrl`
 3. GET the download URL
 4. Verify JSON contains user data
 
 ### Test E-Signature
+
 1. Upload PDF via Signature Request Form
 2. Add signers
 3. Submit
@@ -466,6 +506,7 @@ POST   /api/signatures/webhooks/hellosign
 ## 📞 Support
 
 For issues or questions:
+
 - **GDPR**: Check consent manager logs
 - **E-Signatures**: Check webhook logs in `signature_webhooks_log`
 - **Audit Trail**: Query `signature_audit_trail` table

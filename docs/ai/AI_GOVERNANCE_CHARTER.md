@@ -20,6 +20,7 @@ To provide strategic oversight and ethical guidance for all AI initiatives at Un
 ### Guiding Principles
 
 The committee operates according to these core values:
+
 - **Worker-Centric:** AI must serve workers, not replace them
 - **Democratic:** Member input and consent are essential
 - **Transparent:** No "black box" AI decisions
@@ -36,6 +37,7 @@ The committee operates according to these core values:
 The AI Governance Committee has authority to:
 
 **Approve/Reject:**
+
 - New AI use cases and features
 - AI model deployments to production
 - Changes to AI policies and procedures
@@ -43,6 +45,7 @@ The AI Governance Committee has authority to:
 - AI research partnerships involving member data
 
 **Review & Oversee:**
+
 - AI system performance and accuracy
 - Fairness audits and bias assessments
 - Privacy impact assessments
@@ -50,6 +53,7 @@ The AI Governance Committee has authority to:
 - Budget allocation for AI initiatives
 
 **Recommend:**
+
 - AI strategy adjustments to Union Executive Board
 - Policy changes requiring board approval
 - Resource allocation for AI programs
@@ -58,6 +62,7 @@ The AI Governance Committee has authority to:
 ### Limitations
 
 The committee **cannot**:
+
 - Override Union Executive Board decisions
 - Modify collective bargaining agreements
 - Access confidential member data without authorization
@@ -77,6 +82,7 @@ The committee **cannot**:
 ### Core Members (7 total)
 
 #### Executive Sponsor (1)
+
 - **Role:** Union Executive Board Representative (Chair)
 - **Term:** 2 years (renewable)
 - **Responsibilities:**
@@ -87,6 +93,7 @@ The committee **cannot**:
 - **Qualifications:** Union leadership experience, understanding of technology impact
 
 #### Technical Leadership (2)
+
 1. **Chief Technology Officer**
    - **Term:** Ex-officio (as long as in role)
    - **Responsibilities:**
@@ -106,6 +113,7 @@ The committee **cannot**:
    - **Qualifications:** PhD or equivalent in AI/ML, fairness expertise
 
 #### Legal & Compliance (1)
+
 - **Role:** Labor Law Counsel
 - **Term:** 2 years (renewable)
 - **Responsibilities:**
@@ -116,6 +124,7 @@ The committee **cannot**:
 - **Qualifications:** Labor law expertise, privacy law knowledge, tech law experience
 
 #### Union Representation (2)
+
 1. **Senior Steward (Elected Position)**
    - **Term:** 2 years (elected by stewards)
    - **Responsibilities:**
@@ -135,6 +144,7 @@ The committee **cannot**:
    - **Qualifications:** Union member in good standing, no conflicts of interest
 
 #### Privacy & Ethics (1)
+
 - **Role:** Data Privacy Officer
 - **Term:** Ex-officio (as long as in role)
 - **Responsibilities:**
@@ -148,6 +158,7 @@ The committee **cannot**:
 ### Advisory Members (Non-Voting)
 
 #### External AI Ethicist
+
 - **Role:** Independent advisory role
 - **Term:** 1-year contract (renewable)
 - **Responsibilities:**
@@ -158,6 +169,7 @@ The committee **cannot**:
 - **Qualifications:** PhD in AI ethics, published research, no vendor conflicts
 
 #### Chief Information Security Officer (CISO)
+
 - **Role:** Security advisory
 - **Attendance:** As needed (security-related discussions)
 - **Responsibilities:**
@@ -169,6 +181,7 @@ The committee **cannot**:
 ### Election & Appointment Process
 
 **Elected Positions (Senior Steward, Member-at-Large):**
+
 1. Nominations open 60 days before term expiration
 2. Candidates submit statements (max 500 words)
 3. Electronic voting open for 14 days
@@ -176,12 +189,14 @@ The committee **cannot**:
 5. In case of tie, runoff election
 
 **Appointed Positions (Executive Sponsor, Legal Counsel):**
+
 1. Union Executive Board nominates
 2. AI Governance Committee interviews (except when forming initially)
 3. Union Executive Board approves
 4. 2-year term, renewable once
 
 **Ex-Officio Positions:**
+
 - Automatically filled by role holders
 - No election/appointment process
 - If role is vacant, committee pauses decisions until filled
@@ -189,6 +204,7 @@ The committee **cannot**:
 ### Removal & Replacement
 
 **Grounds for Removal:**
+
 - Violation of confidentiality
 - Conflict of interest (undisclosed)
 - Failure to attend 3+ consecutive meetings without excuse
@@ -196,11 +212,13 @@ The committee **cannot**:
 - Loss of required qualifications (e.g., steward loses position)
 
 **Removal Process:**
+
 - 2/3 vote of committee (excluding subject member)
 - Or Union Executive Board decision (for appointed members)
 - Or recall election (for elected members, requires 20% member petition)
 
 **Replacement:**
+
 - Immediate interim appointment by Union Executive Board
 - Special election within 60 days (for elected positions)
 - Replacement completes remainder of term
@@ -212,17 +230,20 @@ The committee **cannot**:
 ### Meeting Cadence
 
 **Regular Meetings:**
+
 - **Frequency:** Quarterly (January, April, July, October)
 - **Duration:** 2 hours
 - **Format:** Hybrid (in-person + virtual)
 - **Scheduling:** First Wednesday of month, 2:00 PM ET
 
 **Special Meetings:**
+
 - Called by Committee Chair or any 3 members
 - 7-day notice required (except emergencies)
 - Emergency meetings: 24-hour notice (for critical incidents)
 
 **Annual Strategic Session:**
+
 - Full-day retreat (8 hours)
 - Held in December
 - AI strategy review and next-year planning
@@ -233,6 +254,7 @@ The committee **cannot**:
 **Quorum:** 5 of 7 voting members (71%)
 
 **Voting Rules:**
+
 - **Standard Decisions:** Simple majority (4 of 7)
 - **Policy Approvals:** Supermajority (5 of 7)
 - **Emergency Actions:** 2/3 majority (5 of 7)
@@ -245,16 +267,19 @@ The committee **cannot**:
 ### Agenda & Materials
 
 **Agenda Development:**
+
 - Draft agenda due 10 days before meeting (Committee Chair + CTO)
 - Members can suggest items 14 days before meeting
 - Final agenda distributed 7 days before meeting
 
 **Meeting Materials:**
+
 - All materials distributed 5 business days before meeting
 - Uploaded to secure committee portal
 - Confidential materials (member data) available in read-only mode
 
 **Standing Agenda Items:**
+
 1. Approval of previous meeting minutes
 2. Action item review
 3. AI performance dashboard review
@@ -269,28 +294,33 @@ The committee **cannot**:
 **Standard Approval Workflow:**
 
 **Stage 1 - Submission (T-14 days):**
+
 - Proposer submits request (use case, policy, vendor)
 - Includes business case, risk assessment, cost estimate
 - Technical review by CTO/Data Science Lead
 
 **Stage 2 - Pre-Review (T-7 days):**
+
 - Materials distributed to committee
 - Members review and submit questions
 - Technical team prepares responses
 
 **Stage 3 - Committee Discussion (Meeting Day):**
+
 - Proposer presents (15 minutes)
 - Committee Q&A (20 minutes)
 - Deliberation (15 minutes)
 - Vote
 
 **Stage 4 - Documentation (T+3 days):**
+
 - Decision recorded in minutes
 - Rationale documented
 - Action items assigned
 - Stakeholders notified
 
 **Expedited Approval (Emergency):**
+
 - Email vote (within 48 hours)
 - Requires 2/3 majority
 - Ratified at next regular meeting
@@ -299,12 +329,14 @@ The committee **cannot**:
 ### Minutes & Record-Keeping
 
 **Meeting Minutes:**
+
 - Prepared by committee secretary (designated staff member)
 - Draft circulated within 5 business days
 - Approved at next meeting
 - Published internally (redacted for confidentiality)
 
 **Records Retention:**
+
 - Meeting minutes: Permanent
 - Proposals and decisions: 7 years
 - Fairness audit reports: Permanent
@@ -312,6 +344,7 @@ The committee **cannot**:
 - Email correspondence: 3 years
 
 **Access:**
+
 - Committee members: Full access
 - Union staff: Redacted versions (no member PII)
 - Members: Summaries (quarterly public reports)
@@ -324,12 +357,14 @@ The committee **cannot**:
 ### Strategic Oversight
 
 **AI Strategy Alignment:**
+
 - Annual review of AI Strategy Roadmap
 - Ensure AI initiatives align with union mission
 - Prioritize use cases based on member value
 - Budget recommendations to Union Executive Board
 
 **Performance Monitoring:**
+
 - Quarterly review of AI performance metrics
 - Accuracy, fairness, adoption, satisfaction
 - Identify underperforming AI features
@@ -341,6 +376,7 @@ The committee **cannot**:
 Every new AI use case must obtain committee approval before production deployment.
 
 **Approval Criteria:**
+
 - [ ] Business value clearly articulated
 - [ ] Risks assessed and mitigated
 - [ ] Fairness audit planned
@@ -364,11 +400,13 @@ Every new AI use case must obtain committee approval before production deploymen
 ### Fairness & Bias Oversight
 
 **Fairness Audit Schedule:**
+
 - Quarterly audits of deployed AI features
 - Annual comprehensive audits (all features)
 - Ad-hoc audits if bias suspected
 
 **Audit Review Process:**
+
 1. Data Science Lead conducts audit
 2. Results presented to committee within 30 days
 3. Committee reviews findings
@@ -379,6 +417,7 @@ Every new AI use case must obtain committee approval before production deploymen
 5. Audit summary published (anonymized)
 
 **Bias Incident Response:**
+
 - Emergency meeting convened within 48 hours
 - Affected predictions flagged for human review
 - Members notified (if material impact)
@@ -390,6 +429,7 @@ Every new AI use case must obtain committee approval before production deploymen
 
 **Policy Ownership:**
 The committee is responsible for maintaining:
+
 - AI Foundational Principles
 - AI Ethics Policy
 - Responsible AI Policy
@@ -398,12 +438,14 @@ The committee is responsible for maintaining:
 - Incident Response Procedures
 
 **Policy Review Cycle:**
+
 - Annual review of all policies (December)
 - Ad-hoc updates as needed (technology changes, new regulations)
 - Version control and change tracking
 - Stakeholder feedback incorporation
 
 **Policy Approval:**
+
 - Draft policy developed by subcommittee or staff
 - Circulated for review (14 days)
 - Committee vote (supermajority for major policies)
@@ -413,6 +455,7 @@ The committee is responsible for maintaining:
 ### Incident Investigation
 
 **Incident Types:**
+
 - AI bias or discrimination
 - Privacy breaches (AI-related)
 - Security incidents (AI models compromised)
@@ -420,6 +463,7 @@ The committee is responsible for maintaining:
 - Ethical violations (misuse of AI)
 
 **Investigation Process:**
+
 1. **Incident Reported:** Via hotline, user report, or automated detection
 2. **Triage (24 hours):** Severity assessment, immediate containment
 3. **Investigation (7-14 days):** Root cause analysis, impact assessment
@@ -428,6 +472,7 @@ The committee is responsible for maintaining:
 6. **Follow-Up:** Verify fixes, update policies, communicate lessons learned
 
 **Incident Severity Levels:**
+
 - **Critical:** Privacy breach, discrimination affecting >10 members, security compromise
 - **High:** Bias detected, accuracy failure affecting outcomes, policy violation
 - **Medium:** User complaints, minor inaccuracies, explainability issues
@@ -436,12 +481,14 @@ The committee is responsible for maintaining:
 ### Training & Education
 
 **Committee Responsibilities:**
+
 - Approve training curriculum for stewards
 - Review member communication materials
 - Identify AI literacy gaps
 - Budget allocation for training programs
 
 **Training Oversight:**
+
 - Ensure 100% of stewards trained before AI access
 - Monitor training effectiveness (pre/post tests)
 - Update training based on feedback
@@ -456,16 +503,19 @@ The committee is responsible for maintaining:
 The committee may establish time-limited subcommittees for specific tasks:
 
 #### Fairness & Bias Subcommittee
+
 - **Members:** Data Science Lead (chair), Data Privacy Officer, Member-at-Large
 - **Purpose:** Oversee fairness audits, bias detection, remediation
 - **Meeting Frequency:** Monthly (during active audits)
 
 #### Policy Development Subcommittee
+
 - **Members:** Legal Counsel (chair), CTO, Senior Steward
 - **Purpose:** Draft new policies, update existing policies
 - **Meeting Frequency:** As needed
 
 #### Technology Evaluation Subcommittee
+
 - **Members:** CTO (chair), Data Science Lead, External AI Ethicist
 - **Purpose:** Evaluate new AI technologies, vendors, research
 - **Meeting Frequency:** Quarterly
@@ -473,6 +523,7 @@ The committee may establish time-limited subcommittees for specific tasks:
 ### Working Group Formation
 
 **Process:**
+
 1. Committee identifies need for specialized work
 2. Vote to establish working group (simple majority)
 3. Define scope, timeline, deliverables
@@ -480,6 +531,7 @@ The committee may establish time-limited subcommittees for specific tasks:
 5. Report back to full committee
 
 **Working Group Authority:**
+
 - Conduct research and analysis
 - Make recommendations to full committee
 - No decision-making authority (advisory only)
@@ -491,16 +543,19 @@ The committee may establish time-limited subcommittees for specific tasks:
 ### Internal Reporting
 
 **To Union Executive Board:**
+
 - Quarterly written reports (summary of decisions, risks, metrics)
 - Annual presentation (strategic review, budget request)
 - Ad-hoc briefings (major incidents, policy changes)
 
 **To Union Staff:**
+
 - Monthly AI performance dashboard (metrics, adoption)
 - Policy updates and reminders
 - Training opportunities
 
 **To Stewards:**
+
 - Quarterly newsletter (AI updates, tips, success stories)
 - Office hours (monthly Q&A sessions)
 - Feedback surveys (twice yearly)
@@ -508,6 +563,7 @@ The committee may establish time-limited subcommittees for specific tasks:
 ### External Reporting
 
 **To Union Members:**
+
 - Annual "AI at Union Eyes" report (plain language, transparent)
   - How AI is used
   - Benefits achieved
@@ -518,11 +574,13 @@ The committee may establish time-limited subcommittees for specific tasks:
 - FAQ updates (ongoing)
 
 **To Regulators (as required):**
+
 - GDPR/PIPEDA compliance reports
 - Labor department filings (if applicable)
 - Incident notifications (data breaches)
 
 **To Public (Transparency):**
+
 - AI Principles published on website
 - High-level AI strategy (redacted for competitive sensitivity)
 - Fairness audit summaries (anonymized)
@@ -534,6 +592,7 @@ The committee may establish time-limited subcommittees for specific tasks:
 ### Budget Authority
 
 **Committee Budget Allocation:**
+
 - **Governance Operations:** $30,000/year
   - Meeting costs, travel, technology
   - External ethicist fees
@@ -552,6 +611,7 @@ The committee may establish time-limited subcommittees for specific tasks:
 **Total Annual Budget:** $90,000
 
 **Spending Approval:**
+
 - <$5,000: Committee Chair approval
 - $5,000-$25,000: Committee vote (simple majority)
 - >$25,000: Committee vote (supermajority) + Board notification
@@ -559,10 +619,12 @@ The committee may establish time-limited subcommittees for specific tasks:
 ### Staffing Support
 
 **Dedicated Staff:**
+
 - Committee Secretary (0.2 FTE) - Meeting coordination, minutes
 - AI Governance Coordinator (0.5 FTE) - Policy management, training
 
 **Access to Expertise:**
+
 - Legal Counsel (as needed)
 - CTO and Data Science team
 - External consultants (with approval)
@@ -574,6 +636,7 @@ The committee may establish time-limited subcommittees for specific tasks:
 ### Disclosure Requirements
 
 All committee members must disclose:
+
 - Financial interests in AI vendors or competitors
 - Consulting relationships with AI companies
 - Research funding from AI industry
@@ -581,6 +644,7 @@ All committee members must disclose:
 - Any other conflicts (real or perceived)
 
 **Disclosure Timing:**
+
 - Upon joining committee
 - Annually (January)
 - Immediately when new conflict arises
@@ -588,6 +652,7 @@ All committee members must disclose:
 ### Conflict Management
 
 **Process:**
+
 1. Member discloses conflict to Committee Chair
 2. Committee discusses (without conflicted member present)
 3. Determine if conflict is:
@@ -596,6 +661,7 @@ All committee members must disclose:
    - **Unmanageable:** Member resigns or is removed
 
 **Recusal:**
+
 - Member must leave room during discussion and vote
 - Recusal recorded in minutes
 - Member cannot access related materials
@@ -607,21 +673,25 @@ All committee members must disclose:
 ### Amendment Process
 
 **Proposal:**
+
 - Any committee member can propose amendment
 - Or Union Executive Board can mandate amendment
 - Submit written proposal with rationale
 
 **Approval:**
+
 - Committee vote (supermajority: 5 of 7)
 - Union Executive Board approval
 - 30-day comment period for union staff/members
 - Final approval and publication
 
 **Amendment Frequency:**
+
 - Annual review (December strategic session)
 - Ad-hoc as needed (regulatory changes, major incidents)
 
 **Version Control:**
+
 - All amendments tracked
 - Previous versions archived
 - Change log maintained
@@ -631,11 +701,13 @@ All committee members must disclose:
 ## 11. Dissolution
 
 The AI Governance Committee may only be dissolved by:
+
 - Union Executive Board vote (supermajority)
 - Membership referendum
 - Union Eyes ceases AI operations
 
 **Transition Plan:**
+
 - 90-day wind-down period
 - Knowledge transfer to successor body
 - Archive all records
@@ -646,23 +718,24 @@ The AI Governance Committee may only be dissolved by:
 ## Approval & Signatures
 
 **Proposed By:**  
-_________________________  
+`_________________________`  
 Chief Technology Officer  
-Date: ___________
+Date: `___________`
 
 **Reviewed By:**  
-_________________________  
+`_________________________`  
 Legal Counsel  
-Date: ___________
+Date: `___________`
 
 **Approved By:**  
-_________________________  
+`_________________________`  
 Union Executive Board Chair  
-Date: ___________ (Pending)
+Date: `___________` (Pending)
 
 ---
 
 **Document Control:**
+
 - **Version:** 1.0 (Draft)
 - **Status:** Pending Board Approval
 - **Next Review:** January 1, 2027

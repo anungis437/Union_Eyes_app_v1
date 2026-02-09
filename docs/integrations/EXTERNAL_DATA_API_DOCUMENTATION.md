@@ -8,6 +8,7 @@
 ## Overview
 
 This API provides access to external labor market data for CBA enrichment:
+
 - **Statistics Canada**: Wages, union density, CPI/inflation, EI/CPP rates
 - **Provincial LRB**: Collective agreements from Ontario and BC
 - **CLC Partnership**: Per-capita benchmarks and bargaining trends
@@ -37,11 +38,13 @@ Authorization: Bearer <cron_secret>
 List available endpoints and data sources.
 
 **Query Parameters:**
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `action` | string | Action to perform |
 
 **Actions:**
+
 - `list` - List all available endpoints
 - `sync-status` - Check sync history
 - `wages` - Get wage data
@@ -50,11 +53,13 @@ List available endpoints and data sources.
 - `benchmarks` - Get stored benchmarks
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/external-data?action=list"
 ```
 
 **Response:**
+
 ```json
 {
   "endpoints": {
@@ -82,6 +87,7 @@ curl "https://api.example.com/api/external-data?action=list"
 Get wage data from Statistics Canada.
 
 **Query Parameters:**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `noc` | string | Yes | NOC code (e.g., "6513") |
@@ -89,11 +95,13 @@ Get wage data from Statistics Canada.
 | `year` | number | No | Survey year |
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/external-data?action=wages&noc=3012&geo=35&year=2024"
 ```
 
 **Response:**
+
 ```json
 {
   "wages": [
@@ -125,6 +133,7 @@ curl "https://api.example.com/api/external-data?action=wages&noc=3012&geo=35&yea
 Get union density statistics.
 
 **Query Parameters:**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `geo` | string | No | Geography code (default: "01") |
@@ -132,11 +141,13 @@ Get union density statistics.
 | `year` | number | No | Survey year |
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/external-data?action=union-density&geo=35&naics=62"
 ```
 
 **Response:**
+
 ```json
 {
   "unionDensity": [
@@ -161,6 +172,7 @@ curl "https://api.example.com/api/external-data?action=union-density&geo=35&naic
 Get cost of living adjustment data.
 
 **Query Parameters:**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `geo` | string | No | Geography code (default: "35") |
@@ -168,11 +180,13 @@ Get cost of living adjustment data.
 | `endYear` | number | No | End year (default: current year) |
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/external-data?action=cola&geo=35&startYear=2020&endYear=2024"
 ```
 
 **Response:**
+
 ```json
 {
   "cola": [
@@ -191,6 +205,7 @@ curl "https://api.example.com/api/external-data?action=cola&geo=35&startYear=202
 Trigger sync operations.
 
 **Request Body:**
+
 ```json
 {
   "action": "sync-wages",
@@ -214,6 +229,7 @@ Trigger sync operations.
 | `get-benchmarks` | Get benchmarks for CBA enrichment |
 
 **Example - Full Sync:**
+
 ```bash
 curl -X POST "https://api.example.com/api/external-data" \
   -H "Authorization: Bearer <token>" \
@@ -222,6 +238,7 @@ curl -X POST "https://api.example.com/api/external-data" \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -251,6 +268,7 @@ curl -X POST "https://api.example.com/api/external-data" \
 Search LRB agreements.
 
 **Query Parameters:**
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `action` | string | Action to perform |
@@ -263,11 +281,13 @@ Search LRB agreements.
 | `limit` | number | Results per page (default: 20) |
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/external-data/lrb?action=search&employer=Hospital&jurisdiction=ON&page=1&limit=10"
 ```
 
 **Response:**
+
 ```json
 {
   "agreements": [
@@ -299,17 +319,20 @@ curl "https://api.example.com/api/external-data/lrb?action=search&employer=Hospi
 Get wage comparisons for an occupation.
 
 **Query Parameters:**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `noc` | string | Yes | NOC occupation code |
 | `jurisdiction` | string | No | Province code |
 
 **Example:**
+
 ```bash
 curl "https://api.example.com/api/external-data/lrb?action=wage-comparison&noc=3012&jurisdiction=ON"
 ```
 
 **Response:**
+
 ```json
 {
   "nocCode": "3012",
@@ -343,6 +366,7 @@ curl "https://api.example.com/api/external-data/lrb?action=wage-comparison&noc=3
 Trigger LRB sync operations.
 
 **Request Body:**
+
 ```json
 {
   "action": "sync-all"
@@ -350,6 +374,7 @@ Trigger LRB sync operations.
 ```
 
 **Actions:**
+
 | Action | Description |
 |--------|-------------|
 | `sync-ontario` | Sync Ontario LRB agreements |
@@ -357,6 +382,7 @@ Trigger LRB sync operations.
 | `sync-all` | Sync all LRB sources |
 
 **Example:**
+
 ```bash
 curl -X POST "https://api.example.com/api/external-data/lrb" \
   -H "Authorization: Bearer <token>" \
@@ -373,11 +399,13 @@ curl -X POST "https://api.example.com/api/external-data/lrb" \
 Monthly cron job for syncing external data.
 
 **Headers:**
+
 ```
 Authorization: Bearer <cron_secret>
 ```
 
 **Response:**
+
 ```json
 {
   "timestamp": "2026-02-09T06:00:00Z",
@@ -411,6 +439,7 @@ Authorization: Bearer <cron_secret>
 ## Error Responses
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "Unauthorized"
@@ -418,6 +447,7 @@ Authorization: Bearer <cron_secret>
 ```
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "Invalid action or missing parameters"
@@ -425,6 +455,7 @@ Authorization: Bearer <cron_secret>
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "Resource not found"
@@ -432,6 +463,7 @@ Authorization: Bearer <cron_secret>
 ```
 
 ### 500 Internal Server Error
+
 ```json
 {
   "error": "Internal server error",

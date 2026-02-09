@@ -30,6 +30,7 @@ Complete guide for deploying Union Eyes in multiple AWS regions with automatic f
 ### 1. Route 53 Configuration
 
 **Health Checks:**
+
 ```json
 {
   "Type": "HTTPS",
@@ -42,6 +43,7 @@ Complete guide for deploying Union Eyes in multiple AWS regions with automatic f
 ```
 
 **DNS Record Sets:**
+
 ```json
 [
   {
@@ -73,6 +75,7 @@ Complete guide for deploying Union Eyes in multiple AWS regions with automatic f
 ### 2. RDS Multi-Region Setup
 
 **Primary Database (us-east-1):**
+
 ```bash
 aws rds create-db-instance \
   --db-instance-identifier unioneyes-prod-primary \
@@ -89,6 +92,7 @@ aws rds create-db-instance \
 ```
 
 **Read Replica (us-west-2):**
+
 ```bash
 aws rds create-db-instance-read-replica \
   --db-instance-identifier unioneyes-prod-replica-west \
@@ -98,6 +102,7 @@ aws rds create-db-instance-read-replica \
 ```
 
 **Promote to Standalone (Failover):**
+
 ```bash
 aws rds promote-read-replica \
   --db-instance-identifier unioneyes-prod-replica-west \
@@ -107,6 +112,7 @@ aws rds promote-read-replica \
 ### 3. S3 Cross-Region Replication
 
 **Create buckets:**
+
 ```bash
 # Primary bucket (us-east-1)
 aws s3 mb s3://unioneyes-assets-east --region us-east-1
@@ -116,6 +122,7 @@ aws s3 mb s3://unioneyes-assets-west --region us-west-2
 ```
 
 **Enable versioning:**
+
 ```bash
 aws s3api put-bucket-versioning \
   --bucket unioneyes-assets-east \
@@ -127,6 +134,7 @@ aws s3api put-bucket-versioning \
 ```
 
 **Setup replication:**
+
 ```json
 {
   "Role": "arn:aws:iam::123456789:role/s3-replication-role",
@@ -152,6 +160,7 @@ aws s3api put-bucket-versioning \
 ### 4. ElastiCache Redis (Global Datastore)
 
 **Primary Cluster (us-east-1):**
+
 ```bash
 aws elasticache create-replication-group \
   --replication-group-id unioneyes-redis-primary \
@@ -164,6 +173,7 @@ aws elasticache create-replication-group \
 ```
 
 **Global Datastore:**
+
 ```bash
 aws elasticache create-global-replication-group \
   --global-replication-group-id-suffix unioneyes-global \
@@ -334,11 +344,13 @@ terraform show
 ## Failover Procedures
 
 ### Automatic Failover (Route 53)
+
 1. Route 53 health checks detect failure in primary region
 2. DNS automatically routes traffic to secondary region
 3. TTL ensures quick propagation (60 seconds)
 
 ### Manual Failover
+
 ```bash
 # 1. Promote RDS replica to primary
 aws rds promote-read-replica \
@@ -361,6 +373,7 @@ kubectl rollout restart deployment/unioneyes-app -n production
 ## Monitoring & Alerts
 
 **CloudWatch Alarms:**
+
 ```bash
 # Create alarm for primary region health
 aws cloudwatch put-metric-alarm \

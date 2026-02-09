@@ -1,4 +1,5 @@
 # Union Eyes AI Strategy: Board Presentation
+
 ## January 10, 2026 Executive Board Meeting
 
 **Presenter:** Chief Technology Officer  
@@ -22,6 +23,7 @@ Presented by: [CTO Name]
 ## Slide 2: Executive Summary
 
 **Where We Are Today (December 2025):**
+
 - ✅ **35% Complete** - Foundation Phase delivered
 - ✅ **5 AI Use Cases** operational in production since November 2025
 - ✅ **90% Technology Infrastructure** built and stable
@@ -29,6 +31,7 @@ Presented by: [CTO Name]
 - ⚠️ **18% Adoption** - limited steward training and awareness
 
 **Where We're Going (Q3 2026):**
+
 - 🎯 **90% Complete** - Full operational deployment
 - 🎯 **12 Use Cases** deployed (adding 7 new capabilities)
 - 🎯 **200 Stewards** trained and certified
@@ -44,31 +47,37 @@ Presented by: [CTO Name]
 ### Operational AI Capabilities
 
 **UC-01: Claim Outcome Prediction**
+
 - Predicts win/loss probability with 85% accuracy
 - Helps stewards prioritize high-value cases
 - **Impact:** Better case selection, higher win rates
 
 **UC-02: Timeline Forecasting**
+
 - Predicts resolution timeframes (±7 days accuracy: 78%)
 - Manages member expectations proactively
 - **Impact:** Reduced member complaints, better planning
 
 **UC-03: Smart Assignment Optimization**
+
 - Matches cases to stewards by expertise and workload
 - Balances caseloads automatically
 - **Impact:** Faster assignments, reduced burnout
 
 **UC-04: Legal Precedent Search (AI Workbench)**
+
 - Semantic search across 50,000+ documents
 - Finds relevant cases in seconds vs. hours
 - **Impact:** 90%+ relevance, 4.5/5 user satisfaction
 
 **UC-05: Natural Language Data Queries**
+
 - "Show me all open grievances in Healthcare sector"
 - No SQL knowledge required
 - **Impact:** 88% query success rate, democratized data access
 
 ### Technology Stack
+
 - **Azure OpenAI Service** - GPT-4o (production), GPT-4o-mini (staging)
 - **Pinecone Vector Database** - Semantic search infrastructure
 - **Next.js 14 + React** - Modern, responsive UI
@@ -93,18 +102,21 @@ Presented by: [CTO Name]
 ### Critical Blockers
 
 **1. No AI Governance Committee** (85-point impact)
+
 - Cannot approve ethics policies without committee
 - Cannot conduct fairness audits without oversight
 - Cannot deploy advanced use cases without approval process
 - **Risk:** Ethical violations, legal liability, member backlash
 
 **2. Limited Training & Adoption** (65-point impact)
+
 - Only 20 stewards trained (10% of target)
 - 82% of stewards unaware of AI capabilities
 - No formal training curriculum (until December 2025)
 - **Risk:** Technology underutilized, ROI not realized
 
 **3. Advanced Use Cases Blocked** (70-point impact)
+
 - 7 high-value use cases require governance approval
 - Churn prediction, grievance drafting, negotiation strategy all on hold
 - $400K+ annual value waiting to be unlocked
@@ -117,6 +129,7 @@ Presented by: [CTO Name]
 ### Strategic Approach: Governance First, Then Scale
 
 **Phase 1 (Q1 2026): Foundation + Governance = 50%**
+
 - Form AI Governance Committee (Jan 15)
 - Approve 4 core policies (Ethics, Responsible AI, Risk, Incident Response)
 - Train 50 stewards (pilot program)
@@ -125,6 +138,7 @@ Presented by: [CTO Name]
 - **Budget:** $285K
 
 **Phase 2 (Q2 2026): Growth + Adoption = 70%**
+
 - Train 100 additional stewards (150 total)
 - Deploy 3 use cases (Grievance Drafting, Negotiation Strategy, Dues Optimization)
 - Conduct first fairness audit
@@ -133,6 +147,7 @@ Presented by: [CTO Name]
 - **Budget:** $312K
 
 **Phase 3 (Q3 2026): Optimization + Scale = 90%**
+
 - Train final 50 stewards (200 total)
 - Deploy 2 use cases (CBA Compliance, Multilingual pilot)
 - Achieve 60% adoption rate
@@ -193,6 +208,7 @@ Presented by: [CTO Name]
 ### Why We Need This Committee (Critical Blocker)
 
 **Without a Committee:**
+
 - ❌ Cannot approve ethics policies → Cannot deploy sensitive use cases
 - ❌ Cannot conduct fairness audits → Risk of discriminatory AI
 - ❌ Cannot review incidents → No accountability for AI failures
@@ -200,6 +216,7 @@ Presented by: [CTO Name]
 - ❌ Cannot meet regulatory requirements → Legal exposure
 
 **With a Committee:**
+
 - ✅ Ethical AI oversight → Member trust, regulatory compliance
 - ✅ Quarterly fairness audits → Zero discrimination incidents
 - ✅ Incident review and remediation → Continuous improvement
@@ -238,18 +255,21 @@ Presented by: [CTO Name]
 ### Committee Responsibilities
 
 **Strategic:**
+
 - Approve AI use case deployments (gated process)
 - Review quarterly progress against 90% Implementation Plan
 - Update AI strategy based on emerging technologies/risks
 - Report to Board quarterly
 
 **Operational:**
+
 - Review fairness audit results, approve remediation plans
 - Investigate AI incidents, approve corrective actions
 - Approve policy updates (Ethics, Responsible AI, Risk Management)
 - Monitor adoption metrics, address barriers
 
 **Compliance:**
+
 - Ensure GDPR/privacy compliance for all AI features
 - Conduct annual external audit, track remediation
 - Review regulatory changes, update policies accordingly
@@ -273,18 +293,21 @@ Presented by: [CTO Name]
 ### Q1 2026 (January - March): Foundation + Governance → 50% Complete
 
 **January:**
+
 - ✅ Form AI Governance Committee (Jan 15) - **REQUIRES BOARD APPROVAL TODAY**
 - ✅ Post ML Engineer job (Jan 13, target start Feb 1)
 - ✅ Launch steward training pilot (10 stewards, Jan 31)
 - ✅ Deploy monitoring dashboard (Feb 15)
 
 **February:**
+
 - ✅ Approve AI Ethics Policy (Feb 15)
 - ✅ Approve Responsible AI Policy (Feb 28)
 - ✅ Train 25 additional stewards (35 total)
 - ✅ Initiate external auditor RFP (fairness audit)
 
 **March:**
+
 - ✅ Hire ML Engineer (start date Mar 1)
 - ✅ Train 15 additional stewards (50 total)
 - ✅ Conduct first fairness audit (Claim Outcome Prediction)
@@ -293,17 +316,20 @@ Presented by: [CTO Name]
 ### Q2 2026 (April - June): Growth + Adoption → 70% Complete
 
 **April:**
+
 - ✅ Deploy UC-07: Churn Risk Prediction
 - ✅ Deploy UC-08: Workload Forecasting
 - ✅ Train 50 stewards (100 total)
 - ✅ Launch member communication campaign
 
 **May:**
+
 - ✅ Deploy UC-09: Grievance Drafting Assistant
 - ✅ Train 30 stewards (130 total)
 - ✅ Post Data Scientist job (target start Jun 1)
 
 **June:**
+
 - ✅ Deploy UC-10: Negotiation Strategy Assistant
 - ✅ Deploy UC-11: Dues Optimization
 - ✅ Train 20 stewards (150 total)
@@ -313,16 +339,19 @@ Presented by: [CTO Name]
 ### Q3 2026 (July - September): Optimization + Scale → 90% Complete
 
 **July:**
+
 - ✅ Deploy UC-12: CBA Compliance Monitoring
 - ✅ Train 25 stewards (175 total)
 - ✅ Hire Data Scientist (start date Jul 1)
 
 **August:**
+
 - ✅ Deploy UC-14: Multilingual Support (pilot)
 - ✅ Train 15 stewards (190 total)
 - ✅ External security audit
 
 **September:**
+
 - ✅ Train final 10 stewards (200 total)
 - ✅ Disaster recovery testing
 - ✅ Conduct Q3 fairness audit (all models)
@@ -335,12 +364,14 @@ Presented by: [CTO Name]
 ### Governance Success (95% Target)
 
 **Committee Effectiveness:**
+
 - ✅ 12 monthly meetings conducted (100% attendance)
 - ✅ 4 policies approved (Ethics, Responsible AI, Risk, Incident Response)
 - ✅ 3 fairness audits completed (Q2, Q3, external)
 - ✅ 0 critical findings unresolved
 
 **Compliance:**
+
 - ✅ 100% DPIA completion for sensitive use cases
 - ✅ 100% model explainability maintained
 - ✅ 0 discrimination complaints
@@ -350,12 +381,14 @@ Presented by: [CTO Name]
 ### Technology Success (85% Target)
 
 **Use Case Deployment:**
+
 - ✅ 12 of 15 use cases operational (80% coverage)
 - ✅ 95%+ uptime across all AI services
 - ✅ <5% data/prediction drift (PSI <0.25)
 - ✅ 85%+ model accuracy maintained
 
 **Performance:**
+
 - ✅ Response time <2 seconds (95th percentile)
 - ✅ Automated retraining pipeline live
 - ✅ Real-time monitoring dashboard operational
@@ -364,12 +397,14 @@ Presented by: [CTO Name]
 ### Adoption Success (85% Target)
 
 **Steward Engagement:**
+
 - ✅ 200 stewards trained and certified
 - ✅ 60%+ active monthly users (120+ stewards)
 - ✅ 8+ AI feature uses per steward per month
 - ✅ 80%+ training satisfaction (NPS ≥55)
 
 **Member Impact:**
+
 - ✅ 50,000+ members reached (communication campaign)
 - ✅ 70%+ member awareness of AI features
 - ✅ <5% opt-out rate (member consent)
@@ -378,12 +413,14 @@ Presented by: [CTO Name]
 ### Business Impact Success
 
 **Efficiency Gains:**
+
 - ✅ Claim resolution time <35 days (from 42 days baseline)
 - ✅ Steward productivity +40% (AI-assisted vs. non-assisted)
 - ✅ Contract negotiation prep time -50%
 - ✅ Legal research time -70%
 
 **Financial Returns:**
+
 - ✅ Positive ROI ($1.08M annual value > $912K cost)
 - ✅ Member retention ≥88% (from 85% baseline)
 - ✅ Dues collection rate +5% (arrears intervention)
@@ -392,6 +429,7 @@ Presented by: [CTO Name]
 ### Responsible AI Success (100% Target - Zero Tolerance)
 
 **Ethical Metrics:**
+
 - ✅ 0 discrimination incidents (bias-free AI)
 - ✅ 0 privacy violations (data protection working)
 - ✅ 0 security breaches (penetration testing passed)
@@ -405,15 +443,17 @@ Presented by: [CTO Name]
 ### Top 5 Risks to 90% Completion
 
 **1. Committee Formation Delay** (Likelihood: Medium, Impact: Very High)
+
 - **Risk:** Board does not approve today → 4-6 week delay → Q1 slips to Q2
 - **Impact:** Cannot approve policies, cannot deploy use cases, cascade delays
-- **Mitigation:** 
+- **Mitigation:**
   - Backup member candidates identified (ready to recruit)
   - External advisor pre-vetted (can start immediately)
   - Charter complete, ready for Day 1 meeting
 - **Ask:** Board approval today (January 10) to meet January 15 first meeting
 
 **2. Fairness Audit Failure** (Likelihood: Medium, Impact: High)
+
 - **Risk:** First audit reveals bias in Claim Outcome Prediction → model retraining required
 - **Impact:** 30-60 day delay, reputational risk, member complaints
 - **Mitigation:**
@@ -423,6 +463,7 @@ Presented by: [CTO Name]
   - Model performance monitoring (85% accuracy threshold)
 
 **3. Low Adoption (<40%)** (Likelihood: Medium, Impact: High)
+
 - **Risk:** Stewards don't use AI tools despite training → ROI not realized
 - **Impact:** $912K investment with limited business value
 - **Mitigation:**
@@ -433,6 +474,7 @@ Presented by: [CTO Name]
   - Leadership endorsement (Board, union leaders)
 
 **4. Budget Overruns** (Likelihood: Medium, Impact: Medium)
+
 - **Risk:** Use case development takes longer than estimated → cost overruns
 - **Impact:** Need additional $100K+ mid-year
 - **Mitigation:**
@@ -442,6 +484,7 @@ Presented by: [CTO Name]
   - Monthly budget reviews with CTO
 
 **5. Use Case Deployment Delays** (Likelihood: High, Impact: Medium)
+
 - **Risk:** Complex use cases (UC-09 Grievance Drafting, UC-10 Negotiation) slip schedules
 - **Impact:** Q2 milestones miss 70% target, cascade to Q3
 - **Mitigation:**
@@ -468,6 +511,7 @@ Presented by: [CTO Name]
 ### What 90% Completion Means for Stakeholders
 
 **For Members (50,000+ workers):**
+
 - ✅ Faster grievance resolution (35 days vs. 42 days)
 - ✅ More personalized support (churn risk intervention)
 - ✅ Better contract negotiations (AI-powered strategy)
@@ -475,6 +519,7 @@ Presented by: [CTO Name]
 - ✅ Privacy protected (GDPR compliance, data security)
 
 **For Stewards (200 trained):**
+
 - ✅ Less administrative work, more member time
 - ✅ Better case prioritization (focus on winnable grievances)
 - ✅ Faster legal research (seconds vs. hours)
@@ -482,6 +527,7 @@ Presented by: [CTO Name]
 - ✅ Reduced burnout (balanced workloads)
 
 **For Union Leadership:**
+
 - ✅ Data-driven strategy (workload forecasts, churn insights)
 - ✅ Competitive advantage (best-in-class union technology)
 - ✅ Member retention (88%+ vs. 85% industry average)
@@ -489,6 +535,7 @@ Presented by: [CTO Name]
 - ✅ Ethical AI leadership (model for labor movement)
 
 **For the Labor Movement:**
+
 - ✅ Proof that AI can empower workers, not just employers
 - ✅ Open-source playbook (share with other unions)
 - ✅ Policy advocacy (union perspective on AI regulation)
@@ -514,21 +561,25 @@ Presented by: [CTO Name]
 ### What This Leadership Means
 
 **1. Competitive Advantage:**
+
 - Attract new members with cutting-edge tools
 - Retain existing members with superior service
 - Benchmark: 88% retention (vs. 85% industry average) = 3% improvement = 1,500 members retained annually
 
 **2. Revenue Impact:**
+
 - 1,500 members retained × $50/month average dues = **$900K annual recurring revenue**
 - Positive ROI in Year 1, compounding in Years 2-3
 
 **3. Thought Leadership:**
+
 - Speaking opportunities at labor conferences
 - Press coverage ("The Union Leading on Ethical AI")
 - Policy influence (union perspective in AI regulation debates)
 - Recruitment advantage (attract tech-savvy organizers)
 
 **4. Collective Action:**
+
 - Share learnings with sister unions (open-source approach)
 - Build coalition for labor-focused AI standards
 - Counter employer AI surveillance with worker-empowering AI
@@ -540,6 +591,7 @@ Presented by: [CTO Name]
 ### Board Decisions Required (January 10, 2026)
 
 **1. APPROVE: AI Governance Committee Formation** ✋ **CRITICAL**
+
 - Authorize CTO to recruit 7 committee members
 - Approve committee charter (attached)
 - Authorize $50K annual committee budget
@@ -548,6 +600,7 @@ Presented by: [CTO Name]
 **Why this is urgent:** Without committee, cannot approve policies → cannot deploy use cases → Q1 milestones slip 4-6 weeks → 90% target at risk
 
 **2. APPROVE: $912K AI Implementation Budget (2026)**
+
 - Revised from $535K original budget (+$377K increase)
 - Breakdown: $285K (Q1) + $312K (Q2) + $315K (Q3)
 - Funding sources: [Budget allocations to be confirmed]
@@ -556,6 +609,7 @@ Presented by: [CTO Name]
 **Why this is necessary:** Original $535K budget was for maintenance, not growth. 90% completion requires 7 new use cases, 180 additional stewards trained, 3.2 FTE hires, external audits.
 
 **3. ENDORSE: 90% Completion Target (Q3 2026)**
+
 - Public commitment to achieving 90% by September 30, 2026
 - Quarterly Board reviews (March, June, September)
 - CTO accountability for delivery
@@ -565,23 +619,27 @@ Presented by: [CTO Name]
 ### What Happens After Approval
 
 **January 13-15 (Week 1):**
+
 - CTO recruits 7 committee members
 - ML Engineer job posted
 - Steward training pilot scheduled
 - External auditor RFP released
 
 **January 15 (Day 5):**
+
 - First AI Governance Committee meeting
 - Charter ratified
 - Q1 priorities confirmed
 - Policy review begins
 
 **January 31 (Week 4):**
+
 - 10 stewards trained (pilot complete)
 - AI Ethics Policy draft ready for committee review
 - Monitoring dashboard development 50% complete
 
 **March 31 (End of Q1):**
+
 - **50% completion achieved**
 - 50 stewards trained
 - 2 new use cases deployed
@@ -595,11 +653,13 @@ Presented by: [CTO Name]
 ### Question 1: "Why can't we do this with the original $535K budget?"
 
 **Answer:** The original budget was for **maintenance**, not **growth**. It covered:
+
 - Infrastructure costs ($150K Azure, licensing)
 - Existing staff salaries ($210K)
 - Ongoing operations ($175K)
 
 To advance from 35% → 90%, we need:
+
 - **7 new use cases** ($350K development)
 - **180 additional stewards trained** ($90K training delivery)
 - **3.2 FTE hires** ($360K prorated for 2026)
@@ -617,6 +677,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 **Scenario:** Q2 fairness audit reveals 8% bias in Claim Outcome Prediction (favoring certain demographics).
 
 **Our Response (30-day remediation):**
+
 1. **Immediate:** Suspend affected predictions, notify impacted members
 2. **Week 1:** Root cause analysis (data imbalance? feature selection? model architecture?)
 3. **Week 2-3:** Model retraining with balanced dataset, bias detection algorithms
@@ -624,6 +685,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 5. **Ongoing:** Add continuous bias monitoring, quarterly re-audits
 
 **Transparent Communication:**
+
 - Notify members: "We discovered and fixed a bias issue"
 - Explain remediation: "Here's what we did to ensure fairness"
 - Demonstrate accountability: "We're committed to ethical AI"
@@ -639,11 +701,13 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 **Answer:** Low adoption is a **risk we take seriously**. Here's our mitigation strategy:
 
 **Diagnosis (Month 3 - March 2026):**
+
 - Survey stewards: Why aren't you using AI? (Fear? Usability? Lack of value?)
 - Usage analytics: Which features are used? Which are ignored?
 - Focus groups: What would make AI more valuable to your work?
 
 **Interventions (Months 4-6):**
+
 1. **Gamification:** Leaderboards, badges, public recognition for AI usage
 2. **Champions Program:** Recruit 20 "AI evangelists" (peer influence)
 3. **Mandatory Training:** Tie AI certification to professional development requirements
@@ -653,6 +717,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 **Success Stories:** Highlight early adopters (e.g., "Steward Jane resolved 15 grievances in 30 days using AI-assisted research")
 
 **Escalation (Month 6):** If still <30%, adjust roadmap:
+
 - Pause new use case development
 - Focus 100% on adoption (UX improvements, training, communication)
 - Delay Q3 milestones until adoption reaches 40%+
@@ -666,12 +731,14 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 **Answer:** **AI is designed to augment stewards, not replace them.**
 
 **What AI Does:**
+
 - ✅ Reads 50,000 documents in seconds (legal research)
 - ✅ Predicts claim outcomes based on historical data
 - ✅ Drafts initial grievance language (steward edits)
 - ✅ Flags members at churn risk (steward intervenes)
 
 **What AI Cannot Do:**
+
 - ❌ Build trust with members (requires human empathy)
 - ❌ Navigate workplace politics (requires emotional intelligence)
 - ❌ Make ethical judgments (requires human values)
@@ -680,11 +747,13 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 
 **The Steward Role Evolution:**
 
-**Before AI:** 
+**Before AI:**
+
 - 70% administrative (paperwork, research, data entry)
 - 30% member interaction (listening, advocating, supporting)
 
-**After AI:** 
+**After AI:**
+
 - 30% administrative (review AI outputs, approve decisions)
 - 70% member interaction (more time for human connection)
 
@@ -701,24 +770,28 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 **Without Board Approval:**
 
 **Immediate (January):**
+
 - ❌ Cannot form AI Governance Committee → Cannot approve policies
 - ❌ Cannot post ML Engineer job → Hiring delayed 4-6 weeks
 - ❌ Cannot deploy advanced use cases → Stuck with 5 basic features
 - ❌ Cannot conduct fairness audits → Ethical risk exposure
 
 **Q1 2026 (January-March):**
+
 - ❌ Miss 50% completion target (remain at 35%)
 - ❌ No new use cases deployed (Churn Risk, Workload Forecasting delayed)
 - ❌ No steward training at scale (remain at 20 trained)
 - ❌ $285K Q1 budget unspent, projects paused
 
 **Q2-Q3 2026 (April-September):**
+
 - ❌ Cascade delays: Q2 slips to Q3, Q3 slips to Q4/2027
 - ❌ 90% target missed (likely finish at 45-50% by year-end)
 - ❌ Competitive disadvantage (peer unions catch up)
 - ❌ Opportunity cost: $1.08M annual value unrealized
 
 **Long-Term:**
+
 - ❌ Union Eyes loses AI leadership position in labor movement
 - ❌ Member expectations unmet (slow grievance resolution continues)
 - ❌ Recruitment/retention challenges (outdated tools)
@@ -735,6 +808,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 ### What Success Looks Like (September 30, 2026)
 
 **For the Board:**
+
 - ✅ Quarterly reports show 90% completion achieved
 - ✅ ROI demonstrated: $1.08M annual value on $912K investment
 - ✅ Zero ethical incidents (discrimination, privacy, security)
@@ -742,6 +816,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 - ✅ Union Eyes recognized as AI leader in labor movement
 
 **For Members:**
+
 - ✅ 50,000+ members benefit from AI-powered services
 - ✅ Grievances resolved 7 days faster (35 days vs. 42)
 - ✅ Personalized churn intervention (88% retention)
@@ -749,6 +824,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 - ✅ Privacy protected (GDPR-compliant, secure)
 
 **For Stewards:**
+
 - ✅ 200 stewards trained and certified
 - ✅ 60% actively using AI tools monthly
 - ✅ 40% more productive (AI-assisted vs. non-assisted)
@@ -756,6 +832,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 - ✅ Professional development (AI literacy, career advancement)
 
 **For Union Eyes:**
+
 - ✅ Competitive moat (best technology in labor movement)
 - ✅ Thought leadership (speaking, press, policy influence)
 - ✅ Talent magnet (attract tech-savvy organizers)
@@ -789,13 +866,14 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 
 **Moved by:** _________________  
 **Seconded by:** _________________  
-**Vote:** ___ For / ___ Against / ___ Abstain
+**Vote:** ***For /*** Against / ___ Abstain
 
 ---
 
 ### Next Steps (Post-Approval)
 
 **January 13-15 (Week 1):**
+
 - CTO recruits 7 committee members
 - ML Engineer job posted (LinkedIn, Indeed, union networks)
 - Steward training pilot scheduled (10 stewards, January 31)
@@ -803,17 +881,20 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 - Monitoring dashboard kickoff (4-tab design, Prometheus/Grafana)
 
 **January 15 (First Committee Meeting):**
+
 - Charter ratification
 - Q1 priorities confirmed
 - Policy review begins (Ethics, Responsible AI)
 - Fairness audit scope defined
 
 **January 31 (End of Month):**
+
 - 10 stewards trained (pilot complete, feedback collected)
 - AI Ethics Policy draft ready for committee vote (Feb 15)
 - Monitoring dashboard 50% complete (Overview + Model Performance tabs)
 
 **March 31 (Q1 Checkpoint):**
+
 - **Board Review:** 50% completion report
 - 50 stewards trained and certified
 - 2 new use cases deployed (UC-07, UC-08)
@@ -822,6 +903,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 - ML Engineer onboarded and productive
 
 **June 30 (Q2 Checkpoint):**
+
 - **Board Review:** 70% completion report
 - 150 stewards trained (cumulative)
 - 3 new use cases deployed (UC-09, UC-10, UC-11)
@@ -829,6 +911,7 @@ The $377K increase is a **strategic investment**, not a cost overrun. ROI is 118
 - Q2 fairness audit complete
 
 **September 30 (Q3 Final Checkpoint):**
+
 - **Board Review:** 90% completion ACHIEVED
 - 200 stewards trained (target met)
 - 2 final use cases deployed (UC-12, UC-14 pilot)
@@ -896,16 +979,19 @@ See [AI Risk Management Framework](./AI_RISK_MANAGEMENT.md) for complete details
 ### Appendix D: Training Schedule (200 Stewards, 9 Months)
 
 **Q1 2026 (50 stewards):**
+
 - January 31: Pilot (10 stewards)
 - February: 2 cohorts (25 stewards)
 - March: 1 cohort (15 stewards)
 
 **Q2 2026 (100 stewards):**
+
 - April: 4 cohorts (50 stewards)
 - May: 2 cohorts (30 stewards)
 - June: 1 cohort (20 stewards)
 
 **Q3 2026 (50 stewards):**
+
 - July: 2 cohorts (25 stewards)
 - August: 1 cohort (15 stewards)
 - September: 1 cohort (10 stewards)
@@ -919,6 +1005,7 @@ See [AI Risk Management Framework](./AI_RISK_MANAGEMENT.md) for complete details
 ### Appendix E: Committee Member Recruitment (Draft)
 
 **Confirmed Members (subject to availability):**
+
 1. **Chair: [CTO Name]** - Strategic direction, budget oversight
 2. **[COO Name]** - Operational impact, resource allocation
 3. **[General Counsel Name]** - Legal compliance, regulatory risk
@@ -938,11 +1025,13 @@ See [AI Risk Management Framework](./AI_RISK_MANAGEMENT.md) for complete details
 **Questions?**
 
 Contact:
+
 - **[CTO Name], Chief Technology Officer**
 - **Email:** [cto@unioneyes.org]
 - **Phone:** [xxx-xxx-xxxx]
 
 **Supporting Documents:**
+
 - 90% Implementation Plan (18,000 words)
 - AI Governance Charter (15,000 words)
 - Complete AI documentation suite (156,000 words, 12 documents)

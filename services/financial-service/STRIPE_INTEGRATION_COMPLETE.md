@@ -7,6 +7,7 @@ The Stripe integration for the financial service has been completed with full pa
 ### ✅ Completed Features
 
 #### 1. Donations Route (`src/routes/donations.ts`)
+
 - **POST /api/donations** - Create donation with Stripe payment intent
   - Amount validation (minimum $1)
   - Support for anonymous and named donations
@@ -29,6 +30,7 @@ The Stripe integration for the financial service has been completed with full pa
   - Returns donation details with fund information
 
 #### 2. Stripe SDK Integration
+
 - Initialized with API key from environment
 - Payment Intent creation with metadata
 - Webhook signature verification
@@ -36,12 +38,14 @@ The Stripe integration for the financial service has been completed with full pa
 - Email receipts via Stripe
 
 #### 3. Database Integration
+
 - Creates pending donation records on payment intent creation
 - Updates donation status based on webhook events
 - Increments strike fund balance on successful payment
 - Stores payment metadata for audit trail
 
 #### 4. Security Features
+
 - Webhook signature verification using `stripe.webhooks.constructEvent()`
 - Raw body parsing for webhook endpoint only
 - Fund validation (must be active)
@@ -50,6 +54,7 @@ The Stripe integration for the financial service has been completed with full pa
 #### 5. Testing Infrastructure
 
 **Documentation:**
+
 - `STRIPE_TESTING.md` - Comprehensive testing guide
   - Environment setup
   - Stripe CLI installation and configuration
@@ -60,6 +65,7 @@ The Stripe integration for the financial service has been completed with full pa
   - Production deployment checklist
 
 **PowerShell Scripts:**
+
 - `setup-stripe-testing.ps1` - Interactive setup wizard
   - Checks for Stripe CLI installation
   - Verifies authentication
@@ -90,30 +96,35 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 ### 🚀 Quick Start Testing
 
 1. **Install Stripe CLI**
+
    ```powershell
    scoop install stripe
    stripe login
    ```
 
 2. **Configure Environment**
+
    ```powershell
    cd services/financial-service
    .\setup-stripe-testing.ps1
    ```
 
 3. **Start Service**
+
    ```powershell
    # Terminal 1
    pnpm dev
    ```
 
 4. **Start Webhook Listener**
+
    ```powershell
    # Terminal 2
    .\start-webhook-listener.ps1
    ```
 
 5. **Run Tests**
+
    ```powershell
    # Terminal 3
    .\test-donations.ps1 -FundId "your-fund-uuid" -Amount 25.00
@@ -185,18 +196,21 @@ strike_funds (
 ### 📈 Monitoring & Debugging
 
 **Service Logs:**
+
 - Payment intent creation events
 - Webhook receipt and processing
 - Database updates
 - Error messages with full context
 
 **Stripe Dashboard:**
+
 - View all payment intents
 - Monitor webhook deliveries
 - Check failed events and retries
 - Access test mode data
 
 **Database Queries:**
+
 ```sql
 -- View recent donations
 SELECT * FROM public_donations 
@@ -220,6 +234,7 @@ FROM strike_funds;
 - **Requires Auth:** 4000 0025 0000 3155
 
 All cards use:
+
 - Expiry: Any future date (e.g., 12/34)
 - CVC: Any 3 digits (e.g., 123)
 - ZIP: Any 5 digits (e.g., 12345)

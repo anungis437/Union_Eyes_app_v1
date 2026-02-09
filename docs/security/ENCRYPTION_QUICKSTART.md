@@ -96,6 +96,7 @@ pnpm test __tests__/lib/encryption.test.ts
 ```
 
 You should see ~20 tests passing, covering:
+
 - Encryption/decryption
 - Format validation
 - Masked display
@@ -125,6 +126,7 @@ pnpm tsx scripts/migrate-sin-to-encrypted.ts
 Test encryption in the application:
 
 1. **Register a new member** with SIN:
+
 ```typescript
 import { encryptSIN } from '@/lib/encryption';
 
@@ -135,7 +137,8 @@ await db.insert(users).values({
 });
 ```
 
-2. **Generate T4A** (tax document):
+1. **Generate T4A** (tax document):
+
 ```typescript
 import { generateT4A } from '@/lib/services/strike-fund-tax-service';
 
@@ -143,7 +146,8 @@ const t4a = await generateT4A(memberId, 2025);
 console.log('T4A SIN:', t4a.recipientSIN); // Decrypted for tax document
 ```
 
-3. **Display masked SIN** in UI:
+1. **Display masked SIN** in UI:
+
 ```typescript
 import { formatSINForDisplay } from '@/lib/encryption';
 
@@ -173,22 +177,27 @@ Before deploying to production:
 ## 🆘 Troubleshooting
 
 ### "Cannot find module '@azure/keyvault-keys'"
+
 ```bash
 pnpm install -w @azure/keyvault-keys
 ```
 
 ### "Fallback encryption key must be 32 bytes"
+
 Re-run the key generator:
+
 ```bash
 pnpm tsx scripts/generate-encryption-key.ts
 ```
 
 ### "Failed to decrypt SIN"
+
 - Check FALLBACK_ENCRYPTION_KEY is in .env.local
 - Verify the key is base64 encoded
 - Check if data was encrypted with a different key
 
 ### Need more help?
+
 See [ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md) for detailed troubleshooting.
 
 ---
@@ -197,7 +206,7 @@ See [ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md) for detailed troubleshooting.
 
 - **[ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md)** - Complete encryption documentation
 - **[lib/encryption.ts](../lib/encryption.ts)** - Encryption API reference
-- **[__tests__/lib/encryption.test.ts](../__tests__/lib/encryption.test.ts)** - Test examples
+- **[**tests**/lib/encryption.test.ts](../__tests__/lib/encryption.test.ts)** - Test examples
 
 ---
 

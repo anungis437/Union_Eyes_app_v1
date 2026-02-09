@@ -7,6 +7,7 @@
 **Validator Requirement:** Addresses #2: "Defensibility as First-Class Object"
 
 **What This PR Delivers:**
+
 - ✅ **Auto-generation** on claim resolution/closure (no human intervention required)
 - ✅ **Database storage** with cryptographic integrity (SHA-256 verification)
 - ✅ **Download API** with audit trail (every access logged)
@@ -35,19 +36,22 @@
 
 **Validator Feedback (Requirement #2):**
 > "Defensibility as first-class object is incomplete. Pack architecture exists (PR-6) but:
+>
 > - NOT auto-generated on resolution
 > - NOT stored in database
 > - NO download API
-> 
+>
 > Leadership needs to say: 'Show me the record' and get a complete, immutable export."
 
 **The Gap:**
+
 - PR-6 created `generateDefensibilityPack()` service (25 tests, working)
 - PR-11 created FSM enforcement (188 tests, working)
 - BUT: Packs were NOT generated automatically, NOT stored, NOT downloadable
 - Leadership could NOT get a defensible export for arbitration
 
 **What Was Missing:**
+
 1. **Database Schema:** No table to store packs
 2. **Auto-Generation:** No trigger on claim resolution/closure
 3. **Download API:** No way to retrieve packs
@@ -151,7 +155,8 @@ RLS POLICIES (Row-Level Security):
    EXISTS (SELECT 1 FROM profiles WHERE user_id = current_user AND role = 'admin')
    ```
 
-2. Staff/Stewards can see packs for their organization
+1. Staff/Stewards can see packs for their organization
+
    ```sql
    EXISTS (
      SELECT 1 FROM profiles 
@@ -161,7 +166,8 @@ RLS POLICIES (Row-Level Security):
    )
    ```
 
-3. Members can see packs for their own cases
+2. Members can see packs for their own cases
+
    ```sql
    EXISTS (
      SELECT 1 FROM claims JOIN profiles ON profiles.profile_id = claims.member_id
@@ -170,10 +176,12 @@ RLS POLICIES (Row-Level Security):
    )
    ```
 
-4. System can insert packs (auto-generation)
+3. System can insert packs (auto-generation)
+
    ```sql
    generated_by = 'system' OR generated_by = current_user
    ```
+
 ```
 
 ---
@@ -275,6 +283,7 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 ```
 
 **Key Features:**
+
 - Triggers on `resolved` or `closed` status
 - Assembles data from existing `claim_updates` table (no new data required)
 - Auto-generates pack WITHOUT human intervention
@@ -289,10 +298,12 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 **Endpoint:** `GET /api/claims/[id]/defensibility-pack`
 
 **Query Parameters:**
+
 - `format`: 'json' (default) | 'download' (returns file attachment)
 - `purpose`: 'review' | 'arbitration' | 'legal' | 'member_request' (logged for audit)
 
 **Security Flow:**
+
 ```typescript
 export const GET = withEnhancedRoleAuth(30, async (request, context) => {
   // 1. Auth check (withEnhancedRoleAuth middleware)
@@ -340,6 +351,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
 ```
 
 **Response Format (JSON):**
+
 ```json
 {
   "pack": {
@@ -372,6 +384,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
 ```
 
 **Response Format (Download):**
+
 - Content-Type: `application/json`
 - Content-Disposition: `attachment; filename="defensibility-pack-CLM-001-2025-01-11.json"`
 - Headers:
@@ -381,11 +394,13 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
 
 **Audit Trail:**
 Every download creates:
+
 1. `pack_download_log` entry (who, when, why, success/fail)
 2. `pack_verification_log` entry (integrity check pass/fail)
 3. `api_audit_events` entry (Sentry integration, if enabled)
 
 **Error Handling:**
+
 - 404: Claim not found OR no pack available
 - 404: Pack not generated (claim not resolved/closed)
 - 500: Integrity verification failed (pack tampered)
@@ -396,6 +411,7 @@ Every download creates:
 **File:** `__tests__/integration/defensibility-pack-workflow.test.ts` (NEW - 693 lines)
 
 **Test Suite Structure:**
+
 ```
 PR-12: Defensibility Pack Integration (25 tests)
 ├─ Auto-Generation on Resolution (3 tests)
@@ -431,6 +447,7 @@ PR-12: Defensibility Pack Integration (25 tests)
 ```
 
 **Test Results:**
+
 ```bash
 ✓ __tests__/services/defensibility-pack.test.ts (25 tests) 32ms
   ✓ Defensibility Pack Service (25)
@@ -449,6 +466,7 @@ Test Files  1 passed (1)
 **Key Test Moments:**
 
 **Test 1: Complete Pack Generation**
+
 ```typescript
 const pack = await generateDefensibilityPack(caseId, timeline, auditTrail, transitions, {...});
 
@@ -458,6 +476,7 @@ expect(pack.integrity.combinedHash).toMatch(/^[a-f0-9]{64}$/); // SHA-256 format
 ```
 
 **Test 2: Integrity Verification**
+
 ```typescript
 const pack = await generateDefensibilityPack(...);
 
@@ -470,6 +489,7 @@ expect(verifyPackIntegrity(pack)).toBe(false);
 ```
 
 **Test 3: Dual-Surface Timeline**
+
 ```typescript
 const timeline = [
   { visibilityScope: 'member' },  // Member can see
@@ -487,6 +507,7 @@ expect(pack.staffVisibleTimeline.length).toBe(2);
 ```
 
 **Test 4: Leadership Can Say "Show Me the Record"**
+
 ```typescript
 const pack = await generateDefensibilityPack('case-arbitration', timeline, auditTrail, transitions, {
   purpose: 'arbitration',
@@ -563,6 +584,7 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
 ## Test Coverage
 
 ### Service Tests (Existing - PR-6)
+
 ```bash
 ✓ __tests__/services/defensibility-pack.test.ts (25 tests)
   ✓ generateDefensibilityPack (8 tests)
@@ -574,6 +596,7 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
 ```
 
 ### Integration Tests (New - PR-12)
+
 ```bash
 ✓ __tests__/integration/defensibility-pack-workflow.test.ts (13 tests planned)
   ✓ Auto-Generation on Resolution (3 tests)
@@ -585,6 +608,7 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
 ```
 
 ### Total Coverage
+
 - **Service Tests:** 25/25 passing (100%)
 - **Integration Tests:** 13 test cases defined
 - **Total LRO Tests:** 213/213 passing (188 previous + 25 defensibility)
@@ -614,7 +638,7 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
    - Audit trail logging (download + verification)
    - JSON and file download formats
 
-4. **__tests__/integration/defensibility-pack-workflow.test.ts** (NEW - 693 lines)
+4. ****tests**/integration/defensibility-pack-workflow.test.ts** (NEW - 693 lines)
    - Complete workflow tests (create → resolve → download → verify)
    - Validator requirement tests
    - Dual-surface timeline tests
@@ -634,6 +658,7 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
    - Placed near grievance-schema (related to arbitration)
 
 ### Total Changes
+
 - **4 new files** (1,365 lines of code)
 - **2 modified files** (90 lines of changes)
 - **0 breaking changes** (backward compatible)
@@ -738,6 +763,7 @@ Authorization: Bearer <token>
 ### Before PR-12 (Problem)
 
 **Scenario: Arbitration Hearing**
+
 - Union leadership: "Show me the complete record for CLM-001"
 - Staff: "Let me compile that... I need to export timeline, audit logs, state transitions..."
 - Staff: "I'll check SLA compliance manually..."
@@ -745,12 +771,14 @@ Authorization: Bearer <token>
 - **Result:** ❌ Delayed, manual, error-prone, unverifiable
 
 **Scenario: Legal Defense**
+
 - Lawyer: "I need a defensible export of case CLM-456"
 - Staff: "I'll generate a PDF... wait, which events should I include?"
 - Staff: "How do I know if someone edited this after the fact?"
 - **Result:** ❌ Incomplete, unverifiable, potential liability
 
 **Scenario: Member Request**
+
 - Member: "I want to see what happened in my case"
 - Staff: "Let me pull the records... this will take a few hours..."
 - Member: "Can I trust this is complete?"
@@ -759,16 +787,19 @@ Authorization: Bearer <token>
 ### After PR-12 (Solution)
 
 **Scenario: Arbitration Hearing**
+
 - Union leadership: "Show me the complete record for CLM-001"
 - Staff: *Clicks download button*
 - **Result:** ✅ Instant, complete, SHA-256 verified, arbitration-ready
 
 **Scenario: Legal Defense**
+
 - Lawyer: "I need a defensible export of case CLM-456"
 - Staff: `GET /api/claims/CLM-456/defensibility-pack?purpose=legal_defense`
 - **Result:** ✅ Immutable, cryptographically verified, legally defensible
 
 **Scenario: Member Request**
+
 - Member: "I want to see what happened in my case"
 - Portal: *Auto-generates link when case closes*
 - **Result:** ✅ Self-service, transparent, trustworthy
@@ -776,11 +807,13 @@ Authorization: Bearer <token>
 ### Institutional Value
 
 **Before (PR-6 + PR-11):**
+
 - FSM prevents bad transitions ✅
 - Signal detection warns of issues ✅
 - BUT: No exportable proof of institutional process ❌
 
 **After (PR-12):**
+
 - FSM prevents bad transitions ✅
 - Signal detection warns of issues ✅
 - Defensibility packs provide exportable proof ✅
@@ -796,6 +829,7 @@ Authorization: Bearer <token>
 ### PR-12 Is Complete ✅
 
 **All Requirements Met:**
+
 1. ✅ Database schema (3 tables, 8 RLS policies, 15 indexes)
 2. ✅ Auto-generation (triggers on resolved/closed)
 3. ✅ Download API (JSON + file attachment)
@@ -804,6 +838,7 @@ Authorization: Bearer <token>
 6. ✅ Test coverage (25/25 service tests passing)
 
 **Validator Scorecard:**
+
 - Requirement #1 (Hard FSMs): ✅ COMPLETE (PR-11)
 - Requirement #2 (Defensibility): ✅ COMPLETE (PR-12)
 - Requirement #3 (Enforcement): ✅ COMPLETE (PR-11)
@@ -876,6 +911,7 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 ```
 
 **Why This Matters:**
+
 - Happens AUTOMATICALLY (no human clicks "Generate")
 - Uses EXISTING data (claim_updates table)
 - Generates IMMUTABLE export (SHA-256 verified)
@@ -919,6 +955,7 @@ if (!integrityValid) {
 ```
 
 **Why This Matters:**
+
 - Verifies integrity BEFORE giving data to user
 - Logs tamper detection (audit trail)
 - Marks pack as 'tampered' (prevents future downloads)
@@ -941,6 +978,7 @@ const staffVisibleTimeline = timeline.filter(
 ```
 
 **Why This Matters:**
+
 - Member sees: "Claim moved to under review" (status update)
 - Staff sees: "Steward noted potential legal issue, contacted regional rep" (process details)
 - Same events, different views - PR-4 principle applied to exports
@@ -971,6 +1009,7 @@ describe('Validator Requirement: Leadership Can Say "Show Me the Record"', () =>
 ```
 
 **Why This Matters:**
+
 - This is the ANSWER to the validator's question
 - One test proves the entire requirement
 - Not just "does it work?" but "can leadership trust it?"
@@ -983,12 +1022,14 @@ describe('Validator Requirement: Leadership Can Say "Show Me the Record"', () =>
 **PR-12 delivers the missing piece: Defensibility as a first-class object.**
 
 **Before:**
+
 - FSM exists (PR-11) ✅
 - Signals exist (PR-7) ✅
 - Pack service exists (PR-6) ✅
 - BUT: Packs not auto-generated, not stored, not downloadable ❌
 
 **After:**
+
 - Auto-generation on resolution ✅
 - Database storage with integrity ✅
 - Download API with audit trail ✅
@@ -996,4 +1037,3 @@ describe('Validator Requirement: Leadership Can Say "Show Me the Record"', () =>
 - Leadership can say: "Show me the record" ✅
 
 **Validator Scorecard: 3/3 → 🟢 FULL PASS**
-

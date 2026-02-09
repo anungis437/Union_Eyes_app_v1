@@ -33,21 +33,25 @@ Option 4 delivers comprehensive security, compliance, and transparency logging a
 ### Files Modified by Category
 
 **Authentication & Authorization** (2 files):
+
 - OAuth callback handlers (Google, Microsoft Calendar)
 - State validation and CSRF detection
 - Integration success tracking
 
 **PII Data Access** (4 files):
+
 - Claims management (list, create, update, delete)
 - Member profiles (self-access, profile-by-ID)
 - Complete data access audit trails
 
 **Financial Operations** (3 files):
+
 - Dues payment session creation
 - Strike fund management (list, create)
 - Stipend calculations
 
 **Democratic Operations** (4 files):
+
 - Voting session management (list, create)
 - Vote casting (anonymous tracking)
 - Results retrieval
@@ -71,11 +75,13 @@ Option 4 delivers comprehensive security, compliance, and transparency logging a
 **Pattern**: Log all authentication successes and security issues with full context.
 
 **Use Cases**:
+
 - OAuth integration success
 - State parameter mismatches (CSRF detection)
 - Authentication failures
 
 **Example Implementation** (OAuth Callback Success):
+
 ```typescript
 // Log successful OAuth integration
 logger.info('Google Calendar OAuth integration successful', {
@@ -89,6 +95,7 @@ logger.info('Google Calendar OAuth integration successful', {
 ```
 
 **Example Implementation** (CSRF Detection):
+
 ```typescript
 // Log OAuth state parameter mismatch - potential CSRF attack
 logger.warn('OAuth state parameter mismatch - potential CSRF attack', {
@@ -102,6 +109,7 @@ logger.warn('OAuth state parameter mismatch - potential CSRF attack', {
 ```
 
 **Security Context Fields**:
+
 - `userId` - User performing authentication
 - `organizationId` - Tenant context
 - `provider` - OAuth provider (google, microsoft)
@@ -115,12 +123,14 @@ logger.warn('OAuth state parameter mismatch - potential CSRF attack', {
 **Pattern**: Log all read/write operations on sensitive data (claims, profiles) with resource identifiers.
 
 **Use Cases**:
+
 - Claims list retrieval
 - Single claim access
 - Claim creation/update/deletion
 - Member profile access/updates
 
 **Example Implementation** (Claims List Access):
+
 ```typescript
 // Log PII data access - claims list retrieved
 logger.info('Claims data accessed - list retrieval', {
@@ -137,6 +147,7 @@ logger.info('Claims data accessed - list retrieval', {
 ```
 
 **Example Implementation** (Claim Creation):
+
 ```typescript
 // Log PII data access - new claim created
 logger.info('Claims data accessed - record created', {
@@ -154,6 +165,7 @@ logger.info('Claims data accessed - record created', {
 ```
 
 **Example Implementation** (Member Profile Update):
+
 ```typescript
 // Log PII data access - member profile updated
 logger.info('Member data accessed - profile updated', {
@@ -169,6 +181,7 @@ logger.info('Member data accessed - profile updated', {
 ```
 
 **Security Context Fields**:
+
 - `userId` - User accessing data
 - `organizationId` - Tenant context
 - `resourceId` - Specific claim/member ID
@@ -185,12 +198,14 @@ logger.info('Member data accessed - profile updated', {
 **Pattern**: Log all financial operations with amounts, transaction types, and full audit context.
 
 **Use Cases**:
+
 - Dues payment session creation
 - Strike fund creation
 - Strike fund data access
 - Stipend calculations
 
 **Example Implementation** (Dues Payment):
+
 ```typescript
 // Log financial transaction - dues payment session created
 logger.info('Financial transaction initiated - dues payment', {
@@ -208,6 +223,7 @@ logger.info('Financial transaction initiated - dues payment', {
 ```
 
 **Example Implementation** (Strike Fund Creation):
+
 ```typescript
 // Log financial transaction - strike fund created
 logger.info('Financial transaction - strike fund created', {
@@ -228,6 +244,7 @@ logger.info('Financial transaction - strike fund created', {
 ```
 
 **Example Implementation** (Stipend Calculation):
+
 ```typescript
 // Log financial transaction - stipend calculated
 logger.info('Financial transaction - stipend calculated', {
@@ -245,6 +262,7 @@ logger.info('Financial transaction - stipend calculated', {
 ```
 
 **Security Context Fields**:
+
 - `userId` - User initiating transaction
 - `organizationId` - Tenant context
 - `amount` / `stipendAmount` / `targetAmount` - Financial amounts
@@ -262,11 +280,13 @@ logger.info('Financial transaction - stipend calculated', {
 **Pattern**: Log democratic operations while preserving voter anonymity. Track sessions, vote counts, and results without revealing individual voter identities.
 
 **Use Cases**:
+
 - Voting session creation
 - Vote casting (anonymous)
 - Results retrieval
 
 **Example Implementation** (Session Creation):
+
 ```typescript
 // Log voting transparency - session created
 logger.info('Voting session created', {
@@ -289,6 +309,7 @@ logger.info('Voting session created', {
 ```
 
 **Example Implementation** (Vote Casting - Anonymity Protected):
+
 ```typescript
 // Log voting transparency - vote cast (without revealing voter identity if anonymous)
 logger.info('Vote cast in voting session', {
@@ -307,6 +328,7 @@ logger.info('Vote cast in voting session', {
 ```
 
 **Example Implementation** (Results Access):
+
 ```typescript
 // Log voting transparency - results accessed
 logger.info('Voting results accessed', {
@@ -329,6 +351,7 @@ logger.info('Voting results accessed', {
 ```
 
 **Security Context Fields**:
+
 - `userId` - Only for session creation/results access (NOT for vote casting if anonymous)
 - `sessionId` - Voting session identifier
 - `voterIdentifier` - 'anonymous' or userId based on session settings
@@ -349,14 +372,17 @@ logger.info('Voting results accessed', {
 ### Authentication & Authorization
 
 #### 1. `app/api/calendar-sync/google/callback/route.ts`
+
 **Purpose**: OAuth callback handler for Google Calendar integration
 
 **Changes Made**:
+
 - Added OAuth state validation logging (CSRF detection)
 - Added successful integration logging with full context
 - Included IP address and correlation ID tracking
 
 **Logger Statements Added**: 2
+
 - State mismatch warning (CSRF detection)
 - Integration success info
 
@@ -365,14 +391,17 @@ logger.info('Voting results accessed', {
 ---
 
 #### 2. `app/api/calendar-sync/microsoft/callback/route.ts`
+
 **Purpose**: OAuth callback handler for Microsoft Outlook Calendar integration
 
 **Changes Made**:
+
 - Added OAuth state validation logging (CSRF detection)
 - Added successful integration logging with full context
 - Consistent pattern with Google implementation
 
 **Logger Statements Added**: 2
+
 - State mismatch warning (CSRF detection)
 - Integration success info
 
@@ -383,13 +412,16 @@ logger.info('Voting results accessed', {
 ### PII Data Access
 
 #### 3. `app/api/claims/route.ts`
+
 **Purpose**: Claims list and creation endpoint
 
 **Changes Made**:
+
 - Added logging for claims list retrieval with filters and record counts
 - Added logging for new claim creation with claim type and anonymity flag
 
 **Logger Statements Added**: 2
+
 - GET: Claims list access with filter context
 - POST: Claim creation with claim details
 
@@ -398,14 +430,17 @@ logger.info('Voting results accessed', {
 ---
 
 #### 4. `app/api/claims/[id]/route.ts`
+
 **Purpose**: Single claim access, update, and deletion
 
 **Changes Made**:
+
 - Added logging for single claim retrieval with update count
 - Added logging for claim updates with fields modified
 - Added logging for claim deletion (soft delete) with previous status
 
 **Logger Statements Added**: 3
+
 - GET: Single claim access
 - PATCH: Claim update with field changes
 - DELETE: Claim deletion (soft delete)
@@ -415,13 +450,16 @@ logger.info('Voting results accessed', {
 ---
 
 #### 5. `app/api/members/me/route.ts`
+
 **Purpose**: Current user profile access and update
 
 **Changes Made**:
+
 - Added logging for member profile retrieval with statistics
 - Added logging for profile updates with fields modified
 
 **Logger Statements Added**: 2
+
 - GET: Profile retrieval with claim statistics
 - PATCH: Profile update with field changes
 
@@ -430,13 +468,16 @@ logger.info('Voting results accessed', {
 ---
 
 #### 6. `app/api/members/[id]/route.ts`
+
 **Purpose**: Member profile access by ID (steward/admin)
 
 **Changes Made**:
+
 - Added logging for member profile access by ID
 - Included requesting user ID and target member ID for audit trail
 
 **Logger Statements Added**: 1
+
 - GET: Profile access by ID
 
 **Security Context**: requestingUserId, targetMemberId, organizationId, membershipNumber, operation, dataType, correlationId, ipAddress
@@ -446,13 +487,16 @@ logger.info('Voting results accessed', {
 ### Financial Operations
 
 #### 7. `app/api/portal/dues/pay/route.ts`
+
 **Purpose**: Dues payment session creation (Stripe)
 
 **Changes Made**:
+
 - Added logging for payment session creation with amount and provider
 - Included Stripe session ID for transaction tracking
 
 **Logger Statements Added**: 1
+
 - POST: Payment session created
 
 **Security Context**: userId, sessionId, amount, currency, paymentType, transactionType, provider, correlationId, ipAddress
@@ -460,14 +504,17 @@ logger.info('Voting results accessed', {
 ---
 
 #### 8. `app/api/strike/funds/route.ts`
+
 **Purpose**: Strike fund management (list and create)
 
 **Changes Made**:
+
 - Added logging for strike fund list retrieval with count
 - Added logging for strike fund creation with target amounts and status
 - Fixed error handling to avoid double JSON parsing
 
 **Logger Statements Added**: 2
+
 - GET: Strike funds list access
 - POST: Strike fund creation
 
@@ -476,13 +523,16 @@ logger.info('Voting results accessed', {
 ---
 
 #### 9. `app/api/strike/stipends/route.ts`
+
 **Purpose**: Strike stipend calculation
 
 **Changes Made**:
+
 - Added logging for stipend calculations with amount and date range
 - Fixed error handling to avoid double JSON parsing
 
 **Logger Statements Added**: 1
+
 - POST: Stipend calculation
 
 **Security Context**: userId, strikeFundId, memberId, stipendAmount, transactionType, dataType, correlationId, ipAddress
@@ -492,13 +542,16 @@ logger.info('Voting results accessed', {
 ### Voting & Democratic Operations
 
 #### 10. `app/api/voting/sessions/route.ts`
+
 **Purpose**: Voting session management (list and create)
 
 **Changes Made**:
+
 - Added logging for voting sessions list access (with/without stats)
 - Added logging for voting session creation with settings
 
 **Logger Statements Added**: 3
+
 - GET: Sessions list (basic)
 - GET: Sessions list with statistics
 - POST: Session creation
@@ -508,14 +561,17 @@ logger.info('Voting results accessed', {
 ---
 
 #### 11. `app/api/voting/sessions/[id]/vote/route.ts`
+
 **Purpose**: Vote casting endpoint
 
 **Changes Made**:
+
 - Added logger import
 - Added logging for vote casting with anonymity protection
 - Voter identity protected when anonymous voting enabled
 
 **Logger Statements Added**: 1
+
 - POST: Vote cast (anonymity preserved)
 
 **Security Context**: sessionId, voteId, optionId, voterIdentifier (anonymous or userId), operation, dataType, correlationId, ipAddress
@@ -525,13 +581,16 @@ logger.info('Voting results accessed', {
 ---
 
 #### 12. `app/api/voting/sessions/[id]/results/route.ts`
+
 **Purpose**: Voting results retrieval
 
 **Changes Made**:
+
 - Added logger import
 - Added logging for results access with statistics
 
 **Logger Statements Added**: 1
+
 - GET: Results access
 
 **Security Context**: userId, sessionId, totalVotes, turnoutPercentage, quorumMet, operation, dataType, correlationId, ipAddress
@@ -552,12 +611,14 @@ All enhanced logger statements include comprehensive security context fields:
 ### Category-Specific Fields
 
 #### Authentication
+
 - `userId` - User performing authentication
 - `organizationId` - Tenant context
 - `provider` - OAuth provider (google, microsoft)
 - `connectionId` - Integration identifier
 
 #### PII Data Access
+
 - `userId` - User accessing data
 - `organizationId` - Tenant context
 - `resourceId` - Claim/member identifier
@@ -566,6 +627,7 @@ All enhanced logger statements include comprehensive security context fields:
 - `fieldsModified` - Updated field names
 
 #### Financial Operations
+
 - `userId` - User initiating transaction
 - `organizationId` - Tenant context
 - `amount` / `stipendAmount` - Financial values
@@ -574,6 +636,7 @@ All enhanced logger statements include comprehensive security context fields:
 - `provider` - Payment provider
 
 #### Voting Operations
+
 - `userId` - User creating/viewing sessions (NOT for vote casting if anonymous)
 - `sessionId` - Voting session identifier
 - `voterIdentifier` - 'anonymous' or userId
@@ -588,16 +651,19 @@ All enhanced logger statements include comprehensive security context fields:
 ### 1. Real-Time Alerts
 
 **Security Incidents**:
+
 - CSRF detection (OAuth state mismatch) → Immediate alert
 - Rate limit violations (5+ in 10 minutes) → Warning alert
 - Unauthorized access attempts → Security team notification
 
 **Financial Anomalies**:
+
 - Large payment amounts (> $10,000) → Review required
 - Multiple payment failures → Fraud detection
 - Stipend calculation errors → Finance team notification
 
 **Democratic Integrity**:
+
 - Vote casting outside session hours → Session validation alert
 - Quorum not met → Organizer notification
 - Results access before closing → Audit log
@@ -605,21 +671,25 @@ All enhanced logger statements include comprehensive security context fields:
 ### 2. Dashboard Metrics
 
 **Authentication**:
+
 - OAuth integration success rate (target: >95%)
 - CSRF attack attempts per day
 - Integration volume by provider
 
 **PII Access**:
+
 - Claims access frequency by user
 - Profile updates per day
 - Anonymous claim ratio
 
 **Financial**:
+
 - Payment session success rate
 - Strike fund creation volume
 - Stipend calculation errors
 
 **Voting**:
+
 - Active voting sessions count
 - Vote turnout percentage by session
 - Quorum achievement rate
@@ -627,16 +697,19 @@ All enhanced logger statements include comprehensive security context fields:
 ### 3. Compliance Reporting
 
 **SOC2 Audit Trails**:
+
 - Query logs by `dataType: 'PII'` or `dataType: 'FINANCIAL'`
 - Filter by date range and operation type
 - Export to CSV for auditor review
 
 **GDPR Data Access Reports**:
+
 - User-specific access logs (`userId: <target>`)
 - Profile update history (`operation: 'UPDATE_PROFILE'`)
 - Deletion events (`operation: 'DELETE'`)
 
 **HIPAA Compliance** (if applicable):
+
 - PII access audit trails
 - IP address tracking for all sensitive operations
 - Correlation ID for request tracing
@@ -652,23 +725,27 @@ All enhanced logger statements include comprehensive security context fields:
 ### Manual Testing Checklist
 
 **Authentication Logging**:
+
 - [ ] OAuth callback success logged
 - [ ] State mismatch logged (CSRF test)
 - [ ] IP address captured
 - [ ] Correlation ID captured
 
 **PII Logging**:
+
 - [ ] Claims list access logged
 - [ ] Claim creation logged
 - [ ] Profile update logged with field changes
 - [ ] Operation type correct (READ_LIST, CREATE, UPDATE, DELETE)
 
 **Financial Logging**:
+
 - [ ] Payment session creation logged with amount
 - [ ] Strike fund creation logged
 - [ ] Stipend calculation logged
 
 **Voting Logging**:
+
 - [ ] Session creation logged
 - [ ] Vote casting logged (anonymity preserved)
 - [ ] Results access logged
@@ -711,6 +788,7 @@ describe('Claims Logging', () => {
 **Implementation Plan**:
 
 1. **Wrapper Creation** (`lib/security-audit-wrapper.ts`):
+
 ```typescript
 import { securityAuditService } from '@court-lens/auth';
 import { logger } from './logger';
@@ -734,12 +812,14 @@ export async function logDataAccess(event: DataAccessParams) {
 }
 ```
 
-2. **Gradual Migration**:
+1. **Gradual Migration**:
+
 - Replace `logger.info()` calls with `logDataAccess()` wrapper
 - Start with high-priority endpoints (Claims, Members)
 - Maintain backward compatibility with existing logger
 
-3. **Benefits**:
+1. **Benefits**:
+
 - Structured audit log storage (Supabase RPC)
 - Automatic risk level calculation
 - Compliance-ready reporting (SOC2, GDPR, HIPAA)
@@ -791,16 +871,19 @@ Option 4 successfully enhances logging infrastructure across 13 critical API end
 ### Next Steps
 
 **Immediate**:
+
 - Deploy to staging environment
 - Validate log output format
 - Test monitoring dashboard integration
 
 **Short-term** (1-2 weeks):
+
 - Extend logging to remaining API endpoints (140+ files)
 - Implement automated alerting rules
 - Create compliance reporting scripts
 
 **Long-term** (1-3 months):
+
 - Migrate to security audit service (`@court-lens/auth`)
 - Implement log aggregation (ELK/DataDog)
 - Build real-time monitoring dashboards

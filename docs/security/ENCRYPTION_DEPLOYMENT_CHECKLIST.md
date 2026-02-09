@@ -21,7 +21,7 @@ Complete checklist for deploying the SIN encryption system to Union Eyes.
   - SIN-specific functions
   - Audit logging
 
-- [x] **__tests__/lib/encryption.test.ts** - Test suite (380 lines)
+- [x] ****tests**/lib/encryption.test.ts** - Test suite (380 lines)
   - 20+ comprehensive tests
   - Encryption/decryption validation
   - Performance benchmarks
@@ -139,6 +139,7 @@ psql $DATABASE_URL -f db/migrations/068_add_encrypted_pii_fields.sql
 ```
 
 **Verify**:
+
 ```sql
 SELECT column_name, data_type 
 FROM information_schema.columns 
@@ -148,6 +149,7 @@ WHERE table_schema = 'user_management'
 ```
 
 Should show:
+
 - `encrypted_sin` (text)
 - `encrypted_ssn` (text)
 - `encrypted_bank_account` (text)
@@ -209,6 +211,7 @@ az ad sp create-for-rbac \
 ```
 
 Save output:
+
 - `appId` → `AZURE_CLIENT_ID`
 - `password` → `AZURE_CLIENT_SECRET`
 - `tenant` → `AZURE_TENANT_ID`
@@ -237,6 +240,7 @@ pnpm encrypt:test
 ```
 
 **Verify**:
+
 - Azure Key Vault connection works
 - Encryption/decryption successful
 - Performance acceptable (< 50ms)
@@ -251,6 +255,7 @@ pnpm encrypt:test
 4. **Review audit logs**
 
 **Test Cases**:
+
 ```typescript
 // 1. Encrypt on registration
 const encrypted = await encryptSIN('123-456-789');
@@ -348,16 +353,19 @@ pnpm db:migrate                     # Apply database migration
 ### Common Issues
 
 **"Cannot find module '@azure/keyvault-keys'"**
+
 ```bash
 pnpm install -w @azure/keyvault-keys
 ```
 
 **"Fallback encryption key must be 32 bytes"**
+
 ```bash
 pnpm encrypt:generate-key
 ```
 
 **"Failed to decrypt SIN"**
+
 - Check `FALLBACK_ENCRYPTION_KEY` in .env.local
 - Verify Azure Key Vault credentials
 - Ensure data was encrypted with correct key
@@ -376,8 +384,9 @@ pnpm encrypt:generate-key
 ## 📝 Files Changed
 
 **Created (11 files)**:
+
 - lib/encryption.ts
-- __tests__/lib/encryption.test.ts
+- **tests**/lib/encryption.test.ts
 - db/migrations/068_add_encrypted_pii_fields.sql
 - scripts/generate-encryption-key.ts
 - scripts/test-encryption-system.ts
@@ -388,6 +397,7 @@ pnpm encrypt:generate-key
 - docs/ENCRYPTION_DEPLOYMENT_CHECKLIST.md (this file)
 
 **Modified (5 files)**:
+
 - db/schema/users-schema.ts (added encrypted fields)
 - db/schema/user-management-schema.ts (added encrypted fields)
 - lib/services/strike-fund-tax-service.ts (added decryption)

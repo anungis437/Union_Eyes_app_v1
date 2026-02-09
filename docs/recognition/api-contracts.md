@@ -5,10 +5,12 @@
 ### Admin Routes
 
 #### `POST /api/recognition/programs`
+
 Create a new recognition program.
 
 **Auth**: Admin role required  
 **Request**:
+
 ```typescript
 {
   name: string;
@@ -19,6 +21,7 @@ Create a new recognition program.
 ```
 
 **Response**:
+
 ```typescript
 {
   id: string;
@@ -35,10 +38,12 @@ Create a new recognition program.
 ---
 
 #### `POST /api/recognition/award-types`
+
 Create a new award type template.
 
 **Auth**: Admin role required  
 **Request**:
+
 ```typescript
 {
   program_id: string;
@@ -55,10 +60,12 @@ Create a new award type template.
 ---
 
 #### `POST /api/recognition/awards`
+
 Create a new award request.
 
 **Auth**: Admin or designated issuer  
 **Request**:
+
 ```typescript
 {
   program_id: string;
@@ -74,6 +81,7 @@ Create a new award request.
 ---
 
 #### `POST /api/recognition/awards/:id/approve`
+
 Approve a pending award.
 
 **Auth**: Admin role required  
@@ -82,10 +90,12 @@ Approve a pending award.
 ---
 
 #### `POST /api/recognition/awards/:id/issue`
+
 Issue an approved award (writes to wallet ledger).
 
 **Auth**: Admin role required  
-**Response**: 
+**Response**:
+
 ```typescript
 {
   award: AwardObject;
@@ -97,10 +107,12 @@ Issue an approved award (writes to wallet ledger).
 ---
 
 #### `POST /api/recognition/awards/:id/revoke`
+
 Revoke an issued award (negative ledger entry).
 
 **Auth**: Admin role required  
 **Request**:
+
 ```typescript
 {
   reason: string;
@@ -112,10 +124,12 @@ Revoke an issued award (negative ledger entry).
 ---
 
 #### `POST /api/rewards/budgets`
+
 Create a budget envelope.
 
 **Auth**: Admin role required  
 **Request**:
+
 ```typescript
 {
   program_id: string;
@@ -134,15 +148,18 @@ Create a budget envelope.
 ---
 
 #### `GET /api/rewards/reports/summary`
+
 Get organization-wide recognition and redemption summary.
 
 **Auth**: Admin role required  
 **Query Params**:
+
 - `start_date`: ISO 8601
 - `end_date`: ISO 8601
 - `program_id?`: Filter by program
 
 **Response**:
+
 ```typescript
 {
   total_credits_issued: number;
@@ -166,14 +183,17 @@ Get organization-wide recognition and redemption summary.
 ### Member Routes
 
 #### `GET /api/rewards/wallet`
+
 Get current user's wallet balance and recent ledger entries.
 
 **Auth**: Authenticated user  
 **Query Params**:
+
 - `limit?`: Number of ledger entries (default: 20)
 - `offset?`: Pagination offset
 
 **Response**:
+
 ```typescript
 {
   balance: number;
@@ -195,10 +215,12 @@ Get current user's wallet balance and recent ledger entries.
 ---
 
 #### `POST /api/rewards/redemptions/initiate`
+
 Initiate a redemption request.
 
 **Auth**: Authenticated user  
 **Request**:
+
 ```typescript
 {
   program_id: string;
@@ -211,6 +233,7 @@ Initiate a redemption request.
 ```
 
 **Response**:
+
 ```typescript
 {
   redemption_id: string;
@@ -222,6 +245,7 @@ Initiate a redemption request.
 ```
 
 **Errors**:
+
 - `400`: Insufficient balance
 - `400`: Invalid program or disabled Shopify integration
 - `422`: Budget constraints violated
@@ -229,14 +253,17 @@ Initiate a redemption request.
 ---
 
 #### `GET /api/rewards/redemptions`
+
 Get current user's redemption history.
 
 **Auth**: Authenticated user  
 **Query Params**:
+
 - `limit?`: Default 20
 - `offset?`: Pagination
 
 **Response**:
+
 ```typescript
 {
   redemptions: {
@@ -259,10 +286,12 @@ Get current user's redemption history.
 ### Outbound (Union Eyes → Shopify)
 
 #### Storefront API: Fetch Curated Collections
+
 **Endpoint**: `https://{shop_domain}/api/2024-01/graphql.json`  
 **Auth**: `X-Shopify-Storefront-Access-Token: {storefront_token}`
 
 **GraphQL Query**:
+
 ```graphql
 query GetCuratedCollections($handles: [String!]!) {
   collections(first: 10, query: "handle IN [\"{handles}\"]") {
@@ -307,16 +336,19 @@ query GetCuratedCollections($handles: [String!]!) {
 ```
 
 **Union Eyes Mapping**:
+
 - `shopify_config.allowed_collections` → filter collections by handle/ID
 - Display products with credit conversion (1 credit = $1 CAD)
 
 ---
 
 #### Admin API: Create Discount Code (Checkout Method)
+
 **Endpoint**: `POST https://{shop_domain}/admin/api/2024-01/price_rules.json`  
 **Auth**: `X-Shopify-Access-Token: {admin_token}`
 
 **Request**:
+
 ```json
 {
   "price_rule": {
@@ -335,6 +367,7 @@ query GetCuratedCollections($handles: [String!]!) {
 ```
 
 **Then Create Discount Code**:
+
 ```json
 {
   "discount_code": {
@@ -344,7 +377,7 @@ query GetCuratedCollections($handles: [String!]!) {
 }
 ```
 
-**Checkout URL**: 
+**Checkout URL**:
 `https://{shop_domain}/discount/UE{redemption_id}`
 
 ---
@@ -352,13 +385,16 @@ query GetCuratedCollections($handles: [String!]!) {
 ### Inbound (Shopify → Union Eyes)
 
 #### Webhook: `POST /api/integrations/shopify/webhooks/orders_paid`
+
 **Headers**:
+
 - `X-Shopify-Hmac-Sha256`: HMAC signature
 - `X-Shopify-Topic`: `orders/paid`
 - `X-Shopify-Shop-Domain`: `shop-moi-ca.myshopify.com`
 - `X-Shopify-Webhook-Id`: Unique ID for idempotency
 
 **Payload** (simplified):
+
 ```json
 {
   "id": 123456789,
@@ -377,6 +413,7 @@ query GetCuratedCollections($handles: [String!]!) {
 ```
 
 **Processing Logic**:
+
 1. Verify HMAC signature
 2. Check idempotency (`webhook_receipts.webhook_id`)
 3. Extract `redemption_id` from discount code
@@ -388,10 +425,12 @@ query GetCuratedCollections($handles: [String!]!) {
 ---
 
 #### Webhook: `POST /api/integrations/shopify/webhooks/orders_fulfilled`
+
 **Headers**: Same as above  
 **Topic**: `orders/fulfilled`
 
 **Processing Logic**:
+
 1. Verify + idempotency check
 2. Update `reward_redemptions.status = 'fulfilled'`
 3. Emit analytics event
@@ -399,10 +438,12 @@ query GetCuratedCollections($handles: [String!]!) {
 ---
 
 #### Webhook: `POST /api/integrations/shopify/webhooks/refunds_create`
+
 **Headers**: Same as above  
 **Topic**: `refunds/create`
 
 **Payload**:
+
 ```json
 {
   "id": 987654321,
@@ -418,6 +459,7 @@ query GetCuratedCollections($handles: [String!]!) {
 ```
 
 **Processing Logic**:
+
 1. Verify + idempotency
 2. Find `reward_redemptions` by `provider_order_id`
 3. Update status to `'refunded'`
@@ -430,10 +472,12 @@ query GetCuratedCollections($handles: [String!]!) {
 ## Security
 
 ### HMAC Signature Verification (Shopify)
+
 **Algorithm**: SHA256  
 **Secret**: From `shopify_config.webhook_secret_ref`
 
 **Verification**:
+
 ```typescript
 import crypto from 'crypto';
 
@@ -452,9 +496,11 @@ function verifyShopifyWebhook(body: string, hmacHeader: string, secret: string):
 ---
 
 ### Idempotency
+
 **Key**: `X-Shopify-Webhook-Id`  
 **Storage**: `webhook_receipts` table  
 **Check**:
+
 ```typescript
 const existing = await db.query.webhookReceipts.findFirst({
   where: eq(webhookReceipts.webhookId, webhookId)
@@ -468,6 +514,7 @@ if (existing) {
 ---
 
 ## Rate Limiting
+
 - `/api/rewards/redemptions/initiate`: 5 requests/minute per user (Upstash Redis)
 - Admin endpoints: 30 requests/minute per org
 - Webhook endpoints: No rate limit (trusted source after HMAC verification)
@@ -477,6 +524,7 @@ if (existing) {
 ## Error Handling
 
 ### Standard Error Response
+
 ```typescript
 {
   error: string; // Human-readable message
@@ -486,6 +534,7 @@ if (existing) {
 ```
 
 ### Common Error Codes
+
 - `INSUFFICIENT_BALANCE`: User doesn't have enough credits
 - `BUDGET_EXCEEDED`: Budget envelope exhausted
 - `UNAUTHORIZED`: Not authenticated

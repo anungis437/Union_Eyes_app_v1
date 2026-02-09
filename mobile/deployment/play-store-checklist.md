@@ -393,20 +393,20 @@ fastlane android release
 
 ## Resources
 
-- **Play Console**: https://play.google.com/console
-- **Developer Policy**: https://play.google.com/about/developer-content-policy/
-- **Design Guidelines**: https://material.io/design
-- **Android Developers**: https://developer.android.com/distribute
-- **Academy**: https://play.google.com/academy
+- **Play Console**: <https://play.google.com/console>
+- **Developer Policy**: <https://play.google.com/about/developer-content-policy/>
+- **Design Guidelines**: <https://material.io/design>
+- **Android Developers**: <https://developer.android.com/distribute>
+- **Academy**: <https://play.google.com/academy>
 
 ## Support
 
 For internal support:
 
-- Email: dev@unioneyes.com
+- Email: <dev@unioneyes.com>
 - Slack: #mobile-deployment
 
 For Google support:
 
-- Developer Support: https://support.google.com/googleplay/android-developer
+- Developer Support: <https://support.google.com/googleplay/android-developer>
 - Policy Questions: Use Play Console support

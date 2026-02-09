@@ -23,11 +23,13 @@ These foundational principles govern all AI development, deployment, and usage a
 AI systems must perform consistently, accurately, and reliably in union contexts. Predictions and recommendations must be based on sound data and validated methodologies.
 
 #### Union Context
+
 Labor unions make high-stakes decisions affecting workers' livelihoods, careers, and rights. AI predictions about grievance outcomes, member churn, or settlement values must be trustworthy and accurate, or they risk harming the very members they're meant to serve.
 
 #### Requirements
 
 **Accuracy Standards:**
+
 - ✅ Claim outcome predictions: ≥85% accuracy
 - ✅ Timeline forecasts: ±7 days for 80% of predictions
 - ✅ Precedent search: ≥90% relevance score
@@ -35,6 +37,7 @@ Labor unions make high-stakes decisions affecting workers' livelihoods, careers,
 - ✅ Recommendation acceptance rate: ≥70%
 
 **Validation Protocols:**
+
 - **Pre-Deployment:** Backtesting on historical data (minimum 1,000 cases)
 - **Post-Deployment:** Monthly accuracy monitoring against actual outcomes
 - **A/B Testing:** Compare AI recommendations vs. control group outcomes
@@ -42,6 +45,7 @@ Labor unions make high-stakes decisions affecting workers' livelihoods, careers,
 - **Failure Analysis:** Root cause analysis for all predictions with <50% confidence
 
 **Model Monitoring:**
+
 - Real-time performance dashboards
 - Alerting for accuracy degradation >5%
 - Model drift detection (statistical tests on input distributions)
@@ -49,12 +53,14 @@ Labor unions make high-stakes decisions affecting workers' livelihoods, careers,
 - Annual third-party audits of model performance
 
 #### Success Metrics
+
 - Prediction accuracy meets or exceeds targets: ✅ Yes / ❌ No
 - User-reported accuracy issues: <10 per quarter
 - Model retraining frequency: At least quarterly
 - Validation test pass rate: 100%
 
 #### Accountability
+
 - **Model Owner:** CTO and Data Science Team
 - **Validation Reviewer:** AI Governance Committee
 - **Escalation:** Union Executive Board for persistent accuracy issues
@@ -67,11 +73,13 @@ Labor unions make high-stakes decisions affecting workers' livelihoods, careers,
 Clear ownership and responsibility for AI decisions must be established. Every AI output must be traceable, auditable, and reviewable by humans.
 
 #### Union Context
+
 When a grievance is lost or a member receives poor advice, there must be clear accountability. AI cannot be a "black box" that shields humans from responsibility. Stewards, staff, and members need to know who made decisions and why.
 
 #### Requirements
 
 **Decision Ownership:**
+
 - **AI Recommendations:** System generates suggestions, humans make final decisions
 - **Critical Decisions:** Grievance filings, settlement acceptance, legal strategy → Human approval required
 - **Routine Tasks:** Data queries, document summaries → AI autonomous with human review option
@@ -79,6 +87,7 @@ When a grievance is lost or a member receives poor advice, there must be clear a
 
 **Audit Trail:**
 Every AI interaction must log:
+
 - Timestamp and user ID
 - Input data provided to AI
 - AI output (prediction, recommendation, summary)
@@ -89,6 +98,7 @@ Every AI interaction must log:
 **Retention:** 3 years for operational decisions, 7 years for legal matters
 
 **Review Process:**
+
 - **Level 1:** Steward reviews AI recommendations in real-time
 - **Level 2:** Supervisors spot-check 10% of AI-assisted decisions monthly
 - **Level 3:** AI Governance Committee reviews aggregate AI performance quarterly
@@ -108,12 +118,14 @@ Every AI interaction must log:
 | Data queries | Execute | Spot check | User |
 
 #### Success Metrics
+
 - 100% of critical decisions have human approval
 - Audit trail completeness: 100%
 - Quarterly review completion: On-time
 - User satisfaction with accountability: ≥4.0/5.0
 
 #### Accountability
+
 - **Process Owner:** Chief Technology Officer
 - **Compliance Monitor:** Data Privacy Officer
 - **Escalation:** Legal Counsel for compliance violations
@@ -126,10 +138,13 @@ Every AI interaction must log:
 AI systems must treat all members equitably, without discrimination based on protected characteristics. Active bias detection and mitigation are mandatory.
 
 #### Union Context
+
 Unions exist to fight discrimination and ensure fair treatment. AI that perpetuates bias—whether in grievance predictions, steward assignments, or resource allocation—betrays core union values and violates labor law.
 
 #### Protected Attributes
+
 AI systems must not discriminate based on:
+
 - Age
 - Gender/Gender identity
 - Race/Ethnicity
@@ -157,12 +172,14 @@ AI systems must not discriminate based on:
 **Bias Detection Protocol:**
 
 **Quarterly Fairness Audits:**
+
 - Analyze AI outputs by demographic segments
 - Statistical tests for disparate impact (4/5ths rule)
 - Compare AI recommendations vs. actual outcomes by group
 - Test for intersectional bias (e.g., race + gender)
 
 **Audit Process:**
+
 1. **Data Collection:** Extract AI predictions and outcomes for past quarter
 2. **Segmentation:** Group by protected attributes (with privacy safeguards)
 3. **Statistical Analysis:** Chi-square tests, regression analysis, disparate impact ratios
@@ -195,6 +212,7 @@ AI systems must not discriminate based on:
 **Incident Response:**
 
 When bias is detected:
+
 1. **Immediate:** Flag affected predictions for human review
 2. **Short-term (24 hours):** Notify affected members and stewards
 3. **Medium-term (7 days):** Deploy model hotfix or rollback
@@ -202,6 +220,7 @@ When bias is detected:
 5. **Transparency:** Public report on bias incident and remediation
 
 #### Success Metrics
+
 - Zero substantiated discrimination complaints
 - Fairness audits pass rate: 100%
 - Disparate impact ratio: ≥0.80 for all protected groups
@@ -209,6 +228,7 @@ When bias is detected:
 - Remediation time: <30 days from detection to fix
 
 #### Accountability
+
 - **Fairness Officer:** Data Science Lead
 - **Audit Executor:** External third-party (annual)
 - **Escalation:** AI Governance Committee → Union Executive Board
@@ -221,6 +241,7 @@ When bias is detected:
 AI systems must be secure from malicious attacks, protect member data, and fail safely without causing harm.
 
 #### Union Context
+
 Union data is a target for adversaries: employers seeking bargaining intelligence, anti-union groups, or bad actors wanting to disrupt operations. AI systems must be hardened against attacks and data breaches.
 
 #### Requirements
@@ -260,6 +281,7 @@ Union data is a target for adversaries: employers seeking bargaining intelligenc
 | **Adversarial Examples** | Medium | Adversarial training, input validation, confidence thresholds |
 
 **Rate Limiting:**
+
 - API requests: 100 per minute per user
 - Natural language queries: 20 per minute per user
 - Prediction requests: 50 per hour per user
@@ -268,26 +290,31 @@ Union data is a target for adversaries: employers seeking bargaining intelligenc
 **Incident Response Plan:**
 
 **Phase 1 - Detection (0-1 hour):**
+
 - Automated alerting for security anomalies
 - Security Operations Center (SOC) notified
 - Initial triage and severity assessment
 
 **Phase 2 - Containment (1-4 hours):**
+
 - Isolate affected systems
 - Preserve evidence for forensics
 - Implement temporary mitigations
 
 **Phase 3 - Eradication (4-24 hours):**
+
 - Remove threat actor access
 - Patch vulnerabilities
 - Reset compromised credentials
 
 **Phase 4 - Recovery (24-72 hours):**
+
 - Restore systems from clean backups
 - Validate data integrity
 - Resume operations with enhanced monitoring
 
 **Phase 5 - Lessons Learned (1-2 weeks):**
+
 - Root cause analysis
 - Update security controls
 - Staff training on new threats
@@ -295,12 +322,14 @@ Union data is a target for adversaries: employers seeking bargaining intelligenc
 
 **Safe Failure:**
 AI systems must fail gracefully:
+
 - Default to human decision-making if AI unavailable
 - Degrade gracefully (disable predictions, keep core functions)
 - Never expose raw data or system internals in error messages
 - Log all failures for post-incident analysis
 
 #### Success Metrics
+
 - Security incidents: 0 per year
 - Penetration test pass rate: 100%
 - Mean time to detect (MTTD): <15 minutes
@@ -308,6 +337,7 @@ AI systems must fail gracefully:
 - Security training completion: 100% of staff annually
 
 #### Accountability
+
 - **Security Owner:** Chief Information Security Officer (CISO)
 - **Incident Commander:** CTO
 - **Escalation:** Union Executive Board for major breaches
@@ -320,6 +350,7 @@ AI systems must fail gracefully:
 Member data must be protected with the highest standards of privacy, confidentiality, and control. Members have rights to access, correct, and delete their data.
 
 #### Union Context
+
 Union members trust their union with sensitive information: workplace grievances, health issues, financial struggles, family situations. This trust is sacred. AI processing must preserve absolute confidentiality.
 
 #### Requirements
@@ -346,6 +377,7 @@ Union members trust their union with sensitive information: workplace grievances
 | Voice-to-text intake | Explicit (opt-in) | Yes |
 
 **Consent Collection:**
+
 - Clear, plain-language explanations
 - Granular choices (not all-or-nothing)
 - Easy withdrawal process
@@ -399,24 +431,28 @@ Union members trust their union with sensitive information: workplace grievances
    - Cryptographic protocols for privacy-preserving analytics
 
 **Tenant Isolation:**
+
 - Each union's data in separate database schemas
 - No cross-union queries allowed
 - Application-layer enforcement + database-level constraints
 - Regular audits of data access logs
 
 **Third-Party Data Sharing:**
+
 - **Prohibited:** Selling or renting member data
 - **Allowed with Consent:** Research partnerships, legal requirements
 - **Data Processing Agreements:** Required for all vendors with data access
 - **Vendor Audits:** Annual compliance reviews
 
 **Compliance:**
+
 - **GDPR (European members):** Full compliance
 - **PIPEDA (Canadian members):** Full compliance
 - **State Privacy Laws:** California CPRA, Virginia VCDPA, Colorado CPA
 - **Sector-Specific:** HIPAA (health data), Gramm-Leach-Bliley (financial data)
 
 #### Success Metrics
+
 - Privacy violations: 0 per year
 - Data subject access request (DSAR) response time: <30 days (100%)
 - Consent collection rate: ≥80% for opt-in features
@@ -425,6 +461,7 @@ Union members trust their union with sensitive information: workplace grievances
 - Third-party audit pass rate: 100%
 
 #### Accountability
+
 - **Privacy Owner:** Data Privacy Officer
 - **Compliance Monitor:** Legal Counsel
 - **Escalation:** Regulatory authorities (if breach), Union Executive Board
@@ -437,6 +474,7 @@ Union members trust their union with sensitive information: workplace grievances
 AI decisions must be understandable to stewards and members. No "black box" AI. Systems must explain their reasoning in plain language.
 
 #### Union Context
+
 Stewards need to explain AI recommendations to members. Members have a right to understand decisions affecting them. Transparency builds trust and enables informed consent.
 
 #### Requirements
@@ -469,6 +507,7 @@ Stewards need to explain AI recommendations to members. Members have a right to 
 **Transparency Requirements:**
 
 **Model Documentation:**
+
 - Algorithm type (e.g., "Gradient Boosted Decision Trees")
 - Training data description (size, date range, sources)
 - Features used (and features explicitly excluded)
@@ -477,12 +516,14 @@ Stewards need to explain AI recommendations to members. Members have a right to 
 - Last retraining date
 
 **User-Facing Transparency:**
+
 - AI usage indicators: "🤖 AI-Generated" labels
 - Ability to view AI reasoning for any prediction
 - Access to model documentation (simplified version)
 - "How does this work?" help links
 
 **Organizational Transparency:**
+
 - Public AI Principles document (this document)
 - Annual AI Impact Report
 - Fairness audit summaries (anonymized)
@@ -500,6 +541,7 @@ Stewards need to explain AI recommendations to members. Members have a right to 
 | Natural language queries | Query translation + results provenance |
 
 **Human-in-the-Loop:**
+
 - Users can request human review of any AI decision
 - AI explanations must be reviewable by humans
 - Stewards can override AI with documented justification
@@ -507,23 +549,27 @@ Stewards need to explain AI recommendations to members. Members have a right to 
 **Training & Education:**
 
 **Steward Training:**
+
 - 4-hour workshop: "Understanding AI Tools"
 - Topics: How AI works (simplified), reading explanations, when to trust AI, escalation
 - Certification required for AI feature access
 
 **Member Education:**
+
 - FAQ document: "How Union Eyes Uses AI"
 - Video tutorials (3-5 minutes each)
 - Help center articles with screenshots
 - Live Q&A sessions (quarterly)
 
 **Transparency Metrics:**
+
 - Explanation quality rating (user survey): ≥4.0/5.0
 - "How does this work?" link clicks: Track usage
 - AI literacy improvement: Pre/post training tests
 - Member trust in AI: ≥70% favorable (annual survey)
 
 #### Success Metrics
+
 - Explanation availability: 100% of AI outputs
 - User comprehension rate: ≥80% (tested via quizzes)
 - Training completion: 100% of stewards before AI access
@@ -531,6 +577,7 @@ Stewards need to explain AI recommendations to members. Members have a right to 
 - "AI is understandable" rating: ≥4.0/5.0
 
 #### Accountability
+
 - **Explainability Owner:** Product Manager (AI Features)
 - **Training Coordinator:** Learning & Development Lead
 - **Escalation:** AI Governance Committee
@@ -554,6 +601,7 @@ Occasionally, principles may conflict (e.g., explainability vs. accuracy, privac
 6. **Documentation:** Record decision and rationale
 
 **Example Conflict:**
+
 - **Scenario:** Churn prediction requires detailed member behavior data (validity), but this seems invasive (privacy)
 - **Resolution:** Implement differential privacy (add noise), obtain explicit consent, allow opt-out, limit data retention to 1 year
 - **Outcome:** Balance achieved—model still accurate enough, privacy protected
@@ -576,6 +624,7 @@ Before deploying any AI feature:
 - [ ] **Governance Approval:** AI Governance Committee sign-off obtained
 
 **Compliance Verification:**
+
 - Quarterly self-assessments by feature teams
 - Annual third-party audits
 - Incident-triggered reviews (if principle violation suspected)
@@ -593,6 +642,7 @@ These principles are living guidelines, not static rules. We commit to:
 - **Research Integration:** Stay current with AI ethics research
 
 **Feedback Channels:**
+
 - AI Governance Committee meetings (quarterly)
 - Member surveys (annual)
 - Incident reports (ongoing)

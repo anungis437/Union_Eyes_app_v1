@@ -3,6 +3,7 @@
 ## 🚀 Getting Started (New Developers)
 
 ### 1. Initial Setup
+
 ```powershell
 # Clone the repo
 git clone <repo-url>
@@ -20,6 +21,7 @@ cp .env.example .env
 ```
 
 ### 2. Verify Security Setup
+
 ```bash
 # Check for tracked secrets (should be empty)
 git ls-files | Select-String '\.env'
@@ -39,17 +41,20 @@ git restore --staged .env
 ## 🛡️ Daily Development Checklist
 
 ### Before Starting Work
+
 - [ ] Pull latest changes: `git pull origin main`
 - [ ] Verify `.env` is in `.gitignore`
 - [ ] Check `.env` has all required variables
 
 ### When Adding New API Routes
+
 - [ ] Wrap handler with `withApiAuth()` (unless public webhook/health check)
 - [ ] Add to `PUBLIC_API_ROUTES` if intentionally public
 - [ ] Run auth scanner: `pnpm tsx scripts/scan-api-auth.ts`
 - [ ] Test route with/without authentication
 
 **Example:**
+
 ```typescript
 // app/api/my-new-route/route.ts
 import { withApiAuth } from '@/lib/api-auth-guard';
@@ -61,18 +66,21 @@ export const GET = withApiAuth(async (request, { user, userId }) => {
 ```
 
 ### Before Committing
+
 - [ ] Run `git status` - verify no `.env` files staged
 - [ ] Run `git diff --cached` - review changes for secrets
 - [ ] Pre-commit hook will auto-check (don't disable it!)
 - [ ] If hook blocks commit, investigate and fix
 
 ### Before Pushing
+
 - [ ] All tests pass: `pnpm test`
 - [ ] TypeScript compiles: `pnpm tsc --noEmit`
 - [ ] Build succeeds: `pnpm build`
 - [ ] Auth scanner shows no regression
 
 ### Before Creating PR
+
 - [ ] CI checks pass (6 security jobs)
 - [ ] No merge conflicts
 - [ ] PR description mentions security implications (if any)
@@ -85,11 +93,13 @@ export const GET = withApiAuth(async (request, { user, userId }) => {
 ### "Pre-commit hook blocked my commit!"
 
 **Issue:** Tried to commit `.env` file
+
 ```
 ❌ COMMIT REJECTED: .env file detected!
 ```
 
 **Solution:**
+
 ```bash
 # Remove from staging
 git restore --staged .env
@@ -108,12 +118,15 @@ git commit -m "your message"
 **Issue:** Missing authentication wrapper
 
 **Solution:**
+
 1. Check if route is wrapped with `withApiAuth`:
+
    ```typescript
    export const GET = withApiAuth(async (request, { user }) => { ... });
    ```
 
 2. If intentionally public (webhook), add to allowlist:
+
    ```typescript
    // lib/api-auth-guard.ts
    const PUBLIC_API_ROUTES = new Set([
@@ -122,6 +135,7 @@ git commit -m "your message"
    ```
 
 3. Verify Clerk is configured correctly in `.env`:
+
    ```
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
    CLERK_SECRET_KEY=sk_...
@@ -134,6 +148,7 @@ git commit -m "your message"
 **Issue:** Gitleaks detected a secret in your commit
 
 **Solution:**
+
 ```bash
 # View the commit that failed
 git show <commit-hash>
@@ -156,6 +171,7 @@ git push --force
 **Issue:** Added new route without authentication
 
 **Solution:**
+
 ```bash
 # Run scanner locally
 pnpm tsx scripts/scan-api-auth.ts
@@ -177,6 +193,7 @@ pnpm tsx scripts/scan-api-auth.ts
 **Issue:** Build depends on local files not in repo
 
 **Solution:**
+
 ```dockerfile
 # ❌ BAD: Copies from local machine
 COPY .next ./.next
@@ -186,6 +203,7 @@ COPY --from=builder /app/.next ./.next
 ```
 
 **Test locally:**
+
 ```bash
 # Build should succeed using only repo contents
 docker build -f Dockerfile -t test:local .
@@ -298,6 +316,7 @@ const results = await db
 ## 📊 Security Scanning Commands
 
 ### Comprehensive Security Check
+
 ```bash
 # Run all security checks locally before pushing
 pnpm tsx scripts/scan-api-auth.ts   # API auth coverage
@@ -307,6 +326,7 @@ docker build -f Dockerfile -t test . # Build reproducibility
 ```
 
 ### API Auth Scanner (Detailed Output)
+
 ```bash
 pnpm tsx scripts/scan-api-auth.ts
 
@@ -324,6 +344,7 @@ pnpm tsx scripts/scan-api-auth.ts
 ```
 
 ### Dependency Audit
+
 ```bash
 # Check for vulnerabilities
 pnpm audit
@@ -336,6 +357,7 @@ pnpm audit --fix
 ```
 
 ### Secret Detection (Local)
+
 ```bash
 # Check staged files for secrets (pre-commit does this automatically)
 git diff --cached | Select-String -Pattern "(password|secret|api[_-]?key)"
@@ -352,6 +374,7 @@ git grep -i "password\|secret\|api_key" -- ':!*.md'
 ## 🔧 Troubleshooting Tools
 
 ### Check Git Tracking Status
+
 ```bash
 # List all tracked files (should NOT include .env)
 git ls-files
@@ -367,6 +390,7 @@ git diff --cached --name-only
 ```
 
 ### Verify .gitignore Works
+
 ```bash
 # Create test .env file
 echo "TEST=123" > .env.test
@@ -381,6 +405,7 @@ git restore --staged .env.test 2>$null
 ```
 
 ### Test Pre-Commit Hook
+
 ```bash
 # Hook should be at: .git/hooks/pre-commit
 Test-Path .git/hooks/pre-commit  # Should be True
@@ -396,6 +421,7 @@ rm .env.fail-test
 ```
 
 ### Check CI Status
+
 ```bash
 # View recent workflow runs
 gh run list --workflow=security-checks.yml
@@ -412,16 +438,19 @@ gh run rerun <run-id>
 ## 📞 Emergency Contacts
 
 ### Security Issues
+
 - **Exposed Secrets:** Immediately notify DevOps team, rotate credentials
 - **Unauthorized Access:** Contact security team, audit logs
 - **Data Breach Suspected:** Escalate to management immediately
 
 ### Code Review Requests
+
 - **Auth Changes:** Require security team review
 - **API Changes:** Require backend lead review
 - **Dockerfile Changes:** Require DevOps review
 
 ### Resources
+
 - **Security Documentation:** `docs/SECURITY_POSTURE.md`
 - **API Auth Guard Code:** `lib/api-auth-guard.ts`
 - **Setup Script:** `scripts/setup-security.ps1`

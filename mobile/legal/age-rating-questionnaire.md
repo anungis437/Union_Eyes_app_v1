@@ -79,7 +79,7 @@ This is the lowest age rating, indicating the app is suitable for all ages.
 
 #### Contact Information
 
-- Email: support@unioneyes.com
+- Email: <support@unioneyes.com>
 - Phone: 1-800-UNION-EYE
 
 #### Violence
@@ -166,7 +166,7 @@ This is the lowest age rating, indicating the app is suitable for all ages.
 - Union membership details
 - Claim information
 
-**Privacy Policy URL:** https://unioneyes.com/privacy
+**Privacy Policy URL:** <https://unioneyes.com/privacy>
 
 ### Expected Age Ratings
 
@@ -325,9 +325,9 @@ Before submitting age rating questionnaire:
 
 ### Rating Boards
 
-- **ESRB (USA):** https://www.esrb.org/
-- **PEGI (Europe):** https://pegi.info/
-- **IARC (Global):** https://www.globalratings.com/
+- **ESRB (USA):** <https://www.esrb.org/>
+- **PEGI (Europe):** <https://pegi.info/>
+- **IARC (Global):** <https://www.globalratings.com/>
 
 ---
 
@@ -337,13 +337,13 @@ For questions about age ratings:
 
 **Internal:**
 
-- Email: dev@unioneyes.com
+- Email: <dev@unioneyes.com>
 - Slack: #mobile-deployment
 
 **External:**
 
-- Apple Developer Support: https://developer.apple.com/support/
-- Google Play Support: https://support.google.com/googleplay/android-developer
+- Apple Developer Support: <https://developer.apple.com/support/>
+- Google Play Support: <https://support.google.com/googleplay/android-developer>
 
 ---
 

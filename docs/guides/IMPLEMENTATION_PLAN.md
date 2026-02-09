@@ -18,6 +18,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 ## 📊 Current State Analysis
 
 ### ✅ Completed (97%)
+
 - **Infrastructure:** 100% - Multi-tenant, security, database, API
 - **Claims Management:** 95% - Core workflows, notifications, search
 - **CBA Intelligence:** 90% - Clause library, precedents, sharing
@@ -27,6 +28,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 - **Build System:** 100% - Zero errors, 189 pages generated
 
 ### ⚠️ Incomplete (3%)
+
 - **Accessibility:** 19 form labels, 2 button texts
 - **Member Portal:** Dashboard incomplete, document upload missing
 - **Dues Management:** Calculation engine partial, payment flow incomplete
@@ -42,12 +44,14 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 **Team:** 1-2 developers
 
 ### Task 1.1: Accessibility Fixes (Priority: CRITICAL)
+
 **Estimated Time:** 1-2 days  
 **Files Affected:** 7 components
 
-#### Components to Fix:
+#### Components to Fix
 
 1. **`app/[locale]/dashboard/settings/page.tsx`** (16 issues)
+
    ```typescript
    // Fix missing labels on inputs
    - Add aria-label or title to all <input> elements (lines 208, 220, 325, 331, 359, 386, 402, 418, 525, 552, 582, 599, 626, 642)
@@ -57,36 +61,42 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 2. **`components/strike/StrikeFundDashboard.tsx`** (1 issue)
+
    ```typescript
    // Line 175: Add aria-label to select
    <select aria-label="Select strike fund">
    ```
 
 3. **`components/organizing/DensityHeatMap.tsx`** (1 issue)
+
    ```typescript
    // Line 157: Add aria-label to select
    <select aria-label="Filter by workplace">
    ```
 
 4. **`components/equity/SelfIdentificationForm.tsx`** (2 issues)
+
    ```typescript
    // Lines 219, 276: Add aria-label to selects
    <select aria-label="Select demographic category">
    ```
 
 5. **`components/tax/T4AGenerationDashboard.tsx`** (1 issue)
+
    ```typescript
    // Line 97: Add aria-label to select
    <select aria-label="Select tax year">
    ```
 
 6. **`components/payment-success-popup.tsx`** (1 issue)
+
    ```typescript
    // Line 240: Add accessible text to button
    <button aria-label="Close payment success dialog">
    ```
 
 **Deliverables:**
+
 - [ ] All 19 form inputs have labels or aria-labels
 - [ ] All 2 buttons have discernible text
 - [ ] WCAG 2.1 AA compliance validated
@@ -95,12 +105,14 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 ---
 
 ### Task 1.2: CSS Cleanup (Priority: HIGH)
+
 **Estimated Time:** 4-6 hours  
 **Files Affected:** 4 components
 
-#### Fixes Required:
+#### Fixes Required
 
 1. **`app/[locale]/dashboard/settings/page.tsx`** (3 conflicts)
+
    ```typescript
    // Lines 468, 485, 501: Remove 'block' class (keep 'flex')
    // Before:
@@ -110,6 +122,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 2. **`components/organization/organization-tree.tsx`** (1 inline style)
+
    ```typescript
    // Line 219: Move inline style to CSS module or Tailwind
    // Create: components/organization/organization-tree.module.css
@@ -119,6 +132,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 3. **`components/organizing/CampaignTracker.tsx`** (3 inline styles)
+
    ```typescript
    // Lines 157, 169, 181: Move negative left positions to CSS
    // Consider using Tailwind's arbitrary values or CSS module
@@ -126,6 +140,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 **Deliverables:**
+
 - [ ] Zero CSS conflict warnings
 - [ ] All inline styles moved to modules or Tailwind
 - [ ] Build passes linting checks
@@ -133,10 +148,12 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 ---
 
 ### Task 1.3: Member Portal Dashboard Completion (Priority: CRITICAL)
+
 **Estimated Time:** 2-3 days  
 **Files Affected:** Portal pages, API routes
 
-#### Current State:
+#### Current State
+
 ```
 ✅ Layout and navigation (100%)
 ✅ Profile page with edit mode (100%)
@@ -148,9 +165,10 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 ❌ Notifications center (0%)
 ```
 
-#### Implementation Steps:
+#### Implementation Steps
 
 1. **Complete Dashboard Stats Integration**
+
    ```typescript
    // File: app/[locale]/portal/page.tsx
    
@@ -185,6 +203,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 2. **Complete Dues Balance API**
+
    ```typescript
    // File: app/api/portal/dues/balance/route.ts
    
@@ -223,6 +242,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 3. **Document Upload Implementation**
+
    ```typescript
    // File: app/[locale]/portal/documents/page.tsx
    
@@ -248,6 +268,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 **Deliverables:**
+
 - [ ] Dashboard shows real member statistics
 - [ ] Dues balance calculates from database
 - [ ] Document upload works with Vercel Blob
@@ -256,10 +277,12 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 ---
 
 ### Task 1.4: Dues Calculation Engine Completion (Priority: CRITICAL)
+
 **Estimated Time:** 3-4 days  
 **Files Affected:** Financial service, API routes, database functions
 
-#### Current State:
+#### Current State
+
 ```
 ✅ Database schema (100%)
 ✅ Dues rules table (100%)
@@ -271,9 +294,10 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 ❌ RL-1 generation (0%)
 ```
 
-#### Implementation Steps:
+#### Implementation Steps
 
 1. **Complete Calculation Functions**
+
    ```sql
    -- File: database/migrations/functions/calculate_member_dues.sql
    
@@ -352,6 +376,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 2. **Monthly Batch Processing**
+
    ```typescript
    // File: app/api/cron/monthly-dues-calculation/route.ts
    
@@ -415,6 +440,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 3. **RL-1 Generation (Quebec Tax Slip)**
+
    ```typescript
    // File: services/financial-service/src/services/rl1-generation.ts
    
@@ -486,6 +512,7 @@ This plan outlines the remaining work to achieve 100% feature completion across 
    ```
 
 **Deliverables:**
+
 - [ ] Complete calculation engine for all 5 types
 - [ ] Monthly batch processing cron job
 - [ ] RL-1 generation for Quebec members
@@ -501,9 +528,11 @@ This plan outlines the remaining work to achieve 100% feature completion across 
 **Team:** 2-3 developers
 
 ### Task 2.1: Messages System (Priority: MEDIUM)
+
 **Estimated Time:** 4-5 days
 
-#### Implementation:
+#### Implementation
+
 ```typescript
 // Database Schema
 // File: database/migrations/020_messaging_system.sql
@@ -600,6 +629,7 @@ export default function MessagesPage() {
 ```
 
 **Deliverables:**
+
 - [ ] Database schema for messaging
 - [ ] API routes for conversations and messages
 - [ ] Real-time message updates
@@ -609,9 +639,11 @@ export default function MessagesPage() {
 ---
 
 ### Task 2.2: Notifications Center (Priority: MEDIUM)
+
 **Estimated Time:** 2-3 days
 
-#### Implementation:
+#### Implementation
+
 ```typescript
 // File: app/[locale]/portal/notifications/page.tsx
 
@@ -681,6 +713,7 @@ export default function NotificationsPage() {
 ```
 
 **Deliverables:**
+
 - [ ] Notifications page with filtering
 - [ ] Mark as read functionality
 - [ ] Real-time notification updates
@@ -690,11 +723,13 @@ export default function NotificationsPage() {
 ---
 
 ### Task 2.3: External Monitoring Setup (Priority: HIGH)
+
 **Estimated Time:** 1-2 days
 
-#### Tools to Integrate:
+#### Tools to Integrate
 
 1. **UptimeRobot** (Free tier)
+
    ```yaml
    # Monitor URLs
    monitors:
@@ -716,6 +751,7 @@ export default function NotificationsPage() {
    ```
 
 2. **Better Stack** (formerly Logtail)
+
    ```typescript
    // File: lib/monitoring.ts
    
@@ -741,6 +777,7 @@ export default function NotificationsPage() {
    ```
 
 3. **Performance Dashboard**
+
    ```typescript
    // File: app/[locale]/dashboard/admin/monitoring/page.tsx
    
@@ -777,6 +814,7 @@ export default function NotificationsPage() {
    ```
 
 **Deliverables:**
+
 - [ ] UptimeRobot monitoring configured
 - [ ] Better Stack log aggregation
 - [ ] Performance dashboard for admins
@@ -792,9 +830,11 @@ export default function NotificationsPage() {
 **Team:** Full team
 
 ### Task 3.1: Mobile Responsive Optimization
+
 **Estimated Time:** 5-7 days
 
-#### Areas to Optimize:
+#### Areas to Optimize
+
 - Dashboard layouts (grid to stack)
 - Table views (horizontal scroll or card view)
 - Forms (full-width on mobile)
@@ -804,9 +844,11 @@ export default function NotificationsPage() {
 ---
 
 ### Task 3.2: Multi-Language Support
+
 **Estimated Time:** 3-4 days
 
-#### Implementation:
+#### Implementation
+
 ```typescript
 // Already have i18n infrastructure
 // File: messages/fr-CA.json (expand)
@@ -829,6 +871,7 @@ export default function NotificationsPage() {
 ```
 
 **Deliverables:**
+
 - [ ] Complete French translations
 - [ ] Language switcher in portal
 - [ ] Locale-aware date/number formatting
@@ -837,9 +880,11 @@ export default function NotificationsPage() {
 ---
 
 ### Task 3.3: Advanced Analytics
+
 **Estimated Time:** 2 weeks
 
-#### Features:
+#### Features
+
 - Predictive claim outcomes (ML model)
 - Member churn risk analysis
 - Financial forecasting
@@ -853,6 +898,7 @@ export default function NotificationsPage() {
 ### Automated Testing Strategy
 
 #### Unit Tests
+
 ```typescript
 // File: __tests__/lib/dues-calculation.test.ts
 
@@ -880,6 +926,7 @@ describe('Dues Calculation Engine', () => {
 ```
 
 #### Integration Tests
+
 ```typescript
 // File: __tests__/api/portal/dues.test.ts
 
@@ -897,6 +944,7 @@ describe('Dues API', () => {
 ```
 
 #### E2E Tests (Playwright)
+
 ```typescript
 // File: e2e/portal/dues-payment.spec.ts
 
@@ -956,6 +1004,7 @@ test('member can pay dues', async ({ page }) => {
   - [ ] Alert routing tested
 
 ### Environment Variables
+
 ```env
 # Portal & API
 DATABASE_URL=postgresql://...
@@ -987,12 +1036,14 @@ CRON_SECRET=...
 ## 📊 Success Metrics
 
 ### Launch Metrics (Week 1)
+
 - [ ] Zero critical errors in Sentry
 - [ ] 99.9% uptime
 - [ ] <100ms average response time
 - [ ] All pilot users onboarded successfully
 
 ### Growth Metrics (Month 1)
+
 - [ ] 90% user adoption rate
 - [ ] 50+ claims submitted
 - [ ] $10,000+ dues collected
@@ -1024,21 +1075,25 @@ CRON_SECRET=...
 ## 📅 Timeline Summary
 
 ### Week 1: Critical Fixes
+
 - Days 1-2: Accessibility fixes
 - Days 3-4: Member portal completion
 - Days 5-7: Dues calculation engine
 
 ### Week 2: Portal Features
+
 - Days 1-3: Messages system
 - Days 4-5: Notifications center
 - Days 6-7: Testing and bug fixes
 
 ### Week 3: Monitoring & Polish
+
 - Days 1-2: External monitoring setup
 - Days 3-5: CSS cleanup and mobile optimization
 - Days 6-7: Final testing and documentation
 
 ### Week 4: Launch Preparation
+
 - Days 1-3: Pilot user onboarding
 - Days 4-5: Performance testing
 - Days 6-7: Launch checklist completion
@@ -1048,12 +1103,14 @@ CRON_SECRET=...
 ## 👥 Team Allocation
 
 ### Development Team
+
 - **Lead Developer:** Portal features, dues engine
 - **Frontend Developer:** Accessibility, CSS, mobile
 - **Backend Developer:** API routes, database functions
 - **QA Engineer:** Testing, validation, documentation
 
 ### Roles & Responsibilities
+
 - **Product Manager:** Prioritization, stakeholder communication
 - **DevOps:** Monitoring setup, deployment automation
 - **Support:** User training, documentation, helpdesk
@@ -1063,6 +1120,7 @@ CRON_SECRET=...
 ## 📝 Documentation Updates
 
 ### Required Documentation
+
 - [ ] User Guide (member portal)
 - [ ] Admin Guide (dashboard usage)
 - [ ] API Documentation (updated endpoints)
@@ -1070,6 +1128,7 @@ CRON_SECRET=...
 - [ ] Troubleshooting Guide (common issues)
 
 ### Code Documentation
+
 - [ ] JSDoc comments on all functions
 - [ ] README files in all service directories
 - [ ] Architecture decision records (ADRs)
@@ -1080,6 +1139,7 @@ CRON_SECRET=...
 ## ✅ Definition of Done
 
 A feature is considered complete when:
+
 - [ ] Code is written and reviewed
 - [ ] Unit tests pass (>80% coverage)
 - [ ] Integration tests pass
@@ -1096,6 +1156,7 @@ A feature is considered complete when:
 ## 🎉 Launch Readiness Criteria
 
 The platform is ready to launch when:
+
 - [ ] All Phase 1 tasks complete (100%)
 - [ ] All critical bugs resolved
 - [ ] Accessibility compliance achieved

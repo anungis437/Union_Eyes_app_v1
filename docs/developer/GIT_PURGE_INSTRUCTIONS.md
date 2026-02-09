@@ -3,22 +3,28 @@
 ## Manual Git History Cleanup
 
 ### Prerequisites
+
 1. Install git-filter-repo:
+
    ```powershell
    pip install git-filter-repo
    ```
+
    OR
+
    ```powershell
    scoop install git-filter-repo
    ```
 
 ### Step 1: Create Backup
+
 ```powershell
 cd C:\APPS
 git clone --mirror Union_Eyes_app_v1 Union_Eyes_backup
 ```
 
 ### Step 2: Purge Files from History
+
 ```powershell
 cd Union_Eyes_app_v1
 
@@ -32,6 +38,7 @@ git filter-repo --invert-paths `
 ```
 
 ### Step 3: Verify Removal
+
 ```powershell
 # Check that files are gone from history
 git log --all --full-history --oneline -- .env
@@ -42,12 +49,14 @@ git log --all --full-history --oneline -- .env.production
 ```
 
 ### Step 4: Garbage Collect
+
 ```powershell
 git reflog expire --expire=now --all
 git gc --prune=now --aggressive
 ```
 
 ### Step 5: Force Push to Remote
+
 ⚠️ **WARNING:** This will rewrite history for ALL team members!
 
 ```powershell
@@ -59,6 +68,7 @@ git push --force --tags
 ```
 
 ### Step 6: Notify Team
+
 All team members must delete their local clones and re-clone:
 
 ```powershell
@@ -68,6 +78,7 @@ git clone <repo-url>
 ```
 
 ### Step 7: CRITICAL - Rotate All Credentials
+
 Treat ALL exposed credentials as compromised and rotate IMMEDIATELY:
 
 - ✅ PostgreSQL DATABASE_URL passwords
@@ -80,6 +91,7 @@ Treat ALL exposed credentials as compromised and rotate IMMEDIATELY:
 - ✅ Whop API keys
 
 ### Verification
+
 ```powershell
 # Search for any remaining secrets
 git grep -i "password|secret|api_key" -- ':!*.md' ':!*.example'
@@ -118,6 +130,7 @@ git push --force --tags
 ```
 
 ## Rollback (if needed)
+
 If something goes wrong:
 
 ```powershell

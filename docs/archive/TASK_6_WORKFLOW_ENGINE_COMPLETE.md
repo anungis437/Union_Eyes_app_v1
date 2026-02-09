@@ -149,6 +149,7 @@ Other Claim Types:
 **Endpoint**: `PATCH /api/claims/[id]/status`
 
 **Request Body**:
+
 ```json
 {
   "status": "under_review",
@@ -157,6 +158,7 @@ Other Claim Types:
 ```
 
 **Response**:
+
 ```json
 {
   "claim": {
@@ -170,7 +172,8 @@ Other Claim Types:
 
 **Authorization**: User must own claim OR be assigned steward
 
-**Validation**: 
+**Validation**:
+
 - Validates transition is allowed per state machine
 - Checks user role has permission for transition
 - Records change in claim_updates table
@@ -180,6 +183,7 @@ Other Claim Types:
 **Endpoint**: `GET /api/claims/[id]/workflow`
 
 **Response**:
+
 ```json
 {
   "workflow": {
@@ -206,10 +210,12 @@ Other Claim Types:
 **Endpoint**: `GET /api/workflow/overdue?type=overdue`
 
 **Query Parameters**:
+
 - `type`: "overdue" | "approaching"
 - `days`: Number of days for "approaching" type (default: 3)
 
 **Response**:
+
 ```json
 {
   "claims": [
@@ -235,6 +241,7 @@ Other Claim Types:
 **Endpoint**: `GET /api/claims/[id]/workflow/history`
 
 **Response**:
+
 ```json
 {
   "history": [
@@ -340,6 +347,7 @@ CREATE TABLE claim_updates (
 ```
 
 **Indexes**:
+
 - `claim_id` (for history queries)
 - `created_at` (for timeline sorting)
 
@@ -425,12 +433,14 @@ CREATE TABLE claim_updates (
 ### Environment Variables
 
 No additional environment variables needed. Uses existing:
+
 - `DATABASE_URL`: PostgreSQL connection string
 - Clerk authentication (already configured)
 
 ### Database Migrations
 
 No new tables needed. Uses existing:
+
 - `claims` table (status, assignedTo, deadline fields)
 - `claim_updates` table (for audit trail)
 - `members` table (for user info)
@@ -438,6 +448,7 @@ No new tables needed. Uses existing:
 ### Monitoring
 
 Add monitoring for:
+
 1. **Overdue Claims Count**: Alert if > threshold
 2. **Failed Status Updates**: Log validation failures
 3. **API Response Times**: Monitor workflow endpoints

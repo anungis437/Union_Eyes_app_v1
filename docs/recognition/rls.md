@@ -29,11 +29,13 @@ $$ LANGUAGE SQL STABLE;
 ### `recognition_programs`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.recognition_programs ENABLE ROW LEVEL SECURITY;
 ```
 
 **Policy**: Organization isolation
+
 ```sql
 CREATE POLICY "recognition_programs_org_isolation" 
 ON public.recognition_programs
@@ -54,11 +56,13 @@ USING (
 ### `recognition_award_types`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.recognition_award_types ENABLE ROW LEVEL SECURITY;
 ```
 
 **Policy**: Organization isolation via program relationship
+
 ```sql
 CREATE POLICY "recognition_award_types_org_isolation" 
 ON public.recognition_award_types
@@ -84,6 +88,7 @@ USING (
 ### `recognition_awards`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.recognition_awards ENABLE ROW LEVEL SECURITY;
 ```
@@ -91,6 +96,7 @@ ALTER TABLE public.recognition_awards ENABLE ROW LEVEL SECURITY;
 **Policies**:
 
 **1. Members can read their own awards**:
+
 ```sql
 CREATE POLICY "recognition_awards_read_own" 
 ON public.recognition_awards
@@ -106,6 +112,7 @@ USING (
 ```
 
 **2. Admins can read all awards in their org**:
+
 ```sql
 CREATE POLICY "recognition_awards_admin_read" 
 ON public.recognition_awards
@@ -121,6 +128,7 @@ USING (
 ```
 
 **3. Admins can insert/update awards**:
+
 ```sql
 CREATE POLICY "recognition_awards_admin_write" 
 ON public.recognition_awards
@@ -154,6 +162,7 @@ USING (
 ### `reward_wallet_ledger`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.reward_wallet_ledger ENABLE ROW LEVEL SECURITY;
 ```
@@ -161,6 +170,7 @@ ALTER TABLE public.reward_wallet_ledger ENABLE ROW LEVEL SECURITY;
 **Policies**:
 
 **1. Users can read their own ledger**:
+
 ```sql
 CREATE POLICY "reward_wallet_ledger_read_own" 
 ON public.reward_wallet_ledger
@@ -176,6 +186,7 @@ USING (
 ```
 
 **2. Admins can read all ledger entries in their org**:
+
 ```sql
 CREATE POLICY "reward_wallet_ledger_admin_read" 
 ON public.reward_wallet_ledger
@@ -191,6 +202,7 @@ USING (
 ```
 
 **3. Service role can insert (bypass RLS)**:
+
 ```sql
 -- No explicit INSERT policy; service layer uses service role credentials
 -- Grant INSERT to service role user (configured at deployment)
@@ -203,11 +215,13 @@ USING (
 ### `reward_budget_envelopes`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.reward_budget_envelopes ENABLE ROW LEVEL SECURITY;
 ```
 
 **Policy**: Admin-only access within org
+
 ```sql
 CREATE POLICY "reward_budget_envelopes_admin" 
 ON public.reward_budget_envelopes
@@ -229,6 +243,7 @@ USING (
 ### `reward_redemptions`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.reward_redemptions ENABLE ROW LEVEL SECURITY;
 ```
@@ -236,6 +251,7 @@ ALTER TABLE public.reward_redemptions ENABLE ROW LEVEL SECURITY;
 **Policies**:
 
 **1. Users can read their own redemptions**:
+
 ```sql
 CREATE POLICY "reward_redemptions_read_own" 
 ON public.reward_redemptions
@@ -251,6 +267,7 @@ USING (
 ```
 
 **2. Users can insert their own redemptions**:
+
 ```sql
 CREATE POLICY "reward_redemptions_insert_own" 
 ON public.reward_redemptions
@@ -266,6 +283,7 @@ WITH CHECK (
 ```
 
 **3. Admins can read all redemptions in org**:
+
 ```sql
 CREATE POLICY "reward_redemptions_admin_read" 
 ON public.reward_redemptions
@@ -281,6 +299,7 @@ USING (
 ```
 
 **4. Service role can update (webhook processing)**:
+
 ```sql
 -- Webhooks bypass RLS via service role
 -- Grant UPDATE to service role user
@@ -293,11 +312,13 @@ USING (
 ### `shopify_config`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.shopify_config ENABLE ROW LEVEL SECURITY;
 ```
 
 **Policy**: Admin-only access
+
 ```sql
 CREATE POLICY "shopify_config_admin" 
 ON public.shopify_config
@@ -319,11 +340,13 @@ USING (
 ### `webhook_receipts`
 
 **Enable RLS**:
+
 ```sql
 ALTER TABLE public.webhook_receipts ENABLE ROW LEVEL SECURITY;
 ```
 
 **Policy**: No user-level access (service role only)
+
 ```sql
 -- No policies; all access via service role
 -- Optionally, allow admins to read for debugging:
@@ -347,15 +370,18 @@ USING (
 ## Service Role Configuration
 
 ### Service Role Setup
+
 For operations that bypass RLS (e.g., webhook processing, ledger writes):
 
 1. **Create Service Role User** (if not exists):
+
    ```sql
    CREATE ROLE service_role WITH LOGIN PASSWORD 'secure_password';
    GRANT CONNECT ON DATABASE union_eyes TO service_role;
    ```
 
 2. **Grant Table Permissions**:
+
    ```sql
    GRANT SELECT, INSERT, UPDATE ON public.reward_wallet_ledger TO service_role;
    GRANT SELECT, UPDATE ON public.reward_redemptions TO service_role;
@@ -363,6 +389,7 @@ For operations that bypass RLS (e.g., webhook processing, ledger writes):
    ```
 
 3. **Bypass RLS**:
+
    ```sql
    ALTER TABLE public.reward_wallet_ledger FORCE ROW LEVEL SECURITY;
    ALTER TABLE public.reward_redemptions FORCE ROW LEVEL SECURITY;
@@ -375,6 +402,7 @@ For operations that bypass RLS (e.g., webhook processing, ledger writes):
    ```
 
 ### Application Code Usage
+
 ```typescript
 // User-scoped queries (RLS enforced)
 const userDb = drizzle(pool); // Uses user connection pool
@@ -390,6 +418,7 @@ const serviceDb = drizzle(servicePool, {
 ## Testing RLS Policies
 
 ### Manual Testing
+
 ```sql
 -- Set user context
 SET app.current_user_id = 'user_2abc123xyz';
@@ -406,7 +435,9 @@ RESET app.current_user_id;
 ```
 
 ### Automated Testing
+
 Add integration tests in `__tests__/rls-rewards.test.ts`:
+
 - Verify members can only see own wallet
 - Verify admins can see org-wide data
 - Verify cross-org isolation (users in org A cannot see org B data)

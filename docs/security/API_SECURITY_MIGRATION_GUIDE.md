@@ -1,9 +1,10 @@
 /**
- * API SECURITY MIGRATION GUIDE
- * 
- * This document shows how to migrate existing API routes to use the new
- * security middleware. Start with the most critical routes (admin, voting,
- * financial) and expand systematically.
+
+* API SECURITY MIGRATION GUIDE
+*
+* This document shows how to migrate existing API routes to use the new
+* security middleware. Start with the most critical routes (admin, voting,
+* financial) and expand systematically.
  */
 
 // ============================================================================
@@ -182,64 +183,73 @@ export const GET = withPublicAPI(
 
 PHASE 1 (IMMEDIATE): Admin & Sensitive Routes (15 routes)
 ---
+
 ✅ /api/admin/* (7 routes) - HIGHEST PRIORITY
-  - POST /api/admin/users - User management
-  - PATCH /api/admin/users/{id} - User updates
-  - DELETE /api/admin/users/{id} - User deletion
-  - POST /api/admin/organizations - Org management
-  - PATCH /api/admin/system/settings - System config
-  - POST /api/admin/feature-flags - Feature control
-  - POST /api/admin/jobs - Background jobs
+
+* POST /api/admin/users - User management
+* PATCH /api/admin/users/{id} - User updates
+* DELETE /api/admin/users/{id} - User deletion
+* POST /api/admin/organizations - Org management
+* PATCH /api/admin/system/settings - System config
+* POST /api/admin/feature-flags - Feature control
+* POST /api/admin/jobs - Background jobs
 
 ✅ /api/voting/* (3 routes) - CRITICAL VOTING  
-  - POST /api/voting/sessions - Create voting session
-  - PATCH /api/voting/sessions/{id} - Update session
-  - DELETE /api/voting/sessions/{id} - Delete session
+
+* POST /api/voting/sessions - Create voting session
+* PATCH /api/voting/sessions/{id} - Update session
+* DELETE /api/voting/sessions/{id} - Delete session
 
 ✅ /api/stripe/* (2 routes) - PAYMENT SECURITY
-  - POST /api/stripe/webhooks - Webhook handler
-  - POST /api/stripe/checkout - Payment intent
+
+* POST /api/stripe/webhooks - Webhook handler
+* POST /api/stripe/checkout - Payment intent
 
 ✅ /api/auth/* (3 routes) - AUTHENTICATION ROUTES
-  - POST /api/auth/session - Session mgmt
-  - POST /api/auth/logout - User logout
-  - POST /api/auth/roles - Role assignment
+
+* POST /api/auth/session - Session mgmt
+* POST /api/auth/logout - User logout
+* POST /api/auth/roles - Role assignment
 
 PHASE 2 (WEEK 1): Financial Operations (12 routes)
 ---
-  - POST /api/dues/transactions - Create transaction
-  - POST /api/dues/members/{id}/payment - Process payment
-  - POST /api/remittances - Create remittance
-  - POST /api/strike-funds/{id}/lock - Fund operations
-  - POST /api/hardship/apply - Hardship applications
-  - POST /api/stipends/calculate - Stipend calculation
-  - POST /api/donations - Donation recording
-  - And 5 more financial endpoints
+
+* POST /api/dues/transactions - Create transaction
+* POST /api/dues/members/{id}/payment - Process payment
+* POST /api/remittances - Create remittance
+* POST /api/strike-funds/{id}/lock - Fund operations
+* POST /api/hardship/apply - Hardship applications
+* POST /api/stipends/calculate - Stipend calculation
+* POST /api/donations - Donation recording
+* And 5 more financial endpoints
 
 PHASE 3 (WEEK 2): Data Management (20 routes)
 ---
-  - POST /api/claims - Create claim
-  - PATCH /api/claims/{id} - Update claim
-  - DELETE /api/claims/{id} - Delete claim
-  - POST /api/members/merge - Member merge
-  - POST /api/members/import - Bulk import
-  - PATCH /api/members/{id} - Member updates
-  - POST /api/organizations/{id}/members - Member assignments
-  - And 13 more data management endpoints
+
+* POST /api/claims - Create claim
+* PATCH /api/claims/{id} - Update claim
+* DELETE /api/claims/{id} - Delete claim
+* POST /api/members/merge - Member merge
+* POST /api/members/import - Bulk import
+* PATCH /api/members/{id} - Member updates
+* POST /api/organizations/{id}/members - Member assignments
+* And 13 more data management endpoints
 
 PHASE 4 (WEEK 3): Reporting & Analytics (15 routes)
 ---
-  - POST /api/reports - Create report
-  - POST /api/exports/pdf - PDF export
-  - POST /api/exports/excel - Excel export
-  - GET /api/analytics/dashboard - Dashboard data
-  - And 11 more reporting endpoints
+
+* POST /api/reports - Create report
+* POST /api/exports/pdf - PDF export
+* POST /api/exports/excel - Excel export
+* GET /api/analytics/dashboard - Dashboard data
+* And 11 more reporting endpoints
 
 PHASE 5 (WEEK 4+): Remaining Routes (335+ routes)
 ---
-  - Search endpoints (/api/*/search)
-  - Read-only endpoints (lower priority)
-  - Integration endpoints gradually
+
+* Search endpoints (/api/*/search)
+* Read-only endpoints (lower priority)
+* Integration endpoints gradually
 
 */
 
@@ -285,32 +295,32 @@ export const authHeaderSchema = z.object({
 When migrating routes, test with:
 
 1. SUCCESS CASE
-   curl -X POST http://localhost:3000/api/admin/users \
+   curl -X POST <http://localhost:3000/api/admin/users> \
      -H "Authorization: Bearer <token>" \
      -H "Content-Type: application/json" \
-     -d '{"email":"user@example.com","name":"John"}'
-   
+     -d '{"email":"<user@example.com>","name":"John"}'
+
    Expect: 201 Created with user data
 
 2. AUTH FAILED
-   curl -X POST http://localhost:3000/api/admin/users \
+   curl -X POST <http://localhost:3000/api/admin/users> \
      -H "Content-Type: application/json" \
-     -d '{"email":"user@example.com","name":"John"}'
-   
+     -d '{"email":"<user@example.com>","name":"John"}'
+
    Expect: 401 Unauthorized
 
 3. VALIDATION FAILED
-   curl -X POST http://localhost:3000/api/admin/users \
+   curl -X POST <http://localhost:3000/api/admin/users> \
      -H "Authorization: Bearer <token>" \
      -H "Content-Type: application/json" \
      -d '{"email":"invalid-email","name":"John"}'
-   
+
    Expect: 400 Invalid request body with field errors
 
 4. SQL INJECTION ATTEMPT
-   curl -X GET "http://localhost:3000/api/admin/users?search=*;DROP TABLE users;--" \
+   curl -X GET "<http://localhost:3000/api/admin/users?search=*;DROP> TABLE users;--" \
      -H "Authorization: Bearer <token>"
-   
+
    Expect: 400 Request validation failed
 
 5. AUDIT LOG

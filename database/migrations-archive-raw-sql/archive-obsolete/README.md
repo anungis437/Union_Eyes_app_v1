@@ -15,6 +15,7 @@ The following obsolete versions of the CLC hierarchy migration were archived:
 - `044_clc_hierarchy_system_v2.sql` - Intermediate version during refactoring
 
 **Active Versions:**
+
 - `044_clc_hierarchy_system.sql` - Current active migration
 - `044_clc_hierarchy_system_CLEAN.sql` - Clean version referenced by dependent migrations
 

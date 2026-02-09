@@ -13,6 +13,7 @@ This guide provides step-by-step instructions for migrating existing API routes 
 ### Why Migrate?
 
 **Before (Manual Context Setting):**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -30,6 +31,7 @@ export const GET = async (request: NextRequest) => {
 ```
 
 **After (Automatic Context with Transaction Isolation):**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -60,6 +62,7 @@ export const GET = async (request: NextRequest) => {
 ### Pattern 1: Simple SELECT Query
 
 **Before:**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(40, async (request, context) => {
@@ -78,6 +81,7 @@ export const GET = async (request: NextRequest) => {
 ```
 
 **After:**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(40, async (request, context) => {
@@ -98,6 +102,7 @@ export const GET = async (request: NextRequest) => {
 ### Pattern 2: INSERT/UPDATE/DELETE Operations
 
 **Before:**
+
 ```typescript
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
@@ -117,6 +122,7 @@ export const POST = async (request: NextRequest) => {
 ```
 
 **After:**
+
 ```typescript
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
@@ -139,6 +145,7 @@ export const POST = async (request: NextRequest) => {
 ### Pattern 3: Multiple Queries (Transaction Benefit)
 
 **Before:**
+
 ```typescript
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(80, async (request, context) => {
@@ -157,6 +164,7 @@ export const POST = async (request: NextRequest) => {
 ```
 
 **After:**
+
 ```typescript
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(80, async (request, context) => {
@@ -178,6 +186,7 @@ export const POST = async (request: NextRequest) => {
 ### Pattern 4: Admin Impersonation (View As User)
 
 **Before:**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(100, async (request, context) => {
@@ -201,6 +210,7 @@ export const GET = async (request: NextRequest) => {
 ```
 
 **After:**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(100, async (request, context) => {
@@ -226,6 +236,7 @@ export const GET = async (request: NextRequest) => {
 ### Pattern 5: Clerk Webhooks / System Operations
 
 **Before:**
+
 ```typescript
 export const POST = async (request: NextRequest) => {
   // Clerk webhook - no user context available
@@ -239,6 +250,7 @@ export const POST = async (request: NextRequest) => {
 ```
 
 **After:**
+
 ```typescript
 export const POST = async (request: NextRequest) => {
   const payload = await request.json();
@@ -256,6 +268,7 @@ export const POST = async (request: NextRequest) => {
 ### Pattern 6: Manual Role Check → Automatic with RLS
 
 **Before:**
+
 ```typescript
 async function checkAdminRole(userId: string): Promise<boolean> {
   try {
@@ -286,6 +299,7 @@ export const GET = async (request: NextRequest) => {
 ```
 
 **After:**
+
 ```typescript
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -306,15 +320,18 @@ export const GET = async (request: NextRequest) => {
 ## Step-by-Step Migration Process
 
 ### Phase 1: High-Priority Routes (Week 1)
+
 Migrate critical user-facing routes first to minimize security risks.
 
 **Priority 1 Routes:**
+
 - `app/api/claims/**` - Claims management (most sensitive)
 - `app/api/training/**` - Training enrollment and records
 - `app/api/users/**` - User profile operations
 - `app/api/admin/users/**` - Admin user management
 
 **Migration Steps:**
+
 1. ✅ Locate manual `SET app.current_user_id` calls
 2. ✅ Identify role check functions to remove
 3. ✅ Wrap database operations in `withRLSContext()`
@@ -326,9 +343,11 @@ Migrate critical user-facing routes first to minimize security risks.
 ---
 
 ### Phase 2: Admin Routes (Week 2)
+
 Admin routes with complex queries and multi-table operations.
 
 **Priority 2 Routes:**
+
 - `app/api/admin/clc/**` - CLC remittances and reporting
 - `app/api/admin/organizations/**` - Organization management
 - `app/api/admin/reports/**` - Analytics and reporting
@@ -337,9 +356,11 @@ Admin routes with complex queries and multi-table operations.
 ---
 
 ### Phase 3: Webhook & System Routes (Week 2)
+
 System operations requiring special handling.
 
 **Priority 3 Routes:**
+
 - `app/api/webhooks/**` - Clerk and external webhooks
 - `app/api/cron/**` - Scheduled jobs
 - `app/api/internal/**` - System-to-system operations
@@ -352,6 +373,7 @@ Use `withSystemContext()` for operations without authenticated user context.
 ## Code Search Commands
 
 ### Find Routes with Manual Context Setting
+
 ```bash
 # Find all manual SET commands in API routes
 grep -r "SET app.current_user_id" app/api/
@@ -364,6 +386,7 @@ grep -r "checkAdminRole\|isAdmin.*=" app/api/
 ```
 
 ### Validation After Migration
+
 ```bash
 # Verify no remaining manual SET commands
 grep -r "SET app.current_user_id" app/api/ | wc -l  # Should be 0
@@ -393,6 +416,7 @@ For each migrated route, verify:
 ## Common Pitfalls
 
 ### ❌ Pitfall 1: Forgetting to return NextResponse
+
 ```typescript
 // WRONG - context set but response not returned
 return withRLSContext(async (tx) => {
@@ -408,6 +432,7 @@ return withRLSContext(async (tx) => {
 ```
 
 ### ❌ Pitfall 2: Using `db` instead of `tx` parameter
+
 ```typescript
 // WRONG - uses global db, bypasses context
 return withRLSContext(async (tx) => {
@@ -423,6 +448,7 @@ return withRLSContext(async (tx) => {
 ```
 
 ### ❌ Pitfall 3: Mixing manual SET with withRLSContext
+
 ```typescript
 // WRONG - redundant, context set twice
 await db.execute(sql`SET app.current_user_id = ${userId}`);
@@ -452,6 +478,7 @@ return withRLSContext(async (tx) => {
 ```
 
 **Rule Logic:**
+
 - Detect `db.select()`, `db.insert()`, `db.update()`, `db.delete()` in `app/api/**`
 - Ensure wrapped in `withRLSContext()`, `withExplicitUserContext()`, or `withSystemContext()`
 - Exclude: `lib/db/**`, `scripts/**`, `__tests__/**`
@@ -481,6 +508,7 @@ return withRLSContext(async (tx) => {
 **Target:** <15ms RLS overhead per query
 
 ### Benchmark Query
+
 ```sql
 -- With RLS
 EXPLAIN ANALYZE
@@ -493,6 +521,7 @@ SELECT * FROM claims WHERE member_id = 'user_abc123';
 ```
 
 ### Expected Results
+
 - **Simple SELECT:** 5-10ms overhead
 - **Complex JOIN:** 10-15ms overhead
 - **Aggregation:** 8-12ms overhead
@@ -507,10 +536,12 @@ If migration causes issues:
 
 1. **Identify problematic route** (check error logs, Sentry)
 2. **Revert to previous version:**
+
    ```bash
    git diff HEAD~1 app/api/path/to/route.ts
    git checkout HEAD~1 -- app/api/path/to/route.ts
    ```
+
 3. **Redeploy** specific route
 4. **Investigate** RLS policy issue or context setting
 5. **Fix** and re-migrate with additional testing
@@ -520,11 +551,13 @@ If migration causes issues:
 ## Support & Questions
 
 **Documentation:**
+
 - [RLS Security Assessment](../security/RLS_SECURITY_ASSESSMENT.md)
 - [RLS/Auth/RBAC Alignment](../security/RLS_AUTH_RBAC_ALIGNMENT.md)
 - [withRLSContext API Reference](../../lib/db/with-rls-context.ts)
 
 **Team Contact:**
+
 - Security questions: #security-team
 - Migration help: #backend-team
 - Database issues: #database-team

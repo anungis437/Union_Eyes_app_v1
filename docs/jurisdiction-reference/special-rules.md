@@ -34,6 +34,7 @@ This guide provides **in-depth analysis** of these special rules, including hist
 Manitoba is the **only jurisdiction in Canada** that requires a super-majority for strike votes. This requirement was introduced in **1996** under the Gary Filmon government as part of broader labour relations reforms.
 
 **Legislative Intent:**
+
 - Ensure strong membership support before strike action
 - Reduce "narrow majority" strikes that divide the membership
 - Encourage negotiated settlements by raising the strike authorization bar
@@ -48,12 +49,14 @@ The 65% requirement has been challenged multiple times as an infringement on wor
 **Challenge**: Achieving 65% support requires strong solidarity and effective communication.
 
 **Best Practices:**
+
 1. **Pre-vote education**: Ensure all members understand the issues and stakes
 2. **Address concerns**: One-on-one conversations with skeptical members
 3. **Timing**: Don't call a vote until you're confident of 70%+ support (safety margin)
 4. **Turnout strategy**: High turnout is essential - low turnout favors "No" votes
 
 **Example Scenario:**
+
 ```
 Union has 1,000 members eligible to vote.
 Scenario A: 800 members vote
@@ -91,10 +94,12 @@ Scenario C: 900 members vote (high turnout)
 ### Legal Challenges
 
 **Key Cases:**
+
 - **United Food and Commercial Workers, Local 832 v. Manitoba (AG)** [2003]: Challenge to 65% requirement dismissed
 - **Manitoba Labour Board decisions**: Numerous cases clarifying "votes cast" vs. "eligible members"
 
 **Court Reasoning:**
+
 - Provincial jurisdiction over labour relations is broad
 - 65% requirement is not unconstitutional interference with freedom of association
 - Legislature can set reasonable procedural requirements for strike votes
@@ -116,6 +121,7 @@ Saskatchewan is the **only jurisdiction** where the strike vote threshold is cal
 In all other jurisdictions, abstentions don't affect the result. In Saskatchewan, **abstentions count as "No" votes**.
 
 **Formula:**
+
 ```
 Other Jurisdictions: (Yes Votes / Votes Cast) ≥ 50%
 Saskatchewan:       (Yes Votes / Total Eligible Members) ≥ 45%
@@ -181,6 +187,7 @@ Saskatchewan:
 In Saskatchewan, you cannot win a strike vote with low turnout, no matter how overwhelming the support among those who vote.
 
 **Best Practices:**
+
 1. **Target 50%+ turnout**: Aim for at least half of all members to vote "Yes"
 2. **Member tracking**: Maintain accurate lists of all eligible members
 3. **Absentee voting**: Provide multiple ways to vote (in-person, mail, online)
@@ -188,6 +195,7 @@ In Saskatchewan, you cannot win a strike vote with low turnout, no matter how ov
 5. **Extended voting periods**: Give members multiple days/times to vote
 
 **Example Scenario:**
+
 ```
 Your union has 1,000 eligible members.
 You need: 1,000 × 0.45 = 450 "Yes" votes minimum
@@ -219,11 +227,13 @@ Turnout Goals:
 The 45% rule was designed to ensure strike votes have broad-based support across the entire bargaining unit, not just among the most active members.
 
 **Legislative Intent:**
+
 - Prevent strikes by small, vocal minorities
 - Ensure that at least 45% of workers actively support the strike
 - Balance workers' right to strike with broader workplace stability
 
 **Case Law:**
+
 - **Saskatchewan Labour Relations Board decisions**: Numerous rulings clarifying "eligible members" vs. "votes cast"
 - **Key principle**: "Eligible members" includes all employees in the bargaining unit at the time of the vote, even those temporarily absent (sick leave, vacation, etc.)
 
@@ -234,6 +244,7 @@ The 45% rule was designed to ensure strike votes have broad-based support across
 ### Legal Foundation
 
 **Statutes:**
+
 - **Labour Code**, CQLR c C-27
 - **Charter of the French Language** (Bill 101), CQLR c C-11
 
@@ -262,6 +273,7 @@ The 45% rule was designed to ensure strike votes have broad-based support across
 The Union Claims Platform provides **side-by-side English/French templates** for all Quebec filings:
 
 **Example: Grievance Notice Template**
+
 ```
 Left Column (French):          Right Column (English):
 AVIS DE GRIEF                  GRIEVANCE NOTICE
@@ -272,6 +284,7 @@ Grief #: [NUMÉRO]              Grievance #: [NUMBER]
 ```
 
 **Forms Provided:**
+
 - **Certification**: TAT application form (bilingual)
 - **Grievance Filing**: Notice of grievance (bilingual)
 - **Strike Notice**: 7-day advance notice (bilingual)
@@ -280,6 +293,7 @@ Grief #: [NUMÉRO]              Grievance #: [NUMBER]
 ### Language Rights in the Workplace
 
 **Bill 101 Requirements:**
+
 - Collective agreements must be drafted in French (English version for reference)
 - Employer communications must be in French (unless anglophone majority)
 - Union can communicate with members in English if members prefer
@@ -289,6 +303,7 @@ Grief #: [NUMÉRO]              Grievance #: [NUMBER]
 ### Case Law
 
 **Key Cases:**
+
 - **Ford v. Quebec (AG)** [1988]: Upheld Bill 101's language requirements for collective agreements
 - **Solski v. Quebec (AG)** [2005]: Clarified language rights in education (analogous to labour context)
 
@@ -317,6 +332,7 @@ Federal cooling-off periods are **longer than any province**:
 The **Canada Industrial Relations Board (CIRB)** oversees conciliation in federal workplaces:
 
 **Steps:**
+
 1. **Bargaining Impasse**: Union or employer requests conciliation
 2. **Conciliation Officer Appointed**: Within 15 days of request
 3. **Conciliation Attempt**: Officer meets with parties (usually 30-60 days)
@@ -325,6 +341,7 @@ The **Canada Industrial Relations Board (CIRB)** oversees conciliation in federa
 6. **Strike/Lockout Permitted**: After 21 days + strike notice (72 hours)
 
 **Total Timeline Example:**
+
 ```
 Day 0: Bargaining impasse, conciliation requested
 Day 15: Conciliation officer appointed
@@ -337,11 +354,13 @@ Day 72: Strike/lockout can commence
 ### Strategic Implications
 
 **For Unions:**
+
 - **Extended Timeline**: Federal strikes take longer to execute than provincial
 - **Continued Bargaining**: 21 days provides extended negotiation window
 - **Member Communication**: Use cooling-off period to prepare members for potential strike
 
 **For Employers:**
+
 - **Preparation Time**: 21 days to prepare contingency plans
 - **Settlement Window**: Extended opportunity to reach agreement
 
@@ -425,24 +444,28 @@ Day 72: Strike/lockout can commence
 ## Practical Guidance Summary
 
 ### For Manitoba Organizers
+
 - ✅ Aim for **70%+ support** before calling a vote (safety margin)
 - ✅ Conduct pre-vote polling to gauge support
 - ✅ Address member concerns before the vote
 - ❌ Don't call a vote with marginal support (60-65%) - too risky
 
 ### For Saskatchewan Organizers
+
 - ✅ Prioritize **high turnout** over overwhelming support
 - ✅ Provide multiple voting methods (in-person, mail, online)
 - ✅ Track all eligible members accurately (including those on leave)
 - ❌ Don't assume low turnout with strong support will pass
 
 ### For Quebec Organizers
+
 - ✅ Use bilingual templates for all TAT filings
 - ✅ Provide French translations of major union communications
 - ✅ Confirm collective agreement is in French (English translation optional)
 - ❌ Don't file English-only documents with TAT (may be rejected)
 
 ### For Federal Organizers
+
 - ✅ Plan for **21-day cooling-off** period in strike timelines
 - ✅ Use cooling-off period for continued bargaining
 - ✅ Prepare members for extended process (3-4 months typical)
@@ -462,9 +485,10 @@ Day 72: Strike/lockout can commence
 ## Questions or Clarifications?
 
 If you need guidance on applying these special rules to your specific case:
+
 - **Consult your union representative**: For strategic advice
 - **Contact a labour lawyer**: For legal interpretation
-- **Email platform support**: support@unionclaims.ca for technical questions
+- **Email platform support**: <support@unionclaims.ca> for technical questions
 
 ---
 

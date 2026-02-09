@@ -25,53 +25,65 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 ## 2. Priority AI Use Cases (Phase 1–2)
 
 ### U1. Smart Case & Precedent Search (RAG)
+
 **Goal:** Let users ask natural language questions like "Show me past cases about overtime for part-time workers against Employer X in Ontario."
 
 **Implementation:**
+
 - `ai_documents` + `ai_chunks` tables in Supabase with embeddings
 - `/api/ai/search` endpoint with retrieval + LLM summarization
 - Returns: Ranked cases + snippets + filters (employer, arbitrator, issue, outcome)
 - **Always shows sources with citations and confidence scores**
 
 **Risk Controls:**
+
 - RAG only over curated corpus (uploaded awards, licensed databases)
 - Never invent cases – prompt rule: "Only reference documents explicitly provided"
 - Template response for weak matches: "No high-confidence matches found"
 
 ### U2. Case Summaries & Brief Drafts (Human-in-the-loop)
+
 **Goal:** One-click summary of grievance file: "Facts / Issues / Arguments / Outcome"
 
 **Implementation:**
+
 - Background job triggered on case upload
 - Output stored in `case_summaries` table with `created_by = 'ai'`, `approved_by` for human sign-off
 - Draft first-pass briefs that lawyers/staff edit before finalizing
 
 **Risk Controls:**
+
 - All outputs labeled "AI Assistant Suggestion" – never "approved" automatically
 - Require explicit human review and edit before any summary becomes official
 - Log all generation requests in `ai_query_logs`
 
 ### U3. Similar-Case Recommender
+
 **Goal:** Surface "You may also want to review…" when viewing a case
 
 **Implementation:**
+
 - Re-use embeddings from U1 to compute nearest neighbours
 - UI component inside case detail page
 - No new LLM calls – deterministic similarity search
 
 **Risk Controls:**
+
 - Transparent explanation: "Similar based on issue tags, employer, arbitrator"
 - User can dismiss or provide feedback on recommendations
 
 ### U4. Pattern Detection & Dashboards
+
 **Goal:** Show trends – spike in discipline cases, repeat violators, arbitrator leanings
 
 **Implementation:**
+
 - Use existing Supabase schema + BI layer (Power BI / custom dashboards)
 - AI assists in tagging cases (issue type, violation type, stage)
 - Dashboards are deterministic SQL queries
 
 **Risk Controls:**
+
 - Quarterly bias audit: check if certain employers/regions are under-represented
 - Human approves AI-suggested tags before they become training data
 
@@ -80,9 +92,11 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 ## 3. AI Risk Areas & Controls
 
 ### 3.1 Hallucinations
+
 **Risk:** Model invents case law that doesn't exist or misstates outcomes.
 
 **Controls:**
+
 - ✅ RAG only over curated corpus (uploaded awards, licensed databases)
 - ✅ Always show source list (case ID, citation, link to PDF)
 - ✅ Confidence indicator / retrieval score
@@ -90,9 +104,11 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 - ✅ Prompt rule: `"Never invent a case. Only reference documents explicitly provided in the context. If unsure, say you don't know."`
 
 ### 3.2 Copyright / Intellectual Property
+
 **Risk:** Using non-licensed decisions or third-party content in training/responses.
 
 **Controls:**
+
 - ✅ Restrict ingestion to:
   - Union's own case files
   - Licensed databases or public domain sources
@@ -102,9 +118,11 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 - ✅ Policy: "No scraping of paid services or members-only portals without explicit agreements"
 
 ### 3.3 Ethical Use / Bias
+
 **Risk:** AI suggestions systematically favour one side or under-surface certain case types.
 
 **Controls:**
+
 - ✅ Define allowed AI decisions:
   - AI may: summarize, organize, suggest precedents
   - AI may not: decide whether to file, settle, or drop a case
@@ -114,9 +132,11 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 - ✅ Prompting: `"Remain neutral. Present arguments and precedents from both union and employer perspectives where relevant."`
 
 ### 3.4 Cybersecurity
+
 **Risk:** New attack surface via AI endpoints & data ingestion.
 
 **Controls:**
+
 - ✅ Only expose AI routes server-side in Next.js (`/app/api/ai/*/route.ts`)
 - ✅ Clerk auth → union staff only
 - ✅ Org-level RLS in Supabase (`organization_id`)
@@ -127,9 +147,11 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 - ✅ Rate limiting middleware on AI endpoints
 
 ### 3.5 Privacy
+
 **Risk:** Member names, health details, discipline info leaking in prompts, logs, or training data.
 
 **Controls:**
+
 - ✅ Pre-processing pipeline for documents:
   - Detect & mask personal identifiers (name, SIN, address, health info) before sending to external LLMs
 - ✅ Clear per-tenant data boundaries with Supabase RLS:
@@ -138,9 +160,11 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 - ✅ Add "Privacy Mode" toggle in UI for exported answers (remove names by default)
 
 ### 3.6 Lack of Transparency
+
 **Risk:** Staff don't know where answers come from or how to challenge them.
 
 **Controls:**
+
 - ✅ UI patterns:
   - Always show "Sources (N)" with clickable list
   - Show compact explanation: "Why you're seeing this" (filters, issue tags, date range)
@@ -154,30 +178,36 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 ## 4. Foundational AI Principles (Microsoft Framework Mapping)
 
 ### Validity & Reliability
+
 - ✅ Only deploy AI features after test suite passes
 - ✅ Golden-set of manually evaluated queries + expected sources
 - ✅ Monitor precision/recall of search results over time
 
 ### Accountability
+
 - ✅ All final legal/strategic decisions belong to human reps/lawyers
 - ✅ AI outputs labeled as "assistant suggestions," not "approved positions"
 
 ### Fairness & Bias Detection
+
 - ✅ Quarterly audit of:
   - Which employers, demographics, regions are most represented
   - Whether certain groups are systematically under-served in recommendations
 
 ### Safety & Security
+
 - ✅ Follow Azure + Supabase security baseline
 - ✅ No direct external calls from browser to LLMs
 - ✅ Every AI request goes through authenticated server route
 
 ### Data Privacy
+
 - ✅ PIPEDA / Law 25 oriented:
   - Data minimization in prompts
   - Right to deletion respected at record level (also remove from embeddings)
 
 ### Explainability & Transparency
+
 - ✅ Provide "View Answer Detail" drawer:
   - Prompt template (sanitized)
   - Top retrieved documents + similarity scores
@@ -187,14 +217,17 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 ## 5. AI Maturity & Roadmap
 
 ### Phase 0 – Non-AI Foundation (✅ Complete)
+
 - Claims intake, orgs & users, basic workflows
 - Deterministic analytics (SQL-based dashboards)
 - Logging, RBAC, RLS
 
 ### Phase 1 – Safe RAG Pilot (Internal Only) [Current Phase]
+
 **Goal:** Get one high-value, low-risk AI feature into production
 
 **Tasks:**
+
 1. Create `ai_documents`, `ai_chunks`, `ai_queries`, `ai_query_logs` tables in Supabase
 2. Ingest small, clean corpus (200 redacted decisions + internal memos)
 3. Build `/api/ai/search` endpoint:
@@ -205,6 +238,7 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 6. **Pilot users: Internal union staff only**
 
 ### Phase 2 – Summaries, Brief Drafts & Similar Cases
+
 1. Add background jobs using workflow package:
    - Trigger: `case_created` or `document_uploaded`
    - Action: generate structured summary, store in `case_summaries`
@@ -212,6 +246,7 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 3. Implement similar-case panel using existing embeddings
 
 ### Phase 3 – Pattern Analysis & Maturity
+
 1. Enhance tagging with AI:
    - AI suggests issue type, stage, outcome category
    - Human approves → becomes training data for future models
@@ -221,6 +256,7 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
    - Time-to-resolution trends
 
 ### Phase 4 – Conversational Assistant & Externalization
+
 1. Build chat-style "Research Copilot" for expert staff
 2. Limited version for smaller locals or regional offices (if validated)
 
@@ -229,6 +265,7 @@ Union Eyes uses AI to **accelerate case research, improve consistency, and surfa
 ## 6. Technical Architecture
 
 ### Database Schema
+
 ```sql
 -- Documents ingested for AI search
 CREATE TABLE ai_documents (
@@ -309,6 +346,7 @@ CREATE POLICY "Users can only access their org's AI data"
 ```
 
 ### API Routes
+
 ```typescript
 // /app/api/ai/search/route.ts
 // Authenticated via Clerk, org-scoped via RLS
@@ -322,6 +360,7 @@ CREATE POLICY "Users can only access their org's AI data"
 ```
 
 ### Package Structure
+
 ```
 packages/ai/
 ├── src/
@@ -346,7 +385,8 @@ packages/ai/
 
 **When using AI coding assistants (GitHub Copilot, Cursor, etc.) to build Union Eyes AI features:**
 
-### System Prompt for AI-Assisted Development:
+### System Prompt for AI-Assisted Development
+
 ```
 You are working in the Union Eyes app (Next.js + Supabase + Clerk, multi-tenant).
 
@@ -385,16 +425,19 @@ When writing code, explain how your changes satisfy these constraints.
 ## 8. Monitoring & Audit Requirements
 
 ### Weekly Monitoring
+
 - [ ] Review `ai_query_logs` for error rates and latency spikes
 - [ ] Check `ai_feedback` for patterns in negative ratings
 - [ ] Monitor token usage and costs
 
 ### Monthly Audit
+
 - [ ] Review top 20 queries for hallucinations or inappropriate responses
 - [ ] Verify RLS policies are working correctly (spot-check cross-org leaks)
 - [ ] Update golden-set test cases based on new queries
 
 ### Quarterly Audit
+
 - [ ] Bias analysis:
   - Export queries by employer, region, issue type
   - Check if certain categories are under-served
@@ -410,12 +453,14 @@ When writing code, explain how your changes satisfy these constraints.
 ## 9. Compliance & Legal
 
 ### PIPEDA & Law 25 Requirements
+
 - ✅ Data minimization: Only include necessary context in prompts
 - ✅ Transparency: "How Union Eyes AI Works" page accessible to all users
 - ✅ Right to deletion: When member data is deleted, embeddings are also removed
 - ✅ No training on member data: Configure LLM providers with "do not train" flag
 
 ### Union-Specific Considerations
+
 - ✅ Member confidentiality: No PII in logs or external API calls
 - ✅ Legal privilege: AI-generated drafts do not create attorney-client privilege automatically
 - ✅ Transparency with members: Explain when AI was used in case prep (if required by union policy)
@@ -425,12 +470,14 @@ When writing code, explain how your changes satisfy these constraints.
 ## 10. Success Metrics
 
 ### Phase 1 KPIs
+
 - **Adoption:** % of staff using AI search vs manual search
 - **Satisfaction:** Average feedback rating on AI responses
 - **Efficiency:** Time saved per query (manual research time - AI-assisted time)
 - **Accuracy:** % of AI responses with correct citations (manual validation of 50 queries/month)
 
 ### Phase 2+ KPIs
+
 - **Case prep time:** Average hours to prepare case brief (before vs after AI summaries)
 - **Pattern detection value:** # of strategic insights surfaced by AI dashboards
 - **Coverage:** % of case corpus successfully ingested and searchable
@@ -440,11 +487,13 @@ When writing code, explain how your changes satisfy these constraints.
 ## 11. Training & Change Management
 
 ### Staff Training
+
 - [ ] "Introduction to Union Eyes AI" webinar (1 hour)
 - [ ] "How to Validate AI Responses" guide (PDF + video)
 - [ ] Office hours for Q&A during pilot phase
 
 ### Communication Plan
+
 - [ ] Email announcement to pilot users (internal staff only)
 - [ ] In-app onboarding tour for AI Search panel
 - [ ] Monthly newsletter highlighting new AI features and best practices
@@ -462,6 +511,7 @@ When writing code, explain how your changes satisfy these constraints.
 ## Appendix: Prompt Templates
 
 ### Search Prompt Template
+
 ```
 You are an assistant for union representatives researching labor arbitration cases.
 
@@ -487,6 +537,7 @@ Generate your response now.
 ```
 
 ### Summary Prompt Template
+
 ```
 You are assisting with case preparation for a union grievance.
 

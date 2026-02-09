@@ -54,6 +54,7 @@ npx drizzle-kit migrate
 ### 3. Required Schema Extensions
 
 The following tables are created:
+
 - `wage_benchmarks` - Statistics Canada wage data
 - `union_density` - Union density statistics
 - `cost_of_living_data` - CPI and inflation data
@@ -72,17 +73,20 @@ The following tables are created:
 ### 4. API Access Registration
 
 #### Statistics Canada
-1. Register at: https://www.statcan.gc.ca/eng/api
+
+1. Register at: <https://www.statcan.gc.ca/eng/api>
 2. Select "Labour market" data products
 3. Note API key for environment variable
 
 #### BC Labour Relations Board
-1. Apply at: https://www.lrb.bc.ca/api-registration
+
+1. Apply at: <https://www.lrb.bc.ca/api-registration>
 2. Await approval (typically 1-2 weeks)
 3. Receive API credentials
 
 #### CLC Partnership (Future)
-1. Contact: partnerships@canadianlabour.ca
+
+1. Contact: <partnerships@canadianlabour.ca>
 2. Sign data processing agreement
 3. Receive OAuth credentials
 
@@ -218,21 +222,24 @@ LIMIT 10;
 
 ## Rollback Plan
 
-### If Issues Occur:
+### If Issues Occur
 
 1. **Database Rollback:**
+
 ```bash
 # Restore from backup
 psql $DATABASE_URL < backup_before_deployment.sql
 ```
 
-2. **Environment Revert:**
+1. **Environment Revert:**
+
 ```bash
 # Revert environment variables
 git checkout .env.production
 ```
 
-3. **Vercel Redeploy:**
+1. **Vercel Redeploy:**
+
 ```bash
 # Redeploy previous version
 vercel deploy --prod --prebuilt
@@ -242,14 +249,14 @@ vercel deploy --prod --prebuilt
 
 ## Monitoring & Alerts
 
-### Recommended Alerts:
+### Recommended Alerts
 
 1. **Sync Failures** - Alert when sync status is 'failed'
 2. **Data Staleness** - Alert if no sync in 48 hours
 3. **API Errors** - Alert on API endpoint errors
 4. **Rate Limiting** - Alert on API rate limit warnings
 
-### Log Locations:
+### Log Locations
 
 - Sync logs: `external_data_sync_log` table
 - Application logs: `/latest-logs/` directory
@@ -281,7 +288,7 @@ vercel deploy --prod --prebuilt
 
 ## Support & Troubleshooting
 
-### Common Issues:
+### Common Issues
 
 1. **API Key Not Working**
    - Verify key hasn't expired
@@ -298,7 +305,7 @@ vercel deploy --prod --prebuilt
    - Verify source APIs are operational
    - Review data validation rules
 
-### Contact:
+### Contact
 
-- Statistics Canada API Support: api@statcan.gc.ca
-- BC LRB Support: api-support@lrb.bc.ca
+- Statistics Canada API Support: <api@statcan.gc.ca>
+- BC LRB Support: <api-support@lrb.bc.ca>

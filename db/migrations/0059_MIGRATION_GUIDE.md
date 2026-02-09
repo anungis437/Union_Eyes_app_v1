@@ -12,6 +12,7 @@
 This migration completes the Clerk user ID alignment started in migration 0055. It converts **52+ remaining UUID user ID columns to VARCHAR(255)** across **40+ tables** that were not included in the initial migration.
 
 ### Affected Modules
+
 - ✅ Per-Capita Remittances (CLC)
 - ✅ Communication Analytics
 - ✅ ERP Integration (Financial Audit, Connectors, Journal Entries)
@@ -29,6 +30,7 @@ This migration completes the Clerk user ID alignment started in migration 0055. 
 ## Prerequisites
 
 ### 1. Database Backup
+
 ```bash
 # Create full database backup before proceeding
 pg_dump -h unioneyes-staging-db.postgres.database.azure.com \
@@ -39,11 +41,13 @@ pg_dump -h unioneyes-staging-db.postgres.database.azure.com \
 ```
 
 ### 2. Maintenance Window
+
 - **Recommended:** 15-minute maintenance window
 - **Required:** Application shutdown during migration
 - **Reason:** Prevent concurrent writes during schema changes
 
 ### 3. Testing
+
 - ✅ Migration tested on development environment
 - ⏳ Ready for staging execution
 - ⏳ Production deployment pending staging success
@@ -64,7 +68,9 @@ pg_dump -h unioneyes-staging-db.postgres.database.azure.com \
 ## Execution Steps
 
 ### Step 1: Verify Current State
+
 Check how many UUID columns still exist:
+
 ```sql
 SELECT COUNT(*) as uuid_user_columns
 FROM information_schema.columns
@@ -74,9 +80,11 @@ WHERE column_name IN (
   'recipient_id', 'executed_by', 'shared_by', 'shared_with', 'reconciled_by'
 ) AND data_type = 'uuid';
 ```
+
 **Expected Result:** 52 rows
 
 ### Step 2: Execute Migration
+
 ```bash
 # Set password securely
 export PGPASSWORD='UnionEyes2026!Staging'
@@ -90,6 +98,7 @@ psql -h unioneyes-staging-db.postgres.database.azure.com \
 ```
 
 ### Step 3: Verify Completion
+
 ```sql
 -- Should return 0 for UUID columns after migration
 SELECT COUNT(*) as remaining_uuid_columns
@@ -112,6 +121,7 @@ WHERE column_name IN (
 ```
 
 ### Step 4: Verify Foreign Keys
+
 ```sql
 -- Check that FK constraints were recreated
 SELECT 
@@ -131,6 +141,7 @@ ORDER BY tc.table_name;
 ```
 
 ### Step 5: Test Data Integrity
+
 ```sql
 -- Verify no NULL values were introduced
 SELECT 
@@ -157,18 +168,21 @@ FROM deadlines;
 ## Post-Migration Tasks
 
 ### 1. Push Drizzle Schema
+
 ```bash
 # Push updated schema to match database
 pnpm drizzle-kit push
 ```
 
 ### 2. Restart Application
+
 ```bash
 # Start application instances
 # Verify authentication flow works correctly
 ```
 
 ### 3. Smoke Tests
+
 - [ ] User login successful
 - [ ] Create new report (tests reports.created_by)
 - [ ] Create deadline (tests deadlines.completed_by)
@@ -176,7 +190,9 @@ pnpm drizzle-kit push
 - [ ] Check audit logs (tests financial_audit_log.user_id)
 
 ### 4. Monitor for Issues
+
 Check for:
+
 - Foreign key constraint violations
 - Authentication failures
 - Type mismatch errors in application logs
@@ -287,6 +303,7 @@ COMMIT;
 ## Tables Converted (52 columns across 40+ tables)
 
 ### Core Schema Updates
+
 - **per_capita_remittances** (3 columns): approved_by, rejected_by, created_by
 - **remittance_approvals** (1 column): approver_user_id
 - **organization_contacts** (1 column): user_id
@@ -308,7 +325,9 @@ COMMIT;
 - **automation_rules** (1 column): created_by
 
 ### Additional Tables (30+ tables)
+
 All `created_by`, `approved_by`, or `recipient_id` columns converted in:
+
 - arbitration_precedents
 - bargaining_notes
 - cba_footnotes, cba_version_history
@@ -338,11 +357,13 @@ All `created_by`, `approved_by`, or `recipient_id` columns converted in:
 ## Support & Escalation
 
 **During Migration:**
+
 - Primary Contact: Database Administrator
 - Backup Contact: DevOps Lead
 - Escalation: CTO
 
 **Issue Resolution:**
+
 - Slack Channel: #infrastructure-alerts
 - Emergency Hotline: [REDACTED]
 

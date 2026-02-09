@@ -22,6 +22,7 @@ The system implements four membership roles with increasing privilege levels:
 | **admin** | 4 | Organization administrator | Full access, system configuration |
 
 **Hierarchy Rules:**
+
 - Higher level roles inherit all permissions from lower levels
 - `admin` (level 4) can perform all operations
 - `officer` (level 3) can perform steward and member operations
@@ -47,6 +48,7 @@ db/
 ### Data Model
 
 **organization_members table:**
+
 ```typescript
 {
   id: string (uuid)
@@ -87,10 +89,12 @@ Handler({ tenantId, userId, role, memberId })
 Wraps API route handlers with role-based authorization.
 
 **Parameters:**
+
 - `requiredRole`: Minimum role required (`'member'` | `'steward'` | `'officer'` | `'admin'`)
 - `handler`: Route handler function
 
 **Context provided to handler:**
+
 ```typescript
 interface RoleContext {
   tenantId: string;    // Current tenant ID
@@ -101,6 +105,7 @@ interface RoleContext {
 ```
 
 **Usage:**
+
 ```typescript
 import { withRoleAuth } from '@/lib/role-middleware';
 
@@ -112,6 +117,7 @@ export const POST = withRoleAuth('steward', async (request, context) => {
 ```
 
 **Error Responses:**
+
 - `403 Forbidden` - User not a member of organization
 - `403 Forbidden` - User's role insufficient (includes role info in message)
 - `500 Internal Server Error` - Database or system error
@@ -121,10 +127,12 @@ export const POST = withRoleAuth('steward', async (request, context) => {
 Allows access if user has ANY of the specified roles (OR logic).
 
 **Parameters:**
+
 - `allowedRoles`: Array of allowed roles
 - `handler`: Route handler function
 
 **Usage:**
+
 ```typescript
 import { withAnyRole } from '@/lib/role-middleware';
 
@@ -137,13 +145,16 @@ export const POST = withAnyRole(['officer', 'admin'], async (request, context) =
 ### Helper Functions
 
 **`hasRolePermission(userRole, requiredRole): boolean`**
+
 - Returns true if userRole meets or exceeds requiredRole
 - Uses hierarchy levels for comparison
 
 **`checkRole(context, requiredRole): boolean`**
+
 - Check role within a handler (for conditional logic)
 
 **`requireAdmin(context): void`**
+
 - Throws error if not admin (use for admin-only sections in handlers)
 
 ## API Route Protection
@@ -163,6 +174,7 @@ export const POST = withAnyRole(['officer', 'admin'], async (request, context) =
 | `/api/claims/[id]` | DELETE | ⏳ | officer | Pending |
 
 **Legend:**
+
 - ✅ Complete: Role-based auth implemented
 - ⏳ Pending: Needs role-based auth
 - 🚫 Not Implemented: Endpoint doesn't exist yet
@@ -170,6 +182,7 @@ export const POST = withAnyRole(['officer', 'admin'], async (request, context) =
 ### Example Implementations
 
 **Member List (All members can view):**
+
 ```typescript
 // app/api/organization/members/route.ts
 export const GET = withRoleAuth('member', async (request, context) => {
@@ -180,6 +193,7 @@ export const GET = withRoleAuth('member', async (request, context) => {
 ```
 
 **Create Member (Stewards and above):**
+
 ```typescript
 // app/api/organization/members/route.ts
 export const POST = withRoleAuth('steward', async (request, context) => {
@@ -191,6 +205,7 @@ export const POST = withRoleAuth('steward', async (request, context) => {
 ```
 
 **Update Member (Stewards and above):**
+
 ```typescript
 // app/api/members/[id]/route.ts
 export const PATCH = withRoleAuth('steward', async (request, context) => {
@@ -203,6 +218,7 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
 ```
 
 **Self-Access Pattern (View own vs. view all):**
+
 ```typescript
 export const GET = withRoleAuth('member', async (request, context) => {
   const { tenantId, userId, role, memberId } = context;
@@ -238,16 +254,19 @@ Our database uses simple role enums. These map conceptually to the application's
 ## Security Considerations
 
 ### Tenant Isolation
+
 - All role checks happen AFTER tenant validation
 - Users can only access resources within their current tenant
 - Role is tenant-specific (user may have different roles in different tenants)
 
 ### Role Assignment
+
 - Only admins should be able to change roles (enforce in PATCH handler)
 - Role changes should be logged for audit trail
 - Default new members get `member` role
 
 ### Privilege Escalation Prevention
+
 ```typescript
 // In member update handler
 export const PATCH = withRoleAuth('steward', async (request, context) => {
@@ -265,6 +284,7 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
 ```
 
 ### Error Messages
+
 - Don't expose internal system details
 - Include user's current role to aid troubleshooting
 - Log unauthorized access attempts
@@ -274,6 +294,7 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
 ### Unit Tests Needed
 
 **Role Hierarchy Tests:**
+
 ```typescript
 describe('hasRolePermission', () => {
   it('admin can access member endpoints', () => {
@@ -293,6 +314,7 @@ describe('hasRolePermission', () => {
 ### Integration Tests
 
 **Role Enforcement:**
+
 ```typescript
 describe('POST /api/organization/members', () => {
   it('allows steward to create members', async () => {
@@ -322,24 +344,28 @@ describe('POST /api/organization/members', () => {
 ## Migration Path
 
 ### Phase 1: Core Middleware ✅ COMPLETE
+
 - [x] Create role-middleware.ts
 - [x] Add getMemberByUserId query
 - [x] Protect member API routes
 - [x] Document implementation
 
 ### Phase 2: Expand Coverage ⏳ NEXT
+
 - [ ] Protect claims API routes
 - [ ] Protect voting API routes
 - [ ] Protect CBA/contract API routes
 - [ ] Add role checks to frontend components
 
 ### Phase 3: UI Integration
+
 - [ ] Show current user role in dashboard
 - [ ] Hide/disable actions based on role
 - [ ] Create role management admin page
 - [ ] Add role change audit logging
 
 ### Phase 4: Advanced Features
+
 - [ ] Temporary role delegation
 - [ ] Role-based dashboard views
 - [ ] Permission-based feature flags
@@ -393,16 +419,19 @@ export function middleware(request: NextRequest) {
 ### Common Issues
 
 **"Forbidden - User is not a member of this organization"**
+
 - User doesn't have a record in organization_members for current tenant
 - Verify tenant switching worked correctly
 - Check if member was soft-deleted (deletedAt not null)
 
 **"Forbidden - steward role or higher required. Your role: member"**
+
 - User authenticated but lacks required role
 - This is expected behavior - user needs role upgrade
 - Contact admin to change role
 
 **Role changes not taking effect**
+
 - Check if organization_members record was updated
 - No caching currently - changes should be immediate
 - Verify correct tenantId in update query
@@ -425,6 +454,7 @@ if (process.env.NODE_ENV === 'development') {
 ## Future Enhancements
 
 ### Permission-Based System
+
 Currently using simple role hierarchy. For fine-grained control, integrate with `packages/auth/rbac/`:
 
 ```typescript
@@ -443,6 +473,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
 ```
 
 ### Multi-Role Support
+
 Allow members to hold multiple roles (e.g., steward in one department, member in another):
 
 ```typescript
@@ -456,6 +487,7 @@ interface RoleContext {
 ```
 
 ### Audit Logging
+
 Track role-based actions for compliance:
 
 ```typescript
@@ -474,24 +506,28 @@ await logRoleAction({
 ## Summary
 
 **What We Built:**
+
 - Hierarchical role system (member < steward < officer < admin)
 - Role-based middleware (`withRoleAuth`, `withAnyRole`)
 - Protected member API routes with role enforcement
 - Tenant-aware role context
 
 **Security Posture:**
+
 - ✅ Tenant isolation maintained
 - ✅ Role hierarchy enforced
 - ✅ Helpful error messages
 - ✅ Database-backed role storage
 
 **Next Steps:**
+
 1. Protect remaining API routes (claims, voting, contracts)
 2. Add role management UI for admins
 3. Create role-aware React hooks for frontend
 4. Add comprehensive test coverage
 
 **Key Files:**
+
 - `lib/role-middleware.ts` - Core RBAC middleware
 - `db/schema/organization-members-schema.ts` - Role field definition
 - `app/api/organization/members/route.ts` - Protected member APIs

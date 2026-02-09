@@ -9,11 +9,13 @@ This document verifies that UnionEyes has been correctly configured with Clerk a
 ## ✅ Verification Checklist
 
 ### 1. Package Installation
+
 - [x] `@clerk/nextjs` v5.3.7 installed
 - [x] All dependencies installed successfully
 - [x] No deprecated packages used
 
 ### 2. Environment Variables
+
 - [x] `.env.local` created with Clerk credentials
 - [x] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` configured
 - [x] `CLERK_SECRET_KEY` configured
@@ -21,6 +23,7 @@ This document verifies that UnionEyes has been correctly configured with Clerk a
 - [x] `.env.local` is in `.gitignore` (credentials protected)
 
 ### 3. Middleware Configuration
+
 - [x] `middleware.ts` exists at project root
 - [x] Uses `clerkMiddleware()` from `@clerk/nextjs/server`
 - [x] NOT using deprecated `authMiddleware()`
@@ -28,6 +31,7 @@ This document verifies that UnionEyes has been correctly configured with Clerk a
 - [x] Protected routes configured (dashboard)
 
 ### 4. Layout Configuration
+
 - [x] `app/layout.tsx` wrapped with `<ClerkProvider>`
 - [x] Using App Router structure (NOT pages/_app.tsx)
 - [x] Imported authentication components:
@@ -39,12 +43,14 @@ This document verifies that UnionEyes has been correctly configured with Clerk a
 - [x] Header with authentication UI implemented
 
 ### 5. Server Functions
+
 - [x] Using `auth()` from `@clerk/nextjs/server`
 - [x] Using `currentUser()` from `@clerk/nextjs/server`
 - [x] Proper async/await patterns
 
 ### 6. Development Server
-- [x] Server running at http://localhost:3000
+
+- [x] Server running at <http://localhost:3000>
 - [x] No compilation errors
 - [x] Ready for testing
 
@@ -53,6 +59,7 @@ This document verifies that UnionEyes has been correctly configured with Clerk a
 ## Implementation Details
 
 ### Middleware (`middleware.ts`)
+
 ```typescript
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
@@ -69,6 +76,7 @@ export const config = {
 ```
 
 ### Layout (`app/layout.tsx`)
+
 ```typescript
 import { ClerkProvider, SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
@@ -99,6 +107,7 @@ export default async function RootLayout({ children }) {
 ```
 
 ### Environment Variables (`.env.local`)
+
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_a25vd24taGFnZmlzaC02Ny5jbGVyay5hY2NvdW50cy5kZXYk
 CLERK_SECRET_KEY=sk_test_CgTyrzrO1CazAU5AGQvOkq7OyybHaWwzMS4g3DUoQA
@@ -124,7 +133,7 @@ The following deprecated patterns were **NOT** used in this implementation:
 
 ## Testing Instructions
 
-1. **Visit the application**: http://localhost:3000
+1. **Visit the application**: <http://localhost:3000>
 2. **Click "Sign Up"**: Should redirect to Clerk's sign-up flow
 3. **Create an account**: Complete the registration process
 4. **Verify authentication**: User button should appear in header
@@ -150,8 +159,8 @@ The following deprecated patterns were **NOT** used in this implementation:
 
 ## Support
 
-- **Clerk Documentation**: https://clerk.com/docs
-- **Next.js App Router**: https://nextjs.org/docs/app
+- **Clerk Documentation**: <https://clerk.com/docs>
+- **Next.js App Router**: <https://nextjs.org/docs/app>
 - **Project Setup**: See `UNIONEYES_SETUP.md`
 
 ---
@@ -161,6 +170,7 @@ The following deprecated patterns were **NOT** used in this implementation:
 ✅ **UnionEyes is now fully configured with Clerk authentication using the latest Next.js App Router approach.**
 
 All requirements from the Clerk integration guardrails have been met:
+
 - Using `clerkMiddleware()` from `@clerk/nextjs/server`
 - App wrapped with `<ClerkProvider>`
 - Authentication UI components properly implemented

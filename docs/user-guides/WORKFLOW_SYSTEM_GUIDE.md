@@ -1,6 +1,7 @@
 # Workflow System User Guide
 
 ## Table of Contents
+
 1. [Introduction](#introduction)
 2. [Getting Started](#getting-started)
 3. [Creating Workflows](#creating-workflows)
@@ -92,6 +93,7 @@ The left sidebar contains the **Node Palette** with 10 node types:
 4. An edge (arrow) appears connecting the nodes
 
 For **Decision nodes**, you can label edges with conditions:
+
 1. Select the edge in the canvas
 2. Set the condition in the properties panel
 3. The edge will route based on the condition result
@@ -101,6 +103,7 @@ For **Decision nodes**, you can label edges with conditions:
 Click any node to edit its properties in the right panel:
 
 **Example: Task Node Configuration**
+
 ```
 Name: Update Claim Status
 Action: update-claim-status
@@ -109,6 +112,7 @@ Parameters:
 ```
 
 **Example: Decision Node Configuration**
+
 ```
 Name: Check Claim Amount
 Conditions:
@@ -119,6 +123,7 @@ Conditions:
 ```
 
 **Example: Approval Node Configuration**
+
 ```
 Name: Supervisor Approval
 Requested From: supervisor-user-id
@@ -139,6 +144,7 @@ Auto-approve: false
 
 1. Click **Test** button
 2. Enter test context data (JSON):
+
 ```json
 {
   "claimId": "test-123",
@@ -146,19 +152,23 @@ Auto-approve: false
   "memberEmail": "member@example.com"
 }
 ```
-3. Review execution results in the Monitor
+
+1. Review execution results in the Monitor
 
 ### Advanced Features
 
 **Zoom and Pan**
+
 - Use zoom controls (+/-/reset) to navigate large workflows
 - Click and drag the canvas to pan
 
 **Export/Import**
+
 - **Export**: Download workflow as JSON file
 - **Import**: Load workflow from JSON file
 
 **Context Variables**
+
 - Access context data using `{{context.fieldName}}` syntax
 - Example: `{{context.claimId}}` in notification messages
 - Available in: notifications, API calls, task parameters
@@ -179,9 +189,11 @@ Auto-approve: false
 ### Available Templates
 
 #### 1. Claim Intake Processing
+
 **Purpose**: Automate new claim routing based on AI complexity assessment
 
 **Flow**:
+
 1. Start with new claim
 2. AI prediction analyzes complexity
 3. Decision routes based on complexity:
@@ -193,9 +205,11 @@ Auto-approve: false
 **When to Use**: Every new claim submission
 
 #### 2. Multi-Level Approval Chain
+
 **Purpose**: Sequential approval workflow for high-value claims
 
 **Flow**:
+
 1. Start with claim requiring approval
 2. Supervisor approval request
 3. If approved and amount > $50K, manager approval request
@@ -205,9 +219,11 @@ Auto-approve: false
 **When to Use**: Claims exceeding approval thresholds
 
 #### 3. Settlement Negotiation
+
 **Purpose**: AI-powered settlement calculation and negotiation
 
 **Flow**:
+
 1. Start with claim ready for settlement
 2. AI prediction calculates settlement range
 3. Decision checks if in acceptable range:
@@ -220,9 +236,11 @@ Auto-approve: false
 **When to Use**: Claims entering settlement phase
 
 #### 4. Claim Escalation
+
 **Purpose**: Automatic escalation for stalled claims
 
 **Flow**:
+
 1. Start with claim ID
 2. Check last update timestamp
 3. Decision: Is claim stalled (>30 days)?
@@ -233,9 +251,11 @@ Auto-approve: false
 **When to Use**: Daily batch process for all open claims
 
 #### 5. Document Review & Analysis
+
 **Purpose**: Automated document collection and AI analysis
 
 **Flow**:
+
 1. Start with claim requiring documents
 2. Send document request to member
 3. Delay until documents received (webhook trigger)
@@ -272,6 +292,7 @@ Auto-approve: false
 Navigate to **Workflows > Monitor** to see:
 
 **Statistics Dashboard**:
+
 - **Total**: All workflow instances
 - **Running**: Currently executing (blue)
 - **Paused**: Waiting for approval (yellow)
@@ -279,6 +300,7 @@ Navigate to **Workflows > Monitor** to see:
 - **Failed**: Encountered errors (red)
 
 **Workflow Instance Table**:
+
 - Workflow name and status
 - Current node being executed
 - Progress bar showing completion percentage
@@ -291,6 +313,7 @@ Navigate to **Workflows > Monitor** to see:
 **Search**: Enter workflow name, instance ID, or claim ID
 
 **Status Filter**: Show only workflows in specific status:
+
 - All
 - Pending
 - Running
@@ -306,6 +329,7 @@ Navigate to **Workflows > Monitor** to see:
 Click **View Details** (eye icon) on any instance to see:
 
 **Overview Section**:
+
 - Workflow name, version, and status
 - Start time (absolute and relative)
 - Total duration
@@ -314,6 +338,7 @@ Click **View Details** (eye icon) on any instance to see:
 - Error message (if failed)
 
 **Execution Timeline**:
+
 - Visual timeline of all node executions
 - Status indicator (completed, failed, running)
 - Duration for each node
@@ -322,12 +347,14 @@ Click **View Details** (eye icon) on any instance to see:
 - Click **View Details** to see node input/output/error
 
 **Execution Path**:
+
 - Badge flow showing node sequence
 - Current node highlighted with animation
 - Completed nodes in gray
 - Upcoming nodes in light gray
 
 **Context Variables**:
+
 - Current workflow context as formatted JSON
 - Shows data flowing through the workflow
 - Updated as nodes execute
@@ -335,6 +362,7 @@ Click **View Details** (eye icon) on any instance to see:
 ### Cancelling Workflows
 
 For running or paused workflows:
+
 1. Click **Cancel** (stop icon) in the Monitor
 2. Confirm cancellation
 3. Workflow status changes to "cancelled"
@@ -347,11 +375,13 @@ For running or paused workflows:
 Navigate to **Workflows > Approvals** to see:
 
 **Statistics**:
+
 - **Pending**: Awaiting your response (yellow)
 - **Approved**: You approved (green)
 - **Rejected**: You rejected (red)
 
 **Pending Approvals Section**:
+
 - Workflow name and claim ID
 - How long ago approval was requested
 - Approval message from workflow
@@ -359,6 +389,7 @@ Navigate to **Workflows > Approvals** to see:
 - Approve/Reject buttons
 
 **Approval History Table**:
+
 - All past approval decisions
 - Workflow name and status
 - When requested and responded
@@ -366,7 +397,8 @@ Navigate to **Workflows > Approvals** to see:
 
 ### Responding to Approvals
 
-#### To Approve:
+#### To Approve
+
 1. Review the approval request details
 2. Check claim ID and context data
 3. Click **Approve** (green button)
@@ -374,7 +406,8 @@ Navigate to **Workflows > Approvals** to see:
 5. Click **Submit Approval**
 6. Workflow resumes execution
 
-#### To Reject:
+#### To Reject
+
 1. Review the approval request
 2. Click **Reject** (red button)
 3. **Required**: Add comments explaining why
@@ -396,6 +429,7 @@ Navigate to **Workflows > Approvals** to see:
 Navigate to **Workflows > Analytics** and select **Overview (All Workflows)**:
 
 **Key Metrics**:
+
 - **Active Workflows**: How many of your workflows are currently active
 - **Success Rate**: Overall success percentage with trend indicator
   - Excellent: >90% (green)
@@ -411,12 +445,14 @@ Navigate to **Workflows > Analytics** and select **Overview (All Workflows)**:
 Select a specific workflow from the dropdown to see:
 
 **Execution Metrics**:
+
 - **Total Executions**: How many times this workflow has run
 - **Success Rate**: Percentage and count of successful executions
 - **Failed Executions**: Count and failure rate
 - **Avg Execution Time**: Typical duration for this workflow
 
 **Node Performance Table**:
+
 - **Node Name**: Each node in the workflow
 - **Average Time**: How long the node typically takes
 - **Failure Rate**: Percentage with visual progress bar
@@ -428,23 +464,27 @@ Select a specific workflow from the dropdown to see:
 ### Using Analytics to Improve Workflows
 
 **Identify Bottlenecks**:
+
 - Look for nodes with high average execution time
 - Consider optimizing or parallelizing slow nodes
 - Check if external API calls have long timeouts
 
 **Address Failures**:
+
 - Focus on nodes with high failure rates
 - Review error messages in failed executions
 - Update node configurations to handle edge cases
 - Add better error handling in decision nodes
 
 **Optimize Success Rates**:
+
 - Investigate failed workflow instances
 - Update conditions in decision nodes
 - Add validation before external calls
 - Increase retry counts for unreliable services
 
 **Track Trends**:
+
 - Compare metrics across different time ranges
 - Monitor success rate changes after workflow updates
 - Track execution time improvements
@@ -515,30 +555,35 @@ Select a specific workflow from the dropdown to see:
 ### Common Issues
 
 **Workflow Not Starting**
+
 - ✓ Verify workflow has Start node
 - ✓ Check workflow is active (not archived)
 - ✓ Ensure all required context fields provided
 - ✓ Review workflow validation errors
 
 **Execution Fails Immediately**
+
 - ✓ Check first node configuration
 - ✓ Verify context data format (valid JSON)
 - ✓ Review node execution error in timeline
 - ✓ Test node configuration individually
 
 **Stuck on Approval**
+
 - ✓ Verify approval request was created
 - ✓ Check assigned user has access to approval queue
 - ✓ Ensure user ID is correct in approval node
 - ✓ Review approval status in database
 
 **Slow Execution**
+
 - ✓ Check node performance in analytics
 - ✓ Review external API response times
 - ✓ Look for unnecessary delay nodes
 - ✓ Consider using parallel nodes
 
 **Decision Node Not Routing**
+
 - ✓ Verify condition syntax is correct
 - ✓ Check context contains required fields
 - ✓ Test condition expression in isolation
@@ -547,6 +592,7 @@ Select a specific workflow from the dropdown to see:
 ### Getting Help
 
 If you encounter issues:
+
 1. Check the workflow execution timeline for errors
 2. Review node configurations for mistakes
 3. Test with simplified workflow first
@@ -558,6 +604,7 @@ If you encounter issues:
 ### Webhook Triggers
 
 Workflows can be triggered by external webhooks:
+
 1. Configure webhook URL in workflow trigger settings
 2. Send POST request to webhook URL with context data
 3. Workflow starts automatically with provided context
@@ -565,6 +612,7 @@ Workflows can be triggered by external webhooks:
 ### API Integration
 
 Call external APIs using API Call nodes:
+
 - Set method, URL, headers, and body
 - Reference context values in configuration
 - Response stored in context for subsequent nodes
@@ -573,6 +621,7 @@ Call external APIs using API Call nodes:
 ### Parallel Execution
 
 Execute multiple branches concurrently:
+
 1. Add Parallel node
 2. Connect to multiple downstream nodes
 3. Configure "wait for all" setting
@@ -581,6 +630,7 @@ Execute multiple branches concurrently:
 ### AI-Powered Workflows
 
 Leverage AI predictions in workflows:
+
 1. Use AI Prediction node
 2. Select prediction type (outcome, timeline, resources, settlement)
 3. Map context data to AI input
@@ -589,6 +639,7 @@ Leverage AI predictions in workflows:
 ### Custom Actions
 
 Extend task nodes with custom actions:
+
 1. Define action in workflow service
 2. Implement action handler
 3. Add action to node configuration

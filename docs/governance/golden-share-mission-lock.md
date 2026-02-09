@@ -5,6 +5,7 @@
 Protect Union Eyes' union-serving mission from investor interference while allowing normal corporate governance and eventual investor exit.
 
 **Problem Solved**: Prevents mission drift where profit-seeking investors pressure the company to:
+
 - Serve employers instead of unions
 - Sell member data
 - Deprioritize union needs
@@ -19,16 +20,19 @@ Protect Union Eyes' union-serving mission from investor interference while allow
 **Holder**: Elected Union Member Representative Council (5 members)
 
 **Economic Rights**:
+
 - $1.00 redemption value (nominal)
 - No dividend rights
 - No profit participation
 - No liquidation preference
 
 **Voting Rights**:
+
 - **Reserved Matters**: 51% voting power (veto)
 - **All Other Matters**: 1% voting power (ordinary)
 
 **Transfer Restrictions**:
+
 - Non-transferable
 - Cannot be sold or pledged
 - Can only pass to successor Council (elected by union members)
@@ -40,6 +44,7 @@ Protect Union Eyes' union-serving mission from investor interference while allow
 **Term**: 2 years
 
 **Election Process**:
+
 1. Nomination period (60 days before election)
 2. Candidate statements published
 3. Online voting (all union members vote)
@@ -58,18 +63,21 @@ The Golden Share holder (Union Council) has veto power over:
 ### 1. Mission Changes
 
 **Cannot do without Union Council approval**:
+
 - Change company charter/purpose from union service
 - Serve non-union clients as primary business
 - Partner with employers in ways that compromise union neutrality
 - Rebrand away from union focus
 
 **Examples**:
+
 - ✅ **Allowed without veto**: Add new union-serving features
 - ❌ **Requires veto**: Pivot to serve employers exclusively
 
 ### 2. Sale/Control Changes
 
 **Cannot do without Union Council approval**:
+
 - Sale of company (>50% ownership transfer)
 - Merger or acquisition (Union Eyes acquired)
 - Initial Public Offering (IPO)
@@ -78,12 +86,14 @@ The Golden Share holder (Union Council) has veto power over:
 **Rationale**: Prevents acquisition by anti-union companies or private equity
 
 **Examples**:
+
 - ❌ **Blocked**: Walmart acquires Union Eyes
 - ✅ **Allowed**: Union Eyes acquires smaller union tech company
 
 ### 3. Data Governance
 
 **Cannot do without Union Council approval**:
+
 - Share member data with employers
 - Sell member data to third parties
 - Move data outside Canada permanently
@@ -92,12 +102,14 @@ The Golden Share holder (Union Council) has veto power over:
 **Rationale**: Protects member privacy and union confidentiality
 
 **Examples**:
+
 - ❌ **Blocked**: Sell anonymized member data to data brokers
 - ✅ **Allowed**: Export data for member's own use
 
 ### 4. Major Contracts
 
 **Cannot do without Union Council approval**:
+
 - Contracts >$1M annually with employers
 - Exclusive partnerships that limit union choice
 - Technology licensing to anti-union entities
@@ -106,6 +118,7 @@ The Golden Share holder (Union Council) has veto power over:
 **Rationale**: Prevents financial dependence on employers
 
 **Examples**:
+
 - ❌ **Blocked**: $2M/year exclusive contract with Amazon to monitor warehouse workers
 - ✅ **Allowed**: $500k contract with union to customize platform
 
@@ -114,23 +127,27 @@ The Golden Share holder (Union Council) has veto power over:
 Golden Share holder votes as ordinary shareholder (1% power) on:
 
 ### Day-to-Day Operations
+
 - Hiring/firing executives (except CEO)
 - Annual operating budgets
 - Office leases
 - Equipment purchases
 
 ### Product Development
+
 - Feature prioritization
 - Technology stack choices
 - Product roadmap
 - Release schedules
 
 ### Ordinary Contracts
+
 - Contracts <$1M annually
 - Vendor agreements (hosting, SaaS)
 - Professional services (legal, accounting)
 
 ### Corporate Governance
+
 - Board meeting frequency
 - Committee assignments
 - Compensation policies (within budget)
@@ -144,6 +161,7 @@ Golden Share holder votes as ordinary shareholder (1% power) on:
 **Condition**: Union Eyes maintains union-serving mission for 5 consecutive years
 
 **Verification**:
+
 1. **Annual Independent Audit**
    - Third-party auditor reviews operations
    - Confirms mission compliance
@@ -169,6 +187,7 @@ Golden Share holder votes as ordinary shareholder (1% power) on:
 **Condition**: 75% of Class A (ordinary) shareholders vote to sunset
 
 **Process**:
+
 1. Shareholder proposal filed
 2. Union Council notified (60 days notice)
 3. Special meeting called
@@ -199,11 +218,13 @@ Golden Share holder votes as ordinary shareholder (1% power) on:
 ### Voting Power Calculation
 
 **Reserved Matters** (sale, mission change, data sharing):
+
 - Union Council: 51% (Golden Share) + 7.35% (Class A) = **58.35%**
 - Founders: 35% + 25% = 29.4%
 - Investors: 15% + 10% = 12.25%
 
 **All Other Matters** (normal operations):
+
 - Founders: 35% + 25% = **60%** (control)
 - Union Council: 15% + 1% (Golden) = 16%
 - Investors: 15% + 10% = 25%
@@ -313,6 +334,7 @@ holder within 10 business days of any investigation into potential violations.
 ### Investor Considerations
 
 #### Advantages for Investors
+
 ✅ **Clear Exit Path**: 5-year sunset provides certainty
 ✅ **Limited Scope**: Veto only applies to 4 Reserved Matter categories
 ✅ **Day-to-Day Control**: Founders/investors control operations
@@ -320,12 +342,14 @@ holder within 10 business days of any investigation into potential violations.
 ✅ **Proven Model**: Similar to B-Corps, dual-class structures
 
 #### Disadvantages for Investors
+
 ❌ **Valuation Discount**: Typically 20-30% vs. unrestricted shares
 ❌ **Exit Complexity**: Sale requires Union Council approval
 ❌ **Longer Timeline**: 5-year wait for full liquidity
 ❌ **Mission Risk**: Violation resets 5-year clock
 
 #### Comparable Structures
+
 - **Kickstarter**: Public Benefit Corporation (PBC) with mission lock
 - **Patagonia**: Perpetual trust owns voting shares
 - **Atlassian**: Dual-class voting structure (founders retain control)
@@ -333,6 +357,7 @@ holder within 10 business days of any investigation into potential violations.
 ### Tax Implications
 
 **CRA Treatment**:
+
 - Golden Share is voting equity (not debt)
 - $1 redemption value = nominal fair market value
 - No taxable benefit to Union Council
@@ -343,27 +368,32 @@ holder within 10 business days of any investigation into potential violations.
 ### Reserved Matter Approval Process
 
 #### Step 1: Proposal
+
 - Board of Directors proposes transaction (e.g., sale, partnership)
 - Detailed memo prepared for shareholders
 - Financial analysis, legal opinion, strategic rationale
 
 #### Step 2: Class A Vote
+
 - Notice sent to all Class A shareholders (30 days)
 - Special meeting called
 - Vote held (majority required: >50%)
 
 #### Step 3: Golden Share Vote
+
 - Union Council receives detailed briefing
 - 10-day deliberation period
 - Council votes internally (majority of 5 members)
 - Decision communicated to Board
 
 #### Step 4: Outcome
+
 - **If both approve**: Transaction proceeds
 - **If Class A rejects**: Transaction blocked (no Golden Share vote needed)
 - **If Golden Share vetoes**: Transaction blocked regardless of Class A vote
 
 #### Step 5: Appeal (Optional)
+
 - Board can request reconsideration
 - Union Council can request amendments
 - Revised proposal can be re-voted
@@ -373,11 +403,13 @@ holder within 10 business days of any investigation into potential violations.
 **Timeline**: April of each year (for previous calendar year)
 
 #### Independent Auditor
+
 - Appointed by Board (with Union Council consent)
 - Qualifications: CPA with corporate governance experience
 - Scope: Review compliance with mission, Reserved Matters restrictions
 
 #### Review Criteria
+
 1. **Revenue Analysis**
    - % from union clients vs. employers
    - Contract review (>$1M contracts)
@@ -401,12 +433,14 @@ holder within 10 business days of any investigation into potential violations.
    - Target: No mission drift
 
 #### Auditor Report
+
 - Issued by May 31
 - Shared with Board and Union Council
 - Public summary for members
 - Detailed findings confidential
 
 #### Consecutive Years Tracking
+
 - **Year 1 (2026)**: Compliant ✅ → 1 year
 - **Year 2 (2027)**: Compliant ✅ → 2 years
 - **Year 3 (2028)**: Compliant ✅ → 3 years
@@ -420,11 +454,13 @@ holder within 10 business days of any investigation into potential violations.
 **Situation**: Series A investor wants to sell 10% stake to new investor
 
 **Analysis**:
+
 - Not a change of control (<50%)
 - Not a Reserved Matter
 - Ordinary shareholder transfer
 
 **Voting**:
+
 - Class A shareholders vote (if pre-emption rights invoked)
 - Golden Share does NOT have veto power
 
@@ -437,11 +473,13 @@ holder within 10 business days of any investigation into potential violations.
 **Situation**: Large HR tech company offers to acquire Union Eyes for $50M
 
 **Analysis**:
+
 - Change of control (>50% ownership transfer)
 - Reserved Matter: Sale of Company
 - Golden Share veto applies
 
 **Voting**:
+
 1. Class A shareholders vote: 80% approve
 2. Union Council votes: **VETO** (4 out of 5 vote no)
 
@@ -456,12 +494,14 @@ holder within 10 business days of any investigation into potential violations.
 **Situation**: Amazon offers $2M/year exclusive contract to provide Union Eyes to warehouse managers for "employee engagement"
 
 **Analysis**:
+
 - Contract >$1M with employer
 - Compromises union neutrality
 - Reserved Matter: Major Contract with Employer
 - Golden Share veto applies
 
 **Voting**:
+
 1. Board proposes (attractive revenue)
 2. Class A shareholders: 65% approve
 3. Union Council: **VETO** (unanimous)
@@ -477,6 +517,7 @@ holder within 10 business days of any investigation into potential violations.
 **Situation**: Major Canadian union signs $800k annual contract
 
 **Analysis**:
+
 - Contract <$1M
 - Union client (not employer)
 - NOT a Reserved Matter
@@ -493,6 +534,7 @@ holder within 10 business days of any investigation into potential violations.
 **Situation**: 5 consecutive years of mission compliance (2026-2030)
 
 **Annual Audit Results**:
+
 - 2026: ✅ Compliant (94% union revenue, 85% satisfaction)
 - 2027: ✅ Compliant (92% union revenue, 82% satisfaction)
 - 2028: ✅ Compliant (96% union revenue, 88% satisfaction)
@@ -502,6 +544,7 @@ holder within 10 business days of any investigation into potential violations.
 **Sunset Trigger**: January 1, 2031
 
 **Effect**:
+
 - Golden Share automatically converts to 1 Class A share
 - Union Council retains 15% + 0.01% = 15.01% voting (no veto)
 - Founders/investors gain full control on all matters
@@ -516,17 +559,20 @@ holder within 10 business days of any investigation into potential violations.
 **Situation**: Union Eyes signs $1.5M contract with employer client without Union Council approval
 
 **Analysis**:
+
 - Reserved Matter violated
 - Material breach of Golden Share agreement
 - Auditor flags violation
 
 **Consequences**:
+
 1. Contract voided or requires retroactive Union Council approval
 2. 5-year countdown **resets to zero**
 3. New 5-year period begins from 2029
 4. Potential legal action by Union Council
 
 **Remediation**:
+
 - Cancel contract or renegotiate
 - Strengthen approval controls
 - Board commits to no future violations
@@ -538,6 +584,7 @@ holder within 10 business days of any investigation into potential violations.
 ## Implementation Checklist
 
 ### Legal Documents Required
+
 - [ ] Amended Articles of Incorporation (create Class B shares)
 - [ ] Shareholders Agreement (Reserved Matters, Sunset Clause)
 - [ ] Union Member Election Procedures (Schedule A)
@@ -545,17 +592,20 @@ holder within 10 business days of any investigation into potential violations.
 - [ ] Independent Auditor Engagement Letter
 
 ### Corporate Filings
+
 - [ ] Articles of Amendment (Corporations Canada or provincial)
 - [ ] Updated securities register
 - [ ] Notice to existing shareholders (30 days)
 
 ### Governance Setup
+
 - [ ] Elect initial Union Member Representative Council (5 members)
 - [ ] Appoint Independent Auditor
 - [ ] Schedule Annual Mission Review (April each year)
 - [ ] Document Reserved Matters approval process
 
 ### Communication
+
 - [ ] Announce to union members
 - [ ] Investor briefing (explain sunset clause, exit path)
 - [ ] Public statement (reinforce mission commitment)

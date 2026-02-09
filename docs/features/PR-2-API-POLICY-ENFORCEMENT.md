@@ -1,14 +1,17 @@
 # PR-2: API Policy Enforcement Gate (Deny-by-Default)
 
 ## Summary
+
 Implements systematic API route authentication enforcement to make it impossible to ship an unguarded API route by accident. Establishes a "deny-by-default" security policy with explicit public route allowlisting.
 
 ## Changes Made
 
 ### 1. Enhanced API Authentication Guard
+
 - **File:** `lib/api-auth-guard.ts`
 - **Added:** `requireApiAuth()` function - modern, simple guard for API routes
 - **Signature:**
+
   ```typescript
   requireApiAuth(options?: {
     tenant?: boolean;
@@ -16,7 +19,9 @@ Implements systematic API route authentication enforcement to make it impossible
     allowPublic?: boolean;
   })
   ```
+
 - **Usage:**
+
   ```typescript
   import { requireApiAuth } from '@/lib/api-auth-guard';
   
@@ -27,9 +32,11 @@ Implements systematic API route authentication enforcement to make it impossible
   ```
 
 ### 2. Public API Routes Configuration
+
 - **File:** `config/public-api-routes.ts`
 - **Purpose:** Explicit allowlist of public API routes with justifications
 - **Structure:**
+
   ```typescript
   {
     pattern: string;      // Route pattern (supports * and [param])
@@ -37,6 +44,7 @@ Implements systematic API route authentication enforcement to make it impossible
     category: 'health' | 'webhook' | 'public-content' | 'tracking' | 'payment' | 'dev-only';
   }
   ```
+
 - **Categories:**
   - Health/Monitoring: `/api/health`, `/api/status`
   - Webhooks: Stripe, CLC, Whop, DocuSign (signature-verified)
@@ -45,6 +53,7 @@ Implements systematic API route authentication enforcement to make it impossible
   - Cron Jobs: Internal scheduled tasks (secret header auth)
 
 ### 3. CI Enforcement Script
+
 - **File:** `scripts/check-api-guards.js` (Node.js - cross-platform)
 - **File:** `scripts/check-api-guards.ts` (TypeScript version for future)
 - **Functionality:**
@@ -61,6 +70,7 @@ Implements systematic API route authentication enforcement to make it impossible
   - Exits with code 1 on failure (CI-friendly)
 
 **Recognized Guard Patterns:**
+
 ```javascript
 - requireApiAuth         (preferred)
 - withApiAuth            (wrapper pattern)
@@ -71,16 +81,19 @@ Implements systematic API route authentication enforcement to make it impossible
 ```
 
 ### 4. Package.json Script
+
 - **Script:** `"validate:api-guards": "node scripts/check-api-guards.js"`
 - **Usage:** `pnpm validate:api-guards`
 
 ### 5. GitHub Actions CI Workflow
+
 - **File:** `.github/workflows/api-security.yml`
 - **Trigger:** Pull requests affecting API routes or auth files
 - **Job:** Validates all API routes have proper guards
 - **Failure Behavior:** Blocks PR if unguarded routes detected
 
 ### 6. Updated 5 Representative Routes
+
 Updated to use `requireApiAuth()` pattern:
 
 1. **`/api/workflow/overdue`** - GET
@@ -105,6 +118,7 @@ Updated to use `requireApiAuth()` pattern:
 ## Current Status
 
 ### Guard Compliance
+
 ```
 Total API routes:    378
 ✅ Guarded:          328 (87%)
@@ -115,7 +129,9 @@ Total API routes:    378
 **Progress:** Reduced violations from 40 → 26 through guard updates and improved detection
 
 ### Remaining Work (Follow-up PRs)
+
 26 remaining unguarded routes need attention:
+
 - `/api/organizations/[id]/sharing-settings`
 - `/api/organizations/[id]/path`
 - `/api/signatures/audit/[documentId]`
@@ -135,6 +151,7 @@ Total API routes:    378
 ## Verification
 
 ### Local Verification
+
 ```bash
 # Run guard validation
 pnpm validate:api-guards
@@ -151,6 +168,7 @@ pnpm validate:api-guards
 ```
 
 ### CI Verification
+
 ```bash
 # GitHub Actions will run automatically on PR
 # When API route files or guard files change
@@ -161,12 +179,14 @@ pnpm validate:api-guards
 ## How to Test
 
 1. **Test guard validation:**
+
    ```bash
    pnpm validate:api-guards
    # Should show current state (26 violations)
    ```
 
 2. **Test creating unguarded route:**
+
    ```bash
    # Create a new route without guard
    cat > app/api/test-unguarded/route.ts << 'EOF'
@@ -185,6 +205,7 @@ pnpm validate:api-guards
    ```
 
 3. **Test properly guarded route:**
+
    ```typescript
    // In any route.ts
    import { requireApiAuth } from '@/lib/api-auth-guard';
@@ -200,6 +221,7 @@ pnpm validate:api-guards
    ```
 
 4. **Test public route allowlist:**
+
    ```typescript
    // Add to config/public-api-routes.ts
    {
@@ -216,6 +238,7 @@ pnpm validate:api-guards
 ## Files Changed
 
 ### New Files
+
 - `config/public-api-routes.ts` - Explicit public routes allowlist
 - `scripts/check-api-guards.js` - Main CI enforcement script (Node.js)
 - `scripts/check-api-guards.ts` - TypeScript version for future use
@@ -223,6 +246,7 @@ pnpm validate:api-guards
 - `docs/PR-2-API-POLICY-ENFORCEMENT.md` - This document
 
 ### Modified Files
+
 - `lib/api-auth-guard.ts` - Added requireApiAuth() function
 - `package.json` - Added validate:api-guards script
 - `app/api/workflow/overdue/route.ts` - Updated to requireApiAuth
@@ -234,11 +258,13 @@ pnpm validate:api-guards
 ## Impact Assessment
 
 ### Breaking Changes
+
 - **None** - All changes are additive or internal improvements
 - Existing auth patterns (withEnhancedRoleAuth, withRLSContext) still work
 - No API behavior changes for existing routes
 
 ### Benefits
+
 1. **Security by Default:** Cannot ship unguarded API routes accidentally
 2. **Explicit Public Routes:** Every public endpoint requires justification
 3. **Automated Enforcement:** CI catches violations before merge
@@ -247,6 +273,7 @@ pnpm validate:api-guards
 6. **Flexible Patterns:** Supports multiple existing guard patterns
 
 ### Risks
+
 - **Minimal** - Incremental adoption approach
 - CI is informative; developers can bypass with explicit allowlisting
 - Compatible with existing auth infrastructure
@@ -256,23 +283,28 @@ pnpm validate:api-guards
 For the remaining 26 unguarded routes, recommended approach:
 
 ### 1. Audit Each Route
+
 ```bash
 # Get list of unguarded routes
 pnpm validate:api-guards 2>&1 | grep "File:" | awk '{print $2}'
 ```
 
 ### 2. Categorize by Fix Type
+
 - **Add requireApiAuth:** Most common case
 - **Add to allowlist:** If truly public (rare)
 - **Already guarded but not detected:** Update detection script
 
 ### 3. Create Follow-up Issues
+
 Create GitHub issues for remaining routes:
+
 - Group by module (organizations, signatures, workbench, etc.)
 - Assign to appropriate teams
 - Link to this PR for context
 
 ### 4. Example Fix PR
+
 ```typescript
 // Before
 export async function GET(request: NextRequest) {
@@ -301,13 +333,17 @@ export async function GET(request: NextRequest) {
 ## Documentation
 
 ### For Developers
+
 See [SECURITY.md](./SECURITY.md) (to be created in PR-3) for:
+
 - How to use requireApiAuth()
 - When to add routes to public allowlist
 - Role-based access control patterns
 
 ### For Security Team
+
 See [ARCHITECTURE.md](./ARCHITECTURE.md) (to be created in PR-3) for:
+
 - Complete auth architecture
 - Guard patterns and precedence
 - Audit logging integration
@@ -315,6 +351,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) (to be created in PR-3) for:
 ## Next Steps
 
 After PR-2 is merged:
+
 - **PR-3:** Evidence & Audit Baseline (comprehensive audit logging)
 - **Follow-up PRs:** Address remaining 26 unguarded routes
 - **Documentation:** Complete SECURITY.md and ARCHITECTURE.md (part of PR-3)

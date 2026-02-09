@@ -30,12 +30,14 @@ Invoke-WebRequest "https://images.pexels.com/photos/1103970/pexels-photo-1103970
 ```
 
 After downloading, update file extensions in components:
+
 - `animated-hero.tsx`: Change `.svg` to `.jpg` in hero image src
 - `animated-reviews.tsx`: Change `.svg` to `.jpg` in avatar image src
 
 ### Option 2: Using Pixabay (Also Free)
 
-Search for images manually at https://pixabay.com and download:
+Search for images manually at <https://pixabay.com> and download:
+
 - Hero: Search "team collaboration business"
 - Avatars: Search "professional portrait" (get 5 diverse photos)
 - Background: Search "minimal pattern abstract"
@@ -47,6 +49,7 @@ Use your own photos or hire a photographer for authentic brand imagery.
 ## Current Placeholder Benefits
 
 The SVG placeholders provide:
+
 - ✅ Zero load time (inline, scalable)
 - ✅ Professional gradient designs
 - ✅ Perfect responsive scaling
@@ -56,11 +59,13 @@ The SVG placeholders provide:
 ## When to Upgrade
 
 Consider keeping SVG placeholders if:
+
 - Building prototype/MVP quickly
 - Testing layout and UX first
 - Budget constraints for photography
 
 Upgrade to photos when:
+
 - Launching to production
 - Building trust with real testimonials
 - Showcasing actual team/product

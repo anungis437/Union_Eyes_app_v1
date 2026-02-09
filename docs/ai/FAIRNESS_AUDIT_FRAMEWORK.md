@@ -26,11 +26,13 @@ This Fairness Audit Framework establishes standardized procedures for detecting,
 ### Scope
 
 **Applies to:**
+
 - All AI/ML models in production
 - AI features in pilot testing (before full deployment)
 - Third-party AI services integrated into Union Eyes
 
 **Audit Frequency:**
+
 - **Quarterly:** All production AI models
 - **Pre-Deployment:** New AI features (before general availability)
 - **Ad-Hoc:** Following bias incidents or member complaints
@@ -59,6 +61,7 @@ Per [AI_PRINCIPLES.md](AI_PRINCIPLES.md), we monitor fairness across:
 ### Intersectional Analysis
 
 **We also analyze intersections:**
+
 - Gender × Race (e.g., Black women vs. White men)
 - Age × Disability (e.g., Older workers with disabilities)
 - Seniority × Union Local (e.g., New members in small locals)
@@ -77,12 +80,13 @@ We use three complementary definitions of fairness:
 
 **Definition:** AI predictions should be distributed similarly across demographic groups.
 
-**Formula:** 
+**Formula:**
 $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}{\text{Positive Prediction Rate (Group B)}}$$
 
 **Pass Criteria:** Ratio ≥ 0.80 (4/5ths rule from employment law)
 
-**Example:** 
+**Example:**
+
 - AI predicts 60% of male-led grievances will win
 - AI predicts 45% of female-led grievances will win
 - Ratio: 45/60 = 0.75 ❌ **FAIL** (below 0.80 threshold)
@@ -94,14 +98,17 @@ $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}
 **Definition:** AI should make errors at similar rates across groups.
 
 **Formulas:**
+
 - **False Positive Rate (FPR):** % of actual negatives incorrectly predicted as positive
 - **False Negative Rate (FNR):** % of actual positives incorrectly predicted as negative
 
-**Pass Criteria:** 
+**Pass Criteria:**
+
 - FPR difference ≤ 10 percentage points across groups
 - FNR difference ≤ 10 percentage points across groups
 
 **Example:**
+
 - Black members: FPR = 12%, FNR = 8%
 - White members: FPR = 10%, FNR = 6%
 - FPR difference: 2 percentage points ✅ **PASS**
@@ -118,6 +125,7 @@ $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}
 **Pass Criteria:** ±5 percentage point calibration error per group
 
 **Example:**
+
 - AI predicts 80% win probability for 100 grievances led by women → 75 actually win (75%) ✅ **PASS** (within ±5%)
 - AI predicts 80% win probability for 100 grievances led by men → 85 actually win (85%) ✅ **PASS** (within ±5%)
 
@@ -126,16 +134,19 @@ $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}
 ### Statistical Significance Testing
 
 **Chi-Square Test (Categorical Outcomes):**
+
 - Tests whether prediction distribution differs significantly across groups
 - p-value < 0.05 indicates statistically significant difference
 - Used for: Demographic parity analysis
 
 **Two-Sample T-Test (Continuous Outcomes):**
+
 - Tests whether average predictions differ significantly across groups
 - p-value < 0.05 indicates statistically significant difference
 - Used for: Timeline predictions, settlement amounts
 
 **Logistic Regression (Multivariate Analysis):**
+
 - Tests whether protected attributes have significant effect on predictions after controlling for legitimate factors
 - p-value < 0.05 for protected attribute coefficient indicates potential bias
 - Used for: Isolating bias from confounding variables
@@ -151,6 +162,7 @@ $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}
 **Audit Lead:** Data Privacy Officer or designated auditor
 
 **Scope Definition:**
+
 - [ ] Identify AI models to audit (all production models quarterly)
 - [ ] Determine audit period (typically last 90 days of predictions)
 - [ ] Define success criteria (fairness thresholds)
@@ -161,17 +173,20 @@ $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}
 #### 1.2 Data Collection Requirements
 
 **Required Data:**
+
 - All predictions made by AI model in audit period
 - Actual outcomes (for accuracy validation)
 - Member demographic attributes (protected categories)
 - Input features used by model (to identify proxies)
 
 **Data Privacy:**
+
 - Use pseudonymized member IDs (not names)
 - Restrict access to audit team only
 - Data deleted after audit completion (30 days)
 
 **Data Quality Checks:**
+
 - [ ] Missing demographic data ≤10% (otherwise cannot conduct audit)
 - [ ] Outcome data available (can verify predictions)
 - [ ] Data completeness (no corrupted records)
@@ -185,12 +200,14 @@ $$\text{Selection Rate Ratio} = \frac{\text{Positive Prediction Rate (Group A)}}
 **Generate summary statistics:**
 
 **Overall Prediction Distribution:**
+
 - Total predictions: N
 - Positive predictions: X (Y%)
 - Negative predictions: Z (W%)
 - Average confidence: C
 
 **Demographic Breakdown:**
+
 - Group sizes (ensure ≥30 members per group)
 - Prediction rates by group
 - Confidence scores by group
@@ -334,28 +351,34 @@ if p_value < 0.05:
 **Potential Causes:**
 
 **1. Training Data Bias:**
+
 - Historical data reflects past discrimination
 - Example: Women historically underrepresented in successful grievances → AI learns to predict lower win rates for women
 
 **2. Proxy Discrimination:**
+
 - Model uses features correlated with protected attributes
 - Example: "Union local" may be proxy for race if locals are segregated
 
 **3. Measurement Bias:**
+
 - Outcome data systematically biased
 - Example: Arbitrators may rule differently based on steward gender → AI learns biased pattern
 
 **4. Aggregation Bias:**
+
 - One model for all groups ignores group-specific patterns
 - Example: Timeline predictions based on men's average timelines don't fit women's patterns
 
 **5. Evaluation Bias:**
+
 - Model optimized for majority group, underperforms for minorities
 - Example: Training data 80% White → AI optimizes for White members
 
 **Investigation Steps:**
 
 **Step 1: Feature Importance Analysis**
+
 - Which features drive predictions?
 - Are any correlated with protected attributes? (proxy test)
 
@@ -368,14 +391,17 @@ for feature in model.features:
 ```
 
 **Step 2: Training Data Audit**
+
 - Is historical data balanced across groups?
 - Do outcomes differ by group in training data?
 
 **Step 3: Model Inspection**
+
 - Does model have separate decision boundaries for groups?
 - Visualize predictions by group (scatter plots, histograms)
 
 **Step 4: Stakeholder Interviews**
+
 - Ask stewards: Do predictions "feel" biased?
 - Review member complaints or feedback
 
@@ -388,16 +414,19 @@ for feature in model.features:
 **Choose appropriate strategy based on root cause:**
 
 **Strategy 1: Data Rebalancing**
+
 - **When:** Training data imbalanced across groups
 - **How:** Oversample minority groups or undersample majority groups
 - **Example:** If 80% White, 20% minority in training data → balance to 50/50
 
 **Strategy 2: Feature Engineering**
+
 - **When:** Proxy features identified
 - **How:** Remove or transform correlated features
 - **Example:** Remove "union local" if proxy for race; replace with "local size" (less correlated)
 
 **Strategy 3: Fairness Constraints**
+
 - **When:** Model optimizes accuracy over fairness
 - **How:** Add fairness penalty to loss function during training
 - **Example:** Penalize model if demographic parity ratio < 0.85
@@ -410,16 +439,19 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 ```
 
 **Strategy 4: Post-Processing Calibration**
+
 - **When:** Calibration differs across groups
 - **How:** Adjust prediction thresholds per group to equalize outcomes
 - **Example:** Threshold 0.5 for majority, 0.45 for minority (increase their positive rate)
 
 **Strategy 5: Separate Models per Group**
+
 - **When:** Groups have fundamentally different patterns
 - **How:** Train distinct models for each group
 - **Risk:** May violate fairness if models have different accuracy (consult legal)
 
 **Strategy 6: Human Review Override**
+
 - **When:** Bias persists despite technical fixes
 - **How:** Flag predictions for disadvantaged groups for human review
 - **Example:** All predictions for Black women reviewed by supervisor before use
@@ -429,17 +461,20 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 #### 4.2 Remediation Timeline
 
 **Immediate (0-7 days):**
+
 - Notify AI Governance Committee
 - Implement temporary mitigation (e.g., human review override)
 - Communicate to affected users (if material impact)
 
 **Short-Term (7-30 days):**
+
 - Implement technical fixes (data rebalancing, feature engineering, fairness constraints)
 - Retrain model with bias mitigation
 - Validate fixes (re-run fairness audit)
 - Deploy updated model
 
 **Long-Term (30-90 days):**
+
 - Monitor for bias recurrence (monthly checks)
 - Establish ongoing fairness controls (automated alerts)
 - Policy updates if needed (e.g., stricter thresholds)
@@ -452,6 +487,7 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 #### 5.1 Audit Report Structure
 
 **Executive Summary (1 page):**
+
 - Audit scope and period
 - Key findings (bias detected or not)
 - Severity assessment (Critical, High, Medium, Low, None)
@@ -459,6 +495,7 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 - Timeline for resolution
 
 **Detailed Findings (10-20 pages):**
+
 1. **Introduction:** Purpose, scope, methodology
 2. **Data Overview:** Sample size, demographic distribution, audit period
 3. **Fairness Metrics Results:** Tables and charts for each protected attribute
@@ -469,6 +506,7 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 8. **Conclusion:** Overall fairness assessment
 
 **Appendices:**
+
 - Raw data tables
 - Statistical test outputs
 - Code used for analysis (reproducibility)
@@ -479,17 +517,20 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 #### 5.2 Report Distribution
 
 **Internal:**
+
 - AI Governance Committee (full report)
 - CTO and Data Science Lead (full report)
 - Union Executive Board (executive summary)
 - Audit team (full report)
 
 **External (if required):**
+
 - Third-party auditor (for validation)
 - Regulators (if compliance audit)
 - Members (anonymized public summary if transparency commitment)
 
 **Timing:**
+
 - Draft report: 3 weeks after audit start
 - Final report: 4 weeks after audit start (after committee review)
 
@@ -498,6 +539,7 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 **Per [AI_GOVERNANCE_CHARTER.md](AI_GOVERNANCE_CHARTER.md), we commit to transparency:**
 
 **Quarterly Fairness Summary (Public):**
+
 - Total AI predictions audited
 - Number of fairness tests conducted
 - Pass/fail rate (% of tests passed)
@@ -505,11 +547,13 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 - Remediation actions taken
 
 **What We DON'T Publish:**
+
 - Member-level data (privacy protected)
 - Detailed model internals (security risk)
 - Ongoing investigations (until resolved)
 
 **Where Published:**
+
 - Union Eyes public website: [unioneyes.org/ai-fairness](https://unioneyes.org/ai-fairness)
 - Annual AI Transparency Report (comprehensive)
 
@@ -522,30 +566,35 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 ### Severity Classification
 
 **Critical Bias:**
+
 - Disparate impact ratio <0.60 (severe discrimination)
 - Affects >100 members
 - High-stakes decisions (settlements, discipline advice)
 - **Action:** Immediate model suspension, emergency committee meeting, notify Board within 24 hours
 
 **High Bias:**
+
 - Disparate impact ratio 0.60-0.79
 - Affects 50-100 members
 - Moderate-stakes decisions (claim predictions, steward assignment)
 - **Action:** Enhanced human review override, remediation within 30 days, committee notification within 48 hours
 
 **Medium Bias:**
+
 - Disparate impact ratio 0.80-0.84 (borderline)
 - Affects 20-50 members
 - Lower-stakes decisions (precedent search, document summaries)
 - **Action:** Remediation within 60 days, include in quarterly committee report
 
 **Low Bias:**
+
 - Disparate impact ratio 0.85-0.89 (near-pass)
 - Affects <20 members
 - Informational features (no decisions)
 - **Action:** Remediation within 90 days, monitor for trends
 
 **No Bias Detected:**
+
 - Disparate impact ratio ≥0.90
 - All fairness tests passed
 - **Action:** Continue quarterly monitoring, no immediate action needed
@@ -553,38 +602,45 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 ### Remediation Process
 
 **Step 1: Bias Confirmation (0-7 days)**
+
 - Validate findings (ensure not data error or statistical fluke)
 - Determine severity
 - Notify stakeholders (committee, affected teams)
 
 **Step 2: Immediate Containment (0-7 days)**
+
 - Critical/High: Suspend model or add human review gate
 - Medium: Enhanced monitoring, flag affected predictions
 - Low: Document and schedule fix
 
 **Step 3: Root Cause Investigation (7-14 days)**
+
 - Analyze training data for imbalance
 - Check for proxy features
 - Review model architecture for bias amplification
 - Interview stewards (qualitative insights)
 
 **Step 4: Implement Mitigation (14-30 days)**
+
 - Apply chosen bias mitigation strategy (see Phase 4)
 - Retrain model with fixes
 - Validate on test set (ensure bias reduced)
 - A/B test if possible (compare biased vs. unbiased model)
 
 **Step 5: Re-Audit (30-45 days)**
+
 - Re-run fairness audit on updated model
 - Confirm bias eliminated (disparity ratio ≥0.80)
 - Compare accuracy (ensure mitigation didn't degrade performance excessively)
 
 **Step 6: Deployment (45-60 days)**
+
 - Deploy updated model to production
 - Monitor closely first 30 days (weekly fairness checks)
 - Communicate resolution to committee and affected users
 
 **Step 7: Post-Remediation Monitoring (Ongoing)**
+
 - Monthly fairness spot-checks first 90 days
 - Resume quarterly audit schedule
 - Lessons learned documented (prevent recurrence)
@@ -595,12 +651,14 @@ fairness_penalty = max(0, 0.85 - demographic_parity_ratio)
 Data Science Lead → CTO → AI Governance Committee
 
 **Escalation Triggers:**
+
 - Critical bias detected
 - Remediation plan not implemented on time
 - Bias recurs after remediation
 - Legal or regulatory concern
 
 **Escalation Chain:**
+
 1. CTO (immediate)
 2. AI Governance Committee (24 hours)
 3. Union Executive Board (48 hours for Critical)
@@ -614,34 +672,40 @@ Data Science Lead → CTO → AI Governance Committee
 ### Automated Bias Detection
 
 **Real-Time Monitoring:**
+
 - Calculate demographic parity ratio daily (production AI models)
 - Alert if ratio drops below 0.75 (early warning)
 - Dashboard with fairness metrics (accessible to committee)
 
 **Monthly Spot Checks:**
+
 - Random sample (500 predictions)
 - Quick fairness analysis (demographic parity only)
 - Identify trends before quarterly audit
 
 **Quarterly Full Audits:**
+
 - Comprehensive audit per procedures above
 - All fairness metrics, statistical tests, root cause analysis
 
 ### Bias Prevention Best Practices
 
 **During Development:**
+
 - [ ] Diverse training data (balanced across demographics)
 - [ ] Remove proxy features (test correlation with protected attributes)
 - [ ] Add fairness constraints to model training
 - [ ] Pre-deployment fairness audit (before general availability)
 
 **During Operations:**
+
 - [ ] Real-time fairness monitoring
 - [ ] User feedback channels ("Report Bias" button)
 - [ ] Regular retraining with updated data
 - [ ] Diversity in AI team (reduce blind spots)
 
 **Organizational Culture:**
+
 - [ ] Fairness training for all AI developers (mandatory)
 - [ ] Fairness champion on each AI project team
 - [ ] Fairness requirements in performance reviews
@@ -656,28 +720,33 @@ Data Science Lead → CTO → AI Governance Committee
 **Per [AI_GOVERNANCE_CHARTER.md](AI_GOVERNANCE_CHARTER.md), we conduct annual third-party audits.**
 
 **Third-Party Auditor Selection:**
+
 - [ ] Independent firm (no conflicts of interest)
 - [ ] Expertise in AI fairness and bias detection
 - [ ] Experience with labor/union context
 - [ ] References from similar organizations
 
 **Audit Scope:**
+
 - Validate internal fairness audits (accurate and complete?)
 - Test fairness of all production AI models
 - Review audit procedures (industry best practices?)
 - Assess organizational fairness culture
 
 **Deliverables:**
+
 - Audit report to AI Governance Committee and Union Board
 - Findings: Bias detected, process gaps, recommendations
 - Comparison to industry benchmarks (how does Union Eyes compare?)
 
 **Timeline:**
+
 - Annual audit: Q4 each year (October-November)
 - Report delivered: December
 - Remediation plan: January of following year
 
 **Cost:**
+
 - Estimated $40,000/year
 - Budgeted in AI_STRATEGY_ROADMAP.md
 
@@ -688,6 +757,7 @@ Data Science Lead → CTO → AI Governance Committee
 ### Auditor Training
 
 **Fairness Audit Certification (16 hours):**
+
 - Module 1: AI fairness concepts (demographic parity, equalized odds, calibration)
 - Module 2: Statistical testing (chi-square, t-tests, regression)
 - Module 3: Audit procedures (planning, data analysis, reporting)
@@ -696,6 +766,7 @@ Data Science Lead → CTO → AI Governance Committee
 - Certification: Pass exam (≥85%)
 
 **Who Needs Training:**
+
 - Data Science team (all members)
 - Data Privacy Officer
 - AI Governance Committee members (optional but recommended)
@@ -704,16 +775,19 @@ Data Science Lead → CTO → AI Governance Committee
 ### Tools & Resources
 
 **Software:**
+
 - **Python Libraries:** `scikit-learn`, `fairlearn`, `aif360` (IBM), `pandas`, `numpy`, `scipy`
 - **Visualization:** `matplotlib`, `seaborn`, `plotly`
 - **Statistical Tools:** R (alternative to Python)
 
 **Templates:**
+
 - Audit Plan Template (see Appendix A)
 - Audit Report Template (see Appendix B)
 - Remediation Plan Template (see Appendix C)
 
 **External Resources:**
+
 - NIST AI Risk Management Framework: [https://www.nist.gov/itl/ai-risk-management-framework](https://www.nist.gov/itl/ai-risk-management-framework)
 - Google PAIR: People + AI Guidebook: [https://pair.withgoogle.com/guidebook](https://pair.withgoogle.com/guidebook)
 - Microsoft Fairlearn Toolkit: [https://fairlearn.org/](https://fairlearn.org/)
@@ -902,6 +976,7 @@ STATUS: [In Progress / Completed / On Hold]
 Regular, rigorous fairness audits are essential to ensure AI serves all members equitably. This framework provides a systematic approach to detect, measure, and mitigate bias, building trust through transparency and accountability.
 
 **Key Principles:**
+
 - **Proactive:** Audit before harm occurs (quarterly + pre-deployment)
 - **Comprehensive:** Multiple fairness definitions, statistical rigor, intersectional analysis
 - **Actionable:** Clear remediation procedures, timeline, success criteria
@@ -917,6 +992,7 @@ Contact: [ai-fairness@unioneyes.org](mailto:ai-fairness@unioneyes.org)
 ---
 
 **Document Control:**
+
 - **Version:** 1.0 (Draft)
 - **Status:** Pending AI Governance Committee Approval (Q1 2026)
 - **Next Review:** February 2027 (Annual)

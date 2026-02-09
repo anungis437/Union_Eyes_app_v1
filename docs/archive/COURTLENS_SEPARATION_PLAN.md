@@ -27,6 +27,7 @@
 ### Package Usage Analysis
 
 **Main App Dependencies:**
+
 ```json
 // d:\APPS\union-claims-standalone\package.json
 "dependencies": {
@@ -39,6 +40,7 @@
 ```
 
 **Legal Data Service:**
+
 ```json
 // services/legal-data-service/package.json
 "dependencies": {
@@ -47,6 +49,7 @@
 ```
 
 **Inter-package Dependencies:**
+
 - `@unioneyes/auth` depends on `@unioneyes/supabase`
 - `@unioneyes/multi-tenant` depends on `@unioneyes/types`
 - `@unioneyes/workflow` depends on `@unioneyes/supabase`
@@ -58,6 +61,7 @@
 ### Existing Azure Resources
 
 #### 1. **Azure Container Registry** ✅
+
 - **Name**: `acrunionclaimsdev4x25.azurecr.io`
 - **Status**: Active, contains 3 deployed microservices
 - **Images**:
@@ -70,6 +74,7 @@
   - (and more)
 
 #### 2. **Azure Kubernetes Service (AKS)** ✅
+
 - **Cluster**: Union Claims Dev cluster
 - **Status**: Active with 8+ pods running
 - **Deployed Services**:
@@ -79,20 +84,24 @@
   - Auth Service (2 replicas)
 
 #### 3. **Azure PostgreSQL** ✅
+
 - **Server**: `psql-union-claims-dev-4x25.postgres.database.azure.com`
 - **Status**: Active
 - **Connection**: Already configured in codebase
 
 #### 4. **Azure Blob Storage** (Inferred from code)
+
 - Used for document storage
 - Likely named: `unionclaimsXXXX` or similar
 
 #### 5. **Azure Speech Services** (Inferred from code)
+
 - Used for voice-to-text functionality
 - SDK: `microsoft-cognitiveservices-speech-sdk@1.46.0`
 - May need separate resource or can share subscription
 
 #### 6. **Azure Cognitive Services** (Inferred from code)
+
 - Used for AI features
 - OpenAI integration via `@azure/openai@2.0.0`
 
@@ -101,11 +110,13 @@
 ## 🔄 Separation Strategy
 
 ### Option 1: Clean Rebrand (RECOMMENDED)
+
 **Timeline**: 1-2 days  
 **Risk**: Low  
 **Approach**: Rename all packages during migration to UnionEyes
 
 **Steps:**
+
 1. In UnionEyes, create new package structure under `packages/`
 2. Copy code from old packages
 3. Update `package.json` with `@unioneyes` scope
@@ -113,15 +124,18 @@
 5. Update `pnpm-workspace.yaml` to reference new packages
 
 **Advantages:**
+
 - Clean break from unioneyes
 - All code under UnionEyes branding
 - No dependency on old packages
 - Clear ownership
 
 **Impact on Azure:**
+
 - ✅ **NONE** - Azure resources already UnionEyes branded!
 
 ### Option 2: Gradual Migration
+
 **Timeline**: 2-4 weeks  
 **Risk**: Medium  
 **Approach**: Keep packages temporarily, rebrand incrementally
@@ -135,6 +149,7 @@
 ### Phase 1: Package Structure Setup (Day 1)
 
 1. **Create UnionEyes package structure:**
+
 ```
 UnionEyes/
 ├── packages/
@@ -148,14 +163,16 @@ UnionEyes/
 └── pnpm-workspace.yaml
 ```
 
-2. **Create `pnpm-workspace.yaml`:**
+1. **Create `pnpm-workspace.yaml`:**
+
 ```yaml
 packages:
   - 'packages/*'
   - 'apps/*'
 ```
 
-3. **Create base `tsconfig.json` with path mappings:**
+1. **Create base `tsconfig.json` with path mappings:**
+
 ```json
 {
   "compilerOptions": {
@@ -177,6 +194,7 @@ packages:
 For each package:
 
 1. **Copy source code:**
+
 ```powershell
 # Example for auth package
 Copy-Item -Path "D:\APPS\union-claims-standalone\packages\auth\*" `
@@ -184,7 +202,8 @@ Copy-Item -Path "D:\APPS\union-claims-standalone\packages\auth\*" `
           -Recurse
 ```
 
-2. **Update `package.json`:**
+1. **Update `package.json`:**
+
 ```json
 // Before (old)
 {
@@ -203,7 +222,8 @@ Copy-Item -Path "D:\APPS\union-claims-standalone\packages\auth\*" `
 }
 ```
 
-3. **Update imports in source files:**
+1. **Update imports in source files:**
+
 ```typescript
 // Before
 import { createClient } from '@unioneyes/supabase';
@@ -214,7 +234,8 @@ import { createClient } from '@unioneyes/supabase';
 import type { User } from '@unioneyes/types';
 ```
 
-4. **Run find/replace across package:**
+1. **Run find/replace across package:**
+
 ```powershell
 # PowerShell script to update imports
 Get-ChildItem -Path ".\packages\auth\" -Recurse -Include *.ts,*.tsx | 
@@ -229,6 +250,7 @@ Get-ChildItem -Path ".\packages\auth\" -Recurse -Include *.ts,*.tsx |
 ### Phase 3: Application Migration (Day 2)
 
 1. **Update main app `package.json`:**
+
 ```json
 // UnionEyes/package.json
 {
@@ -243,7 +265,8 @@ Get-ChildItem -Path ".\packages\auth\" -Recurse -Include *.ts,*.tsx |
 }
 ```
 
-2. **Update all imports in Next.js app:**
+1. **Update all imports in Next.js app:**
+
 ```typescript
 // Before
 import { useAuth } from '@unioneyes/auth';
@@ -254,7 +277,8 @@ import { useAuth } from '@unioneyes/auth';
 import { Button } from '@unioneyes/ui';
 ```
 
-3. **Run automated import replacement:**
+1. **Run automated import replacement:**
+
 ```powershell
 # Update all app files
 Get-ChildItem -Path ".\app\" -Recurse -Include *.ts,*.tsx | 
@@ -269,27 +293,32 @@ Get-ChildItem -Path ".\app\" -Recurse -Include *.ts,*.tsx |
 ### Phase 4: Verification & Testing (Day 2)
 
 1. **Install dependencies:**
+
 ```powershell
 cd UnionEyes
 pnpm install
 ```
 
-2. **Type check:**
+1. **Type check:**
+
 ```powershell
 pnpm type-check
 ```
 
-3. **Build packages:**
+1. **Build packages:**
+
 ```powershell
 pnpm --filter "@unioneyes/*" build
 ```
 
-4. **Build app:**
+1. **Build app:**
+
 ```powershell
 pnpm build
 ```
 
-5. **Run dev server:**
+1. **Run dev server:**
+
 ```powershell
 pnpm dev
 ```
@@ -299,6 +328,7 @@ pnpm dev
 ## 🔍 Search & Replace Reference
 
 ### File Extensions to Update
+
 ```
 *.ts
 *.tsx
@@ -311,6 +341,7 @@ pnpm dev
 ```
 
 ### Search Patterns
+
 ```regex
 @unioneyes/
 @unioneyes/
@@ -321,6 +352,7 @@ UnionEyes
 ```
 
 ### Replace With
+
 ```
 @unioneyes/
 @unioneyes/
@@ -331,6 +363,7 @@ UnionEyes
 ```
 
 ### Exceptions (DO NOT CHANGE)
+
 - Azure resource names (already UnionEyes!)
 - Git history/commit messages
 - Archive folders
@@ -341,7 +374,9 @@ UnionEyes
 ## 🚨 Critical Considerations
 
 ### 1. **No Azure Changes Required** ✅
+
 All Azure resources are already branded as UnionEyes:
+
 - Container Registry: `acrunionclaimsdev4x25.azurecr.io`
 - PostgreSQL: `psql-union-claims-dev-4x25.postgres.database.azure.com`
 - AKS cluster: Union Claims Dev
@@ -349,7 +384,9 @@ All Azure resources are already branded as UnionEyes:
 **Action Required**: NONE - Use existing resources as-is!
 
 ### 2. **Package Publishing**
+
 If you plan to publish packages to npm:
+
 - Reserve `@unioneyes` npm organization
 - Update registry URLs in package.json
 - Configure authentication
@@ -357,13 +394,17 @@ If you plan to publish packages to npm:
 For now, using `workspace:*` protocol keeps everything local.
 
 ### 3. **Import Compatibility**
+
 Since Next.js 14 uses Turbopack (or Webpack), ensure:
+
 - Path mappings in `tsconfig.json` are correct
 - `pnpm-workspace.yaml` includes all package paths
 - Packages export proper entry points
 
 ### 4. **Microservices Updates**
+
 If microservices reference these packages:
+
 ```powershell
 # Update each microservice
 cd services/claims-service
@@ -376,6 +417,7 @@ docker push acrunionclaimsdev4x25.azurecr.io/claims-service:latest
 ```
 
 ### 5. **Database Schema**
+
 No changes required - database schema is independent of package names.
 
 ---
@@ -383,12 +425,14 @@ No changes required - database schema is independent of package names.
 ## ✅ Verification Checklist
 
 ### Pre-Migration
+
 - [ ] Backup union-claims-standalone repository
 - [ ] Document current package versions
 - [ ] List all files importing unioneyes packages
 - [ ] Verify Azure resource access
 
 ### During Migration
+
 - [ ] Create UnionEyes package structure
 - [ ] Copy package source code
 - [ ] Update all package.json files
@@ -399,6 +443,7 @@ No changes required - database schema is independent of package names.
 - [ ] Update pnpm workspace config
 
 ### Post-Migration
+
 - [ ] `pnpm install` succeeds
 - [ ] No `@unioneyes` or `@unioneyes` references remain
 - [ ] TypeScript compilation succeeds
@@ -413,11 +458,13 @@ No changes required - database schema is independent of package names.
 ## 📊 Impact Assessment
 
 ### Low Impact ✅
+
 - Package naming (purely cosmetic)
 - Import statements (find/replace operation)
 - TypeScript paths (configuration update)
 
 ### No Impact ✅
+
 - Azure resources (already correct branding!)
 - Database schema
 - API endpoints
@@ -425,11 +472,13 @@ No changes required - database schema is independent of package names.
 - Clerk authentication
 
 ### Medium Impact ⚠️
+
 - Microservices (need rebuild if using packages)
 - Docker images (need rebuild with updated code)
 - Documentation (references to old names)
 
 ### Zero Impact ✅
+
 - User data
 - Production deployments (if any)
 - Third-party integrations
@@ -461,6 +510,7 @@ No changes required - database schema is independent of package names.
    - Test basic functionality
 
 ### This Month
+
 - Migrate microservices to use new packages
 - Rebuild Docker images
 - Update deployment manifests
@@ -471,6 +521,7 @@ No changes required - database schema is independent of package names.
 ## 💡 Key Insights
 
 ### What Makes This Easy
+
 1. ✅ **Azure resources already UnionEyes branded** - No cloud migration needed!
 2. ✅ **Workspace protocol** - Packages are local, not published to npm
 3. ✅ **TypeScript** - Type safety catches import issues immediately
@@ -478,6 +529,7 @@ No changes required - database schema is independent of package names.
 5. ✅ **Modern tooling** - pnpm makes monorepo management easy
 
 ### What to Watch For
+
 1. ⚠️ **Circular dependencies** - Ensure packages don't depend on each other cyclically
 2. ⚠️ **Path mappings** - Must match both `tsconfig.json` and `pnpm-workspace.yaml`
 3. ⚠️ **Build order** - Some packages may need to build before others
@@ -488,6 +540,7 @@ No changes required - database schema is independent of package names.
 ## 📚 Resources
 
 ### Configuration Files to Update
+
 ```
 UnionEyes/
 ├── package.json              # Add workspace packages
@@ -498,6 +551,7 @@ UnionEyes/
 ```
 
 ### Commands Reference
+
 ```powershell
 # Install all workspace dependencies
 pnpm install

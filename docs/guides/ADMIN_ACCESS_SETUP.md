@@ -1,7 +1,9 @@
 # Admin Access Setup Guide
 
 ## Problem
+
 The admin panel redirects to dashboard with `error=unauthorized` because:
+
 1. Clerk user IDs (format: `user_xxxxx`) don't match the database UUID column type
 2. Role lookup fails, so the system can't identify you as admin
 
@@ -13,11 +15,13 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
 2. Navigate to **Users** → Find your user
 3. Click on your user → **Metadata** tab
 4. Under **Public Metadata**, add:
+
    ```json
    {
      "role": "admin"
    }
    ```
+
 5. Save and refresh your browser at `http://localhost:3000`
 
 **Pros**: No database changes, immediate effect
@@ -28,12 +32,14 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
 ### Option 2: Database Schema Fix (Recommended for Production)
 
 #### Prerequisites
+
 - Access to your PostgreSQL database
 - psql or any PostgreSQL client
 
 #### Steps
 
 1. **Connect to your database**:
+
    ```bash
    # Using psql
    psql postgresql://postgres:postgres@host.docker.internal:5432/unioneyes
@@ -43,12 +49,14 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
    ```
 
 2. **Run the migration**:
+
    ```bash
    # From the UnionEyes directory
    psql [YOUR_CONNECTION_STRING] -f database/migrations/fix-user-id-type.sql
    ```
-   
+
    Or manually execute the SQL:
+
    ```sql
    -- Change column type
    ALTER TABLE user_management.tenant_users 
@@ -73,6 +81,7 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
    ```
 
 3. **Verify the changes**:
+
    ```sql
    -- Check column type
    SELECT column_name, data_type, character_maximum_length 
@@ -87,6 +96,7 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
    ```
 
 4. **Restart your dev server**:
+
    ```powershell
    # Stop the current dev server (Ctrl+C)
    cd d:\APPS\union-claims-standalone\UnionEyes
@@ -103,11 +113,13 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
 ## Finding Your Clerk User ID
 
 Your Clerk user ID is visible in the server logs. Look for lines like:
+
 ```
 Looking up profile by user ID: user_35NlrrNcfTv0DMh2kzBHyXZRtpb
 ```
 
 Or find it in:
+
 1. Clerk Dashboard → Users → Click on your user → Copy the User ID
 2. Browser console → Check the Clerk user object
 3. Server logs when you log in
@@ -130,17 +142,20 @@ After implementing either solution:
 ## Troubleshooting
 
 ### Still getting "unauthorized" error?
+
 1. Check server logs for `Error fetching user role` messages
 2. Verify your Clerk user ID matches what's in the database
 3. Ensure tenant exists in `tenant_management.tenants` table
 4. Clear browser cache and restart dev server
 
 ### "Admin Panel" link not showing in sidebar?
+
 1. Verify the schema change was applied: `userId` should be VARCHAR(255), not UUID
 2. Check that your role is correctly set in database or Clerk metadata
 3. Restart dev server to pick up changes
 
 ### Database errors after migration?
+
 1. Check foreign key constraints were properly handled
 2. Verify no other tables reference the old UUID format
 3. Review the backup table: `user_management.tenant_users_backup`
@@ -171,6 +186,7 @@ Once you have admin access:
 ## Support
 
 If you encounter issues:
+
 1. Check server logs: `terminal output → Look for PostgresError or "Error fetching user role"`
 2. Verify database connection: Can you query `tenant_management.tenants`?
 3. Test Clerk authentication: Can you log in and see your user ID?

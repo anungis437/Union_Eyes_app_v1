@@ -48,17 +48,20 @@ draft → submitted → acknowledged → investigating → pending_response
 #### Validation Rules
 
 **Role-Based Permissions:**
+
 - Members can only draft and withdraw their own cases
 - Stewards can acknowledge and investigate
 - Officers can negotiate and escalate
 - Admins have override capability (can close from any state)
 
 **Conditional Requirements:**
+
 - `investigating → [any]`: Requires `hasSufficientEvidence: true`
   - **Admin Exception:** Admin can bypass this when closing (`investigating → closed`)
 - `pending_response → negotiating`: Only officer/admin (not steward)
 
 **SLA Enforcement:**
+
 - `submitted → acknowledged`: Must occur within 2 business days
   - Validated via `context.daysInCurrentState`
   - Transition rejected if SLA expired
@@ -107,6 +110,7 @@ Automated SLA tracking with early breach warning.
 - **breached:** ≥ 100% of time elapsed
 
 **Example:** Investigation complete in 14 days
+
 - 14 / 15 = 93% elapsed
 - 93% ≥ 80% threshold → **at_risk**
 
@@ -222,6 +226,7 @@ export function CaseList({ cases }: { cases: Case[] }) {
 ✅ Urgent state identification
 
 **Key Test Cases:**
+
 - Member can only draft/withdraw
 - Steward cannot negotiate (officer/admin only)
 - Admin can close from any state (bypasses evidence requirement)
@@ -243,6 +248,7 @@ export function CaseList({ cases }: { cases: Case[] }) {
 ✅ Case list filtering (at-risk, breached)
 
 **Key Test Cases:**
+
 - Acknowledgment at 1 day: within_sla
 - Acknowledgment at 3 days: breached
 - Investigation at 14 days: at_risk (93% elapsed)
@@ -252,6 +258,7 @@ export function CaseList({ cases }: { cases: Case[] }) {
 ## Business Value
 
 ### Before PR-5
+
 - Workflow rules in training documents
 - Manual SLA tracking in spreadsheets
 - Inconsistent case progression
@@ -259,6 +266,7 @@ export function CaseList({ cases }: { cases: Case[] }) {
 - Officers bypassing procedures
 
 ### After PR-5
+
 - Workflow rules enforced by code
 - Automated SLA tracking with early warning
 - Guaranteed valid state transitions
@@ -283,6 +291,7 @@ export function CaseList({ cases }: { cases: Case[] }) {
 ## Next Steps
 
 **PR-6: Defensibility Pack Exports**
+
 - Generate system-of-record summaries
 - Include complete audit trail
 - Add integrity checksums

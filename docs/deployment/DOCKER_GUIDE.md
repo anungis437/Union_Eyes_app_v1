@@ -25,27 +25,32 @@ Union_Eyes_app_v1/
 **Image Size:** Larger (~500MB+)
 
 **Features:**
+
 - Multi-stage build with separate deps/builder stages
 - Builds workspace packages (`@unioneyes/ai`, etc.)
 - Full monorepo support with pnpm workspaces
 - Security hardening (non-root user)
 
 **When to Use:**
+
 - Production deployments with custom workspace packages
 - When workspace packages need to be built from source
 - Full CI/CD pipeline deployments
 
 **Build Command:**
+
 ```bash
 docker build -f Dockerfile -t unioneyes:prod .
 ```
 
 **Pros:**
+
 - ✅ Complete build from source
 - ✅ Workspace packages included
 - ✅ Reproducible builds
 
 **Cons:**
+
 - ⏱️ Longer build time
 - 💾 Larger image size
 
@@ -58,17 +63,20 @@ docker build -f Dockerfile -t unioneyes:prod .
 **Image Size:** Smaller (~200MB)
 
 **Features:**
+
 - Uses pre-built `.next` directory
 - Production dependencies only (`--prod`)
 - Minimal runtime footprint
 - Non-root user security
 
 **When to Use:**
+
 - Cloud platforms with separate build/deploy steps (Vercel, Railway)
 - CI/CD where Next.js is built separately
 - Fastest deployment times needed
 
 **Build Command:**
+
 ```bash
 # Build Next.js first
 pnpm build
@@ -78,11 +86,13 @@ docker build -f Dockerfile.simple -t unioneyes:simple .
 ```
 
 **Pros:**
+
 - ⚡ Very fast build
 - 💾 Smaller image size
 - 🎯 Minimal runtime
 
 **Cons:**
+
 - ⚠️ Requires pre-built .next directory
 - ⚠️ Build step must happen separately
 
@@ -95,17 +105,20 @@ docker build -f Dockerfile.simple -t unioneyes:simple .
 **Image Size:** Medium (~350MB)
 
 **Features:**
+
 - Optimized for staging environment
 - Skips workspace package builds
 - Supports build-time environment variables
 - Staging-specific optimizations
 
 **When to Use:**
+
 - Staging/QA environments
 - Testing before production
 - Demo environments
 
 **Build Command:**
+
 ```bash
 docker build -f Dockerfile.staging \
   --build-arg NEXT_PUBLIC_APP_URL=https://staging.unioneyes.com \
@@ -113,11 +126,13 @@ docker build -f Dockerfile.staging \
 ```
 
 **Pros:**
+
 - ⚖️ Balanced build time and features
 - 🔧 Environment-specific configs
 - 🧪 Good for testing
 
 **Cons:**
+
 - ⚠️ Not recommended for production
 - ⚠️ Less optimization than full build
 
@@ -130,12 +145,14 @@ docker build -f Dockerfile.staging \
 **Purpose:** Local development environment
 
 **Services:**
+
 - Next.js app with hot reload
 - PostgreSQL database
 - Redis (if needed)
 - Volume mounts for live code changes
 
 **Usage:**
+
 ```bash
 # Start all services
 docker-compose up
@@ -151,6 +168,7 @@ docker-compose down
 ```
 
 **Environment:**
+
 - Hot reload enabled
 - Debug logging
 - Development database
@@ -163,11 +181,13 @@ docker-compose down
 **Purpose:** Staging environment deployment
 
 **Services:**
+
 - Next.js app (built from Dockerfile.staging)
 - PostgreSQL or external database connection
 - Optional Redis cache
 
 **Usage:**
+
 ```bash
 # Deploy staging
 docker-compose -f docker-compose.staging.yml up -d
@@ -180,6 +200,7 @@ docker-compose -f docker-compose.staging.yml restart app
 ```
 
 **Environment:**
+
 - Production build mode
 - Staging database
 - Logging to files
@@ -192,6 +213,7 @@ docker-compose -f docker-compose.staging.yml restart app
 **Purpose:** Production deployment (if using Docker Compose)
 
 **Services:**
+
 - Next.js app (optimized production build)
 - External database connection
 - Redis cache
@@ -199,6 +221,7 @@ docker-compose -f docker-compose.staging.yml restart app
 - Resource limits
 
 **Usage:**
+
 ```bash
 # Deploy production (not recommended for actual prod)
 docker-compose -f docker-compose.prod.yml up -d
@@ -314,12 +337,14 @@ docker run \
 **Use instead:**
 
 #### Option A: Vercel (Recommended)
+
 ```bash
 # Deploy to Vercel
 vercel --prod
 ```
 
 #### Option B: Kubernetes
+
 ```yaml
 # Deploy with Kubernetes
 apiVersion: apps/v1
@@ -341,6 +366,7 @@ spec:
 ```
 
 #### Option C: AWS ECS/Fargate
+
 ```bash
 # Deploy to ECS
 aws ecs create-service \
@@ -434,12 +460,14 @@ pnpm --filter @unioneyes/ai build
 ### Container Starts But Crashes
 
 **Check logs:**
+
 ```bash
 docker logs <container-id>
 docker logs -f <container-id>  # Follow logs
 ```
 
 **Common issues:**
+
 - Missing environment variables
 - Database connection failure
 - Port already in use
@@ -447,12 +475,14 @@ docker logs -f <container-id>  # Follow logs
 ### Slow Build Times
 
 **Use BuildKit:**
+
 ```bash
 export DOCKER_BUILDKIT=1
 docker build -t app .
 ```
 
 **Check layer caching:**
+
 ```bash
 docker build --no-cache -t app .  # Force rebuild
 ```
@@ -460,11 +490,13 @@ docker build --no-cache -t app .  # Force rebuild
 ### Image Size Too Large
 
 **Check what's taking space:**
+
 ```bash
 docker history unioneyes:prod
 ```
 
 **Solutions:**
+
 - Use alpine base images
 - Multi-stage builds
 - Remove dev dependencies
