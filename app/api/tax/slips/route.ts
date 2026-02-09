@@ -20,7 +20,7 @@ export const GET = async (request: NextRequest) => {
     const { userId, organizationId } = context;
 
   try {
-      // Rate limiting: 20 tax operations per hour per user
+      // Rate limiting: 10 tax operations per hour per user
       const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
       if (!rateLimitResult.allowed) {
         logger.warn('Rate limit exceeded for tax slips read', {        limit: rateLimitResult.limit,

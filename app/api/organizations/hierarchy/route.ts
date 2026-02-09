@@ -2,24 +2,87 @@ import { requireUser } from '@/lib/auth/unified-auth';
 /**
  * Organization Hierarchy API
  * Get hierarchical organization structure with RLS isolation
- * Phase 1: Multi-Tenant Architecture
+ * Phase 3: Multi-Tenant Architecture - FULLY SECURED
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
-
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logger } from '@/lib/logger';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
-export async function GET(request: NextRequest) {
+export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
   try {
-    const { userId } = await requireUser();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Rate limiting for hierarchy operations
+    const rateLimitResult = await checkRateLimit(
+      `${organizationId}`,
+      RATE_LIMITS.ORGANIZATION_OPERATIONS
+    );
+    
+    if (!rateLimitResult.allowed) {
+      logger.warn('Rate limit exceeded for organization hierarchy', {
+        userId,
+        organizationId,
+        limit: rateLimitResult.limit,
+        resetIn: rateLimitResult.resetIn,
+      });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/organizations/hierarchy',
+        method: 'GET',
+        eventType: 'validation_failed',
+        severity: 'medium',
+        details: {
+          dataType: 'ORGANIZATION',
+          reason: 'Rate limit exceeded',
+          limit: rateLimitResult.limit,
+        },
+      });
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded. Too many requests.',
+          resetIn: rateLimitResult.resetIn,
+        },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult),
+        }
+      );
     }
 
     const searchParams = request.nextUrl.searchParams;
     const rootOrgId = searchParams.get('rootOrgId');
+
+    // Verify organization access if rootOrgId provided
+    if (rootOrgId && rootOrgId !== organizationId) {
+      logger.warn('Unauthorized organization hierarchy access attempt', {
+        userId,
+        requestedOrgId: rootOrgId,
+        userOrgId: organizationId,
+      });
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/organizations/hierarchy',
+        method: 'GET',
+        eventType: 'auth_failed',
+        severity: 'high',
+        details: {
+          dataType: 'ORGANIZATION',
+          reason: 'Cross-organization access denied',
+          requestedOrgId: rootOrgId,
+        },
+      });
+      return NextResponse.json(
+        { error: 'Forbidden - Cannot access other organization hierarchy' },
+        { status: 403 }
+      );
+    }
 
     let query;
     
@@ -118,15 +181,45 @@ export async function GET(request: NextRequest) {
 
     const result = await db.execute(query);
 
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/organizations/hierarchy',
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      details: {
+        dataType: 'ORGANIZATION',
+        rootOrgId,
+        resultCount: result.length,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       data: result,
     });
   } catch (error) {
-    console.error('Error fetching organization hierarchy:', error);
+    logger.error('Error fetching organization hierarchy', error as Error, {
+      userId,
+      organizationId,
+      correlationId: request.headers.get('x-correlation-id'),
+    });
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/organizations/hierarchy',
+      method: 'GET',
+      eventType: 'server_error',
+      severity: 'high',
+      details: {
+        dataType: 'ORGANIZATION',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
   }
-}
+});

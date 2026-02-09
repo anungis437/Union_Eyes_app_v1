@@ -1,4 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 /**
  * GET /api/events/[id]
  * Get event details
@@ -95,6 +96,22 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting
+      const rateLimitResult = await checkRateLimit(
+        `event-ops:${userId}`,
+        RATE_LIMITS.EVENT_OPERATIONS
+      );
+
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+          {
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const eventId = params.id;
 
       const access = await checkEventAccess(eventId, userId);
@@ -116,6 +133,8 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
           canDelete: access.canDelete,
           isAttendee: access.isAttendee,
         },
+      }, {
+        headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
       console.error('Get event error:', error);
@@ -132,6 +151,22 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting
+      const rateLimitResult = await checkRateLimit(
+        `event-ops:${userId}`,
+        RATE_LIMITS.EVENT_OPERATIONS
+      );
+
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+          {
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const eventId = params.id;
       const body = await request.json();
 
@@ -247,6 +282,8 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({
         message: 'Event updated successfully',
         event: updatedEvent,
+      }, {
+        headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
       console.error('Update event error:', error);
@@ -263,6 +300,22 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting
+      const rateLimitResult = await checkRateLimit(
+        `event-ops:${userId}`,
+        RATE_LIMITS.EVENT_OPERATIONS
+      );
+
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+          {
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const eventId = params.id;
       const { searchParams } = new URL(request.url);
       const cancellationReason = searchParams.get('reason');

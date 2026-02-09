@@ -56,7 +56,11 @@ export const GET = async (
           method: 'GET',
           eventType: 'success',
           severity: 'low',
-          details: { organizationId: id, organizationName: organization.name },
+          details: { 
+            dataType: 'ORGANIZATION',
+            organizationId: id, 
+            organizationName: organization.name 
+          },
         });
 
         return NextResponse.json({
@@ -76,7 +80,10 @@ export const GET = async (
           method: 'GET',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          details: { 
+            dataType: 'ORGANIZATION',
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          },
         });
         return NextResponse.json(
           { success: false, error: 'Failed to fetch organization' },
@@ -94,7 +101,7 @@ export const PATCH = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
     const { userId, organizationId } = context;
 
   let id = '';
@@ -114,7 +121,11 @@ export const PATCH = async (
               method: 'PATCH',
               eventType: 'validation_failed',
               severity: 'low',
-              details: { reason: 'Invalid slug format', slug: body.slug },
+              details: { 
+                dataType: 'ORGANIZATION',
+                reason: 'Invalid slug format', 
+                slug: body.slug 
+              },
             });
             return NextResponse.json(
               { error: 'Slug must contain only lowercase letters, numbers, hyphens, and underscores' },
@@ -134,7 +145,11 @@ export const PATCH = async (
               method: 'PATCH',
               eventType: 'validation_failed',
               severity: 'low',
-              details: { reason: 'Invalid organization type', type: body.type },
+              details: { 
+                dataType: 'ORGANIZATION',
+                reason: 'Invalid organization type', 
+                type: body.type 
+              },
             });
             return NextResponse.json(
               { error: `Invalid organization type. Must be one of: ${validTypes.join(', ')}` },
@@ -153,7 +168,11 @@ export const PATCH = async (
             method: 'PATCH',
             eventType: 'validation_failed',
             severity: 'low',
-            details: { reason: 'Organization not found', organizationId: id },
+            details: { 
+              dataType: 'ORGANIZATION',
+              reason: 'Organization not found', 
+              organizationId: id 
+            },
           });
           return NextResponse.json(
             { error: 'Organization not found' },
@@ -168,7 +187,11 @@ export const PATCH = async (
           method: 'PATCH',
           eventType: 'success',
           severity: 'high',
-          details: { organizationId: id, updatedFields: Object.keys(body) },
+          details: { 
+            dataType: 'ORGANIZATION',
+            organizationId: id, 
+            updatedFields: Object.keys(body) 
+          },
         });
 
         return NextResponse.json({
@@ -189,7 +212,11 @@ export const PATCH = async (
           method: 'PATCH',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error', code: error.code },
+          details: { 
+            dataType: 'ORGANIZATION',
+            error: error instanceof Error ? error.message : 'Unknown error', 
+            code: error.code 
+          },
         });
 
         // Handle unique constraint violations
@@ -224,7 +251,7 @@ export const DELETE = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   let id = '';
@@ -242,7 +269,11 @@ export const DELETE = async (
             method: 'DELETE',
             eventType: 'validation_failed',
             severity: 'low',
-            details: { reason: 'Organization not found', organizationId: id },
+            details: { 
+              dataType: 'ORGANIZATION',
+              reason: 'Organization not found', 
+              organizationId: id 
+            },
           });
           return NextResponse.json(
             { error: 'Organization not found' },
@@ -257,7 +288,10 @@ export const DELETE = async (
           method: 'DELETE',
           eventType: 'success',
           severity: 'critical',
-          details: { organizationId: id },
+          details: { 
+            dataType: 'ORGANIZATION',
+            organizationId: id 
+          },
         });
 
         return NextResponse.json({
@@ -277,7 +311,10 @@ export const DELETE = async (
           method: 'DELETE',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          details: { 
+            dataType: 'ORGANIZATION',
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          },
         });
         return NextResponse.json(
           { success: false, error: 'Failed to delete organization' },

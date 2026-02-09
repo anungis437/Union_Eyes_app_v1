@@ -22,6 +22,7 @@ import { sql } from 'drizzle-orm';
 import { generateRemittanceFile } from '@/services/clc/remittance-exporter';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // =====================================================================================
 // GET - Export remittances
@@ -32,6 +33,21 @@ export const GET = async (request: NextRequest) => {
     const { userId } = context;
 
     try {
+      // Rate limiting: 50 CLC operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.CLC_OPERATIONS);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many CLC requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       // Parse query parameters
       const searchParams = request.nextUrl.searchParams;
       const format = searchParams.get('format') as 'csv' | 'xml' | 'statcan' | null;

@@ -5,8 +5,8 @@ import { members, duesTransactions } from '@/services/financial-service/src/db/s
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { rateLimit, createRateLimitResponse, createRateLimitHeaders } from '@/lib/rate-limit';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 /**
  * Validation schema
@@ -37,29 +37,33 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
   const body = parsed.data;
   const { userId, organizationId } = context;
 
+  // Rate limiting: 20 financial write operations per hour per user
+  const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.FINANCIAL_WRITE);
+  if (!rateLimitResult.allowed) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), userId,
+      endpoint: '/api/dues/create-payment-intent',
+      method: 'POST',
+      eventType: 'auth_failed',
+      severity: 'medium',
+      details: { reason: 'Rate limit exceeded' },
+    });
+    return NextResponse.json(
+      { 
+        error: 'Rate limit exceeded. Too many financial write requests.',
+        resetIn: rateLimitResult.resetIn 
+      },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult),
+      }
+    );
+  }
+
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
-
-// Apply rate limiting: 5 requests per minute per user
-    const rateLimitResult = rateLimit(request, {
-      maxRequests: 5,
-      windowSeconds: 60,
-    });
-
-    if (!rateLimitResult.success) {
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/dues/create-payment-intent',
-        method: 'POST',
-        eventType: 'auth_failed',
-        severity: 'medium',
-        details: { reason: 'Rate limit exceeded' },
-      });
-      console.warn('[create-payment-intent] Rate limit exceeded for user:', userId);
-      return createRateLimitResponse(rateLimitResult);
-    }
 
     try {
       const { userId: requestedUserId, amount, savePaymentMethod } = body;

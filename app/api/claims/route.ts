@@ -14,6 +14,7 @@ import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**
  * Validation schema for creating claims
@@ -40,9 +41,8 @@ const createClaimSchema = z.object({
  * Fetch all claims with optional filtering
  * Protected by tenant middleware - only returns claims for the user's current tenant
  */
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId, organizationId } = context;
+export const GET = withEnhancedRoleAuth(30, async (request, context) => {
+  const { userId, organizationId } = context;
 
     try {
       const { searchParams } = new URL(request.url);
@@ -97,11 +97,13 @@ export const GET = async (request: NextRequest) => {
         const total = totalResult[0]?.count || 0;
 
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: '/api/claims',
           method: 'GET',
           eventType: 'success',
           severity: 'low',
+          dataType: 'CLAIMS',
           details: { 
             organizationId, 
             filters: { status, priority, search, memberId }, 
@@ -121,12 +123,14 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
         logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
+          timestamp: new Date().toISOString(), 
+          userId,
           endpoint: '/api/claims',
           method: 'GET',
           eventType: 'server_error',
           severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
+          dataType: 'CLAIMS',
+          details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
         console.error("Error fetching claims:", error);
         // Return empty results instead of error
@@ -145,15 +149,34 @@ export const GET = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : "Failed to fetch claims"
         });
       }
-      })(request);
-};
+});
 
 /**
  * POST /api/claims
  * Create a new claim
  * Protected by tenant middleware - claim will be created in the user's current tenant
  */
-export const POST = withEnhancedRoleAuth(20, async (request, context) => {
+export const POST = withEnhancedRoleAuth(30, async (request, context) => {
+  const { userId, organizationId } = context;
+
+  // Check rate limit for claims operations
+  const rateLimitResult = await checkRateLimit(
+    `claims-operations:${userId}`,
+    RATE_LIMITS.CLAIMS_OPERATIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { 
+        error: 'Rate limit exceeded. Please try again later.',
+        resetIn: rateLimitResult.resetIn 
+      },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
   let rawBody: unknown;
   try {
     rawBody = await request.json();
@@ -167,7 +190,6 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   }
 
   const body = parsed.data;
-  const { userId, organizationId } = context;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
@@ -208,11 +230,13 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
         .returning();
 
       logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
+        timestamp: new Date().toISOString(), 
+        userId,
         endpoint: '/api/claims',
         method: 'POST',
         eventType: 'success',
         severity: 'medium',
+        dataType: 'CLAIMS',
         details: { organizationId, claimNumber, claimType: body.claimType },
       });
 
@@ -226,12 +250,14 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
     });
   } catch (error) {
       logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
+        timestamp: new Date().toISOString(), 
+        userId,
         endpoint: '/api/claims',
         method: 'POST',
         eventType: 'server_error',
         severity: 'high',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        dataType: 'CLAIMS',
+        details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
       });
       console.error("Error creating claim:", error);
       return NextResponse.json(

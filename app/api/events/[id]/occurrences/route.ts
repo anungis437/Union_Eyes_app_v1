@@ -1,4 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 /**
  * Recurring Event Occurrences API
  * 
@@ -33,6 +34,22 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
+      // Rate limiting
+      const rateLimitResult = await checkRateLimit(
+        `event-ops:${user.id}`,
+        RATE_LIMITS.EVENT_OPERATIONS
+      );
+
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+          {
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const eventId = params.id;
 
       // Get parent event
@@ -125,6 +142,8 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         count: instances.length,
         virtualCount: virtualInstances.length,
         generatedCount: dbInstances.length,
+      }, {
+        headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
       console.error('Error fetching recurring instances:', error);

@@ -12,7 +12,22 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(40, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit advanced analytics (predictions are AI-driven)
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ADVANCED_ANALYTICS,
+      `analytics-predictions:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
     try {
       const body = await request.json();
       const { predictionType, periodsAhead, modelName } = body;
@@ -52,6 +67,17 @@ export const POST = async (request: NextRequest) => {
           { status: 400 }
         );
       }
+
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'predictions_generate',
+        resourceType: 'analytics',
+        resourceId: 'predictions',
+        metadata: { targetMetric, horizonDays },
+        dataType: 'ANALYTICS',
+      });
       
       return NextResponse.json({
         success: true,

@@ -8,10 +8,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimStatistics } from "@/db/queries/claims-queries";
-import { withOrganizationAuth } from "@/lib/organization-middleware";
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { unstable_cache } from 'next/cache';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 // Cache dashboard stats for 60 seconds per tenant
 const getCachedDashboardStats = unstable_cache(
@@ -45,9 +47,23 @@ const getCachedDashboardStats = unstable_cache(
 /**
  * GET /api/dashboard/stats?tenantId=<uuid>
  * Fetch dashboard statistics for the specified tenant
- * Protected by tenant middleware (falls back to query param if cookie not set)
+ * Protected by enhanced role-based auth with rate limiting
  */
-export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
+export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // Rate limit dashboard refreshes
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.DASHBOARD_REFRESH,
+    `dashboard-stats:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
   try {
     // Prefer query parameter over middleware tenantId (to avoid cookie timing issues)
     const { searchParams } = new URL(request.url);
@@ -60,6 +76,17 @@ export const GET = withOrganizationAuth(async (request: NextRequest, context) =>
     const response = await getCachedDashboardStats(tenantId);
     
     console.log('[API /api/dashboard/stats] Returning response:', response);
+    
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'dashboard_stats_fetch',
+      resourceType: 'dashboard',
+      resourceId: tenantId,
+      metadata: { cached: true },
+      dataType: 'ANALYTICS',
+    });
     
     // Add cache headers
     return NextResponse.json(response, {

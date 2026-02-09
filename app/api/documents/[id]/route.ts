@@ -47,57 +47,87 @@ export const GET = async (
     const { userId, organizationId } = context;
 
   try {
-        const { searchParams } = new URL(request.url);
-        const includeFolder = searchParams.get("includeFolder") === "true";
-        const versions = searchParams.get("versions") === "true";
+    const { searchParams } = new URL(request.url);
+    const includeFolder = searchParams.get("includeFolder") === "true";
+    const versions = searchParams.get("versions") === "true";
 
-        const document = await getDocumentById(params.id, includeFolder);
-        
-        if (!document) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/documents/${params.id}`,
-            method: 'GET',
-            eventType: 'validation_failed',
-            severity: 'low',
-            details: { reason: 'Document not found', documentId: params.id },
-          });
-          return NextResponse.json({ error: "Document not found" }, { status: 404 });
-        }
+    const document = await getDocumentById(params.id, includeFolder);
+    
+    if (!document) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'GET',
+        eventType: 'validation_failed',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Document not found', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
 
-        if (versions) {
-          const versionHistory = await getDocumentVersions(params.id);
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/documents/${params.id}`,
-            method: 'GET',
-            eventType: 'success',
-            severity: 'low',
-            details: { documentId: params.id, includeVersions: true, versionCount: versionHistory?.length || 0 },
-          });
-          return NextResponse.json({ ...document, versions: versionHistory });
-        }
+    // Verify organization access
+    if (document.tenantId !== organizationId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'GET',
+        eventType: 'authorization_failed',
+        severity: 'high',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Organization ID mismatch', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: `/api/documents/${params.id}`,
-          method: 'GET',
-          eventType: 'success',
-          severity: 'low',
-          details: { documentId: params.id },
-        });
+    if (versions) {
+      const versionHistory = await getDocumentVersions(params.id);
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'GET',
+        eventType: 'success',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { documentId: params.id, includeVersions: true, versionCount: versionHistory?.length || 0 },
+      });
+      return NextResponse.json({ ...document, versions: versionHistory });
+    }
 
-        return NextResponse.json(document);
-      } catch (error) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: `/api/documents/${params.id}`,
-          method: 'GET',
-          eventType: 'server_error',
-          severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        });
-        console.error("Error fetching document:", error);
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'GET',
+      eventType: 'success',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { documentId: params.id },
+    });
+
+    return NextResponse.json(document);
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'GET',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error("Error fetching document:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch document", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+  })(request);
+};
         return NextResponse.json(
           { error: "Failed to fetch document", details: error instanceof Error ? error.message : "Unknown error" },
           { status: 500 }
@@ -116,68 +146,110 @@ export const PATCH = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-    let rawBody: unknown;
-    try {
-      rawBody = await request.json();
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
-    }
-
-    const parsed = updateDocumentSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-    }
-
-    const body = parsed.data;
+  return withEnhancedRoleAuth(40, async (request, context) => {
     const { userId, organizationId } = context;
 
-    const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
-    if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+  let rawBody: unknown;
+  try {
+    rawBody = await request.json();
+  } catch {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'PATCH',
+      eventType: 'validation_failed',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { reason: 'Invalid JSON in request body' },
+    });
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+  }
+
+  const parsed = updateDocumentSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'PATCH',
+      eventType: 'validation_failed',
+      severity: 'low',
+      dataType: 'DOCUMENTS',
+      details: { reason: 'Validation failed', errors: parsed.error.errors },
+    });
+    return NextResponse.json({ 
+      error: 'Invalid request body',
+      details: parsed.error.errors
+    }, { status: 400 });
+  }
+
+  const body = parsed.data;
 
   try {
-          const updated = await updateDocument(params.id, body);
-          
-          if (!updated) {
-            logApiAuditEvent({
-              timestamp: new Date().toISOString(), userId,
-              endpoint: `/api/documents/${params.id}`,
-              method: 'PATCH',
-              eventType: 'validation_failed',
-              severity: 'low',
-              details: { reason: 'Document not found', documentId: params.id },
-            });
-            return NextResponse.json({ error: "Document not found" }, { status: 404 });
-          }
+    // First, get the document to verify ownership
+    const document = await getDocumentById(params.id);
+    if (!document) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'PATCH',
+        eventType: 'validation_failed',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Document not found', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
 
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/documents/${params.id}`,
-            method: 'PATCH',
-            eventType: 'success',
-            severity: 'medium',
-            details: { documentId: params.id, updatedFields: Object.keys(body) },
-          });
+    // Verify organization access
+    if (document.tenantId !== organizationId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'PATCH',
+        eventType: 'authorization_failed',
+        severity: 'high',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Organization ID mismatch', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-          return NextResponse.json(updated);
-        } catch (error) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/documents/${params.id}`,
-            method: 'PATCH',
-            eventType: 'server_error',
-            severity: 'high',
-            details: { error: error instanceof Error ? error.message : 'Unknown error' },
-          });
-          console.error("Error updating document:", error);
-          return NextResponse.json(
-            { error: "Failed to update document", details: error instanceof Error ? error.message : "Unknown error" },
-            { status: 500 }
-          );
-        }
-        })(request, { params });
+    const updated = await updateDocument(params.id, body);
+
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'PATCH',
+      eventType: 'success',
+      severity: 'medium',
+      dataType: 'DOCUMENTS',
+      details: { documentId: params.id, updatedFields: Object.keys(body) },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'PATCH',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error("Error updating document:", error);
+    return NextResponse.json(
+      { error: "Failed to update document", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+  })(request);
 };
 
 /**
@@ -191,54 +263,91 @@ export const DELETE = async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(60, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
-        const { searchParams } = new URL(request.url);
-        const permanent = searchParams.get("permanent") === "true";
+    const { searchParams } = new URL(request.url);
+    const permanent = searchParams.get("permanent") === "true";
 
-        const success = permanent
-          ? await permanentlyDeleteDocument(params.id)
-          : await deleteDocument(params.id);
+    // First, get the document to verify ownership
+    const document = await getDocumentById(params.id);
+    if (!document) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'DELETE',
+        eventType: 'validation_failed',
+        severity: 'low',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Document not found', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
 
-        if (!success) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: `/api/documents/${params.id}`,
-            method: 'DELETE',
-            eventType: 'validation_failed',
-            severity: 'low',
-            details: { reason: 'Document not found', documentId: params.id },
-          });
-          return NextResponse.json({ error: "Document not found" }, { status: 404 });
-        }
+    // Verify organization access
+    if (document.tenantId !== organizationId) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'DELETE',
+        eventType: 'authorization_failed',
+        severity: 'high',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Organization ID mismatch', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: `/api/documents/${params.id}`,
-          method: 'DELETE',
-          eventType: 'success',
-          severity: 'high',
-          details: { documentId: params.id, permanent },
-        });
+    const success = permanent
+      ? await permanentlyDeleteDocument(params.id)
+      : await deleteDocument(params.id);
 
-        return NextResponse.json({ success: true, message: "Document deleted successfully" });
-      } catch (error) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: `/api/documents/${params.id}`,
-          method: 'DELETE',
-          eventType: 'server_error',
-          severity: 'high',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' },
-        });
-        console.error("Error deleting document:", error);
-        return NextResponse.json(
-          { error: "Failed to delete document", details: error instanceof Error ? error.message : "Unknown error" },
-          { status: 500 }
-        );
-      }
-      })(request, { params });
+    if (!success) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: `/api/documents/${params.id}`,
+        method: 'DELETE',
+        eventType: 'server_error',
+        severity: 'high',
+        dataType: 'DOCUMENTS',
+        details: { reason: 'Delete operation failed', documentId: params.id },
+      });
+      return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
+    }
+
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'DELETE',
+      eventType: 'success',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { documentId: params.id, permanent },
+    });
+
+    return NextResponse.json({ success: true, message: "Document deleted successfully" });
+  } catch (error) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: `/api/documents/${params.id}`,
+      method: 'DELETE',
+      eventType: 'server_error',
+      severity: 'high',
+      dataType: 'DOCUMENTS',
+      details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    });
+    console.error("Error deleting document:", error);
+    return NextResponse.json(
+      { error: "Failed to delete document", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+  })(request);
 };
 

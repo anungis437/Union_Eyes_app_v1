@@ -7,15 +7,32 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
+import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 import { db } from '@/db';
 import { sql } from '@/db';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 async function getHandler(
   req: NextRequest,
-  context: OrganizationContext,
+  context: any,
   params?: { id: string }
 ) {
+  const { userId, organizationId } = context;
+
+  // Rate limit report fetching
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.ANALYTICS_QUERY,
+    `report-get:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
     if (!params?.id) {
       return NextResponse.json(
@@ -30,7 +47,7 @@ async function getHandler(
         om.first_name || ' ' || om.last_name AS created_by_name
       FROM reports r
       LEFT JOIN organization_members om ON om.id = r.created_by AND om.tenant_id = r.tenant_id
-      WHERE r.id = ${params.id} AND r.tenant_id = ${context.organizationId}
+      WHERE r.id = ${params.id} AND r.tenant_id = ${organizationId}
     `);
 
     if (!reportResult || reportResult.length === 0) {
@@ -39,6 +56,16 @@ async function getHandler(
         { status: 404 }
       );
     }
+
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'report_fetch',
+      resourceType: 'report',
+      resourceId: params.id,
+      dataType: 'ANALYTICS',
+    });
 
     return NextResponse.json({ report: reportResult[0] });
   } catch (error) {
@@ -52,9 +79,24 @@ async function getHandler(
 
 async function putHandler(
   req: NextRequest,
-  context: OrganizationContext,
+  context: any,
   params?: { id: string }
 ) {
+  const { userId, organizationId } = context;
+
+  // Rate limit report updates
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.REPORT_BUILDER,
+    `report-update:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
     if (!params?.id) {
       return NextResponse.json(
@@ -103,9 +145,24 @@ async function putHandler(
 
 async function deleteHandler(
   req: NextRequest,
-  context: OrganizationContext,
+  context: any,
   params?: { id: string }
 ) {
+  const { userId, organizationId } = context;
+
+  // Rate limit report deletion
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.REPORT_BUILDER,
+    `report-delete:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
     if (!params?.id) {
       return NextResponse.json(
@@ -117,7 +174,7 @@ async function deleteHandler(
     // Verify ownership or admin
     const existingResult = await db.execute(sql`
       SELECT created_by FROM reports 
-      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
+      WHERE id = ${params.id} AND tenant_id = ${organizationId}
     `);
 
     if (!existingResult || existingResult.length === 0) {
@@ -130,8 +187,18 @@ async function deleteHandler(
     // Delete report
     await db.execute(sql`
       DELETE FROM reports
-      WHERE id = ${params.id} AND tenant_id = ${context.organizationId}
+      WHERE id = ${params.id} AND tenant_id = ${organizationId}
     `);
+
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'report_delete',
+      resourceType: 'report',
+      resourceId: params.id,
+      dataType: 'ANALYTICS',
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -143,6 +210,6 @@ async function deleteHandler(
   }
 }
 
-export const GET = withOrganizationAuth(getHandler);
-export const PUT = withOrganizationAuth(putHandler);
-export const DELETE = withOrganizationAuth(deleteHandler);
+export const GET = withEnhancedRoleAuth(30, getHandler);
+export const PUT = withEnhancedRoleAuth(50, putHandler);
+export const DELETE = withEnhancedRoleAuth(60, deleteHandler);

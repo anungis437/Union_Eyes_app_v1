@@ -4,13 +4,29 @@ import { db } from '@/db';
 import { members, duesTransactions, employerRemittances } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 // Resolve reconciliation discrepancies
 export const POST = async (req: NextRequest) => {
-  return withEnhancedRoleAuth(60, async (request, context) => {
+  return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting: 10 reconciliation operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.RECONCILIATION);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many reconciliation requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       // Get member to verify tenant
       const [member] = await db
         .select()
@@ -178,6 +194,21 @@ export const POST = async (req: NextRequest) => {
         })
         .where(eq(employerRemittances.id, remittanceId));
 
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/reconciliation/resolve',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          remittanceId,
+          action,
+          rowIndex,
+        },
+      });
+
       return NextResponse.json({
         message: 'Resolution action completed',
         action: actionResult,
@@ -185,6 +216,15 @@ export const POST = async (req: NextRequest) => {
       });
 
     } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/reconciliation/resolve',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
       console.error('Resolve reconciliation error:', error);
       return NextResponse.json(
         { error: 'Failed to resolve reconciliation' },

@@ -1,4 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 /**
  * Social Media Analytics API Routes - Phase 10
  * 
@@ -24,12 +25,24 @@ function getSupabaseClient() {
 }
 
 export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
+  return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.SOCIAL_MEDIA_API,
+        `social-analytics-read:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
       }
 
       // Parse query parameters
@@ -141,12 +154,24 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(40, async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.SOCIAL_MEDIA_API,
+        `social-analytics-refresh:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
       }
 
       const body = await request.json();

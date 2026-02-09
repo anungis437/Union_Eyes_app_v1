@@ -15,6 +15,7 @@ import { z } from "zod";
 import { getSystemConfigs, updateSystemConfig } from "@/actions/admin-actions";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 /**
  * Validation schemas
@@ -61,6 +62,22 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
   const query = parsed.data;
   const { userId, organizationId } = context;
 
+  // Rate limiting for system operations
+  const rateLimitResult = await checkRateLimit(
+    `system-ops:${userId}`,
+    RATE_LIMITS.SYSTEM_OPERATIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+      {
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult),
+      }
+    );
+  }
+
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -100,6 +117,8 @@ try {
         success: true,
         data: configs,
         count: configs.length,
+      }, {
+        headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
       logApiAuditEvent({
@@ -135,6 +154,22 @@ export const PUT = withEnhancedRoleAuth(90, async (request, context) => {
 
   const body = parsed.data;
   const { userId, organizationId } = context;
+
+  // Rate limiting for system operations
+  const rateLimitResult = await checkRateLimit(
+    `system-ops:${userId}`,
+    RATE_LIMITS.SYSTEM_OPERATIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+      {
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult),
+      }
+    );
+  }
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
@@ -182,6 +217,8 @@ try {
       return NextResponse.json({
         success: true,
         message: "Setting updated successfully",
+      }, {
+        headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
       logApiAuditEvent({

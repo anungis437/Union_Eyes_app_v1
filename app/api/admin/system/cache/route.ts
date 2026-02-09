@@ -14,12 +14,29 @@ import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
+      // Rate limiting for system operations
+      const rateLimitResult = await checkRateLimit(
+        `system-ops:${userId}`,
+        RATE_LIMITS.SYSTEM_OPERATIONS
+      );
+
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded", resetIn: rateLimitResult.resetIn },
+          {
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       // Check admin role using RLS-protected query
       return withRLSContext(async (tx) => {
         const adminCheck = await tx
@@ -43,6 +60,8 @@ export const POST = async (request: NextRequest) => {
         return NextResponse.json({
           success: true,
           message: "Cache cleared successfully",
+        }, {
+          headers: createRateLimitHeaders(rateLimitResult),
         });
       });
     } catch (error) {

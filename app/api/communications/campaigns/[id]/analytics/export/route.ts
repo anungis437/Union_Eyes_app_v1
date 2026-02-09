@@ -16,32 +16,44 @@ import {
   newsletterEngagement 
 } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    try {
+      const { userId, organizationId } = context;
 
-    // Get campaign
-    const [campaign] = await db
-      .select()
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.organizationId, user.tenantId)
-        )
+      if (!organizationId) {
+        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.EXPORTS,
+        `campaign-export:${userId}`
       );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
+
+      // Get campaign
+      const [campaign] = await db
+        .select()
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, params.id),
+            eq(newsletterCampaigns.organizationId, organizationId)
+          )
+        );
 
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
@@ -114,6 +126,17 @@ export async function GET(
     ].join('
 ');
 
+    // Audit log
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'EXPORT_CAMPAIGN_ANALYTICS',
+      dataType: 'CAMPAIGNS',
+      recordId: params.id,
+      success: true,
+      metadata: { format: 'CSV', rows: recipients.length },
+    });
+
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv',
@@ -127,4 +150,5 @@ export async function GET(
       { status: 500 }
     );
   }
+  })(request);
 }

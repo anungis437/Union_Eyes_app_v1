@@ -25,7 +25,7 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
 /**
  * Rate limit configuration
  */
-interface RateLimitConfig {
+export interface RateLimitConfig {
   /** Maximum number of requests allowed */
   limit: number;
   /** Time window in seconds */
@@ -37,7 +37,7 @@ interface RateLimitConfig {
 /**
  * Rate limit result
  */
-interface RateLimitResult {
+export interface RateLimitResult {
   /** Whether the request is allowed */
   allowed: boolean;
   /** Current request count in the window */
@@ -182,6 +182,28 @@ export const RATE_LIMITS = {
   },
 
   /**
+   * AI Completion/Generation (very expensive OpenAI calls)
+   * CRITICAL: Strict limit for cost control
+   * 20 requests per hour per user
+   */
+  AI_COMPLETION: {
+    limit: 20,
+    window: 3600, // 1 hour
+    identifier: 'ai-completion',
+  },
+
+  /**
+   * ML Training/Configuration (very expensive and resource-intensive)
+   * CRITICAL: Extremely strict limit
+   * 5 requests per hour per user
+   */
+  ML_TRAINING: {
+    limit: 5,
+    window: 3600, // 1 hour
+    identifier: 'ml-training',
+  },
+
+  /**
    * ML Predictions (expensive model inference)
    * 50 predictions per hour per user
    */
@@ -199,6 +221,39 @@ export const RATE_LIMITS = {
     limit: 100,
     window: 3600, // 1 hour
     identifier: 'voice-transcription',
+  },
+
+  /**
+   * Message sending (individual messages)
+   * Moderate limit to prevent spam
+   * 100 messages per hour per user
+   */
+  MESSAGE_SEND: {
+    limit: 100,
+    window: 3600, // 1 hour
+    identifier: 'message-send',
+  },
+
+  /**
+   * Bulk message sending (broadcast messages)
+   * CRITICAL: Strict limit to prevent mass spam
+   * 10 bulk sends per hour per user
+   */
+  BULK_MESSAGE: {
+    limit: 10,
+    window: 3600, // 1 hour
+    identifier: 'bulk-message',
+  },
+
+  /**
+   * SMS sending (costs money per SMS)
+   * CRITICAL: Strict limit for cost control
+   * 50 SMS per hour per user
+   */
+  SMS_SEND: {
+    limit: 50,
+    window: 3600, // 1 hour
+    identifier: 'sms-send',
   },
 
   /**
@@ -358,6 +413,28 @@ export const RATE_LIMITS = {
   },
 
   /**
+   * Organization operations (hierarchy, members, etc.)
+   * Phase 3 Data Management
+   * 50 requests per hour per organization
+   */
+  ORGANIZATION_OPERATIONS: {
+    limit: 50,
+    window: 3600, // 1 hour
+    identifier: 'organization-operations',
+  },
+
+  /**
+   * Equity analytics and reporting
+   * Phase 3 Data Management - sensitive demographic data
+   * 30 requests per hour per organization
+   */
+  EQUITY_ANALYTICS: {
+    limit: 30,
+    window: 3600, // 1 hour
+    identifier: 'equity-analytics',
+  },
+
+  /**
    * Member operations (profile updates, role changes)
    * Moderate limit
    * 50 operations per hour per user
@@ -366,6 +443,39 @@ export const RATE_LIMITS = {
     limit: 50,
     window: 3600, // 1 hour
     identifier: 'members',
+  },
+
+  /**
+   * Member bulk import operations (POST /api/members/bulk)
+   * Strict limit for bulk operations
+   * 5 requests per hour per user
+   */
+  MEMBER_BULK_IMPORT: {
+    limit: 5,
+    window: 3600, // 1 hour
+    identifier: 'member-bulk-import',
+  },
+
+  /**
+   * Member export operations (GET /api/members/export)
+   * Moderate limit for export operations
+   * 20 requests per hour per user
+   */
+  MEMBER_EXPORT: {
+    limit: 20,
+    window: 3600, // 1 hour
+    identifier: 'member-export',
+  },
+
+  /**
+   * Claims operations (approve, reject, status updates)
+   * Moderate limit for claims operations
+   * 50 requests per hour per user
+   */
+  CLAIMS_OPERATIONS: {
+    limit: 50,
+    window: 3600, // 1 hour
+    identifier: 'claims-operations',
   },
 
   // ===== FINANCIAL OPERATIONS =====
@@ -404,14 +514,58 @@ export const RATE_LIMITS = {
   },
 
   /**
-   * Tax slip generation (GET /api/tax/slips, POST /api/tax/t4a)
-   * Moderate limit for tax operations
+   * Financial write operations (dues, payments, etc.)
+   * Strict limit for financial write operations
    * 20 requests per hour per user
    */
-  TAX_OPERATIONS: {
+  FINANCIAL_WRITE: {
     limit: 20,
     window: 3600, // 1 hour
+    identifier: 'financial-write',
+  },
+
+  /**
+   * Financial read operations (balance, history, etc.)
+   * Higher limit for read operations
+   * 100 requests per hour per user
+   */
+  FINANCIAL_READ: {
+    limit: 100,
+    window: 3600, // 1 hour
+    identifier: 'financial-read',
+  },
+
+  /**
+   * Tax slip generation (GET /api/tax/slips, POST /api/tax/t4a)
+   * Strict limit for tax operations
+   * 10 requests per hour per user
+   */
+  TAX_OPERATIONS: {
+    limit: 10,
+    window: 3600, // 1 hour
     identifier: 'tax-operations',
+  },
+
+  /**
+   * Reconciliation operations (upload, process, resolve)
+   * Moderate limit for reconciliation operations
+   * 10 requests per hour per user
+   */
+  RECONCILIATION: {
+    limit: 10,
+    window: 3600, // 1 hour
+    identifier: 'reconciliation',
+  },
+
+  /**
+   * CLC operations (remittances, analytics, etc.)
+   * Moderate limit for CLC operations
+   * 50 requests per hour per user
+   */
+  CLC_OPERATIONS: {
+    limit: 50,
+    window: 3600, // 1 hour
+    identifier: 'clc-operations',
   },
 
   /**
@@ -447,6 +601,190 @@ export const RATE_LIMITS = {
     limit: 50,
     window: 3600, // 1 hour
     identifier: 'uploads',
+  },
+
+  // ===== DOCUMENT OPERATIONS =====
+  
+  /**
+   * Document uploads (POST /api/documents/upload)
+   * Moderate limit to prevent storage abuse
+   * 30 uploads per hour per user
+   */
+  DOCUMENT_UPLOAD: {
+    limit: 30,
+    window: 3600, // 1 hour
+    identifier: 'document-upload',
+  },
+
+  /**
+   * Document downloads (GET /api/documents/[id]/download)
+   * Higher limit for document downloads
+   * 100 downloads per hour per user
+   */
+  DOCUMENT_DOWNLOAD: {
+    limit: 100,
+    window: 3600, // 1 hour
+    identifier: 'document-download',
+  },
+
+  /**
+   * Storage operations (GET/POST /api/storage/*)
+   * Strict limit for storage management
+   * 20 operations per hour per user
+   */
+  STORAGE_OPERATIONS: {
+    limit: 20,
+    window: 3600, // 1 hour
+    identifier: 'storage-operations',
+  },
+
+  // ===== PHASE 4: CALENDAR, EVENTS, AND SYSTEM UTILITIES =====
+
+  /**
+   * Calendar operations (GET/POST/PATCH/DELETE /api/calendar/**)
+   * Moderate limit for calendar management
+   * 60 requests per hour per user
+   */
+  CALENDAR_OPERATIONS: {
+    limit: 60,
+    window: 3600, // 1 hour
+    identifier: 'calendar-operations',
+  },
+
+  /**
+   * Event operations (GET/POST/PATCH/DELETE /api/events/**)
+   * Moderate limit for event management
+   * 60 requests per hour per user
+   */
+  EVENT_OPERATIONS: {
+    limit: 60,
+    window: 3600, // 1 hour
+    identifier: 'event-operations',
+  },
+
+  /**
+   * Webhook calls (POST /api/webhooks/*)
+   * High limit for external system integrations
+   * 300 requests per hour per IP/source
+   */
+  WEBHOOK_CALLS: {
+    limit: 300,
+    window: 3600, // 1 hour
+    identifier: 'webhook-calls',
+  },
+
+  /**
+   * System operations (POST /api/admin/system/*)
+   * Strict limit for admin system utilities
+   * 30 requests per hour per admin
+   */
+  SYSTEM_OPERATIONS: {
+    limit: 30,
+    window: 3600, // 1 hour
+    identifier: 'system-operations',
+  },
+
+  // ===== PHASE 4: ANALYTICS & REPORTING =====
+
+  /**
+   * Analytics query operations (GET /api/analytics/**)
+   * Moderate limit for complex analytics queries
+   * 60 requests per hour per user
+   */
+  ANALYTICS_QUERY: {
+    limit: 60,
+    window: 3600, // 1 hour
+    identifier: 'analytics-query',
+  },
+
+  /**
+   * Analytics export operations (POST /api/analytics/export, /api/reports/export)
+   * Strict limit for resource-intensive CSV/PDF exports
+   * 10 requests per hour per user
+   */
+  ANALYTICS_EXPORT: {
+    limit: 10,
+    window: 3600, // 1 hour
+    identifier: 'analytics-export',
+  },
+
+  /**
+   * Dashboard refresh operations (GET /api/dashboard/**)
+   * Higher limit for real-time dashboard updates
+   * 120 requests per hour per user
+   */
+  DASHBOARD_REFRESH: {
+    limit: 120,
+    window: 3600, // 1 hour
+    identifier: 'dashboard-refresh',
+  },
+
+  /**
+   * Report execution operations (POST /api/reports/execute, /api/reports/[id]/execute)
+   * Moderate limit for report generation
+   * 30 requests per hour per user
+   */
+  REPORT_EXECUTION: {
+    limit: 30,
+    window: 3600, // 1 hour
+    identifier: 'report-execution',
+  },
+
+  /**
+   * Report builder operations (POST /api/reports/builder)
+   * Moderate limit for report configuration
+   * 20 requests per hour per user
+   */
+  REPORT_BUILDER: {
+    limit: 20,
+    window: 3600, // 1 hour
+    identifier: 'report-builder',
+  },
+
+  /**
+   * Advanced analytics operations (POST /api/analytics/predictions, /api/analytics/insights)
+   * Strict limit for AI-driven analytics
+   * 20 requests per hour per user
+   */
+  ADVANCED_ANALYTICS: {
+    limit: 20,
+    window: 3600, // 1 hour
+    identifier: 'advanced-analytics',
+  },
+
+  // ===== PHASE 4: SOCIAL MEDIA & CAMPAIGNS =====
+  
+  /**
+   * Campaign operations (create, edit, schedule)
+   * Moderate limit to prevent spam/abuse
+   * 30 requests per hour per user
+   */
+  CAMPAIGN_OPERATIONS: {
+    limit: 30,
+    window: 3600, // 1 hour
+    identifier: 'campaign-operations',
+  },
+
+  /**
+   * Social media post operations (publish, schedule)
+   * Strict limit to prevent spam/abuse of posting features
+   * 20 requests per hour per user
+   */
+  SOCIAL_MEDIA_POST: {
+    limit: 20,
+    window: 3600, // 1 hour
+    identifier: 'social-media-post',
+  },
+
+  /**
+   * Social media API calls (external platform API calls)
+   * Higher limit for API calls to external platforms
+   * 100 requests per hour per organization
+   */
+  SOCIAL_MEDIA_API: {
+    limit: 100,
+    window: 3600, // 1 hour
+    identifier: 'social-media-api',
   },
 } as const;
 

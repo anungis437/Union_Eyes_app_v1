@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { z } from 'zod';
 
-import { requireUser } from '@/lib/auth/unified-auth';
+const QuerySchema = z.object({
+  question: z.string().min(1).max(500),
+  context: z.any().optional(),
+});
 
 /**
  * POST /api/ml/query
@@ -28,31 +35,31 @@ import { requireUser } from '@/lib/auth/unified-auth';
  * - "What's our win rate this quarter?"
  * - "Which employer has the most claims?"
  */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // CRITICAL: Rate limit ML query calls (expensive AI operations)
+  const rateLimitResult = await checkRateLimit(
+    `ml-predictions:${userId}`,
+    RATE_LIMITS.ML_PREDICTIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded for ML operations. Please try again later.' },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
+
   try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const body = await request.json();
+    const { question, context: queryContext } = QuerySchema.parse(body);
 
     const organizationScopeId = organizationId || userId;
     const tenantId = organizationScopeId;
-    const { question, context } = await request.json();
-    
-    if (!question || typeof question !== 'string') {
-      return NextResponse.json(
-        { error: 'question is required and must be a string' }, 
-        { status: 400 }
-      );
-    }
-
-    if (question.length > 500) {
-      return NextResponse.json(
-        { error: 'question is too long (max 500 characters)' }, 
-        { status: 400 }
-      );
-    }
 
     // Call AI service for natural language query
     const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3005';
@@ -68,7 +75,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         question,
         tenantId,
-        context
+        context: queryContext
       })
     });
 
@@ -83,6 +90,18 @@ export async function POST(request: NextRequest) {
     // Generate follow-up suggestions based on the query type
     const suggestions = generateFollowUpSuggestions(question, result);
 
+    // Log audit event
+    await logApiAuditEvent({
+      action: 'ml_query',
+      resourceType: 'AI_ML',
+      organizationId,
+      userId,
+      metadata: {
+        question: question.substring(0, 100),
+        confidence: result.confidence,
+      },
+    });
+
     return NextResponse.json({
       ...result,
       suggestions
@@ -90,12 +109,20 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Natural language query error:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: error.errors },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to process natural language query' },
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * Generate intelligent follow-up question suggestions

@@ -15,7 +15,9 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterCampaigns } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
 const updateCampaignSchema = z.object({
   name: z.string().min(1).optional(),
@@ -32,65 +34,98 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+  return withEnhancedRoleAuth(20, async (request, context) => {
+    try {
+      const { userId, organizationId } = context;
 
-    const [campaign] = await db
-      .select()
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.organizationId, user.tenantId)
-        )
+      if (!organizationId) {
+        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.CAMPAIGN_OPERATIONS,
+        `campaign-read:${userId}`
       );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
 
-    if (!campaign) {
-      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      const [campaign] = await db
+        .select()
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, params.id),
+            eq(newsletterCampaigns.organizationId, organizationId)
+          )
+        );
+
+      if (!campaign) {
+        return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      }
+
+      // Audit log
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'VIEW_CAMPAIGN',
+        dataType: 'CAMPAIGNS',
+        recordId: params.id,
+        success: true,
+      });
+
+      return NextResponse.json({ campaign });
+    } catch (error) {
+      console.error('Error fetching campaign:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch campaign' },
+        { status: 500 }
+      );
     }
-
-    return NextResponse.json({ campaign });
-  } catch (error) {
-    console.error('Error fetching campaign:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch campaign' },
-      { status: 500 }
-    );
-  }
+  })(request);
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+  return withEnhancedRoleAuth(40, async (request, context) => {
+    try {
+      const { userId, organizationId } = context;
+
+      if (!organizationId) {
+        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.CAMPAIGN_OPERATIONS,
+        `campaign-ops:${userId}`
+      );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
 
     const body = await request.json();
     const validatedData = updateCampaignSchema.parse(body);
 
-    // Check if campaign can be edited
-    const [existing] = await db
-      .select()
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.organizationId, user.tenantId)
-        )
-      );
+      // Check if campaign can be edited
+      const [existing] = await db
+        .select()
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, params.id),
+            eq(newsletterCampaigns.organizationId, organizationId)
+          )
+        );
 
     if (!existing) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
@@ -108,52 +143,75 @@ export async function PUT(
       updateData.scheduledAt = new Date(validatedData.scheduledAt);
     }
 
-    const [campaign] = await db
-      .update(newsletterCampaigns)
-      .set(updateData)
-      .where(eq(newsletterCampaigns.id, params.id))
-      .returning();
+      const [campaign] = await db
+        .update(newsletterCampaigns)
+        .set(updateData)
+        .where(eq(newsletterCampaigns.id, params.id))
+        .returning();
 
-    return NextResponse.json({ campaign });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+      // Audit log
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'UPDATE_CAMPAIGN',
+        dataType: 'CAMPAIGNS',
+        recordId: params.id,
+        success: true,
+        metadata: { updates: Object.keys(validatedData) },
+      });
+
+      return NextResponse.json({ campaign });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: 'Validation error', details: error.errors },
+          { status: 400 }
+        );
+      }
+
+      console.error('Error updating campaign:', error);
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
+        { error: 'Failed to update campaign' },
+        { status: 500 }
       );
     }
-
-    console.error('Error updating campaign:', error);
-    return NextResponse.json(
-      { error: 'Failed to update campaign' },
-      { status: 500 }
-    );
-  }
+  })(request);
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+  return withEnhancedRoleAuth(60, async (request, context) => {
+    try {
+      const { userId, organizationId } = context;
 
-    // Check if campaign can be deleted
-    const [existing] = await db
-      .select()
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, params.id),
-          eq(newsletterCampaigns.organizationId, user.tenantId)
-        )
+      if (!organizationId) {
+        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      }
+
+      // Rate limit check
+      const rateLimitResult = await checkRateLimit(
+        RATE_LIMITS.CAMPAIGN_OPERATIONS,
+        `campaign-ops:${userId}`
       );
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+          { status: 429 }
+        );
+      }
+
+      // Check if campaign can be deleted
+      const [existing] = await db
+        .select()
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, params.id),
+            eq(newsletterCampaigns.organizationId, organizationId)
+          )
+        );
 
     if (!existing) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
@@ -166,16 +224,27 @@ export async function DELETE(
       );
     }
 
-    await db
-      .delete(newsletterCampaigns)
-      .where(eq(newsletterCampaigns.id, params.id));
+      await db
+        .delete(newsletterCampaigns)
+        .where(eq(newsletterCampaigns.id, params.id));
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting campaign:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete campaign' },
-      { status: 500 }
-    );
-  }
+      // Audit log
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'DELETE_CAMPAIGN',
+        dataType: 'CAMPAIGNS',
+        recordId: params.id,
+        success: true,
+      });
+
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      return NextResponse.json(
+        { error: 'Failed to delete campaign' },
+        { status: 500 }
+      );
+    }
+  })(request);
 }

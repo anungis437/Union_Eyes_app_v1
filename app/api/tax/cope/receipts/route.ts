@@ -12,6 +12,7 @@ import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,21 @@ export const GET = async (request: NextRequest) => {
     const { userId } = context;
 
   try {
+      // Rate limiting: 10 tax operations per hour per user
+      const rateLimitResult = await checkRateLimit(userId, RATE_LIMITS.TAX_OPERATIONS);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. Too many tax requests.',
+            resetIn: rateLimitResult.resetIn 
+          },
+          { 
+            status: 429,
+            headers: createRateLimitHeaders(rateLimitResult),
+          }
+        );
+      }
+
       const { searchParams } = new URL(request.url);
       const memberId = searchParams.get('memberId');
       const taxYear = parseInt(searchParams.get('taxYear') || new Date().getFullYear().toString());
@@ -99,9 +115,34 @@ export const GET = async (request: NextRequest) => {
         }, { status: 501 });
       }
 
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/tax/cope/receipts',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'medium',
+        details: {
+          dataType: 'FINANCIAL',
+          memberId,
+          taxYear,
+          totalAmount,
+          contributionCount: contributions.length,
+        },
+      });
+
       return NextResponse.json(response);
 
     } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/tax/cope/receipts',
+        method: 'GET',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
       logger.error('Failed to fetch COPE receipts', error as Error, {
         userId: userId,
         memberId: request.nextUrl.searchParams.get('memberId'),
@@ -170,6 +211,22 @@ export const POST = async (request: NextRequest) => {
         })
         .returning();
 
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/tax/cope/receipts',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'high',
+        details: {
+          dataType: 'FINANCIAL',
+          memberId,
+          organizationId,
+          totalAmount: Number(totalAmount),
+          politicalPortion: Number(politicalPortion),
+        },
+      });
+
       return NextResponse.json({
         success: true,
         data: result[0],
@@ -177,6 +234,15 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/tax/cope/receipts',
+        method: 'POST',
+        eventType: 'server_error',
+        severity: 'high',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+      });
       logger.error('Failed to record COPE contribution', error as Error, {
         userId: userId,
         correlationId: request.headers.get('x-correlation-id'),

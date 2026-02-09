@@ -11,12 +11,29 @@ import { logger } from '@/lib/logger';
 import { put } from '@vercel/blob';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const POST = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
 
-  try {
+    // CRITICAL: Rate limit message sending
+    const rateLimitResult = await checkRateLimit(
+      `message-send:${userId}`,
+      RATE_LIMITS.MESSAGE_SEND
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded for messaging. Please try again later.' },
+        { 
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    try {
       const threadId = params.threadId;
 
       // Fetch thread

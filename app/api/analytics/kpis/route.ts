@@ -12,7 +12,22 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
 
 export const POST = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
+  return withEnhancedRoleAuth(50, async (request, context) => {
+    const { userId, organizationId } = context;
+
+    // Rate limit KPI creation
+    const rateLimitResult = await checkRateLimit(
+      RATE_LIMITS.ANALYTICS_QUERY,
+      `analytics-kpis-create:${userId}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+        { status: 429 }
+      );
+    }
+
     try {
       const body = await request.json();
       const {
@@ -65,6 +80,17 @@ export const POST = async (request: NextRequest) => {
           { status: 400 }
         );
       }
+
+      // Log audit event
+      await logApiAuditEvent({
+        userId,
+        organizationId,
+        action: 'kpi_calculate',
+        resourceType: 'analytics',
+        resourceId: 'kpis',
+        metadata: { kpiType, kpiName, periodType },
+        dataType: 'ANALYTICS',
+      });
       
       return NextResponse.json({
         success: true,

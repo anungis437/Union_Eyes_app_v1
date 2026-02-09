@@ -40,13 +40,39 @@ interface WorkloadForecastResponse {
   generatedAt: string;
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const { userId, organizationId } = await requireUser();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+/**
+ * UC-08: Workload Forecasting API
+ * 
+ * GET  /api/ml/predictions/workload-forecast - Get forecasts for specified time horizon
+ * POST /api/ml/predictions/workload-forecast - Generate new forecast for date range
+ * 
+ * Returns:
+ * - predictions: Array of forecast points with date, volume, confidence intervals
+ * - trend: Overall trend direction (increasing/decreasing/stable)
+ * - accuracy: Model accuracy percentage
+ * - resourceRecommendations: Suggested staffing adjustments
+ */
 
+export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // Rate limit ML predictions
+  const rateLimitResult = await checkRateLimit(
+    `ml-predictions:${userId}`,
+    RATE_LIMITS.ML_PREDICTIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded for ML operations. Please try again later.' },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
+
+  try {
     const searchParams = request.nextUrl.searchParams;
     const horizon = parseInt(searchParams.get('horizon') || '30'); // 30, 60, or 90 days
     const granularity = searchParams.get('granularity') || 'daily'; // daily or weekly

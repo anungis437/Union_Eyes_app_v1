@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { z } from 'zod';
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { requireUser } from '@/lib/auth/unified-auth';
+
+const TimelineRequestSchema = z.object({
+  claimId: z.string().uuid(),
+});
 
 /**
  * POST /api/ml/predictions/timeline
@@ -28,21 +34,31 @@ import { requireUser } from '@/lib/auth/unified-auth';
  *   }
  * }
  */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // CRITICAL: Rate limit ML predictions (expensive)
+  const rateLimitResult = await checkRateLimit(
+    `ml-predictions:${userId}`,
+    RATE_LIMITS.ML_PREDICTIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded for ML operations. Please try again later.' },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
+
   try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const body = await request.json();
+    const { claimId } = TimelineRequestSchema.parse(body);
 
     const organizationScopeId = organizationId || userId;
     const tenantId = organizationScopeId;
-    const { claimId } = await request.json();
-    
-    if (!claimId) {
-      return NextResponse.json({ error: 'claimId is required' }, { status: 400 });
-    }
 
     // Verify claim exists and belongs to tenant
     const claim = await db.query.claims.findFirst({
@@ -76,13 +92,34 @@ export async function POST(request: NextRequest) {
 
     const prediction = await response.json();
 
+    // Log audit event
+    await logApiAuditEvent({
+      action: 'ml_prediction',
+      resourceType: 'AI_ML',
+      organizationId,
+      userId,
+      metadata: {
+        predictionType: 'timeline',
+        claimId,
+        confidence: prediction.confidence,
+      },
+    });
+
     return NextResponse.json({ prediction });
     
   } catch (error) {
     console.error('Timeline prediction error:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: error.errors },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to predict timeline' },
       { status: 500 }
     );
   }
-}
+});

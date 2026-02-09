@@ -6,18 +6,33 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { sql, db } from '@/db';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { sql, db } from '@/db';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-async function handler(req: NextRequest, context) {
+export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // Rate limit claims analytics
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.ANALYTICS_QUERY,
+    `analytics-claims:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
-    const organizationId = context.organizationId;
     const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
-        { error: 'Tenant ID required' },
+        { error: 'Organization ID required' },
         { status: 400 }
       );
     }
@@ -58,7 +73,16 @@ async function handler(req: NextRequest, context) {
       totalClaims: Number((result as any)[0]?.total_claims || 0),
       period: { startDate, endDate }
     };
-
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'claims_analytics_fetch',
+      resourceType: 'analytics',
+      resourceId: 'claims-metrics',
+      metadata: { daysBack, includeDetails, filters },
+      dataType: 'ANALYTICS',
+    });
     return NextResponse.json({
       analytics,
       dateRange: {

@@ -6,18 +6,33 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
-import { getExecutiveSummary, getMonthlyTrends } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { getExecutiveSummary, getMonthlyTrends } from '@/db/queries/analytics-queries';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
-async function handler(req: NextRequest, context) {
+export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // Rate limit executive analytics
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.ANALYTICS_QUERY,
+    `analytics-executive:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
-    const organizationId = context.organizationId;
     const tenantId = organizationId;
     
     if (!tenantId) {
       return NextResponse.json(
-        { error: 'Tenant ID required' },
+        { error: 'Organization ID required' },
         { status: 400 }
       );
     }
@@ -35,6 +50,17 @@ async function handler(req: NextRequest, context) {
     // Get monthly trends for the past 12 months
     const trends = await getMonthlyTrends(tenantId, 12);
 
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'executive_analytics_fetch',
+      resourceType: 'analytics',
+      resourceId: 'executive-summary',
+      metadata: { daysBack },
+      dataType: 'ANALYTICS',
+    });
+
     return NextResponse.json({
       summary,
       trends,
@@ -51,6 +77,4 @@ async function handler(req: NextRequest, context) {
       { status: 500 }
     );
   }
-}
-
-export const GET = withOrganizationAuth(handler);
+});

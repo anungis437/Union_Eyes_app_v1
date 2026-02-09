@@ -17,10 +17,27 @@ import {
 } from '@/lib/services/ai/auto-classification-service';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-  try {
+    // CRITICAL: Rate limit AI calls (expensive OpenAI API)
+    const rateLimitResult = await checkRateLimit(
+      `ai-completion:${context.userId}`,
+      RATE_LIMITS.AI_COMPLETION
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded for AI operations. Please try again later.' },
+        { 
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    try {
       const body = await request.json();
       const {
         action = 'classify-clause', // 'classify-clause', 'generate-tags', 'detect-refs', 'classify-precedent', 'enrich', 'batch-classify'

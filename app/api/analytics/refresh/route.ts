@@ -5,13 +5,28 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { refreshAnalyticsViews, getViewRefreshStats } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from "@/lib/enterprise-role-middleware";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
 async function postHandler(req: NextRequest, context) {
+  const { userId, organizationId } = context;
+
+  // Rate limit refresh operations
+  const rateLimitResult = await checkRateLimit(
+    RATE_LIMITS.DASHBOARD_REFRESH,
+    `analytics-refresh:${userId}`
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
+      { status: 429 }
+    );
+  }
+
   try {
-    const organizationId = context.organizationId;
     const tenantId = organizationId;
     
     if (!tenantId) {
@@ -25,6 +40,17 @@ async function postHandler(req: NextRequest, context) {
     const startTime = Date.now();
     const results = await refreshAnalyticsViews();
     const duration = Date.now() - startTime;
+
+    // Log audit event
+    await logApiAuditEvent({
+      userId,
+      organizationId,
+      action: 'analytics_views_refresh',
+      resourceType: 'analytics',
+      resourceId: 'materialized-views',
+      metadata: { duration, viewCount: results.length },
+      dataType: 'ANALYTICS',
+    });
 
     return NextResponse.json({
       success: true,
@@ -74,5 +100,5 @@ async function getHandler(req: NextRequest, context) {
   }
 }
 
-export const POST = withOrganizationAuth(postHandler);
-export const GET = withOrganizationAuth(getHandler);
+export const POST = withEnhancedRoleAuth(50, postHandler);
+export const GET = withEnhancedRoleAuth(30, getHandler);

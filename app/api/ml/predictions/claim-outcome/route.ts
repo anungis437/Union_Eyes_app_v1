@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+import { withEnhancedRoleAuth } from '@/lib/enterprise-role-middleware';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { z } from 'zod';
 import { db } from '@/db';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { requireUser } from '@/lib/auth/unified-auth';
 
 /**
  * POST /api/ml/predictions/claim-outcome
@@ -37,7 +39,26 @@ import { requireUser } from '@/lib/auth/unified-auth';
  *   }
  * }
  */
-export async function POST(request: NextRequest) {
+export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
+  const { userId, organizationId } = context;
+
+  // CRITICAL: Rate limit ML predictions (expensive)
+  const rateLimitResult = await checkRateLimit(
+    `ml-predictions:${userId}`,
+    RATE_LIMITS.ML_PREDICTIONS
+  );
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded for ML operations. Please try again later.' },
+      { 
+        status: 429,
+        headers: createRateLimitHeaders(rateLimitResult)
+      }
+    );
+  }
+
+  try {
   try {
     const { userId, organizationId } = await requireUser();
     

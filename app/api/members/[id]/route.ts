@@ -60,6 +60,7 @@ export const GET = async (
             method: 'GET',
             eventType: 'validation_failed',
             severity: 'low',
+            dataType: 'MEMBER_DATA',
             details: { reason: 'Member ID is required' },
           });
           return NextResponse.json(
