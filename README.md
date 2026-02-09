@@ -10,7 +10,7 @@
 ![Tests Passing](https://img.shields.io/badge/Tests-80%2F80%20Passing-brightgreen?style=for-the-badge&logo=check&logoColor=white)
 ![Compliance](https://img.shields.io/badge/Compliance-GDPR%20%7C%20PIPEDA%20%7C%20SOC2-blue?style=for-the-badge&logo=shield&logoColor=white)
 
-> **📢 Recent Update (Feb 6, 2026):** All 11 development branches successfully merged! Phase 6 complete with analytics dashboards, IRV voting, RRULE parser, OpenAPI docs, and full validator/compliance system integrated. [View merge details](BRANCH_MERGE_PLAN.md)
+> **📢 Recent Update (Feb 9, 2026):** Latest improvements include defensibility pack system-of-record exports, wage benchmarking analytics, enhanced visibility controls, comprehensive documentation reorganization, and TypeScript type safety improvements. Repository streamlined to main branch with all features integrated.
 
 **A complete, enterprise-grade union management platform** built with Next.js 14, featuring claims management, CBA intelligence, member management, pension administration, organizing tools, strike fund management, cross-organization collaboration, and AI-powered assistance.
 
@@ -81,6 +81,9 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 | **Claims Management** | Full lifecycle management from submission to resolution | ✅ Production |
 | **Member Management** | Profiles, documents, certifications, dues tracking | ✅ Production |
 | **CBA Intelligence** | Contract analysis, clause library, precedent database | ✅ Production |
+| **Defensibility Pack System** | System-of-record exports for arbitration with tamper-proof audit trails | ✅ Production |
+| **Wage Benchmarking** | Multi-dimensional wage analytics (COL, CPI, industry, NOC) | ✅ Production |
+| **Visibility Controls** | Granular data access controls (private, union, public, verified) | ✅ Production |
 | **Financial System** | Strike funds, payments, subscriptions, tracking | ✅ Production |
 | **Collaboration** | Cross-org clause sharing, precedent exchange | ✅ Production |
 | **Calendar & Events** | Integrated calendar with event management | ✅ Production |
@@ -169,6 +172,26 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 - Trend analysis
 - Export to multiple formats (PDF, Excel, CSV)
 - Per-capita CLC reporting
+- Wage benchmarking analytics (COL, CPI, industry comparisons)
+- Multi-dimensional compensation analysis
+
+### 🛡️ **Defensibility Pack System** ✨ NEW
+- System-of-record export packages for arbitration
+- Complete audit trail with tamper-proof signatures
+- Document version control and timeline tracking
+- Breach event documentation with evidence links
+- Export formats: PDF, ZIP archives with structured data
+- Integration with grievance and arbitration workflows
+- Automated generation based on configurable rules
+- Compliance tracking for arbitration deadlines
+
+### 👁️ **Visibility & Access Controls** ✨ NEW
+- Granular visibility scopes: private, union-wide, public, verified-only
+- Row-level security integration for data isolation
+- Configurable sharing permissions for clauses and precedents
+- Cross-organization collaboration with privacy controls
+- Visibility audit trails and change history
+- Automated visibility enforcement in all data queries
 
 ### 🔐 **Security & Compliance**
 - 238 Row-Level Security policies
@@ -252,7 +275,8 @@ UnionEyes is a **complete enterprise union management platform** designed for mo
 | **Security** | Azure Key Vault | Encryption key management |
 | **AI** | OpenAI, Anthropic, Google | Multi-provider AI assistance |
 | **Payments** | Stripe, Whop | Payment processing |
-| **Queue** | BullMQ + Redis | Background job processing |
+| **Queue** | BullMQ + Redis (ioredis) | Background job processing |
+| **Cache** | Redis (ioredis 5.4.1) | Session & data caching |
 
 ### **Infrastructure**
 
@@ -607,6 +631,18 @@ union-claims-standalone/
 │   ├── claim-status-update.tsx
 │   ├── member-welcome.tsx
 │   └── ...
+│
+├── docs/                        # Organized documentation (60+ files)
+│   ├── features/                # Feature specifications and PRs
+│   ├── implementation/          # Progress reports and summaries
+│   ├── security/                # Security audits and reports
+│   ├── compliance/              # GDPR and privacy documentation
+│   ├── migrations/              # Migration logs and outputs
+│   ├── migration/               # Migration status and tracking
+│   ├── developer/               # Development workflow guides
+│   ├── integrations/            # Third-party integration docs
+│   ├── ai/                      # CBA intelligence and AI docs
+│   └── validation/              # Assessment and validation reports
 │
 ├── .github/                     # GitHub workflows
 │   └── workflows/
@@ -1120,36 +1156,71 @@ docker-compose -f docker-compose.prod.yml up -d
 |----------|-------------|
 | [README.md](README.md) | This file - Complete platform overview and setup guide |
 | [SECURITY_WORLD_CLASS_COMPLETE.md](SECURITY_WORLD_CLASS_COMPLETE.md) | World-class security certification (10/10 rating) |
-| [Platform Readiness Assessment](docs/PLATFORM_READINESS_ASSESSMENT.md) | Production readiness evaluation |
-| [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md) | Step-by-step deployment guide |
-| [Azure Setup Credentials](docs/AZURE_SETUP_CREDENTIALS.md) | Azure resource configuration |
-| [Scheduled Reports Quick Start](docs/QUICK_START_SCHEDULED_REPORTS.md) | Reports system setup |
 
-### **Security Documentation**
+### **Documentation Organization**
 
-Located in [docs/security/](docs/security/):
+All documentation is organized in the [docs/](docs/) directory:
 
-| Document | Description |
-|----------|-------------|
-| [Security Verification Final Report](docs/security/SECURITY_VERIFICATION_FINAL_REPORT.md) | Complete security test results (80/80 passing) |
-| [Security Implementation Complete](docs/security/SECURITY_IMPLEMENTATION_COMPLETE.md) | Azure Key Vault integration details |
-| [Security Audit RLS](docs/security/SECURITY_AUDIT_RLS.md) | Row-Level Security audit results |
-| [Security Verification Report](docs/security/SECURITY_VERIFICATION_REPORT.md) | Initial security verification |
+#### **Features** ([docs/features/](docs/features/))
+- Feature specifications and PR descriptions
+- Implementation guides for major features
+- 13+ detailed feature documents
 
-### **Historical Documentation**
+#### **Implementation** ([docs/implementation/](docs/implementation/))
+- Phase completion reports
+- Progress tracking documents
+- Implementation summaries and assessments
 
-Located in [docs/archive/](docs/archive/):
+#### **Security** ([docs/security/](docs/security/))
+- [Security Verification Final Report](docs/security/SECURITY_VERIFICATION_FINAL_REPORT.md) - Complete security test results (80/80 passing)
+- [Security Implementation Complete](docs/security/SECURITY_IMPLEMENTATION_COMPLETE.md) - Azure Key Vault integration
+- [Security Audit RLS](docs/security/SECURITY_AUDIT_RLS.md) - Row-Level Security audit
+- Route authentication audit reports
 
-| Document | Description |
-|----------|-------------|
-| [Phase 1 Deployment](docs/archive/PHASE-1-DEPLOYMENT.md) | Initial platform deployment |
-| [Phase 2 Complete](docs/archive/PHASE_2_COMPLETE.md) | Member management completion |
-| [Phase 2.3 Complete](docs/archive/PHASE_2_3_COMPLETE.md) | CBA Intelligence completion |
-| [Phase 2.4 Complete](docs/archive/PHASE_2_4_COMPLETE.md) | Calendar & Events completion |
-| [Organization Access Fix](docs/archive/ORGANIZATION_ACCESS_FIX.md) | Multi-org access implementation |
-| [Tenant to Organization Migration](docs/archive/TENANT_TO_ORGANIZATION_MIGRATION_COMPLETE.md) | Data model migration |
-| [Schema Alignment Complete](docs/archive/SCHEMA_ALIGNMENT_COMPLETE.md) | Database schema updates |
-| [Database Population Complete](docs/archive/DATABASE_POPULATION_COMPLETE.md) | Initial data setup |
+#### **Compliance** ([docs/compliance/](docs/compliance/))
+- GDPR compliance documentation
+- Privacy policy implementation
+- Data protection guidelines
+
+#### **Migrations** ([docs/migrations/](docs/migrations/))
+- Database migration logs and outputs
+- Migration execution records
+- Schema alignment documentation
+
+#### **Migration Status** ([docs/migration/](docs/migration/))
+- User ID migration reports
+- Migration alignment status
+- Migration inventory and tracking
+
+#### **Developer** ([docs/developer/](docs/developer/))
+- Branch merge plans
+- Development workflow guides
+- Technical planning documents
+
+#### **Integrations** ([docs/integrations/](docs/integrations/))
+- CBA intelligence integration
+- AI provider setup and configuration
+- Third-party service integrations
+
+#### **AI/CBA Intelligence** ([docs/ai/](docs/ai/))
+- CBA intelligence system documentation
+- AI-powered contract analysis guides
+- RAG implementation details
+
+#### **Validation** ([docs/validation/](docs/validation/))
+- Final assessment and validation reports
+- Phase verification documents
+- Quality assurance records
+
+### **Quick Reference Guides**
+
+| Guide | Location | Description |
+|-------|----------|-------------|
+| **Platform Readiness** | [docs/validation/](docs/validation/) | Production readiness evaluation |
+| **Deployment Checklist** | [docs/developer/](docs/developer/) | Step-by-step deployment guide |
+| **Azure Setup** | [docs/integrations/](docs/integrations/) | Azure resource configuration |
+| **Scheduled Reports** | [docs/features/](docs/features/) | Reports system setup |
+| **Branch Strategy** | [docs/developer/](docs/developer/) | Git workflow and branching |
 
 ### **API Documentation**
 
@@ -1466,9 +1537,19 @@ We actively incorporate feedback from unions using the platform. [Share your ide
 
 **Built with ❤️ for labor unions worldwide**
 
-**Version**: 1.0.0 Production  
-**Last Updated**: December 2024  
+**Version**: 1.1.0 Production  
+**Last Updated**: February 2026  
 **Maintainers**: [Contributors](https://github.com/anungis437/union-claims-standalone/graphs/contributors)
+
+### Recent Improvements (v1.1.0 - February 2026)
+- ✅ **Defensibility Pack System**: System-of-record exports for arbitration
+- ✅ **Wage Benchmarking**: Multi-dimensional compensation analytics (COL, CPI, industry, NOC)
+- ✅ **Visibility Controls**: Granular data access controls with 4 visibility levels
+- ✅ **Documentation Reorganization**: 60+ documents organized into 11 logical categories
+- ✅ **TypeScript Enhancements**: Strict literal unions for improved type safety
+- ✅ **Redis Integration**: ioredis 5.4.1 for caching and queue management
+- ✅ **Schema Improvements**: Resolved module ambiguities with explicit re-exports
+- ✅ **Repository Cleanup**: Streamlined to main branch, removed temporary artifacts
 
 ---
 
