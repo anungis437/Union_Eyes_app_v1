@@ -1,5 +1,6 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
+import { NotificationService } from "@/lib/services/notification-service";
 /**
  * GET /api/events/[id]
  * Get event details
@@ -353,7 +354,51 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         // Don't fail event cancellation if reminder cancellation fails
       }
 
-      // TODO: Send cancellation notifications to attendees via email
+      // Send cancellation notifications to attendees via email
+      try {
+        const attendees = await db
+          .select()
+          .from(eventAttendees)
+          .where(eq(eventAttendees.eventId, eventId));
+        
+        if (attendees.length > 0) {
+          const notificationService = new NotificationService();
+          const event = access.event;
+          
+          for (const attendee of attendees) {
+            if (attendee.email) {
+              await notificationService.send({
+                organizationId: event.tenantId,
+                recipientId: attendee.userId || undefined,
+                recipientEmail: attendee.email,
+                type: 'email',
+                priority: 'high',
+                subject: `Event Cancelled: ${event.title}`,
+                body: `The event "${event.title}" has been cancelled.\n\nOriginal Time: ${event.startTime?.toLocaleString()}${cancellationReason ? `\nReason: ${cancellationReason}` : ''}\n\nWe apologize for any inconvenience.`,
+                htmlBody: `
+                  <h2>Event Cancelled</h2>
+                  <p>The following event has been cancelled:</p>
+                  <ul>
+                    <li><strong>Event:</strong> ${event.title}</li>
+                    <li><strong>Original Time:</strong> ${event.startTime?.toLocaleString()}</li>
+                    ${event.location ? `<li><strong>Location:</strong> ${event.location}</li>` : ''}
+                    ${cancellationReason ? `<li><strong>Reason:</strong> ${cancellationReason}</li>` : ''}
+                  </ul>
+                  <p>We apologize for any inconvenience this may cause.</p>
+                `,
+                metadata: {
+                  eventId,
+                  eventTitle: event.title,
+                  cancellationReason,
+                },
+              });
+            }
+          }
+        }
+      } catch (notificationError) {
+        console.error('Failed to send cancellation notifications:', notificationError);
+        // Don't fail event cancellation if notifications fail
+      }
 
       return NextResponse.json({
         message: 'Event cancelled successfully',

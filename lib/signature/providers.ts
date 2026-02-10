@@ -365,7 +365,7 @@ SignatureProviderFactory.initialize({
   docusign: process.env.DOCUSIGN_API_KEY
     ? {
         apiKey: process.env.DOCUSIGN_API_KEY,
-        accountId: process.env.DOCUSIGN_ACCOUNT_ID!,
+        accountId: (process.env.DOCUSIGN_API_ACCOUNT_ID || process.env.DOCUSIGN_ACCOUNT_ID)!,
         environment: process.env.DOCUSIGN_ENVIRONMENT as any,
       }
     : undefined,

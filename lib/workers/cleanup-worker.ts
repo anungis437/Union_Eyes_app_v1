@@ -83,11 +83,36 @@ async function cleanupNotificationHistory(olderThanDays: number) {
 async function cleanupSessions() {
   console.log('Cleaning up expired sessions');
 
-  // TODO: Implement session cleanup
-  // This depends on your session storage mechanism
-  // For Clerk, sessions are managed automatically
+  try {
+    // Import user session schema dynamically to avoid build issues
+    const { userSessions } = await import('../../db/schema/user-management-schema');
+    
+    // Delete expired sessions from database
+    const result = await db
+      .delete(userSessions)
+      .where(lt(userSessions.expiresAt, new Date()));
 
-  return { deleted: 0 };
+    const deletedCount = result.rowCount || 0;
+    console.log(`Deleted ${deletedCount} expired sessions`);
+
+    // Also clean up inactive sessions older than 90 days
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
+    const inactiveResult = await db
+      .delete(userSessions)
+      .where(
+        lt(userSessions.lastUsedAt, ninetyDaysAgo)
+      );
+
+    const inactiveCount = inactiveResult.rowCount || 0;
+    console.log(`Deleted ${inactiveCount} inactive sessions (90+ days old)`);
+
+    return { deleted: deletedCount + inactiveCount };
+  } catch (error) {
+    console.error('Error cleaning up sessions:', error);
+    return { deleted: 0 };
+  }
 }
 
 /**

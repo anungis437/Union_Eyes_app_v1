@@ -16,10 +16,10 @@ import {
   cancelWorkflow,
 } from '@/services/pki/workflow-engine';
 import { z } from "zod";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withAdminAuth } from '@/lib/api-auth-guard';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withRoleAuth(90, async (request, context) => {
+  return withAdminAuth(async (request, context) => {
   try {
       const workflowId = params.id;
       const { searchParams } = new URL(request.url);
@@ -61,12 +61,9 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const PUT = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withRoleAuth(90, async (request, context) => {
+  return withAdminAuth(async (request, context) => {
   try {
       const workflowId = params.id;
-
-      // TODO: Add admin role check
-      // For now, allow any authenticated user to advance workflow
 
       const result = advanceWorkflow(workflowId);
 
@@ -89,7 +86,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
 };
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withRoleAuth(90, async (request, context) => {
+  return withAdminAuth(async (request, context) => {
     const { userId } = context;
 
   try {

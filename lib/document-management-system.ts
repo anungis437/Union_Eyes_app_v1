@@ -16,6 +16,8 @@ import {
   type SignatureData,
 } from "@/db/schema";
 import { put } from "@vercel/blob";
+import { DocuSignProvider } from "@/lib/services/signature-providers";
+import { processImageOCR, processPDFOCR } from "@/lib/services/ocr-service";
 
 // ============================================================================
 // TYPES
@@ -491,17 +493,50 @@ export async function requestESignature(
       };
     }
 
-    // For now, use internal signature flow
-    // TODO: Integrate with DocuSign/Adobe Sign APIs
-    const signatureData: SignatureData = {
+    let signatureData: SignatureData = {
       provider: request.provider,
       timestamp: new Date().toISOString(),
     };
 
+    if (request.provider === "docusign") {
+      const response = await fetch(document.filePath);
+      if (!response.ok) {
+        throw new Error(`Failed to download document for signing: ${response.status}`);
+      }
+
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const provider = new DocuSignProvider();
+      const envelope = await provider.createEnvelope({
+        documentId: document.id,
+        documentName: document.documentName,
+        documentBuffer: buffer,
+        subject: `Signature Request: ${document.documentName}`,
+        message: request.message || 'Please review and sign the attached document.',
+        signers: [
+          {
+            name: request.signerName,
+            email: request.signerEmail,
+            role: 'signer',
+            order: 1,
+          },
+        ],
+        organizationId: document.organizationId as any,
+        userId: request.signerUserId,
+      });
+
+      signatureData = {
+        provider: request.provider,
+        timestamp: new Date().toISOString(),
+        envelopeId: envelope.id,
+        status: envelope.status,
+        documentUrl: envelope.documentUrl,
+      } as SignatureData;
+    }
+
     await db
       .update(grievanceDocuments)
       .set({
-        signatureStatus: "pending",
+        signatureStatus: request.provider === 'docusign' ? 'sent' : 'pending',
         signatureData,
       })
       .where(eq(grievanceDocuments.id, request.documentId));
@@ -730,14 +765,31 @@ export async function getGrievanceDocuments(
 // ============================================================================
 
 async function queueOCRProcessing(documentId: string, fileUrl: string): Promise<void> {
-  // TODO: Integrate with OCR service (Tesseract, Google Vision, AWS Textract, etc.)
-  console.log(`Queuing OCR processing for document ${documentId}: ${fileUrl}`);
-  
-  // Placeholder: In production, this would:
-  // 1. Download the file
-  // 2. Process with OCR service
-  // 3. Update document with extracted text
-  // 4. Mark as indexed
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download OCR document: ${response.status}`);
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get('content-type') || '';
+
+    let ocrText = '';
+
+    if (contentType.includes('pdf') || fileUrl.toLowerCase().endsWith('.pdf')) {
+      const result = await processPDFOCR(buffer, { provider: 'azure' });
+      ocrText = result.fullText;
+    } else {
+      const result = await processImageOCR(buffer, { provider: 'azure' });
+      ocrText = result.text;
+    }
+
+    if (ocrText.trim().length > 0) {
+      await updateDocumentOCR(documentId, ocrText);
+    }
+  } catch (error) {
+    console.error("OCR processing failed:", error);
+  }
 }
 
 /**
@@ -770,9 +822,40 @@ export async function updateDocumentOCR(
 // HELPER FUNCTIONS
 // ============================================================================
 
+import { NotificationService } from "@/lib/services/notification-service";
+
 async function sendSignatureRequestNotification(
   request: ESignatureRequest
 ): Promise<void> {
-  // TODO: Integrate with notification system
-  console.log(`Sending signature request to ${request.signerEmail}`);
+  try {
+    const notificationService = new NotificationService();
+    await notificationService.send({
+      organizationId: request.tenantId,
+      recipientEmail: request.signerEmail,
+      type: 'email',
+      priority: 'normal',
+      subject: 'Document Ready for Signature',
+      body: `You have a document that requires your signature.\n\nDocument ID: ${request.documentId}\nRequested by: ${request.requestedBy}\n\nPlease sign the document at your earliest convenience.`,
+      htmlBody: `
+        <h2>Document Ready for Signature</h2>
+        <p>You have a document that requires your signature.</p>
+        <ul>
+          <li><strong>Document ID:</strong> ${request.documentId}</li>
+          <li><strong>Requested by:</strong> ${request.requestedBy}</li>
+          <li><strong>Due Date:</strong> ${request.dueDate ? new Date(request.dueDate).toLocaleDateString() : 'No due date'}</li>
+        </ul>
+        <p>Please sign the document at your earliest convenience.</p>
+      `,
+      actionUrl: `/documents/${request.documentId}/sign`,
+      actionLabel: 'Sign Document',
+      metadata: {
+        documentId: request.documentId,
+        requestId: request.id,
+      },
+    });
+    console.log(`Signature request notification sent to ${request.signerEmail}`);
+  } catch (error) {
+    console.error('Failed to send signature request notification:', error);
+    // Don't throw - notification failure shouldn't block the request
+  }
 }

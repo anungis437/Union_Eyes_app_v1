@@ -9,6 +9,7 @@
  * - Audit logging for security
  */
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail } from '@/lib/email-service';
 // ============================================================================
 // Invitation Service
 // ============================================================================
@@ -378,9 +379,16 @@ export class InvitationService {
                 html: this.generateEmailHTML(invitation.email, invitationUrl, org?.name || 'CourtLens', inviter ? `${inviter.first_name} ${inviter.last_name}` : 'Someone', invitation.role, daysUntilExpiration),
                 text: this.generateEmailText(invitation.email, invitationUrl, org?.name || 'CourtLens', inviter ? `${inviter.first_name} ${inviter.last_name}` : 'Someone', invitation.role, daysUntilExpiration),
             };
-            // TODO: Integrate with email service (SendGrid, Mailgun, etc.)
-            // For now, just log the email
-            console.log('Invitation email would be sent:', email);
+            const response = await sendEmail({
+                to: [{ email: invitation.email, name: invitation.email }],
+                subject: email.subject,
+                html: email.html,
+                text: email.text,
+            });
+            if (!response.success) {
+                console.error('Error sending invitation email:', response.error);
+                return false;
+            }
             return true;
         }
         catch (error) {

@@ -8,8 +8,13 @@ export const GET = async () => {
     const { userId, organizationId } = context;
 
   try {
-      // TODO: Replace with actual financial-service URL from environment
-      const financialServiceUrl = process.env.FINANCIAL_SERVICE_URL || 'http://localhost:3001';
+      const financialServiceUrl = process.env.FINANCIAL_SERVICE_URL;
+      if (!financialServiceUrl) {
+        return NextResponse.json(
+          { error: 'Financial service URL not configured' },
+          { status: 500 }
+        );
+      }
       
       // Fetch member's current dues balance from financial-service
       const response = await fetch(`${financialServiceUrl}/api/dues/transactions?memberId=${userId}&status=pending`, {

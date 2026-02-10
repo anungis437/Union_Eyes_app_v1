@@ -495,6 +495,49 @@ function checkMemberScope(
 }
 
 /**
+ * Get permission exception ID if one exists
+ * Returns the exception ID or null if no valid exception found
+ */
+async function getPermissionExceptionId(
+  memberId: string,
+  organizationId: string,
+  permission: string,
+  resourceType?: string,
+  resourceId?: string
+): Promise<string | null> {
+  try {
+    const { sql } = await import('drizzle-orm');
+    const { db } = await import('@/db/db');
+    
+    let query = sql`
+      SELECT id FROM permission_exceptions
+      WHERE member_id = ${memberId}
+        AND organization_id = ${organizationId}
+        AND permission = ${permission}
+        AND is_active = TRUE
+        AND revoked_at IS NULL
+        AND (expires_at IS NULL OR expires_at > NOW())
+        AND (usage_limit IS NULL OR usage_count < usage_limit)
+    `;
+    
+    if (resourceType) {
+      query = sql`${query} AND resource_type = ${resourceType}`;
+    }
+    if (resourceId) {
+      query = sql`${query} AND (resource_id IS NULL OR resource_id = ${resourceId})`;
+    }
+    
+    query = sql`${query} LIMIT 1`;
+    
+    const result = await db.execute(query);
+    return result[0]?.id || null;
+  } catch (error) {
+    console.error('Error fetching permission exception ID:', error);
+    return null;
+  }
+}
+
+/**
  * Check if member has permission (via role or exception)
  */
 async function checkMemberPermission(
@@ -516,7 +559,8 @@ async function checkMemberPermission(
   
   // Check permission exceptions if allowed
   if (allowExceptions && resourceType) {
-    const hasException = await memberHasPermissionException(
+    // Check for exception first
+    const exceptionId = await getPermissionExceptionId(
       memberId,
       tenantId,
       requiredPermission,
@@ -524,8 +568,15 @@ async function checkMemberPermission(
       resourceId
     );
     
-    if (hasException) {
-      // TODO: Increment usage count for the exception
+    if (exceptionId) {
+      // Increment usage count for the exception
+      try {
+        await incrementExceptionUsage(exceptionId);
+      } catch (error) {
+        console.error('Failed to increment exception usage:', error);
+        // Don't fail the request if usage tracking fails
+      }
+      
       return {
         allowed: true,
         grantMethod: 'exception',

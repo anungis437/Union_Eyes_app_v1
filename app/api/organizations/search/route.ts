@@ -60,16 +60,28 @@ export async function GET(request: NextRequest) {
       filters.isActive = isActiveParam === 'true';
     }
 
-    // TODO: Implement filter support in searchOrganizations function
     const limit = parseInt(searchParams.get('limit') || '20');
-    const results = await searchOrganizations(query, limit);
+    let results = await searchOrganizations(query, limit);
+
+    if (filters.type) {
+      results = results.filter((org) => org.organizationType === filters.type);
+    }
+    if (filters.sector) {
+      results = results.filter((org) => Array.isArray(org.sectors) && org.sectors.includes(filters.sector!));
+    }
+    if (filters.jurisdiction) {
+      results = results.filter((org) => org.provinceTerritory === filters.jurisdiction);
+    }
+    if (filters.isActive !== undefined) {
+      results = results.filter((org) => (org.status === 'active') === filters.isActive);
+    }
 
     return NextResponse.json({
       success: true,
       data: results,
       count: results.length,
       query,
-      // filters, // TODO: Apply filters after fetching results or implement in query
+      filters,
     });
   } catch (error) {
     logger.error('Error searching organizations', error as Error, {

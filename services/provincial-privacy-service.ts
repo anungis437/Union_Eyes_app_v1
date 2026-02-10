@@ -7,6 +7,7 @@ import {
   dataSubjectAccessRequests,
 } from "@/db/schema/provincial-privacy-schema";
 import { eq, and, gte, lte } from "drizzle-orm";
+import { NotificationService } from "@/lib/services/notification-service";
 
 /**
  * Provincial Privacy Service
@@ -442,10 +443,54 @@ export class ProvincialPrivacyService {
   }
 
   /**
-   * Trigger urgent breach notification (internal - would integrate with notification system)
+   * Trigger urgent breach notification (internal - integrated with notification system)
    */
   private static async triggerUrgentBreachNotification(breachId: string) {
-    // TODO: Integrate with notification system
     console.warn(`URGENT: Breach ${breachId} approaching 72-hour notification deadline`);
+    
+    try {
+      // Get breach details
+      const [breach] = await db
+        .select()
+        .from(privacyBreaches)
+        .where(eq(privacyBreaches.id, breachId))
+        .limit(1);
+      
+      if (breach) {
+        const notificationService = new NotificationService();
+        
+        // Notify privacy officer/DPO
+        await notificationService.send({
+          organizationId: breach.tenantId,
+          recipientEmail: process.env.PRIVACY_OFFICER_EMAIL || process.env.DPO_EMAIL || process.env.ADMIN_EMAIL || 'admin@unioneyes.app',
+          type: 'email',
+          priority: 'urgent',
+          subject: '⚠️ URGENT: Privacy Breach Notification Deadline Approaching',
+          body: `URGENT: Privacy breach ${breachId} is approaching the 72-hour notification deadline.\n\nBreach Type: ${breach.breachType}\nSeverity: ${breach.severityLevel}\nDiscovered: ${breach.discoveredAt?.toLocaleString()}\nDeadline: ${breach.notificationDeadline?.toLocaleString()}\n\nImmediate action required to comply with notification requirements.`,
+          htmlBody: `
+            <h2 style="color: red;">⚠️ URGENT: Privacy Breach Notification Deadline Approaching</h2>
+            <p><strong>A privacy breach is approaching the 72-hour notification deadline.</strong></p>
+            <ul>
+              <li><strong>Breach ID:</strong> ${breachId}</li>
+              <li><strong>Breach Type:</strong> ${breach.breachType}</li>
+              <li><strong>Severity:</strong> ${breach.severityLevel}</li>
+              <li><strong>Discovered:</strong> ${breach.discoveredAt?.toLocaleString()}</li>
+              <li><strong>Notification Deadline:</strong> ${breach.notificationDeadline?.toLocaleString()}</li>
+              <li><strong>Affected Records:</strong> ${breach.affectedRecords}</li>
+            </ul>
+            <p><strong style="color: red;">IMMEDIATE ACTION REQUIRED</strong> to comply with notification requirements under provincial privacy legislation.</p>
+          `,
+          metadata: {
+            breachId,
+            breachType: breach.breachType,
+            severityLevel: breach.severityLevel,
+            notificationDeadline: breach.notificationDeadline?.toISOString(),
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send urgent breach notification:', error);
+      // Log but don't throw - this is a background notification
+    }
   }
 }

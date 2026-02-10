@@ -7,7 +7,7 @@ import {
   type DuesRule,
   type MemberDuesAssignment,
 } from '@/services/financial-service/src/db/schema';
-import { eq, and, sql, lte, gte, or, isNull } from 'drizzle-orm';
+import { eq, and, sql, lte, gte, or, isNull, desc } from 'drizzle-orm';
 
 interface DuesCalculationParams {
   tenantId: string;
@@ -39,6 +39,9 @@ interface DuesCalculationResult {
 }
 
 export class DuesCalculationEngine {
+  private static readonly MAX_FORMULA_LENGTH = 200;
+  private static readonly SAFE_FORMULA_REGEX = /^[0-9+\-*/(). _a-zA-Z]+$/;
+
   /**
    * Calculate dues for a member for a given period
    */
@@ -234,10 +237,156 @@ export class DuesCalculationEngine {
       return 0;
     }
 
-    // TODO: Implement safe formula evaluation
-    // For now, return 0 as this requires a formula parser
-    console.warn('Formula-based dues calculation not yet implemented');
-    return 0;
+    try {
+      this.validateFormula(rule.customFormula);
+      const context = this.buildFormulaContext(memberData);
+      const substituted = this.replaceFormulaVariables(rule.customFormula, context);
+      const result = this.evaluateSafeFormula(substituted);
+      return Number.isFinite(result) ? result : 0;
+    } catch (error) {
+      console.warn('Failed to evaluate dues formula', error);
+      return 0;
+    }
+  }
+
+  private static buildFormulaContext(memberData?: DuesCalculationParams['memberData']): Record<string, number> {
+    return {
+      grossWages: memberData?.grossWages ?? 0,
+      baseSalary: memberData?.baseSalary ?? 0,
+      hourlyRate: memberData?.hourlyRate ?? 0,
+      hoursWorked: memberData?.hoursWorked ?? 0,
+    };
+  }
+
+  private static validateFormula(formula: string): void {
+    if (formula.length > this.MAX_FORMULA_LENGTH) {
+      throw new Error('Formula exceeds maximum length');
+    }
+    if (!this.SAFE_FORMULA_REGEX.test(formula)) {
+      throw new Error('Formula contains unsafe characters');
+    }
+    const dangerousPatterns = [/eval/i, /function/i, /import/i, /require/i, /process/i, /exec/i];
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(formula)) {
+        throw new Error('Formula contains forbidden pattern');
+      }
+    }
+  }
+
+  private static replaceFormulaVariables(formula: string, context: Record<string, number>): string {
+    let substituted = formula;
+    Object.entries(context).forEach(([key, value]) => {
+      substituted = substituted.replace(new RegExp(`\\b${key}\\b`, 'g'), value.toString());
+    });
+    return substituted;
+  }
+
+  private static evaluateSafeFormula(formula: string): number {
+    let pos = 0;
+
+    const peek = (): string => formula[pos] || '';
+    const consume = (): string => formula[pos++] || '';
+    const skipWhitespace = () => {
+      while (peek() === ' ') consume();
+    };
+
+    const parseNumber = (): number => {
+      skipWhitespace();
+      let numStr = '';
+      while (/[0-9.]/.test(peek())) {
+        numStr += consume();
+      }
+      if (!numStr) throw new Error('Expected number');
+      return Number(numStr);
+    };
+
+    const parseFactor = (): number => {
+      skipWhitespace();
+      if (peek() === '-') {
+        consume();
+        return -parseFactor();
+      }
+      if (peek() === '(') {
+        consume();
+        const result = parseExpression();
+        skipWhitespace();
+        if (consume() !== ')') throw new Error('Expected )');
+        return result;
+      }
+      return parseNumber();
+    };
+
+    const parseTerm = (): number => {
+      let result = parseFactor();
+      skipWhitespace();
+
+      while (peek() === '*' || peek() === '/') {
+        const op = consume();
+        const right = parseFactor();
+        result = op === '*' ? result * right : result / right;
+        skipWhitespace();
+      }
+
+      return result;
+    };
+
+    const parseExpression = (): number => {
+      let result = parseTerm();
+      skipWhitespace();
+
+      while (peek() === '+' || peek() === '-') {
+        const op = consume();
+        const right = parseTerm();
+        result = op === '+' ? result + right : result - right;
+        skipWhitespace();
+      }
+
+      return result;
+    };
+
+    return parseExpression();
+  }
+
+  private static async resolveMemberData(
+    tenantId: string,
+    memberId: string
+  ): Promise<DuesCalculationParams['memberData'] | undefined> {
+    try {
+      const [lastTransaction] = await db
+        .select({ metadata: duesTransactions.metadata })
+        .from(duesTransactions)
+        .where(
+          and(
+            eq(duesTransactions.tenantId, tenantId),
+            eq(duesTransactions.memberId, memberId)
+          )
+        )
+        .orderBy(desc(duesTransactions.createdAt))
+        .limit(1);
+
+      if (!lastTransaction?.metadata) {
+        return undefined;
+      }
+
+      const metadata = typeof lastTransaction.metadata === 'string'
+        ? JSON.parse(lastTransaction.metadata)
+        : lastTransaction.metadata;
+
+      const breakdown = metadata?.breakdown ?? metadata;
+      const baseAmount = Number(breakdown?.baseAmount ?? 0);
+      const hoursWorked = Number(breakdown?.hours ?? 0);
+      const hourlyRate = Number(breakdown?.rate ?? 0);
+
+      return {
+        grossWages: baseAmount || undefined,
+        baseSalary: baseAmount || undefined,
+        hourlyRate: hourlyRate || undefined,
+        hoursWorked: hoursWorked || undefined,
+      };
+    } catch (error) {
+      console.warn('Failed to resolve member payroll data', error);
+      return undefined;
+    }
   }
 
   /**
@@ -307,7 +456,7 @@ export class DuesCalculationEngine {
           memberId: member.id,
           periodStart,
           periodEnd,
-          // TODO: Get actual member wage data from payroll integration
+          memberData: await this.resolveMemberData(tenantId, member.id),
         });
 
         if (!calculation) {

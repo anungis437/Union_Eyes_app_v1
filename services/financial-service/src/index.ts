@@ -17,6 +17,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import winston from 'winston';
+import { verifyToken } from '@clerk/backend';
 
 // Route imports
 import duesRulesRouter from './routes/dues-rules';
@@ -146,20 +147,39 @@ const authenticate = async (
     
     const token = authHeader.substring(7);
     
-    // TODO: Implement JWT verification with Clerk
-    // For now, parse basic info from token
-    // In production, verify signature and expiration
-    
+    if (process.env.CLERK_SECRET_KEY) {
+      try {
+        const { payload } = await verifyToken(token, {
+          secretKey: process.env.CLERK_SECRET_KEY,
+        });
+
+        req.user = {
+          id: payload.sub as string,
+          tenantId: payload.tenant_id as string,
+          role: payload.org_role as string,
+          permissions: (payload.org_permissions as string[]) || [],
+        };
+
+        return next();
+      } catch (error) {
+        logger.warn('Clerk token verification failed', { error });
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid or expired token',
+        });
+      }
+    }
+
     try {
       const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-      
+
       req.user = {
         id: payload.sub,
         tenantId: payload.tenant_id,
         role: payload.org_role,
         permissions: payload.org_permissions || [],
       };
-      
+
       next();
     } catch (error) {
       return res.status(401).json({

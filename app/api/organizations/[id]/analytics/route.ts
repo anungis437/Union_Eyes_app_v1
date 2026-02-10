@@ -8,8 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
 
 import { logger } from '@/lib/logger';
-// TODO: Implement getOrganizationAnalytics function
-// import { getOrganizationAnalytics } from '@/db/queries/organization-queries';
+import { getOrganizationById } from '@/db/queries/organization-queries';
+import { getMemberCount, getActiveMemberCount, getMembersByRole } from '@/db/queries/organization-members-queries';
 
 /**
  * GET /api/organizations/[id]/analytics
@@ -34,13 +34,41 @@ export async function GET(
     const resolvedParams = await params;
     id = resolvedParams.id;
     
-    // TODO: Implement getOrganizationAnalytics function
-    // const analytics = await getOrganizationAnalytics(id);
+    const organization = await getOrganizationById(id);
+    if (!organization) {
+      return NextResponse.json(
+        { success: false, error: 'Organization not found' },
+        { status: 404 }
+      );
+    }
+
+    const [memberCount, activeMemberCount, adminMembers, stewardMembers, officerMembers] = await Promise.all([
+      getMemberCount(id),
+      getActiveMemberCount(id),
+      getMembersByRole(id, 'admin'),
+      getMembersByRole(id, 'steward'),
+      getMembersByRole(id, 'officer'),
+    ]);
 
     return NextResponse.json({
-      success: false,
-      error: 'Organization analytics not yet implemented',
-    }, { status: 501 });
+      success: true,
+      data: {
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          organizationType: organization.organizationType,
+          status: organization.status,
+          createdAt: organization.createdAt,
+        },
+        members: {
+          total: memberCount,
+          active: activeMemberCount,
+          admins: adminMembers.length,
+          stewards: stewardMembers.length,
+          officers: officerMembers.length,
+        },
+      },
+    });
   } catch (error) {
     logger.error('Error fetching organization analytics', error as Error, {
       organizationId: id,

@@ -52,8 +52,7 @@ export const POST = withRoleAuth('steward', async (request, context) => {
 try {
       const { memberId, periodStart, periodEnd, memberData } = body;
 
-      // TODO: Get tenantId from user session
-      const tenantId = 'default-tenant';
+      const tenantId = organizationId;
 
       const calculation = await DuesCalculationEngine.calculateMemberDues({
         tenantId,

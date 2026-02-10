@@ -14,6 +14,7 @@ import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql } from 'drizzle-orm';
 import { db } from '@/db/db';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { NotificationService } from '@/lib/services/notification-service';
 
 /**
  * GET - Get all shares for a report
@@ -159,7 +160,56 @@ async function postHandler(
       }
     }
 
-    // TODO: Send email notifications to shared users
+    // Send email notifications to shared users
+    try {
+      const notificationService = new NotificationService();
+      const reportDetails = report[0] as any;
+      
+      for (const sharedWithId of sharedWithList) {
+        // Get user email
+        const userResult = await db.execute(sql`
+          SELECT email, first_name, last_name FROM users WHERE id = ${sharedWithId}
+        `);
+        
+        if (userResult.length > 0) {
+          const user = userResult[0] as any;
+          const sharerResult = await db.execute(sql`
+            SELECT email, first_name, last_name FROM users WHERE id = ${userId}
+          `);
+          const sharer = sharerResult.length > 0 ? (sharerResult[0] as any) : { first_name: 'A user' };
+          
+          await notificationService.send({
+            organizationId: tenantId,
+            recipientId: sharedWithId,
+            recipientEmail: user.email,
+            type: 'email',
+            priority: 'normal',
+            subject: 'Report Shared With You',
+            body: `${sharer.first_name || 'A user'} has shared a report with you.\n\nReport ID: ${reportId}\nPermissions: ${body.canEdit ? 'Can Edit, ' : ''}Can Execute\n\nYou can now access this report.`,
+            htmlBody: `
+              <h2>Report Shared With You</h2>
+              <p>${sharer.first_name || 'A user'} has shared a report with you.</p>
+              <ul>
+                <li><strong>Report ID:</strong> ${reportId}</li>
+                <li><strong>Permissions:</strong> ${body.canEdit ? 'Can Edit, ' : ''}Can Execute</li>
+                ${body.expiresAt ? `<li><strong>Expires:</strong> ${new Date(body.expiresAt).toLocaleDateString()}</li>` : ''}
+              </ul>
+              <p>You can now access this report from your dashboard.</p>
+            `,
+            actionUrl: `/reports/${reportId}`,
+            actionLabel: 'View Report',
+            metadata: {
+              reportId,
+              sharedBy: userId,
+              canEdit: body.canEdit || false,
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to send share notifications:', error);
+      // Don't fail the share operation if notifications fail
+    }
 
     return NextResponse.json({ 
       shares,

@@ -8,8 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllFeatureFlags, toggleFeatureFlag } from '@/lib/feature-flags';
 import { z } from 'zod';
-import { withSecureAPI, logApiAuditEvent } from '@/lib/middleware/api-security';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+import { withAdminAuth } from '@/lib/api-auth-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,66 +23,29 @@ const toggleFlagSchema = z.object({
 });
 
 /**
- * Helper to check admin role
- */
-async function checkAdminRole(userId: string): Promise<boolean> {
-  // TODO: Integrate with actual admin role check from auth-middleware
-  // For now, this is a placeholder
-  return true;
-}
-
-/**
  * Get all feature flags
  */
-export const GET = withSecureAPI(async (request, user) => {
-  const { id: userId } = user;
+export const GET = withAdminAuth(async (request, context) => {
+  const { userId } = context;
 
-  try {
-    // Check if user is admin
-    const isAdmin = await checkAdminRole(userId);
-    if (!isAdmin) {
-      logApiAuditEvent({
-        timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/admin/feature-flags',
-        method: 'GET',
-        eventType: 'unauthorized_access',
-        severity: 'high',
-        details: { reason: 'Non-admin attempted access' },
-      });
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+  const flags = await getAllFeatureFlags();
 
-    const flags = await getAllFeatureFlags();
+  logApiAuditEvent({
+    timestamp: new Date().toISOString(), userId,
+    endpoint: '/api/admin/feature-flags',
+    method: 'GET',
+    eventType: 'success',
+    severity: 'low',
+    details: { flagCount: Object.keys(flags).length },
+  });
 
-    logApiAuditEvent({
-      timestamp: new Date().toISOString(), userId,
-      endpoint: '/api/admin/feature-flags',
-      method: 'GET',
-      eventType: 'success',
-      severity: 'low',
-      details: { flagCount: Object.keys(flags).length },
-    });
-
-    return NextResponse.json(flags);
-  } catch (error) {
-    logApiAuditEvent({
-      timestamp: new Date().toISOString(), userId,
-      endpoint: '/api/admin/feature-flags',
-      method: 'GET',
-      eventType: 'auth_failed',
-      severity: 'high',
-      details: { error: error instanceof Error ? error.message : 'Unknown error' },
-    });
-
-    console.error('Failed to fetch feature flags', error);
-    throw error;
-  }
+  return NextResponse.json(flags);
 });
 
 /**
  * Toggle a feature flag
  */
-export const PATCH = withRoleAuth(90, async (request, context) => {
+export const PATCH = withAdminAuth(async (request, context) => {
   let rawBody: unknown;
   try {
     rawBody = await request.json();
@@ -104,19 +67,6 @@ export const PATCH = withRoleAuth(90, async (request, context) => {
   }
 
 try {
-      // Check if user is admin
-      const isAdmin = await checkAdminRole(userId);
-      if (!isAdmin) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/admin/feature-flags',
-          method: 'PATCH',
-          eventType: 'unauthorized_access',
-          severity: 'high',
-          details: { reason: 'Non-admin attempted to toggle flag' },
-        });
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
 
       const { name, enabled } = body;
 

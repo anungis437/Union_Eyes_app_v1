@@ -11,9 +11,8 @@
  * @module RealtimeService
  */
 
-import { createClient, RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
-// import type { Database } from '../types';
-type Database = any; // TODO: Generate from Supabase schema
+import { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '../../types';
 
 export interface RealtimeSubscription {
   id: string;

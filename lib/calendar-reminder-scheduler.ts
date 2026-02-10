@@ -197,9 +197,32 @@ export async function cancelEventReminders(eventId: string): Promise<number> {
         )
       );
 
-    // TODO: Cancel jobs in BullMQ queue
-    // This requires job IDs to be stored in eventReminders table
-    // or a way to query BullMQ by event metadata
+    // Cancel jobs in BullMQ queue
+    try {
+      const { getNotificationQueue } = await import('@/lib/job-queue');
+      const queue = getNotificationQueue();
+      
+      if (queue) {
+        // Get all jobs in the queue
+        const jobs = await queue.getJobs(['waiting', 'delayed', 'active']);
+        
+        // Filter jobs related to this event
+        const eventJobs = jobs.filter((job: any) => 
+          job.data.metadata?.eventId === eventId
+        );
+        
+        // Remove matching jobs
+        for (const job of eventJobs) {
+          await job.remove();
+          console.log(`Cancelled BullMQ job ${job.id} for event ${eventId}`);
+        }
+        
+        console.log(`Cancelled ${eventJobs.length} BullMQ job(s) for event ${eventId}`);
+      }
+    } catch (error) {
+      console.error('Error cancelling BullMQ jobs:', error);
+      // Don't throw - we already updated the database status
+    }
 
     return pendingReminders.length;
   } catch (error) {

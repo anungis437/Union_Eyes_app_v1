@@ -9,6 +9,7 @@ import { renderToBuffer } from '@react-pdf/renderer';
 import { put } from '@vercel/blob';
 import { ReceiptDocument, ReceiptData } from '@/components/pdf/receipt-template';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { organizations } from '@/db/schema-organizations';
 
 /**
  * GET: Generate and download receipt PDF for transaction
@@ -100,6 +101,24 @@ export const GET = async (
         const receiptNumber = `REC-${transaction.id.substring(0, 8).toUpperCase()}`;
         const paymentDate = transaction.paymentDate || transaction.createdAt || new Date();
         
+        const [organization] = await db
+          .select()
+          .from(organizations)
+          .where(eq(organizations.id, member.organizationId))
+          .limit(1);
+
+        const address = organization?.address
+          ? [
+              organization.address.street,
+              organization.address.unit,
+              organization.address.city,
+              organization.address.province,
+              organization.address.postal_code,
+            ]
+              .filter(Boolean)
+              .join(', ')
+          : undefined;
+
         const receiptData: ReceiptData = {
           receiptNumber,
           paymentDate: new Date(paymentDate).toLocaleDateString('en-US', {
@@ -109,12 +128,12 @@ export const GET = async (
           }),
           generatedAt: new Date().toLocaleString('en-US'),
           
-          // Union info (TODO: Get from tenant settings)
-          unionName: 'Your Union Name',
-          unionAddress: '123 Union Street, Suite 100, City, ST 12345',
-          unionPhone: '(555) 123-4567',
-          unionEmail: 'info@union.org',
-          unionLogo: undefined, // TODO: Add union logo URL from tenant settings
+          // Union info
+          unionName: organization?.displayName || organization?.name || 'Union',
+          unionAddress: address || 'Address not available',
+          unionPhone: organization?.phone || 'Phone not available',
+          unionEmail: organization?.email || 'Email not available',
+          unionLogo: (organization?.settings as Record<string, any>)?.logoUrl,
           
           // Member info
           memberName: member.name,

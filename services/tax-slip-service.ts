@@ -6,7 +6,10 @@ import {
   taxYearEndProcessing,
   weeklyThresholdTracking,
 } from "@/db/schema/strike-fund-tax-schema";
+import { users } from "@/db/schema/user-management-schema";
+import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { eq, and, gte, lte } from "drizzle-orm";
+import { NotificationService } from "@/lib/services/notification-service";
 
 /**
  * Strike Fund Tax Service
@@ -467,19 +470,50 @@ export class TaxSlipService {
   }
 
   /**
-   * Get member tax information (placeholder - would integrate with user table)
+   * Get member tax information from user tables
    */
   private static async getMemberTaxInfo(userId: string): Promise<MemberTaxInfo> {
-    // TODO: Query actual user table
+    // Query user information from user_management.users table
+    const userResult = await db
+      .select({
+        firstName: users.firstName,
+        lastName: users.lastName,
+        encryptedSin: users.encryptedSin,
+      })
+      .from(users)
+      .where(eq(users.userId, userId))
+      .limit(1);
+
+    // Query member information from organization_members table
+    const memberResult = await db
+      .select({
+        name: organizationMembers.name,
+      })
+      .from(organizationMembers)
+      .where(eq(organizationMembers.userId, userId))
+      .limit(1);
+
+    const user = userResult[0];
+    const member = memberResult[0];
+    
+    // Construct full name from available data
+    const fullName = user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : member?.name || "Member Name";
+
+    // TODO: Decrypt SIN if needed (requires encryption key)
+    // For now, return undefined as we need proper decryption implementation
+    const sin = undefined; // user?.encryptedSin ? await decrypt(user.encryptedSin) : undefined
+
     return {
       userId,
-      fullName: "Member Name",
-      sin: undefined,
-      address: "123 Main St",
+      fullName,
+      sin,
+      address: "123 Main St", // TODO: Add address fields to schema if needed
       city: "Toronto",
       province: "ON",
       postalCode: "M1M 1M1",
-      isQuebecResident: false,
+      isQuebecResident: false, // TODO: Calculate from province or address
     };
   }
 
@@ -491,10 +525,77 @@ export class TaxSlipService {
     taxYear: string,
     weeklyTotal: number
   ) {
-    // TODO: Integrate with notification system
     console.log(
       `NOTICE: User ${userId} exceeded $500/week threshold in ${taxYear}. Weekly total: $${weeklyTotal.toFixed(2)}. Tax slip will be required.`
     );
+    
+    try {
+      // Get user details
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+      });
+      
+      if (user?.email) {
+        const notificationService = new NotificationService();
+        
+        // Notify user that they've exceeded threshold
+        await notificationService.send({
+          organizationId: user.organizationId || 'system',
+          recipientId: userId,
+          recipientEmail: user.email,
+          type: 'email',
+          priority: 'normal',
+          subject: 'Tax Reporting Threshold Exceeded',
+          body: `Your weekly income has exceeded the $500 threshold for tax year ${taxYear}.\n\nWeekly Total: $${weeklyTotal.toFixed(2)}\n\nYou will be required to receive a tax slip (T4A) for this tax year. Please ensure your personal information and address are up to date in your profile.`,
+          htmlBody: `
+            <h2>Tax Reporting Threshold Exceeded</h2>
+            <p>Your weekly income has exceeded the $500 threshold for tax year ${taxYear}.</p>
+            <ul>
+              <li><strong>Weekly Total:</strong> $${weeklyTotal.toFixed(2)}</li>
+              <li><strong>Tax Year:</strong> ${taxYear}</li>
+            </ul>
+            <p>You will be required to receive a tax slip (T4A) for this tax year.</p>
+            <p><strong>Action Required:</strong> Please ensure your personal information and mailing address are up to date in your profile to receive your tax slip.</p>
+          `,
+          actionUrl: '/profile/tax-information',
+          actionLabel: 'Update Profile',
+          metadata: {
+            taxYear,
+            weeklyTotal: weeklyTotal.toString(),
+            threshold: '500',
+          },
+        });
+        
+        // Also notify admin/accounting
+        await notificationService.send({
+          organizationId: user.organizationId || 'system',
+          recipientEmail: process.env.ACCOUNTING_EMAIL || process.env.ADMIN_EMAIL || 'admin@unioneyes.app',
+          type: 'email',
+          priority: 'normal',
+          subject: `Tax Slip Required - User ${userId}`,
+          body: `User ${userId} (${user.email}) has exceeded the weekly threshold for tax year ${taxYear}.\n\nWeekly Total: $${weeklyTotal.toFixed(2)}\n\nA tax slip (T4A) will need to be generated for this user.`,
+          htmlBody: `
+            <h2>Tax Slip Required</h2>
+            <p>A user has exceeded the weekly income threshold for tax reporting.</p>
+            <ul>
+              <li><strong>User ID:</strong> ${userId}</li>
+              <li><strong>Email:</strong> ${user.email}</li>
+              <li><strong>Tax Year:</strong> ${taxYear}</li>
+              <li><strong>Weekly Total:</strong> $${weeklyTotal.toFixed(2)}</li>
+            </ul>
+            <p>A tax slip (T4A) will need to be generated and distributed to this user.</p>
+          `,
+          metadata: {
+            userId,
+            taxYear,
+            weeklyTotal: weeklyTotal.toString(),
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send threshold notification:', error);
+      // Don't throw - notification failure shouldn't block threshold tracking
+    }
   }
 
   /**

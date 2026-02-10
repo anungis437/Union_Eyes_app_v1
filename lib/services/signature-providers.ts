@@ -5,6 +5,7 @@
  * Provides unified interface for creating envelopes, tracking signatures, and downloading documents
  */
 
+import { createSign } from "crypto";
 import { logger } from "@/lib/logger";
 import { createAuditLog } from "./audit-service";
 
@@ -68,13 +69,45 @@ export class DocuSignProvider implements SignatureProvider {
   private userId: string;
   private privateKey: string;
   private baseUrl: string;
+  private oauthBaseUrl: string;
+
+  private static base64UrlEncode(value: Buffer | string): string {
+    const buffer = typeof value === 'string' ? Buffer.from(value) : value;
+    return buffer
+      .toString('base64')
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+  }
+
+  private static resolveOAuthBaseUrl(rawBaseUrl: string): string {
+    const lower = rawBaseUrl.toLowerCase();
+
+    if (lower.includes('demo.docusign.net') || lower.includes('account-d.docusign.com')) {
+      return 'https://account-d.docusign.com';
+    }
+
+    return 'https://account.docusign.com';
+  }
+
+  private static normalizeBaseUrls(rawBaseUrl: string): { apiBaseUrl: string; oauthBaseUrl: string } {
+    const trimmed = rawBaseUrl.replace(/\/+$/, '');
+    const withoutRestApi = trimmed.replace(/\/restapi$/, '');
+    const apiBaseUrl = trimmed.endsWith('/restapi') ? trimmed : `${trimmed}/restapi`;
+    const oauthBaseUrl = DocuSignProvider.resolveOAuthBaseUrl(withoutRestApi);
+
+    return {
+      apiBaseUrl,
+      oauthBaseUrl,
+    };
+  }
 
   constructor(
-    accountId: string = process.env.DOCUSIGN_ACCOUNT_ID || "",
+    accountId: string = process.env.DOCUSIGN_API_ACCOUNT_ID || process.env.DOCUSIGN_ACCOUNT_ID || "",
     integrationKey: string = process.env.DOCUSIGN_INTEGRATION_KEY || "",
     userId: string = process.env.DOCUSIGN_USER_ID || "",
     privateKey: string = process.env.DOCUSIGN_PRIVATE_KEY || "",
-    baseUrl: string = process.env.DOCUSIGN_BASE_URL || "https://demo.docusign.net/restapi"
+    baseUrl: string = process.env.DOCUSIGN_BASE_URL || "https://demo.docusign.net"
   ) {
     if (!accountId || !integrationKey || !userId) {
       throw new Error("DocuSign credentials not configured");
@@ -83,7 +116,44 @@ export class DocuSignProvider implements SignatureProvider {
     this.integrationKey = integrationKey;
     this.userId = userId;
     this.privateKey = privateKey;
-    this.baseUrl = baseUrl;
+    const { apiBaseUrl, oauthBaseUrl } = DocuSignProvider.normalizeBaseUrls(baseUrl);
+    this.baseUrl = apiBaseUrl;
+    this.oauthBaseUrl = oauthBaseUrl;
+  }
+
+  private buildJwtAssertion(): string {
+    if (!this.privateKey) {
+      throw new Error("DOCUSIGN_PRIVATE_KEY not configured");
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+      iss: this.integrationKey,
+      sub: this.userId,
+      aud: this.oauthBaseUrl,
+      iat: now - 30,
+      exp: now + 60 * 60,
+      scope: 'signature impersonation',
+    };
+
+    const header = {
+      alg: 'RS256',
+      typ: 'JWT',
+    };
+
+    const encodedHeader = DocuSignProvider.base64UrlEncode(JSON.stringify(header));
+    const encodedPayload = DocuSignProvider.base64UrlEncode(JSON.stringify(payload));
+    const signingInput = `${encodedHeader}.${encodedPayload}`;
+
+    const normalizedKey = this.privateKey.replace(/\\n/g, '\n');
+    const signer = createSign('RSA-SHA256');
+    signer.update(signingInput);
+    signer.end();
+
+    const signature = signer.sign(normalizedKey);
+    const encodedSignature = DocuSignProvider.base64UrlEncode(signature);
+
+    return `${signingInput}.${encodedSignature}`;
   }
 
   /**
@@ -91,35 +161,34 @@ export class DocuSignProvider implements SignatureProvider {
    */
   private async getAccessToken(): Promise<string> {
     try {
-      const tokenUrl = `${this.baseUrl.replace('/v2.1', '')}/oauth/token`;
-      
-      // Use basic auth with integration key for simplicity
-      // Production: implement proper JWT with private key
+      const tokenUrl = `${this.oauthBaseUrl.replace('/v2.1', '')}/oauth/token`;
+      const assertion = this.buildJwtAssertion();
+
       const response = await fetch(tokenUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${Buffer.from(`${this.integrationKey}:`).toString('base64')}`,
         },
         body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          code: this.integrationKey,
+          grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+          assertion,
         }).toString(),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        logger.warn(`DocuSign auth response: ${response.status} - ${errorText}`);
-        // Return fallback token for development
-        return `token-${Date.now()}`;
+        throw new Error(`DocuSign auth error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json() as any;
-      return data.access_token || `token-${Date.now()}`;
+      if (!data.access_token) {
+        throw new Error('DocuSign auth response missing access_token');
+      }
+
+      return data.access_token;
     } catch (error) {
       logger.error("Failed to get DocuSign access token", { error });
-      // Fallback token for development
-      return `token-${Date.now()}`;
+      throw error;
     }
   }
 

@@ -203,6 +203,9 @@ importers:
       '@types/qrcode':
         specifier: ^1.5.6
         version: 1.5.6
+      '@types/twilio':
+        specifier: ^3.19.3
+        version: 3.19.3
       '@upstash/redis':
         specifier: ^1.35.8
         version: 1.35.8
@@ -6832,6 +6835,10 @@ packages:
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  '@types/twilio@3.19.3':
+    resolution: {integrity: sha512-W53Z0TDCu6clZ5CzTWHRPnpQAad+AANglx6WiQ4Mkxxw21o4BYBx5EhkfR6J4iYqY58rtWB3r8kDGJ4y1uTUGQ==}
+    deprecated: This is a stub types definition. twilio provides its own type definitions, so you do not need this installed.
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -22112,6 +22119,13 @@ snapshots:
 
   '@types/trusted-types@2.0.7':
     optional: true
+
+  '@types/twilio@3.19.3':
+    dependencies:
+      twilio: 5.10.7
+    transitivePeerDependencies:
+      - debug
+      - supports-color
 
   '@types/unist@2.0.11': {}
 

@@ -25,6 +25,7 @@ import { addSmsJob } from '../job-queue';
 import { db } from '@/db/db';
 import { notificationHistory, userNotificationPreferences, inAppNotifications } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Validate Redis configuration (deferred until actual use)
 let connection: IORedis | null = null;
@@ -139,10 +140,10 @@ async function sendInAppNotification(
       })
     );
     
-    console.log(`In-app notification sent to user ${userId} with real-time pub/sub`);
+    logger.info('In-app notification sent with real-time pub/sub', { userId });
   } catch (error) {
-    console.warn(`Failed to publish real-time notification (Redis not available):`, error);
-    console.log(`In-app notification saved to database for user ${userId}`);
+    logger.warn('Failed to publish real-time notification', { userId, error: error instanceof Error ? error.message : String(error) });
+    logger.info('In-app notification saved to database', { userId });
   }
 }
 
@@ -152,7 +153,7 @@ async function sendInAppNotification(
 async function processNotification(job: any) {
   const { userId, title, message, data, channels } = job.data;
 
-  console.log(`Processing notification job ${job.id} for user ${userId}`);
+  logger.info('Processing notification job', { jobId: job.id, userId });
 
   await job.updateProgress(10);
 
@@ -182,11 +183,11 @@ async function processNotification(job: any) {
   });
 
   if (enabledChannels.length === 0) {
-    console.log(`No enabled channels for user ${userId} (quiet hours: ${inQuietHours})`);
+    logger.info('No enabled channels for user', { userId, inQuietHours });
     return { success: true, sent: 0, channels: [] };
   }
 
-  console.log(`Sending notification to ${userId} via: ${enabledChannels.join(', ')}`);
+  logger.info('Sending notification', { userId, channels: enabledChannels });
 
   await job.updateProgress(40);
 
@@ -222,7 +223,7 @@ async function processNotification(job: any) {
 
         case 'push':
           // TODO: Implement push notifications
-          console.log(`Push notification to ${userId}: ${title}`);
+          logger.info('Push notification queued', { userId, title });
           return { channel, success: true };
 
         case 'in-app':
@@ -294,21 +295,21 @@ async function getUserEmail(userId: string): Promise<string | null> {
     const primaryEmail = user.emailAddresses?.find((email: any) => email.id === user.primaryEmailAddressId);
     
     if (primaryEmail?.emailAddress) {
-      console.log(`Retrieved email for user ${userId}: ${primaryEmail.emailAddress}`);
+      logger.info('Retrieved primary email for user', { userId });
       return primaryEmail.emailAddress;
     }
 
     // Fallback to first email if no primary email found
     const firstEmail = user.emailAddresses?.[0]?.emailAddress;
     if (firstEmail) {
-      console.log(`Retrieved fallback email for user ${userId}: ${firstEmail}`);
+      logger.info('Retrieved fallback email for user', { userId });
       return firstEmail;
     }
 
-    console.warn(`No email found for user ${userId}`);
+    logger.warn('No email found for user', { userId });
     return null;
   } catch (error) {
-    console.error('Error fetching user email from Clerk:', error);
+    logger.error('Error fetching user email from Clerk', error instanceof Error ? error : new Error(String(error)), { userId });
     return null;
   }
 }
@@ -327,23 +328,23 @@ export const notificationWorker = new Worker(
 
 // Event handlers
 notificationWorker.on('completed', (job: any) => {
-  console.log(`Notification job ${job.id} completed`);
+  logger.info('Notification job completed', { jobId: job.id });
 });
 
 notificationWorker.on('failed', (job: any, err: any) => {
-  console.error(`Notification job ${job?.id} failed:`, err.message);
+  logger.error('Notification job failed', err instanceof Error ? err : new Error(String(err)), { jobId: job?.id });
 });
 
 notificationWorker.on('error', (err: any) => {
-  console.error('Notification worker error:', err);
+  logger.error('Notification worker error', err instanceof Error ? err : new Error(String(err)));
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('Shutting down notification worker...');
+  logger.info('Shutting down notification worker');
   await notificationWorker.close();
   await connection.quit();
-  console.log('Notification worker stopped');
+  logger.info('Notification worker stopped');
 }
 
 process.on('SIGTERM', shutdown);

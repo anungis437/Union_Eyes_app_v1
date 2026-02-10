@@ -5,6 +5,7 @@
  * Provides methods to view, terminate, and monitor active sessions
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { SessionManagement } from '../services/sessionManagement';
 // Get Supabase config (similar pattern to packages/supabase/client.ts)
 const getSupabaseConfig = () => {
@@ -61,11 +62,17 @@ const getSupabaseConfig = () => {
  * ```
  */
 export function useSessionManagement(options = {}) {
-    const { userId, enableRealtime = false, refreshInterval = 0, includeTerminated = false, } = options;
+    const { userId, enableRealtime = true, refreshInterval = 60000, includeTerminated = false, } = options;
     const [sessions, setSessions] = useState([]);
     const [currentSession, setCurrentSession] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const supabase = useMemo(() => {
+        const { url, anonKey } = getSupabaseConfig();
+        if (!url || !anonKey)
+            return null;
+        return createClient(url, anonKey);
+    }, []);
     const sessionManager = useMemo(() => {
         const config = getSupabaseConfig();
         return new SessionManagement(config.url, config.anonKey);
@@ -168,28 +175,28 @@ export function useSessionManagement(options = {}) {
         }
     }, [refreshInterval, fetchSessions]);
     /**
-     * Real-time subscriptions (TODO: implement with Supabase realtime)
+     * Real-time subscriptions
      */
     useEffect(() => {
         if (!enableRealtime)
             return;
-        // TODO: Implement Supabase realtime subscription
-        // const subscription = supabase
-        //   .channel('user_sessions')
-        //   .on('postgres_changes', {
-        //     event: '*',
-        //     schema: 'public',
-        //     table: 'user_sessions',
-        //     filter: userId ? `user_id=eq.${userId}` : undefined
-        //   }, payload => {
-        //     // Handle real-time updates
-        //     fetchSessions();
-        //   })
-        //   .subscribe();
-        // return () => {
-        //   subscription.unsubscribe();
-        // };
-    }, [enableRealtime, userId, fetchSessions]);
+        if (!supabase)
+            return;
+        const channel = supabase
+            .channel('user_sessions')
+            .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'user_sessions',
+            filter: userId ? `user_id=eq.${userId}` : undefined,
+        }, () => {
+            fetchSessions();
+        })
+            .subscribe();
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [enableRealtime, supabase, userId, fetchSessions]);
     /**
      * Calculate active session count
      */

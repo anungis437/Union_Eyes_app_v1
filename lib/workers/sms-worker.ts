@@ -22,8 +22,7 @@ import { SmsJobData } from '../job-queue';
 import { db } from '../../db/db';
 import { notificationHistory, userNotificationPreferences } from '../../db/schema';
 import { eq } from 'drizzle-orm';
-// TODO: Install twilio package - npm install twilio
-// import twilio from 'twilio';
+import twilio from 'twilio';
 
 const connection = new IORedis({
   host: process.env.REDIS_HOST || 'localhost',
@@ -31,12 +30,36 @@ const connection = new IORedis({
   maxRetriesPerRequest: null,
 });
 
-// TODO: Twilio client - install twilio package first
-const twilioClient: any = null; // process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
-  // ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-  // : null;
+/**
+ * Validate Twilio environment variables at startup
+ */
+function validateTwilioConfig(): { valid: boolean; error?: string } {
+  if (!process.env.TWILIO_ACCOUNT_SID) {
+    return { valid: false, error: 'TWILIO_ACCOUNT_SID not configured' };
+  }
+  if (!process.env.TWILIO_AUTH_TOKEN) {
+    return { valid: false, error: 'TWILIO_AUTH_TOKEN not configured' };
+  }
+  if (!process.env.TWILIO_PHONE_NUMBER) {
+    return { valid: false, error: 'TWILIO_PHONE_NUMBER not configured' };
+  }
+  return { valid: true };
+}
+
+// Initialize Twilio client with proper validation
+const twilioConfig = validateTwilioConfig();
+const twilioClient = twilioConfig.valid
+  ? twilio(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!)
+  : null;
 
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER || '';
+
+// Log Twilio configuration status
+if (twilioClient) {
+  console.log('✓ Twilio SMS worker initialized successfully');
+} else {
+  console.warn(`⚠ Twilio SMS worker disabled: ${twilioConfig.error}`);
+}
 
 /**
  * Check if user wants SMS notifications
@@ -134,11 +157,6 @@ async function processSmsJob(job: any) {
 
   // Send SMS via Twilio
   try {
-    // TODO: Twilio not installed - this will fail until package is installed
-    if (!twilioClient) {
-      throw new Error('Twilio client not initialized - install twilio package');
-    }
-    
     const result = await twilioClient.messages.create({
       body: message,
       from: TWILIO_PHONE_NUMBER,
@@ -149,7 +167,9 @@ async function processSmsJob(job: any) {
 
     await logSms(null, formattedPhone, message, 'sent', undefined, result.sid);
 
-    console.log(`SMS sent to ${formattedPhone} (SID: ${result.sid})`);
+    // Log without exposing full phone number
+    const maskedPhone = formattedPhone.replace(/(\+\d{1,3})(\d+)(\d{4})/, '$1****$3');
+    console.log(`SMS sent to ${maskedPhone} (SID: ${result.sid})`);  
 
     await job.updateProgress(100);
 

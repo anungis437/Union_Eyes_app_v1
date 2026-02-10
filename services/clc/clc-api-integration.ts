@@ -33,6 +33,7 @@
 import { db } from '@/db';
 import { organizations } from '@/db/schema';
 import { eq, desc, and, gte, isNotNull } from 'drizzle-orm';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 // TODO: Create schema tables for CLC sync
 // import { clcSyncLog, clcWebhookLog } from '@/db/schema';
@@ -652,23 +653,56 @@ function getConflictReason(field: string, resolution: string): string {
 // HELPER FUNCTIONS - WEBHOOK VERIFICATION
 // ============================================================================
 
+/**
+ * Verify webhook signature using HMAC
+ * 
+ * SECURITY: Protects against webhook spoofing attacks by verifying
+ * that the webhook payload was signed by CLC using the shared secret.
+ * Uses timing-safe comparison to prevent timing attacks.
+ */
 function verifyWebhookSignature(payload: CLCWebhookPayload): boolean {
-  // In production, verify webhook signature using HMAC
-  // For now, simple secret check
+  // Require webhook secret in production
   if (!WEBHOOK_SECRET) {
-    console.warn('CLC_WEBHOOK_SECRET not configured, skipping verification');
-    return true; // Allow in development
+    console.error('CLC_WEBHOOK_SECRET not configured - rejecting webhook');
+    return false;
   }
 
-  // TODO: Implement proper HMAC signature verification
-  // const expectedSignature = crypto
-  //   .createHmac('sha256', WEBHOOK_SECRET)
-  //   .update(JSON.stringify(payload))
-  //   .digest('hex');
-  // 
-  // return expectedSignature === payload.signature;
+  // Verify signature is present
+  if (!payload.signature) {
+    console.error('Webhook payload missing signature');
+    return false;
+  }
 
-  return true; // Placeholder
+  try {
+    // Create payload copy without signature for verification
+    const { signature, ...payloadWithoutSig } = payload;
+    
+    // Calculate expected signature
+    const expectedSignature = createHmac('sha256', WEBHOOK_SECRET)
+      .update(JSON.stringify(payloadWithoutSig))
+      .digest('hex');
+    
+    // Use timing-safe comparison to prevent timing attacks
+    const signatureBuffer = Buffer.from(signature, 'hex');
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    
+    // Ensure both buffers are same length before comparison
+    if (signatureBuffer.length !== expectedBuffer.length) {
+      console.error('Webhook signature length mismatch');
+      return false;
+    }
+    
+    const isValid = timingSafeEqual(signatureBuffer, expectedBuffer);
+    
+    if (!isValid) {
+      console.error('Webhook signature verification failed');
+    }
+    
+    return isValid;
+  } catch (error) {
+    console.error('Error verifying webhook signature:', error);
+    return false;
+  }
 }
 
 // ============================================================================

@@ -185,7 +185,7 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Get tenant ID
-      const tenantId = 'default'; // TODO: Get from user's organization
+      const tenantId = organizationId;
 
       const [newRoom] = await db
         .insert(meetingRooms)

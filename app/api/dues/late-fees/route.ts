@@ -68,8 +68,7 @@ try {
 
       const { lateFeeRate } = body;
 
-      // TODO: Get tenantId from user session
-      const tenantId = 'default-tenant';
+      const tenantId = organizationId;
 
       const result = await DuesCalculationEngine.calculateLateFees(
         tenantId,

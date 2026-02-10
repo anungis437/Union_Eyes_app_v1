@@ -15,6 +15,7 @@ import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import type { ScheduledReport } from '@/db/queries/scheduled-reports-queries';
 import { updateScheduleAfterRun } from '@/db/queries/scheduled-reports-queries';
+import DocumentStorageService from '@/lib/services/document-storage-service';
 
 // ============================================================================
 // Types
@@ -36,6 +37,8 @@ interface ReportData {
   rows: any[];
   totalCount: number;
 }
+
+const storageService = new DocumentStorageService();
 
 // ============================================================================
 // Main Execution Function
@@ -75,7 +78,8 @@ export async function executeScheduledReport(
     const fileUrl = await uploadFile(
       fileBuffer,
       schedule.id,
-      schedule.exportFormat
+      schedule.exportFormat,
+      schedule.tenantId
     );
 
     const processingDurationMs = Date.now() - startTime;
@@ -645,24 +649,37 @@ async function generatePDF(data: ReportData): Promise<Buffer> {
 // ============================================================================
 
 /**
- * Upload file to storage
- * TODO: Implement actual storage (S3, Azure Blob, etc.)
+ * Upload file to storage via DocumentStorageService
  */
 async function uploadFile(
   buffer: Buffer,
   scheduleId: string,
-  format: string
+  format: string,
+  tenantId: string
 ): Promise<string> {
-  // For now, return a placeholder URL
-  // In production, upload to S3, Azure Blob Storage, etc.
   const timestamp = Date.now();
   const filename = `scheduled-report-${scheduleId}-${timestamp}.${format}`;
-  
-  // TODO: Actual upload implementation
-  // const uploadResult = await s3.upload({ ... });
-  // return uploadResult.Location;
+  const contentType = format === 'excel'
+    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    : format === 'pdf'
+      ? 'application/pdf'
+      : format === 'csv'
+        ? 'text/csv'
+        : 'application/json';
 
-  return `/exports/${filename}`;
+  const uploadResult = await storageService.uploadDocument({
+    organizationId: tenantId,
+    documentName: filename,
+    documentBuffer: buffer,
+    documentType: 'scheduled_report',
+    contentType,
+    metadata: {
+      scheduleId,
+      format,
+    },
+  });
+
+  return uploadResult.url;
 }
 
 // ============================================================================

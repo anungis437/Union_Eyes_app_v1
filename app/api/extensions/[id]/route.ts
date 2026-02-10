@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { approveDeadlineExtension, denyDeadlineExtension } from '@/db/queries/deadline-queries';
-import { getCurrentUser } from '@/lib/api-auth-guard';
+import { requireApiAuth } from '@/lib/api-auth-guard';
 
 /**
  * PATCH /api/extensions/[id]
@@ -11,19 +11,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // TODO: Add proper role-based permission checking
-    // For now, assume the user making this request has permission if authenticated
-    // Permission check would require fetching user's role from organization
-
-    const { id: userId } = user;
+    const { userId } = await requireApiAuth({
+      tenant: true,
+      roles: ['admin', 'steward', 'officer'],
+    });
 
     const body = await request.json();
     const { action, daysGranted, notes, reason } = body;

@@ -76,9 +76,7 @@ export const PUT = async (request: NextRequest) => {
         phone,
       } = body;
 
-      // Get tenant ID from user
-      // TODO: Implement tenant resolution
-      const tenantId = 'default';
+      const tenantId = organizationId;
 
       // Check if preferences exist
       const existing = await db.query.userNotificationPreferences.findFirst({

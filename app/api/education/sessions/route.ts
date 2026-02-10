@@ -1,5 +1,6 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
+import { NotificationService } from "@/lib/services/notification-service";
 import { db } from "@/db";
 import { courseSessions, trainingCourses, courseRegistrations } from "@/db/migrations/schema";
 import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
@@ -363,7 +364,61 @@ export const DELETE = async (request: NextRequest) => {
         return NextResponse.json({ error: "Session not found" }, { status: 404 });
       }
 
-      // TODO: Send cancellation notifications to enrolled members
+      // Send cancellation notifications to enrolled members
+      try {
+        const enrollments = await db
+          .select({
+            memberId: courseRegistrations.memberId,
+            memberEmail: courseRegistrations.memberEmail,
+            memberName: courseRegistrations.memberName,
+          })
+          .from(courseRegistrations)
+          .where(
+            and(
+              eq(courseRegistrations.sessionId, sessionId),
+              inArray(courseRegistrations.registrationStatus, ['registered', 'confirmed'])
+            )
+          );
+        
+        if (enrollments.length > 0) {
+          const notificationService = new NotificationService();
+          
+          for (const enrollment of enrollments) {
+            if (enrollment.memberEmail) {
+              await notificationService.send({
+                organizationId: cancelledSession.organizationId,
+                recipientId: enrollment.memberId,
+                recipientEmail: enrollment.memberEmail,
+                type: 'email',
+                priority: 'high',
+                subject: `Education Session Cancelled: ${cancelledSession.sessionName || cancelledSession.sessionCode}`,
+                body: `The education session "${cancelledSession.sessionName || cancelledSession.sessionCode}" has been cancelled.\n\nOriginal Date: ${cancelledSession.startDate}${cancellationReason ? `\nReason: ${cancellationReason}` : ''}\n\nWe apologize for any inconvenience. Please contact us if you have any questions.`,
+                htmlBody: `
+                  <h2>Education Session Cancelled</h2>
+                  <p>The following education session has been cancelled:</p>
+                  <ul>
+                    <li><strong>Session:</strong> ${cancelledSession.sessionName || cancelledSession.sessionCode}</li>
+                    <li><strong>Original Date:</strong> ${cancelledSession.startDate}</li>
+                    ${cancelledSession.venueName ? `<li><strong>Location:</strong> ${cancelledSession.venueName}</li>` : ''}
+                    ${cancellationReason ? `<li><strong>Reason:</strong> ${cancellationReason}</li>` : ''}
+                  </ul>
+                  <p>We apologize for any inconvenience. Please contact us if you have any questions.</p>
+                `,
+                metadata: {
+                  sessionId,
+                  sessionCode: cancelledSession.sessionCode,
+                  cancellationReason,
+                },
+              });
+            }
+          }
+          
+          logger.info(`Sent ${enrollments.length} cancellation notifications for session ${sessionId}`);
+        }
+      } catch (notificationError) {
+        logger.error('Failed to send session cancellation notifications', { error: notificationError });
+        // Don't fail the cancellation if notifications fail
+      }
 
       logger.info("Session cancelled", {
         sessionId,

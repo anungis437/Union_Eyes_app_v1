@@ -27,7 +27,7 @@ import {
 } from "@/db/queries/organization-queries";
 import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
+import { withEnhancedRoleAuth, withAdminAuth } from "@/lib/api-auth-guard";
 
 // =====================================================
 // GET - Get Organization by ID
@@ -228,11 +228,8 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
 // =====================================================
 
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withAdminAuth(async (request, context) => {
   try {
-      // TODO: Add admin role check when profiles/roles are set up
-      // For now, authenticated users can delete organizations
-
       const { id } = params;
 
       // Wrap all operations in RLS context for transaction consistency

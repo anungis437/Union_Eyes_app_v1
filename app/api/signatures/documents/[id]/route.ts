@@ -19,9 +19,14 @@ export const GET = withApiAuth(async (
     }
     
     const documentId = params.id;
-    const document = await SignatureService.getDocumentStatus(documentId);
+    
+    // SECURITY FIX: Verify user has access to this document (prevent IDOR)
+    const hasAccess = await SignatureService.verifyDocumentAccess(documentId, user.id);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
-    // TODO: Check if user has access to this document
+    const document = await SignatureService.getDocumentStatus(documentId);
 
     return NextResponse.json(document);
   } catch (error) {
@@ -45,6 +50,13 @@ export const PATCH = withApiAuth(async (
     
     const userId = user.id;
     const documentId = params.id;
+    
+    // SECURITY FIX: Verify user has access to this document (prevent IDOR)
+    const hasAccess = await SignatureService.verifyDocumentAccess(documentId, userId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+    
     const body = await req.json();
     const { action, reason } = body;
 

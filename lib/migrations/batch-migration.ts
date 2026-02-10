@@ -23,6 +23,7 @@ import {
   updateMappingStatus,
   validateMapping,
 } from "./tenant-to-org-mapper";
+import { logger } from '@/lib/logger';
 
 // Migration configuration for each table
 interface TableMigrationConfig {
@@ -152,10 +153,10 @@ export async function migrateTable(
     `));
 
     result.totalRows = Number(countResult[0]?.count || 0);
-    console.log(`   Total rows to migrate: ${result.totalRows}`);
+    logger.info('Migration rows to process', { tableName: config.tableName, totalRows: result.totalRows });
 
     if (result.totalRows === 0) {
-      console.log(`   ✅ No rows to migrate for ${config.tableName}`);
+      logger.info('No rows to migrate', { tableName: config.tableName });
       result.status = "completed";
       result.duration = Date.now() - startTime;
       return result;
@@ -246,17 +247,20 @@ export async function migrateTable(
     result.status = result.failedRows === 0 ? "completed" : "failed";
     result.duration = Date.now() - startTime;
 
-    console.log(`\n   ✅ Migration ${result.status} for ${config.tableName}`);
-    console.log(`   Migrated: ${result.migratedRows}`);
-    console.log(`   Failed: ${result.failedRows}`);
-    console.log(`   Skipped: ${result.skippedRows}`);
-    console.log(`   Duration: ${(result.duration / 1000).toFixed(2)}s`);
+    logger.info('Migration completed', {
+      tableName: config.tableName,
+      status: result.status,
+      migratedRows: result.migratedRows,
+      failedRows: result.failedRows,
+      skippedRows: result.skippedRows,
+      durationSeconds: (result.duration / 1000).toFixed(2)
+    });
 
     return result;
   } catch (error) {
     result.status = "failed";
     result.duration = Date.now() - startTime;
-    console.error(`❌ Migration failed for ${config.tableName}:`, error);
+    logger.error('Migration failed', error instanceof Error ? error : new Error(String(error)), { tableName: config.tableName });
     result.errors.push({
       row: {},
       error: error instanceof Error ? error.message : "Unknown error",

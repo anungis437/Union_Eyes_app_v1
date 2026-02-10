@@ -12,10 +12,10 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { z } from 'zod';
 import {
   getOrganizationMembers,
-  // TODO: Implement addOrganizationMember function for adding existing users to organizations
-  // addOrganizationMember,
+  addOrganizationMember,
 } from '@/db/queries/organization-members-queries';
 import { logger } from '@/lib/logger';
+import { clerkClient } from '@clerk/nextjs/server';
 
 /**
  * GET /api/organizations/[id]/members
@@ -258,13 +258,33 @@ export const POST = async (
         );
       }
 
-      // TODO: Implement addOrganizationMember function
-      // const result = await addOrganizationMember(
-      //   id,
-      //   validated.data.memberId,
-      //   validated.data.role,
-      //   validated.data.isPrimary
-      // );
+      const memberUser = await clerkClient.users.getUser(validated.data.memberId);
+      if (!memberUser) {
+        return NextResponse.json(
+          { error: 'Member not found' },
+          { status: 404 }
+        );
+      }
+
+      const memberEmail = memberUser.emailAddresses?.[0]?.emailAddress;
+      if (!memberEmail) {
+        return NextResponse.json(
+          { error: 'Member email not found' },
+          { status: 400 }
+        );
+      }
+
+      const memberName = `${memberUser.firstName || ''} ${memberUser.lastName || ''}`.trim() || 'Member';
+
+      const result = await addOrganizationMember({
+        organizationId: id,
+        userId: validated.data.memberId,
+        role: validated.data.role,
+        isPrimary: validated.data.isPrimary,
+        name: memberName,
+        email: memberEmail,
+        phone: memberUser.phoneNumbers?.[0]?.phoneNumber,
+      });
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -278,14 +298,14 @@ export const POST = async (
           organizationId: id,
           memberId: validated.data.memberId,
           role: validated.data.role,
-          notImplemented: true,
+          addedMemberId: result.id,
         },
       });
 
       return NextResponse.json({
-        success: false,
-        error: 'Adding members to organizations not yet implemented',
-      }, { status: 501 });
+        success: true,
+        data: result,
+      });
     } catch (error: any) {
       logger.error('Error adding member to organization', error as Error, {
         organizationId: id,

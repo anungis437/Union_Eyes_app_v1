@@ -7,6 +7,7 @@ import { db } from '@/db';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { mlPredictions } from '@/db/schema/ml-predictions-schema';
 
 /**
  * POST /api/ml/predictions/claim-outcome
@@ -117,7 +118,25 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
 
     // Store prediction for learning
     if (body.claimId) {
-      // TODO: Store prediction in ai_predictions table for future model training
+      const predictedValue = typeof prediction?.probability === 'number'
+        ? prediction.probability
+        : typeof prediction?.confidence === 'number'
+          ? prediction.confidence
+          : 0;
+
+      await withRLSContext({ organizationId: tenantId }, async (db) => {
+        await db.insert(mlPredictions).values({
+          organizationId: tenantId,
+          predictionType: 'claim_outcome',
+          predictionDate: new Date(),
+          predictedValue: predictedValue.toString(),
+          lowerBound: prediction?.settlementRange?.min?.toString(),
+          upperBound: prediction?.settlementRange?.max?.toString(),
+          confidence: typeof prediction?.confidence === 'number' ? prediction.confidence.toString() : undefined,
+          horizon: typeof prediction?.estimatedDuration === 'number' ? prediction.estimatedDuration : undefined,
+          granularity: 'daily',
+        });
+      });
     }
 
     return NextResponse.json({ prediction });

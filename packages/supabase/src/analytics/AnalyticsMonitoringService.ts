@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-// import { Database } from '../types/database';
-type Database = any; // TODO: Generate from Supabase schema
+import type { Database } from '../../types';
 
 /**
  * Analytics and Monitoring Service for CourtLens

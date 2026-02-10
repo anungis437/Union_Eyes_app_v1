@@ -17,7 +17,8 @@
 import { db } from "../db/db";
 import { withRLSContext } from "./db/with-rls-context";
 import { claims, claimUpdates } from "../db/schema/claims-schema";
-import { eq } from "drizzle-orm";
+import { organizationMembers } from "../db/schema/organization-members-schema";
+import { eq, and } from "drizzle-orm";
 import { sendClaimStatusNotification } from "./claim-notifications";
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { 
@@ -70,6 +71,27 @@ export const PRIORITY_MULTIPLIERS = {
 } as const;
 
 export type ClaimPriority = keyof typeof PRIORITY_MULTIPLIERS;
+
+/**
+ * Helper function to get member name from organizationMembers table
+ */
+async function getMemberName(
+  memberId: string,
+  tx: NodePgDatabase<any>
+): Promise<string> {
+  try {
+    const result = await tx
+      .select({ name: organizationMembers.name })
+      .from(organizationMembers)
+      .where(eq(organizationMembers.userId, memberId))
+      .limit(1);
+    
+    return result[0]?.name || 'Member';
+  } catch (error) {
+    console.error('Error fetching member name:', error);
+    return 'Member';
+  }
+}
 
 /**
  * Validate if a status transition is allowed (LEGACY - use validateClaimTransition for full validation)
@@ -197,6 +219,20 @@ export async function updateClaimStatus(
       (claim.description && claim.description.length > 20) || 
       (notes && notes.length > 20);
 
+    // Get user role for FSM validation
+    const userRoleResult = await tx
+      .select({ role: organizationMembers.role })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.status, 'active')
+        )
+      )
+      .limit(1);
+    
+    const userRole = userRoleResult[0]?.role || 'member';
+
     // FSM VALIDATION (PR-11 ENFORCEMENT LAYER)
     // This makes bad practice IMPOSSIBLE
     const validation = validateClaimTransition({
@@ -204,7 +240,7 @@ export async function updateClaimStatus(
       currentStatus,
       targetStatus: newStatus,
       userId,
-      userRole: 'steward', // TODO: Get from context when available
+      userRole: userRole as any,
       priority,
       statusChangedAt: claim.updatedAt || claim.createdAt,
       hasUnresolvedCriticalSignals,
@@ -351,7 +387,7 @@ export async function updateClaimStatus(
             caseSummary: {
               title: claim.title || `Claim ${claim.claimNumber}`,
               memberId: claim.memberId,
-              memberName: 'Member', // TODO: Fetch from profiles
+              memberName: await getMemberName(claim.memberId, tx),
               currentState: newStatus,
               createdAt: claim.createdAt,
               lastUpdated: updatedClaim.updatedAt || new Date(),

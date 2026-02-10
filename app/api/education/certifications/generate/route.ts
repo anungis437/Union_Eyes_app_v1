@@ -18,6 +18,7 @@ import {
 } from "@/components/pdf/certificate-template";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { organizations } from '@/db/schema-organizations';
 
 // GET /api/education/certifications/generate?registrationId={id} - Generate certificate PDF
 export const GET = async (request: NextRequest) => {
@@ -120,8 +121,14 @@ export const GET = async (request: NextRequest) => {
       const memberFullName = [registration.memberFirstName, registration.memberLastName]
         .filter(Boolean)
         .join(" ");
+      const [organization] = await db
+        .select({ name: organizations.name, displayName: organizations.displayName })
+        .from(organizations)
+        .where(eq(organizations.id, context.organizationId))
+        .limit(1);
+
       const certificateData = createUnionCertificate({
-        organizationName: "Union Local", // TODO: Get from organization table
+        organizationName: organization?.displayName || organization?.name || "Union Local",
         memberName: memberFullName || "",
         memberNumber: registration.memberId || "", // Use memberId as identifier
         courseName: registration.courseName || "",

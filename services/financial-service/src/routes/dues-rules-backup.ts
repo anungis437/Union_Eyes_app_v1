@@ -5,6 +5,9 @@
 
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import { db } from '../db/index';
+import { duesRules } from '../db/schema';
+import { eq, and, desc } from 'drizzle-orm';
 
 const router = Router();
 
@@ -66,22 +69,25 @@ const createDuesRuleSchema = z.object({
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { tenantId } = (req as any).user;
-    const { active, category, status } = req.query;
+    const { active } = req.query;
     
-    // TODO: Implement database query
-    // const rules = await db.query.duesRules.findMany({
-    //   where: {
-    //     tenantId,
-    //     ...(active === 'true' && { isActive: true }),
-    //     ...(category && { memberCategory: category }),
-    //   },
-    //   orderBy: { createdAt: 'desc' },
-    // });
+    // Build where conditions
+    const conditions = [eq(duesRules.tenantId, tenantId)];
+    
+    if (active === 'true') {
+      conditions.push(eq(duesRules.isActive, true));
+    }
+    
+    const rules = await db
+      .select()
+      .from(duesRules)
+      .where(and(...conditions))
+      .orderBy(desc(duesRules.createdAt));
     
     res.json({
       success: true,
-      data: [],
-      total: 0,
+      data: rules,
+      total: rules.length,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -100,21 +106,24 @@ router.get('/:id', async (req: Request, res: Response) => {
     const { tenantId } = (req as any).user;
     const { id } = req.params;
     
-    // TODO: Implement database query
-    // const rule = await db.query.duesRules.findFirst({
-    //   where: { id, tenantId },
-    // });
+    const rules = await db
+      .select()
+      .from(duesRules)
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .limit(1);
     
-    // if (!rule) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     error: 'Dues rule not found',
-    //   });
-    // }
+    const rule = rules[0];
+    
+    if (!rule) {
+      return res.status(404).json({
+        success: false,
+        error: 'Dues rule not found',
+      });
+    }
     
     res.json({
       success: true,
-      data: null,
+      data: rule,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -143,16 +152,31 @@ router.post('/', async (req: Request, res: Response) => {
     // Validate input
     const validatedData = createDuesRuleSchema.parse(req.body);
     
-    // TODO: Implement database insert
-    // const newRule = await db.insert(duesRules).values({
-    //   ...validatedData,
-    //   tenantId,
-    //   createdBy: (req as any).user.id,
-    // }).returning();
+    // Map validation schema to database schema
+    const dbData = {
+      tenantId,
+      ruleName: validatedData.ruleName,
+      ruleCode: validatedData.ruleCode,
+      description: validatedData.description,
+      calculationType: validatedData.calculationType,
+      percentageRate: validatedData.percentageRate?.toString(),
+      baseField: validatedData.baseField,
+      flatAmount: validatedData.flatAmount?.toString(),
+      hourlyRate: validatedData.hourlyRate?.toString(),
+      hoursPerPeriod: validatedData.hoursPerPeriod,
+      tierStructure: validatedData.tierStructure,
+      customFormula: validatedData.customFormula,
+      billingFrequency: validatedData.billingFrequency,
+      effectiveDate: validatedData.effectiveFrom.toISOString().split('T')[0],
+      endDate: validatedData.effectiveTo?.toISOString().split('T')[0],
+      createdBy: (req as any).user.id,
+    };
+    
+    const newRule = await db.insert(duesRules).values(dbData).returning();
     
     res.status(201).json({
       success: true,
-      data: validatedData,
+      data: newRule[0],
       message: 'Dues rule created successfully',
     });
   } catch (error: any) {
@@ -191,15 +215,41 @@ router.put('/:id', async (req: Request, res: Response) => {
     // Validate input
     const validatedData = createDuesRuleSchema.partial().parse(req.body);
     
-    // TODO: Implement database update
-    // const updatedRule = await db.update(duesRules)
-    //   .set(validatedData)
-    //   .where({ id, tenantId })
-    //   .returning();
+    // Map validation schema to database schema for update
+    const dbData: any = {};
+    if (validatedData.ruleName) dbData.ruleName = validatedData.ruleName;
+    if (validatedData.ruleCode) dbData.ruleCode = validatedData.ruleCode;
+    if (validatedData.description !== undefined) dbData.description = validatedData.description;
+    if (validatedData.calculationType) dbData.calculationType = validatedData.calculationType;
+    if (validatedData.percentageRate !== undefined) dbData.percentageRate = validatedData.percentageRate?.toString();
+    if (validatedData.baseField !== undefined) dbData.baseField = validatedData.baseField;
+    if (validatedData.flatAmount !== undefined) dbData.flatAmount = validatedData.flatAmount?.toString();
+    if (validatedData.hourlyRate !== undefined) dbData.hourlyRate = validatedData.hourlyRate?.toString();
+    if (validatedData.hoursPerPeriod !== undefined) dbData.hoursPerPeriod = validatedData.hoursPerPeriod;
+    if (validatedData.tierStructure !== undefined) dbData.tierStructure = validatedData.tierStructure;
+    if (validatedData.customFormula !== undefined) dbData.customFormula = validatedData.customFormula;
+    if (validatedData.billingFrequency) dbData.billingFrequency = validatedData.billingFrequency;
+    if (validatedData.effectiveFrom) dbData.effectiveDate = validatedData.effectiveFrom.toISOString().split('T')[0];
+    if (validatedData.effectiveTo) dbData.endDate = validatedData.effectiveTo.toISOString().split('T')[0];
+    
+    dbData.updatedAt = new Date().toISOString();
+    
+    const updatedRule = await db
+      .update(duesRules)
+      .set(dbData)
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .returning();
+    
+    if (updatedRule.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Dues rule not found',
+      });
+    }
     
     res.json({
       success: true,
-      data: validatedData,
+      data: updatedRule[0],
       message: 'Dues rule updated successfully',
     });
   } catch (error: any) {
@@ -235,10 +285,21 @@ router.delete('/:id', async (req: Request, res: Response) => {
       });
     }
     
-    // TODO: Implement soft delete
-    // await db.update(duesRules)
-    //   .set({ isActive: false })
-    //   .where({ id, tenantId });
+    const result = await db
+      .update(duesRules)
+      .set({ 
+        isActive: false,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .returning();
+    
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Dues rule not found',
+      });
+    }
     
     res.json({
       success: true,
@@ -270,12 +331,45 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
       });
     }
     
-    // TODO: Implement duplication logic
-    // 1. Fetch existing rule
-    // 2. Create new rule with modified code/name
+    // Fetch existing rule
+    const existingRules = await db
+      .select()
+      .from(duesRules)
+      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, tenantId)))
+      .limit(1);
+    
+    const existingRule = existingRules[0];
+    
+    if (!existingRule) {
+      return res.status(404).json({
+        success: false,
+        error: 'Dues rule not found',
+      });
+    }
+    
+    // Create new rule with modified code/name
+    const duplicatedRule = await db.insert(duesRules).values({
+      tenantId,
+      ruleName: newRuleName || `${existingRule.ruleName} (Copy)`,
+      ruleCode: newRuleCode || `${existingRule.ruleCode}_COPY`,
+      description: existingRule.description,
+      calculationType: existingRule.calculationType,
+      percentageRate: existingRule.percentageRate,
+      baseField: existingRule.baseField,
+      flatAmount: existingRule.flatAmount,
+      hourlyRate: existingRule.hourlyRate,
+      hoursPerPeriod: existingRule.hoursPerPeriod,
+      tierStructure: existingRule.tierStructure,
+      customFormula: existingRule.customFormula,
+      billingFrequency: existingRule.billingFrequency,
+      effectiveDate: existingRule.effectiveDate,
+      endDate: existingRule.endDate,
+      createdBy: (req as any).user.id,
+    }).returning();
     
     res.status(201).json({
       success: true,
+      data: duplicatedRule[0],
       message: 'Dues rule duplicated successfully',
     });
   } catch (error: any) {

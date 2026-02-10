@@ -17,6 +17,7 @@ import {
 } from "@/lib/services/claim-workflow-fsm";
 import {
   claims,
+  claimUpdates,
   grievanceWorkflows,
   grievanceStages,
   grievanceTransitions,
@@ -31,7 +32,12 @@ import {
   type StageCondition,
   type StageAction,
 } from "@/db/schema";
+import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { getNotificationService } from "@/lib/services/notification-service";
+import { logger } from "@/lib/logger";
+import { generatePDF } from "@/lib/utils/pdf-generator";
+import { generateExcel } from "@/lib/utils/excel-generator";
+import DocumentStorageService from "@/lib/services/document-storage-service";
 import {
   sendGrievanceStageChangeNotification,
   sendGrievanceAssignedNotification,
@@ -119,16 +125,102 @@ function getStatusFromStageType(stageType: string): ClaimStatus {
 
 /**
  * Map user ID to role level for FSM validation
- * In production, this should query the user's actual role from database
+ * Queries the organizationMembers table for the user's actual role
  */
 async function getUserRole(userId: string, tenantId: string): Promise<string> {
-  // TODO: Replace with actual role lookup from database
-  // For now, assume system users have admin role
+  // System users have admin-level access
   if (userId === 'system') return 'system';
   
-  // Simple heuristic: check if user is in organization admins
-  // This should be replaced with proper role lookup
-  return 'steward'; // Default to steward for non-system users
+  try {
+    // Query the user's role from organizationMembers table
+    const result = await db
+      .select({ role: organizationMembers.role })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, tenantId),
+          eq(organizationMembers.status, 'active')
+        )
+      )
+      .limit(1);
+    
+    if (result.length > 0) {
+      return result[0].role;
+    }
+    
+    // Default to 'member' if no role found
+    return 'member';
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+    return 'member';
+  }
+}
+
+/**
+ * Check for unresolved critical signals on a claim
+ * Returns true if there are any critical signals that need attention
+ */
+async function checkForUnresolvedCriticalSignals(claimId: string): Promise<boolean> {
+  try {
+    // Query for recent signal recomputation updates
+    const recentSignalUpdates = await db
+      .select()
+      .from(claimUpdates)
+      .where(
+        and(
+          eq(claimUpdates.claimId, claimId),
+          eq(claimUpdates.updateType, 'signal_recompute')
+        )
+      )
+      .orderBy(desc(claimUpdates.createdAt))
+      .limit(1);
+
+    if (!recentSignalUpdates.length) {
+      return false; // No signal data available
+    }
+
+    const latestSignalData = recentSignalUpdates[0];
+    const metadata = latestSignalData.metadata as any;
+
+    // Check for critical signals in the metadata
+    if (metadata?.criticalCount && metadata.criticalCount > 0) {
+      logger.info(`Found ${metadata.criticalCount} unresolved critical signal(s) for claim ${claimId}`);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    logger.error(`Error checking for critical signals on claim ${claimId}:`, { error });
+    return false; // Don't block transitions on signal check errors
+  }
+}
+
+/**
+ * Check if a claim is overdue based on SLA deadlines
+ */
+async function checkClaimOverdue(claimId: string): Promise<boolean> {
+  try {
+    const now = new Date();
+    
+    // Query unmet deadlines for this claim
+    const overdueDeadlines = await db
+      .select({ id: grievanceDeadlines.id })
+      .from(grievanceDeadlines)
+      .where(
+        and(
+          eq(grievanceDeadlines.claimId, claimId),
+          isNull(grievanceDeadlines.isMet),
+          lte(grievanceDeadlines.deadlineDate, now.toISOString().split('T')[0])
+        )
+      )
+      .limit(1);
+    
+    return overdueDeadlines.length > 0;
+  } catch (error) {
+    console.error('Error checking claim overdue status:', error);
+    return false;
+  }
 }
 
 // ============================================================================
@@ -327,8 +419,11 @@ export async function transitionToStage(
     // Check if claim has required documentation
     const hasRequiredDocumentation = options.notes ? options.notes.length > 0 : false;
 
-    // TODO: Check for unresolved critical signals (integrate with LRO signals)
-    const hasUnresolvedCriticalSignals = false;
+    // Check for unresolved critical signals (integrate with LRO signals)
+    const hasUnresolvedCriticalSignals = await checkForUnresolvedCriticalSignals(claimId);
+
+    // Calculate if claim is overdue based on SLA deadlines
+    const isOverdue = await checkClaimOverdue(claimId);
 
     // Build FSM validation context
     const fsmContext: ClaimTransitionContext = {
@@ -341,7 +436,7 @@ export async function transitionToStage(
       statusChangedAt: currentTransition?.transitionedAt || claim.createdAt || new Date(),
       hasUnresolvedCriticalSignals,
       hasRequiredDocumentation,
-      isOverdue: false, // TODO: Calculate from SLA service
+      isOverdue,
       notes: options.notes,
     };
 
@@ -985,8 +1080,48 @@ async function autoAssignOfficer(
   tenantId: string,
   userId: string
 ): Promise<void> {
-  // TODO: Implement intelligent assignment (Week 2)
-  console.log(`Auto-assign officer for claim ${claimId} with role ${role}`);
+  try {
+    // Import the assignment engine
+    const { autoAssignGrievance } = await import('@/lib/case-assignment-engine');
+    
+    // Map criteria to AssignmentCriteria type
+    const assignmentCriteria = {
+      claimType: criteria.claimType,
+      priority: criteria.priority,
+      department: criteria.department,
+      location: criteria.location,
+      complexity: criteria.complexity,
+      estimatedHours: criteria.estimatedHours,
+      requiresLegal: criteria.requiresLegal,
+      requiresArbitration: criteria.requiresArbitration,
+    };
+    
+    // Attempt automatic assignment with intelligent matching
+    const result = await autoAssignGrievance(
+      claimId,
+      tenantId,
+      assignmentCriteria,
+      userId,
+      {
+        role: role as any,
+        forceAssignment: criteria.forceAssignment || false,
+        minScore: criteria.minScore || 0.5,
+      }
+    );
+    
+    if (result.success) {
+      logger.info(
+        `Auto-assigned claim ${claimId} to officer ${result.assignedTo} with role ${result.role}`
+      );
+    } else {
+      logger.warn(
+        `Failed to auto-assign claim ${claimId}: ${result.error}. Recommendations available: ${result.recommendations?.length || 0}`
+      );
+    }
+  } catch (error) {
+    logger.error(`Error in autoAssignOfficer for claim ${claimId}:`, { error });
+    throw error;
+  }
 }
 
 async function createActionDeadline(
@@ -1053,13 +1188,56 @@ async function generateActionDocument(
   try {
     const documentType = config.documentType || 'pdf';
     const templateType = config.template || 'generic';
+    const documentName = config.documentName || `claim-${claimId}-${Date.now()}.${documentType === 'excel' ? 'xlsx' : 'pdf'}`;
+    const payload = config.data || {
+      claimId,
+      template: templateType,
+      generatedAt: new Date().toISOString(),
+      generatedBy: userId,
+    };
     
     logger.info(`Generating ${documentType} document for claim ${claimId} using template ${templateType}`);
     
-    // TODO: Implement document generation using pdf-generator/excel-generator
-    // This would fetch claim data and generate a document based on the template
-    // For now, just log that we would generate it
-    logger.info(`Document generation triggered for claim ${claimId}`);
+    const fileBuffer = documentType === 'excel'
+      ? await generateExcel({
+          title: config.title || `Claim ${claimId} Document`,
+          data: Object.entries(payload).map(([field, value]) => ({ field, value })),
+          columns: [
+            { header: 'Field', key: 'field', width: 30 },
+            { header: 'Value', key: 'value', width: 50 },
+          ],
+          sheetName: config.sheetName || 'Claim Document',
+        })
+      : await generatePDF({
+          title: config.title || `Claim ${claimId} Document`,
+          data: payload,
+          template: config.template,
+          metadata: {
+            author: 'UnionEyes Workflow Automation',
+            subject: `Claim ${claimId} Document`,
+          },
+        });
+
+    const storageService = new DocumentStorageService();
+    const uploadResult = await storageService.uploadDocument({
+      organizationId: tenantId,
+      documentName,
+      documentBuffer: fileBuffer,
+      documentType: 'workflow_document',
+      contentType: documentType === 'excel'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'application/pdf',
+      metadata: {
+        claimId,
+        template: templateType,
+        generatedBy: userId,
+      },
+    });
+
+    logger.info(`Document generated and stored for claim ${claimId}`, {
+      url: uploadResult.url,
+      key: uploadResult.key,
+    });
   } catch (error) {
     logger.error(`Failed to generate document for claim ${claimId}`, { error });
   }

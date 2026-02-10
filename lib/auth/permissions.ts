@@ -5,6 +5,9 @@
 
 import { UserRole, Permission, ROLE_PERMISSIONS } from './roles';
 import type { PermissionCheckOptions, RoleCheckOptions } from './types';
+import { db } from '@/db';
+import { organizationMembers } from '@/db/schema/organization-members-schema';
+import { eq, and, isNull } from 'drizzle-orm';
 
 /**
  * Check if a role has a specific permission
@@ -52,15 +55,34 @@ export function getPermissionsForRoles(roles: UserRole[]): Permission[] {
  * This is a stub - actual implementation should query user's role from database
  */
 export async function checkUserPermission(options: PermissionCheckOptions): Promise<boolean> {
-  // TODO: Implement actual permission check by:
-  // 1. Fetch user's role from database
-  // 2. Check if role has required permission
-  // 3. Consider organization-specific overrides
-  console.warn(
-    'checkUserPermission is deprecated. Use withPermission() from lib/enterprise-role-middleware.ts instead. ' +
-    'This stub always returns false and should not be used in production.'
-  );
-  return false;
+  if (!options.organizationId) {
+    console.warn('checkUserPermission requires organizationId to resolve user role');
+    return false;
+  }
+
+  try {
+    const [member] = await db
+      .select({ role: organizationMembers.role })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, options.organizationId),
+          eq(organizationMembers.userId, options.userId),
+          isNull(organizationMembers.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (!member?.role) {
+      return false;
+    }
+
+    const mappedRole = mapOrganizationRoleToUserRole(member.role);
+    return roleHasPermission(mappedRole, options.permission);
+  } catch (error) {
+    console.warn('checkUserPermission failed', error);
+    return false;
+  }
 }
 
 /**
@@ -75,15 +97,48 @@ export async function checkUserPermission(options: PermissionCheckOptions): Prom
  * This is a stub - actual implementation should query user's role from database
  */
 export async function checkUserRole(options: RoleCheckOptions): Promise<boolean> {
-  // TODO: Implement actual role check by:
-  // 1. Fetch user's role from database
-  // 2. Check if user has any of the required roles
-  // 3. Consider organization-specific role assignments
-  console.warn(
-    'checkUserRole is deprecated. Use withEnhancedRoleAuth() from lib/enterprise-role-middleware.ts instead. ' +
-    'This stub always returns false and should not be used in production.'
-  );
-  return false;
+  if (!options.organizationId) {
+    console.warn('checkUserRole requires organizationId to resolve user role');
+    return false;
+  }
+
+  try {
+    const [member] = await db
+      .select({ role: organizationMembers.role })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.organizationId, options.organizationId),
+          eq(organizationMembers.userId, options.userId),
+          isNull(organizationMembers.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (!member?.role) {
+      return false;
+    }
+
+    const mappedRole = mapOrganizationRoleToUserRole(member.role);
+    const requiredRoles = Array.isArray(options.role) ? options.role : [options.role];
+    return requiredRoles.includes(mappedRole);
+  } catch (error) {
+    console.warn('checkUserRole failed', error);
+    return false;
+  }
+}
+
+function mapOrganizationRoleToUserRole(role: string): UserRole {
+  switch (role) {
+    case 'admin':
+      return UserRole.ADMIN;
+    case 'officer':
+      return UserRole.STAFF_REP;
+    case 'steward':
+      return UserRole.UNION_REP;
+    default:
+      return UserRole.MEMBER;
+  }
 }
 
 /**

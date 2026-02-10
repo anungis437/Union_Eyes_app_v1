@@ -55,6 +55,11 @@ export interface FilterCondition {
   logicalOperator?: 'AND' | 'OR';
 }
 
+export interface FilterGroup {
+  conditions: FilterCondition[];
+  logicalOperator: 'AND' | 'OR';
+}
+
 export interface SortRule {
   fieldId: string;
   direction: 'asc' | 'desc';
@@ -407,6 +412,9 @@ export class ReportExecutor {
 
   /**
    * Build WHERE/HAVING filter clause
+   * 
+   * SECURITY: Properly handles OR operators with parameterized queries
+   * to prevent SQL injection vulnerabilities.
    */
   private buildFilterClause(
     filters: FilterCondition[],
@@ -415,12 +423,15 @@ export class ReportExecutor {
     if (filters.length === 0) return null;
 
     const conditions: SQL[] = [];
+    let currentGroupConditions: SQL[] = [];
+    let currentGroupOperator: 'AND' | 'OR' = 'AND';
 
     for (let i = 0; i < filters.length; i++) {
       const filter = filters[i];
       const fieldName = filter.fieldName || filter.fieldId;
       let condition: SQL;
 
+      // Build individual condition with proper parameterization
       switch (filter.operator) {
         case 'eq':
           condition = sql`${sql.raw(fieldName)} = ${filter.value}`;
@@ -465,13 +476,39 @@ export class ReportExecutor {
           continue;
       }
 
-      conditions.push(condition);
+      // Handle logical operator transitions
+      const nextOperator = filter.logicalOperator || 'AND';
+      
+      if (i === 0) {
+        currentGroupOperator = nextOperator;
+        currentGroupConditions.push(condition);
+      } else if (nextOperator === currentGroupOperator) {
+        currentGroupConditions.push(condition);
+      } else {
+        // Operator changed - close current group and start new one
+        if (currentGroupConditions.length > 0) {
+          const groupSql = currentGroupOperator === 'OR'
+            ? sql.join(currentGroupConditions, sql` OR `)
+            : sql.join(currentGroupConditions, sql` AND `);
+          conditions.push(sql`(${groupSql})`);
+        }
+        currentGroupConditions = [condition];
+        currentGroupOperator = nextOperator;
+      }
+    }
+
+    // Add remaining group
+    if (currentGroupConditions.length > 0) {
+      const groupSql = currentGroupOperator === 'OR'
+        ? sql.join(currentGroupConditions, sql` OR `)
+        : sql.join(currentGroupConditions, sql` AND `);
+      conditions.push(currentGroupConditions.length === 1 ? currentGroupConditions[0] : sql`(${groupSql})`);
     }
 
     if (conditions.length === 0) return null;
 
-    // Combine conditions with AND/OR based on logical operators
-    return sql.join(conditions, sql` AND `); // TODO: Support OR operator
+    // Join all groups with AND (groups themselves may contain OR logic)
+    return conditions.length === 1 ? conditions[0] : sql.join(conditions, sql` AND `);
   }
 
   /**

@@ -3,6 +3,10 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { initializeConsoleWrapper } from './lib/console-wrapper';
+
+// Initialize console wrapper for production logging control
+initializeConsoleWrapper();
 
 Sentry.init({
   dsn: "https://3a27b790762b741291334c39f6e330bb@o4509395283542016.ingest.de.sentry.io/4510423943544912",

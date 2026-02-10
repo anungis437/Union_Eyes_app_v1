@@ -26,6 +26,7 @@ import { db } from '@/db';
 import { eq, and, desc, isNull } from 'drizzle-orm';
 import { emergencyDeclarations, breakGlassActivations } from '@/db/schema/force-majeure-schema';
 import { createHash, randomBytes } from 'crypto';
+import { logger } from '@/lib/logger';
 
 export type EmergencyType = 
   | 'strike'
@@ -140,12 +141,15 @@ export class BreakGlassService {
       //   data: { emergencyId, emergencyType, holderName: holder.name }
       // });
       
-      console.log(`[BREAK-GLASS] Notifying ${holder.role}: ${holder.name}`);
-      console.log(`  Emergency ID: ${emergencyId}, Type: ${emergencyType}`);
-      console.log(`  Action Required: Present key fragment if activation needed`);
+      logger.info('Break-glass key holder notified', { 
+        role: holder.role, 
+        name: holder.name,
+        emergencyId, 
+        emergencyType 
+      });
     }
     
-    console.log(`[BREAK-GLASS] All ${keyHolders.length} key holders notified`);
+    logger.info('All break-glass key holders notified', { count: keyHolders.length, emergencyId });
   }
 
   /**
@@ -174,11 +178,11 @@ export class BreakGlassService {
     
     // For demo, verify key fragment format
     if (!holder.keyFragment || holder.keyFragment.length < 32) {
-      console.error(`[BREAK-GLASS] Invalid key fragment for ${holder.role}`);
+      logger.error('Invalid break-glass key fragment', undefined, { role: holder.role });
       return false;
     }
 
-    console.log(`[BREAK-GLASS] Key holder verified: ${holder.role} - ${holder.name}`);
+    logger.info('Break-glass key holder verified', { role: holder.role, name: holder.name });
     return true;
   }
 
@@ -267,11 +271,12 @@ export class BreakGlassService {
     emergencyId: string,
     keyHolders: KeyHolderAuth[]
   ): Promise<void> {
-    console.log('[BREAK-GLASS] Activation logged for audit');
-    console.log(`Emergency ID: ${emergencyId}`);
-    console.log(`Key Holders Present: ${keyHolders.map(h => h.role).join(', ')}`);
-    console.log(`Activated At: ${new Date().toISOString()}`);
-    console.log(`Audit Deadline: ${this.AUDIT_DEADLINE_DAYS} days`);
+    logger.info('Break-glass activation logged for audit', {
+      emergencyId,
+      keyHoldersPresent: keyHolders.map(h => h.role),
+      activatedAt: new Date().toISOString(),
+      auditDeadlineDays: this.AUDIT_DEADLINE_DAYS
+    });
     
     // In production, write to immutable audit log table
     // await db.insert(auditLogs).values({
@@ -283,7 +288,7 @@ export class BreakGlassService {
     //   userAgent: request.userAgent
     // });
     
-    console.log('[BREAK-GLASS] Audit record created in immutable storage');
+    logger.info('Break-glass audit record created in immutable storage', { emergencyId });
   }
 
   /**
@@ -296,35 +301,33 @@ export class BreakGlassService {
   ): Promise<RecoveryStatus> {
     const startTime = Date.now();
 
-    console.log(`[RECOVERY] Starting 48-hour recovery drill`);
-    console.log(`Backup Source: ${backupLocation}`);
-    console.log(`Access Token: ${coldStorageAccess.substring(0, 20)}...`);
+    logger.info('Starting 48-hour recovery drill', { backupLocation });
 
     // Step 1: Download encrypted backup
-    console.log('[RECOVERY] Step 1/5: Downloading encrypted backup...');
+    logger.info('Recovery step 1/5: Downloading encrypted backup');
     await this.simulateDelay(5000); // 5 seconds
 
     // Step 2: Decrypt and restore database
-    console.log('[RECOVERY] Step 2/5: Decrypting and restoring database...');
+    logger.info('Recovery step 2/5: Decrypting and restoring database');
     await this.simulateDelay(10000); // 10 seconds
 
     // Step 3: Restore file storage
-    console.log('[RECOVERY] Step 3/5: Restoring file storage...');
+    logger.info('Recovery step 3/5: Restoring file storage');
     await this.simulateDelay(5000); // 5 seconds
 
     // Step 4: Verify data integrity
-    console.log('[RECOVERY] Step 4/5: Verifying data integrity...');
+    logger.info('Recovery step 4/5: Verifying data integrity');
     const dataLoss = 0; // No data loss in successful recovery
     await this.simulateDelay(3000); // 3 seconds
 
     // Step 5: Notify members
-    console.log('[RECOVERY] Step 5/5: Notifying members of recovery...');
+    logger.info('Recovery step 5/5: Notifying members of recovery');
     await this.simulateDelay(2000); // 2 seconds
 
     const endTime = Date.now();
     const recoveryTimeHours = (endTime - startTime) / (1000 * 60 * 60);
 
-    console.log(`[RECOVERY] Recovery complete in ${recoveryTimeHours.toFixed(2)} hours`);
+    logger.info('Recovery complete', { recoveryTimeHours: recoveryTimeHours.toFixed(2) });
 
     return {
       success: true,

@@ -10,6 +10,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { sendEmail } from '@/lib/email-service';
 
 // ============================================================================
 // Types
@@ -495,9 +496,17 @@ export class InvitationService {
         ),
       };
 
-      // TODO: Integrate with email service (SendGrid, Mailgun, etc.)
-      // For now, just log the email
-      console.log('Invitation email would be sent:', email);
+      const response = await sendEmail({
+        to: [{ email: invitation.email, name: invitation.email }],
+        subject: email.subject,
+        html: email.html,
+        text: email.text,
+      });
+
+      if (!response.success) {
+        console.error('Error sending invitation email:', response.error);
+        return false;
+      }
 
       return true;
     } catch (error) {

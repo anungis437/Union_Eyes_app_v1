@@ -7,6 +7,7 @@
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { logger } from './logger';
 
 export interface DatabaseHealthStatus {
   healthy: boolean;
@@ -89,7 +90,7 @@ async function performHealthCheck() {
       timestamp: row?.timestamp,
     };
   } catch (error) {
-    console.error('[DB Health] Connection test failed:', error);
+    logger.error('Database health check connection test failed', error);
     throw error;
   }
 }
@@ -106,31 +107,33 @@ export async function validateDatabaseConnection(
   maxRetries = 3,
   retryDelay = 2000
 ): Promise<boolean> {
-  console.log('[DB Validator] Starting database connection validation...');
+  logger.info('Starting database connection validation');
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    console.log(`[DB Validator] Attempt ${attempt}/${maxRetries}...`);
+    logger.info('Database validation attempt', { attempt, maxRetries });
     
     const health = await checkDatabaseHealth();
     
     if (health.healthy) {
-      console.log(`✅ Database connection validated (${health.responseTime}ms)`);
-      if (health.details?.version) {
-        console.log(`   Database: ${health.details.database}`);
-        console.log(`   Version: ${health.details.version}`);
-      }
+      logger.info('Database connection validated', { 
+        responseTime: health.responseTime,
+        hasDetails: !!health.details 
+      });
       return true;
     }
     
-    console.error(`❌ Database health check failed: ${health.error}`);
+    logger.error('Database health check failed', undefined, { 
+      attempt, 
+      error: health.error 
+    });
     
     if (attempt < maxRetries) {
-      console.log(`   Retrying in ${retryDelay}ms...`);
+      logger.info('Retrying database connection', { retryDelay });
       await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
   }
   
-  console.error('❌ Database validation failed after all retry attempts');
+  logger.error('Database validation failed after all retry attempts');
   return false;
 }
 
@@ -150,10 +153,10 @@ export async function testDatabaseQuery(): Promise<boolean> {
     // Handle both array and rows format
     const rows = Array.isArray(result) ? result : result.rows || [];
     const count = rows[0]?.count;
-    console.log(`✅ Database query test passed. Found ${count} tables in public schema.`);
+    logger.info('Database query test passed', { tableCount: count });
     return true;
   } catch (error) {
-    console.error('❌ Database query test failed:', error);
+    logger.error('Database query test failed', error);
     return false;
   }
 }
@@ -192,10 +195,12 @@ export async function validateDatabaseSchema(): Promise<{
     const missingTables = criticalTables.filter(table => !tables.includes(table));
     
     if (missingTables.length > 0) {
-      console.warn(`⚠️  Missing critical tables: ${missingTables.join(', ')}`);
-      console.warn('   Database migrations may not be up to date.');
+      logger.warn('Missing critical database tables', { 
+        missingTables,
+        message: 'Database migrations may not be up to date' 
+      });
     } else {
-      console.log(`✅ Database schema validation passed. Found ${tableCount} tables.`);
+      logger.info('Database schema validation passed', { tableCount });
     }
     
     return {
@@ -204,7 +209,7 @@ export async function validateDatabaseSchema(): Promise<{
       tableCount,
     };
   } catch (error) {
-    console.error('❌ Database schema validation failed:', error);
+    logger.error('Database schema validation failed', error);
     return {
       valid: false,
       missingTables: [],
@@ -221,7 +226,7 @@ export async function validateDatabaseSchema(): Promise<{
  * @returns Promise<boolean> - true if all checks pass
  */
 export async function runDatabaseStartupChecks(throwOnError = false): Promise<boolean> {
-  console.log('\n🔍 Running database startup validation...\n');
+  logger.info('Running database startup validation');
   
   // 1. Validate connection with retries
   const connectionValid = await validateDatabaseConnection(3, 2000);
@@ -242,11 +247,11 @@ export async function runDatabaseStartupChecks(throwOnError = false): Promise<bo
   // 3. Validate schema
   const schemaResult = await validateDatabaseSchema();
   if (!schemaResult.valid) {
-    console.warn('\n⚠️  Database schema validation warnings detected');
+    logger.warn('Database schema validation warnings detected');
     // Don't fail on schema warnings, just log them
   }
   
-  console.log('\n✅ All database startup checks passed\n');
+  logger.info('All database startup checks passed');
   return true;
 }
 

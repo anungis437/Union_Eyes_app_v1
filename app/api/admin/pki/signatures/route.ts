@@ -13,6 +13,7 @@ import { createWorkflow, startWorkflow } from '@/services/pki/workflow-engine';
 import type { WorkflowCreateParams } from '@/services/pki/workflow-engine';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { clerkClient } from '@clerk/nextjs/server';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -80,8 +81,8 @@ export const POST = async (request: NextRequest) => {
         );
       }
 
-      // TODO: Get user name from Clerk user metadata
-      const createdByName = 'Current User'; // Placeholder
+      const user = await clerkClient.users.getUser(userId);
+      const createdByName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
 
       // Create workflow
       const workflowParams: WorkflowCreateParams = {

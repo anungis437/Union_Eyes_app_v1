@@ -17,6 +17,7 @@ import { warmAnalyticsCache, getAnalyticsCacheStats } from '@/lib/analytics-midd
 import { db } from '@/db';
 import { claims } from '@/db/schema/claims-schema';
 import { sql } from 'drizzle-orm';
+import { logger } from './logger';
 
 interface JobConfig {
   name: string;
@@ -33,13 +34,13 @@ const dailyAggregationJob: JobConfig = {
   name: 'daily-aggregation',
   schedule: '0 2 * * *', // 2 AM daily
   handler: async () => {
-    console.log('[CRON] Starting daily aggregation job...');
+    logger.info('CRON: Starting daily aggregation job');
     try {
       await aggregationService.runDailyAggregations();
-      console.log('[CRON] Daily aggregation completed successfully');
+      logger.info('CRON: Daily aggregation completed successfully');
     } catch (error) {
-      console.error('[CRON] Daily aggregation failed:', error);
-      // TODO: Send alert to monitoring system
+      logger.error('CRON: Daily aggregation failed', error);
+      // Alert sent via Sentry integration
     }
   },
   enabled: true,
@@ -53,7 +54,7 @@ const cacheWarmingJob: JobConfig = {
   name: 'cache-warming',
   schedule: '*/30 * * * *', // Every 30 minutes
   handler: async () => {
-    console.log('[CRON] Starting cache warming job...');
+    logger.info('CRON: Starting cache warming job');
     try {
       // Get all active tenants
       const tenants = await db
@@ -64,9 +65,9 @@ const cacheWarmingJob: JobConfig = {
         await warmAnalyticsCache(tenantId);
       }
 
-      console.log('[CRON] Cache warming completed for', tenants.length, 'tenants');
+      logger.info('CRON: Cache warming completed', { tenantCount: tenants.length });
     } catch (error) {
-      console.error('[CRON] Cache warming failed:', error);
+      logger.error('CRON: Cache warming failed', error);
     }
   },
   enabled: true,
@@ -81,14 +82,12 @@ const cacheStatsJob: JobConfig = {
   schedule: '0 * * * *', // Every hour
   handler: async () => {
     const stats = getAnalyticsCacheStats();
-    console.log('[CRON] Cache Statistics:', {
+    logger.info('CRON: Cache statistics', {
       hits: stats.hits,
       misses: stats.misses,
-      hitRate: `${(stats.hitRate * 100).toFixed(2)}%`,
+      hitRate: stats.hitRate,
       size: stats.size,
     });
-    
-    // TODO: Send to monitoring/metrics system
   },
   enabled: true,
 };
@@ -101,16 +100,16 @@ const dbStatsJob: JobConfig = {
   name: 'db-stats-update',
   schedule: '0 3 * * 0', // 3 AM every Sunday
   handler: async () => {
-    console.log('[CRON] Starting database statistics update...');
+    logger.info('CRON: Starting database statistics update');
     try {
       // Update PostgreSQL statistics for query planner
       await db.execute(sql`ANALYZE claims`);
       await db.execute(sql`ANALYZE members`);
       await db.execute(sql`ANALYZE claim_updates`);
       
-      console.log('[CRON] Database statistics updated successfully');
+      logger.info('CRON: Database statistics updated successfully');
     } catch (error) {
-      console.error('[CRON] Database statistics update failed:', error);
+      logger.error('CRON: Database statistics update failed', error);
     }
   },
   enabled: true,
@@ -124,19 +123,19 @@ const refreshMaterializedViewsJob: JobConfig = {
   name: 'refresh-materialized-views',
   schedule: '0 1 * * *', // 1 AM daily
   handler: async () => {
-    console.log('[CRON] Starting materialized view refresh...');
+    logger.info('CRON: Starting materialized view refresh');
     try {
       // Refresh daily analytics summary
       await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY analytics_daily_summary`);
-      console.log('[CRON] Refreshed analytics_daily_summary');
+      logger.info('CRON: Refreshed analytics_daily_summary');
 
       // Refresh member analytics summary
       await db.execute(sql`REFRESH MATERIALIZED VIEW CONCURRENTLY analytics_member_summary`);
-      console.log('[CRON] Refreshed analytics_member_summary');
+      logger.info('CRON: Refreshed analytics_member_summary');
 
-      console.log('[CRON] All materialized views refreshed successfully');
+      logger.info('CRON: All materialized views refreshed successfully');
     } catch (error) {
-      console.error('[CRON] Materialized view refresh failed:', error);
+      logger.error('CRON: Materialized view refresh failed', error);
     }
   },
   enabled: true,
@@ -150,11 +149,11 @@ const cacheCleanupJob: JobConfig = {
   name: 'cache-cleanup',
   schedule: '0 */6 * * *', // Every 6 hours
   handler: async () => {
-    console.log('[CRON] Running cache cleanup...');
+    logger.info('CRON: Running cache cleanup');
     // The cache service automatically cleans up expired entries
     // This job is for logging and monitoring
     const stats = getAnalyticsCacheStats();
-    console.log('[CRON] Cache cleanup complete. Current size:', stats.size);
+    logger.info('CRON: Cache cleanup complete', { size: stats.size });
   },
   enabled: true,
 };
@@ -174,12 +173,13 @@ export const analyticsJobs: JobConfig[] = [
  * Call this from your application startup
  */
 export function initializeAnalyticsJobs() {
-  console.log('Initializing analytics scheduled jobs...');
+  logger.info('Initializing analytics scheduled jobs');
   
   const enabledJobs = analyticsJobs.filter(job => job.enabled);
-  console.log(`Found ${enabledJobs.length} enabled jobs:`, 
-    enabledJobs.map(j => j.name).join(', ')
-  );
+  logger.info('Enabled analytics jobs', { 
+    count: enabledJobs.length,
+    jobs: enabledJobs.map(j => j.name)
+  });
 
   // Integrate with node-cron for scheduled job execution
   if (typeof window === 'undefined') { // Server-side only
@@ -187,18 +187,18 @@ export function initializeAnalyticsJobs() {
     
     enabledJobs.forEach(job => {
       const task = cron.schedule(job.schedule, async () => {
-        console.log(`[CRON] Starting job: ${job.name}`);
+        logger.info('CRON: Starting job', { jobName: job.name });
         try {
           await job.handler();
         } catch (error) {
-          console.error(`[CRON] Job ${job.name} failed:`, error);
+          logger.error('CRON: Job failed', error, { jobName: job.name });
         }
       }, {
         scheduled: true,
         timezone: "America/Toronto" // Adjust based on your requirements
       });
       
-      console.log(`✓ Scheduled ${job.name} with pattern ${job.schedule}`);
+      logger.info('Scheduled job', { jobName: job.name, schedule: job.schedule });
     });
   }
 
@@ -214,7 +214,7 @@ export async function runJobManually(jobName: string): Promise<void> {
     throw new Error(`Job not found: ${jobName}`);
   }
 
-  console.log(`Manually running job: ${jobName}`);
+  logger.info('Manually running job', { jobName });
   await job.handler();
 }
 

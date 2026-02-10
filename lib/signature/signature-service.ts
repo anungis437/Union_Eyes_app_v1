@@ -9,6 +9,7 @@ import {
   signatureDocuments,
   documentSigners,
   signatureAuditTrail,
+  organizationMembers,
   type NewSignatureDocument,
   type NewDocumentSigner,
   type NewSignatureAuditTrail,
@@ -16,13 +17,33 @@ import {
 import SignatureProviderFactory, {
   type CreateEnvelopeRequest,
 } from "./providers";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, or, desc } from "drizzle-orm";
 import { createHash } from "crypto";
+import { NotificationService } from "@/lib/services/notification-service";
+import DocumentStorageService from "@/lib/services/document-storage-service";
 
 /**
  * Signature Document Service
  */
 export class SignatureService {
+  private static getContentType(fileName: string): string {
+    const extension = fileName.split(".").pop()?.toLowerCase();
+    switch (extension) {
+      case "pdf":
+        return "application/pdf";
+      case "doc":
+        return "application/msword";
+      case "docx":
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      case "png":
+        return "image/png";
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      default:
+        return "application/octet-stream";
+    }
+  }
   /**
    * Create and send a document for signature
    */
@@ -77,6 +98,19 @@ export class SignatureService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + (data.expirationDays || 30));
 
+    const storageService = new DocumentStorageService();
+    const uploadResult = await storageService.uploadDocument({
+      organizationId: data.tenantId,
+      documentName: data.fileName,
+      documentBuffer: data.file,
+      documentType: data.documentType,
+      contentType: this.getContentType(data.fileName),
+      metadata: {
+        envelopeId: envelope.envelopeId,
+        provider: provider.name,
+      },
+    });
+
     // Create document record
     const [document] = await db
       .insert(signatureDocuments)
@@ -85,7 +119,7 @@ export class SignatureService {
         title: data.title,
         description: data.description,
         documentType: data.documentType,
-        fileUrl: `/signatures/documents/${envelope.envelopeId}`, // TODO: Upload to storage
+        fileUrl: uploadResult.url,
         fileName: data.fileName,
         fileSizeBytes: data.file.length,
         fileHash,
@@ -146,6 +180,64 @@ export class SignatureService {
     });
 
     return document;
+  }
+
+  /**
+   * Verify user has access to document (SECURITY FIX: Prevent IDOR)
+   */
+  static async verifyDocumentAccess(
+    documentId: string,
+    userId: string
+  ): Promise<boolean> {
+    const document = await db.query.signatureDocuments.findFirst({
+      where: eq(signatureDocuments.id, documentId),
+      with: {
+        signers: true,
+      },
+    });
+
+    if (!document) {
+      return false;
+    }
+
+    // SECURITY: User has access if they:
+    // 1. Sent the document
+    // 2. Are a signer on the document
+    // 3. Share the same tenantId (organization member)
+    
+    const isSender = document.sentBy === userId;
+    const isSigner = document.signers.some((s) => s.userId === userId);
+    
+    // Verify tenant-based access (prevents IDOR attacks)
+    const isOrgMember = await this.checkOrgMembership(userId, document.tenantId);
+    
+    return isSender || isSigner || isOrgMember;
+  }
+
+  /**
+   * Check if user is a member of the organization
+   * 
+   * SECURITY: Prevents unauthorized access to documents by verifying
+   * that the user belongs to the same organization as the document.
+   */
+  private static async checkOrgMembership(
+    userId: string,
+    tenantId: string
+  ): Promise<boolean> {
+    try {
+      const membership = await db.query.organizationMembers.findFirst({
+        where: and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, tenantId),
+          eq(organizationMembers.status, 'active')
+        ),
+      });
+      
+      return !!membership;
+    } catch (error) {
+      console.error('[SignatureService] Error checking org membership:', error);
+      return false;
+    }
   }
 
   /**
@@ -212,9 +304,72 @@ export class SignatureService {
       }
 
       // Update signer statuses
-      // TODO: Match and update signer records
+      if (status.signers?.length) {
+        for (const signer of status.signers) {
+          const signerStatus = this.mapProviderSignerStatus(signer.status);
+          const updateData: Partial<typeof documentSigners.$inferInsert> = {
+            status: signerStatus,
+            signedAt: signer.signedAt,
+            viewedAt: signer.viewedAt,
+            declinedAt: signer.status === "declined" ? new Date() : undefined,
+            updatedAt: new Date(),
+          };
+
+          const updated = await db
+            .update(documentSigners)
+            .set(updateData)
+            .where(
+              and(
+                eq(documentSigners.documentId, documentId),
+                or(
+                  eq(documentSigners.providerSignerId, signer.signerId),
+                  eq(documentSigners.email, signer.email)
+                )
+              )
+            )
+            .returning();
+
+          if (updated.length > 0) {
+            await AuditTrailService.log({
+              documentId,
+              signerId: updated[0].id,
+              eventType: "signer_status_updated",
+              eventDescription: `Signer ${signer.email} status updated to ${signerStatus}`,
+              metadata: { signerStatus },
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error("Failed to sync document status:", error);
+    }
+  }
+
+  private static mapProviderSignerStatus(status: string):
+    | "pending"
+    | "sent"
+    | "delivered"
+    | "viewed"
+    | "signed"
+    | "declined"
+    | "authentication_failed"
+    | "expired" {
+    switch (status) {
+      case "sent":
+        return "sent";
+      case "delivered":
+        return "delivered";
+      case "viewed":
+        return "viewed";
+      case "signed":
+      case "completed":
+        return "signed";
+      case "declined":
+        return "declined";
+      case "voided":
+        return "expired";
+      default:
+        return "pending";
     }
   }
 
@@ -357,12 +512,36 @@ export class SignatureService {
       throw new Error("Signer not found");
     }
 
-    // TODO: Send email reminder
-    // await sendEmail({
-    //   to: signer.email,
-    //   subject: "Reminder: Document awaiting your signature",
-    //   body: ...
-    // });
+    // Send email reminder
+    try {
+      const notificationService = new NotificationService();
+      await notificationService.send({
+        organizationId: signer.tenantId,
+        recipientEmail: signer.email,
+        type: 'email',
+        priority: 'normal',
+        subject: 'Reminder: Document Awaiting Your Signature',
+        body: `This is a reminder that you have a document awaiting your signature.\n\nDocument ID: ${signer.documentId}\nSigner: ${signer.name}\n\nPlease sign the document at your earliest convenience.`,
+        htmlBody: `
+          <h2>Reminder: Document Awaiting Your Signature</h2>
+          <p>This is a friendly reminder that you have a document awaiting your signature.</p>
+          <ul>
+            <li><strong>Document ID:</strong> ${signer.documentId}</li>
+            <li><strong>Signer:</strong> ${signer.name}</li>
+          </ul>
+          <p>Please sign the document at your earliest convenience.</p>
+        `,
+        actionUrl: `/documents/${signer.documentId}/sign`,
+        actionLabel: 'Sign Now',
+        metadata: {
+          documentId: signer.documentId,
+          signerId,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to send signature reminder:', error);
+      // Continue with audit log even if notification fails
+    }
 
     await AuditTrailService.log({
       documentId: signer.documentId,

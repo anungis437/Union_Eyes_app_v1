@@ -1,3 +1,7 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "files.associations": {
+        "db/migrations/*.sql": "postgresql"
+    },
+    "mssql.validateScriptText": false
 }

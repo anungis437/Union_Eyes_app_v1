@@ -80,6 +80,35 @@ export async function createMember(member: InsertOrganizationMember): Promise<Se
 }
 
 /**
+ * Add an existing user to an organization
+ */
+export async function addOrganizationMember(params: {
+  organizationId: string;
+  userId: string;
+  role: "member" | "steward" | "officer" | "admin";
+  isPrimary?: boolean;
+  name: string;
+  email: string;
+  phone?: string | null;
+}): Promise<SelectOrganizationMember> {
+  const existing = await getMemberByUserId(params.organizationId, params.userId);
+  if (existing) {
+    return existing;
+  }
+
+  return createMember({
+    organizationId: params.organizationId,
+    userId: params.userId,
+    role: params.role,
+    status: "active",
+    isPrimary: params.isPrimary ?? false,
+    name: params.name,
+    email: params.email,
+    phone: params.phone ?? undefined,
+  });
+}
+
+/**
  * Update a member
  */
 export async function updateMember(

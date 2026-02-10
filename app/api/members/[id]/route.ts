@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { getMemberById } from '@/db/queries/organization-members-queries';
+import { getMemberById, updateMember as updateMemberRecord } from '@/db/queries/organization-members-queries';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -261,22 +262,46 @@ export const PATCH = async (
           );
         }
 
-        // TODO: Implement updateMember query function and call it here
-        // For now, return not implemented
+        const body = await request.json();
+        const updateSchema = z.object({
+          name: z.string().min(1).optional(),
+          email: z.string().email().optional(),
+          phone: z.string().optional(),
+          role: z.enum(['member', 'steward', 'officer', 'admin']).optional(),
+          status: z.enum(['active', 'inactive', 'on-leave']).optional(),
+          department: z.string().optional(),
+          position: z.string().optional(),
+          membershipNumber: z.string().optional(),
+          preferredContactMethod: z.string().optional(),
+        });
+
+        const validated = updateSchema.safeParse(body);
+        if (!validated.success) {
+          return NextResponse.json(
+            { success: false, error: 'Validation failed', details: validated.error.errors },
+            { status: 400 }
+          );
+        }
+
+        const updated = await updateMemberRecord(memberId, validated.data);
+        if (!updated) {
+          return NextResponse.json(
+            { success: false, error: 'Member not found or update failed' },
+            { status: 404 }
+          );
+        }
+
         logApiAuditEvent({
           timestamp: new Date().toISOString(),
           userId,
           endpoint: `/api/members/${memberId}`,
           method: 'PATCH',
-          eventType: 'validation_failed',
+          eventType: 'success',
           severity: 'low',
-          details: { reason: 'Not yet implemented', memberId },
+          details: { memberId, updatedFields: Object.keys(validated.data) },
         });
 
-        return NextResponse.json(
-          { success: false, error: 'Member update not yet implemented' },
-          { status: 501 }
-        );
+        return NextResponse.json({ success: true, data: updated });
       } catch (error) {
         logApiAuditEvent({
           timestamp: new Date().toISOString(),

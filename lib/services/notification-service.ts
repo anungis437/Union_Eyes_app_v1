@@ -8,6 +8,7 @@
 
 import { db } from "@/db";
 import { v4 as uuid } from "uuid";
+import { Resend } from "resend";
 import { logger } from "@/lib/logger";
 import { createAuditLog } from "./audit-service";
 import { 
@@ -106,6 +107,80 @@ export const notifications = pgTable('notifications', {
 // ============================================================================
 // EMAIL PROVIDER (SendGrid)
 // ============================================================================
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<style[^>]*>.*<\/style>/gm, '')
+    .replace(/<[^>]+>/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export class ResendEmailProvider implements NotificationProvider {
+  name = "resend";
+  private apiKey: string;
+  private client: Resend;
+
+  constructor(apiKey: string = process.env.RESEND_API_KEY || "") {
+    if (!apiKey) {
+      throw new Error("Resend API key not configured");
+    }
+    this.apiKey = apiKey;
+    this.client = new Resend(this.apiKey);
+  }
+
+  async send(payload: NotificationPayload): Promise<NotificationResponse> {
+    try {
+      if (!payload.recipientEmail) {
+        throw new Error("Recipient email not provided");
+      }
+
+      const fromEmail = process.env.EMAIL_FROM || 'noreply@unioneyes.app';
+      const replyTo = process.env.EMAIL_REPLY_TO;
+      const subject = payload.subject || 'Notification';
+      const htmlBody = payload.htmlBody || `<p>${payload.body}</p>`;
+
+      const { data, error } = await this.client.emails.send({
+        from: fromEmail,
+        to: [payload.recipientEmail],
+        subject,
+        html: htmlBody,
+        text: stripHtml(htmlBody),
+        replyTo,
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Resend send error');
+      }
+
+      const messageId = data?.id || `rs-${uuid()}`;
+
+      logger.info("Email notification sent via Resend", {
+        to: payload.recipientEmail,
+        subject,
+        messageId,
+        priority: payload.priority,
+      });
+
+      return {
+        id: messageId,
+        status: "sent",
+        sentAt: new Date(),
+      };
+    } catch (error) {
+      logger.error("Failed to send email notification via Resend", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        to: payload.recipientEmail,
+        subject: payload.subject,
+      });
+      return {
+        id: uuid(),
+        status: "failed",
+        failureReason: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+}
 
 export class SendGridEmailProvider implements NotificationProvider {
   name = "sendgrid";
@@ -411,14 +486,27 @@ export class NotificationService {
 
     // Initialize providers
     try {
-      const apiKey = process.env.SENDGRID_API_KEY;
-      if (!apiKey) {
-        throw new Error("SENDGRID_API_KEY environment variable not set");
+      const providerType = process.env.EMAIL_PROVIDER || (process.env.RESEND_API_KEY ? 'resend' : 'sendgrid');
+
+      if (providerType === 'resend') {
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) {
+          throw new Error("RESEND_API_KEY environment variable not set");
+        }
+        this.providers.set("email", new ResendEmailProvider(apiKey));
+        logger.info("Resend email provider initialized successfully");
+      } else if (providerType === 'sendgrid') {
+        const apiKey = process.env.SENDGRID_API_KEY;
+        if (!apiKey) {
+          throw new Error("SENDGRID_API_KEY environment variable not set");
+        }
+        this.providers.set("email", new SendGridEmailProvider(apiKey));
+        logger.info("SendGrid email provider initialized successfully");
+      } else {
+        throw new Error(`Unsupported EMAIL_PROVIDER: ${providerType}`);
       }
-      this.providers.set("email", new SendGridEmailProvider(apiKey));
-      logger.info("SendGrid email provider initialized successfully");
     } catch (error) {
-      logger.warn("SendGrid provider not available - email notifications will fail", { 
+      logger.warn("Email provider not available - email notifications will fail", {
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }

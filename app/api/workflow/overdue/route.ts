@@ -12,10 +12,10 @@ import { requireApiAuth } from '@/lib/api-auth-guard';
 export async function GET(request: NextRequest) {
   try {
     // Authentication guard with tenant isolation
-    const { userId, organizationId } = await requireApiAuth({ tenant: true });
-
-    // TODO: Add role-based access control (only stewards/admins should see this)
-    // Consider: await requireApiAuth({ tenant: true, roles: ['admin', 'steward'] })
+    const { userId, organizationId } = await requireApiAuth({
+      tenant: true,
+      roles: ['admin', 'steward'],
+    });
 
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type") || "overdue";

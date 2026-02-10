@@ -7,16 +7,14 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from "zod";
-import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
+import { withAdminAuth } from "@/lib/api-auth-guard";
 
 export const POST = async (request: NextRequest, { params }: { params: { action: string } }) => {
-  return withEnhancedRoleAuth(90, async (request, context) => {
+  return withAdminAuth(async (request, context) => {
   // Import job-queue functions only at runtime, not at module load time
     // This prevents bundling bullmq during build phase
     const { pauseQueue, resumeQueue, cleanCompletedJobs } = await import('@/lib/job-queue');
     try {
-      // TODO: Check if user is admin
-
       const { action } = params;
       const body = await request.json();
       const { queue } = body;

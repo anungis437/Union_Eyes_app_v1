@@ -9,6 +9,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db/db';
+import { deadlines } from '@/db/schema/deadlines-schema';
+import { and, eq } from 'drizzle-orm';
+import { sendOverdueClaimNotification } from '@/lib/claim-notifications';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,69 +24,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Implement once deadline field is added to claims schema
-    console.log('Overdue notifications cron triggered, but deadline tracking not yet implemented');
-
-    return NextResponse.json({
-      success: true,
-      message: 'Deadline tracking not yet implemented in claims schema',
-      total: 0,
-      sent: 0,
-      failed: 0,
-      claims: [],
-    });
-
-    /* IMPLEMENTATION PENDING - Requires deadline field in claims schema
-    
-    import { db } from '@/db/db';
-    import { claims } from '@/db/schema/claims-schema';
-    import { lt, and, notInArray } from 'drizzle-orm';
-    import { sendOverdueClaimNotification } from '@/lib/claim-notifications';
-    
-    // Get all overdue claims (deadline passed, not closed/rejected)
-    const now = new Date();
-    const overdueClaims = await db
-      .select({
-        claimId: claims.claimId,
-        claimType: claims.claimType,
-        status: claims.status,
-        deadline: claims.deadline,
-      })
-      .from(claims)
+    const overdueDeadlines = await db
+      .select({ claimId: deadlines.claimId })
+      .from(deadlines)
       .where(
         and(
-          lt(claims.deadline, now),
-          notInArray(claims.status, ['closed', 'rejected', 'resolved'])
+          eq(deadlines.status, 'pending'),
+          eq(deadlines.isOverdue, true)
         )
       );
 
-    // Send notifications for each overdue claim
+    const claimIds = Array.from(new Set(overdueDeadlines.map((d) => d.claimId)));
     const results = await Promise.allSettled(
-      overdueClaims.map((claim) =>
-        sendOverdueClaimNotification(claim.claimId)
-      )
+      claimIds.map((claimId) => sendOverdueClaimNotification(claimId))
     );
 
-    // Count successes and failures
-    const successes = results.filter((r) => r.status === 'fulfilled').length;
-    const failures = results.filter((r) => r.status === 'rejected').length;
-
-    console.log(
-      `Overdue notification job: ${successes} sent, ${failures} failed, ${overdueClaims.length} total`
-    );
+    const sent = results.filter((r) => r.status === 'fulfilled' && r.value.success).length;
+    const failed = results.filter((r) => r.status === 'rejected').length + (claimIds.length - sent);
 
     return NextResponse.json({
       success: true,
-      total: overdueClaims.length,
-      sent: successes,
-      failed: failures,
-      claims: overdueClaims.map((c) => ({
-        claimId: c.claimId,
-        claimType: c.claimType,
-        status: c.status,
-      })),
+      total: claimIds.length,
+      sent,
+      failed,
+      claims: claimIds.map((claimId) => ({ claimId })),
     });
-    */
   } catch (error) {
     console.error('Error in overdue notification cron:', error);
     return NextResponse.json(

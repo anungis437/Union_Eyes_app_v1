@@ -54,6 +54,7 @@ import {
   logPermissionCheck,
   type MemberRoleWithDetails,
 } from '@/db/queries/enhanced-rbac-queries';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // CLERK RE-EXPORTS
@@ -241,10 +242,8 @@ export const PUBLIC_API_ROUTES = new Set([
   
   // ========================================================================
   // DEV/TESTING ENDPOINTS
-  // Justification: Sentry integration testing
-  // WARNING: Should be disabled in production via feature flag
+  // Note: Sentry test endpoint removed for production security
   // ========================================================================
-  '/api/sentry-example-api',    // Sentry error testing (TODO: Remove in production)
 ]);
 
 /**
@@ -308,7 +307,7 @@ function verifyCronAuth(request: NextRequest): boolean {
   const expectedSecret = process.env.CRON_SECRET_KEY;
   
   if (!expectedSecret) {
-    console.error('[Auth] CRON_SECRET_KEY not configured');
+    logger.error('CRON_SECRET_KEY not configured', undefined, { context: 'Auth' });
     return false;
   }
   
@@ -353,8 +352,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       metadata: { ...publicMetadata },
     };
   } catch (error) {
-    console.error('[Auth] Error getting current user:', error);
-    return null;
+    // SECURITY FIX: Fail closed - authentication system errors should not result in anonymous access
+    // Log the error for monitoring but throw to reject the request
+    logger.error('CRITICAL: Authentication system error', error instanceof Error ? error : new Error(String(error)), { context: 'Auth' });
+    throw new Error('Authentication system unavailable');
   }
 }
 

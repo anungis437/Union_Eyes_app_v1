@@ -16,6 +16,16 @@ import { CalendarSidebar } from '@/components/calendar/CalendarSidebar';
 import { EventDialog } from '@/components/calendar/EventDialog';
 import { CalendarSyncManager } from '@/components/calendar/CalendarSyncManager';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Plus, Settings } from 'lucide-react';
 
 export default function CalendarPage() {
@@ -30,6 +40,12 @@ export default function CalendarPage() {
   const [syncManagerOpen, setSyncManagerOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [initialDate, setInitialDate] = useState<Date | undefined>();
+  const [createCalendarOpen, setCreateCalendarOpen] = useState(false);
+  const [isCreatingCalendar, setIsCreatingCalendar] = useState(false);
+  const [newCalendarName, setNewCalendarName] = useState('');
+  const [newCalendarDescription, setNewCalendarDescription] = useState('');
+  const [newCalendarColor, setNewCalendarColor] = useState('#2563eb');
+  const [newCalendarTimezone, setNewCalendarTimezone] = useState('America/New_York');
 
   useEffect(() => {
     fetchCalendars();
@@ -130,6 +146,48 @@ export default function CalendarPage() {
     );
   };
 
+  const handleCreateCalendar = async () => {
+    if (!newCalendarName.trim()) {
+      return;
+    }
+
+    setIsCreatingCalendar(true);
+
+    try {
+      const response = await fetch('/api/calendars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCalendarName.trim(),
+          description: newCalendarDescription.trim() || undefined,
+          color: newCalendarColor,
+          timezone: newCalendarTimezone,
+          isPersonal: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create calendar');
+      }
+
+      const data = await response.json();
+      await fetchCalendars();
+
+      if (data?.calendar?.id) {
+        setSelectedCalendarId(data.calendar.id);
+      }
+
+      setCreateCalendarOpen(false);
+      setNewCalendarName('');
+      setNewCalendarDescription('');
+    } catch (error) {
+      console.error('Error creating calendar:', error);
+      alert('Failed to create calendar');
+    } finally {
+      setIsCreatingCalendar(false);
+    }
+  };
+
   const handleSyncCalendar = async (calendarId: string) => {
     // Trigger sync via API
     try {
@@ -175,10 +233,7 @@ export default function CalendarPage() {
         selectedCalendarId={selectedCalendarId}
         onSelectCalendar={setSelectedCalendarId}
         onToggleVisibility={handleToggleCalendarVisibility}
-        onCreateCalendar={() => {
-          // TODO: Implement calendar creation dialog
-          alert('Calendar creation coming soon!');
-        }}
+        onCreateCalendar={() => setCreateCalendarOpen(true)}
         onSyncCalendar={handleSyncCalendar}
         onManageSync={() => setSyncManagerOpen(true)}
       />
@@ -213,7 +268,7 @@ export default function CalendarPage() {
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <p className="mb-4">{t('calendar.noCalendarSelected')}</p>
-              <Button onClick={() => alert('Create calendar coming soon!')}>
+              <Button onClick={() => setCreateCalendarOpen(true)}>
                 {t('calendar.createFirstCalendar')}
               </Button>
             </div>
@@ -236,6 +291,75 @@ export default function CalendarPage() {
         open={syncManagerOpen}
         onOpenChange={setSyncManagerOpen}
       />
+
+      <Dialog open={createCalendarOpen} onOpenChange={setCreateCalendarOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Calendar</DialogTitle>
+            <DialogDescription>
+              Create a new personal calendar to organize your events.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="calendar-name">Name</Label>
+              <Input
+                id="calendar-name"
+                value={newCalendarName}
+                onChange={(event) => setNewCalendarName(event.target.value)}
+                placeholder="e.g., Team Calendar"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="calendar-description">Description</Label>
+              <Input
+                id="calendar-description"
+                value={newCalendarDescription}
+                onChange={(event) => setNewCalendarDescription(event.target.value)}
+                placeholder="Optional description"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="calendar-color">Color</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="calendar-color"
+                  type="color"
+                  value={newCalendarColor}
+                  onChange={(event) => setNewCalendarColor(event.target.value)}
+                  className="h-10 w-16 p-1"
+                />
+                <Input
+                  value={newCalendarColor}
+                  onChange={(event) => setNewCalendarColor(event.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="calendar-timezone">Timezone</Label>
+              <Input
+                id="calendar-timezone"
+                value={newCalendarTimezone}
+                onChange={(event) => setNewCalendarTimezone(event.target.value)}
+                placeholder="America/New_York"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateCalendarOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCalendar} disabled={!newCalendarName.trim() || isCreatingCalendar}>
+              {isCreatingCalendar ? 'Creating...' : 'Create Calendar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

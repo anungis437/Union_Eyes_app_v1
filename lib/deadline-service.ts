@@ -37,6 +37,7 @@ import {
   type DeadlineExtension,
   type DeadlineAlert,
 } from '@/db/queries/deadline-queries';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // DEADLINE CREATION
@@ -53,7 +54,7 @@ export async function initializeClaimDeadlines(
   filingDate: Date,
   createdBy: string
 ): Promise<ClaimDeadline[]> {
-  console.log(`Initializing deadlines for claim ${claimId}`);
+  logger.info('Initializing claim deadlines', { claimId });
   
   try {
     const deadlines = await autoCreateClaimDeadlines(
@@ -65,10 +66,10 @@ export async function initializeClaimDeadlines(
       createdBy
     );
     
-    console.log(`Created ${deadlines.length} deadlines for claim ${claimId}`);
+    logger.info('Claim deadlines created', { claimId, count: deadlines.length });
     return deadlines;
   } catch (error) {
-    console.error(`Failed to initialize deadlines for claim ${claimId}:`, error);
+    logger.error('Failed to initialize claim deadlines', error instanceof Error ? error : new Error(String(error)), { claimId });
     throw error;
   }
 }
@@ -105,12 +106,12 @@ export async function updateDeadlineStatuses(): Promise<{
   markedOverdue: number;
   alertsGenerated: number;
 }> {
-  console.log('Running deadline status update...');
+  logger.info('Running deadline status update');
   
   try {
     // Mark overdue deadlines
     const markedOverdue = await markOverdueDeadlines();
-    console.log(`Marked ${markedOverdue} deadlines as overdue`);
+    logger.info('Deadlines marked as overdue', { count: markedOverdue });
     
     // This would trigger the alert generation
     // For now, return count
@@ -119,7 +120,7 @@ export async function updateDeadlineStatuses(): Promise<{
       alertsGenerated: 0, // Will be handled by separate job
     };
   } catch (error) {
-    console.error('Failed to update deadline statuses:', error);
+    logger.error('Failed to update deadline statuses', error instanceof Error ? error : new Error(String(error)));
     throw error;
   }
 }
@@ -155,14 +156,14 @@ export async function getMemberUpcomingDeadlines(
  * Run this as a scheduled job every hour
  */
 export async function generateDeadlineAlerts(tenantId: string): Promise<number> {
-  console.log(`Generating deadline alerts for tenant ${tenantId}...`);
+  logger.info('Generating deadline alerts', { tenantId });
   
   try {
     const alertCount = await generateUpcomingDeadlineAlerts(tenantId);
-    console.log(`Generated ${alertCount} alerts`);
+    logger.info('Deadline alerts generated', { tenantId, count: alertCount });
     return alertCount;
   } catch (error) {
-    console.error('Failed to generate deadline alerts:', error);
+    logger.error('Failed to generate deadline alerts', error instanceof Error ? error : new Error(String(error)), { tenantId });
     throw error;
   }
 }
@@ -175,18 +176,18 @@ export async function sendDailyDeadlineDigest(
   memberId: string,
   tenantId: string
 ): Promise<void> {
-  console.log(`Sending daily digest to member ${memberId}...`);
+  logger.info('Sending daily deadline digest', { memberId, tenantId });
   
   try {
     const summary = await getMemberDeadlineSummary(memberId, tenantId);
     
     if (summary.overdue_count > 0 || summary.due_soon_count > 0) {
       // Send email digest
-      console.log('Digest would be sent via email');
+      logger.info('Daily digest ready for sending', { memberId, overdueCount: summary.overdue_count, dueSoonCount: summary.due_soon_count });
       // Implementation: Send via email service
     }
   } catch (error) {
-    console.error('Failed to send daily digest:', error);
+    logger.error('Failed to send daily digest', error instanceof Error ? error : new Error(String(error)), { memberId, tenantId });
     throw error;
   }
 }
@@ -232,7 +233,7 @@ export async function requestExtension(
   daysRequested: number,
   reason: string
 ): Promise<DeadlineExtension> {
-  console.log(`Extension requested for deadline ${deadlineId}: ${daysRequested} days`);
+  logger.info('Extension requested for deadline', { deadlineId, daysRequested, requestedBy });
   
   // Check if deadline allows extensions
   const deadlines = await getClaimDeadlines(deadlineId);
@@ -259,12 +260,12 @@ export async function approveExtension(
   daysGranted?: number,
   notes?: string
 ): Promise<void> {
-  console.log(`Approving extension ${extensionId}`);
+  logger.info('Approving extension', { extensionId, approvedBy });
   
   await approveDeadlineExtension(extensionId, approvedBy, daysGranted, notes);
   
   // Send notification to requester
-  console.log('Extension approved notification would be sent');
+  logger.info('Extension approved', { extensionId });
 }
 
 /**
@@ -275,12 +276,12 @@ export async function denyExtension(
   deniedBy: string,
   reason?: string
 ): Promise<void> {
-  console.log(`Denying extension ${extensionId}`);
+  logger.info('Denying extension', { extensionId, deniedBy });
   
   await denyDeadlineExtension(extensionId, deniedBy, reason);
   
   // Send notification to requester
-  console.log('Extension denied notification would be sent');
+  logger.info('Extension denied', { extensionId });
 }
 
 /**
@@ -299,7 +300,7 @@ export async function getPendingExtensions(tenantId: string): Promise<DeadlineEx
  * Run this as a scheduled job every 15 minutes
  */
 export async function escalateOverdueDeadlines(tenantId: string): Promise<number> {
-  console.log(`Checking for deadlines to escalate in tenant ${tenantId}...`);
+  logger.info('Checking for deadlines to escalate', { tenantId });
   
   try {
     const overdueDeadlines = await getOverdueDeadlines(tenantId);
@@ -308,14 +309,14 @@ export async function escalateOverdueDeadlines(tenantId: string): Promise<number
     for (const deadline of overdueDeadlines) {
       // Check if enough time has passed since last escalation
       // Implement escalation logic here
-      console.log(`Would escalate deadline ${deadline.id}`);
+      logger.info('Escalating deadline', { deadlineId: deadline.id });
       escalatedCount++;
     }
     
-    console.log(`Escalated ${escalatedCount} deadlines`);
+    logger.info('Deadlines escalated', { tenantId, count: escalatedCount });
     return escalatedCount;
   } catch (error) {
-    console.error('Failed to escalate deadlines:', error);
+    logger.error('Failed to escalate deadlines', error instanceof Error ? error : new Error(String(error)), { tenantId });
     throw error;
   }
 }

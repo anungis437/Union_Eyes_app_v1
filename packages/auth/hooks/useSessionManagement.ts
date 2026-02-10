@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { SessionManagement, type SessionInfo } from '../services/sessionManagement';
 
 // Get Supabase config (similar pattern to packages/supabase/client.ts)
@@ -60,6 +61,12 @@ export interface UseSessionManagementReturn {
   
   /** Refresh sessions manually */
   refresh: () => Promise<void>;
+
+    const supabase = useMemo(() => {
+      const { url, anonKey } = getSupabaseConfig();
+      if (!url || !anonKey) return null;
+      return createClient(url, anonKey);
+    }, []);
   
   /** Terminate a specific session */
   terminateSession: (sessionId: string) => Promise<boolean>;
@@ -237,29 +244,28 @@ export function useSessionManagement(
   }, [refreshInterval, fetchSessions]);
 
   /**
-   * Real-time subscriptions (TODO: implement with Supabase realtime)
+   * Real-time subscriptions
    */
   useEffect(() => {
     if (!enableRealtime) return;
+    if (!supabase) return;
 
-    // TODO: Implement Supabase realtime subscription
-    // const subscription = supabase
-    //   .channel('user_sessions')
-    //   .on('postgres_changes', {
-    //     event: '*',
-    //     schema: 'public',
-    //     table: 'user_sessions',
-    //     filter: userId ? `user_id=eq.${userId}` : undefined
-    //   }, payload => {
-    //     // Handle real-time updates
-    //     fetchSessions();
-    //   })
-    //   .subscribe();
+    const channel = supabase
+      .channel('user_sessions')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_sessions',
+        filter: userId ? `user_id=eq.${userId}` : undefined,
+      }, () => {
+        fetchSessions();
+      })
+      .subscribe();
 
-    // return () => {
-    //   subscription.unsubscribe();
-    // };
-  }, [enableRealtime, userId, fetchSessions]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [enableRealtime, supabase, userId, fetchSessions]);
 
   /**
    * Calculate active session count

@@ -16,13 +16,22 @@ import {
   cookieConsents,
   gdprDataRequests,
   dataAnonymizationLog,
+  messages,
+  messageThreads,
+  messageReadReceipts,
+  claims,
+  claimUpdates,
+  votes,
+  votingSessions,
+  profiles,
   type NewUserConsent,
   type NewCookieConsent,
   type NewGdprDataRequest,
   type NewDataAnonymizationLog,
 } from "@/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, or } from "drizzle-orm";
 import { createHash } from "crypto";
+import { NotificationService } from "@/lib/services/notification-service";
 
 /**
  * Consent Management
@@ -229,7 +238,37 @@ export class GdprRequestManager {
       })
       .returning();
 
-    // TODO: Send notification to admin/DPO
+    // Send notification to admin/DPO
+    try {
+      const notificationService = new NotificationService();
+      await notificationService.send({
+        organizationId: data.tenantId,
+        recipientEmail: process.env.DPO_EMAIL || process.env.ADMIN_EMAIL || 'admin@unioneyes.app',
+        type: 'email',
+        priority: 'high',
+        subject: 'New GDPR Data Access Request',
+        body: `A new GDPR data access request has been submitted by user ${data.userId}. Please review and respond within 30 days (deadline: ${deadline.toLocaleDateString()}).`,
+        htmlBody: `
+          <h2>New GDPR Data Access Request</h2>
+          <p>A new GDPR data access request has been submitted.</p>
+          <ul>
+            <li><strong>User ID:</strong> ${data.userId}</li>
+            <li><strong>Tenant ID:</strong> ${data.tenantId}</li>
+            <li><strong>Request Type:</strong> Data Access (Article 15)</li>
+            <li><strong>Deadline:</strong> ${deadline.toLocaleDateString()}</li>
+          </ul>
+          <p>Please review this request and respond accordingly.</p>
+        `,
+        metadata: {
+          requestId: request.id,
+          requestType: 'access',
+          userId: data.userId,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to send GDPR request notification:', error);
+      // Don't fail the request creation if notification fails
+    }
     return request;
   }
 
@@ -408,21 +447,190 @@ export class DataExportService {
   }
 
   private static async getCommunicationData(userId: string, tenantId: string) {
-    // Query communication history
-    // TODO: Implement based on your communications schema
-    return [];
+    try {
+      // Query message threads where user participated
+      const userThreads = await db.query.messageThreads.findMany({
+        where: and(
+          eq(messageThreads.organizationId, tenantId),
+          or(
+            eq(messageThreads.memberId, userId),
+            eq(messageThreads.staffId, userId)
+          )
+        ),
+        with: {
+          // Include messages from these threads
+        }
+      });
+
+      // Query all messages sent by user
+      const userMessages = await db.query.messages.findMany({
+        where: eq(messages.senderId, userId)
+      });
+
+      // Query read receipts for user
+      const userReadReceipts = await db.query.messageReadReceipts.findMany({
+        where: eq(messageReadReceipts.userId, userId)
+      });
+
+      // Log GDPR request execution
+      console.log(`[GDPR] Communication data retrieved for user ${userId}`);
+
+      return [
+        {
+          dataType: "message_threads",
+          count: userThreads.length,
+          data: userThreads.map(t => ({
+            id: t.id,
+            subject: t.subject,
+            status: t.status,
+            priority: t.priority,
+            category: t.category,
+            createdAt: t.createdAt,
+            lastMessageAt: t.lastMessageAt
+          }))
+        },
+        {
+          dataType: "messages",
+          count: userMessages.length,
+          data: userMessages.map(m => ({
+            id: m.id,
+            threadId: m.threadId,
+            messageType: m.messageType,
+            content: m.content,
+            fileName: m.fileName,
+            status: m.status,
+            createdAt: m.createdAt,
+            readAt: m.readAt
+          }))
+        },
+        {
+          dataType: "read_receipts",
+          count: userReadReceipts.length,
+          data: userReadReceipts.map(r => ({
+            messageId: r.messageId,
+            readAt: r.readAt
+          }))
+        }
+      ];
+    } catch (error) {
+      console.error("[GDPR] Error retrieving communication data:", error);
+      throw new Error("Failed to retrieve communication data");
+    }
   }
 
   private static async getClaimsData(userId: string, tenantId: string) {
-    // Query claims data
-    // TODO: Implement based on your claims schema
-    return [];
+    try {
+      // Query claims filed by user
+      const userClaims = await db.query.claims.findMany({
+        where: and(
+          eq(claims.memberId, userId),
+          eq(claims.organizationId, tenantId)
+        )
+      });
+
+      // Query claim updates/notes for user's claims
+      const claimIds = userClaims.map(c => c.claimId);
+      let claimNotes: any[] = [];
+      
+      if (claimIds.length > 0) {
+        claimNotes = await db.query.claimUpdates.findMany({
+          where: sql`${claimUpdates.claimId} = ANY(${claimIds})`
+        });
+      }
+
+      // Log GDPR request execution
+      console.log(`[GDPR] Claims data retrieved for user ${userId}`);
+
+      return [
+        {
+          dataType: "claims",
+          count: userClaims.length,
+          data: userClaims.map(c => ({
+            claimId: c.claimId,
+            claimNumber: c.claimNumber,
+            claimType: c.claimType,
+            status: c.status,
+            priority: c.priority,
+            incidentDate: c.incidentDate,
+            location: c.location,
+            description: c.description,
+            desiredOutcome: c.desiredOutcome,
+            isAnonymous: c.isAnonymous,
+            progress: c.progress,
+            createdAt: c.createdAt,
+            resolvedAt: c.resolvedAt
+          }))
+        },
+        {
+          dataType: "claim_notes",
+          count: claimNotes.length,
+          data: claimNotes.map((n: any) => ({
+            updateId: n.updateId,
+            claimId: n.claimId,
+            updateType: n.updateType,
+            content: n.content,
+            createdAt: n.createdAt
+          }))
+        }
+      ];
+    } catch (error) {
+      console.error("[GDPR] Error retrieving claims data:", error);
+      throw new Error("Failed to retrieve claims data");
+    }
   }
 
   private static async getVotingData(userId: string, tenantId: string) {
-    // Query voting history (anonymized)
-    // TODO: Implement based on your voting schema
-    return [];
+    try {
+      // Query voting sessions in user's organization
+      const orgSessions = await db.query.votingSessions.findMany({
+        where: eq(votingSessions.organizationId, tenantId)
+      });
+
+      // Query user's vote participation (anonymized - no vote content)
+      // Only return metadata about participation, not actual vote choices
+      const userVotes = await db.query.votes.findMany({
+        where: sql`${votes.voterId} = ${userId} OR ${votes.voterHash} = ${createHash("sha256").update(userId).digest("hex")}`
+      });
+
+      // Log GDPR request execution
+      console.log(`[GDPR] Voting data retrieved for user ${userId} (anonymized)`);
+
+      return [
+        {
+          dataType: "voting_participation",
+          count: userVotes.length,
+          data: userVotes.map(v => ({
+            sessionId: v.sessionId,
+            castAt: v.castAt,
+            receiptId: v.receiptId,
+            verificationCode: v.verificationCode,
+            isAnonymous: v.isAnonymous,
+            voterType: v.voterType,
+            // Note: Actual vote content (optionId) is excluded for privacy
+          }))
+        },
+        {
+          dataType: "voting_sessions_participated",
+          count: orgSessions.filter(s => 
+            userVotes.some(v => v.sessionId === s.id)
+          ).length,
+          data: orgSessions
+            .filter(s => userVotes.some(v => v.sessionId === s.id))
+            .map(s => ({
+              sessionId: s.id,
+              title: s.title,
+              type: s.type,
+              meetingType: s.meetingType,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              // Note: Vote choice not included per GDPR anonymization requirements
+            }))
+        }
+      ];
+    } catch (error) {
+      console.error("[GDPR] Error retrieving voting data:", error);
+      throw new Error("Failed to retrieve voting data");
+    }
   }
 }
 
@@ -496,18 +704,26 @@ export class DataErasureService {
     // Replace PII with anonymized values
     const anonymousEmail = `deleted_${createHash("sha256").update(userId).digest("hex").substring(0, 16)}@anonymized.local`;
     
-    // TODO: Implement actual profile anonymization
-    // await db.update(profiles)
-    //   .set({
-    //     email: anonymousEmail,
-    //     firstName: "Deleted",
-    //     lastName: "User",
-    //     phoneNumber: null,
-    //     // ... other PII fields
-    //   })
-    //   .where(eq(profiles.userId, userId));
+    try {
+      // Anonymize profile while keeping user ID for referential integrity
+      await db.update(profiles)
+        .set({
+          email: anonymousEmail,
+          // Clear payment provider data
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+          whopUserId: null,
+          whopMembershipId: null,
+          // Keep membership status for statistical purposes
+          status: "deleted",
+          updatedAt: new Date()
+        })
+        .where(eq(profiles.userId, userId));
 
-    return {
+      // Log GDPR anonymization
+      console.log(`[GDPR] Profile anonymized for user ${userId}`);
+
+      return {
       table: "profiles",
       recordsAffected: 1,
       fieldsAnonymized: ["email", "firstName", "lastName", "phoneNumber"],

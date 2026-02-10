@@ -12,9 +12,10 @@
  */
 
 import { db } from '@/db/db';
-import { claimUpdates, grievanceTransitions, claims } from '@/db/schema';
+import { claimUpdates, grievanceTransitions, claims, organizationMembers, users } from '@/db/schema';
 import { eq, and, inArray, desc } from 'drizzle-orm';
 import { detectSignals, type CaseForSignals } from './lro-signals';
+import { NotificationService } from '@/lib/services/notification-service';
 
 export type VisibilityScope = 'member' | 'staff' | 'admin' | 'system';
 
@@ -279,11 +280,20 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
     type: mapUpdateTypeToTimelineType(u.updateType),
   }));
 
+  // Fetch member name from organizationMembers table
+  const memberResult = await db
+    .select({ name: organizationMembers.name })
+    .from(organizationMembers)
+    .where(eq(organizationMembers.userId, claimData.memberId))
+    .limit(1);
+  
+  const memberName = memberResult[0]?.name || 'Member';
+
   const caseForSignals: CaseForSignals = {
     id: claimData.claimId,
     title: claimData.description || 'Untitled',
     memberId: claimData.memberId,
-    memberName: 'Member', // TODO: Fetch from member table
+    memberName,
     currentState: claimData.status as any, // Map claim status to case state
     priority: (claimData.priority as any) || 'medium',
     createdAt: claimData.createdAt!,
@@ -305,20 +315,73 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
     // Send notifications for critical signals
     const criticalSignals = signals.filter(s => s.severity === 'critical');
     if (criticalSignals.length > 0) {
-      // TODO: Send notification to assigned officer
       console.log(`[PR #13] ⚠️  ${criticalSignals.length} CRITICAL signals detected!`);
+      
+      // Send notification to assigned officer
+      if (claimData.assignedTo) {
+        try {
+          const assignedOfficer = await db.query.users.findFirst({
+            where: eq(users.id, claimData.assignedTo),
+          });
+          
+          if (assignedOfficer?.email) {
+            const notificationService = new NotificationService();
+            await notificationService.send({
+              organizationId: claimData.tenantId || claimData.organizationId,
+              recipientId: claimData.assignedTo,
+              recipientEmail: assignedOfficer.email,
+              type: 'email',
+              priority: 'urgent',
+              subject: `⚠️ CRITICAL Signals Detected - Case ${claimId}`,
+              body: `${criticalSignals.length} critical signals have been detected for case ${claimId}:\n\n${criticalSignals.map(s => `- ${s.title}`).join('\n')}\n\nPlease review this case immediately.`,
+              htmlBody: `
+                <h2>⚠️ CRITICAL Signals Detected</h2>
+                <p><strong>Case ID:</strong> ${claimId}</p>
+                <p>${criticalSignals.length} critical signals have been detected:</p>
+                <ul>
+                  ${criticalSignals.map(s => `<li><strong>${s.title}</strong></li>`).join('')}
+                </ul>
+                <p><strong>Please review this case immediately.</strong></p>
+              `,
+              metadata: {
+                claimId,
+                signalCount: criticalSignals.length,
+                signalTitles: criticalSignals.map(s => s.title),
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send critical signal notification:', error);
+        }
+      }
     }
   } else {
     console.log(`[PR #13] No signals detected for case ${claimId} (all clear)`);
   }
 
-  // TODO: Store signals in database with lastComputedAt timestamp
-  // Example:
-  // await db.insert(caseSignals).values({
-  //   caseId: claimId,
-  //   signals: signals,
-  //   lastComputedAt: new Date(),
-  // });
+  // Store signals in database with lastComputedAt timestamp
+  try {
+    // Store signals as JSON metadata in claim_updates table
+    await db.insert(claimUpdates).values({
+      organizationId: claimData.organizationId,
+      claimId,
+      updateType: 'signal_recompute',
+      updateText: `Recomputed ${signals.length} signal(s)`,
+      createdBy: 'system',
+      visibilityScope: 'admin',
+      metadata: {
+        signals,
+        lastComputedAt: new Date().toISOString(),
+        criticalCount: signals.filter(s => s.severity === 'critical').length,
+        urgentCount: signals.filter(s => s.severity === 'urgent').length,
+        warningCount: signals.filter(s => s.severity === 'warning').length,
+      },
+    });
+    
+    console.log(`[PR #13] ✅ Stored ${signals.length} signals for case ${claimId}`);
+  } catch (error) {
+    console.error(`[PR #13] ❌ Failed to store signals for case ${claimId}:`, error);
+  }
 }
 
 /**

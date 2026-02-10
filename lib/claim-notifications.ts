@@ -11,10 +11,11 @@ import { render } from '@react-email/render';
 import { ClaimStatusNotificationEmail } from './email-templates';
 import { db } from '../db/db';
 import { claims } from '../db/schema/claims-schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { ClaimStatus } from './workflow-engine';
 import * as React from 'react';
 import { clerkClient } from '@clerk/nextjs/server';
+import { deadlines } from '../db/schema/deadlines-schema';
 
 interface ClaimNotificationData {
   claimId: string;
@@ -226,11 +227,103 @@ function getEmailSubject(
 export async function sendOverdueClaimNotification(
   claimId: string
 ): Promise<{ success: boolean; error?: string }> {
-  // TODO: Implement once deadline field is added to claims schema
-  return { 
-    success: false, 
-    error: 'Deadline tracking not yet implemented in schema' 
-  };
+  try {
+    const [claim] = await db
+      .select({
+        claimId: claims.claimId,
+        claimType: claims.claimType,
+        description: claims.description,
+        memberId: claims.memberId,
+        assignedTo: claims.assignedTo,
+        tenantId: claims.organizationId,
+      })
+      .from(claims)
+      .where(eq(claims.claimId, claimId))
+      .limit(1);
+
+    if (!claim) {
+      return { success: false, error: 'Claim not found' };
+    }
+
+    const overdueDeadlines = await db
+      .select({
+        deadlineName: deadlines.deadlineName,
+        dueDate: deadlines.dueDate,
+        status: deadlines.status,
+        priority: deadlines.priority,
+      })
+      .from(deadlines)
+      .where(
+        and(
+          eq(deadlines.claimId, claimId),
+          eq(deadlines.status, 'pending'),
+          eq(deadlines.isOverdue, true)
+        )
+      );
+
+    if (overdueDeadlines.length === 0) {
+      return { success: false, error: 'No overdue deadlines found' };
+    }
+
+    const member = await clerkClient.users.getUser(claim.memberId);
+    const memberEmail = member?.emailAddresses?.[0]?.emailAddress;
+    if (!memberEmail) {
+      return { success: false, error: 'Member email not found' };
+    }
+    const memberName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Member';
+
+    let assignedStewardEmail: string | undefined;
+    let assignedStewardName: string | undefined;
+    if (claim.assignedTo) {
+      try {
+        const steward = await clerkClient.users.getUser(claim.assignedTo);
+        if (steward?.emailAddresses?.[0]?.emailAddress) {
+          assignedStewardEmail = steward.emailAddresses[0].emailAddress;
+          assignedStewardName = `${steward.firstName || ''} ${steward.lastName || ''}`.trim() || 'Steward';
+        }
+      } catch (error) {
+        console.error('Failed to fetch assigned steward:', error);
+      }
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const claimUrl = `${baseUrl}/dashboard/claims/${claimId}`;
+
+    const recipients: EmailRecipient[] = [
+      { email: memberEmail, name: memberName },
+    ];
+    if (assignedStewardEmail && assignedStewardName) {
+      recipients.push({ email: assignedStewardEmail, name: assignedStewardName });
+    }
+
+    const deadlineListHtml = overdueDeadlines
+      .map(
+        (deadline) =>
+          `<li><strong>${deadline.deadlineName}</strong> (due ${new Date(deadline.dueDate).toLocaleDateString()})</li>`
+      )
+      .join('');
+
+    const subject = `Overdue Claim Deadlines: ${claim.claimType} Claim`;
+    const html = `
+      <p>One or more deadlines are overdue for claim <strong>${claim.claimType}</strong>.</p>
+      <ul>${deadlineListHtml}</ul>
+      <p><a href="${claimUrl}">View claim details</a></p>
+    `;
+
+    const result = await sendEmail({
+      to: recipients,
+      subject,
+      html,
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error sending overdue claim notification:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
   
   /* IMPLEMENTATION PENDING - Requires deadline field in claims schema
   try {

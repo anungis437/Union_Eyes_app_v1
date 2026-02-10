@@ -23,8 +23,9 @@ import { EmailJobData } from '../job-queue';
 import { sendEmail } from '../email-service';
 import { render } from '@react-email/render';
 import { db } from '../../db/db';
-import { notificationHistory, userNotificationPreferences } from '../../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { notificationHistory, userNotificationPreferences, inAppNotifications } from '../../db/schema';
+import { eq, and, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Email templates
 // import ClaimStatusNotificationEmail from '../../emails/ClaimStatusNotification'; // TODO: Create this template
@@ -61,7 +62,7 @@ async function checkUserPreferences(email: string): Promise<boolean> {
 
     return preferences?.emailEnabled ?? true; // Default to enabled
   } catch (error) {
-    console.error('Error checking user preferences:', error);
+    logger.error('Error checking user preferences', error instanceof Error ? error : new Error(String(error)));
     return true; // Default to enabled on error
   }
 }
@@ -89,7 +90,7 @@ async function logNotification(
       sentAt: new Date(),
     });
   } catch (err) {
-    console.error('Error logging notification:', err);
+    logger.error('Error logging notification', err instanceof Error ? err : new Error(String(err)));
   }
 }
 
@@ -99,7 +100,7 @@ async function logNotification(
 async function processEmailJob(job: any) {
   const { to, subject, template, data, priority } = job.data;
 
-  console.log(`Processing email job ${job.id}: ${template} to ${to}`);
+  logger.info('Processing email job', { jobId: job.id, template, recipientCount: Array.isArray(to) ? to.length : 1 });
 
   // Update progress
   await job.updateProgress(10);
@@ -115,7 +116,7 @@ async function processEmailJob(job: any) {
       
       if (!wantsEmail && priority !== 1) {
         // Skip non-critical emails if user disabled
-        console.log(`Skipping email to ${email} (disabled by user)`);
+        logger.info('Skipping email (disabled by user)', { email });
         await logNotification(null, email, subject, template, 'sent', 'Skipped by user preference');
         return { email, skipped: true };
       }
@@ -131,7 +132,7 @@ async function processEmailJob(job: any) {
         }
         html = await renderer(data);
       } catch (error) {
-        console.error(`Error rendering template ${template}:`, error);
+        logger.error('Error rendering template', error instanceof Error ? error : new Error(String(error)), { template });
         throw error;
       }
 
@@ -147,10 +148,10 @@ async function processEmailJob(job: any) {
 
         await logNotification(data.userId || null, email, subject, template, 'sent');
 
-        console.log(`Email sent to ${email}`);
+        logger.info('Email sent successfully', { email });
         return { email, sent: true };
       } catch (error) {
-        console.error(`Error sending email to ${email}:`, error);
+        logger.error('Error sending email', error instanceof Error ? error : new Error(String(error)), { email });
         await logNotification(
           data.userId || null,
           email,
@@ -188,7 +189,7 @@ async function processDigestJob(job: any) {
   const { data: jobData } = job;
   const { frequency } = jobData.data;
 
-  console.log(`Processing ${frequency} digest job ${job.id}`);
+  logger.info('Processing digest job', { jobId: job.id, frequency });
 
   // Get users who want digest emails
   const users = await db.query.userNotificationPreferences.findMany({
@@ -199,22 +200,42 @@ async function processDigestJob(job: any) {
   });
 
   if (users.length === 0) {
-    console.log('No users want digest emails');
+    logger.info('No users want digest emails', { frequency });
     return { success: true, sent: 0, total: 0 };
   }
 
-  console.log(`Sending digest to ${users.length} users`);
+  logger.info('Sending digest emails', { frequency, userCount: users.length });
 
   // Send digest to each user
   let sent = 0;
   for (const user of users) {
     try {
+      // Fetch unread in-app notifications for this user
+      const unreadNotifications = await db
+        .select({
+          id: inAppNotifications.id,
+          title: inAppNotifications.title,
+          message: inAppNotifications.message,
+          type: inAppNotifications.type,
+          actionUrl: inAppNotifications.actionUrl,
+          createdAt: inAppNotifications.createdAt,
+        })
+        .from(inAppNotifications)
+        .where(
+          and(
+            eq(inAppNotifications.userId, user.userId!),
+            eq(inAppNotifications.read, false)
+          )
+        )
+        .orderBy(desc(inAppNotifications.createdAt))
+        .limit(20);
+
       // Gather user's notifications from the past period
       const digestData = {
         userId: user.userId!,
         email: user.email,
         frequency,
-        notifications: [], // TODO: Fetch unread notifications
+        notifications: unreadNotifications,
       };
 
       const html = await render(DigestEmail(digestData));
@@ -229,7 +250,7 @@ async function processDigestJob(job: any) {
 
       sent++;
     } catch (error) {
-      console.error(`Error sending digest to ${user.email}:`, error);
+      logger.error('Error sending digest', error instanceof Error ? error : new Error(String(error)), { email: user.email });
     }
   }
 
@@ -259,23 +280,23 @@ export const emailWorker = new Worker(
 
 // Event handlers
 emailWorker.on('completed', (job: any) => {
-  console.log(`Email job ${job.id} completed`);
+  logger.info('Email job completed', { jobId: job.id });
 });
 
 emailWorker.on('failed', (job: any, err: any) => {
-  console.error(`Email job ${job?.id} failed:`, err.message);
+  logger.error('Email job failed', err instanceof Error ? err : new Error(String(err)), { jobId: job?.id });
 });
 
 emailWorker.on('error', (err: any) => {
-  console.error('Email worker error:', err);
+  logger.error('Email worker error', err instanceof Error ? err : new Error(String(err)));
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('Shutting down email worker...');
+  logger.info('Shutting down email worker');
   await emailWorker.close();
   await connection.quit();
-  console.log('Email worker stopped');
+  logger.info('Email worker stopped');
 }
 
 process.on('SIGTERM', shutdown);

@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   ArrowLeft,
   ArrowRight,
@@ -51,6 +52,17 @@ interface Template {
   name: string;
   messageTemplate: string;
   category: string;
+}
+
+interface Member {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  status: string;
+  department?: string | null;
 }
 
 const STEPS = [
@@ -78,6 +90,12 @@ export function SmsCampaignBuilder({
   const [recipientCount, setRecipientCount] = useState(0);
   const [recipients, setRecipients] = useState<any[]>([]);
   const [scheduledDate, setScheduledDate] = useState<string>('');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
+  const [memberSearch, setMemberSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('active');
 
   // Load templates
   const loadTemplates = useCallback(async () => {
@@ -99,6 +117,50 @@ export function SmsCampaignBuilder({
   useEffect(() => {
     loadTemplates();
   }, [loadTemplates]);
+
+  const loadMembers = useCallback(async () => {
+    try {
+      setMembersLoading(true);
+      const response = await fetch(`/api/organizations/${tenantId}/members`);
+      if (!response.ok) throw new Error('Failed to load members');
+      const data = await response.json();
+      setMembers((data?.data || []) as Member[]);
+    } catch (error) {
+      console.error('Failed to load members:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load members',
+        variant: 'destructive',
+      });
+    } finally {
+      setMembersLoading(false);
+    }
+  }, [tenantId, toast]);
+
+  useEffect(() => {
+    if (currentStep === 2 && members.length === 0 && !membersLoading) {
+      loadMembers();
+    }
+  }, [currentStep, members.length, membersLoading, loadMembers]);
+
+  const updateRecipients = useCallback(
+    (nextSelected: Set<string>, list: Member[] = members) => {
+      const selected = list.filter((member) => nextSelected.has(member.id) && member.phone);
+      setRecipients(
+        selected.map((member) => ({
+          userId: member.userId,
+          phoneNumber: member.phone,
+        }))
+      );
+      setRecipientCount(selected.length);
+    },
+    [members]
+  );
+
+  useEffect(() => {
+    if (members.length === 0) return;
+    updateRecipients(selectedMemberIds, members);
+  }, [members, selectedMemberIds, updateRecipients]);
 
   // Calculate segments and cost
   const calculateSegments = (text: string): number => {
@@ -291,6 +353,21 @@ export function SmsCampaignBuilder({
         );
 
       case 2:
+        const filteredMembers = members.filter((member) => {
+          const matchesSearch =
+            member.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+            member.email.toLowerCase().includes(memberSearch.toLowerCase()) ||
+            (member.phone || '').includes(memberSearch);
+          const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+          const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
+          return matchesSearch && matchesRole && matchesStatus;
+        });
+
+        const selectableMembers = filteredMembers.filter((member) => Boolean(member.phone));
+        const allSelected =
+          selectableMembers.length > 0 &&
+          selectableMembers.every((member) => selectedMemberIds.has(member.id));
+
         return (
           <div className="space-y-6">
             <Card>
@@ -309,25 +386,148 @@ export function SmsCampaignBuilder({
                   </div>
                 </div>
 
-                <div className="text-sm text-muted-foreground">
-                  <strong>TODO:</strong> Implement recipient selection UI with filters (role,
-                  status, tags, etc.)
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="member-search">Search</Label>
+                    <Input
+                      id="member-search"
+                      value={memberSearch}
+                      onChange={(event) => setMemberSearch(event.target.value)}
+                      placeholder="Name, email, phone"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All roles</SelectItem>
+                        <SelectItem value="member">Member</SelectItem>
+                        <SelectItem value="steward">Steward</SelectItem>
+                        <SelectItem value="officer">Officer</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All statuses</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="on-leave">On leave</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Temporary mock data */}
-                <Button
-                  onClick={() => {
-                    setRecipientCount(50);
-                    setRecipients(
-                      Array.from({ length: 50 }, (_, i) => ({
-                        userId: `user-${i}`,
-                        phoneNumber: `+1415555${String(i).padStart(4, '0')}`,
-                      }))
-                    );
-                  }}
-                >
-                  Select All Active Members (50)
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const nextSelected = new Set(selectedMemberIds);
+                      selectableMembers.forEach((member) => nextSelected.add(member.id));
+                      setSelectedMemberIds(nextSelected);
+                      updateRecipients(nextSelected, members);
+                    }}
+                    disabled={selectableMembers.length === 0}
+                  >
+                    Select filtered
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const nextSelected = new Set(selectedMemberIds);
+                      selectableMembers.forEach((member) => nextSelected.delete(member.id));
+                      setSelectedMemberIds(nextSelected);
+                      updateRecipients(nextSelected, members);
+                    }}
+                    disabled={selectedMemberIds.size === 0}
+                  >
+                    Clear filtered
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedMemberIds(new Set());
+                      updateRecipients(new Set(), members);
+                    }}
+                    disabled={selectedMemberIds.size === 0}
+                  >
+                    Clear all
+                  </Button>
+                </div>
+
+                <div className="rounded-lg border">
+                  <div className="flex items-center justify-between border-b px-4 py-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={(checked) => {
+                          const nextSelected = new Set(selectedMemberIds);
+                          if (checked) {
+                            selectableMembers.forEach((member) => nextSelected.add(member.id));
+                          } else {
+                            selectableMembers.forEach((member) => nextSelected.delete(member.id));
+                          }
+                          setSelectedMemberIds(nextSelected);
+                          updateRecipients(nextSelected, members);
+                        }}
+                      />
+                      <span>Select all in view</span>
+                    </div>
+                    <span>{filteredMembers.length} member(s)</span>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto">
+                    {membersLoading ? (
+                      <div className="p-4 text-sm text-muted-foreground">Loading members...</div>
+                    ) : filteredMembers.length === 0 ? (
+                      <div className="p-4 text-sm text-muted-foreground">No members found.</div>
+                    ) : (
+                      filteredMembers.map((member) => (
+                        <div key={member.id} className="flex items-start gap-3 border-b px-4 py-3 last:border-b-0">
+                          <Checkbox
+                            checked={selectedMemberIds.has(member.id)}
+                            disabled={!member.phone}
+                            onCheckedChange={(checked) => {
+                              const nextSelected = new Set(selectedMemberIds);
+                              if (checked) {
+                                nextSelected.add(member.id);
+                              } else {
+                                nextSelected.delete(member.id);
+                              }
+                              setSelectedMemberIds(nextSelected);
+                              updateRecipients(nextSelected, members);
+                            }}
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-sm text-muted-foreground">{member.email}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {member.phone || 'No phone number'}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge variant="outline">{member.role}</Badge>
+                            <Badge variant={member.status === 'active' ? 'secondary' : 'outline'}>
+                              {member.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

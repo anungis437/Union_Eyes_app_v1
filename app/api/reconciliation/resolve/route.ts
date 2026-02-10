@@ -5,6 +5,7 @@ import { members, duesTransactions, employerRemittances } from '@/services/finan
 import { eq, and } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { sendEmail } from '@/lib/email-service';
 
 // Resolve reconciliation discrepancies
 export const POST = async (req: NextRequest) => {
@@ -175,11 +176,22 @@ export const POST = async (req: NextRequest) => {
           row.correctionRequestedAt = new Date().toISOString();
           row.correctionNotes = actionData?.notes || 'Correction requested from employer';
 
+          const employerEmail = actionData?.employerEmail || row.row?.email;
+          if (employerEmail) {
+            await sendEmail({
+              to: [{ email: employerEmail, name: remittance.employerName }],
+              subject: `Correction requested for remittance ${remittanceId}`,
+              html: `
+                <p>A correction is requested for remittance <strong>${remittanceId}</strong>.</p>
+                <p>Notes: ${row.correctionNotes}</p>
+              `,
+            });
+          }
+
           actionResult = {
             action: 'request_correction',
-            message: 'Email notification would be sent to employer',
+            message: employerEmail ? 'Correction request sent to employer' : 'No employer email available',
             notes: row.correctionNotes,
-            // TODO: Implement email service integration
           };
           break;
       }

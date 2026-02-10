@@ -66,8 +66,10 @@ export async function getUserRole(userId: string): Promise<UserRole> {
     // Default role
     return UserRole.MEMBER;
   } catch (error) {
-    console.error("Error fetching user role:", error);
-    return UserRole.MEMBER; // Default to member on error
+    // SECURITY FIX: Fail closed - authorization system errors should not grant default access
+    // Log the error for monitoring and throw to prevent unauthorized access
+    console.error("CRITICAL: Authorization system error for user", userId, error);
+    throw new Error('Authorization system unavailable');
   }
 }
 

@@ -65,10 +65,26 @@ const envSchema = z.object({
     .email('Invalid SENDGRID_FROM_EMAIL')
     .optional(),
   SENDGRID_FROM_NAME: z.string().optional(),
+
+  // ============== HIGH - Email Delivery (Resend/SendGrid) ==============
+  EMAIL_PROVIDER: z.enum(['resend', 'sendgrid', 'console']).default('resend'),
+  EMAIL_FROM: z.string().email('Invalid EMAIL_FROM').optional(),
+  EMAIL_REPLY_TO: z.string().email('Invalid EMAIL_REPLY_TO').optional(),
+  RESEND_API_KEY: z.string().optional(),
   
-  TWILIO_ACCOUNT_SID: z.string().optional(),
-  TWILIO_AUTH_TOKEN: z.string().optional(),
-  TWILIO_PHONE_NUMBER: z.string().optional(),
+  // ============== MEDIUM - SMS Notifications (Optional) ==============
+  TWILIO_ACCOUNT_SID: z.string()
+    .min(34, 'TWILIO_ACCOUNT_SID must be at least 34 characters')
+    .optional()
+    .describe('Twilio Account SID for SMS notifications'),
+  TWILIO_AUTH_TOKEN: z.string()
+    .min(32, 'TWILIO_AUTH_TOKEN must be at least 32 characters')
+    .optional()
+    .describe('Twilio Auth Token for SMS notifications'),
+  TWILIO_PHONE_NUMBER: z.string()
+    .regex(/^\+\d{1,15}$/, 'TWILIO_PHONE_NUMBER must be in E.164 format (+1234567890)')
+    .optional()
+    .describe('Twilio phone number in E.164 format for SMS sending'),
 
   // ============== HIGH - Document Storage ==============
   STORAGE_TYPE: z.enum(['s3', 'r2', 'azure', 'disk'])
@@ -96,7 +112,10 @@ const envSchema = z.object({
   DOCUSIGN_INTEGRATION_KEY: z.string().optional(),
   DOCUSIGN_SECRET_KEY: z.string().optional(),
   DOCUSIGN_ACCOUNT_ID: z.string().optional(),
-  DOCUSIGN_BASE_URL: z.string().optional(),
+  DOCUSIGN_API_ACCOUNT_ID: z.string().optional(),
+  DOCUSIGN_USER_ID: z.string().optional(),
+  DOCUSIGN_PRIVATE_KEY: z.string().optional(),
+  DOCUSIGN_BASE_URL: z.string().url('Invalid DOCUSIGN_BASE_URL').optional(),
 
   HELLOSIGN_API_KEY: z.string().optional(),
 
@@ -134,6 +153,8 @@ const envSchema = z.object({
   AZURE_SPEECH_REGION: z.string().optional(),
   AZURE_OPENAI_ENDPOINT: z.string().optional(),
   AZURE_OPENAI_KEY: z.string().optional(),
+  AZURE_COMPUTER_VISION_KEY: z.string().optional(),
+  AZURE_COMPUTER_VISION_ENDPOINT: z.string().url('Invalid AZURE_COMPUTER_VISION_ENDPOINT').optional(),
 
   // Azure SQL Server
   AZURE_SQL_SERVER: z.string().optional(),
@@ -246,6 +267,12 @@ class EnvironmentManager {
           }
           if (!this.environment.STRIPE_SECRET_KEY && !this.environment.WHOP_WEBHOOK_SECRET) {
             warnings.push('⚠️ Neither STRIPE nor WHOP webhook secrets configured');
+          }
+          if (this.environment.EMAIL_PROVIDER === 'resend' && !this.environment.RESEND_API_KEY) {
+            warnings.push('⚠️ RESEND_API_KEY missing for EMAIL_PROVIDER=resend');
+          }
+          if (this.environment.EMAIL_PROVIDER === 'resend' && !this.environment.EMAIL_FROM) {
+            warnings.push('⚠️ EMAIL_FROM missing for Resend delivery');
           }
         }
       }

@@ -27,6 +27,7 @@
 
 import { SecretClient } from '@azure/keyvault-secrets';
 import { DefaultAzureCredential } from '@azure/identity';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // CONFIGURATION
@@ -94,7 +95,7 @@ function logKeyVaultAccess(log: KeyVaultAccessLog): void {
 
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Key Vault Access]', {
+    logger.info('Key Vault Access', {
       secretName: log.secretName,
       accessType: log.accessType,
       success: log.success,

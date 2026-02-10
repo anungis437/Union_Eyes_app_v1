@@ -71,40 +71,10 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
 
   const loadConversations = async () => {
     try {
-      // TODO: Implement API endpoint
-      // const response = await fetch(`/api/communications/sms/conversations?tenantId=${tenantId}`);
-      // if (!response.ok) throw new Error('Failed to load conversations');
-      // const { conversations } = await response.json();
-      // setConversations(conversations);
-
-      // Mock data for now
-      setConversations([
-        {
-          id: '1',
-          phoneNumber: '+14155552671',
-          direction: 'inbound',
-          message: 'Can you update me on my claim status?',
-          status: 'received',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          phoneNumber: '+14155552672',
-          direction: 'inbound',
-          message: 'STOP',
-          status: 'received',
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: '3',
-          phoneNumber: '+14155552673',
-          direction: 'inbound',
-          message: 'When is the next meeting?',
-          status: 'read',
-          createdAt: new Date(Date.now() - 7200000).toISOString(),
-          readAt: new Date(Date.now() - 3000000).toISOString(),
-        },
-      ]);
+      const response = await fetch(`/api/communications/sms/conversations?tenantId=${tenantId}`);
+      if (!response.ok) throw new Error('Failed to load conversations');
+      const { conversations } = await response.json();
+      setConversations(conversations || []);
     } catch (error) {
       console.error('Failed to load conversations:', error);
       toast({
@@ -120,10 +90,13 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
   // Mark as read
   const markAsRead = async (conversationId: string) => {
     try {
-      // TODO: Implement API endpoint
-      // await fetch(`/api/communications/sms/conversations/${conversationId}/read`, {
-      //   method: 'POST',
-      // });
+      const response = await fetch(`/api/communications/sms/conversations/${conversationId}/read`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark as read');
+      }
 
       setConversations((prev) =>
         prev.map((c) =>
@@ -145,10 +118,11 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
     setIsSending(true);
 
     try {
-      const response = await fetch('/api/communications/sms/send', {
+      const response = await fetch('/api/communications/sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'send',
           tenantId,
           phoneNumber: conversation.phoneNumber,
           message: replyMessage,
@@ -179,7 +153,14 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
   // Archive conversation
   const handleArchive = async (conversationId: string) => {
     try {
-      // TODO: Implement API endpoint
+      const response = await fetch(`/api/communications/sms/conversations/${conversationId}/archive`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to archive conversation');
+      }
+
       setConversations((prev) =>
         prev.map((c) => (c.id === conversationId ? { ...c, status: 'archived' } : c))
       );

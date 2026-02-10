@@ -5,6 +5,7 @@
  */
 
 import { Resend } from 'resend';
+import { logger } from '@/lib/logger';
 
 // Lazy initialize Resend client to avoid errors during build
 let resend: Resend | null = null;
@@ -46,7 +47,7 @@ export async function sendEmail({
     // Check if email service is configured
     const client = getResendClient();
     if (!client) {
-      console.warn('RESEND_API_KEY not configured. Email will not be sent.');
+      logger.warn('RESEND_API_KEY not configured - email not sent');
       return {
         success: false,
         error: 'Email service not configured',
@@ -64,7 +65,7 @@ export async function sendEmail({
     });
 
     if (error) {
-      console.error('Error sending email:', error);
+      logger.error('Error sending email', error instanceof Error ? error : new Error(error.message || 'Failed to send email'));
       return {
         success: false,
         error: error.message || 'Failed to send email',
@@ -76,7 +77,7 @@ export async function sendEmail({
       messageId: data?.id,
     };
   } catch (error) {
-    console.error('Exception sending email:', error);
+    logger.error('Exception sending email', error instanceof Error ? error : new Error(String(error)));
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -109,7 +110,7 @@ export function isValidEmail(email: string): boolean {
 export function getValidRecipients(recipients: EmailRecipient[]): EmailRecipient[] {
   return recipients.filter(recipient => {
     if (!isValidEmail(recipient.email)) {
-      console.warn(`Invalid email address: ${recipient.email}`);
+      logger.warn('Invalid email address', { email: recipient.email });
       return false;
     }
     return true;

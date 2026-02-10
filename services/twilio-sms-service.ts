@@ -35,6 +35,7 @@ import {
   type NewSmsConversation,
   type SmsCampaign,
 } from '@/db/schema/sms-communications-schema';
+import { organizations } from '@/db/schema-organizations';
 
 // ============================================================================
 // CONFIGURATION
@@ -138,6 +139,21 @@ export function calculateSmsCost(message: string): number {
 
 function resolveOrganizationId(input: { organizationId?: string; tenantId?: string }): string | null {
   return input.organizationId ?? input.tenantId ?? null;
+}
+
+async function resolveOrganizationIdFromPhoneNumber(phoneNumber: string): Promise<string | null> {
+  try {
+    const [org] = await db
+      .select({ id: organizations.id })
+      .from(organizations)
+      .where(sql`(${organizations.settings} ->> 'twilioPhoneNumber') = ${phoneNumber}`)
+      .limit(1);
+
+    return org?.id || process.env.DEFAULT_ORGANIZATION_ID || null;
+  } catch (error) {
+    console.error('❌ Failed to resolve organization from phone number:', error);
+    return process.env.DEFAULT_ORGANIZATION_ID || null;
+  }
 }
 
 /**
@@ -516,8 +532,11 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
 
   try {
     // Determine organization from phone number (lookup in database)
-    // For now, we'll need to implement organization resolution logic
-    // This could be done by looking up which organization owns the "To" phone number
+    const organizationId = await resolveOrganizationIdFromPhoneNumber(To);
+    if (!organizationId) {
+      console.warn(`⚠️  Unable to resolve organization for inbound SMS to ${To}`);
+      return;
+    }
 
     // Check if message is STOP/UNSUBSCRIBE (TCPA compliance)
     const normalizedBody = Body?.toLowerCase().trim() || '';
@@ -535,7 +554,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
 
     // Store inbound message in conversations table
     const conversation: NewSmsConversation = {
-      organizationId: 'REPLACE_WITH_ORGANIZATION_ID', // TODO: Implement organization resolution
+      organizationId,
       phoneNumber: From,
       direction: 'inbound',
       message: Body || '',
@@ -547,7 +566,13 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
 
     console.log(`✅ Inbound SMS received from ${From}: "${Body}"`);
 
-    // TODO: Implement auto-reply logic or notification to staff
+    if (TWILIO_PHONE_NUMBER) {
+      await twilioClient.messages.create({
+        from: TWILIO_PHONE_NUMBER,
+        to: From,
+        body: 'Thanks for your message. We have received it and will follow up soon.',
+      });
+    }
   } catch (error) {
     console.error('❌ Failed to handle inbound SMS:', error);
   }

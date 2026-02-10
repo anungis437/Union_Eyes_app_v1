@@ -9,6 +9,7 @@ import { db } from "@/db/db";
 import { organizations, organizationMembers } from "@/db/schema-organizations";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { logger } from "./logger";
 
 /**
  * Default organization ID used for system operations
@@ -109,7 +110,7 @@ export async function getOrganizationIdForUser(userId: string): Promise<string> 
     
     return organizationId;
   } catch (error) {
-    console.error(`Error resolving organization for user ${userId}:`, error);
+    logger.error('Error resolving organization for user', error);
     throw error;
   }
 }
@@ -142,7 +143,7 @@ export async function validateOrganizationExists(organizationId: string): Promis
     
     return result.length > 0;
   } catch (error) {
-    console.error(`Error validating organization ${organizationId}:`, error);
+    logger.error('Error validating organization exists', error);
     return false;
   }
 }
@@ -169,7 +170,7 @@ export async function getOrganizationInfo(organizationId: string) {
     
     return result[0] || null;
   } catch (error) {
-    console.error(`Error fetching organization info for ${organizationId}:`, error);
+    logger.error('Error fetching organization info', error);
     return null;
   }
 }
@@ -199,7 +200,7 @@ export async function userHasOrganizationAccess(
     
     return result.length > 0;
   } catch (error) {
-    console.error(`Error checking organization access:`, error);
+    logger.error('Error checking organization access', error);
     return false;
   }
 }
@@ -248,7 +249,7 @@ export async function getUserRoleInOrganization(
     
     return roleMap[dbRole] || 'member';
   } catch (error) {
-    console.error(`Error fetching user role:`, error);
+    logger.error('Error fetching user role', error);
     return null;
   }
 }

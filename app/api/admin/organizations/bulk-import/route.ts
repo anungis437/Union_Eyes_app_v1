@@ -22,7 +22,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { organizations } from "@/db/schema-organizations";
 import { createOrganization } from "@/db/queries/organization-queries";
 import { eq } from "drizzle-orm";
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withAdminAuth } from '@/lib/api-auth-guard';
 
 // Type definitions for import
 type Jurisdiction = "federal" | "AB" | "BC" | "MB" | "NB" | "NL" | "NS" | "NT" | "NU" | "ON" | "PE" | "QC" | "SK" | "YT";
@@ -72,13 +72,10 @@ interface ImportResult {
 // =====================================================
 
 export const POST = async (request: NextRequest) => {
-  return withRoleAuth(90, async (request, context) => {
+  return withAdminAuth(async (request, context) => {
     const { userId } = context;
 
   try {
-      // TODO: Add admin role check when profiles/roles are set up
-      // For now, authenticated users can bulk import organizations
-
       const formData = await request.formData();
       const file = formData.get("file") as File;
       const preview = formData.get("preview") === "true";
