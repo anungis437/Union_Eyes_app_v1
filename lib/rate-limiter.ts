@@ -93,19 +93,14 @@ export async function checkRateLimit(
   const { limit, window, identifier } = config;
   const redisKey = `ratelimit:${identifier}:${key}`;
 
-  // If Redis is not configured, log warning and allow request (fail-open)
+  // If Redis is not configured, fail closed to prevent abuse (SECURITY FIX)
   if (!redis) {
-    logger.warn('Redis not configured for rate limiting - allowing request', {
+    logger.error('Redis not configured for rate limiting - rejecting request', {
       key,
       identifier,
+      message: 'Rate limiting service unavailable',
     });
-    return {
-      allowed: true,
-      current: 0,
-      limit,
-      remaining: limit,
-      resetIn: window,
-    };
+    throw new Error('Rate limiting service unavailable. Please contact support if this persists.');
   }
 
   try {

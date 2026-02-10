@@ -5,6 +5,7 @@ import { whopApp } from "@/lib/whop";
 import { auth } from '@/lib/api-auth-guard';
 import { revalidatePath } from "next/cache";
 import { getPendingProfileByEmail, markPendingProfileAsClaimed, deletePendingProfile } from "@/db/queries/pending-profiles-queries";
+import { logger } from '@/lib/logger';
 
 // Convert Whop membership status to our app's membership status
 const getMembershipStatus = (whopStatus: string): "free" | "pro" => {
@@ -24,10 +25,6 @@ export const updateWhopCustomer = async (
   whopMembershipId: string
 ): Promise<void> => {
   try {
-    // Log the operation for audit purposes
-    console.log(`Updating profile for user ${userId} with Whop customer data`);
-    console.log(`Associating Clerk user ID: ${userId} with Whop user ID: ${whopUserId}`);
-    
     if (!userId || !whopUserId || !whopMembershipId) {
       throw new Error("Missing required parameters for updateWhopCustomer");
     }
@@ -44,13 +41,13 @@ export const updateWhopCustomer = async (
       throw new Error("Failed to update profile with Whop customer data");
     }
     
-    console.log(`Successfully updated profile for user ${userId} with Whop data`);
+    logger.info(`Successfully updated profile ${userId} with Whop data`, { whopUserId, whopMembershipId });
     
     // Revalidate any cached data
     revalidatePath("/");
     revalidatePath("/notes");
   } catch (error) {
-    console.error("Error in updateWhopCustomer:", error);
+    logger.error('Error in updateWhopCustomer', error as Error, { userId, whopUserId });
     // Only log the error, don't throw it (same pattern as Stripe)
   }
 };
@@ -66,12 +63,7 @@ export const manageWhopMembershipStatusChange = async (
 ): Promise<void> => {
   try {
     // DEPRECATION WARNING
-    console.warn("DEPRECATED: manageWhopMembershipStatusChange is deprecated due to connection timeouts");
-    console.warn("Use direct updateProfile with Clerk user ID from metadata instead");
-    
-    // Log the membership status change for audit purposes
-    console.log(`Processing membership status change for Whop user ${whopUserId}: status=${status}`);
-    console.log("NOTE: This is using the Whop user ID (not a Clerk user ID) as a lookup key");
+    logger.warn('manageWhopMembershipStatusChange is deprecated - use direct updateProfile with Clerk user ID from metadata instead');
     
     if (!whopMembershipId || !whopUserId) {
       throw new Error("Missing required parameters for manageWhopMembershipStatusChange");
@@ -81,26 +73,22 @@ export const manageWhopMembershipStatusChange = async (
     
     // Attempt to find and update the profile
     // This uses a special lookup function that maps Whop user IDs to Clerk user IDs
-    console.log(`Looking up profile by Whop user ID (fallback method): ${whopUserId}`);
     const updatedProfile = await updateProfileByWhopUserId(whopUserId, {
       whopMembershipId,
       membership: membershipStatus
     });
     
     if (!updatedProfile) {
-      console.error(`No profile found with Whop user ID: ${whopUserId}`);
-      console.error("This is a fallback method and should rarely be needed");
-      console.error("Ensure Clerk user IDs are included in metadata for direct lookups");
+      logger.error('No profile found with Whop user ID - fallback method failed', undefined, { whopUserId });
     } else {
-      console.log(`Successfully updated membership status to ${membershipStatus} for Clerk user ID: ${updatedProfile.userId}`);
-      console.log(`This was found by looking up Whop user ID: ${whopUserId}`);
+      logger.info(`Updated membership status to ${membershipStatus}`, { clerkUserId: updatedProfile.userId, whopUserId });
     }
 
     // Revalidate any cached data
     revalidatePath("/");
     revalidatePath("/notes");
   } catch (error) {
-    console.error("Error in manageWhopMembershipStatusChange:", error);
+    logger.error('Error in manageWhopMembershipStatusChange', error as Error, { whopMembershipId, whopUserId });
     // Only log the error, don't throw it
   }
 };
@@ -117,7 +105,7 @@ export async function canAccessPremiumFeatures() {
     const profile = await getProfileByUserId(userId);
     return profile?.membership === "pro";
   } catch (error) {
-    console.error("Error checking premium access:", error);
+    logger.error('Error checking premium access', error as Error, { userId });
     return false;
   }
 }
@@ -145,73 +133,48 @@ export async function claimPendingProfile(
   token?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log(`===== CLAIM PROFILE START =====`);
-    console.log(`Attempting to claim pending profile for user ${userId} with email ${email}`);
-    
     if (!userId || !email) {
-      console.log(`Missing required parameters: userId=${!!userId}, email=${!!email}`);
+      logger.warn('Missing required parameters in claimPendingProfile', { hasUserId: !!userId, hasEmail: !!email });
       return { success: false, error: "Missing required parameters for claiming profile" };
     }
 
     // First, check if the user already has a profile
-    console.log(`Checking if user ${userId} already has a profile...`);
     const existingUserProfile = await getProfileByUserId(userId);
-    console.log(`Existing profile check result:`, existingUserProfile ? {
-      userId: existingUserProfile.userId,
-      email: existingUserProfile.email,
-      membership: existingUserProfile.membership
-    } : 'No profile found');
     
     if (existingUserProfile?.membership === "pro") {
-      console.log(`User ${userId} already has a pro membership, no need to claim`);
+      logger.info('User already has pro membership', { userId });
       return { success: true };
     }
 
     // Look for a pending profile with matching email from the new table
-    console.log(`Looking for pending profile with email: ${email}`);
     const pendingProfile = await getPendingProfileByEmail(email);
-    
-    console.log(`Pending profile search result:`, pendingProfile ? {
-      id: pendingProfile.id,
-      email: pendingProfile.email,
-      membership: pendingProfile.membership,
-      claimed: pendingProfile.claimed,
-      claimedByUserId: pendingProfile.claimedByUserId
-    } : 'No pending profile found');
     
     if (!pendingProfile) {
       // Fall back to checking the old system (temporary profiles in the profiles table)
-      // This is for backward compatibility during migration
-      console.log(`No pending profile found in new table, checking old system...`);
       const oldPendingProfile = await getProfileByEmail(email);
       
       if (oldPendingProfile && oldPendingProfile.userId.startsWith('temp_')) {
-        console.log(`Found old temporary profile with ID: ${oldPendingProfile.userId}`);
-        // Proceed with the old method - use the existing code with minimal changes
+        logger.info('Found old temporary profile, using legacy claim', { userId, email });
         return claimOldPendingProfile(userId, email, oldPendingProfile);
       }
       
-      console.log(`No pending profile found for email: ${email} in either system`);
+      logger.warn('No pending profile found', { userId, email });
       return { success: false, error: "No pending profile found for this email. Your purchase may not have been processed yet." };
     }
     
     if (pendingProfile.claimed && pendingProfile.claimedByUserId !== userId) {
-      console.log(`Profile for email ${email} is already claimed by user ${pendingProfile.claimedByUserId}`);
+      logger.warn('Profile already claimed by another user', { email, claimedBy: pendingProfile.claimedByUserId });
       return { success: false, error: "This profile has already been claimed by another account" };
     }
     
     // Verify token if provided (optional additional security)
     if (token && pendingProfile.token && token !== pendingProfile.token) {
-      console.log(`Token mismatch: provided=${token}, stored=${pendingProfile.token}`);
+      logger.warn('Token mismatch during claim', { userId, email });
       return { success: false, error: "Invalid verification token" };
     }
-
-    console.log(`Found pending profile for email ${email}, proceeding to claim...`);
     
     // If the user already has a profile, merge the pending profile's data into it
     if (existingUserProfile) {
-      console.log(`MERGE FLOW: User ${userId} already has a profile, merging pending profile data`);
-      
       // Copy all pro-related data from pending profile to existing profile
       const updateData = {
         membership: pendingProfile.membership || "pro",
@@ -225,21 +188,13 @@ export async function claimPendingProfile(
         usageCredits: pendingProfile.usageCredits || 1000,
         usedCredits: pendingProfile.usedCredits || 0,
         status: "active",
-        email: email // Make sure email is also updated
+        email: email
       };
       
-      console.log(`Updating existing profile with data:`, updateData);
-      const updatedProfile = await updateProfile(userId, updateData);
-      console.log(`Existing profile updated:`, updatedProfile ? { 
-        userId: updatedProfile.userId,
-        membership: updatedProfile.membership,
-        usageCredits: updatedProfile.usageCredits 
-      } : 'Failed to update');
+      await updateProfile(userId, updateData);
+      logger.info('Merged pending profile into existing profile', { userId, membership: updateData.membership });
     } else {
-      // User doesn't have a profile yet, create a new one with data from pending profile
-      console.log(`CREATE FLOW: Creating new profile from pending profile`);
-      
-      // Extract only the fields we need
+      // User doesn't have a profile yet, create a new one
       const profileData = {
         userId: userId,
         email: email,
@@ -256,44 +211,22 @@ export async function claimPendingProfile(
         status: "active"
       };
       
-      console.log(`Creating new profile with data:`, {
-        userId: profileData.userId,
-        email: profileData.email,
-        membership: profileData.membership,
-        usageCredits: profileData.usageCredits
-      });
-      
-      const result = await createProfile(profileData);
-      console.log(`New profile creation result:`, result ? {
-        userId: result.userId,
-        membership: result.membership,
-        usageCredits: result.usageCredits
-      } : 'Failed to create');
+      await createProfile(profileData);
+      logger.info('Created new profile from pending profile', { userId, membership: profileData.membership });
     }
     
-    // Mark the pending profile as claimed
+    // Mark the pending profile as claimed (keep for analytics)
     await markPendingProfileAsClaimed(pendingProfile.id, userId);
-    console.log(`Marked pending profile as claimed by user ${userId}`);
-    
-    // IMPORTANT: We intentionally do NOT delete the pending profile.
-    // Instead, we mark it as claimed and keep it for:
-    // 1. Analytics and conversion tracking
-    // 2. Audit trail for customer support
-    // 3. Historical record of frictionless purchases
-    console.log(`Preserving pending profile record for analytics and support`);
     
     // Revalidate relevant paths
-    console.log(`Revalidating paths`);
     revalidatePath("/");
     revalidatePath("/notes");
     revalidatePath("/dashboard");
     
-    console.log(`Successfully claimed profile for user ${userId} with email ${email}`);
-    console.log(`===== CLAIM PROFILE SUCCESS =====`);
+    logger.info('Successfully claimed profile', { userId, email });
     return { success: true };
   } catch (error) {
-    console.error(`===== CLAIM PROFILE ERROR =====`);
-    console.error("Error claiming pending profile:", error);
+    logger.error('Error claiming pending profile', error as Error, { userId, email });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : "Unknown error claiming profile" 
@@ -311,11 +244,8 @@ async function claimOldPendingProfile(
   pendingProfile: any
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Use the existing logic for backward compatibility
-    console.log(`LEGACY FLOW: User ${userId} claiming old temporary profile`);
-    
     if (pendingProfile.userId && pendingProfile.userId !== userId && !pendingProfile.userId.startsWith('temp_')) {
-      console.log(`Profile for email ${email} is already claimed by user ${pendingProfile.userId}`);
+      logger.warn('Profile already claimed by another user (legacy)', { email, claimedBy: pendingProfile.userId });
       return { success: false, error: "This profile has already been claimed by another account" };
     }
     
@@ -323,9 +253,6 @@ async function claimOldPendingProfile(
     const existingUserProfile = await getProfileByUserId(userId);
     
     if (existingUserProfile) {
-      console.log(`LEGACY MERGE: User ${userId} already has a profile, merging temp profile data`);
-      
-      // Copy all pro-related data from pending profile to existing profile
       const updateData = {
         membership: pendingProfile.membership || "pro",
         whopUserId: pendingProfile.whopUserId,
@@ -338,26 +265,22 @@ async function claimOldPendingProfile(
         usageCredits: pendingProfile.usageCredits || 1000,
         usedCredits: pendingProfile.usedCredits || 0,
         status: "active",
-        email: email // Make sure email is also updated
+        email: email
       };
       
-      const updatedProfile = await updateProfile(userId, updateData);
-      console.log(`Existing profile updated through legacy flow`);
+      await updateProfile(userId, updateData);
+      logger.info('Merged legacy temp profile into existing profile', { userId });
       
       // Clean up the temporary profile
       try {
         if (pendingProfile.userId && pendingProfile.userId.startsWith('temp_')) {
-          console.log(`Cleaning up temporary profile: ${pendingProfile.userId}`);
-          const deleted = await deleteProfileById(pendingProfile.userId);
-          console.log(`Temporary profile deletion result: ${deleted ? 'Success' : 'Failed'}`);
+          await deleteProfileById(pendingProfile.userId);
         }
       } catch (cleanupError) {
-        console.error(`Failed to cleanup pending profile: ${cleanupError}`);
+        logger.warn('Failed to cleanup temp profile', cleanupError as Error, { tempProfileId: pendingProfile.userId });
       }
     } else {
       // Create a new profile based on the temporary one
-      console.log(`LEGACY CREATE: Creating new profile from temporary one`);
-      
       const profileData = {
         userId: userId,
         email: email,
@@ -374,16 +297,14 @@ async function claimOldPendingProfile(
         status: "active"
       };
       
-      const result = await createProfile(profileData);
-      console.log(`New profile created through legacy flow`);
+      await createProfile(profileData);
+      logger.info('Created new profile from legacy temp profile', { userId });
       
       // Clean up the temporary profile
       try {
-        console.log(`Cleaning up temporary profile: ${pendingProfile.userId}`);
-        const deleted = await deleteProfileById(pendingProfile.userId);
-        console.log(`Temporary profile deletion result: ${deleted ? 'Success' : 'Failed'}`);
+        await deleteProfileById(pendingProfile.userId);
       } catch (cleanupError) {
-        console.error(`Failed to cleanup temporary profile: ${cleanupError}`);
+        logger.warn('Failed to cleanup temp profile', cleanupError as Error, { tempProfileId: pendingProfile.userId });
       }
     }
     
@@ -392,10 +313,10 @@ async function claimOldPendingProfile(
     revalidatePath("/notes");
     revalidatePath("/dashboard");
     
-    console.log(`Successfully claimed profile through legacy flow`);
+    logger.info('Successfully claimed profile through legacy flow', { userId });
     return { success: true };
   } catch (error) {
-    console.error("Error in legacy profile claiming:", error);
+    logger.error('Error in legacy profile claiming', error as Error, { userId, email });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : "Unknown error claiming profile" 

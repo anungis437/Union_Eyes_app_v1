@@ -1,6 +1,7 @@
 import { makeWebhookHandler } from "@whop-apps/sdk";
 import { checkDatabaseConnection } from "@/db/db";
 import { NextResponse } from "next/server";
+import { logger } from '@/lib/logger';
 
 // Import utility functions
 import { handlePaymentSuccess, handlePaymentFailed } from "./utils/payment-handlers";
@@ -23,12 +24,8 @@ function getWebhookHandler() {
  * to frictionless-payment-handlers.ts based on the presence of email in metadata
  */
 export async function POST(req: Request) {
-  console.log("Received Whop webhook event");
-  
   try {
-    // Log the raw request body for debugging
     const rawBody = await req.text();
-    console.log("Raw webhook body:", rawBody);
     
     // Convert back to request for the handler
     const newReq = new Request(req.url, {
@@ -42,12 +39,12 @@ export async function POST(req: Request) {
     try {
       dbStatus = await checkDatabaseConnection();
     } catch (dbError) {
-      console.error(`Error checking database connection:`, dbError);
+      logger.error('Database connection check failed', dbError as Error);
       dbStatus = { ok: false, message: "Database connection check failed" };
     }
     
     if (!dbStatus.ok) {
-      console.error(`Database connection issue: ${dbStatus.message}`);
+      logger.error('Database unavailable for webhook processing', undefined, { message: dbStatus.message });
       // Even with DB issues, we return 200 to Whop to avoid retries
       return new Response(JSON.stringify({ 
         status: "warning", 
@@ -64,12 +61,9 @@ export async function POST(req: Request) {
         // When a membership becomes invalid
         membershipWentInvalid(event) {
           try {
-            console.log(`[route.ts] Processing 'membershipWentInvalid' event`);
-            console.log(`[route.ts] Event action: ${event.action}`);
-            console.log(`[route.ts] Full event data:`, JSON.stringify(event, null, 2));
             handleMembershipChange(event.data, false);
           } catch (error) {
-            console.error(`[route.ts] Error in membershipWentInvalid handler:`, error);
+            logger.error('Error in membershipWentInvalid handler', error as Error, { eventAction: event.action });
             // Don't rethrow, let the webhook complete successfully
           }
         },
@@ -77,12 +71,9 @@ export async function POST(req: Request) {
         // When a payment is successfully processed
         paymentSucceeded(event) {
           try {
-            console.log(`[route.ts] Processing 'paymentSucceeded' event`);
-            console.log(`[route.ts] Event action: ${event.action}`);
-            console.log(`[route.ts] Full event data:`, JSON.stringify(event, null, 2));
             handlePaymentSuccess(event.data);
           } catch (error) {
-            console.error(`[route.ts] Error in paymentSucceeded handler:`, error);
+            logger.error('Error in paymentSucceeded handler', error as Error, { eventAction: event.action });
             // Don't rethrow, let the webhook complete successfully
           }
         },
@@ -90,14 +81,9 @@ export async function POST(req: Request) {
         // When a payment fails
         paymentFailed(event) {
           try {
-            console.log(`[route.ts] Payment failed for membership: ${event.data.id}`);
-            console.log(`[route.ts] Event action: ${event.action}`);
-            console.log(`[route.ts] Full event data:`, JSON.stringify(event, null, 2));
-            
-            // Handle payment failure
             handlePaymentFailed(event.data);
           } catch (error) {
-            console.error(`[route.ts] Error in paymentFailed handler:`, error);
+            logger.error('Error in paymentFailed handler', error as Error, { eventAction: event.action, membershipId: event.data.id });
             // Don't rethrow, let the webhook complete successfully
           }
         }

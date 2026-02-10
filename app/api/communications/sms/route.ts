@@ -38,13 +38,14 @@ import {
   type NewSmsCampaign,
 } from '@/db/schema/sms-communications-schema';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // ============================================================================
 // GET HANDLER - Routes based on action parameter
 // ============================================================================
 
 export const GET = async (req: NextRequest) => {
-  return withRoleAuth(10, async (request, context) => {
+  return withRoleAuth('member', async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {
@@ -89,7 +90,7 @@ export const GET = async (req: NextRequest) => {
 // ============================================================================
 
 export const POST = async (req: NextRequest) => {
-  return withRoleAuth(20, async (request, context) => {
+  return withRoleAuth('steward', async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
@@ -102,9 +103,9 @@ export const POST = async (req: NextRequest) => {
         case 'bulk':
           return sendBulkSmsAction(userId, body);
         case 'create-template':
-          return createTemplate(userId, body);
+          return createTemplate(userId, organizationId, body);
         case 'create-campaign':
-          return createCampaign(userId, body);
+          return createCampaign(userId, organizationId, body);
         case 'send-campaign':
           return sendCampaignAction(userId, body);
         case 'webhook':
@@ -256,9 +257,9 @@ async function sendBulkSmsAction(userId: string, body: any) {
   });
 }
 
-async function createTemplate(userId: string, body: any) {
+async function createTemplate(userId: string, contextOrganizationId: string, body: any) {
   const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, messageTemplate, variables, category } = body;
-  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody ?? contextOrganizationId;
   const tenantId = organizationId;
 
   if (!tenantId || !name || !messageTemplate) {
@@ -286,14 +287,16 @@ async function createTemplate(userId: string, body: any) {
     createdBy: userId,
   };
 
-  const [template] = await db.insert(smsTemplates).values(newTemplate).returning();
+  const [template] = await withRLSContext({ organizationId: tenantId }, async (db) => {
+    return await db.insert(smsTemplates).values(newTemplate).returning();
+  });
 
   return NextResponse.json({ template }, { status: 201 });
 }
 
-async function createCampaign(userId: string, body: any) {
+async function createCampaign(userId: string, contextOrganizationId: string, body: any) {
   const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, name, description, message, templateId, recipientFilter, scheduledFor } = body;
-  const organizationId = organizationIdFromBody ?? tenantIdFromBody;
+  const organizationId = organizationIdFromBody ?? tenantIdFromBody ?? contextOrganizationId;
   const tenantId = organizationId;
 
   if (!tenantId || !name || !message) {
@@ -315,7 +318,9 @@ async function createCampaign(userId: string, body: any) {
     createdBy: userId,
   };
 
-  const [campaign] = await db.insert(smsCampaigns).values(newCampaign).returning();
+  const [campaign] = await withRLSContext({ organizationId: tenantId }, async (db) => {
+    return await db.insert(smsCampaigns).values(newCampaign).returning();
+  });
 
   return NextResponse.json({ campaign }, { status: 201 });
 }

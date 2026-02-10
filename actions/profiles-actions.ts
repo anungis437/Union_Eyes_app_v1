@@ -70,7 +70,7 @@ export async function checkPaymentFailedAction(): Promise<{ paymentFailed: boole
     const profile = await getProfileByUserId(userId);
     return { paymentFailed: profile?.status === "payment_failed" || false };
   } catch (error) {
-    console.error("Error checking payment status:", error);
+    logger.error('Error checking payment status', error as Error, { userId: auth().userId });
     return { paymentFailed: false };
   }
 }
@@ -114,7 +114,7 @@ export async function getUserPlanInfoAction(): Promise<ActionResult<{
       data: planInfo 
     };
   } catch (error) {
-    console.error("Error getting user plan information:", error);
+    logger.error('Error getting user plan information', error as Error, { userId: auth().userId });
     return { 
       isSuccess: false, 
       message: "Failed to get plan information" 

@@ -12,6 +12,7 @@ import { put } from '@vercel/blob';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const POST = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -117,10 +118,12 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
       // Create notification for recipient
       const recipientId = thread.memberId === userId ? thread.staffId : thread.memberId;
       if (recipientId) {
-        await db.insert(messageNotifications).values({
-          userId: recipientId,
-          messageId: message.id,
-          threadId,
+        await withRLSContext({ organizationId }, async (db) => {
+          return await db.insert(messageNotifications).values({
+            userId: recipientId,
+            messageId: message.id,
+            threadId,
+          });
         });
       }
 

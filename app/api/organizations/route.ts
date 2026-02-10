@@ -18,10 +18,10 @@ import { claims } from '@/db/schema/claims-schema';
 import { tenantUsers } from '@/db/schema/user-management-schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
-import { getUserRole } from '@/lib/auth-middleware';
 import { validateBody, bodySchemas } from '@/lib/validation';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser, getUserRole } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * GET /api/organizations
@@ -130,14 +130,16 @@ export const GET = async (request: NextRequest) => {
                 const [memberCount, children, claimsResult] = await Promise.all([
                   getMemberCount(org.id),
                   getOrganizationChildren(org.id, false),
-                  db.select({ count: sql<number>`count(*)::int` })
-                    .from(claims)
-                    .where(
-                      and(
-                        eq(claims.organizationId, org.id),
-                        sql`${claims.status} IN ('submitted', 'under_review', 'assigned', 'investigation', 'pending_documentation')`
-                      )
-                    )
+                  withRLSContext({ organizationId: org.id }, async (db) => {
+                    return await db.select({ count: sql<number>`count(*)::int` })
+                      .from(claims)
+                      .where(
+                        and(
+                          eq(claims.organizationId, org.id),
+                          sql`${claims.status} IN ('submitted', 'under_review', 'assigned', 'investigation', 'pending_documentation')`
+                        )
+                      );
+                  })
                 ]);
 
                 return {

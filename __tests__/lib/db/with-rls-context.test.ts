@@ -14,7 +14,7 @@ import {
   getCurrentRLSContext,
   createSecureServerAction,
 } from '@/lib/db/with-rls-context';
-import { normalizeRole } from '@/lib/auth';
+import { normalizeRole } from '@/lib/api-auth-guard';
 
 // Mock Clerk auth
 vi.mock('@clerk/nextjs/server', () => ({

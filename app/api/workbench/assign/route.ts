@@ -1,4 +1,5 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logger } from '@/lib/logger';
 /**
  * Workbench API - Assign claim to user
  * 
@@ -38,7 +39,7 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error("Error assigning claim:", error);
+      logger.error('Error assigning claim', error as Error, { claimId: body?.claimId });
       return NextResponse.json(
         { error: "Failed to assign claim" },
         { status: 500 }

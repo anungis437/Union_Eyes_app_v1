@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (!isValid) {
-      console.error('[Webhook] Invalid HMAC signature', { topic, webhookId });
+      logger.warn('Invalid Shopify webhook signature', { topic, webhookId });
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }

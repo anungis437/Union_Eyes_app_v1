@@ -6,13 +6,14 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { db, organizations } from "@/db";
 import { sharedClauseLibrary } from "@/db/schema";
 import { eq, and, or, ilike, inArray, gte, lte, sql, isNull } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
 // POST /api/clause-library/search - Advanced search with full-text
 export const POST = async (request: NextRequest) => {
@@ -20,28 +21,19 @@ export const POST = async (request: NextRequest) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+      // Use authenticated organization context
+      if (!context.organizationId) {
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
-
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
-      // TODO: Add hierarchyPath once tenant hierarchy is implemented
-      const userOrgHierarchyPath = '';
+      const userOrgId = context.organizationId;
+      
+      // Fetch organization with hierarchy data
+      const userOrg = await db.query.organizations.findFirst({
+        where: eq(organizations.id, userOrgId),
+      });
+      
+      const userOrgHierarchyPath = userOrg?.hierarchyPath?.join(',') || '';
 
       const body = await request.json();
 
@@ -123,17 +115,19 @@ export const POST = async (request: NextRequest) => {
         );
       }
 
-      // Query clauses
-      const clauses = await db.query.sharedClauseLibrary.findMany({
-        where: filters.length > 0 ? and(...filters) : undefined,
-        with: {
-          tags: true,
-        },
-        limit: limit + offset, // Fetch more to account for access filtering
-        orderBy: (clause, { desc, asc }) => {
-          const column = clause[sortBy as keyof typeof clause] || clause.createdAt;
-          return sortOrder === "desc" ? [desc(column as any)] : [asc(column as any)];
-        },
+      // Query clauses with RLS enforcement
+      const clauses = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findMany({
+          where: filters.length > 0 ? and(...filters) : undefined,
+          with: {
+            tags: true,
+          },
+          limit: limit + offset, // Fetch more to account for access filtering
+          orderBy: (clause, { desc, asc }) => {
+            const column = clause[sortBy as keyof typeof clause] || clause.createdAt;
+            return sortOrder === "desc" ? [desc(column as any)] : [asc(column as any)];
+          },
+        });
       });
 
       // Filter by access permissions
@@ -151,13 +145,23 @@ export const POST = async (request: NextRequest) => {
               break;
             
             case "federation":
-              // TODO: Check federation hierarchy when implemented
-              hasAccess = false;
+              // Validate federation-level access using hierarchy
+              try {
+                await validateSharingLevel(context.userId, clause.sourceOrganizationId, 'federation');
+                hasAccess = true;
+              } catch (error) {
+                hasAccess = false;
+              }
               break;
             
             case "congress":
-              // TODO: Check CLC membership when implemented
-              hasAccess = false;
+              // Validate congress-level (CLC) access using hierarchy
+              try {
+                await validateSharingLevel(context.userId, clause.sourceOrganizationId, 'congress');
+                hasAccess = true;
+              } catch (error) {
+                hasAccess = false;
+              }
               break;
             
             case "public":

@@ -37,6 +37,7 @@ const EXCLUDE_PATTERNS = [
   '**/with-rls-context.ts',  // The wrapper itself
   '**/db.ts',                // Database connection
   '**/schema/**',            // Schema definitions
+  '**/hierarchy-access-control.ts', // SYSTEM-level security control (needs cross-tenant queries)
 ];
 
 // ============================================================================

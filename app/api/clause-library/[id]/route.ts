@@ -6,7 +6,6 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { db, organizations } from "@/db";
 import { 
   sharedClauseLibrary,
@@ -17,6 +16,8 @@ import { eq } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
 // Helper to log cross-org access
 async function logCrossOrgAccess(
@@ -49,7 +50,9 @@ async function logCrossOrgAccess(
       userAgent,
     };
 
-    await db.insert(crossOrgAccessLog).values(logEntry);
+    await withRLSContext({ organizationId: userOrgId }, async (db) => {
+      return await db.insert(crossOrgAccessLog).values(logEntry);
+    });
   } catch (error) {
     logger.warn('Failed to log cross-org access', { error: error instanceof Error ? error.message : String(error) });
     // Don't fail the request if logging fails
@@ -59,36 +62,28 @@ async function logCrossOrgAccess(
 // GET /api/clause-library/[id] - Get single clause
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
       const clauseId = params.id;
 
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+      // Use authenticated organization context (validated by withEnhancedRoleAuth)
+      if (!organizationId) {
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
+      const userOrgId = organizationId;
+      
+      // Fetch organization with hierarchy data
+      const userOrg = await db.query.organizations.findFirst({
+        where: eq(organizations.id, userOrgId),
+      });
+      
+      const userOrgHierarchyPath = userOrg?.hierarchyPath?.join(',') || '';
 
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
-      // TODO: Add hierarchyPath once tenant hierarchy is implemented
-      const userOrgHierarchyPath = '';
-
-      // Fetch clause using explicit select to avoid automatic joins
-      const clause = await db.query.sharedClauseLibrary.findFirst({
+      // Fetch clause with RLS enforcement
+      const clause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
         where: (c, { eq }) => eq(c.id, clauseId),
         with: {
           tags: true, // Tags don't cause issues
@@ -100,6 +95,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
             },
           },
         },
+        });
       });
 
       if (!clause) {
@@ -113,7 +109,6 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       if (!isOwner) {
         const sharingLevel = clause.sharingLevel;
-        // TODO: Implement hierarchy-based access control when tenant hierarchy is ready
 
         switch (sharingLevel) {
           case "private":
@@ -122,15 +117,23 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
             break;
           
           case "federation":
-            // TODO: Check federation hierarchy when implemented
-            // Temporarily allow access until hierarchy is built
-            hasAccess = true;
+            // Validate federation-level access using hierarchy
+            try {
+              await validateSharingLevel(userId, clause.sourceOrganizationId, 'federation');
+              hasAccess = true;
+            } catch (error) {
+              hasAccess = false;
+            }
             break;
           
           case "congress":
-            // TODO: Check CLC membership when implemented
-            // Temporarily allow access until hierarchy is built
-            hasAccess = true;
+            // Validate congress-level (CLC) access using hierarchy
+            try {
+              await validateSharingLevel(userId, clause.sourceOrganizationId, 'congress');
+              hasAccess = true;
+            } catch (error) {
+              hasAccess = false;
+            }
             break;
           
           case "public":
@@ -188,35 +191,23 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 // PATCH /api/clause-library/[id] - Update clause
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
       const clauseId = params.id;
 
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+      // Use authenticated organization context
+      if (!organizationId) {
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
+      const userOrgId = organizationId;
 
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
-
-      // Fetch existing clause
-      const existingClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (c, { eq }) => eq(c.id, clauseId),
+      // Fetch existing clause with RLS
+      const existingClause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (c, { eq }) => eq(c.id, clauseId),
+        });
       });
 
       if (!existingClause) {
@@ -263,20 +254,24 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       if (sector !== undefined) updates.sector = sector;
       if (province !== undefined) updates.province = province;
 
-      // Update clause
-      const [updatedClause] = await db
-        .update(sharedClauseLibrary)
-        .set(updates)
-        .where(eq(sharedClauseLibrary.id, clauseId))
-        .returning();
+      // Update clause with RLS
+      const [updatedClause] = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(sharedClauseLibrary)
+          .set(updates)
+          .where(eq(sharedClauseLibrary.id, clauseId))
+          .returning();
+      });
 
       // Fetch full clause with relations
-      const fullClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (c, { eq }) => eq(c.id, clauseId),
-        with: {
-          sourceOrganization: true,
-          tags: true,
-        },
+      const fullClause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (c, { eq }) => eq(c.id, clauseId),
+          with: {
+            sourceOrganization: true,
+            tags: true,
+          },
+        });
       });
 
       return NextResponse.json(fullClause);
@@ -297,35 +292,23 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 // DELETE /api/clause-library/[id] - Delete clause
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
       const clauseId = params.id;
 
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+      // Use authenticated organization context
+      if (!organizationId) {
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
+      const userOrgId = organizationId;
 
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
-
-      // Fetch existing clause
-      const existingClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (c, { eq }) => eq(c.id, clauseId),
+      // Fetch existing clause with RLS
+      const existingClause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (c, { eq }) => eq(c.id, clauseId),
+        });
       });
 
       if (!existingClause) {
@@ -337,10 +320,12 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         return NextResponse.json({ error: "Only the owner can delete this clause" }, { status: 403 });
       }
 
-      // Delete clause (cascade will delete tags)
-      await db
-        .delete(sharedClauseLibrary)
-        .where(eq(sharedClauseLibrary.id, clauseId));
+      // Delete clause with RLS (cascade will delete tags)
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .delete(sharedClauseLibrary)
+          .where(eq(sharedClauseLibrary.id, clauseId));
+      });
 
       return NextResponse.json({ success: true, message: "Clause deleted" });
 

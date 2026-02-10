@@ -29,6 +29,7 @@ import {
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
+import { logger } from '@/lib/logger';
 
 /**
  * Get current user's organization ID
@@ -37,7 +38,8 @@ async function getCurrentUserOrgId(): Promise<string> {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
   
-  // Get user's organization from organization_members
+  // Note: This is a lookup query to get org context, not tenant-scoped data
+  // organizationMembers table maps users to orgs, so no RLS wrapper needed here
   const result = await db.query.organizationMembers.findFirst({
     where: (members, { eq }) => eq(members.userId, userId),
     with: {
@@ -110,13 +112,16 @@ export async function calculateMetrics(params: {
         break;
         
       case 'member_growth':
-        const membersCount = await db.query.organizationMembers.findMany({
-          where: (members: any, { eq, and, gte, lte }: any) => and(
-            eq(members.organizationId, orgId),
-            gte(members.createdAt, params.periodStart),
-            lte(members.createdAt, params.periodEnd)
-          )
-        });
+        // SECURITY FIX: Wrap with RLS context for tenant isolation
+        const membersCount = await withRLSContext({ organizationId: orgId }, async (db) =>
+          db.query.organizationMembers.findMany({
+            where: (members: any, { eq, and, gte, lte }: any) => and(
+              eq(members.organizationId, orgId),
+              gte(members.createdAt, params.periodStart),
+              lte(members.createdAt, params.periodEnd)
+            )
+          })
+        );
         metricValue = membersCount.length;
         metricUnit = 'count';
         break;
@@ -130,15 +135,18 @@ export async function calculateMetrics(params: {
     const previousPeriodEnd = new Date(params.periodStart);
     const previousPeriodStart = new Date(params.periodStart.getTime() - periodDuration);
     
-    const previousMetric = await db.query.analyticsMetrics.findFirst({
-      where: and(
-        eq(analyticsMetrics.organizationId, orgId),
-        eq(analyticsMetrics.metricType, params.metricType),
-        eq(analyticsMetrics.periodType, params.periodType),
-        gte(analyticsMetrics.periodStart, previousPeriodStart),
-        lte(analyticsMetrics.periodEnd, previousPeriodEnd)
-      )
-    });
+    // SECURITY FIX: Wrap with RLS context for tenant isolation
+    const previousMetric = await withRLSContext({ organizationId: orgId }, async (db) =>
+      db.query.analyticsMetrics.findFirst({
+        where: (metrics, { and, eq, gte, lte }) => and(
+          eq(metrics.organizationId, orgId),
+          eq(metrics.metricType, params.metricType),
+          eq(metrics.periodType, params.periodType),
+          gte(metrics.periodStart, previousPeriodStart),
+          lte(metrics.periodEnd, previousPeriodEnd)
+        )
+      })
+    );
     
     const comparisonValue = previousMetric?.metricValue ? Number(previousMetric.metricValue) : null;
     let trend: 'up' | 'down' | 'stable' = 'stable';
@@ -149,8 +157,9 @@ export async function calculateMetrics(params: {
       else if (change < -5) trend = 'down';
     }
     
-    // Store metric
-    const [metric] = await db.insert(analyticsMetrics).values({
+    // Store metric with RLS context
+    const [metric] = await withRLSContext({ organizationId: orgId }, async (db) =>
+      db.insert(analyticsMetrics).values({
       organizationId: orgId,
       metricType: params.metricType,
       metricName: params.metricName,
@@ -168,7 +177,7 @@ export async function calculateMetrics(params: {
     
     return { success: true, metric };
   } catch (error) {
-    console.error('Error calculating metrics:', error);
+    logger.error('Error calculating metrics', error as Error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -184,15 +193,17 @@ export async function generatePredictions(params: {
   try {
     const orgId = await getCurrentUserOrgId();
     
-    // Get historical data based on prediction type
-    const historicalMetrics = await db.query.analyticsMetrics.findMany({
-      where: and(
-        eq(analyticsMetrics.organizationId, orgId),
-        eq(analyticsMetrics.metricType, params.predictionType === 'claims_volume' ? 'claims_volume' : 'custom')
-      ),
-      orderBy: [desc(analyticsMetrics.periodStart)],
-      limit: 90 // Last 90 periods
-    });
+    // Get historical data based on prediction type with RLS context
+    const historicalMetrics = await withRLSContext({ organizationId: orgId }, async (db) =>
+      db.query.analyticsMetrics.findMany({
+        where: (metrics, { and, eq }) => and(
+          eq(metrics.organizationId, orgId),
+          eq(metrics.metricType, params.predictionType === 'claims_volume' ? 'claims_volume' : 'custom')
+        ),
+        orderBy: (metrics, { desc }) => [desc(metrics.periodStart)],
+        limit: 90 // Last 90 periods
+      })
+    );
     
     if (historicalMetrics.length < 7) {
       return { success: false, error: 'Insufficient historical data for predictions (minimum 7 data points required)' };
@@ -226,21 +237,23 @@ export async function generatePredictions(params: {
       const targetDate = new Date(lastDate);
       targetDate.setDate(targetDate.getDate() + i + 1);
       
-      const [stored] = await db.insert(mlPredictions).values({
-        organizationId: orgId,
-        predictionType: params.predictionType,
-        modelName: pred.modelName,
-        modelVersion: pred.modelVersion,
-        targetDate,
-        predictedValue: pred.predictedValue.toString(),
-        confidenceInterval: pred.confidenceInterval,
-        confidenceScore: pred.confidenceScore.toString(),
-        features: pred.features,
-        metadata: {
-          historicalDataPoints: timeSeriesData.length,
-          generatedAt: new Date().toISOString()
-        }
-      }).returning();
+      const [stored] = await withRLSContext({ organizationId: orgId }, async (db) =>
+        db.insert(mlPredictions).values({
+          organizationId: orgId,
+          predictionType: params.predictionType,
+          modelName: pred.modelName,
+          modelVersion: pred.modelVersion,
+          targetDate,
+          predictedValue: pred.predictedValue.toString(),
+          confidenceInterval: pred.confidenceInterval,
+          confidenceScore: pred.confidenceScore.toString(),
+          features: pred.features,
+          metadata: {
+            historicalDataPoints: timeSeriesData.length,
+            generatedAt: new Date().toISOString()
+          }
+        }).returning()
+      );
       
       storedPredictions.push(stored);
     }
@@ -249,7 +262,7 @@ export async function generatePredictions(params: {
     
     return { success: true, predictions: storedPredictions };
   } catch (error) {
-    console.error('Error generating predictions:', error);
+    logger.error('Error generating predictions', error as Error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -267,15 +280,17 @@ export async function detectMetricTrends(params: {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
     
-    // Get historical metrics
-    const metrics = await db.query.analyticsMetrics.findMany({
-      where: and(
-        eq(analyticsMetrics.organizationId, orgId),
-        eq(analyticsMetrics.metricType, params.metricType),
-        gte(analyticsMetrics.periodStart, startDate)
-      ),
-      orderBy: [desc(analyticsMetrics.periodStart)]
-    });
+    // Get historical metrics with RLS context
+    const metrics = await withRLSContext({ organizationId: orgId }, async (db) =>
+      db.query.analyticsMetrics.findMany({
+        where: (metricsTable, { and, eq, gte }) => and(
+          eq(metricsTable.organizationId, orgId),
+          eq(metricsTable.metricType, params.metricType),
+          gte(metricsTable.periodStart, startDate)
+        ),
+        orderBy: (metricsTable, { desc }) => [desc(metricsTable.periodStart)]
+      })
+    );
     
     if (metrics.length < 7) {
       return { success: false, error: 'Insufficient data for trend analysis (minimum 7 data points required)' };
@@ -290,31 +305,33 @@ export async function detectMetricTrends(params: {
     // Detect trends
     const trendResult = detectTrend(timeSeriesData);
     
-    // Store trend analysis
-    const [storedTrend] = await db.insert(trendAnalyses).values({
-      organizationId: orgId,
-      analysisType: 'trend',
-      dataSource: params.metricType,
-      timeRange: {
-        start: startDate.toISOString(),
-        end: new Date().toISOString()
-      },
-      detectedTrend: trendResult.detectedTrend,
-      trendStrength: trendResult.trendStrength.toString(),
-      anomaliesDetected: trendResult.anomalies,
-      anomalyCount: trendResult.anomalies.length,
-      seasonalPattern: trendResult.seasonalPattern,
-      correlations: trendResult.correlations,
-      insights: generateTrendInsights(trendResult),
-      recommendations: generateTrendRecommendations(trendResult),
-      confidence: trendResult.confidence.toString()
-    }).returning();
+    // Store trend analysis with RLS context
+    const [storedTrend] = await withRLSContext({ organizationId: orgId }, async (db) =>
+      db.insert(trendAnalyses).values({
+        organizationId: orgId,
+        analysisType: 'trend',
+        dataSource: params.metricType,
+        timeRange: {
+          start: startDate.toISOString(),
+          end: new Date().toISOString()
+        },
+        detectedTrend: trendResult.detectedTrend,
+        trendStrength: trendResult.trendStrength.toString(),
+        anomaliesDetected: trendResult.anomalies,
+        anomalyCount: trendResult.anomalies.length,
+        seasonalPattern: trendResult.seasonalPattern,
+        correlations: trendResult.correlations,
+        insights: generateTrendInsights(trendResult),
+        recommendations: generateTrendRecommendations(trendResult),
+        confidence: trendResult.confidence.toString()
+      }).returning()
+    );
     
     revalidatePath('/dashboard/analytics');
     
     return { success: true, trend: storedTrend };
   } catch (error) {
-    console.error('Error detecting trends:', error);
+    logger.error('Error detecting trends', error as Error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -341,27 +358,29 @@ export async function createKPI(params: {
     
     const orgId = await getCurrentUserOrgId();
     
-    const [kpi] = await db.insert(kpiConfigurations).values({
-      organizationId: orgId,
-      createdBy: userId,
-      name: params.name,
-      description: params.description,
-      metricType: params.metricType,
-      dataSource: params.dataSource,
-      calculation: params.calculation,
-      visualizationType: params.visualizationType,
-      targetValue: params.targetValue?.toString(),
-      warningThreshold: params.warningThreshold?.toString(),
-      criticalThreshold: params.criticalThreshold?.toString(),
-      alertEnabled: params.alertEnabled || false,
-      alertRecipients: params.alertRecipients || []
-    }).returning();
+    const [kpi] = await withRLSContext({ organizationId: orgId }, async (db) =>
+      db.insert(kpiConfigurations).values({
+        organizationId: orgId,
+        createdBy: userId,
+        name: params.name,
+        description: params.description,
+        metricType: params.metricType,
+        dataSource: params.dataSource,
+        calculation: params.calculation,
+        visualizationType: params.visualizationType,
+        targetValue: params.targetValue?.toString(),
+        warningThreshold: params.warningThreshold?.toString(),
+        criticalThreshold: params.criticalThreshold?.toString(),
+        alertEnabled: params.alertEnabled || false,
+        alertRecipients: params.alertRecipients || []
+      }).returning()
+    );
     
     revalidatePath('/dashboard/analytics/kpis');
     
     return { success: true, kpi };
   } catch (error) {
-    console.error('Error creating KPI:', error);
+    logger.error('Error creating KPI', error as Error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -379,33 +398,35 @@ export async function getAnalyticsMetrics(params: {
   try {
     const orgId = await getCurrentUserOrgId();
     
-    const conditions = [eq(analyticsMetrics.organizationId, orgId)];
-    
-    if (params.metricType) {
-      conditions.push(eq(analyticsMetrics.metricType, params.metricType));
-    }
-    
-    if (params.periodType) {
-      conditions.push(eq(analyticsMetrics.periodType, params.periodType));
-    }
-    
-    if (params.startDate) {
-      conditions.push(gte(analyticsMetrics.periodStart, params.startDate));
-    }
-    
-    if (params.endDate) {
-      conditions.push(lte(analyticsMetrics.periodEnd, params.endDate));
-    }
-    
-    const metrics = await db.query.analyticsMetrics.findMany({
-      where: and(...conditions),
-      orderBy: [desc(analyticsMetrics.periodStart)],
-      limit: params.limit || 50
+    const metrics = await withRLSContext({ organizationId: orgId }, async (db) => {
+      const conditions = [eq(analyticsMetrics.organizationId, orgId)];
+      
+      if (params.metricType) {
+        conditions.push(eq(analyticsMetrics.metricType, params.metricType));
+      }
+      
+      if (params.periodType) {
+        conditions.push(eq(analyticsMetrics.periodType, params.periodType));
+      }
+      
+      if (params.startDate) {
+        conditions.push(gte(analyticsMetrics.periodStart, params.startDate));
+      }
+      
+      if (params.endDate) {
+        conditions.push(lte(analyticsMetrics.periodEnd, params.endDate));
+      }
+      
+      return db.query.analyticsMetrics.findMany({
+        where: and(...conditions),
+        orderBy: [desc(analyticsMetrics.periodStart)],
+        limit: params.limit || 50
+      });
     });
     
     return { success: true, metrics };
   } catch (error) {
-    console.error('Error fetching analytics metrics:', error);
+    logger.error('Error fetching analytics metrics', error as Error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

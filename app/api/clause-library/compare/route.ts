@@ -13,39 +13,31 @@ import {
   NewClauseComparison
 } from "@/db/schema";
 import { inArray, eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
 // POST /api/clause-library/compare - Compare multiple clauses
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
+      // Use authenticated organization context
+      if (!organizationId) {
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+      }
+
+      const userOrgId = organizationId;
       
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
-      }
-
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
-
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
-      // TODO: Add hierarchyPath once tenant hierarchy is implemented
-      const userOrgHierarchyPath = '';
+      // Fetch organization with hierarchy data
+      const userOrg = await db.query.organizations.findFirst({
+        where: eq(organizations.id, userOrgId),
+      });
+      
+      const userOrgHierarchyPath = userOrg?.hierarchyPath?.join(',') || '';
 
       const body = await request.json();
       const { clauseIds, comparisonNotes } = body;
@@ -65,19 +57,21 @@ export const POST = async (request: NextRequest) => {
         );
       }
 
-      // Fetch clauses using explicit select to avoid automatic joins
-      const clauses = await db.query.sharedClauseLibrary.findMany({
-        where: (c, { inArray }) => inArray(c.id, clauseIds),
-        with: {
-          tags: true,
-          sourceOrganization: {
-            columns: {
-              id: true,
-              name: true,
-              organizationType: true,
+      // Fetch clauses with RLS enforcement
+      const clauses = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findMany({
+          where: (c, { inArray }) => inArray(c.id, clauseIds),
+          with: {
+            tags: true,
+            sourceOrganization: {
+              columns: {
+                id: true,
+                name: true,
+                organizationType: true,
+              },
             },
           },
-        },
+        });
       });
 
       if (clauses.length !== clauseIds.length) {
@@ -95,7 +89,6 @@ export const POST = async (request: NextRequest) => {
 
         if (!isOwner) {
           const sharingLevel = clause.sharingLevel;
-          // TODO: Implement hierarchy-based access control when tenant hierarchy is ready
 
           switch (sharingLevel) {
             case "private":
@@ -103,15 +96,23 @@ export const POST = async (request: NextRequest) => {
               break;
             
             case "federation":
-              // TODO: Check federation hierarchy when implemented
-              // Temporarily allow access until hierarchy is built
-              hasAccess = true;
+              // Validate federation-level access using hierarchy
+              try {
+                await validateSharingLevel(userId, clause.sourceOrganizationId, 'federation');
+                hasAccess = true;
+              } catch (error) {
+                hasAccess = false;
+              }
               break;
             
             case "congress":
-              // TODO: Check CLC membership when implemented
-              // Temporarily allow access until hierarchy is built
-              hasAccess = true;
+              // Validate congress-level (CLC) access using hierarchy
+              try {
+                await validateSharingLevel(userId, clause.sourceOrganizationId, 'congress');
+                hasAccess = true;
+              } catch (error) {
+                hasAccess = false;
+              }
               break;
             
             case "public":
@@ -130,7 +131,7 @@ export const POST = async (request: NextRequest) => {
         accessibleClauses.push(clause);
       }
 
-      // Log comparison in history
+      // Log comparison in history with RLS
       const comparisonLog: NewClauseComparison = {
         userId,
         organizationId: userOrgId,
@@ -138,17 +139,21 @@ export const POST = async (request: NextRequest) => {
         comparisonNotes: comparisonNotes || null,
       };
 
-      await db.insert(clauseComparisonsHistory).values(comparisonLog);
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.insert(clauseComparisonsHistory).values(comparisonLog);
+      });
 
       // Increment comparison count for each clause
       for (const clause of accessibleClauses) {
-        await db
-          .update(sharedClauseLibrary)
-          .set({
-            comparisonCount: (clause.comparisonCount ?? 0) + 1,
-            updatedAt: new Date(),
-          })
-          .where(eq(sharedClauseLibrary.id, clause.id));
+        await withRLSContext({ organizationId: userOrgId }, async (db) => {
+          return await db
+            .update(sharedClauseLibrary)
+            .set({
+              comparisonCount: (clause.comparisonCount ?? 0) + 1,
+              updatedAt: new Date(),
+            })
+            .where(eq(sharedClauseLibrary.id, clause.id));
+        });
       }
 
       // Analyze differences (basic implementation)

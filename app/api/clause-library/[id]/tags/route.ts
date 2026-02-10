@@ -6,46 +6,34 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { db, organizations } from "@/db";
 import { clauseLibraryTags, sharedClauseLibrary } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // POST /api/clause-library/[id]/tags - Add tag
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
     try {
       const clauseId = params.id;
 
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
-
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
+      const userOrgId = organizationId;
 
       // Fetch existing clause
-      const existingClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (c, { eq }) => eq(c.id, clauseId),
+      const existingClause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (c, { eq }) => eq(c.id, clauseId),
+        });
       });
 
       if (!existingClause) {
@@ -74,12 +62,14 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       }
 
       // Check if tag already exists
-      const existingTag = await db.query.clauseLibraryTags.findFirst({
-        where: (t, { and, eq }) => 
-          and(
-            eq(t.clauseId, clauseId),
-            eq(t.tagName, trimmedTag)
-          ),
+      const existingTag = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.clauseLibraryTags.findFirst({
+          where: (t, { and, eq }) => 
+            and(
+              eq(t.clauseId, clauseId),
+              eq(t.tagName, trimmedTag)
+            ),
+        });
       });
 
       if (existingTag) {
@@ -87,20 +77,24 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       }
 
       // Add tag
-      const [newTag] = await db
-        .insert(clauseLibraryTags)
-        .values({
-          clauseId,
-          tagName: trimmedTag,
-          createdBy: userId,
-        })
-        .returning();
+      const [newTag] = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .insert(clauseLibraryTags)
+          .values({
+            clauseId,
+            tagName: trimmedTag,
+            createdBy: userId,
+          })
+          .returning();
+      });
 
       // Update clause updated_at
-      await db
-        .update(sharedClauseLibrary)
-        .set({ updatedAt: new Date() })
-        .where(eq(sharedClauseLibrary.id, clauseId));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(sharedClauseLibrary)
+          .set({ updatedAt: new Date() })
+          .where(eq(sharedClauseLibrary.id, clauseId));
+      });
 
       return NextResponse.json(newTag, { status: 201 });
 
@@ -121,35 +115,23 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 // DELETE /api/clause-library/[id]/tags - Remove tag
 export const DELETE = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
     try {
       const clauseId = params.id;
 
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
-
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
+      const userOrgId = organizationId;
 
       // Fetch existing clause
-      const existingClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (c, { eq }) => eq(c.id, clauseId),
+      const existingClause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (c, { eq }) => eq(c.id, clauseId),
+        });
       });
 
       if (!existingClause) {
@@ -169,20 +151,24 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       }
 
       // Delete tag
-      await db
-        .delete(clauseLibraryTags)
-        .where(
-          and(
-            eq(clauseLibraryTags.clauseId, clauseId),
-            eq(clauseLibraryTags.tagName, tagName.trim())
-          )
-        );
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .delete(clauseLibraryTags)
+          .where(
+            and(
+              eq(clauseLibraryTags.clauseId, clauseId),
+              eq(clauseLibraryTags.tagName, tagName.trim())
+            )
+          );
+      });
 
       // Update clause updated_at
-      await db
-        .update(sharedClauseLibrary)
-        .set({ updatedAt: new Date() })
-        .where(eq(sharedClauseLibrary.id, clauseId));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(sharedClauseLibrary)
+          .set({ updatedAt: new Date() })
+          .where(eq(sharedClauseLibrary.id, clauseId));
+      });
 
       return NextResponse.json({ 
         success: true, 

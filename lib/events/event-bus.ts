@@ -371,6 +371,7 @@ export const AppEvents = {
   SYSTEM_ERROR: 'system.error',
   SYSTEM_WARNING: 'system.warning',
   TASK_COMPLETED: 'task.completed',
+  AUDIT_LOG: 'system.audit_log',
   
   // Organization
   ORG_CREATED: 'org.created',

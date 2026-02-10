@@ -18,6 +18,7 @@ import { calendarEvents, calendars, eventAttendees, calendarSharing } from '@/db
 import { eq, and } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Check if user has access to event
@@ -258,7 +259,9 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       // Update attendees if provided
       if (attendees) {
         // Delete existing attendees and re-add
-        await db.delete(eventAttendees).where(eq(eventAttendees.eventId, eventId));
+        await withRLSContext({ organizationId }, async (db) => {
+          return await db.delete(eventAttendees).where(eq(eventAttendees.eventId, eventId));
+        });
 
         if (attendees.length > 0) {
           const attendeeValues = attendees.map((attendee: any) => {
@@ -276,7 +279,9 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
             };
           });
 
-          await db.insert(eventAttendees).values(attendeeValues);
+          await withRLSContext({ organizationId }, async (db) => {
+            return await db.insert(eventAttendees).values(attendeeValues);
+          });
         }
       }
 

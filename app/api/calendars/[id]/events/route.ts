@@ -13,6 +13,7 @@ import { calendars, calendarEvents, eventAttendees, calendarSharing } from '@/db
 import { eq, and, gte, lte, or, desc } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Check if user has access to calendar
@@ -257,7 +258,9 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           };
         });
 
-        await db.insert(eventAttendees).values(attendeeValues);
+        await withRLSContext({ organizationId }, async (db) => {
+          return await db.insert(eventAttendees).values(attendeeValues);
+        });
       }
 
       // Schedule reminders using job queue

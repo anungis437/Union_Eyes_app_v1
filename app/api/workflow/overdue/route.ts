@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getOverdueClaims, getClaimsApproachingDeadline } from "@/lib/workflow-engine";
 import { requireApiAuth } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/workflow/overdue
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
       claims: result,
     });
   } catch (error) {
-    console.error("Error getting overdue claims:", error);
+    logger.error('Error getting overdue claims', error as Error);
     return NextResponse.json(
       { error: "Failed to get overdue claims" },
       { status: 500 }

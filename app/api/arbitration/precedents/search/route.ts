@@ -6,13 +6,13 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { logger } from "@/lib/logger";
 import { db, organizations } from "@/db";
 import { arbitrationPrecedents } from "@/db/schema";
 import { eq, and, or, ilike, inArray, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // Helper to check access
 async function canAccessPrecedent(
@@ -46,27 +46,15 @@ async function canAccessPrecedent(
 // POST /api/arbitration/precedents/search - Advanced search
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
       const userOrgHierarchyPath = ''; // TODO: Add once hierarchy is implemented
 
       const body = await request.json();
@@ -192,21 +180,23 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Query precedents with filters
-      const precedents = await db.query.arbitrationPrecedents.findMany({
-        where: filters.length > 0 ? and(...filters) : undefined,
-        limit,
-        offset,
-        orderBy: orderByClause,
-        with: {
-          sourceOrganization: {
-            columns: {
-              id: true,
-              name: true,
-              slug: true,
-            }
-          },
-          tags: true,
-        }
+      const precedents = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findMany({
+          where: filters.length > 0 ? and(...filters) : undefined,
+          limit,
+          offset,
+          orderBy: orderByClause,
+          with: {
+            sourceOrganization: {
+              columns: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            },
+            tags: true,
+          }
+        });
       });
 
       // Filter by tags if specified (post-query filtering since tags are in related table)
@@ -234,10 +224,12 @@ export const POST = async (request: NextRequest) => {
       const finalPrecedents = accessiblePrecedents.filter((p): p is NonNullable<typeof p> => p !== null);
 
       // Get total count for pagination (approximate since we're doing post-filtering)
-      const [{ count }] = await db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(arbitrationPrecedents)
-        .where(filters.length > 0 ? and(...filters) : undefined);
+      const [{ count }] = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(arbitrationPrecedents)
+          .where(filters.length > 0 ? and(...filters) : undefined);
+      });
 
       return NextResponse.json({
         precedents: finalPrecedents,

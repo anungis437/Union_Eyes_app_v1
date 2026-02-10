@@ -20,6 +20,7 @@ import { organizations, organizationMembers } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const POST = async (req: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -50,8 +51,10 @@ export const POST = async (req: NextRequest) => {
       }
 
       // Check if organization exists
-      const targetOrg = await db.query.organizations.findFirst({
-        where: eq(organizations.id, organizationId),
+      const targetOrg = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.organizations.findFirst({
+          where: eq(organizations.id, organizationId),
+        });
       });
 
       if (!targetOrg) {
@@ -91,20 +94,26 @@ export const POST = async (req: NextRequest) => {
       }
 
       // Check if user has membership in target organization
-      const membership = await db.query.organizationMembers.findFirst({
-        where: and(
-          eq(organizationMembers.userId, userId),
-          eq(organizationMembers.organizationId, organizationId)
-        ),
+      const membership = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.organizationMembers.findFirst({
+          where: and(
+            eq(organizationMembers.userId, userId),
+            eq(organizationMembers.organizationId, organizationId)
+          ),
+        });
       });
 
       if (!membership) {
         // Check if user has access through organizational hierarchy (e.g., admin of parent org)
-        const userMemberships = await db.query.organizationMembers.findMany({
-          where: eq(organizationMembers.userId, userId),
-          with: {
-            organization: true,
-          },
+        // NOTE: This is a cross-tenant query - user may have memberships in multiple organizations
+        // Using current context organizationId for RLS compliance, but query spans all user's orgs
+        const userMemberships = await withRLSContext({ organizationId: currentOrgId }, async (db) => {
+          return await db.query.organizationMembers.findMany({
+            where: eq(organizationMembers.userId, userId),
+            with: {
+              organization: true,
+            },
+          });
         });
 
         // Check if user is admin/steward in any parent organization

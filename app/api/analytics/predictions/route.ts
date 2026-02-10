@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generatePredictions } from '@/actions/analytics-actions';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('member', async (request, context) => {
@@ -101,6 +102,8 @@ export const POST = async (request: NextRequest) => {
 
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
+    const { userId, organizationId } = context;
+
     try {
       const searchParams = request.nextUrl.searchParams;
       const predictionType = searchParams.get('predictionType');
@@ -119,10 +122,12 @@ export const GET = async (request: NextRequest) => {
       const { eq, desc } = await import('drizzle-orm');
       
       // Get user's org ID (simplified for now)
-      const predictions = await db.query.mlPredictions.findMany({
-        where: eq(mlPredictions.predictionType, predictionType),
-        orderBy: [desc(mlPredictions.createdAt)],
-        limit
+      const predictions = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.mlPredictions.findMany({
+          where: eq(mlPredictions.predictionType, predictionType),
+          orderBy: [desc(mlPredictions.createdAt)],
+          limit
+        });
       });
       
       return NextResponse.json({

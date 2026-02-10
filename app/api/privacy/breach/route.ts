@@ -5,19 +5,22 @@ import { ProvincialPrivacyService } from "@/services/provincial-privacy-service"
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Helper to check if user has security/admin role
  */
-async function checkSecurityPermissions(userId: string): Promise<boolean> {
+async function checkSecurityPermissions(userId: string, organizationId: string): Promise<boolean> {
   try {
     // Check for security officer or admin roles in any organization
-    const member = await db.query.organizationMembers.findFirst({
-      where: (organizationMembers, { eq, or }) =>
-        or(
-          eq(organizationMembers.userId, userId),
-          // Check multiple roles if available
-        ),
+    const member = await withRLSContext({ organizationId }, async (db) => {
+      return await db.query.organizationMembers.findFirst({
+        where: (organizationMembers, { eq, or }) =>
+          or(
+            eq(organizationMembers.userId, userId),
+            // Check multiple roles if available
+          ),
+      });
     });
 
     // Allow admin and super_admin roles to access security functions
@@ -34,7 +37,7 @@ export const POST = async (request: NextRequest) => {
 
   try {
       // Check if user has admin/security role
-      const hasPermission = await checkSecurityPermissions(userId);
+      const hasPermission = await checkSecurityPermissions(userId, organizationId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - admin or security officer role required" },
@@ -99,7 +102,7 @@ export const GET = async (request: NextRequest) => {
 
   try {
       // Check if user has admin/security role
-      const hasPermission = await checkSecurityPermissions(userId);
+      const hasPermission = await checkSecurityPermissions(userId, organizationId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - admin or security officer role required" },

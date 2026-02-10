@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
 import { requireUser } from '@/lib/auth/unified-auth';
+import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
@@ -136,6 +137,43 @@ export async function PUT(
         { error: "Invalid precedent sharing level" },
         { status: 400 }
       );
+    }
+
+    // Validate federation/congress sharing authorization
+    if (body.default_clause_sharing_level === 'federation' || body.default_clause_sharing_level === 'congress') {
+      const sharingValidation = await validateSharingLevel(
+        userId,
+        organizationId,
+        body.default_clause_sharing_level
+      );
+      
+      if (!sharingValidation.allowed) {
+        return NextResponse.json(
+          { 
+            error: "Cannot enable federation/congress sharing", 
+            reason: sharingValidation.reason 
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (body.default_precedent_sharing_level === 'federation' || body.default_precedent_sharing_level === 'congress') {
+      const sharingValidation = await validateSharingLevel(
+        userId,
+        organizationId,
+        body.default_precedent_sharing_level
+      );
+      
+      if (!sharingValidation.allowed) {
+        return NextResponse.json(
+          { 
+            error: "Cannot enable federation/congress sharing", 
+            reason: sharingValidation.reason 
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Prepare update data

@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { DEFAULT_REDIRECT_URL } from "../webhooks/utils/constants";
 import { requireUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 /**
  * API endpoint to create a Whop checkout session with properly structured metadata
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.WHOP_API_KEY;
     if (!apiKey) {
-      console.error("WHOP_API_KEY environment variable is not set");
+      logger.error('WHOP_API_KEY environment variable is not set');
       return NextResponse.json(
         { error: "Server configuration error: Missing API key" },
         { 
@@ -56,8 +57,6 @@ export async function POST(req: Request) {
       planDuration = "monthly";
     }
     
-    console.log(`Creating checkout for plan ID: ${planId} with duration: ${planDuration}`);
-
     // Use the constant from constants.ts instead of hardcoded URL
     const defaultRedirectUrl = DEFAULT_REDIRECT_URL;
     
@@ -77,11 +76,11 @@ export async function POST(req: Request) {
           validRedirectUrl = redirectUrl;
         } else {
           // If it's not a valid URL format, use default
-          console.log(`Invalid redirect URL format: ${redirectUrl}, using default`);
+          logger.warn('Invalid redirect URL format, using default', { redirectUrl });
           validRedirectUrl = defaultRedirectUrl;
         }
       } catch (error) {
-        console.error(`Error validating redirect URL: ${redirectUrl}`, error);
+        logger.error('Error validating redirect URL', error as Error, { redirectUrl });
         validRedirectUrl = defaultRedirectUrl;
       }
     }
@@ -96,8 +95,6 @@ export async function POST(req: Request) {
       validRedirectUrl = `${validRedirectUrl}?payment=success&cb=${Date.now().toString().slice(-4)}`;
     }
     
-    console.log(`Using validated redirect URL: ${validRedirectUrl}`);
-
     // Create a checkout session directly using fetch
     const response = await fetch("https://api.whop.com/api/v2/checkout_sessions", {
       method: "POST",
@@ -118,7 +115,7 @@ export async function POST(req: Request) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("Failed to create Whop checkout:", errorData);
+      logger.error('Failed to create Whop checkout', undefined, { status: response.status, error: errorData });
       
       // Provide more specific error message based on the response
       const errorMessage = errorData.error?.message || errorData.message || "Unknown error from Whop API";
@@ -137,13 +134,7 @@ export async function POST(req: Request) {
 
     const data = await response.json();
     
-    // Log successful checkout creation
-    console.log(`Successfully created Whop checkout for user ${userId}:`, {
-      checkoutUrl: data.purchase_url,
-      sessionId: data.id,
-      planId,
-      planDuration
-    });
+    logger.info('Whop checkout created', { userId, planId, checkoutUrl: data.purchase_url, sessionId: data.id });
     
     // Return the checkout URL to redirect the user
     return NextResponse.json(
@@ -158,7 +149,7 @@ export async function POST(req: Request) {
       }
     );
   } catch (error) {
-    console.error("Error creating Whop checkout:", error);
+    logger.error('Error creating Whop checkout', error as Error);
     return NextResponse.json(
       { 
         error: "Internal server error",

@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 import { updateProfile, updateProfileByStripeCustomerId } from "@/db/queries/profiles-queries";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { logger } from '@/lib/logger';
 
 const relevantEvents = new Set<Stripe.Event.Type>([
   "checkout.session.completed", 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
       severity: 'high',
       details: { error: err.message },
     });
-    console.error(`Webhook Error: ${err.message}`);
+    logger.error('Stripe webhook signature validation failed', new Error(err.message));
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
@@ -125,7 +126,7 @@ export async function POST(req: Request) {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Webhook handler failed' },
       });
-      console.error("Webhook handler failed:", error);
+      logger.error('Webhook handler failed', error as Error, { eventType: event.type });
       return new Response("Webhook handler failed. View your nextjs function logs.", {
         status: 400
       });
@@ -167,10 +168,8 @@ async function handleCheckoutSession(event: Stripe.Event) {
           billingCycleStart,
           billingCycleEnd
         });
-        
-        console.log(`Reset usage credits to ${DEFAULT_USAGE_CREDITS} for user ${checkoutSession.client_reference_id}`);
       } catch (error) {
-        console.error(`Error updating usage credits: ${error}`);
+        logger.error('Error updating usage credits', error as Error, { userId: checkoutSession.client_reference_id });
       }
     }
   }
@@ -215,12 +214,12 @@ async function handlePaymentFailed(event: Stripe.Event) {
     });
     
     if (updatedProfile) {
-      console.log(`Marked payment as failed for user ${updatedProfile.userId}`);
+      logger.info('Marked payment as failed', { userId: updatedProfile.userId, customerId });
     } else {
-      console.error(`No profile found for Stripe customer: ${customerId}`);
+      logger.warn('No profile found for Stripe customer', { customerId });
     }
   } catch (error) {
-    console.error(`Error processing payment failure: ${error}`);
+    logger.error('Error processing payment failure', error as Error, { customerId });
   }
 }
 
@@ -448,7 +447,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
     const tenantId = setupIntent.metadata?.tenantId;
     
     if (!memberId || !tenantId) {
-      console.warn(`SetupIntent ${setupIntent.id} missing memberId or tenantId in metadata`);
+      logger.warn('SetupIntent missing required metadata', { setupIntentId: setupIntent.id });
       return;
     }
     
@@ -481,23 +480,25 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
     const isDefault = existingMethods.length === 0;
     
     // Save payment method
-    await db.insert(paymentMethods).values({
-      tenantId,
-      memberId,
-      stripePaymentMethodId: setupIntent.payment_method as string,
-      stripeCustomerId: setupIntent.customer as string,
-      type: paymentMethod.type === 'us_bank_account' ? 'bank_account' : 'card',
-      last4: paymentMethod.card?.last4 || paymentMethod.us_bank_account?.last4,
-      brand: paymentMethod.card?.brand,
-      expiryMonth: paymentMethod.card?.exp_month?.toString(),
-      expiryYear: paymentMethod.card?.exp_year?.toString(),
-      bankName: paymentMethod.us_bank_account?.bank_name,
-      isDefault,
-      isActive: true,
+    await withRLSContext({ organizationId: tenantId }, async (db) => {
+      return await db.insert(paymentMethods).values({
+        tenantId,
+        memberId,
+        stripePaymentMethodId: setupIntent.payment_method as string,
+        stripeCustomerId: setupIntent.customer as string,
+        type: paymentMethod.type === 'us_bank_account' ? 'bank_account' : 'card',
+        last4: paymentMethod.card?.last4 || paymentMethod.us_bank_account?.last4,
+        brand: paymentMethod.card?.brand,
+        expiryMonth: paymentMethod.card?.exp_month?.toString(),
+        expiryYear: paymentMethod.card?.exp_year?.toString(),
+        bankName: paymentMethod.us_bank_account?.bank_name,
+        isDefault,
+        isActive: true,
+      });
     });
-    
-    console.log(`Saved payment method ${setupIntent.payment_method} for member ${memberId}`);
+
+    logger.info('Saved payment method', { paymentMethodId: setupIntent.payment_method, memberId });
   } catch (error) {
-    console.error(`Error processing setup intent success: ${error}`);
+    logger.error('Error processing setup intent success', error as Error, { setupIntentId: setupIntent.id });
   }
 } */

@@ -31,6 +31,7 @@
  * - hasRole()                   - Check if user has role
  * - hasMinRole()                - Check if user meets min role in hierarchy
  * - hasRoleInOrganization()     - Check org-specific role
+ * - getUserRole()               - Get user's role in organization (returns role or null)
  * - normalizeRole()             - Normalize legacy roles
  * - isSystemAdmin()             - Check system admin status
  * 
@@ -645,6 +646,51 @@ export async function hasRoleInOrganization(
   } catch (error) {
     console.error('[Auth] Error checking organization role:', error);
     return false;
+  }
+}
+
+/**
+ * Get user's role in organization
+ * Accepts either organization UUID or tenant UUID
+ * Returns the role or null if user is not a member
+ * 
+ * @param userId - User ID to check
+ * @param organizationId - Organization/tenant ID (UUID or slug)
+ * @returns User's role or null
+ */
+export async function getUserRole(
+  userId: string,
+  organizationId: string
+): Promise<UserRole | null> {
+  try {
+    const { tenantUsers } = await import('@/db/schema/user-management-schema');
+    const { tenants } = await import('@/db/schema/tenant-management-schema');
+    const { and } = await import('drizzle-orm');
+    
+    // Join with tenants table to support both slug and UUID lookup
+    const [result] = await db
+      .select({ role: tenantUsers.role })
+      .from(tenantUsers)
+      .innerJoin(
+        tenants,
+        eq(tenants.tenantId, tenantUsers.tenantId)
+      )
+      .where(and(
+        eq(tenantUsers.userId, userId),
+        // Check both tenant_slug and tenant_id to support both formats
+        organizationId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+          ? eq(tenants.tenantId, organizationId)
+          : eq(tenants.tenantSlug, organizationId)
+      ))
+      .limit(1);
+
+    return (result?.role as UserRole) || null;
+  } catch (error) {
+    logger.error('Failed to fetch user role', error, {
+      userId,
+      organizationId,
+    });
+    return null;
   }
 }
 

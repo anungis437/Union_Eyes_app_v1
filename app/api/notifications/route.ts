@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { inAppNotifications } from '@/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
@@ -34,12 +35,14 @@ export const GET = async (request: NextRequest) => {
         ? [...baseConditions, eq(inAppNotifications.read, false)]
         : baseConditions;
 
-      const notifications = await db
-        .select()
-        .from(inAppNotifications)
-        .where(and(...whereConditions))
-        .orderBy(desc(inAppNotifications.createdAt))
-        .limit(limit);
+      const notifications = await withRLSContext({ organizationId: context.organizationId }, async (db) => {
+        return await db
+          .select()
+          .from(inAppNotifications)
+          .where(and(...whereConditions))
+          .orderBy(desc(inAppNotifications.createdAt))
+          .limit(limit);
+      });
 
       // Get unread count with tenant filter
       const unreadCountConditions = [
@@ -51,10 +54,12 @@ export const GET = async (request: NextRequest) => {
         unreadCountConditions.push(eq(inAppNotifications.tenantId, tenantId));
       }
 
-      const unreadCount = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(inAppNotifications)
-        .where(and(...unreadCountConditions));
+      const unreadCount = await withRLSContext({ organizationId: context.organizationId }, async (db) => {
+        return await db
+          .select({ count: sql<number>`count(*)` })
+          .from(inAppNotifications)
+          .where(and(...unreadCountConditions));
+      });
 
       return NextResponse.json({
         notifications,

@@ -37,42 +37,46 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Fetch threads with last message and unread count
-      const threads = await db
-        .select({
-          id: messageThreads.id,
-          subject: messageThreads.subject,
-          memberId: messageThreads.memberId,
-          staffId: messageThreads.staffId,
-          organizationId: messageThreads.organizationId,
-          status: messageThreads.status,
-          priority: messageThreads.priority,
-          category: messageThreads.category,
-          lastMessageAt: messageThreads.lastMessageAt,
-          createdAt: messageThreads.createdAt,
-          updatedAt: messageThreads.updatedAt,
-        })
-        .from(messageThreads)
-        .where(conditions)
-        .orderBy(desc(messageThreads.lastMessageAt))
-        .limit(limit)
-        .offset(offset);
+      const threads = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            id: messageThreads.id,
+            subject: messageThreads.subject,
+            memberId: messageThreads.memberId,
+            staffId: messageThreads.staffId,
+            organizationId: messageThreads.organizationId,
+            status: messageThreads.status,
+            priority: messageThreads.priority,
+            category: messageThreads.category,
+            lastMessageAt: messageThreads.lastMessageAt,
+            createdAt: messageThreads.createdAt,
+            updatedAt: messageThreads.updatedAt,
+          })
+          .from(messageThreads)
+          .where(conditions)
+          .orderBy(desc(messageThreads.lastMessageAt))
+          .limit(limit)
+          .offset(offset);
+      });
 
       // Get unread counts for each thread
       const threadIds = threads.map(t => t.id);
-      const unreadCounts = await db
-        .select({
-          threadId: messages.threadId,
-          count: sql<number>`count(*)`.as('count'),
-        })
-        .from(messages)
-        .where(
-          and(
-            sql`${messages.threadId} = ANY(${threadIds})`,
-            sql`${messages.senderId} != ${userId}`,
-            sql`${messages.readAt} IS NULL`
+      const unreadCounts = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            threadId: messages.threadId,
+            count: sql<number>`count(*)`.as('count'),
+          })
+          .from(messages)
+          .where(
+            and(
+              sql`${messages.threadId} = ANY(${threadIds})`,
+              sql`${messages.senderId} != ${userId}`,
+              sql`${messages.readAt} IS NULL`
+            )
           )
-        )
-        .groupBy(messages.threadId);
+          .groupBy(messages.threadId);
+      });
 
       const unreadMap = Object.fromEntries(
         unreadCounts.map(u => [u.threadId, Number(u.count)])
@@ -122,32 +126,38 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Create thread
-      const [thread] = await db
-        .insert(messageThreads)
-        .values({
-          subject,
-          memberId: userId,
-          staffId: staffId || null,
-          organizationId,
-          category: category || 'general',
-          priority: priority || 'normal',
-          lastMessageAt: new Date(),
-        })
-        .returning();
+      const [thread] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .insert(messageThreads)
+          .values({
+            subject,
+            memberId: userId,
+            staffId: staffId || null,
+            organizationId,
+            category: category || 'general',
+            priority: priority || 'normal',
+            lastMessageAt: new Date(),
+          })
+          .returning();
+      });
 
       // Add creator as participant
-      await db.insert(messageParticipants).values({
-        threadId: thread.id,
-        userId,
-        role: 'member',
+      await withRLSContext({ organizationId }, async (db) => {
+        return await db.insert(messageParticipants).values({
+          threadId: thread.id,
+          userId,
+          role: 'member',
+        });
       });
 
       // Add staff as participant if specified
       if (staffId) {
-        await db.insert(messageParticipants).values({
-          threadId: thread.id,
-          userId: staffId,
-          role: 'staff',
+        await withRLSContext({ organizationId }, async (db) => {
+          return await db.insert(messageParticipants).values({
+            threadId: thread.id,
+            userId: staffId,
+            role: 'staff',
+          });
         });
       }
 

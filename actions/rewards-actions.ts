@@ -7,6 +7,8 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { logger } from '@/lib/logger';
 import * as rewardsService from '@/lib/services/rewards';
 import {
   createProgramSchema,
@@ -36,6 +38,8 @@ async function getCurrentUserOrgId(): Promise<string> {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
+  // Note: This is a lookup query to get org context, not tenant-scoped data
+  // organizationMembers table maps users to orgs, so no RLS wrapper needed here
   const result = await db.query.organizationMembers.findFirst({
     where: (members, { eq }) => eq(members.userId, userId),
   });
@@ -49,6 +53,8 @@ async function checkAdminRole(): Promise<{ userId: string; orgId: string }> {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
 
+  // Note: This is a lookup query to get org context, not tenant-scoped data
+  // organizationMembers table maps users to orgs, so no RLS wrapper needed here
   const member = await db.query.organizationMembers.findFirst({
     where: (members, { eq }) => eq(members.userId, userId),
   });
@@ -390,7 +396,10 @@ export async function initiateRedemption(input: unknown) {
           }
         );
       } catch (shopifyError) {
-        console.error('[Redemption] Shopify integration error:', shopifyError);
+        logger.error('Shopify integration error during redemption', shopifyError as Error, {
+          discountCode: discount.code,
+          redemptionId: redemption.id,
+        });
         // Continue without Shopify - redemption is still valid
       }
     }

@@ -47,7 +47,7 @@ export const updateStripeCustomer = async (userId: string, subscriptionId: strin
 
     return updatedProfile;
   } catch (error) {
-    console.error("Error in updateStripeCustomer:", error);
+    logger.error('Error in updateStripeCustomer', error as Error, { userId, customerId });
     throw error instanceof Error ? error : new Error("Failed to update Stripe customer");
   }
 };
@@ -75,7 +75,7 @@ export const manageSubscriptionStatusChange = async (subscriptionId: string, cus
 
     return membershipStatus;
   } catch (error) {
-    console.error("Error in manageSubscriptionStatusChange:", error);
+    logger.error('Error in manageSubscriptionStatusChange', error as Error, { subscriptionId, customerId });
     throw error instanceof Error ? error : new Error("Failed to update subscription status");
   }
 };

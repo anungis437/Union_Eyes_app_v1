@@ -5,6 +5,7 @@ import { eq, desc, and, count } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Validation schemas
@@ -74,40 +75,48 @@ try {
       const sessionsWithStats = await Promise.all(
         sessions.map(async (session) => {
           // Get vote count
-          const [voteCount] = await db
-            .select({ count: count() })
-            .from(votes)
-            .where(eq(votes.sessionId, session.id));
+          const [voteCount] = await withRLSContext({ organizationId }, async (db) => {
+            return await db
+              .select({ count: count() })
+              .from(votes)
+              .where(eq(votes.sessionId, session.id));
+          });
 
           // Get options count
-          const [optionsCount] = await db
-            .select({ count: count() })
-            .from(votingOptions)
-            .where(eq(votingOptions.sessionId, session.id));
+          const [optionsCount] = await withRLSContext({ organizationId }, async (db) => {
+            return await db
+              .select({ count: count() })
+              .from(votingOptions)
+              .where(eq(votingOptions.sessionId, session.id));
+          });
 
             // Check if user has voted
-            const [userVote] = await db
-              .select()
-              .from(votes)
-              .where(
-                and(
-                  eq(votes.sessionId, session.id),
-                  eq(votes.voterId, userId)
+            const [userVote] = await withRLSContext({ organizationId }, async (db) => {
+              return await db
+                .select()
+                .from(votes)
+                .where(
+                  and(
+                    eq(votes.sessionId, session.id),
+                    eq(votes.voterId, userId)
+                  )
                 )
-              )
-              .limit(1);
+                .limit(1);
+            });
 
             // Check if user is eligible
-            const [eligibility] = await db
-              .select()
-              .from(voterEligibility)
-              .where(
-                and(
-                  eq(voterEligibility.sessionId, session.id),
-                  eq(voterEligibility.memberId, userId)
+            const [eligibility] = await withRLSContext({ organizationId }, async (db) => {
+              return await db
+                .select()
+                .from(voterEligibility)
+                .where(
+                  and(
+                    eq(voterEligibility.sessionId, session.id),
+                    eq(voterEligibility.memberId, userId)
+                  )
                 )
-              )
-              .limit(1);
+                .limit(1);
+            });
 
           return {
             ...session,
@@ -202,12 +211,14 @@ try {
       } = body;
 
       // Check if user has admin/officer permissions
-      const member = await db.query.organizationMembers.findFirst({
-        where: (organizationMembers, { eq, and }) =>
-          and(
-            eq(organizationMembers.userId, context.userId),
-            eq(organizationMembers.organizationId, organizationId)
-          ),
+      const member = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.organizationMembers.findFirst({
+          where: (organizationMembers, { eq, and }) =>
+            and(
+              eq(organizationMembers.userId, context.userId),
+              eq(organizationMembers.organizationId, organizationId)
+            ),
+        });
       });
 
       // Allow admin and officer roles to create voting sessions
@@ -228,24 +239,26 @@ try {
       }
 
       // Create session
-      const [newSession] = await db
-        .insert(votingSessions)
-        .values({
-          title,
-          description,
-          type,
-          meetingType,
-          organizationId,
-          createdBy: userId,
-          startTime: startTime ? new Date(startTime) : undefined,
-          scheduledEndTime: scheduledEndTime ? new Date(scheduledEndTime) : undefined,
-          allowAnonymous,
-          requiresQuorum,
-          quorumThreshold,
-          settings,
-          status: 'draft',
-        })
-        .returning();
+      const [newSession] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .insert(votingSessions)
+          .values({
+            title,
+            description,
+            type,
+            meetingType,
+            organizationId,
+            createdBy: userId,
+            startTime: startTime ? new Date(startTime) : undefined,
+            scheduledEndTime: scheduledEndTime ? new Date(scheduledEndTime) : undefined,
+            allowAnonymous,
+            requiresQuorum,
+            quorumThreshold,
+            settings,
+            status: 'draft',
+          })
+          .returning();
+      });
 
       // Create voting options if provided
       if (options && Array.isArray(options) && options.length > 0) {
@@ -255,7 +268,9 @@ try {
           orderIndex: index,
         }));
 
-        await db.insert(votingOptions).values(optionValues);
+        await withRLSContext({ organizationId }, async (db) => {
+          return await db.insert(votingOptions).values(optionValues);
+        });
       }
 
       logApiAuditEvent({

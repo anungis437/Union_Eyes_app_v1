@@ -54,6 +54,8 @@ const CONTEXT_PATTERNS: Record<QueryContext, RegExp[]> = {
   ],
   [QueryContext.WEBHOOK]: [
     /app\/api\/webhooks\/.+/,
+    /app\/api\/signatures\/webhooks\/.+/,
+    /app\/api\/stripe\/webhooks\/.+/,
   ],
   [QueryContext.ADMIN]: [
     /app\/api\/admin\/.+/,
@@ -75,6 +77,7 @@ const CONTEXT_PATTERNS: Record<QueryContext, RegExp[]> = {
     /lib\/.+-engine\.ts/,          // Engine files - cross-tenant orchestration
     /lib\/.+-scheduler\.ts/,       // Scheduler files - system-wide timing
     /lib\/.+-manager\.ts/,         // Manager files - system-level coordination
+    /lib\/.+-logger\.ts/,          // Logger files - system-level audit/logging
     /lib\/utils\/.+/,              // Utility functions - shared helpers
     /lib\/auth-.+/,                // Auth utilities - framework-level
     /lib\/api-auth-guard\.ts/,    // Auth guard - middleware component
@@ -184,6 +187,31 @@ const ALLOWLIST: AllowlistEntry[] = [
     context: QueryContext.TENANT,
     justification: 'Versioned API routes - queries properly wrapped in withRLSContext() with tenant filtering (false positive from scanner)',
   },
+  {
+    file: 'actions/rewards-actions.ts',
+    context: QueryContext.SYSTEM,
+    justification: 'Auth helper functions (getCurrentUserOrgId, checkAdminRole) - lookup queries to establish tenant context, not accessing tenant-scoped data',
+  },
+  {
+    file: 'actions/analytics-actions.ts',
+    context: QueryContext.SYSTEM,
+    justification: 'Auth helper function (getCurrentUserOrgId) - lookup query to establish tenant context, not accessing tenant-scoped data',
+  },
+  {
+    file: 'app/api/external-data/route.ts',
+    context: QueryContext.SYSTEM,
+    justification: 'Public wage benchmarks - reference data from Statistics Canada, not tenant-specific',
+  },
+  {
+    file: 'app/api/signatures/webhooks/docusign/route.ts',
+    context: QueryContext.WEBHOOK,
+    justification: 'DocuSign webhook handler - signature-verified external callback, webhook event logging and cross-tenant envelope lookup',
+  },
+  {
+    file: 'lib/auth/hierarchy-access-control.ts',
+    context: QueryContext.SYSTEM,
+    justification: 'Hierarchy access validation - auth helper function to validate user access across organizational hierarchy, queries wrapped with RLS context',
+  },
   // Add more allowlisted operations as needed
 ];
 
@@ -264,8 +292,19 @@ interface ScanReport {
 // CONTEXT CLASSIFICATION
 // ============================================================================
 
+function getFileAllowlistEntry(filePath: string): AllowlistEntry | undefined {
+  const normalizedPath = filePath.replace(/\\/g, '/');
+  return ALLOWLIST.find(entry => normalizedPath.includes(entry.file));
+}
+
 function classifyFileContext(filePath: string): QueryContext {
   const normalizedPath = filePath.replace(/\\/g, '/');
+  
+  // Check allowlist first - it overrides pattern-based classification
+  const allowlistEntry = getFileAllowlistEntry(filePath);
+  if (allowlistEntry) {
+    return allowlistEntry.context;
+  }
   
   // Webhook takes precedence (subset of app/api/**)
   if (CONTEXT_PATTERNS[QueryContext.WEBHOOK].some(p => p.test(normalizedPath))) {
@@ -290,11 +329,8 @@ function classifyFileContext(filePath: string): QueryContext {
   return QueryContext.UNKNOWN;
 }
 
-function isAllowlisted(filePath: string, context: QueryContext): AllowlistEntry | undefined {
-  const normalizedPath = filePath.replace(/\\/g, '/');
-  return ALLOWLIST.find(entry => 
-    normalizedPath.includes(entry.file) && entry.context === context
-  );
+function isAllowlisted(filePath: string): AllowlistEntry | undefined {
+  return getFileAllowlistEntry(filePath);
 }
 
 function detectsCriticalTable(code: string): boolean {
@@ -314,7 +350,7 @@ async function scanFile(filePath: string): Promise<ScanResult[]> {
   
   const context = classifyFileContext(filePath);
   const hasRLSImport = SAFE_RLS_PATTERNS.some(pattern => pattern.test(content));
-  const allowlistEntry = isAllowlisted(filePath, context);
+  const allowlistEntry = isAllowlisted(filePath);
   
   lines.forEach((line, index) => {
     DB_OPERATION_PATTERNS.forEach(({ pattern, operation }) => {

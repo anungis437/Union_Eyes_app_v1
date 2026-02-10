@@ -4,6 +4,7 @@ import { polls, pollVotes } from '@/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // Validation schema
 const VoteSchema = z.object({
@@ -156,12 +157,14 @@ export const POST = withApiAuth(async (
     }
 
     // Record vote
-    await db.insert(pollVotes).values({
-      tenantId,
-      pollId,
-      optionId,
-      userId,
-      ipAddress,
+    await withRLSContext({ organizationId: tenantId }, async (db) => {
+      return await db.insert(pollVotes).values({
+        tenantId,
+        pollId,
+        optionId,
+        userId,
+        ipAddress,
+      });
     });
 
     // Update poll option votes (using JSONB update)

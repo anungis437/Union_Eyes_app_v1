@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { detectMetricTrends, getAnalyticsMetrics } from '@/actions/analytics-actions';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -58,7 +59,8 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const GET = async (request: NextRequest) => {
-  return withRoleAuth(10, async (request, context) => {
+  return withRoleAuth(10, async (request, context) => {    const { userId, organizationId } = context;
+
     try {
       const searchParams = request.nextUrl.searchParams;
       const metricType = searchParams.get('metricType');
@@ -80,10 +82,12 @@ export const GET = async (request: NextRequest) => {
         conditions.push(eq(trendAnalyses.analysisType, analysisType));
       }
       
-      const trends = await db.query.trendAnalyses.findMany({
-        where: conditions.length > 0 ? and(...conditions) : undefined,
-        orderBy: [desc(trendAnalyses.createdAt)],
-        limit
+      const trends = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.trendAnalyses.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          orderBy: [desc(trendAnalyses.createdAt)],
+          limit
+        });
       });
       
       return NextResponse.json({

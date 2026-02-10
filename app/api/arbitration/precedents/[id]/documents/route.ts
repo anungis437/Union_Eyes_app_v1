@@ -5,13 +5,13 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { db } from '@/db';
 import { arbitrationPrecedents, organizations } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import * as documentService from '@/lib/services/precedent-document-service';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -19,35 +19,26 @@ type RouteContext = {
 
 export const GET = async (request: NextRequest, context: RouteContext) => {
   return withRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { organizationId } = context;
 
   const { id: precedentId } = await context.params;
     
     try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'No active organization found' },
           { status: 400 }
         );
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
 
       // Fetch precedent
-      const precedent = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, precedentId),
+      const precedent = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, precedentId),
+        });
       });
 
       if (!precedent) {
@@ -84,35 +75,26 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
 
 export const POST = async (request: NextRequest, context: RouteContext) => {
   return withRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { organizationId } = context;
 
   const { id: precedentId } = await context.params;
     
     try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'No active organization found' },
           { status: 400 }
         );
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
 
       // Fetch precedent and verify ownership
-      const precedent = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, precedentId),
+      const precedent = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, precedentId),
+        });
       });
 
       if (!precedent) {
@@ -183,10 +165,12 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
         }
       }
 
-      await db
-        .update(arbitrationPrecedents)
-        .set({ [updateField]: uploadResult.url })
-        .where(eq(arbitrationPrecedents.id, precedentId));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(arbitrationPrecedents)
+          .set({ [updateField]: uploadResult.url })
+          .where(eq(arbitrationPrecedents.id, precedentId));
+      });
 
       // Extract metadata
       const metadata = documentService.extractDocumentMetadata(
@@ -218,35 +202,26 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
 
 export const DELETE = async (request: NextRequest, context: RouteContext) => {
   return withRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { organizationId } = context;
 
   const { id: precedentId } = await context.params;
     
     try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json(
           { error: 'No active organization found' },
           { status: 400 }
         );
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
 
       // Fetch precedent and verify ownership
-      const precedent = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, precedentId),
+      const precedent = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, precedentId),
+        });
       });
 
       if (!precedent) {
@@ -287,10 +262,12 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
       await documentService.deletePrecedentDocument(documentUrl);
 
       // Update precedent to remove URL
-      await db
-        .update(arbitrationPrecedents)
-        .set({ [urlField]: null })
-        .where(eq(arbitrationPrecedents.id, precedentId));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(arbitrationPrecedents)
+          .set({ [urlField]: null })
+          .where(eq(arbitrationPrecedents.id, precedentId));
+      });
 
       return NextResponse.json({
         message: 'Document deleted successfully',

@@ -6,46 +6,34 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { db, organizations } from "@/db";
 import { sharedClauseLibrary } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 
 // PATCH /api/clause-library/[id]/share - Update sharing settings
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
     try {
       const clauseId = params.id;
 
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const orgResult = await db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
-
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
+      const userOrgId = organizationId;
 
       // Fetch existing clause
-      const existingClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (c, { eq }) => eq(c.id, clauseId),
+      const existingClause = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (c, { eq }) => eq(c.id, clauseId),
+        });
       });
 
       if (!existingClause) {
@@ -96,11 +84,13 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       }
 
       // Update clause
-      const [updatedClause] = await db
-        .update(sharedClauseLibrary)
-        .set(updates)
-        .where(eq(sharedClauseLibrary.id, clauseId))
-        .returning();
+      const [updatedClause] = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(sharedClauseLibrary)
+          .set(updates)
+          .where(eq(sharedClauseLibrary.id, clauseId))
+          .returning();
+      });
 
       return NextResponse.json({
         success: true,

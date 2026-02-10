@@ -6,7 +6,6 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { logger } from "@/lib/logger";
 import { db, organizations } from "@/db";
 import { 
@@ -18,6 +17,7 @@ import { eq, and } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -55,63 +55,53 @@ async function canAccessPrecedent(
 // GET /api/arbitration/precedents/[id] - Retrieve single precedent
 export const GET = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   const { id } = await context.params;
     
     try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
       const userOrgHierarchyPath = ''; // TODO: Add once hierarchy is implemented
 
       // Fetch precedent with relations
-      const precedent = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, id),
-        with: {
-          sourceOrganization: {
-            columns: {
-              id: true,
-              name: true,
-              slug: true,
-            }
-          },
-          sourceDecision: {
-            columns: {
-              id: true,
-              decisionDate: true,
-              outcome: true,
-            }
-          },
-          tags: true,
-          citations: {
-            with: {
-              precedent: {
-                columns: {
-                  id: true,
-                  caseTitle: true,
-                  caseNumber: true,
-                  decisionDate: true,
+      const precedent = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, id),
+          with: {
+            sourceOrganization: {
+              columns: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            },
+            sourceDecision: {
+              columns: {
+                id: true,
+                decisionDate: true,
+                outcome: true,
+              }
+            },
+            tags: true,
+            citations: {
+              with: {
+                precedent: {
+                  columns: {
+                    id: true,
+                    caseTitle: true,
+                    caseNumber: true,
+                    decisionDate: true,
+                  }
                 }
               }
             }
           }
-        }
+        });
       });
 
       if (!precedent) {
@@ -131,10 +121,12 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
 
       // Increment view count (don't await to avoid slowing response)
       if (precedent.sourceOrganizationId !== userOrgId) {
-        db.update(arbitrationPrecedents)
-          .set({ viewCount: (precedent.viewCount || 0) + 1 })
-          .where(eq(arbitrationPrecedents.id, id))
-          .execute()
+        withRLSContext({ organizationId: userOrgId }, async (db) => {
+          return await db.update(arbitrationPrecedents)
+            .set({ viewCount: (precedent.viewCount || 0) + 1 })
+            .where(eq(arbitrationPrecedents.id, id))
+            .execute();
+        })
           .catch(err => logger.error('Failed to increment view count', err as Error, {
             precedentId: id,
             organizationId: userOrgId,
@@ -158,33 +150,23 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
 // PATCH /api/arbitration/precedents/[id] - Update precedent (owner only)
 export const PATCH = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   const { id } = await context.params;
     
     try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
 
       // Fetch existing precedent
-      const existing = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, id),
+      const existing = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, id),
+        });
       });
 
       if (!existing) {
@@ -235,16 +217,20 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
       if (body.province !== undefined) updates.province = body.province;
 
       // Update precedent
-      const [updated] = await db
-        .update(arbitrationPrecedents)
-        .set(updates)
-        .where(eq(arbitrationPrecedents.id, id))
-        .returning();
+      const [updated] = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .update(arbitrationPrecedents)
+          .set(updates)
+          .where(eq(arbitrationPrecedents.id, id))
+          .returning();
+      });
 
       // Handle tags if provided
       if (body.tags !== undefined && Array.isArray(body.tags)) {
         // Delete existing tags
-        await db.delete(precedentTags).where(eq(precedentTags.precedentId, id));
+        await withRLSContext({ organizationId: userOrgId }, async (db) => {
+          return await db.delete(precedentTags).where(eq(precedentTags.precedentId, id));
+        });
 
         // Add new tags
         if (body.tags.length > 0) {
@@ -255,23 +241,27 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
             createdBy: userUuid,
           }));
 
-          await db.insert(precedentTags).values(tagInserts);
+          await withRLSContext({ organizationId: userOrgId }, async (db) => {
+            return await db.insert(precedentTags).values(tagInserts);
+          });
         }
       }
 
       // Fetch complete updated precedent
-      const completePrecedent = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, id),
-        with: {
-          sourceOrganization: {
-            columns: {
-              id: true,
-              name: true,
-              slug: true,
-            }
-          },
-          tags: true,
-        }
+      const completePrecedent = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, id),
+          with: {
+            sourceOrganization: {
+              columns: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            },
+            tags: true,
+          }
+        });
       });
 
       return NextResponse.json(completePrecedent);
@@ -291,33 +281,23 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
 // DELETE /api/arbitration/precedents/[id] - Delete precedent (owner only)
 export const DELETE = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
+    const { userId, organizationId } = context;
 
   const { id } = await context.params;
     
     try {
-      // Get user's organization from cookie
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      
-      if (!orgSlug) {
+      // Validate organization context
+      if (!organizationId) {
         return NextResponse.json({ error: "No active organization" }, { status: 400 });
       }
 
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = org.id;
+      const userOrgId = organizationId;
 
       // Fetch existing precedent
-      const existing = await db.query.arbitrationPrecedents.findFirst({
-        where: eq(arbitrationPrecedents.id, id),
+      const existing = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.query.arbitrationPrecedents.findFirst({
+          where: eq(arbitrationPrecedents.id, id),
+        });
       });
 
       if (!existing) {
@@ -330,14 +310,22 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
       }
 
       // Delete related data (cascades handled by DB, but doing explicitly for clarity)
-      await db.delete(precedentTags).where(eq(precedentTags.precedentId, id));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.delete(precedentTags).where(eq(precedentTags.precedentId, id));
+      });
       // Delete citations where this precedent is cited
-      await db.delete(precedentCitations).where(eq(precedentCitations.precedentId, id));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.delete(precedentCitations).where(eq(precedentCitations.precedentId, id));
+      });
       // Delete citations where this precedent cites others
-      await db.delete(precedentCitations).where(eq(precedentCitations.citingPrecedentId, id));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.delete(precedentCitations).where(eq(precedentCitations.citingPrecedentId, id));
+      });
 
       // Delete precedent
-      await db.delete(arbitrationPrecedents).where(eq(arbitrationPrecedents.id, id));
+      await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db.delete(arbitrationPrecedents).where(eq(arbitrationPrecedents.id, id));
+      });
 
       return NextResponse.json({ message: "Precedent deleted successfully" });
     } catch (error) {

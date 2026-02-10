@@ -5,16 +5,19 @@ import { ProvincialPrivacyService, type Province } from "@/services/provincial-p
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Helper to check if user has admin/privacy officer role
  */
-async function checkPrivacyPermissions(userId: string): Promise<boolean> {
+async function checkPrivacyPermissions(userId: string, organizationId: string): Promise<boolean> {
   try {
     // Check for admin roles that can manage privacy requests
-    const member = await db.query.organizationMembers.findFirst({
-      where: (organizationMembers, { eq }) =>
-        eq(organizationMembers.userId, userId),
+    const member = await withRLSContext({ organizationId }, async (db) => {
+      return await db.query.organizationMembers.findFirst({
+        where: (organizationMembers, { eq }) =>
+          eq(organizationMembers.userId, userId),
+      });
     });
 
     // Allow admin and super_admin roles to access privacy officer functions
@@ -74,7 +77,7 @@ export const GET = async (request: NextRequest) => {
 
   try {
       // Check if user has admin/privacy officer role
-      const hasPermission = await checkPrivacyPermissions(userId);
+      const hasPermission = await checkPrivacyPermissions(userId, organizationId);
       if (!hasPermission) {
         return NextResponse.json(
           { error: "Forbidden - admin or privacy officer role required" },

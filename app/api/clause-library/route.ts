@@ -6,7 +6,6 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { db, organizations } from "@/db";
 import { 
   sharedClauseLibrary, 
@@ -19,6 +18,39 @@ import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { validateHierarchyAccess, validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
+import type { InferSelectModel } from 'drizzle-orm';
+
+// =============================================================================
+// VALIDATION SCHEMAS
+// =============================================================================
+
+/**
+ * Zod schema for creating a new shared clause
+ * Validates all input fields to prevent injection attacks
+ */
+const createClauseSchema = z.object({
+  sourceCbaId: z.string().uuid().optional().nullable(),
+  originalClauseId: z.string().uuid().optional().nullable(),
+  clauseNumber: z.string().max(50).optional().nullable(),
+  clauseTitle: z.string().min(1, "Clause title is required").max(500),
+  clauseText: z.string().min(1, "Clause text is required"),
+  clauseType: z.string().min(1, "Clause type is required").max(100),
+  isAnonymized: z.boolean().optional(),
+  originalEmployerName: z.string().max(500).optional().nullable(),
+  sharingLevel: z.enum(["private", "federation", "congress", "public"]).optional(),
+  sharedWithOrgIds: z.array(z.string().uuid()).optional().nullable(),
+  effectiveDate: z.string().datetime().or(z.string().date()).optional().nullable(),
+  expiryDate: z.string().datetime().or(z.string().date()).optional().nullable(),
+  sector: z.string().max(100).optional().nullable(),
+  province: z.string().length(2).optional().nullable(),
+  tags: z.array(z.string().max(100)).optional(),
+});
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
 
 // Helper to anonymize employer names
 function anonymizeEmployerName(originalName: string): string {
@@ -45,7 +77,6 @@ async function canAccessClause(
   }
 
   const sharingLevel = clause.sharingLevel as SharingLevel;
-  // TODO: Implement hierarchy-based access control when tenant hierarchy is ready
 
   switch (sharingLevel) {
     case "private":
@@ -53,14 +84,22 @@ async function canAccessClause(
       return clause.sharedWithOrgIds?.includes(userOrgId) || false;
     
     case "federation":
-      // TODO: Check federation hierarchy when implemented
-      // Temporarily allow access until hierarchy is built
-      return true;
+      // Validate federation-level access using hierarchy
+      try {
+        await validateSharingLevel(userId, clause.sourceOrganizationId, 'federation');
+        return true;
+      } catch (error) {
+        return false;
+      }
     
     case "congress":
-      // TODO: Check CLC membership when implemented
-      // Temporarily allow access until hierarchy is built
-      return true;
+      // Validate congress-level (CLC) access using hierarchy
+      try {
+        await validateSharingLevel(userId, clause.sourceOrganizationId, 'congress');
+        return true;
+      } catch (error) {
+        return false;
+      }
     
     case "public":
       // Everyone can access
@@ -74,31 +113,32 @@ async function canAccessClause(
 // GET /api/clause-library - List clauses with filters
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
+      // Use authenticated organization context (validated by withRoleAuth)
+      if (!organizationId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/clause-library',
+          method: 'GET',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          dataType: 'CLAUSE_LIBRARY',
+          details: { reason: 'No organization context' },
+        });
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+      }
+
+      const userOrgId = organizationId;
       
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
-      }
-
-      // Convert slug to UUID (use select instead of query to avoid relational joins)
-      const orgResult = await db
-        .select({ id: organizations.id, slug: organizations.slug, name: organizations.name })
-        .from(organizations)
-        .where(eq(organizations.slug, orgSlug))
-        .limit(1);
-
-      if (orgResult.length === 0) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
-      }
-
-      const userOrgId = orgResult[0].id;
-      // TODO: Add hierarchyPath once tenant hierarchy is implemented
-      const userOrgHierarchyPath = '';
+      // Fetch organization with hierarchy data
+      const userOrg = await db.query.organizations.findFirst({
+        where: eq(organizations.id, userOrgId),
+      });
+      
+      const userOrgHierarchyPath = userOrg?.hierarchyPath?.join(',') || '';
 
       // Parse query params
       const { searchParams } = new URL(request.url);
@@ -140,20 +180,22 @@ export const GET = async (request: NextRequest) => {
         );
       }
 
-      // Query clauses (use select instead of query to avoid relational joins with jurisdiction column)
-      let clausesQuery = db
-        .select()
-        .from(sharedClauseLibrary)
-        .limit(limit)
-        .offset(offset)
-        .orderBy(sql`${sharedClauseLibrary.createdAt} DESC`)
-        .$dynamic();
-      
-      if (filters.length > 0) {
-        clausesQuery = clausesQuery.where(and(...filters));
-      }
-      
-      const clauses = await clausesQuery;
+      // Query clauses with RLS enforcement
+      const clauses = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        let clausesQuery = db
+          .select()
+          .from(sharedClauseLibrary)
+          .limit(limit)
+          .offset(offset)
+          .orderBy(sql`${sharedClauseLibrary.createdAt} DESC`)
+          .$dynamic();
+        
+        if (filters.length > 0) {
+          clausesQuery = clausesQuery.where(and(...filters));
+        }
+        
+        return await clausesQuery;
+      });
 
       // Filter by access permissions
       const accessibleClauses = [];
@@ -170,13 +212,32 @@ export const GET = async (request: NextRequest) => {
         }
       }
 
-      // Get total count for pagination
-      const totalResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(sharedClauseLibrary)
-        .where(filters.length > 0 ? and(...filters) : undefined);
+      // Get total count for pagination with RLS enforcement
+      const totalResult = await withRLSContext({ organizationId: userOrgId }, async (db) => {
+        return await db
+          .select({ count: sql<number>`count(*)` })
+          .from(sharedClauseLibrary)
+          .where(filters.length > 0 ? and(...filters) : undefined);
+      });
 
       const total = totalResult[0].count;
+
+      // Log successful data access
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/clause-library',
+        method: 'GET',
+        eventType: 'success',
+        severity: 'low',
+        dataType: 'CLAUSE_LIBRARY',
+        details: { 
+          organizationId: userOrgId,
+          clausesReturned: accessibleClauses.length,
+          totalAvailable: total,
+          filters: { clauseType, sector, province, sharingLevel, searchQuery } 
+        },
+      });
 
       return NextResponse.json({
         clauses: accessibleClauses,
@@ -202,27 +263,52 @@ export const GET = async (request: NextRequest) => {
 // POST /api/clause-library - Create new shared clause
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
-    const { userId } = context;
+    const { userId, organizationId } = context;
 
   try {
-      // Get user's organization from cookie (set by organization switcher)
-      const cookieStore = await cookies();
-      const orgSlug = cookieStore.get('active-organization')?.value;
-      
-      if (!orgSlug) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
-      }
-
-      // Convert slug to UUID
-      const org = await db.query.organizations.findFirst({
-        where: (o, { eq }) => eq(o.slug, orgSlug),
-      });
-
-      if (!org) {
-        return NextResponse.json({ error: "Organization not found" }, { status: 400 });
+      // Use authenticated organization context (validated by withRoleAuth)
+      if (!organizationId) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/clause-library',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'medium',
+          dataType: 'CLAUSE_LIBRARY',
+          details: { reason: 'No organization context' },
+        });
+        return NextResponse.json({ error: "No organization context" }, { status: 400 });
       }
 
       const body = await request.json();
+
+      // Validate input with Zod schema
+      const validationResult = createClauseSchema.safeParse(body);
+      
+      if (!validationResult.success) {
+        logApiAuditEvent({
+          timestamp: new Date().toISOString(),
+          userId,
+          endpoint: '/api/clause-library',
+          method: 'POST',
+          eventType: 'validation_failed',
+          severity: 'low',
+          dataType: 'CLAUSE_LIBRARY',
+          details: { 
+            organizationId,
+            reason: 'Invalid input schema',
+            errors: validationResult.error.format() 
+          },
+        });
+        return NextResponse.json(
+          { 
+            error: "Invalid input", 
+            details: validationResult.error.format() 
+          },
+          { status: 400 }
+        );
+      }
 
       const {
         sourceCbaId,
@@ -240,15 +326,7 @@ export const POST = async (request: NextRequest) => {
         sector,
         province,
         tags,
-      } = body;
-
-      // Validate required fields
-      if (!clauseTitle || !clauseText || !clauseType) {
-        return NextResponse.json(
-          { error: "Missing required fields: clauseTitle, clauseText, clauseType" },
-          { status: 400 }
-        );
-      }
+      } = validationResult.data;
 
       // For now, allow clause sharing (sharingSettings validation would go here)
       // TODO: Add tenant-level sharing settings once tenant schema is fully implemented
@@ -267,7 +345,7 @@ export const POST = async (request: NextRequest) => {
 
       // Create clause
       const newClause: NewSharedClause = {
-        sourceOrganizationId: org.id,
+        sourceOrganizationId: organizationId,
         sourceCbaId: sourceCbaId || null,
         originalClauseId: originalClauseId || null,
         clauseNumber: clauseNumber || null,
@@ -286,10 +364,12 @@ export const POST = async (request: NextRequest) => {
         createdBy: userUuid,
       };
 
-      const [createdClause] = await db
-        .insert(sharedClauseLibrary)
-        .values(newClause)
-        .returning();
+      const [createdClause] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .insert(sharedClauseLibrary)
+          .values(newClause)
+          .returning();
+      });
 
       // Add tags if provided
       if (tags && Array.isArray(tags) && tags.length > 0) {
@@ -299,20 +379,44 @@ export const POST = async (request: NextRequest) => {
           createdBy: userUuid,
         }));
 
-        await db.insert(clauseLibraryTags).values(tagValues);
+        await withRLSContext({ organizationId }, async (db) => {
+          return await db.insert(clauseLibraryTags).values(tagValues);
+        });
       }
 
       // Fetch full clause with relations
-      const fullClause = await db.query.sharedClauseLibrary.findFirst({
-        where: (clause, { eq }) => eq(clause.id, createdClause.id),
-        with: {
-          sourceOrganization: {
-            columns: {
-              id: true,
-              name: true,
+      const fullClause = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.sharedClauseLibrary.findFirst({
+          where: (clause, { eq }) => eq(clause.id, createdClause.id),
+          with: {
+            sourceOrganization: {
+              columns: {
+                id: true,
+                name: true,
+              },
             },
+            tags: true,
           },
-          tags: true,
+        });
+      });
+
+      // Log successful clause creation
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/clause-library',
+        method: 'POST',
+        eventType: 'success',
+        severity: 'low',
+        dataType: 'CLAUSE_LIBRARY',
+        details: { 
+          organizationId,
+          clauseId: createdClause.id,
+          clauseTitle: validationResult.data.clauseTitle,
+          clauseType: validationResult.data.clauseType,
+          sharingLevel: finalSharingLevel,
+          isAnonymized: shouldAnonymize,
+          tagsCount: tags?.length || 0,
         },
       });
 

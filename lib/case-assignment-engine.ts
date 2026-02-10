@@ -15,6 +15,7 @@ import {
   type InsertGrievanceAssignment,
   type GrievanceAssignment,
 } from "@/db/schema";
+import { withRLSContext } from "@/lib/db/with-rls-context";
 
 // ============================================================================
 // TYPES
@@ -96,10 +97,12 @@ export async function autoAssignGrievance(
   } = {}
 ): Promise<AssignmentResult> {
   try {
-    // Get claim details
-    const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
-    });
+    // Get claim details (wrapped with RLS for tenant isolation)
+    const claim = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.claims.findFirst({
+        where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
+      })
+    );
 
     if (!claim) {
       return { success: false, error: "Claim not found" };
@@ -216,14 +219,16 @@ export async function manuallyAssignGrievance(
       }
     }
 
-    // Check if already assigned
-    const existing = await db.query.grievanceAssignments.findFirst({
-      where: and(
-        eq(grievanceAssignments.claimId, claimId),
-        eq(grievanceAssignments.assignedTo, assignedTo),
-        eq(grievanceAssignments.status, "assigned")
-      ),
-    });
+    // Check if already assigned (wrapped with RLS for tenant isolation)
+    const existing = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.grievanceAssignments.findFirst({
+        where: and(
+          eq(grievanceAssignments.claimId, claimId),
+          eq(grievanceAssignments.assignedTo, assignedTo),
+          eq(grievanceAssignments.status, "assigned")
+        ),
+      })
+    );
 
     if (existing) {
       return {
@@ -232,32 +237,36 @@ export async function manuallyAssignGrievance(
       };
     }
 
-    // Create assignment
+    // Create assignment (wrapped with RLS for tenant isolation)
     const role = options.role || "primary_officer";
-    const [assignment] = await db
-      .insert(grievanceAssignments)
-      .values({
-        organizationId: tenantId,
-        claimId,
-        assignedTo,
-        role,
-        status: "assigned",
-        assignedBy,
-        assignedAt: new Date(),
-        estimatedHours: options.estimatedHours?.toString() || null,
-        assignmentReason: options.reason || "Manual assignment",
-      })
-      .returning();
-
-    // Update claim if primary officer
-    if (role === "primary_officer") {
-      await db
-        .update(claims)
-        .set({
+    const [assignment] = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db
+        .insert(grievanceAssignments)
+        .values({
+          organizationId: tenantId,
+          claimId,
           assignedTo,
+          role,
+          status: "assigned",
+          assignedBy,
           assignedAt: new Date(),
+          estimatedHours: options.estimatedHours?.toString() || null,
+          assignmentReason: options.reason || "Manual assignment",
         })
-        .where(eq(claims.claimId, claimId));
+        .returning()
+    );
+
+    // Update claim if primary officer (wrapped with RLS for tenant isolation)
+    if (role === "primary_officer") {
+      await withRLSContext({ organizationId: tenantId }, async (db) =>
+        db
+          .update(claims)
+          .set({
+            assignedTo,
+            assignedAt: new Date(),
+          })
+          .where(eq(claims.claimId, claimId))
+      );
     }
 
     return {
@@ -287,13 +296,15 @@ export async function reassignGrievance(
   reason: string
 ): Promise<AssignmentResult> {
   try {
-    // Get current assignment
-    const currentAssignment = await db.query.grievanceAssignments.findFirst({
-      where: and(
-        eq(grievanceAssignments.id, currentAssignmentId),
-        eq(grievanceAssignments.organizationId, tenantId)
-      ),
-    });
+    // Get current assignment (wrapped with RLS for tenant isolation)
+    const currentAssignment = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.grievanceAssignments.findFirst({
+        where: and(
+          eq(grievanceAssignments.id, currentAssignmentId),
+          eq(grievanceAssignments.organizationId, tenantId)
+        ),
+      })
+    );
 
     if (!currentAssignment) {
       return { success: false, error: "Assignment not found" };
@@ -342,9 +353,12 @@ export async function getAssignmentRecommendations(
   criteria: AssignmentCriteria
 ): Promise<AssignmentRecommendation[]> {
   try {
-    const claim = await db.query.claims.findFirst({
-      where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
-    });
+    // Get claim details (wrapped with RLS for tenant isolation)
+    const claim = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.claims.findFirst({
+        where: and(eq(claims.claimId, claimId), eq(claims.organizationId, tenantId)),
+      })
+    );
 
     if (!claim) return [];
 
@@ -370,18 +384,20 @@ async function getEligibleOfficers(
   criteria: AssignmentCriteria
 ): Promise<OfficerProfile[]> {
   try {
-    // Get active officers
-    const officers = await db.query.organizationMembers.findMany({
-      where: and(
-        eq(organizationMembers.organizationId, tenantId),
-        or(
-          eq(organizationMembers.role, "union_officer"),
-          eq(organizationMembers.role, "union_steward"),
-          eq(organizationMembers.role, "admin")
+    // Get active officers (wrapped with RLS for tenant isolation)
+    const officers = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.organizationMembers.findMany({
+        where: and(
+          eq(organizationMembers.organizationId, tenantId),
+          or(
+            eq(organizationMembers.role, "union_officer"),
+            eq(organizationMembers.role, "union_steward"),
+            eq(organizationMembers.role, "admin")
+          ),
+          eq(organizationMembers.status, "active")
         ),
-        eq(organizationMembers.status, "active")
-      ),
-    });
+      })
+    );
 
     // Build officer profiles
     const profiles: OfficerProfile[] = [];
@@ -525,16 +541,18 @@ export async function getOfficerWorkload(
   tenantId: string
 ): Promise<WorkloadStats | null> {
   try {
-    // Get all assignments for this officer
-    const assignments = await db.query.grievanceAssignments.findMany({
-      where: and(
-        eq(grievanceAssignments.assignedTo, userId),
-        eq(grievanceAssignments.organizationId, tenantId)
-      ),
-      with: {
-        claim: true,
-      },
-    });
+    // Get all assignments for this officer (wrapped with RLS for tenant isolation)
+    const assignments = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.grievanceAssignments.findMany({
+        where: and(
+          eq(grievanceAssignments.assignedTo, userId),
+          eq(grievanceAssignments.organizationId, tenantId)
+        ),
+        with: {
+          claim: true,
+        },
+      })
+    );
 
     // Calculate statistics
     const totalCases = assignments.length;
@@ -577,11 +595,12 @@ export async function getOfficerWorkload(
       .filter((a) => a.status !== "completed" && a.estimatedHours)
       .reduce((sum, a) => sum + (Number(a.estimatedHours) || 0), 0);
 
-    // Get officer profile for max caseload
-    const officer = await db.query.organizationMembers.findFirst({
-      where: and(
-        eq(organizationMembers.userId, userId),
-        eq(organizationMembers.organizationId, tenantId)
+    // Get officer profile for max caseload (wrapped with RLS for tenant isolation)
+    const officer = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.organizationMembers.findFirst({
+        where: and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.organizationId, tenantId)
       ),
     });
 
@@ -613,12 +632,13 @@ export async function getTenantWorkloadReport(
   tenantId: string
 ): Promise<WorkloadStats[]> {
   try {
-    // Get all active officers
-    const officers = await db.query.organizationMembers.findMany({
-      where: and(
-        eq(organizationMembers.organizationId, tenantId),
-        or(
-          eq(organizationMembers.role, "union_officer"),
+    // Get all active officers (wrapped with RLS for tenant isolation)
+    const officers = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.organizationMembers.findMany({
+        where: and(
+          eq(organizationMembers.organizationId, tenantId),
+          or(
+            eq(organizationMembers.role, "union_officer"),
           eq(organizationMembers.role, "union_steward"),
           eq(organizationMembers.role, "admin")
         ),
@@ -676,16 +696,18 @@ export async function suggestWorkloadBalancing(
 
     // For each overloaded officer, suggest moving their newest cases
     for (const overloadedOfficer of overloaded) {
-      // Get their recent assignments
-      const recentAssignments = await db.query.grievanceAssignments.findMany({
-        where: and(
-          eq(grievanceAssignments.assignedTo, overloadedOfficer.userId),
-          eq(grievanceAssignments.organizationId, tenantId),
-          eq(grievanceAssignments.status, "assigned")
-        ),
-        orderBy: [desc(grievanceAssignments.assignedAt)],
-        limit: 3,
-      });
+      // Get their recent assignments (wrapped with RLS for tenant isolation)
+      const recentAssignments = await withRLSContext({ organizationId: tenantId }, async (db) =>
+        db.query.grievanceAssignments.findMany({
+          where: and(
+            eq(grievanceAssignments.assignedTo, overloadedOfficer.userId),
+            eq(grievanceAssignments.organizationId, tenantId),
+            eq(grievanceAssignments.status, "assigned")
+          ),
+          orderBy: [desc(grievanceAssignments.assignedAt)],
+          limit: 3,
+        })
+      );
 
       // Suggest moving to least utilized officer
       const leastUtilized = available[available.length - 1];
@@ -739,12 +761,14 @@ export async function removeCollaborator(
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const assignment = await db.query.grievanceAssignments.findFirst({
-      where: and(
-        eq(grievanceAssignments.id, assignmentId),
-        eq(grievanceAssignments.organizationId, tenantId)
-      ),
-    });
+    const assignment = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.grievanceAssignments.findFirst({
+        where: and(
+          eq(grievanceAssignments.id, assignmentId),
+          eq(grievanceAssignments.organizationId, tenantId)
+        ),
+      })
+    );
 
     if (!assignment) {
       return { success: false, error: "Assignment not found" };
@@ -786,20 +810,24 @@ export async function getGrievanceTeam(
   tenantId: string
 ): Promise<Array<GrievanceAssignment & { officerName: string; officerRole: string }>> {
   try {
-    const assignments = await db.query.grievanceAssignments.findMany({
-      where: and(
-        eq(grievanceAssignments.claimId, claimId),
-        eq(grievanceAssignments.organizationId, tenantId)
-      ),
-      orderBy: [desc(grievanceAssignments.assignedAt)],
-    });
+    const assignments = await withRLSContext({ organizationId: tenantId }, async (db) =>
+      db.query.grievanceAssignments.findMany({
+        where: and(
+          eq(grievanceAssignments.claimId, claimId),
+          eq(grievanceAssignments.organizationId, tenantId)
+        ),
+        orderBy: [desc(grievanceAssignments.assignedAt)],
+      })
+    );
 
     // Enrich with officer details
     const enriched = await Promise.all(
       assignments.map(async (assignment) => {
-        const officer = await db.query.organizationMembers.findFirst({
-          where: eq(organizationMembers.userId, assignment.assignedTo),
-        });
+        const officer = await withRLSContext({ organizationId: tenantId }, async (db) =>
+          db.query.organizationMembers.findFirst({
+            where: eq(organizationMembers.userId, assignment.assignedTo),
+          })
+        );
 
         return {
           ...assignment,

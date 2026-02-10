@@ -5,6 +5,7 @@ import { arrearsCases, members, duesTransactions } from '@/services/financial-se
 import { eq, and } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // Validation schema for POST body
 const createPaymentPlanSchema = z.object({
@@ -152,7 +153,9 @@ try {
         }),
       }));
 
-      await db.insert(duesTransactions).values(installmentTransactions);
+      await withRLSContext({ organizationId }, async (db) => {
+        return await db.insert(duesTransactions).values(installmentTransactions);
+      });
 
       logApiAuditEvent({
         timestamp: new Date().toISOString(), userId,

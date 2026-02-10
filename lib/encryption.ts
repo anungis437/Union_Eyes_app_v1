@@ -75,9 +75,20 @@ class EncryptionService {
           this.initialized = true;
           logger.info('Encryption service initialized with fallback key');
         } else if (process.env.NODE_ENV === 'test') {
-          this.encryptionKey = crypto.randomBytes(KEY_LENGTH);
+          // SECURITY FIX: Use deterministic test key instead of random
+          const testKey = process.env.TEST_ENCRYPTION_KEY;
+          if (!testKey) {
+            throw new Error(
+              'TEST_ENCRYPTION_KEY environment variable required in test environment. ' +
+              'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"
+            );
+          }
+          this.encryptionKey = Buffer.from(testKey, 'base64');
+          if (this.encryptionKey.length !== KEY_LENGTH) {
+            throw new Error(`TEST_ENCRYPTION_KEY must be ${KEY_LENGTH} bytes (base64 encoded)`);
+          }
           this.initialized = true;
-          logger.warn('Encryption service initialized with test-only key');
+          logger.info('Encryption service initialized with deterministic test key');
         } else {
           logger.error('No encryption key configured - encryption will fail');
         }

@@ -6,7 +6,7 @@ import { withRoleAuth } from '@/lib/api-auth-guard';
 
 type SmsConversationContext = { params: { conversationId: string }; organizationId?: string };
 
-export const POST = withRoleAuth<SmsConversationContext>(10, async (request, authContext) => {
+export const POST = withRoleAuth<SmsConversationContext>('steward', async (request, authContext) => {
   try {
     const { conversationId } = authContext.params;
     const organizationId = authContext.organizationId;

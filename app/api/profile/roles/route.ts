@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { logger } from '@/lib/logger';
 import { withApiAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const POST = withApiAuth(async (req: NextRequest) => {
   try {
-    const { userId } = await req.json();
+    const { userId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = await req.json();
+    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
 
     if (!userId) {
       return NextResponse.json(
@@ -14,9 +16,18 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       );
     }
 
+    if (!organizationId) {
+      return NextResponse.json(
+        { error: 'organizationId is required' },
+        { status: 400 }
+      );
+    }
+
     // Query organizationMembers to find the user's role
-    const memberRecord = await db.query.organizationMembers.findFirst({
-      where: (organizationMembers, { eq }) => eq(organizationMembers.userId, userId),
+    const memberRecord = await withRLSContext({ organizationId }, async (db) => {
+      return await db.query.organizationMembers.findFirst({
+        where: (organizationMembers, { eq }) => eq(organizationMembers.userId, userId),
+      });
     });
 
     if (!memberRecord) {

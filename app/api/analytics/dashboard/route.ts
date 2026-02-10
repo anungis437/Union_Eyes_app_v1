@@ -5,6 +5,7 @@ import { claims, claimUpdates } from '@/db/schema/claims-schema';
 import { eq, desc, and, count, sql, gte, lte, between } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(30, async (request, context) => {
@@ -43,75 +44,87 @@ export const GET = async (request: NextRequest) => {
       whereConditions.push(gte(claims.createdAt, startDate));
 
       // Get overall statistics
-      const [overallStats] = await db
-        .select({
-          totalClaims: count(),
-          activeClaims: sql<number>`COUNT(CASE WHEN status NOT IN ('resolved', 'rejected', 'closed') THEN 1 END)`,
-          resolvedClaims: sql<number>`COUNT(CASE WHEN status = 'resolved' THEN 1 END)`,
-          rejectedClaims: sql<number>`COUNT(CASE WHEN status = 'rejected' THEN 1 END)`,
-          underReview: sql<number>`COUNT(CASE WHEN status = 'under_review' THEN 1 END)`,
-          investigation: sql<number>`COUNT(CASE WHEN status = 'investigation' THEN 1 END)`,
-          criticalPriority: sql<number>`COUNT(CASE WHEN priority = 'critical' THEN 1 END)`,
-          highPriority: sql<number>`COUNT(CASE WHEN priority = 'high' THEN 1 END)`,
-        })
-        .from(claims)
-        .where(and(...whereConditions));
+      const [overallStats] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            totalClaims: count(),
+            activeClaims: sql<number>`COUNT(CASE WHEN status NOT IN ('resolved', 'rejected', 'closed') THEN 1 END)`,
+            resolvedClaims: sql<number>`COUNT(CASE WHEN status = 'resolved' THEN 1 END)`,
+            rejectedClaims: sql<number>`COUNT(CASE WHEN status = 'rejected' THEN 1 END)`,
+            underReview: sql<number>`COUNT(CASE WHEN status = 'under_review' THEN 1 END)`,
+            investigation: sql<number>`COUNT(CASE WHEN status = 'investigation' THEN 1 END)`,
+            criticalPriority: sql<number>`COUNT(CASE WHEN priority = 'critical' THEN 1 END)`,
+            highPriority: sql<number>`COUNT(CASE WHEN priority = 'high' THEN 1 END)`,
+          })
+          .from(claims)
+          .where(and(...whereConditions));
+      });
 
       // Get claims by type
-      const claimsByType = await db
-        .select({
-          claimType: claims.claimType,
-          count: count(),
-        })
-        .from(claims)
-        .where(and(...whereConditions))
-        .groupBy(claims.claimType);
+      const claimsByType = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            claimType: claims.claimType,
+            count: count(),
+          })
+          .from(claims)
+          .where(and(...whereConditions))
+          .groupBy(claims.claimType);
+      });
 
       // Get claims by status
-      const claimsByStatus = await db
-        .select({
-          status: claims.status,
-          count: count(),
-        })
-        .from(claims)
-        .where(and(...whereConditions))
-        .groupBy(claims.status);
+      const claimsByStatus = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            status: claims.status,
+            count: count(),
+          })
+          .from(claims)
+          .where(and(...whereConditions))
+          .groupBy(claims.status);
+      });
 
       // Get claims by priority
-      const claimsByPriority = await db
-        .select({
-          priority: claims.priority,
-          count: count(),
-        })
-        .from(claims)
-        .where(and(...whereConditions))
-        .groupBy(claims.priority);
+      const claimsByPriority = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            priority: claims.priority,
+            count: count(),
+          })
+          .from(claims)
+          .where(and(...whereConditions))
+          .groupBy(claims.priority);
+      });
 
       // Get average resolution time for resolved claims
-      const [resolutionStats] = await db
-        .select({
-          avgResolutionDays: sql<number>`AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)`,
-          minResolutionDays: sql<number>`MIN(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)`,
-          maxResolutionDays: sql<number>`MAX(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)`,
-        })
-        .from(claims)
-        .where(
-          and(
-            eq(claims.status, 'resolved'),
-            gte(claims.createdAt, startDate)
-          )
-        );
+      const [resolutionStats] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            avgResolutionDays: sql<number>`AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)`,
+            minResolutionDays: sql<number>`MIN(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)`,
+            maxResolutionDays: sql<number>`MAX(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)`,
+          })
+          .from(claims)
+          .where(
+            and(
+              eq(claims.status, 'resolved'),
+              gte(claims.createdAt, startDate)
+            )
+          );
+      });
 
       // Get claims trend (daily for last 30 days)
-      const claimsTrend = await db
-        .select({
-          date: sql<string>`DATE(created_at)`,
-          count: count(),
-        })
-        .from(claims)
-        .where(and(...whereConditions))
-        .groupBy(sql`DATE(created_at)`)
-        .orderBy(sql`DATE(created_at)`);
+      const claimsTrend = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            date: sql<string>`DATE(created_at)`,
+            count: count(),
+          })
+          .from(claims)
+          .where(and(...whereConditions))
+          .groupBy(sql`DATE(created_at)`)
+          .orderBy(sql`DATE(created_at)`);
+      });
 
       // Calculate performance metrics
       const resolutionRate = overallStats.totalClaims > 0

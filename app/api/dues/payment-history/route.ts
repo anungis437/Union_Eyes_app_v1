@@ -6,6 +6,7 @@ import { eq, and, desc } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // Validation schema for query parameters
 const paymentHistorySchema = z.object({
@@ -45,11 +46,13 @@ try {
       const requestedUserId = query.userId;
 
       // Get member record
-      const [member] = await db
-        .select()
-        .from(members)
-        .where(eq(members.userId, requestedUserId))
-        .limit(1);
+      const [member] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select()
+          .from(members)
+          .where(eq(members.userId, requestedUserId))
+          .limit(1);
+      });
 
       if (!member) {
         logApiAuditEvent({
@@ -64,30 +67,32 @@ try {
       }
 
       // Get payment history
-      const payments = await db
-        .select({
-          id: duesTransactions.id,
-          date: duesTransactions.createdAt,
-          amount: duesTransactions.amount,
-          duesAmount: duesTransactions.duesAmount,
-          copeAmount: duesTransactions.copeAmount,
-          pacAmount: duesTransactions.pacAmount,
-          strikeFundAmount: duesTransactions.strikeFundAmount,
-          lateFeeAmount: duesTransactions.lateFeeAmount,
-          adjustmentAmount: duesTransactions.adjustmentAmount,
-          totalAmount: duesTransactions.totalAmount,
-          status: duesTransactions.status,
-          paymentMethod: duesTransactions.paymentMethod,
-          periodStart: duesTransactions.periodStart,
-          periodEnd: duesTransactions.periodEnd,
-          paidDate: duesTransactions.paidDate,
-          paymentReference: duesTransactions.paymentReference,
-          receiptUrl: duesTransactions.receiptUrl,
-        })
-        .from(duesTransactions)
-        .where(eq(duesTransactions.memberId, member.id))
-        .orderBy(desc(duesTransactions.createdAt))
-        .limit(50);
+      const payments = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            id: duesTransactions.id,
+            date: duesTransactions.createdAt,
+            amount: duesTransactions.amount,
+            duesAmount: duesTransactions.duesAmount,
+            copeAmount: duesTransactions.copeAmount,
+            pacAmount: duesTransactions.pacAmount,
+            strikeFundAmount: duesTransactions.strikeFundAmount,
+            lateFeeAmount: duesTransactions.lateFeeAmount,
+            adjustmentAmount: duesTransactions.adjustmentAmount,
+            totalAmount: duesTransactions.totalAmount,
+            status: duesTransactions.status,
+            paymentMethod: duesTransactions.paymentMethod,
+            periodStart: duesTransactions.periodStart,
+            periodEnd: duesTransactions.periodEnd,
+            paidDate: duesTransactions.paidDate,
+            paymentReference: duesTransactions.paymentReference,
+            receiptUrl: duesTransactions.receiptUrl,
+          })
+          .from(duesTransactions)
+          .where(eq(duesTransactions.memberId, member.id))
+          .orderBy(desc(duesTransactions.createdAt))
+          .limit(50);
+      });
 
       const formattedPayments = payments.map(payment => ({
         id: payment.id,

@@ -9,6 +9,7 @@ import {
   exportAnalyticsToCSV,
 } from '@/lib/services/rewards/export-service';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
@@ -24,12 +25,14 @@ export const GET = async (request: NextRequest) => {
       }
 
       // Check admin role
-      const member = await db.query.organizationMembers.findFirst({
-        where: (members, { eq, and }) =>
-          and(
-            eq(members.userId, userId),
-            eq(members.organizationId, organizationId)
-          ),
+      const member = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.organizationMembers.findFirst({
+          where: (members, { eq, and }) =>
+            and(
+              eq(members.userId, userId),
+              eq(members.organizationId, organizationId)
+            ),
+        });
       });
 
       if (!member || !['admin', 'owner'].includes(member.role)) {

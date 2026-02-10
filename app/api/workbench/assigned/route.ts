@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getClaimsAssignedToUser } from "@/db/queries/claims-queries";
 import { getUserByEmail } from "@/db/queries/users-queries";
 import { withOrganizationAuth } from "@/lib/organization-middleware";
+import { logger } from '@/lib/logger';
 
 export const GET = withApiAuth(async (request: NextRequest, context) => {
   try {
@@ -34,7 +35,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     // Look up database user by email
     const dbUser = await getUserByEmail(clerkUser.emailAddresses[0].emailAddress);
     if (!dbUser) {
-      console.log(`No database user found for email: ${clerkUser.emailAddresses[0].emailAddress}`);
+      logger.warn('No database user found for email', { email: clerkUser.emailAddresses[0].emailAddress });
       return NextResponse.json({
         claims: [],
         total: 0,
@@ -54,7 +55,7 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error("Error fetching assigned claims:", error);
+    logger.error('Error fetching assigned claims', error as Error);
     // Return empty array instead of error to allow UI to load
     return NextResponse.json({
       claims: [],

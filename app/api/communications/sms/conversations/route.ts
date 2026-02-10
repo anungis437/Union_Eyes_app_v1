@@ -2,12 +2,19 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { smsConversations } from '@/db/schema/sms-communications-schema';
 import { and, desc, eq, ilike, or } from 'drizzle-orm';
-import { withRoleAuth } from '@/lib/api-auth-guard';
+import { withRoleAuth, getUserContext } from '@/lib/api-auth-guard';
 
-export const GET = withRoleAuth(10, async (request, context) => {
+type SmsConversationsContext = { params?: Record<string, any>; organizationId?: string; userId?: string };
+
+export const GET = withRoleAuth<SmsConversationsContext>('member', async (request, context) => {
   try {
     const { searchParams } = new URL(request.url);
-    const organizationId = searchParams.get('organizationId') ?? searchParams.get('tenantId') ?? context.organizationId;
+    let organizationId = searchParams.get('organizationId') ?? searchParams.get('tenantId');
+    
+    if (!organizationId) {
+      const userContext = await getUserContext();
+      organizationId = userContext?.organizationId ?? null;
+    }
 
     if (!organizationId) {
       return NextResponse.json({ error: 'Missing organizationId' }, { status: 400 });

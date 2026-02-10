@@ -79,7 +79,23 @@ export default clerkMiddleware((auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api')) {
     // PR #4: Use centralized public route checker from api-auth-guard.ts
     if (isPublicApiRoute(req.nextUrl.pathname)) {
-      return NextResponse.next();
+      // Handle CORS preflight for public API routes
+      if (req.method === 'OPTIONS') {
+        return new NextResponse(null, {
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Max-Age': '86400',
+          },
+        });
+      }
+
+      const response = NextResponse.next();
+      response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
+      response.headers.set('Access-Control-Allow-Credentials', 'true');
+      return response;
     }
 
     // PR #4: Check cron routes using centralized CRON_API_ROUTES

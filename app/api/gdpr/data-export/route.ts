@@ -156,7 +156,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-    console.error("Data export download error:", error);
+    logger.error('Data export request error', error as Error);
     return NextResponse.json(
       { error: "Failed to download data export" },
       { status: 500 }

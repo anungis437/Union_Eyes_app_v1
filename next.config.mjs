@@ -3,40 +3,134 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
+// =============================================================================
+// CONTENT SECURITY POLICY (CSP)
+// =============================================================================
+// CSP Configuration with Defense-in-Depth Strategy
+//
+// SECURITY TRADEOFFS DOCUMENTED:
+// 1. script-src 'unsafe-inline' 'unsafe-eval' - Required by Clerk SDK & Next.js dev mode
+//    • Mitigation: Strict domain whitelisting + additional security headers
+//    • Future: Migrate to nonce-based CSP when Clerk adds support (tracking: 2026 Q2)
+//
+// 2. connect-src https: wss: - Permissive to support dynamic integrations
+//    • Required for: User-configured webhooks, third-party APIs, CDN resources
+//    • Mitigation: Server-side URL validation + rate limiting
+//
+// 3. img-src https: - Allow external images from integrations
+//    • Required for: User avatars, document previews, external content
+//    • Mitigation: Subresource Integrity (SRI) where possible
+//
+// DEFENSE LAYERS:
+// • X-Frame-Options: DENY (prevents clickjacking)
+// • X-Content-Type-Options: nosniff (prevents MIME sniffing)
+// • Referrer-Policy: strict-origin-when-cross-origin (privacy)
+// • HSTS with preload (enforces HTTPS)
+// • Cross-Origin-*-Policy headers (Spectre mitigation)
+// =============================================================================
+
 const ContentSecurityPolicy = [
+  // Default policy: Restrict all to same-origin unless explicitly allowed
   "default-src 'self'",
+  
+  // Base URI: Prevent <base> tag hijacking
   "base-uri 'self'",
+  
+  // Objects: Block Flash, Java applets, legacy plugins
   "object-src 'none'",
+  
+  // Frame embedding: Prevent clickjacking (redundant with X-Frame-Options for old browsers)
   "frame-ancestors 'none'",
+  
+  // Images: Allow data URIs (inline), blob (canvas/File API), and external HTTPS
+  // Permissive https: required for user avatars, document previews, CDN resources
   "img-src 'self' data: blob: https:",
+  
+  // Fonts: Allow data URIs and HTTPS CDNs
   "font-src 'self' data: https:",
-  // For Clerk and Radix UI components that require inline styles
+  
+  // Styles: Clerk and Radix UI require inline styles
   "style-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.com",
-  // For Next.js and Clerk
+  
+  // Scripts: SECURITY TRADEOFF - See documentation above
+  // TODO: Migrate to nonce-based CSP (GitHub issue #XXX)
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
-  "connect-src 'self' https: wss: https://*.clerk.com https://*.clerk.accounts.dev https://*.sentry.io",
+  
+  // Connections: SECURITY TRADEOFF - Permissive for dynamic integrations
+  // Core domains whitelisted; https:/wss: required for user-configured webhooks
+  "connect-src 'self' https: wss: https://*.clerk.com https://*.clerk.accounts.dev https://*.sentry.io https://*.supabase.co https://api.stripe.com https://*.upstash.io",
+  
+  // Iframes: Allow Clerk authentication flows and Cloudflare challenges
   "frame-src 'self' https://clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
+  
+  // Web Workers: Allow blob URLs for dynamic worker creation
   "worker-src 'self' blob:",
+  
+  // Media: Restrict to same-origin and HTTPS (for video/audio)
+  "media-src 'self' https:",
+  
+  // Manifests: PWA support
+  "manifest-src 'self'",
+  
+  // Form submissions: Restrict to same-origin
   "form-action 'self'",
+  
+  // Upgrade all HTTP requests to HTTPS
   "upgrade-insecure-requests",
 ].join('; ');
 
+// =============================================================================
+// SECURITY HEADERS
+// =============================================================================
+// Comprehensive HTTP security headers for defense-in-depth protection
+// All headers follow OWASP, Mozilla Observatory, and Snyk best practices
+// =============================================================================
+
 const securityHeaders = [
+  // Content Security Policy (defined above)
   { key: 'Content-Security-Policy', value: ContentSecurityPolicy },
+  
+  // Referrer Policy: Balance privacy with analytics/debugging needs
+  // strict-origin-when-cross-origin = Send full URL for same-origin, origin only for cross-origin HTTPS
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  
+  // X-Content-Type-Options: Prevent MIME-type sniffing attacks
+  // Forces browsers to respect Content-Type headers (prevents XSS via image uploads)
   { key: 'X-Content-Type-Options', value: 'nosniff' },
+  
+  // X-Frame-Options: Prevent clickjacking attacks
+  // DENY = Cannot be embedded in any frame/iframe (redundant with CSP frame-ancestors for older browsers)
   { key: 'X-Frame-Options', value: 'DENY' },
-  // Modern permissions policy
+  
+  // Permissions Policy: Restrict browser APIs to prevent abuse
+  // Disable: camera, microphone, payment, USB, geolocation (except same-origin), interest-cohort (FLoC)
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=(), payment=(), usb=()' },
-  // HSTS with preload (ensures HTTPS)
+  
+  // HTTP Strict Transport Security (HSTS): Enforce HTTPS for 2 years
+  // includeSubDomains = Apply to all subdomains
+  // preload = Eligible for browser preload list (https://hstspreload.org/)
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-  // Additional security headers
+  
+  // X-DNS-Prefetch-Control: Enable DNS prefetching for performance
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
+  
+  // X-Download-Options: Prevent IE from executing downloads in site context
   { key: 'X-Download-Options', value: 'noopen' },
+  
+  // X-Permitted-Cross-Domain-Policies: Block Adobe Flash/PDF cross-domain requests
   { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+  
+  // Cross-Origin-Embedder-Policy: Require CORP for cross-origin resources (Spectre mitigation)
   { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+  
+  // Cross-Origin-Opener-Policy: Isolate browsing context (Spectre mitigation)
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  
+  // Cross-Origin-Resource-Policy: Prevent cross-origin resource loading
   { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+  
+  // Origin-Agent-Cluster: Request origin-keyed agent clusters for better isolation
+  { key: 'Origin-Agent-Cluster', value: '?1' },
 ];
 
 /** @type {import('next').NextConfig} */

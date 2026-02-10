@@ -218,13 +218,15 @@ async function generateDeadlineRecommendations(
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
     // Find upcoming deadlines
-    const upcomingDeadlines = await db.query.deadlines.findMany({
-      where: and(
-        eq(deadlines.tenantId, tenantId),
-        lte(deadlines.dueDate, threeDaysFromNow),
-        gte(deadlines.dueDate, now),
-        isNull(deadlines.completedAt)
-      )
+    const upcomingDeadlines = await withRLSContext({ organizationId: tenantId }, async (db) => {
+      return await db.query.deadlines.findMany({
+        where: and(
+          eq(deadlines.tenantId, tenantId),
+          lte(deadlines.dueDate, threeDaysFromNow),
+          gte(deadlines.dueDate, now),
+          isNull(deadlines.completedAt)
+        )
+      });
     });
 
     if (upcomingDeadlines.length > 0) {
@@ -250,12 +252,14 @@ async function generateDeadlineRecommendations(
     }
 
     // Find overdue deadlines
-    const overdueDeadlines = await db.query.deadlines.findMany({
-      where: and(
-        eq(deadlines.tenantId, tenantId),
-        lte(deadlines.dueDate, now),
-        isNull(deadlines.completedAt)
-      )
+    const overdueDeadlines = await withRLSContext({ organizationId: tenantId }, async (db) => {
+      return await db.query.deadlines.findMany({
+        where: and(
+          eq(deadlines.tenantId, tenantId),
+          lte(deadlines.dueDate, now),
+          isNull(deadlines.completedAt)
+        )
+      });
     });
 
     if (overdueDeadlines.length > 0) {

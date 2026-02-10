@@ -11,6 +11,7 @@ import { userNotificationPreferences } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -18,8 +19,10 @@ export const GET = async (request: NextRequest) => {
 
   try {
       // Get user preferences
-      const preferences = await db.query.userNotificationPreferences.findFirst({
-        where: eq(userNotificationPreferences.userId, userId),
+      const preferences = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.userNotificationPreferences.findFirst({
+          where: eq(userNotificationPreferences.userId, userId),
+        });
       });
 
       // Return defaults if not found
@@ -79,8 +82,10 @@ export const PUT = async (request: NextRequest) => {
       const tenantId = organizationId;
 
       // Check if preferences exist
-      const existing = await db.query.userNotificationPreferences.findFirst({
-        where: eq(userNotificationPreferences.userId, userId),
+      const existing = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.userNotificationPreferences.findFirst({
+          where: eq(userNotificationPreferences.userId, userId),
+        });
       });
 
       let result;

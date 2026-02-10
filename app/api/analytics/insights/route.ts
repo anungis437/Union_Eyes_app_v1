@@ -13,6 +13,7 @@ import { eq, and, desc, inArray } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(30, async (request, context) => {
@@ -52,10 +53,12 @@ export const GET = async (request: NextRequest) => {
         conditions.push(eq(insightRecommendations.category, category));
       }
       
-      const insights = await db.query.insightRecommendations.findMany({
-        where: conditions.length > 0 ? and(...conditions) : undefined,
-        orderBy: [desc(insightRecommendations.createdAt)],
-        limit
+      const insights = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.insightRecommendations.findMany({
+          where: conditions.length > 0 ? and(...conditions) : undefined,
+          orderBy: [desc(insightRecommendations.createdAt)],
+          limit
+        });
       });
       
       // Log audit event
@@ -227,24 +230,26 @@ export const POST = async (request: NextRequest) => {
         );
       }
       
-      const [insight] = await db.insert(insightRecommendations).values({
-        organizationId,
-        insightType,
-        category,
-        priority,
-        title,
-        description,
-        dataSource,
-        metrics,
-        trend,
-        impact,
-        recommendations,
-        actionRequired: actionRequired || false,
-        actionDeadline: actionDeadline ? new Date(actionDeadline) : undefined,
-        estimatedBenefit,
-        confidenceScore: confidenceScore?.toString(),
-        relatedEntities
-      }).returning();
+      const [insight] = await withRLSContext({ organizationId }, async (db) => {
+        return await db.insert(insightRecommendations).values({
+          organizationId,
+          insightType,
+          category,
+          priority,
+          title,
+          description,
+          dataSource,
+          metrics,
+          trend,
+          impact,
+          recommendations,
+          actionRequired: actionRequired || false,
+          actionDeadline: actionDeadline ? new Date(actionDeadline) : undefined,
+          estimatedBenefit,
+          confidenceScore: confidenceScore?.toString(),
+          relatedEntities
+        }).returning();
+      });
       
       // Log audit event
       await logApiAuditEvent({

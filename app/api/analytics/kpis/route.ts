@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createKPI } from '@/actions/analytics-actions';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
@@ -108,6 +109,8 @@ export const POST = async (request: NextRequest) => {
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
+    const { userId, organizationId } = context;
+
     try {
       const searchParams = request.nextUrl.searchParams;
       const isActive = searchParams.get('isActive');
@@ -124,10 +127,12 @@ export const GET = async (request: NextRequest) => {
         conditions.push(eq(kpiConfigurations.isActive, isActive === 'true'));
       }
       
-      const kpis = await db.query.kpiConfigurations.findMany({
-        where: conditions.length > 0 ? conditions[0] : undefined,
-        orderBy: [desc(kpiConfigurations.createdAt)],
-        limit
+      const kpis = await withRLSContext({ organizationId }, async (db) => {
+        return await db.query.kpiConfigurations.findMany({
+          where: conditions.length > 0 ? conditions[0] : undefined,
+          orderBy: [desc(kpiConfigurations.createdAt)],
+          limit
+        });
       });
       
       return NextResponse.json({

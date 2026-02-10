@@ -60,6 +60,32 @@ export async function register() {
           console.log('✅ Database startup checks passed');
         }
       }
+
+      // SECURITY FIX: Validate Redis is available for rate limiting
+      // Rate limiter fails-closed if Redis unavailable (prevents DoS)
+      if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+        try {
+          const { Redis } = await import('@upstash/redis');
+          const redis = new Redis({
+            url: process.env.UPSTASH_REDIS_REST_URL,
+            token: process.env.UPSTASH_REDIS_REST_TOKEN,
+          });
+          const { logger } = await import('./lib/logger');
+          
+          // Test Redis connection with ping
+          await redis.ping();
+          logger.info('Redis connection verified - rate limiting enabled');
+        } catch (error) {
+          const { logger } = await import('./lib/logger');
+          logger.error('Redis connection failed - rate limiting will fail-closed', error as Error);
+          if (process.env.NODE_ENV === 'production') {
+            logger.error('CRITICAL: All rate-limited endpoints will reject requests until Redis is available');
+          }
+        }
+      } else if (process.env.NODE_ENV === 'production') {
+        const { logger } = await import('./lib/logger');
+        logger.error('Redis not configured - rate limiting will fail-closed in production');
+      }
     } catch (error) {
       console.error('❌ Startup validation error:', error);
       

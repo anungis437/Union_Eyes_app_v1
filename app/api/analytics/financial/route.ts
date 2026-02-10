@@ -12,6 +12,7 @@ import { claims } from '@/db/schema/claims-schema';
 import { sql, gte, and, eq } from 'drizzle-orm';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = withRoleAuth('steward', async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
@@ -50,31 +51,35 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
     prevStartDate.setDate(prevStartDate.getDate() - days);
 
     // Get current period financial summary
-    const currentPeriod = await db.select({
-      totalClaims: sql<number>`count(distinct ${claims.claimId})`,
-      totalClaimValue: sql<number>`coalesce(sum(${claims.claimAmount}), 0)`,
-      totalSettlements: sql<number>`coalesce(sum(case when ${claims.resolutionOutcome} = 'won' then ${claims.settlementAmount} else 0 end), 0)`,
-      totalCosts: sql<number>`coalesce(sum(${claims.legalCosts} + coalesce(${claims.courtCosts}, 0)), 0)`,
-      avgClaimValue: sql<number>`coalesce(avg(${claims.claimAmount}), 0)`,
-    })
-    .from(claims)
-    .where(and(
-      eq(claims.organizationId, tenantId),
-      gte(claims.filedDate, startDate)
-    ));
+    const currentPeriod = await withRLSContext({ organizationId }, async (db) => {
+      return await db.select({
+        totalClaims: sql<number>`count(distinct ${claims.claimId})`,
+        totalClaimValue: sql<number>`coalesce(sum(${claims.claimAmount}), 0)`,
+        totalSettlements: sql<number>`coalesce(sum(case when ${claims.resolutionOutcome} = 'won' then ${claims.settlementAmount} else 0 end), 0)`,
+        totalCosts: sql<number>`coalesce(sum(${claims.legalCosts} + coalesce(${claims.courtCosts}, 0)), 0)`,
+        avgClaimValue: sql<number>`coalesce(avg(${claims.claimAmount}), 0)`,
+      })
+      .from(claims)
+      .where(and(
+        eq(claims.organizationId, tenantId),
+        gte(claims.filedDate, startDate)
+      ));
+    });
 
     // Get previous period financial summary
-    const previousPeriod = await db.select({
-      totalClaimValue: sql<number>`coalesce(sum(${claims.claimAmount}), 0)`,
-      totalSettlements: sql<number>`coalesce(sum(case when ${claims.resolutionOutcome} = 'won' then ${claims.settlementAmount} else 0 end), 0)`,
-      totalCosts: sql<number>`coalesce(sum(${claims.legalCosts} + coalesce(${claims.courtCosts}, 0)), 0)`,
-    })
-    .from(claims)
-    .where(and(
-      eq(claims.organizationId, tenantId),
-      gte(claims.filedDate, prevStartDate),
-      sql`${claims.filedDate} < ${startDate}`
-    ));
+    const previousPeriod = await withRLSContext({ organizationId }, async (db) => {
+      return await db.select({
+        totalClaimValue: sql<number>`coalesce(sum(${claims.claimAmount}), 0)`,
+        totalSettlements: sql<number>`coalesce(sum(case when ${claims.resolutionOutcome} = 'won' then ${claims.settlementAmount} else 0 end), 0)`,
+        totalCosts: sql<number>`coalesce(sum(${claims.legalCosts} + coalesce(${claims.courtCosts}, 0)), 0)`,
+      })
+      .from(claims)
+      .where(and(
+        eq(claims.organizationId, tenantId),
+        gte(claims.filedDate, prevStartDate),
+        sql`${claims.filedDate} < ${startDate}`
+      ));
+    });
 
     const current = currentPeriod[0];
     const previous = previousPeriod[0];

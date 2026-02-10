@@ -4,6 +4,7 @@ import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/s
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // Validation schema for update
 const UpdateSurveySchema = z.object({
@@ -242,16 +243,18 @@ export const DELETE = withApiAuth(async (
     }
 
     // Delete answers first (cascading)
-    await db
-      .delete(surveyAnswers)
-      .where(
-        eq(
-          surveyAnswers.responseId,
-          db.select({ id: surveyResponses.id })
-            .from(surveyResponses)
-            .where(eq(surveyResponses.surveyId, surveyId)) as any
-        )
-      );
+    await withRLSContext({ organizationId: tenantId }, async (db) => {
+      return await db
+        .delete(surveyAnswers)
+        .where(
+          eq(
+            surveyAnswers.responseId,
+            db.select({ id: surveyResponses.id })
+              .from(surveyResponses)
+              .where(eq(surveyResponses.surveyId, surveyId)) as any
+          )
+        );
+    });
 
     // Delete responses
     await db

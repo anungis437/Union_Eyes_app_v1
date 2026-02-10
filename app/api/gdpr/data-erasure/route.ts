@@ -10,15 +10,18 @@ import { withApiAuth, withRoleAuth, getCurrentUser } from '@/lib/api-auth-guard'
 import { db } from "@/db";
 import { GdprRequestManager, DataErasureService } from "@/lib/gdpr/consent-manager";
 import { logger } from "@/lib/logger";
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 /**
  * Helper to check if user is admin/DPO
  */
-async function checkAdminOrDPORole(userId: string): Promise<boolean> {
+async function checkAdminOrDPORole(userId: string, organizationId: string): Promise<boolean> {
   try {
-    const member = await db.query.organizationMembers.findFirst({
-      where: (organizationMembers, { eq }) =>
-        eq(organizationMembers.userId, userId),
+    const member = await withRLSContext({ organizationId }, async (db) => {
+      return await db.query.organizationMembers.findFirst({
+        where: (organizationMembers, { eq }) =>
+          eq(organizationMembers.userId, userId),
+      });
     });
 
     // Allow admin and super_admin roles to perform data erasure
@@ -104,17 +107,17 @@ export const POST = withApiAuth(async (request: NextRequest) => {
   }
 });
 
-export const DELETE = withRoleAuth('admin', async (request: NextRequest) => {
+export const DELETE = withRoleAuth('admin', async (request: NextRequest, context) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    const userId = user.id;
+    const { userId, organizationId } = context;
     
     // Check if user is admin/DPO
-    const isAdmin = await checkAdminOrDPORole(userId);
+    const isAdmin = await checkAdminOrDPORole(userId, organizationId);
 
     if (!isAdmin) {
       return NextResponse.json(

@@ -66,8 +66,6 @@ async function checkAndRenewCredits(profile: any): Promise<any> {
   
   // If current time has passed the renewal date, reset used credits
   if (now > renewalDate) {
-    console.log(`Resetting used credits for user ${profile.userId} based on 4-week cycle`);
-    
     // Calculate next renewal date (4 weeks from now)
     const nextRenewal = new Date();
     nextRenewal.setDate(nextRenewal.getDate() + CREDIT_RENEWAL_DAYS);
@@ -81,7 +79,7 @@ async function checkAndRenewCredits(profile: any): Promise<any> {
     // Update profile with reset used credits and new renewal date
     const updatedProfile = await updateProfile(profile.userId, updateData);
     
-    console.log(`Used credits reset to 0 for ${profile.membership} user. Next renewal: ${nextRenewal.toISOString()}`);
+    logger.info('Credits renewed', { userId: profile.userId, membership: profile.membership, nextRenewal: nextRenewal.toISOString() });
     
     // Revalidate pages that display credit information
     revalidatePath("/notes");

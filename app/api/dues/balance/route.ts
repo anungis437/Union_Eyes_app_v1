@@ -6,6 +6,7 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 // Validation schema for query parameters
 const balanceQuerySchema = z.object({
@@ -45,11 +46,13 @@ try {
       const requestedUserId = query.userId;
 
       // Get member record
-      const [member] = await db
-        .select()
-        .from(members)
-        .where(eq(members.userId, requestedUserId))
-        .limit(1);
+      const [member] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select()
+          .from(members)
+          .where(eq(members.userId, requestedUserId))
+          .limit(1);
+      });
 
       if (!member) {
         // Return default values instead of 404 - member might not be in financial system yet
@@ -78,21 +81,23 @@ try {
       }
 
       // Get active dues assignment
-      const [assignment] = await db
-        .select({
-          assignment: memberDuesAssignments,
-          rule: duesRules,
-        })
-        .from(memberDuesAssignments)
-        .leftJoin(duesRules, eq(memberDuesAssignments.ruleId, duesRules.id))
-        .where(
-          and(
-            eq(memberDuesAssignments.memberId, member.id),
-            eq(memberDuesAssignments.isActive, true)
+      const [assignment] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            assignment: memberDuesAssignments,
+            rule: duesRules,
+          })
+          .from(memberDuesAssignments)
+          .leftJoin(duesRules, eq(memberDuesAssignments.ruleId, duesRules.id))
+          .where(
+            and(
+              eq(memberDuesAssignments.memberId, member.id),
+              eq(memberDuesAssignments.isActive, true)
+            )
           )
-        )
-        .orderBy(desc(memberDuesAssignments.effectiveDate))
-        .limit(1);
+          .orderBy(desc(memberDuesAssignments.effectiveDate))
+          .limit(1);
+      });
 
       if (!assignment) {
         logApiAuditEvent({
@@ -120,45 +125,51 @@ try {
       }
 
       // Calculate current balance (sum of unpaid transactions)
-      const [balanceResult] = await db
-        .select({
-          totalOwed: sql<number>`COALESCE(SUM(CAST(${duesTransactions.totalAmount} AS DECIMAL)), 0)`,
-          overdueAmount: sql<number>`COALESCE(SUM(CASE WHEN ${duesTransactions.dueDate} < CURRENT_DATE AND ${duesTransactions.status} = 'pending' THEN CAST(${duesTransactions.totalAmount} AS DECIMAL) ELSE 0 END), 0)`,
-        })
-        .from(duesTransactions)
-        .where(
-          and(
-            eq(duesTransactions.memberId, member.id),
-            eq(duesTransactions.status, 'pending')
-          )
-        );
+      const [balanceResult] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select({
+            totalOwed: sql<number>`COALESCE(SUM(CAST(${duesTransactions.totalAmount} AS DECIMAL)), 0)`,
+            overdueAmount: sql<number>`COALESCE(SUM(CASE WHEN ${duesTransactions.dueDate} < CURRENT_DATE AND ${duesTransactions.status} = 'pending' THEN CAST(${duesTransactions.totalAmount} AS DECIMAL) ELSE 0 END), 0)`,
+          })
+          .from(duesTransactions)
+          .where(
+            and(
+              eq(duesTransactions.memberId, member.id),
+              eq(duesTransactions.status, 'pending')
+            )
+          );
+      });
 
       // Get next upcoming payment
-      const [nextPayment] = await db
-        .select()
-        .from(duesTransactions)
-        .where(
-          and(
-            eq(duesTransactions.memberId, member.id),
-            eq(duesTransactions.status, 'pending'),
-            sql`${duesTransactions.dueDate} >= CURRENT_DATE`
+      const [nextPayment] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select()
+          .from(duesTransactions)
+          .where(
+            and(
+              eq(duesTransactions.memberId, member.id),
+              eq(duesTransactions.status, 'pending'),
+              sql`${duesTransactions.dueDate} >= CURRENT_DATE`
+            )
           )
-        )
-        .orderBy(duesTransactions.dueDate)
-        .limit(1);
+          .orderBy(duesTransactions.dueDate)
+          .limit(1);
+      });
 
       // Get last completed payment
-      const [lastPayment] = await db
-        .select()
-        .from(duesTransactions)
-        .where(
-          and(
-            eq(duesTransactions.memberId, member.id),
-            eq(duesTransactions.status, 'completed')
+      const [lastPayment] = await withRLSContext({ organizationId }, async (db) => {
+        return await db
+          .select()
+          .from(duesTransactions)
+          .where(
+            and(
+              eq(duesTransactions.memberId, member.id),
+              eq(duesTransactions.status, 'completed')
+            )
           )
-        )
-        .orderBy(desc(duesTransactions.paidDate))
-        .limit(1);
+          .orderBy(desc(duesTransactions.paidDate))
+          .limit(1);
+      });
 
       const currentBalance = parseFloat(balanceResult.totalOwed.toString());
       const overdueAmount = parseFloat(balanceResult.overdueAmount.toString());

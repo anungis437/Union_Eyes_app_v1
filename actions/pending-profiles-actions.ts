@@ -6,13 +6,14 @@ import {
   markPendingProfileAsClaimed,
   deletePendingProfile 
 } from "@/db/queries/pending-profiles-queries";
+import { logger } from '@/lib/logger';
 
 export async function getPendingProfileByEmailAction(email: string) {
   try {
     const profile = await getPendingProfileByEmail(email);
     return { success: true, data: profile };
   } catch (error) {
-    console.error("Error getting pending profile by email:", error);
+    logger.error('Error getting pending profile by email', error as Error, { email });
     return { success: false, error: "Failed to get pending profile" };
   }
 }
@@ -22,7 +23,7 @@ export async function getUnclaimedPendingProfilesAction() {
     const profiles = await getUnclaimedPendingProfiles();
     return { success: true, data: profiles };
   } catch (error) {
-    console.error("Error getting unclaimed pending profiles:", error);
+    logger.error('Error getting unclaimed pending profiles', error as Error);
     return { success: false, error: "Failed to get unclaimed profiles" };
   }
 }
@@ -32,7 +33,7 @@ export async function markPendingProfileAsClaimedAction(id: string, userId: stri
     const updated = await markPendingProfileAsClaimed(id, userId);
     return { success: true, data: updated };
   } catch (error) {
-    console.error("Error marking pending profile as claimed:", error);
+    logger.error('Error marking pending profile as claimed', error as Error, { profileId: id, userId });
     return { success: false, error: "Failed to mark profile as claimed" };
   }
 }
@@ -42,7 +43,7 @@ export async function deletePendingProfileAction(id: string) {
     const deleted = await deletePendingProfile(id);
     return { success: true, data: deleted };
   } catch (error) {
-    console.error("Error deleting pending profile:", error);
+    logger.error('Error deleting pending profile', error as Error, { profileId: id });
     return { success: false, error: "Failed to delete pending profile" };
   }
 } 
