@@ -13,8 +13,7 @@
  *   pnpm tsx scripts/validate-hierarchy.ts --fix-orphans
  */
 
-import { validateAllOrganizations, fixOrphanedOrganizations, findOrphanedOrganizations } from '@/lib/utils/hierarchy-validation';
-import { logger } from '@/lib/logger';
+import { validateAllOrganizations, fixOrphanedOrganizations, findOrphanedOrganizations } from '../lib/utils/hierarchy-validation';
 
 const args = process.argv.slice(2);
 const shouldFixOrphans = args.includes('--fix-orphans');
@@ -44,12 +43,12 @@ async function main() {
       
       if (issue.errors.length > 0) {
         console.log('  ❌ Errors:');
-        issue.errors.forEach(err => console.log(`     - ${err}`));
+        issue.errors.forEach((err: string) => console.log(`     - ${err}`));
       }
       
       if (issue.warnings.length > 0) {
         console.log('  ⚠️  Warnings:');
-        issue.warnings.forEach(warn => console.log(`     - ${warn}`));
+        issue.warnings.forEach((warn: string) => console.log(`     - ${warn}`));
       }
     }
     console.log();
@@ -61,7 +60,7 @@ async function main() {
     console.log('═'.repeat(50));
     const orphanIds = await findOrphanedOrganizations();
     console.log(`Found ${orphanIds.length} organizations with invalid parent references`);
-    console.log(`Orphan IDs: ${orphanIds.map(id => id.slice(0, 8)).join(', ')}...`);
+    console.log(`Orphan IDs: ${orphanIds.map((id: string) => id.slice(0, 8)).join(', ')}...`);
     console.log();
 
     if (shouldFixOrphans) {
@@ -86,7 +85,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  logger.error('Hierarchy validation failed', { error });
-  console.error('Fatal error:', error);
+  console.error('Hierarchy validation failed:', error);
   process.exit(1);
 });
