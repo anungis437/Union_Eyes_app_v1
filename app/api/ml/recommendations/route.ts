@@ -4,6 +4,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { z } from 'zod';
 import { db } from '@/db';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { claims, users, deadlines } from '@/db/schema';
 import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
 
@@ -112,13 +113,16 @@ async function generateStewardRecommendations(
 
   try {
     // Find unassigned claims
-    const unassignedClaims = await db.query.claims.findMany({
-      where: and(
-        eq(claims.organizationId, tenantId),
-        isNull(claims.assignedTo),
-        ne(claims.status, 'closed')
-      )
-    });
+    const unassignedClaims = await withRLSContext(
+      { organizationId: tenantId },
+      async (db) => db.query.claims.findMany({
+        where: and(
+          eq(claims.organizationId, tenantId),
+          isNull(claims.assignedTo),
+          ne(claims.status, 'closed')
+        )
+      })
+    );
 
     if (unassignedClaims.length > 0) {
       // Get steward workload
@@ -346,15 +350,18 @@ async function generatePriorityRecommendations(
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const oldOpenClaims = await db.query.claims.findMany({
-      where: and(
-        eq(claims.organizationId, tenantId),
-        ne(claims.status, 'closed'),
-        lte(claims.createdAt, thirtyDaysAgo)
-      ),
-      orderBy: [claims.createdAt],
-      limit: 5
-    });
+    const oldOpenClaims = await withRLSContext(
+      { organizationId: tenantId },
+      async (db) => db.query.claims.findMany({
+        where: and(
+          eq(claims.organizationId, tenantId),
+          ne(claims.status, 'closed'),
+          lte(claims.createdAt, thirtyDaysAgo)
+        ),
+        orderBy: [claims.createdAt],
+        limit: 5
+      })
+    );
 
     if (oldOpenClaims.length > 0) {
       recommendations.push({

@@ -15,15 +15,25 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withVersioning } from '@/lib/api-versioning/version-middleware';
-import { withApiAuth } from '@/lib/api-auth-guard';
+import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db';
 import { claims } from '@/db/schema';
+import { withRLSContext } from '@/lib/db/with-rls-context';
+import { eq } from 'drizzle-orm';
 
 /**
  * Version 1 Handler - Original API
  */
 async function handleV1(request: NextRequest): Promise<NextResponse> {
-  const claimsList = await db.select().from(claims).limit(20);
+  const user = await getCurrentUser();
+  if (!user?.organizationId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const claimsList = await withRLSContext(
+    { organizationId: user.organizationId },
+    async (db) => db.select().from(claims).where(eq(claims.organizationId, user.organizationId)).limit(20)
+  );
 
   // V1 response format
   return NextResponse.json({
@@ -37,12 +47,20 @@ async function handleV1(request: NextRequest): Promise<NextResponse> {
  * Version 2 Handler - Improved API with pagination
  */
 async function handleV2(request: NextRequest): Promise<NextResponse> {
+  const user = await getCurrentUser();
+  if (!user?.organizationId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
   const offset = (page - 1) * limit;
 
-  const claimsList = await db.select().from(claims).limit(limit).offset(offset);
+  const claimsList = await withRLSContext(
+    { organizationId: user.organizationId },
+    async (db) => db.select().from(claims).where(eq(claims.organizationId, user.organizationId)).limit(limit).offset(offset)
+  );
 
   // V2 response format (improved)
   return NextResponse.json({

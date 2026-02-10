@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 
 export const GET = async (req: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -12,14 +13,17 @@ export const GET = async (req: NextRequest) => {
       // Query notifications table for unread notifications for the current user
       // Assuming there's a notifications table with userId, isRead, createdAt columns
       try {
-        const unreadCount = await db.query.notifications.findMany({
-          where: (notifications, { eq, and }) =>
-            and(
-              eq(notifications.userId, userId),
-              eq(notifications.isRead, false)
-            ),
-          columns: { id: true },
-        });
+        const unreadCount = await withRLSContext(
+          { userId, organizationId },
+          async (db) => db.query.notifications.findMany({
+            where: (notifications, { eq, and }) =>
+              and(
+                eq(notifications.userId, userId),
+                eq(notifications.isRead, false)
+              ),
+            columns: { id: true },
+          })
+        );
 
         logger.info('Retrieved notification count', { userId, count: unreadCount.length });
 

@@ -8,6 +8,7 @@
  */
 
 import { db } from '@/db';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { 
   analyticsMetrics, 
   kpiConfigurations, 
@@ -69,27 +70,31 @@ export async function calculateMetrics(params: {
     
     switch (params.metricType) {
       case 'claims_volume':
-        const claimsCount = await db.query.claims.findMany({
-          where: (claims, { eq, and, gte, lte }) => and(
-            eq(claims.organizationId, orgId),
-            gte(claims.createdAt, params.periodStart),
-            lte(claims.createdAt, params.periodEnd)
-          )
-        });
+        const claimsCount = await withRLSContext({ organizationId: orgId }, async (db) => 
+          db.query.claims.findMany({
+            where: (claims, { eq, and, gte, lte }) => and(
+              eq(claims.organizationId, orgId),
+              gte(claims.createdAt, params.periodStart),
+              lte(claims.createdAt, params.periodEnd)
+            )
+          })
+        );
         metricValue = claimsCount.length;
         metricUnit = 'count';
         metadata = { claimIds: claimsCount.map(c => c.claimId) };
         break;
         
       case 'resolution_time':
-        const resolvedClaims = await db.query.claims.findMany({
-          where: (claims, { eq, and, gte, lte, isNotNull }) => and(
-            eq(claims.organizationId, orgId),
-            gte(claims.updatedAt, params.periodStart),
-            lte(claims.updatedAt, params.periodEnd),
-            isNotNull(claims.resolvedAt)
-          )
-        });
+        const resolvedClaims = await withRLSContext({ organizationId: orgId }, async (db) =>
+          db.query.claims.findMany({
+            where: (claims, { eq, and, gte, lte, isNotNull }) => and(
+              eq(claims.organizationId, orgId),
+              gte(claims.updatedAt, params.periodStart),
+              lte(claims.updatedAt, params.periodEnd),
+              isNotNull(claims.resolvedAt)
+            )
+          })
+        );
         
         if (resolvedClaims.length === 0) {
           metricValue = 0;

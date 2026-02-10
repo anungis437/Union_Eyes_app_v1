@@ -4,6 +4,7 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { z } from 'zod';
 import { db } from '@/db';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -66,9 +67,12 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
     
     // Get claim data either from ID or request body
     if (body.claimId) {
-      const claim = await db.query.claims.findFirst({
-        where: eq(claims.claimId, body.claimId)
-      });
+      const claim = await withRLSContext(
+        { organizationId: tenantId },
+        async (db) => db.query.claims.findFirst({
+          where: eq(claims.claimId, body.claimId)
+        })
+      );
       
       if (!claim || claim.organizationId !== tenantId) {
         return NextResponse.json({ error: 'Claim not found' }, { status: 404 });

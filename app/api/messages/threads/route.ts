@@ -5,6 +5,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { messageThreads, messages, messageParticipants } from '@/db/schema/messages-schema';
 import { eq, and, desc, or, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
@@ -152,13 +153,16 @@ export const POST = async (request: NextRequest) => {
 
       // Create initial message if provided
       if (initialMessage) {
-        await db.insert(messages).values({
-          threadId: thread.id,
-          senderId: userId,
-          senderRole: 'member',
-          messageType: 'text',
-          content: initialMessage,
-        });
+        await withRLSContext(
+          { userId, organizationId },
+          async (db) => db.insert(messages).values({
+            threadId: thread.id,
+            senderId: userId,
+            senderRole: 'member',
+            messageType: 'text',
+            content: initialMessage,
+          })
+        );
       }
 
       logger.info('Message thread created', {
