@@ -3,5 +3,22 @@
     "files.associations": {
         "db/migrations/*.sql": "postgresql"
     },
-    "mssql.validateScriptText": false
+    "mssql.validateScriptText": false,
+    "typescript.tsserver.maxTsServerMemory": 4096,
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.git/**": true,
+        "**/coverage/**": true,
+        "**/latest-logs/**": true,
+        "**/staging-logs/**": true,
+        "**/staging-logs-new/**": true,
+        "**/supabase/.temp/**": true
+    },
+    "search.exclude": {
+        "**/coverage/**": true,
+        "**/latest-logs/**": true,
+        "**/staging-logs/**": true,
+        "**/staging-logs-new/**": true,
+        "**/supabase/.temp/**": true
+    }
 }
