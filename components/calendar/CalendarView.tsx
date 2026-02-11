@@ -523,3 +523,4 @@ function getViewEnd(date: Date, view: ViewType): Date {
     return new Date(date.setHours(23, 59, 59, 999));
   }
 }
+

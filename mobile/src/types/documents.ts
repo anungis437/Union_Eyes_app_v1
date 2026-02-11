@@ -415,3 +415,4 @@ export const QUALITY_PRESETS: Record<string, ImageQualityPreset> = {
     format: 'jpeg',
   },
 };
+

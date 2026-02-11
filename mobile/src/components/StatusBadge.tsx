@@ -126,3 +126,4 @@ const createStyles = (
     iconSize: config.iconSize,
   };
 };
+

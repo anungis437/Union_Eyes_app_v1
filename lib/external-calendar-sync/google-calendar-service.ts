@@ -533,3 +533,4 @@ export function getSyncToken(connection: any, googleCalendarId: string): string 
   const mappings = connection.calendarMappings || {};
   return mappings[googleCalendarId]?.syncToken || null;
 }
+

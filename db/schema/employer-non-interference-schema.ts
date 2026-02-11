@@ -171,3 +171,4 @@ export const firewallComplianceAudit = pgTable("firewall_compliance_audit", {
   auditReport: text("audit_report"), // Link to full audit report
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+

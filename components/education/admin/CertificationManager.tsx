@@ -654,3 +654,4 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
     </div>
   );
 }
+

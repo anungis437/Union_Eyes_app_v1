@@ -184,3 +184,4 @@ export type ResourceType = "clause" | "precedent" | "analytics" | "cba" | "decis
 
 // Access types
 export type AccessType = "view" | "download" | "compare" | "cite" | "export";
+

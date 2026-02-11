@@ -377,3 +377,4 @@ class ClaimsApiClient {
 
 // Export singleton instance
 export const claimsApi = new ClaimsApiClient();
+

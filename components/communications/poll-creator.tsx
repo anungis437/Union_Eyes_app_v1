@@ -359,3 +359,4 @@ export function PollCreator({ tenantId, pollId, onSave, onCancel }: PollCreatorP
     </div>
   );
 }
+

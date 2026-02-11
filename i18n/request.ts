@@ -15,3 +15,4 @@ export default getRequestConfig(async ({ locale }) => {
     timeZone: 'America/Toronto', // Default timezone for Canadian users
   };
 });
+

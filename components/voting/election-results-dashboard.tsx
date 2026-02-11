@@ -327,3 +327,4 @@ function QuestionResultCard({ question }: { question: QuestionResults }) {
     </Card>
   );
 }
+

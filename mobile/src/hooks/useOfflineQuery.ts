@@ -458,3 +458,4 @@ export function useCachedData<T>(entity: string, id?: string) {
 }
 
 export default useOfflineQuery;
+

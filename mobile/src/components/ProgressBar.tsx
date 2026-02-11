@@ -132,3 +132,4 @@ const createStyles = (isDark: boolean) =>
       backgroundColor: '#10B981',
     },
   });
+

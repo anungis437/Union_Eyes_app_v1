@@ -1,10 +1,10 @@
 import { db } from "../db";
-import { tenantUsers } from "../db/schema/user-management-schema";
+import { organizationUsers } from "../db/schema/user-management-schema";
 import { organizationMembers } from "../db/schema/organization-members-schema";
 import { eq, and, sql } from "drizzle-orm";
 
 async function syncTenantUsers() {
-  console.log('🔄 Syncing organization_members to tenant_users...\n');
+  console.log('🔄 Syncing organization_members to organization_users...\n');
 
   // Get all organization members
   const members = await db
@@ -26,19 +26,19 @@ async function syncTenantUsers() {
     // Check if tenant_user already exists
     const existingTenantUser = await db
       .select()
-      .from(tenantUsers)
+      .from(organizationUsers)
       .where(
         and(
-          eq(tenantUsers.tenantId, member.organizationId),
-          eq(tenantUsers.userId, member.userId)
+          eq(organizationUsers.organizationId, member.organizationId),
+          eq(organizationUsers.userId, member.userId)
         )
       )
       .limit(1);
 
     if (existingTenantUser.length === 0) {
-      // Add to tenant_users
-      await db.insert(tenantUsers).values({
-        tenantId: member.organizationId,
+      // Add to organization_users
+      await db.insert(organizationUsers).values({
+        organizationId: member.organizationId,
         userId: member.userId,
         role: member.role,
         isActive: true,

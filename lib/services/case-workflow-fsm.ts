@@ -312,3 +312,4 @@ export function getStateDescription(state: CaseState): string {
   };
   return descriptions[state];
 }
+

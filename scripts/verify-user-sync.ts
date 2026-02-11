@@ -26,22 +26,22 @@ async function verifyUserSync() {
     `);
     console.log('Organization Memberships:', JSON.stringify(orgMembers, null, 2));
     
-    // Check tenant_users
-    console.log('\n3. Checking tenant_users...');
-    const tenantUsers = await db.execute(sql`
+    // Check organization_users
+    console.log('\n3. Checking organization_users...');
+    const organizationUsers = await db.execute(sql`
       SELECT 
-        tu.tenant_user_id, 
-        tu.tenant_id, 
+        tu.organization_user_id, 
+        tu.organization_id, 
         tu.user_id, 
         tu.role,
         tu.is_active,
         t.tenant_name,
         t.tenant_slug
-      FROM user_management.tenant_users tu
-      LEFT JOIN tenant_management.tenants t ON t.tenant_id = tu.tenant_id
+      FROM user_management.organization_users tu
+      LEFT JOIN tenant_management.tenants t ON t.tenant_id = tu.organization_id
       WHERE tu.user_id = ${userId}
     `);
-    console.log('Tenant Users:', JSON.stringify(tenantUsers, null, 2));
+    console.log('Organization Users:', JSON.stringify(organizationUsers, null, 2));
     
     console.log('\n✅ Verification complete!');
     

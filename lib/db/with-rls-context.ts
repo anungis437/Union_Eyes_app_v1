@@ -314,3 +314,4 @@ export function withRLS<TArgs extends any[], TReturn>(
     return withRLSContext(() => handler(...args));
   };
 }
+

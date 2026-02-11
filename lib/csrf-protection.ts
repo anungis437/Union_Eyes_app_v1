@@ -368,3 +368,4 @@ export async function csrfMiddleware(request: NextRequest): Promise<NextResponse
   // Token valid - continue to route handler
   return null;
 }
+

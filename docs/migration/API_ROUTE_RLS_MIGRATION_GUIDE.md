@@ -273,7 +273,7 @@ export const POST = async (request: NextRequest) => {
 async function checkAdminRole(userId: string): Promise<boolean> {
   try {
     const admin = await db.execute(
-      sql`SELECT role FROM tenant_users WHERE user_id = ${userId} AND role = 'admin' LIMIT 1`
+      sql`SELECT role FROM organization_users WHERE user_id = ${userId} AND role = 'admin' LIMIT 1`
     );
     return admin.length > 0;
   } catch (_error) {

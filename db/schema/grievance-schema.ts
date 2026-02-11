@@ -411,3 +411,4 @@ export type Arbitration = typeof arbitrations.$inferSelect;
 export type Settlement = typeof settlements.$inferSelect;
 export type GrievanceTimeline = typeof grievanceTimeline.$inferSelect;
 export type GrievanceDeadline = typeof grievanceDeadlines.$inferSelect;
+

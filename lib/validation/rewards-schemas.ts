@@ -154,3 +154,4 @@ export type PaginationInput = z.infer<typeof paginationSchema>;
 export type AwardStatusQueryInput = z.infer<typeof awardStatusQuerySchema>;
 export type ReportQueryInput = z.infer<typeof reportQuerySchema>;
 export type UpdateShopifyConfigInput = z.infer<typeof updateShopifyConfigSchema>;
+

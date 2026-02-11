@@ -99,3 +99,4 @@ function parseUserAgent(ua: string): { type?: 'desktop' | 'mobile' | 'tablet'; b
 
   return { type: deviceType, browser, os };
 }
+

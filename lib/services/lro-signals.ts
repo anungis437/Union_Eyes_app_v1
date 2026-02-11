@@ -501,3 +501,4 @@ export function getHighestSeverityPerCase(signals: Signal[]): Signal[] {
   
   return highestPerCase;
 }
+

@@ -6,11 +6,11 @@ async function checkSchema() {
     SELECT column_name, data_type 
     FROM information_schema.columns 
     WHERE table_schema = 'user_management' 
-    AND table_name = 'tenant_users'
+    AND table_name = 'organization_users'
     ORDER BY ordinal_position
   `);
 
-  console.log('📋 Actual columns in user_management.tenant_users:\n');
+  console.log('📋 Actual columns in user_management.organization_users:\n');
   result.forEach((row: any) => {
     console.log(`  ${row.column_name} (${row.data_type})`);
   });

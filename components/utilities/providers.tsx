@@ -11,3 +11,4 @@ export const Providers = ({ children, ...props }: ThemeProviderProps) => {
     </NextThemesProvider>
   );
 };
+

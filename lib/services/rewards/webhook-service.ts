@@ -234,3 +234,4 @@ export async function getWebhookSecret(orgId: string): Promise<string> {
 
   throw new Error('SHOPIFY_WEBHOOK_SECRET environment variable not set');
 }
+

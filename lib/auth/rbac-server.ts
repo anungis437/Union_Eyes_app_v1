@@ -7,25 +7,25 @@
 
 import { auth, currentUser } from '@/lib/api-auth-guard';
 import { db } from "@/db/db";
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq } from "drizzle-orm";
 import { UserRole, Permission, hasPermission, hasAnyPermission, hasAllPermissions, canAccessRoute } from "./roles";
 
 /**
  * Get user role from database
- * First checks tenant_users table, falls back to Clerk metadata
+ * First checks organization_users table, falls back to Clerk metadata
  */
 export async function getUserRole(userId: string): Promise<UserRole> {
   try {
-    // Try to get role from database tenant_users table
-    const tenantUser = await db
-      .select({ role: tenantUsers.role })
-      .from(tenantUsers)
-      .where(eq(tenantUsers.userId, userId))
+    // Try to get role from database organization_users table
+    const OrganizationUser = await db
+      .select({ role: organizationUsers.role })
+      .from(organizationUsers)
+      .where(eq(organizationUsers.userId, userId))
       .limit(1);
 
-    if (tenantUser.length > 0 && tenantUser[0].role) {
-      const role = tenantUser[0].role.toLowerCase();
+    if (OrganizationUser.length > 0 && OrganizationUser[0].role) {
+      const role = OrganizationUser[0].role.toLowerCase();
       // Map database role to UserRole enum
       switch (role) {
         case "admin":
@@ -197,3 +197,4 @@ export async function requireUnionRepOrHigher(): Promise<{ userId: string; role:
   
   return authData;
 }
+

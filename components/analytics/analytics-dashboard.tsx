@@ -283,3 +283,4 @@ export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) 
     </div>
   );
 }
+

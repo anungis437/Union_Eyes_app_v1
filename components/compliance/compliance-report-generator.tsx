@@ -524,3 +524,4 @@ export function ComplianceReportGenerator({
     </div>
   );
 }
+

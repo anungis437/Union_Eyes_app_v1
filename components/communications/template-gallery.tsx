@@ -540,3 +540,4 @@ export function TemplateGallery({
     </div>
   );
 }
+

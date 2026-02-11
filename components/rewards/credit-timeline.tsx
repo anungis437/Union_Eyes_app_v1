@@ -181,3 +181,4 @@ export function CreditTimeline({ entries, showBalance = true }: CreditTimelinePr
     </div>
   );
 }
+

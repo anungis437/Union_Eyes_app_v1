@@ -282,11 +282,11 @@ export function AdminFeatures() {
 
 ### Method 1: Database (Recommended)
 
-User roles are stored in the `user_management.tenant_users` table:
+User roles are stored in the `user_management.organization_users` table:
 
 ```sql
 -- Set user role
-UPDATE user_management.tenant_users
+UPDATE user_management.organization_users
 SET role = 'admin'
 WHERE user_id = 'user_xxxxx';
 
@@ -311,17 +311,17 @@ await clerkClient.users.updateUserMetadata(userId, {
 
 ```sql
 -- Grant admin role to specific users
-UPDATE user_management.tenant_users
+UPDATE user_management.organization_users
 SET role = 'admin'
 WHERE email IN ('admin@union.com', 'lro@union.com');
 
 -- Set union reps
-UPDATE user_management.tenant_users
+UPDATE user_management.organization_users
 SET role = 'union_rep'
 WHERE email IN ('rep1@union.com', 'rep2@union.com');
 
 -- Default all others to member
-UPDATE user_management.tenant_users
+UPDATE user_management.organization_users
 SET role = 'member'
 WHERE role IS NULL OR role = '';
 ```
@@ -340,7 +340,7 @@ WHERE role IS NULL OR role = '';
 
 ### User sees "Unauthorized" error
 
-- Check user's role in database: `SELECT * FROM user_management.tenant_users WHERE user_id = 'xxx'`
+- Check user's role in database: `SELECT * FROM user_management.organization_users WHERE user_id = 'xxx'`
 - Verify role is set correctly (lowercase: admin, union_rep, staff_rep, member, guest)
 - Check Clerk metadata if database role is missing
 - Confirm user is authenticated

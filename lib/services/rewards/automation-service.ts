@@ -363,3 +363,4 @@ export async function deleteAutomationRule(ruleId: string) {
     return { success: false, error };
   }
 }
+

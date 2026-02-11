@@ -10,6 +10,13 @@ export default defineConfig({
     setupFiles: ['__tests__/setup.ts'],
     include: ['__tests__/**/*.test.ts', '__tests__/**/*.test.tsx'],
     exclude: ['**/dist/**', '**/.next/**', '**/node_modules/**', '**/build/**'],
+    // Run tests sequentially to avoid RLS session variable conflicts
+    pool: 'threads',
+    threads: {
+      singleThread: true,
+    },
+    // Disable file parallelism for RLS test isolation
+    fileParallelism: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

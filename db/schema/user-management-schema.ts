@@ -47,12 +47,11 @@ export const users = userManagementSchema.table("users", {
     sql`${table.phone} IS NULL OR ${table.phone} ~ '^\\+?[1-9]\\d{1,14}$'`),
 }));
 
-// Tenant users table - links users to organizations with roles
+// Organization users table - links users to organizations with roles
 // NOTE: userId uses VARCHAR to support Clerk user IDs (format: "user_xxxxx")
-// NOTE: Column name is "tenant_id" in database to match existing schema
-export const tenantUsers = userManagementSchema.table("tenant_users", {
-  tenantUserId: uuid("tenant_user_id").primaryKey().defaultRandom(),
-  tenantId: uuid("tenant_id").notNull().references(() => organizations.id, { onDelete: "cascade" }), // Changed from organizationId to tenantId
+export const organizationUsers = userManagementSchema.table("organization_users", {
+  organizationUserId: uuid("organization_user_id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   userId: varchar("user_id", { length: 255 }).notNull(), // Changed from uuid to support Clerk IDs
   role: varchar("role", { length: 50 }).notNull().default("member"),
   permissions: jsonb("permissions").default(sql`'[]'::jsonb`),
@@ -100,9 +99,9 @@ export const oauthProviders = userManagementSchema.table("oauth_providers", {
 });
 
 // Define relations
-export const tenantUsersRelations = relations(tenantUsers, ({ one }) => ({
+export const organizationUsersRelations = relations(organizationUsers, ({ one }) => ({
   organization: one(organizations, {
-    fields: [tenantUsers.tenantId],
+    fields: [organizationUsers.organizationId],
     references: [organizations.id],
   }),
 }));
@@ -110,9 +109,10 @@ export const tenantUsersRelations = relations(tenantUsers, ({ one }) => ({
 // Export types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-export type TenantUser = typeof tenantUsers.$inferSelect;
-export type NewTenantUser = typeof tenantUsers.$inferInsert;
+export type OrganizationUser = typeof organizationUsers.$inferSelect;
+export type NewOrganizationUser = typeof organizationUsers.$inferInsert;
 export type UserSession = typeof userSessions.$inferSelect;
 export type NewUserSession = typeof userSessions.$inferInsert;
 export type OAuthProvider = typeof oauthProviders.$inferSelect;
 export type NewOAuthProvider = typeof oauthProviders.$inferInsert;
+

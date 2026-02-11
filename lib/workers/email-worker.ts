@@ -28,12 +28,12 @@ import { eq, and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 
 // Email templates
-// import ClaimStatusNotificationEmail from '../../emails/ClaimStatusNotification'; // TODO: Create this template
 import WelcomeEmail from '../../emails/WelcomeEmail';
 import PasswordResetEmail from '../../emails/PasswordResetEmail';
 import DigestEmail from '../../emails/DigestEmail';
 import ReportReadyEmail from '../../emails/ReportReadyEmail';
 import DeadlineAlertEmail from '../../emails/DeadlineAlertEmail';
+import NotificationEmail from '../../emails/NotificationEmail';
 
 const connection = new IORedis({
   host: process.env.REDIS_HOST || 'localhost',
@@ -43,12 +43,34 @@ const connection = new IORedis({
 
 // Template renderers
 const templateRenderers: Record<string, (data: any) => Promise<string>> = {
-  // 'claim-status': (data) => render(ClaimStatusNotificationEmail(data)), // TODO: Create template
   'welcome': (data) => render(WelcomeEmail(data)),
   'password-reset': (data) => render(PasswordResetEmail(data)),
   'digest': (data) => render(DigestEmail(data)),
   'report-ready': (data) => render(ReportReadyEmail(data)),
   'deadline-alert': (data) => render(DeadlineAlertEmail(data)),
+  'notification': (data) => render(NotificationEmail(data)),
+  
+  // Report templates (all use ReportReadyEmail)
+  'claims-report': (data) => render(ReportReadyEmail({ 
+    reportType: 'Claims',
+    reportUrl: data.reportUrl,
+    expiresAt: data.expiresAt,
+  })),
+  'members-report': (data) => render(ReportReadyEmail({ 
+    reportType: 'Members',
+    reportUrl: data.reportUrl,
+    expiresAt: data.expiresAt,
+  })),
+  'grievances-report': (data) => render(ReportReadyEmail({ 
+    reportType: 'Grievances',
+    reportUrl: data.reportUrl,
+    expiresAt: data.expiresAt,
+  })),
+  'usage-report': (data) => render(ReportReadyEmail({ 
+    reportType: 'Usage',
+    reportUrl: data.reportUrl,
+    expiresAt: data.expiresAt,
+  })),
 };
 
 /**
@@ -301,3 +323,4 @@ async function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+

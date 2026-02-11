@@ -153,3 +153,4 @@ function simpleLinearForecast(data: number[], periods: number): number[] {
 }
 
 export const GET = withApiAuth(handler);
+

@@ -174,3 +174,4 @@ export const whiplashPreventionAudit = pgTable("whiplash_prevention_audit", {
   complianceImpact: text("compliance_impact"), // "none", "low", "medium", "high", "critical"
   metadata: jsonb("metadata"),
 });
+

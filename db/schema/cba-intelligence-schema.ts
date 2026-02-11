@@ -330,3 +330,4 @@ export const claimPrecedentAnalysis = pgTable("claim_precedent_analysis", {
 }, (table) => ({
   claimIdx: index("claim_precedent_claim_idx").on(table.claimId),
 }));
+

@@ -35,3 +35,4 @@ export const GET = async (request: NextRequest) =>
       return NextResponse.json({ error: "Failed to load governance dashboard" }, { status: 500 });
     }
   })(request, {});
+

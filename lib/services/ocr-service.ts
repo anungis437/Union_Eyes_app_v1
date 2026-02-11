@@ -423,3 +423,4 @@ export function validateOCRQuality(result: OCRResult): {
     issues,
   };
 }
+

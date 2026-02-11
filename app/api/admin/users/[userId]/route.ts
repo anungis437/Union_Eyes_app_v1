@@ -14,7 +14,7 @@ import {
   deleteUserFromTenant 
 } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
@@ -31,9 +31,9 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
       return withRLSContext(async (tx) => {
         // Check admin role
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -46,8 +46,8 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
         // Get user details across all tenants
         const userDetails = await tx
           .select()
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, targetUserId));
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, targetUserId));
 
         if (userDetails.length === 0) {
           return NextResponse.json(
@@ -92,9 +92,9 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
       // Check admin role using RLS-protected query
       return withRLSContext(async (tx) => {
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -154,9 +154,9 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
       // Check admin role and execute deletion using RLS-protected query
       return withRLSContext(async (tx) => {
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {

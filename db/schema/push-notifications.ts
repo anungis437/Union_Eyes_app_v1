@@ -361,3 +361,4 @@ export type NewPushNotification = typeof pushNotifications.$inferInsert;
 
 export type PushDelivery = typeof pushDeliveries.$inferSelect;
 export type NewPushDelivery = typeof pushDeliveries.$inferInsert;
+

@@ -375,7 +375,7 @@ Complete mapping of permissions to roles:
 3. If not, run SQL to update your role:
 
    ```sql
-   UPDATE user_management.tenant_users 
+   UPDATE user_management.organization_users 
    SET role = 'admin' 
    WHERE user_id = 'your_user_id';
    ```
@@ -402,7 +402,7 @@ Complete mapping of permissions to roles:
 3. Check database was actually updated:
 
    ```sql
-   SELECT user_id, role FROM user_management.tenant_users WHERE user_id = 'user_id';
+   SELECT user_id, role FROM user_management.organization_users WHERE user_id = 'user_id';
    ```
 
 ### Database UUID Error

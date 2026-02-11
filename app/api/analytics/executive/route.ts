@@ -78,3 +78,4 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
     );
   }
 });
+

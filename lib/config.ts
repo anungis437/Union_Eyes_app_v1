@@ -202,3 +202,4 @@ export function isDevelopment(): boolean {
 export function isTest(): boolean {
   return getEnvironment() === 'test';
 }
+

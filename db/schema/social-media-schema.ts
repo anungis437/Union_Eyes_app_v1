@@ -480,3 +480,4 @@ export interface AnalyticsMetadata {
   best_posting_times?: string[];
   [key: string]: any;
 }
+

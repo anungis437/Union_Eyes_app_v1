@@ -79,3 +79,4 @@ export const manageSubscriptionStatusChange = async (subscriptionId: string, cus
     throw error instanceof Error ? error : new Error("Failed to update subscription status");
   }
 };
+

@@ -58,3 +58,4 @@ export const NOTIFICATION_TYPES = {
   DOCUMENT: 'document',
   SYSTEM: 'system',
 } as const;
+

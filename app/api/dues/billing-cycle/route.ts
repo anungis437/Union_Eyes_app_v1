@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { DuesCalculationEngine } from '@/lib/dues-calculation-engine';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { db } from '@/db';
-import { tenantUsers } from '@/services/financial-service/src/db/schema';
+import { organizationUsers } from '@/db/schema/user-management-schema';
 import { eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
@@ -17,9 +17,9 @@ const billingCycleSchema = z.object({
 async function checkAdminRole(userId: string): Promise<boolean> {
   try {
     const admin = await db
-      .select({ role: tenantUsers.role })
-      .from(tenantUsers)
-      .where(eq(tenantUsers.userId, userId))
+      .select({ role: organizationUsers.role })
+      .from(organizationUsers)
+      .where(eq(organizationUsers.userId, userId))
       .limit(1);
     return admin.length > 0 && admin[0].role === 'admin';
   } catch (_error) {
@@ -108,4 +108,5 @@ try {
       );
     }
 });
+
 

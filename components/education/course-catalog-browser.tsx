@@ -429,3 +429,4 @@ export function CourseCatalogBrowser({
     </div>
   );
 }
+

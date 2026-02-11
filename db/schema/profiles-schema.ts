@@ -78,3 +78,4 @@ export const profiles = profilesTable;
 
 export type InsertProfile = typeof profilesTable.$inferInsert;
 export type SelectProfile = typeof profilesTable.$inferSelect;
+

@@ -413,3 +413,4 @@ function topologicalSort(rows: ImportRow[]): ImportRow[] {
   rows.forEach((row) => visit(row));
   return sorted;
 }
+

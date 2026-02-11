@@ -645,3 +645,4 @@ export function getClaimWorkflowStatus(claim: any) {
     statusSince: statusDate,
   };
 }
+

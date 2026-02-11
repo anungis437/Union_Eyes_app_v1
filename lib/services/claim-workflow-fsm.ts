@@ -371,3 +371,4 @@ export function getTransitionRequirements(
     blockIfCriticalSignals: state.blockIfCriticalSignals || false,
   };
 }
+

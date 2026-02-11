@@ -375,3 +375,4 @@ export function useSwitchOrganization(): (organizationId: string) => Promise<voi
   const { switchOrganization } = useOrganization();
   return switchOrganization;
 }
+

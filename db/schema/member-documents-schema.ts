@@ -18,3 +18,4 @@ export const memberDocuments = pgTable('member_documents', {
 
 export type MemberDocument = typeof memberDocuments.$inferSelect;
 export type NewMemberDocument = typeof memberDocuments.$inferInsert;
+

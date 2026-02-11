@@ -513,3 +513,4 @@ export type NewExternalCalendarConnection = typeof externalCalendarConnections.$
 
 export type EventReminder = typeof eventReminders.$inferSelect;
 export type NewEventReminder = typeof eventReminders.$inferInsert;
+

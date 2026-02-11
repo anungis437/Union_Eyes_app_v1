@@ -124,3 +124,4 @@ function handleAction(caseId: string, signal: Signal) {
   const url = actionMap[signal.type] || `/cases/${caseId}`;
   window.location.href = url;
 }
+

@@ -399,3 +399,4 @@ export function WorkplaceMap({ campaignId }: WorkplaceMapProps) {
     </div>
   );
 }
+

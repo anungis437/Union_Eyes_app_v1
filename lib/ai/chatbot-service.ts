@@ -673,3 +673,4 @@ function cosineSimilarity(a: number[], b: number[]): number {
   
   return dotProduct / (magnitudeA * magnitudeB);
 }
+

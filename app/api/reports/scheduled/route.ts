@@ -125,3 +125,4 @@ async function postHandler(req: NextRequest, context: OrganizationContext) {
 
 export const GET = withOrganizationAuth(getHandler);
 export const POST = withOrganizationAuth(postHandler);
+

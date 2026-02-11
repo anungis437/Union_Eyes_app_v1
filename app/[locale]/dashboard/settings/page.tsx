@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -698,7 +698,7 @@ export default function OrganizationSettingsPage() {
                             }}
                             className="text-blue-700 hover:text-blue-900"
                           >
-                            ×
+                            �
                           </button>
                         </div>
                       ))}

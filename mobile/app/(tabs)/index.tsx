@@ -508,3 +508,4 @@ const createStyles = (isDark: boolean) =>
       color: isDark ? '#6B7280' : '#9CA3AF',
     },
   });
+

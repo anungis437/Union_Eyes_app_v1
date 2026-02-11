@@ -148,3 +148,4 @@ export const POST = async (request: NextRequest) =>
       return NextResponse.json({ error: "Failed to create mission audit" }, { status: 500 });
     }
   })(request, {});
+

@@ -21,3 +21,4 @@ export function TenantSelector() {
 
 // Legacy implementation removed - use OrganizationSelector instead
 // See: @/components/organization/organization-selector
+

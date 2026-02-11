@@ -90,3 +90,4 @@ const createStyles = (isDark: boolean) =>
       color: isDark ? '#F9FAFB' : '#111827',
     },
   });
+

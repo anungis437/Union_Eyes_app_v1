@@ -637,3 +637,4 @@ function ApprovalCard({ approval }: { approval: ApprovalRecord }) {
     </div>
   );
 }
+

@@ -63,3 +63,4 @@ export const getUserById = async (
     return withRLSContext(async (tx) => executeQuery(tx));
   }
 };
+

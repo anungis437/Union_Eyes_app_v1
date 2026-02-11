@@ -397,3 +397,4 @@ export async function resumeSchedule(
   const tenantId = organizationId;
   await updateScheduledReport(id, tenantId, { isActive: true });
 }
+

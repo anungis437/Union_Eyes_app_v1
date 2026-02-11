@@ -218,3 +218,4 @@ export const weeklyThresholdTracking = pgTable("weekly_threshold_tracking", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+

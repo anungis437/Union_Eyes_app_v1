@@ -329,3 +329,4 @@ if (typeof window === 'undefined' && !isTest()) {
   // Skip auto-validation - let caller decide when to validate
   // This prevents validation errors during build time
 }
+

@@ -577,3 +577,4 @@ export function TemplateGallery({ onSelectTemplate, onCreateBlank }: TemplateGal
     </div>
   );
 }
+

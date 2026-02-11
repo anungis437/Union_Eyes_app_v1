@@ -405,3 +405,4 @@ export function renderClaimStatusEmail(props: ClaimNotificationEmailProps): stri
   
   return renderToStaticMarkup(<ClaimStatusNotificationEmail {...props} />);
 }
+

@@ -377,3 +377,4 @@ export type ChatbotSuggestion = typeof chatbotSuggestions.$inferSelect;
 export type NewChatbotSuggestion = typeof chatbotSuggestions.$inferInsert;
 export type ChatbotAnalytics = typeof chatbotAnalytics.$inferSelect;
 export type AISafetyFilter = typeof aiSafetyFilters.$inferSelect;
+

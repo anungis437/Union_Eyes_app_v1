@@ -15,7 +15,7 @@ import {
 import { getMemberCount } from '@/db/queries/organization-members-queries';
 import { db } from '@/db/db';
 import { claims } from '@/db/schema/claims-schema';
-import { tenantUsers } from '@/db/schema/user-management-schema';
+import { organizationUsers } from '@/db/schema/user-management-schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { validateBody, bodySchemas } from '@/lib/validation';
@@ -80,14 +80,14 @@ export const GET = async (request: NextRequest) => {
             // Check if requester is admin in any of the requested user's organizations
             // Get all organizations for requested user
             const requestedUserOrgs = await db
-              .select({ tenantId: tenantUsers.tenantId })
-              .from(tenantUsers)
-              .where(eq(tenantUsers.userId, requestedUserId));
+              .select({ organizationId: organizationUsers.organizationId })
+              .from(organizationUsers)
+              .where(eq(organizationUsers.userId, requestedUserId));
 
             // Check if current user is admin in ANY of those organizations
             let isAdmin = false;
             for (const org of requestedUserOrgs) {
-              const role = await getUserRole(userId, org.tenantId);
+              const role = await getUserRole(userId, org.organizationId);
               if (role === 'admin') {
                 isAdmin = true;
                 break;
@@ -364,4 +364,5 @@ export const POST = async (request: NextRequest) => {
       }
       })(request);
 };
+
 

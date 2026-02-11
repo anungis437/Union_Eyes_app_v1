@@ -132,3 +132,4 @@ export type Claim = typeof claims.$inferSelect;
 export type NewClaim = typeof claims.$inferInsert;
 export type ClaimUpdate = typeof claimUpdates.$inferSelect;
 export type NewClaimUpdate = typeof claimUpdates.$inferInsert;
+

@@ -240,3 +240,4 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
     </nav>
   );
 }
+

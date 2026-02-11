@@ -555,3 +555,4 @@ export function PrecedentSearch({ onSearch, isLoading }: PrecedentSearchProps) {
     </div>
   );
 }
+

@@ -198,3 +198,4 @@ export function useRequirePermission(permission: string | string[]) {
 
   return { hasRequiredPermission, isLoading };
 }
+

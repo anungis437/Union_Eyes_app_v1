@@ -60,3 +60,4 @@ const createStyles = (isDark: boolean) =>
       color: '#fff',
     },
   });
+

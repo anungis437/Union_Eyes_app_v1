@@ -384,3 +384,4 @@ export async function scheduledLocationPurge() {
   console.log(`[CRON] Location purge: ${result.message}`);
   return result;
 }
+

@@ -38,3 +38,4 @@ export const selectFeatureFlagSchema = createSelectSchema(featureFlags);
 // Types
 export type FeatureFlag = typeof featureFlags.$inferSelect;
 export type NewFeatureFlag = typeof featureFlags.$inferInsert;
+

@@ -255,3 +255,4 @@ export type CLCSyncLogInsert = typeof clcSyncLog.$inferInsert;
 
 export type CLCOAuthToken = typeof clcOAuthTokens.$inferSelect;
 export type CLCOAuthTokenInsert = typeof clcOAuthTokens.$inferInsert;
+

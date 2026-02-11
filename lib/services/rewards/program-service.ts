@@ -177,3 +177,4 @@ export async function updateAwardType(
 
   return updated;
 }
+

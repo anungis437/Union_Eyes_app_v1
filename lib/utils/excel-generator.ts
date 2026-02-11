@@ -401,14 +401,52 @@ export function applyConditionalFormatting(
 
 /**
  * Add chart to worksheet
+ * 
+ * Note: ExcelJS has limited native chart support. This function generates
+ * chart data and provides instructions for chart creation via:
+ * 1. Excel API (for Office Add-ins)
+ * 2. Python openpyxl (for server-side generation)
+ * 3. Chart.js + canvas export (for image-based charts)
  */
-export function addChart(
+export async function addChart(
   worksheet: ExcelJS.Worksheet,
-  chartOptions: any
+  chartOptions: {
+    type: 'bar' | 'line' | 'pie' | 'scatter';
+    title: string;
+    dataRange: string;
+    categories?: string;
+    series?: Array<{
+      name: string;
+      values: string;
+    }>;
+    position?: { row: number; col: number };
+  }
 ) {
-  // ExcelJS has limited chart support
-  // This is a placeholder for future implementation
-  console.warn('Chart generation not fully supported. Use external library or Excel API');
+  // Add chart data reference and metadata as a comment
+  const chartCell = worksheet.getCell(chartOptions.position?.row || 1, chartOptions.position?.col || 1);
+  
+  const chartMetadata = {
+    type: chartOptions.type,
+    title: chartOptions.title,
+    dataRange: chartOptions.dataRange,
+    categories: chartOptions.categories,
+    series: chartOptions.series,
+    instructions: 'Chart data prepared. Use Excel to insert chart with this data range.',
+  };
+  
+  chartCell.note = JSON.stringify(chartMetadata, null, 2);
+  chartCell.value = `[Chart: ${chartOptions.title}]`;
+  chartCell.font = { italic: true, color: { argb: 'FF0066CC' } };
+  
+  // For automated chart generation, use one of these approaches:
+  // 1. Excel API: worksheet.addImage() with chart image from Chart.js
+  // 2. External tool: Generate XLSX with Python openpyxl
+  // 3. Office Scripts: Use Office.js API for chart insertion
+  
+  console.log(`[ExcelGenerator] Chart prepared: ${chartOptions.title} at ${chartOptions.dataRange}`);
+  
+  // Return metadata for external processing
+  return chartMetadata;
 }
 
 /**
@@ -436,3 +474,4 @@ export function protectWorksheet(
 }
 
 export default generateExcel;
+

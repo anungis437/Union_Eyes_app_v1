@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { userManagementSchema, users, tenantUsers, userSessions, oauthProviders, tenantUsersRelations } from '@/lib/../db/schema/user-management-schema';
+import { userManagementSchema, users, organizationUsers, userSessions, oauthProviders, organizationUsersRelations } from '@/lib/../db/schema/user-management-schema';
 
 describe('user-management-schema', () => {
   describe('userManagementSchema', () => {
@@ -20,9 +20,9 @@ describe('user-management-schema', () => {
     });
   });
 
-  describe('tenantUsers', () => {
+  describe('organizationUsers', () => {
     it('is defined', () => {
-      expect(tenantUsers).toBeDefined();
+      expect(organizationUsers).toBeDefined();
     });
   });
 
@@ -38,9 +38,9 @@ describe('user-management-schema', () => {
     });
   });
 
-  describe('tenantUsersRelations', () => {
+  describe('organizationUsersRelations', () => {
     it('is defined', () => {
-      expect(tenantUsersRelations).toBeDefined();
+      expect(organizationUsersRelations).toBeDefined();
     });
   });
 });

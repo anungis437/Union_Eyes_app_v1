@@ -22,8 +22,12 @@ import { getDatabase as getUnifiedDatabase, checkDatabaseHealth } from "@/lib/da
 
 // Legacy PostgreSQL client (for backward compatibility)
 // Consider migrating to getUnifiedDatabase() for multi-database support
+const maxConnections = (process.env.NODE_ENV === "test" || process.env.VITEST)
+  ? 1
+  : 3;
+
 const connectionOptions = {
-  max: 3,               // Lower max connections to prevent overloading
+  max: maxConnections,  // Lower max connections to prevent overloading
   idle_timeout: 10,     // Shorter idle timeout
   connect_timeout: 5,   // Shorter connect timeout
   prepare: false,       // Disable prepared statements
@@ -72,3 +76,4 @@ export async function logDatabaseConnectionStatus(): Promise<void> {
     console.error("Failed to check database connection:", error);
   }
 }
+

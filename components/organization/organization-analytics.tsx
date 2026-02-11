@@ -354,3 +354,4 @@ function MetricCard({ title, value, change, changeType, icon, description }: Met
     </Card>
   );
 }
+

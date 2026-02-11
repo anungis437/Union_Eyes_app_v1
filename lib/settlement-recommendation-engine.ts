@@ -662,3 +662,4 @@ function calculatePotentialSettlement(claim: any, precedents: PrecedentCase[]): 
   const avg = settledCases.reduce((sum, p) => sum + (p.settledAmount || 0), 0) / settledCases.length;
   return Math.round(avg);
 }
+

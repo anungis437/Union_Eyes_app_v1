@@ -64,3 +64,4 @@ export function WalletBalanceCard({ balance }: WalletBalanceCardProps) {
     </Card>
   );
 }
+

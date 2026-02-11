@@ -239,3 +239,4 @@ export type NewGovernanceEvent = typeof governanceEvents.$inferInsert;
 
 export type CouncilElection = typeof councilElections.$inferSelect;
 export type NewCouncilElection = typeof councilElections.$inferInsert;
+

@@ -454,3 +454,4 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
 }
 
 export default CourseCatalog;
+

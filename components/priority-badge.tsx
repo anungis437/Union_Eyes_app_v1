@@ -28,3 +28,4 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
     </Badge>
   );
 }
+

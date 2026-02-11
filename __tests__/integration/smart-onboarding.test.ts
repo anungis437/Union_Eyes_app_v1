@@ -18,15 +18,15 @@ import {
 } from '@/lib/utils/smart-onboarding';
 import { db } from '@/db/db';
 import { organizations, sharedClauseLibrary } from '@/db/schema';
-import { sql } from 'drizzle-orm';
+import { inArray, sql } from 'drizzle-orm';
 
 // Test data IDs
 const testOrgIds = {
-  congress: 'test-congress-00000001',
-  federation: 'test-federation-0001',
-  unionSmall: 'test-union-small-001',
-  unionMedium: 'test-union-medium1',
-  unionLarge: 'test-union-large-01',
+  congress: '11111111-1111-1111-1111-111111111111',
+  federation: '22222222-2222-2222-2222-222222222222',
+  unionSmall: '33333333-3333-3333-3333-333333333333',
+  unionMedium: '44444444-4444-4444-4444-444444444444',
+  unionLarge: '55555555-5555-5555-5555-555555555555',
 };
 
 describe('Smart Onboarding - Federation Discovery', () => {
@@ -40,6 +40,9 @@ describe('Smart Onboarding - Federation Discovery', () => {
       hierarchyPath: [testOrgIds.congress],
       hierarchyLevel: 0,
       clcAffiliated: true,
+      affiliationDate: '2024-01-01T00:00:00.000Z',
+      charterNumber: 'CLC-TEST-CONGRESS',
+      clcAffiliateCode: 'CLC-TEST-CONGRESS',
       memberCount: 3000000,
       status: 'active',
     }).onConflictDoNothing();
@@ -56,6 +59,9 @@ describe('Smart Onboarding - Federation Discovery', () => {
       provinceTerritory: 'ON',
       sectors: ['healthcare', 'education'],
       clcAffiliated: true,
+      affiliationDate: '2024-01-01T00:00:00.000Z',
+      charterNumber: 'CLC-TEST-FED',
+      clcAffiliateCode: 'CLC-TEST-FED',
       memberCount: 150000,
       status: 'active',
     }).onConflictDoNothing();
@@ -63,7 +69,9 @@ describe('Smart Onboarding - Federation Discovery', () => {
 
   afterAll(async () => {
     // Cleanup test data
-    await db.delete(organizations).where(sql`id LIKE 'test-%'`);
+    await db
+      .delete(organizations)
+      .where(inArray(organizations.id, Object.values(testOrgIds)));
   });
 
   it('should detect federation by province match', async () => {
@@ -265,7 +273,7 @@ describe('Smart Onboarding - Benchmarks', () => {
 
 describe('Smart Onboarding - Edge Cases', () => {
   it('should handle organization with no peers gracefully', async () => {
-    const uniqueOrgId = 'test-unique-org-001';
+    const uniqueOrgId = '66666666-6666-6666-6666-666666666666';
     
     await db.insert(organizations).values({
       id: uniqueOrgId,

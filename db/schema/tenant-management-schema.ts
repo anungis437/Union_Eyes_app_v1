@@ -117,3 +117,4 @@ export type TenantUsage = typeof tenantUsage.$inferSelect;
 export type NewTenantUsage = typeof tenantUsage.$inferInsert;
 export type DatabasePool = typeof databasePools.$inferSelect;
 export type NewDatabasePool = typeof databasePools.$inferInsert;
+

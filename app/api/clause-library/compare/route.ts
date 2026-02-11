@@ -242,3 +242,4 @@ function highlightDifferences(clauses: any[]): any {
   };
 }
 
+

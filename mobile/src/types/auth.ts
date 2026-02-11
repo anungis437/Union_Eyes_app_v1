@@ -79,3 +79,4 @@ export interface ResetPasswordData {
 export interface VerifyEmailData {
   code: string;
 }
+

@@ -247,3 +247,4 @@ export function RuleComparison({
     </Card>
   );
 }
+

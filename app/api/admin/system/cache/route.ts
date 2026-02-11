@@ -9,7 +9,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
@@ -40,9 +40,9 @@ export const POST = async (request: NextRequest) => {
       // Check admin role using RLS-protected query
       return withRLSContext(async (tx) => {
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -73,3 +73,4 @@ export const POST = async (request: NextRequest) => {
     }
     })(request);
 };
+

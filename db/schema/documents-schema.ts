@@ -57,3 +57,4 @@ export type Document = typeof documents.$inferSelect;
 export type NewDocument = typeof documents.$inferInsert;
 export type DocumentFolder = typeof documentFolders.$inferSelect;
 export type NewDocumentFolder = typeof documentFolders.$inferInsert;
+

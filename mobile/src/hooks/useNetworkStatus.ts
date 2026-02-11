@@ -23,3 +23,4 @@ export function useNetworkStatus() {
     isCellular: connectionType === 'cellular',
   };
 }
+

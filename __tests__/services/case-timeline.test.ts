@@ -19,7 +19,7 @@ import {
 import { db } from '@/db/db';
 import { claims, claimUpdates, organizations } from '@/db/schema';
 import { users } from '@/db/schema/user-management-schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 describe('Case Timeline Service - Visibility Scopes', () => {
@@ -30,6 +30,18 @@ describe('Case Timeline Service - Visibility Scopes', () => {
   let officerId: string;
   let adminId: string;
   const systemUserId = 'system';
+
+  async function setSessionContext(userId: string, orgId: string) {
+    await db.execute(sql`SELECT set_config('app.current_user_id', ${userId}, false)`);
+    await db.execute(sql`SELECT set_config('app.current_organization_id', ${orgId}, false)`);
+    await db.execute(sql`SELECT set_config('app.current_tenant_id', ${orgId}, false)`);
+  }
+
+  async function clearSessionContext() {
+    await db.execute(sql`RESET app.current_user_id`);
+    await db.execute(sql`RESET app.current_organization_id`);
+    await db.execute(sql`RESET app.current_tenant_id`);
+  }
 
   beforeAll(async () => {
     // Create test organization first
@@ -64,10 +76,18 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       }
     }
 
+    await setSessionContext(testMemberId, testOrgId);
+
     await db.insert(users).values({
       userId: testMemberId,
       email: `member-${testMemberId}@example.com`,
     }).onConflictDoNothing();
+
+    await db.execute(sql`
+      INSERT INTO organization_members (user_id, organization_id, role, status)
+      VALUES (${testMemberId}, ${testOrgId}, 'member', 'active')
+      ON CONFLICT DO NOTHING
+    `);
 
     // Create a test claim
     const [claim] = await db
@@ -138,6 +158,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
   });
 
   afterAll(async () => {
+    await clearSessionContext();
     // Cleanup test data
     if (testClaimId) {
       try {

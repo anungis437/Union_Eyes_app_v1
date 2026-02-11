@@ -42,6 +42,10 @@ CREATE POLICY claims_insert_policy ON claims
       SELECT organization_id FROM organization_members 
       WHERE user_id = current_setting('app.current_user_id', TRUE)::VARCHAR
     )
+    OR organization_id = COALESCE(
+      NULLIF(current_setting('app.current_organization_id', TRUE), '')::UUID,
+      organization_id
+    )
   );
 
 -- UPDATE: Users can update claims in organizations they have access to
@@ -86,7 +90,7 @@ DROP POLICY IF EXISTS claim_deadlines_delete_policy ON claim_deadlines;
 CREATE POLICY claim_deadlines_select_policy ON claim_deadlines
   FOR SELECT
   USING (
-    tenant_id::UUID IN (
+    organization_id IN (
       SELECT * FROM get_descendant_org_ids(
         (SELECT organization_id FROM organization_members 
          WHERE user_id = current_setting('app.current_user_id', TRUE)::VARCHAR 
@@ -99,7 +103,7 @@ CREATE POLICY claim_deadlines_select_policy ON claim_deadlines
 CREATE POLICY claim_deadlines_insert_policy ON claim_deadlines
   FOR INSERT
   WITH CHECK (
-    tenant_id::UUID IN (
+    organization_id IN (
       SELECT organization_id FROM organization_members 
       WHERE user_id = current_setting('app.current_user_id', TRUE)::VARCHAR
     )
@@ -109,7 +113,7 @@ CREATE POLICY claim_deadlines_insert_policy ON claim_deadlines
 CREATE POLICY claim_deadlines_update_policy ON claim_deadlines
   FOR UPDATE
   USING (
-    tenant_id::UUID IN (
+    organization_id IN (
       SELECT * FROM get_descendant_org_ids(
         (SELECT organization_id FROM organization_members 
          WHERE user_id = current_setting('app.current_user_id', TRUE)::VARCHAR 
@@ -126,7 +130,7 @@ CREATE POLICY claim_deadlines_delete_policy ON claim_deadlines
       SELECT 1 
       FROM organization_members om
       WHERE om.user_id = current_setting('app.current_user_id', TRUE)::VARCHAR
-        AND om.organization_id = tenant_id::UUID
+        AND om.organization_id = claim_deadlines.organization_id
         AND om.role = 'admin'
         AND om.status = 'active'
     )

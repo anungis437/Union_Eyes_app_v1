@@ -195,3 +195,4 @@ export type SectorType =
   | "transportation"
   | "hospitality"
   | "other";
+

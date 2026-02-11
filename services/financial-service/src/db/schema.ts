@@ -1862,6 +1862,45 @@ export const organizationRelationships = pgTable("organization_relationships", {
 	}
 });
 
+export const congressMembershipStatus = pgEnum("congress_membership_status", [
+	'active',
+	'pending',
+	'suspended',
+	'terminated'
+]);
+
+export const congressMemberships = pgTable("congress_memberships", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	organizationId: uuid("organization_id").notNull(),
+	congressId: uuid("congress_id").notNull(),
+	joinedAt: timestamp("joined_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	status: congressMembershipStatus("status").default('active').notNull(),
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdBy: uuid("created_by"),
+},
+(table) => {
+	return {
+		idxCongressMembershipsOrgId: index("idx_congress_memberships_org_id").using("btree", table.organizationId.asc().nullsLast()),
+		idxCongressMembershipsCongressId: index("idx_congress_memberships_congress_id").using("btree", table.congressId.asc().nullsLast()),
+		idxCongressMembershipsStatus: index("idx_congress_memberships_status").using("btree", table.status.asc().nullsLast()).where(sql`(status = 'active')`),
+		idxCongressMembershipsJoinedAt: index("idx_congress_memberships_joined_at").using("btree", table.joinedAt.desc().nullsLast()),
+		idxCongressMembershipsCongressStatus: index("idx_congress_memberships_congress_status").using("btree", table.congressId.asc().nullsLast(), table.status.asc().nullsLast()).where(sql`(status = 'active')`),
+		congressMembershipsOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "congress_memberships_organization_id_fkey"
+		}).onDelete("cascade"),
+		congressMembershipsCongressIdFkey: foreignKey({
+			columns: [table.congressId],
+			foreignColumns: [organizations.id],
+			name: "congress_memberships_congress_id_fkey"
+		}).onDelete("cascade"),
+		congressMembershipsOrgCongressUnique: unique("congress_memberships_org_congress_unique").on(table.organizationId, table.congressId),
+	}
+});
+
 export const tenantManagementView = pgTable("tenant_management_view", {
 	tenantId: uuid("tenant_id"),
 	tenantSlug: text("tenant_slug"),

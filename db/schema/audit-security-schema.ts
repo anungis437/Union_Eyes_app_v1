@@ -105,3 +105,4 @@ export type FailedLoginAttempt = typeof failedLoginAttempts.$inferSelect;
 export type NewFailedLoginAttempt = typeof failedLoginAttempts.$inferInsert;
 export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
 export type NewRateLimitEvent = typeof rateLimitEvents.$inferInsert;
+

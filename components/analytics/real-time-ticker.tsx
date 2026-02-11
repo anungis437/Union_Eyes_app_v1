@@ -433,3 +433,4 @@ export function useRealtimeMetrics(fetchMetrics: () => Promise<MetricData[]>) {
 
   return { metrics, loading, refresh };
 }
+

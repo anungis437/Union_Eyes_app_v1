@@ -296,8 +296,8 @@ describe('RLS Context Middleware', () => {
     });
 
     it('should default to member for unknown roles', () => {
-      expect(normalizeRole('unknown')).toBe('unknown');
-      expect(normalizeRole('')).toBe('');
+      expect(normalizeRole('unknown')).toBe('member');
+      expect(normalizeRole('')).toBe('member');
     });
   });
 

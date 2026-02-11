@@ -307,3 +307,4 @@ function ElectionTimeline({ election }: { election: Election }) {
     </div>
   );
 }
+

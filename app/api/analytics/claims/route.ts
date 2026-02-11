@@ -112,3 +112,4 @@ async function getClaimsByDateRange(
   // TODO: Implement database query with filters
   return [];
 }
+

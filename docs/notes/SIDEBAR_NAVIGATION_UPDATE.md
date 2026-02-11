@@ -113,8 +113,8 @@ All existing sidebar features remain intact:
 Location: `db/schema/user-management-schema.ts`
 
 ```typescript
-export const tenantUsers = userManagementSchema.table("tenant_users", {
-  tenantUserId: uuid("tenant_user_id").primaryKey().defaultRandom(),
+export const tenantUsers = userManagementSchema.table("organization_users", {
+  organizationUserId: uuid("organization_user_id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.tenantId),
   userId: varchar("user_id", { length: 255 }).notNull(), // Supports Clerk IDs
   role: varchar("role", { length: 50 }).notNull().default("member"),

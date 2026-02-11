@@ -136,3 +136,4 @@ export const packIndexes = {
   verificationPackIdIdx: sql`CREATE INDEX IF NOT EXISTS idx_pack_verification_log_pack_id ON pack_verification_log(pack_id)`,
   verificationPassedIdx: sql`CREATE INDEX IF NOT EXISTS idx_pack_verification_log_passed ON pack_verification_log(verification_passed)`,
 };
+

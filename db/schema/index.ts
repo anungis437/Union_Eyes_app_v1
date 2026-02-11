@@ -14,6 +14,7 @@ export * from "./notifications-schema";
 export * from "./calendar-schema";
 export * from "./deadlines-schema";
 export * from "./reports-schema";
+export * from "./dues-transactions-schema";
 
 // Phase 5A: CLC Organizations
 export * from "../schema-organizations";
@@ -106,6 +107,7 @@ export * from "./international-address-schema";
 export * from "./wage-benchmarks-schema";
 export * from "./lrb-agreements-schema";
 export * from "./clc-partnership-schema";
+export * from "./congress-memberships-schema";
 
 // Rewards System
 export * from "./award-templates-schema";
@@ -136,3 +138,4 @@ export { automationRules, type AutomationRule } from "./automation-rules-schema"
 
 // Grievance: Use the ones from grievance-schema (main definitions)
 export { type GrievanceType, grievanceDeadlines, type GrievanceDeadline } from "./grievance-schema";
+

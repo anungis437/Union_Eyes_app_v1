@@ -110,3 +110,4 @@ const createStyles = (isDark: boolean, isFocused: boolean) =>
       marginLeft: 4,
     },
   });
+

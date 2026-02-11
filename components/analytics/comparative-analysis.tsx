@@ -294,3 +294,4 @@ export function ComparativeAnalysis({ organizationId }: ComparativeAnalysisProps
     </div>
   );
 }
+

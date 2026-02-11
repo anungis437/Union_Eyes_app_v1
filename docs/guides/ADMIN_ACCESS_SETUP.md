@@ -59,15 +59,15 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
 
    ```sql
    -- Change column type
-   ALTER TABLE user_management.tenant_users 
+   ALTER TABLE user_management.organization_users 
    ALTER COLUMN user_id TYPE VARCHAR(255);
    
    -- Add index for performance
-   CREATE INDEX IF NOT EXISTS idx_tenant_users_user_id 
-   ON user_management.tenant_users(user_id);
+   CREATE INDEX IF NOT EXISTS idx_organization_users_user_id 
+   ON user_management.organization_users(user_id);
    
    -- Insert your admin user (replace with your Clerk user ID)
-   INSERT INTO user_management.tenant_users 
+   INSERT INTO user_management.organization_users 
      (tenant_id, user_id, role, is_active, joined_at)
    VALUES
      (
@@ -87,11 +87,11 @@ The admin panel redirects to dashboard with `error=unauthorized` because:
    SELECT column_name, data_type, character_maximum_length 
    FROM information_schema.columns 
    WHERE table_schema = 'user_management' 
-     AND table_name = 'tenant_users' 
+     AND table_name = 'organization_users' 
      AND column_name = 'user_id';
    
    -- Check your user exists
-   SELECT * FROM user_management.tenant_users 
+   SELECT * FROM user_management.organization_users 
    WHERE user_id = 'user_35NlrrNcfTv0DMh2kzBHyXZRtpb';
    ```
 
@@ -158,7 +158,7 @@ After implementing either solution:
 
 1. Check foreign key constraints were properly handled
 2. Verify no other tables reference the old UUID format
-3. Review the backup table: `user_management.tenant_users_backup`
+3. Review the backup table: `user_management.organization_users_backup`
 
 ---
 

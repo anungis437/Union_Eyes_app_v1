@@ -309,3 +309,4 @@ export const smsRateLimitsRelations = relations(smsRateLimits, ({ one }) => ({
     references: [organizations.id],
   }),
 }));
+

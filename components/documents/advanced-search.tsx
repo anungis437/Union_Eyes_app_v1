@@ -649,3 +649,4 @@ export function AdvancedSearch({ onSearch, onClear, initialFilters }: AdvancedSe
     </Card>
   );
 }
+

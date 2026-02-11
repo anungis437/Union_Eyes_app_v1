@@ -334,3 +334,4 @@ export const useHasActiveFilters = () =>
   );
 
 export const useDraftCount = () => useClaimsStore((state) => state.drafts.length);
+

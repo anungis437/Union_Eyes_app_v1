@@ -482,3 +482,4 @@ function generateTrendRecommendations(trend: TrendAnalysisResult): any {
   
   return recommendations;
 }
+

@@ -434,3 +434,4 @@ export function useNetworkStatus() {
     refetchInterval: 10000, // Poll every 10 seconds
   });
 }
+

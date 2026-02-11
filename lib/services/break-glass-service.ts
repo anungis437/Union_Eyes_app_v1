@@ -510,3 +510,4 @@ export async function quarterlyRecoveryDrill() {
   console.error('[DRILL] Break-glass activation failed');
   return null;
 }
+

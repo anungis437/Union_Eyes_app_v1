@@ -431,3 +431,4 @@ class ConflictResolver {
 // Export singleton instance
 export const conflictResolver = new ConflictResolver();
 export default conflictResolver;
+

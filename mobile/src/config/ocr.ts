@@ -158,3 +158,4 @@ export const TEXT_PATTERNS = {
 
 // Export default config
 export default OCR_CONFIG;
+

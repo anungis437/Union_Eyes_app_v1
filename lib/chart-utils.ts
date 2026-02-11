@@ -279,3 +279,4 @@ export function ensureColorContrast(foreground: string, background: string): boo
   // Simplified contrast check - in production, use proper WCAG contrast calculation
   return foreground !== background;
 }
+

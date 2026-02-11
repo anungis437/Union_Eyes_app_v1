@@ -18,7 +18,7 @@
 
 - **Symptom**: Clicking admin panel redirects to dashboard with `error=unauthorized`
 - **Root Cause**: Database UUID type mismatch
-  - Database column `user_management.tenant_users.user_id` expects UUID format
+  - Database column `user_management.organization_users.user_id` expects UUID format
   - Clerk user IDs use string format: `user_xxxxx`
   - Role lookup fails → System can't identify user as admin → Access denied
 
@@ -54,7 +54,7 @@ Settings          ← Goes to /dashboard/settings (user settings)
 
 **Changed Column Type**:
 
-- **Table**: `user_management.tenant_users`
+- **Table**: `user_management.organization_users`
 - **Column**: `user_id`
 - **Before**: `uuid` (PostgreSQL UUID type)
 - **After**: `varchar(255)` (supports Clerk user IDs)
@@ -64,7 +64,7 @@ Settings          ← Goes to /dashboard/settings (user settings)
 
 **Migration Script** (`database/migrations/fix-user-id-type.sql`):
 
-- Backs up existing data to `tenant_users_backup`
+- Backs up existing data to `organization_users_backup`
 - Changes column type from UUID to VARCHAR(255)
 - Adds index for performance
 - Inserts admin user record
@@ -118,7 +118,7 @@ psql "postgresql://unionadmin:UnionEyes2025!Staging@unioneyes-staging-db.postgre
 \i database/migrations/fix-user-id-type.sql
 
 # 3. Verify
-SELECT * FROM user_management.tenant_users WHERE user_id = 'user_35NlrrNcfTv0DMh2kzBHyXZRtpb';
+SELECT * FROM user_management.organization_users WHERE user_id = 'user_35NlrrNcfTv0DMh2kzBHyXZRtpb';
 ```
 
 ---
@@ -282,7 +282,7 @@ userId: varchar("user_id", { length: 255 }).notNull(), // Changed to support Cle
 
 - **Check role**: Run `/api/auth/role` endpoint to see your current role
 - **Check logs**: Look for "Error fetching user role" in server output
-- **Verify DB**: Query `SELECT * FROM user_management.tenant_users WHERE user_id = 'your_clerk_id'`
+- **Verify DB**: Query `SELECT * FROM user_management.organization_users WHERE user_id = 'your_clerk_id'`
 
 ### Still getting "unauthorized" error
 

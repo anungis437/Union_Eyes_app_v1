@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 async function getUserContext(userId: string): Promise<{ role: string; organizationId: string } | null> {
   try {
     const result = await db.execute(
-      sql`SELECT role, organization_id FROM tenant_users WHERE user_id = ${userId} LIMIT 1`
+      sql`SELECT role, organization_id FROM organization_users WHERE user_id = ${userId} LIMIT 1`
     );
     if (result.length > 0) {
       return {

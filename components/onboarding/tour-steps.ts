@@ -340,3 +340,4 @@ export const tourMetadata = [
     estimatedTime: '2 min',
   },
 ] as const;
+

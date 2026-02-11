@@ -10,7 +10,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenants } from "@/db/schema/tenant-management-schema";
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { z } from "zod";
@@ -50,11 +50,11 @@ export const POST = async (request: Request) => {
         // Verify user has access to this tenant
         const userAccess = await tx
           .select()
-          .from(tenantUsers)
+          .from(organizationUsers)
           .where(
             and(
-              eq(tenantUsers.userId, context.userId),
-              eq(tenantUsers.tenantId, tenantId)
+              eq(organizationUsers.userId, context.userId),
+              eq(organizationUsers.organizationId, tenantId)
             )
           )
           .limit(1);
@@ -68,6 +68,12 @@ export const POST = async (request: Request) => {
 
         // Store selected tenant in cookie for session persistence
         const cookieStore = await cookies();
+        cookieStore.set("selected_organization_id", tenantId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+        });
         cookieStore.set("selected_tenant_id", tenantId, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
@@ -85,6 +91,14 @@ export const POST = async (request: Request) => {
             subscriptionTier: tenant[0].subscriptionTier,
             features: tenant[0].features || [],
           },
+          organization: {
+            organizationId: tenant[0].tenantId,
+            name: tenant[0].tenantName,
+            slug: tenant[0].tenantSlug,
+            settings: tenant[0].settings || {},
+            subscriptionTier: tenant[0].subscriptionTier,
+            features: tenant[0].features || [],
+          },
         });
       });
     } catch (error) {
@@ -96,3 +110,4 @@ export const POST = async (request: Request) => {
     }
     })(request);
 };
+

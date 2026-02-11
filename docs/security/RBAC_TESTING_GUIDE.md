@@ -63,32 +63,32 @@ Connect to your database and run:
 ```sql
 -- Check current role
 SELECT user_id, role, created_at 
-FROM user_management.tenant_users 
+FROM user_management.organization_users 
 WHERE user_id = 'user_35NlrrNcfTv0DMh2kzBHyXZRtpb';
 
 -- Set role to admin (for initial testing)
-UPDATE user_management.tenant_users 
+UPDATE user_management.organization_users 
 SET role = 'admin' 
 WHERE user_id = 'user_35NlrrNcfTv0DMh2kzBHyXZRtpb';
 
 -- Create additional test users (replace with actual user IDs)
 -- Union Rep
-UPDATE user_management.tenant_users 
+UPDATE user_management.organization_users 
 SET role = 'union_rep' 
 WHERE user_id = 'user_REPLACE_WITH_ACTUAL_ID';
 
 -- Staff Rep
-UPDATE user_management.tenant_users 
+UPDATE user_management.organization_users 
 SET role = 'staff_rep' 
 WHERE user_id = 'user_REPLACE_WITH_ACTUAL_ID';
 
 -- Member
-UPDATE user_management.tenant_users 
+UPDATE user_management.organization_users 
 SET role = 'member' 
 WHERE user_id = 'user_REPLACE_WITH_ACTUAL_ID';
 
 -- Guest
-UPDATE user_management.tenant_users 
+UPDATE user_management.organization_users 
 SET role = 'guest' 
 WHERE user_id = 'user_REPLACE_WITH_ACTUAL_ID';
 ```
@@ -305,7 +305,7 @@ The following pages still need permission guards added:
 
 ### Role API Returns Null/Error
 
-- Check: User exists in `tenant_users` table
+- Check: User exists in `organization_users` table
 - Check: `role` column is not NULL
 - Check: Clerk publicMetadata has `role` property
 - Fix: Set role in database or Clerk

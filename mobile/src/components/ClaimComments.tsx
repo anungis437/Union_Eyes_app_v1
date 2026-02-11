@@ -492,3 +492,4 @@ const createStyles = (isDark: boolean) =>
       backgroundColor: isDark ? '#374151' : '#D1D5DB',
     },
   });
+

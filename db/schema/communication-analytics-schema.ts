@@ -210,3 +210,4 @@ export type NewUserEngagementScore = typeof userEngagementScores.$inferInsert;
 
 export type CommunicationPreference = typeof communicationPreferences.$inferSelect;
 export type NewCommunicationPreference = typeof communicationPreferences.$inferInsert;
+

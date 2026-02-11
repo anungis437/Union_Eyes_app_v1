@@ -9,7 +9,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
@@ -23,9 +23,9 @@ export const POST = async (request: NextRequest) => {
       return withRLSContext(async (tx) => {
         // Check admin role
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -58,3 +58,4 @@ export const POST = async (request: NextRequest) => {
     }
     })(request);
 };
+

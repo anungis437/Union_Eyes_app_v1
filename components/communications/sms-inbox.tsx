@@ -406,3 +406,4 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
     </div>
   );
 }
+

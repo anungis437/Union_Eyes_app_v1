@@ -400,3 +400,4 @@ export default function TrusteePortal({ trustBoardId, memberId }: TrusteePortalP
     </div>
   );
 }
+

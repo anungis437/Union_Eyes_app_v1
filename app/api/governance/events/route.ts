@@ -54,3 +54,4 @@ export const GET = async (request: NextRequest) =>
       return NextResponse.json({ error: "Failed to fetch governance events" }, { status: 500 });
     }
   })(request, {});
+

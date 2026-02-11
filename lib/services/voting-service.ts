@@ -837,3 +837,4 @@ export async function getSessionStatistics(sessionId: string): Promise<{
     throw new Error("Failed to get session statistics");
   }
 }
+

@@ -136,7 +136,7 @@ pnpm test __tests__/phase-1-messages-integration.test.ts
    - Enum conflict: "enum label 'harassment_verbal' already exists"
 
 2. **`pnpm drizzle-kit migrate`** - Failed with:
-   - "constraint 'tenant_users_user_id_users_user_id_fk' does not exist"
+   - "constraint 'organization_users_user_id_users_user_id_fk' does not exist"
    - Generated migration (0003) included unwanted changes to existing tables
 
 **Solution**: Created standalone migration (`0004_messages_only.sql`) that:

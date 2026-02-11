@@ -20,8 +20,9 @@ import { postGLTransaction } from "@/lib/services/general-ledger-service";
 import { getNotificationService } from "@/lib/services/notification-service";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
+import { cacheGet, cacheSet } from "@/lib/services/cache-service";
 
 // ============================================================================
 // TYPES
@@ -52,28 +53,67 @@ export interface CLCRemittanceUpdate {
  * Verify CLC webhook signature using HMAC-SHA256
  * @throws Error if signature is invalid
  */
+function normalizeSignature(signature: string): string {
+  return signature.startsWith("sha256=") ? signature.replace("sha256=", "") : signature;
+}
+
+function safeCompareSignature(a: string, b: string): boolean {
+  const sigA = Buffer.from(a, "hex");
+  const sigB = Buffer.from(b, "hex");
+  if (sigA.length !== sigB.length) return false;
+  return timingSafeEqual(sigA, sigB);
+}
+
 function verifyCLCWebhookSignature(
+  rawBody: string,
   payload: CLCWebhookPayload,
-  sharedSecret: string
+  sharedSecret: string,
+  providedSignature: string
 ): boolean {
   try {
-    // Remove signature from payload for verification
-    const payloadCopy = { ...payload };
-    const providedSignature = payloadCopy.signature;
-    delete payloadCopy.signature;
+    const normalizedSignature = normalizeSignature(providedSignature);
 
-    // Create HMAC-SHA256 signature of payload
-    const payloadString = JSON.stringify(payloadCopy);
-    const expectedSignature = createHmac("sha256", sharedSecret)
-      .update(payloadString)
+    // Preferred verification: raw body
+    const expectedFromRaw = createHmac("sha256", sharedSecret)
+      .update(rawBody)
       .digest("hex");
 
-    // Compare signatures (constant-time comparison to prevent timing attacks)
-    return providedSignature === expectedSignature;
+    if (safeCompareSignature(normalizedSignature, expectedFromRaw)) {
+      return true;
+    }
+
+    // Fallback: normalized JSON without signature
+    const payloadCopy = { ...payload };
+    delete (payloadCopy as Partial<CLCWebhookPayload>).signature;
+    const normalizedBody = JSON.stringify(payloadCopy);
+    const expectedFromNormalized = createHmac("sha256", sharedSecret)
+      .update(normalizedBody)
+      .digest("hex");
+
+    return safeCompareSignature(normalizedSignature, expectedFromNormalized);
   } catch (error) {
     logger.error("Failed to verify CLC webhook signature", { error });
     return false;
   }
+}
+
+function isTimestampValid(timestampSec: number): { valid: boolean; reason?: string } {
+  const maxSkewSec = Number(process.env.CLC_WEBHOOK_MAX_SKEW_SEC || 300);
+  const nowSec = Math.floor(Date.now() / 1000);
+
+  if (!Number.isFinite(timestampSec)) {
+    return { valid: false, reason: "Invalid timestamp" };
+  }
+
+  if (timestampSec > nowSec + maxSkewSec) {
+    return { valid: false, reason: "Timestamp is in the future" };
+  }
+
+  if (timestampSec < nowSec - maxSkewSec) {
+    return { valid: false, reason: "Timestamp is too old" };
+  }
+
+  return { valid: true };
 }
 
 // ============================================================================
@@ -104,9 +144,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Parse request body
-    const body = await request.json();
-    const payload = body as CLCWebhookPayload;
+    // Parse request body (keep raw for signature verification)
+    const rawBody = await request.text();
+    let payload: CLCWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody) as CLCWebhookPayload;
+    } catch (error) {
+      logger.warn("CLC webhook invalid JSON", { error });
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
 
     logger.info("CLC webhook event received", {
       eventType: payload.event_type,
@@ -143,8 +189,46 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    const signatureHeader = request.headers.get("x-clc-signature");
+    const providedSignature = signatureHeader || payload.signature;
+
+    if (!providedSignature) {
+      logger.warn("CLC webhook signature missing", {
+        eventType: payload.event_type,
+        eventId: payload.event_id,
+      });
+      return NextResponse.json(
+        { error: "Missing signature" },
+        { status: 400 }
+      );
+    }
+
+    const timestampCheck = isTimestampValid(payload.timestamp);
+    if (!timestampCheck.valid) {
+      logger.warn("CLC webhook timestamp invalid", {
+        eventType: payload.event_type,
+        eventId: payload.event_id,
+        reason: timestampCheck.reason,
+      });
+      return NextResponse.json(
+        { error: timestampCheck.reason || "Invalid timestamp" },
+        { status: 400 }
+      );
+    }
+
+    // Replay protection
+    const replayKey = `webhook:clc:${payload.event_id}`;
+    const alreadyProcessed = await cacheGet<string>(replayKey, { namespace: "webhooks" });
+    if (alreadyProcessed) {
+      logger.info("CLC webhook replay detected", {
+        eventType: payload.event_type,
+        eventId: payload.event_id,
+      });
+      return NextResponse.json({ received: true, duplicate: true, eventId: payload.event_id });
+    }
+
     // Verify signature
-    if (!verifyCLCWebhookSignature(payload, sharedSecret)) {
+    if (!verifyCLCWebhookSignature(rawBody, payload, sharedSecret, providedSignature)) {
       logger.warn("CLC webhook signature verification failed", {
         eventType: payload.event_type,
       });
@@ -166,6 +250,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 401 }
       );
     }
+
+    // Mark event as processed for replay protection (24 hours)
+    await cacheSet(replayKey, "processed", { namespace: "webhooks", ttl: 86400 });
 
     // Log webhook receipt
     const [webhookLog] = await db
@@ -867,3 +954,4 @@ export default {
   acknowledgeCLCWebhook,
   retryCLCWebhook,
 };
+

@@ -582,3 +582,4 @@ function ControlStatusCard({ icon: Icon, title, control }: ControlStatusCardProp
     </Card>
   );
 }
+

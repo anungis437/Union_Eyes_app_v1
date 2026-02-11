@@ -409,3 +409,4 @@ export class InvoiceGenerator {
     return Buffer.from(html, 'utf-8');
   }
 }
+

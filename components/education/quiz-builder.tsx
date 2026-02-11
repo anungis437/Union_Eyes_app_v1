@@ -600,3 +600,4 @@ function QuizPreview({ quiz }: { quiz: QuizData }) {
     </div>
   );
 }
+

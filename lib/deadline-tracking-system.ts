@@ -682,3 +682,4 @@ async function sendEscalationNotification(alert: DeadlineAlert): Promise<void> {
     console.error("Error sending escalation notification:", error);
   }
 }
+

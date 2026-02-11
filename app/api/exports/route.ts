@@ -48,3 +48,4 @@ async function getHandler(req: NextRequest, context) {
 }
 
 export const GET = withApiAuth(getHandler);
+

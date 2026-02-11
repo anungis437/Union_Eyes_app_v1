@@ -174,3 +174,4 @@ export type AutomationRule = typeof automationRules.$inferSelect;
 export type AutomationRuleInsert = typeof automationRules.$inferInsert;
 export type AutomationExecutionLogRecord = typeof automationExecutionLog.$inferSelect;
 export type AutomationSchedule = typeof automationSchedules.$inferSelect;
+

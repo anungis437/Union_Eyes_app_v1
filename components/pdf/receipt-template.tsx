@@ -332,3 +332,4 @@ export const ReceiptDocument: React.FC<{ data: ReceiptData }> = ({ data }) => {
     </Document>
   );
 };
+

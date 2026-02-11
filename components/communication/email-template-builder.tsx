@@ -676,3 +676,4 @@ export function EmailTemplateBuilder({
     </div>
   );
 }
+

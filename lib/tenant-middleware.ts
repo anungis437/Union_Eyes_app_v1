@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { withOrganizationAuth, type OrganizationContext } from "@/lib/organization-middleware";
+import { withOrganizationAuth, validateOrganizationAccess, getOrganizationIdFromRequest, type OrganizationContext } from "@/lib/organization-middleware";
 
 export interface TenantContext {
   tenantId: string;
@@ -61,7 +61,7 @@ export async function validateTenantAccess(
     userId,
     requestedTenantId,
   });
-  return false;
+  return validateOrganizationAccess(userId, requestedTenantId);
 }
 
 /**
@@ -79,5 +79,6 @@ export async function getTenantIdFromRequest(
   console.warn('getTenantIdFromRequest is deprecated. Use getOrganizationIdFromRequest instead.', {
     userId,
   });
-  return '';
+  return getOrganizationIdFromRequest(request, userId);
 }
+

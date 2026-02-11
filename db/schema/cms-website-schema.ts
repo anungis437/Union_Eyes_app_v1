@@ -713,3 +713,4 @@ export type NewWebsiteSettings = typeof websiteSettings.$inferInsert;
 
 export type PageAnalytics = typeof pageAnalytics.$inferSelect;
 export type NewPageAnalytics = typeof pageAnalytics.$inferInsert;
+

@@ -362,3 +362,4 @@ export function StrikeFundDashboard({ organizationId }: StrikeFundDashboardProps
     </div>
   );
 }
+

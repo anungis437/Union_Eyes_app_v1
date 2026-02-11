@@ -237,3 +237,4 @@ export const comparativeAnalysesRelations = relations(comparativeAnalyses, ({ on
     references: [users.userId],
   }),
 }));
+

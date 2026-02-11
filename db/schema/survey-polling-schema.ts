@@ -534,3 +534,4 @@ export interface PollResultsResponse {
     percentage: number;
   }>;
 }
+

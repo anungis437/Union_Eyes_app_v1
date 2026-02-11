@@ -267,7 +267,8 @@ export async function getPaginatedResults<T>(
     .order('created_at', { ascending: false });
   
   if (error) {
-    throw new Error(error.message);
+    // Preserve original error object with stack trace
+    throw error;
   }
   
   const totalPages = count ? Math.ceil(count / perPage) : 0;

@@ -1662,7 +1662,7 @@ export default function AdminPage() {
                     <p className="text-sm text-gray-600 mb-2">Core application tables</p>
                     <div className="flex flex-wrap gap-2">
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenants</span>
-                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenant_users</span>
+                      <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">organization_users</span>
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenant_configurations</span>
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">tenant_usage</span>
                       <span className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-mono">claims</span>

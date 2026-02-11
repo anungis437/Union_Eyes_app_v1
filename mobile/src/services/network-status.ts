@@ -428,3 +428,4 @@ class NetworkStatusManager {
 // Export singleton instance
 export const networkStatus = new NetworkStatusManager();
 export default networkStatus;
+

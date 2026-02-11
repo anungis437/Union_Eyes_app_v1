@@ -352,3 +352,4 @@ export function withCircuitBreaker(options: CircuitBreakerOptions & { name: stri
     return descriptor;
   };
 }
+

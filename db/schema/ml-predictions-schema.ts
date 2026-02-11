@@ -70,3 +70,4 @@ export type InsertMlPrediction = typeof mlPredictions.$inferInsert;
 
 export type ModelMetadata = typeof modelMetadata.$inferSelect;
 export type InsertModelMetadata = typeof modelMetadata.$inferInsert;
+

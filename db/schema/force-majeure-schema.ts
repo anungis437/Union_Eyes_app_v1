@@ -274,3 +274,4 @@ export const breakGlassActivations = pgTable("break_glass_activations", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+

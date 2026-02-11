@@ -859,3 +859,4 @@ async function sendSignatureRequestNotification(
     // Don't throw - notification failure shouldn't block the request
   }
 }
+

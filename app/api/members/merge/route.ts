@@ -29,7 +29,7 @@ import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser }
 async function getUserOrganization(userId: string): Promise<string | null> {
   try {
     const result = await db.execute(
-      sql`SELECT organization_id FROM tenant_users WHERE user_id = ${userId} LIMIT 1`
+      sql`SELECT organization_id FROM organization_users WHERE user_id = ${userId} LIMIT 1`
     );
     if (result.length > 0) {
       return result[0].organization_id as string;
@@ -350,4 +350,5 @@ export const GET = async (request: NextRequest) => {
       }
       })(request);
 };
+
 

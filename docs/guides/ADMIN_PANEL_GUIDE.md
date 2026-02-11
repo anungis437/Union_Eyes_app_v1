@@ -483,7 +483,7 @@ If suspicious activity is detected:
 **Solution**: Verify admin role in database
 
 ```sql
-SELECT role FROM tenant_users WHERE user_id = 'your_user_id';
+SELECT role FROM organization_users WHERE user_id = 'your_user_id';
 ```
 
 #### Stats not loading
@@ -579,7 +579,7 @@ The report builder provides a visual interface for constructing reports without 
 Available data sources for reporting:
 
 - `tenants` - Organization details and settings
-- `tenant_users` - User membership and roles
+- `organization_users` - User membership and roles
 - `tenant_usage` - Storage and resource consumption
 - `claims` - Grievance and claim data
 - `audit_logs` - System activity logs
@@ -626,11 +626,11 @@ interface ReportConfig {
   "reportType": "user_activity",
   "category": "activity",
   "config": {
-    "dataSource": "tenant_users",
+    "dataSource": "organization_users",
     "columns": ["tenantId", "COUNT(*) as activeUsers"],
     "joins": [{
       "table": "tenants",
-      "on": "tenants.tenantId = tenant_users.tenantId",
+      "on": "tenants.tenantId = organization_users.tenantId",
       "type": "inner"
     }],
     "filters": [{
@@ -734,7 +734,7 @@ Returns:
     "largestTables": [
       { "schemaname": "public", "tablename": "audit_logs", "size": "450 MB" },
       { "schemaname": "public", "tablename": "claims", "size": "320 MB" },
-      { "schemaname": "public", "tablename": "tenant_users", "size": "85 MB" }
+      { "schemaname": "public", "tablename": "organization_users", "size": "85 MB" }
     ]
   }
 }
@@ -802,7 +802,7 @@ ANALYZE;  -- Updates query planner statistics
 Run `ANALYZE` after bulk data changes:
 
 ```sql
-ANALYZE tenant_users;
+ANALYZE organization_users;
 ANALYZE claims;
 ANALYZE audit_logs;
 ```
@@ -810,7 +810,7 @@ ANALYZE audit_logs;
 ##### 2. Reindex Heavy-Use Tables
 
 ```sql
-REINDEX TABLE tenant_users;
+REINDEX TABLE organization_users;
 REINDEX TABLE claims;
 ```
 
@@ -831,7 +831,7 @@ WHERE n_dead_tup > 1000
 ORDER BY n_dead_tup DESC;
 
 -- Manual vacuum (requires elevated privileges)
-VACUUM ANALYZE tenant_users;
+VACUUM ANALYZE organization_users;
 ```
 
 ##### 4. Index Maintenance
@@ -867,7 +867,7 @@ The application uses a multi-schema architecture for organization:
 **public schema**:
 
 - `tenants` - Organization master table
-- `tenant_users` - User membership and roles
+- `organization_users` - User membership and roles
 - `tenant_configurations` - Per-tenant settings
 - `tenant_usage` - Resource consumption tracking
 - `claims` - Grievance and claim records

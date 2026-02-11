@@ -8,12 +8,26 @@
  * - Distributed locks
  * 
  * Uses Redis with ioredis client
+ * 
+ * Configuration via environment variables:
+ * - REDIS_URL: Redis connection URL
+ * - CACHE_KEY_PREFIX: Global prefix for all cache keys
+ * - CACHE_DEFAULT_TTL: Default TTL in seconds (default: 300)
+ * - CACHE_WARMUP_ENABLED: Enable cache warming on startup
  */
 
 import Redis from 'ioredis';
+import { logger } from '@/lib/logger';
 
 // Redis client singleton
 let redisClient: Redis | null = null;
+
+// Configuration from environment
+const CACHE_CONFIG = {
+  keyPrefix: process.env.CACHE_KEY_PREFIX || 'unioneyes',
+  defaultTTL: parseInt(process.env.CACHE_DEFAULT_TTL || '300'),
+  warmupEnabled: process.env.CACHE_WARMUP_ENABLED === 'true',
+};
 
 /**
  * Initialize Redis connection
@@ -33,11 +47,19 @@ export function initRedis(url?: string): Redis {
   });
 
   redisClient.on('error', (err) => {
-    console.error('[Redis] Connection error:', err);
+    logger.error('[Redis] Connection error', err);
   });
 
   redisClient.on('connect', () => {
-    console.log('[Redis] Connected');
+    logger.info('[Redis] Connected successfully');
+  });
+
+  redisClient.on('ready', () => {
+    logger.info('[Redis] Client ready');
+  });
+
+  redisClient.on('close', () => {
+    logger.warn('[Redis] Connection closed');
   });
 
   return redisClient;
@@ -60,7 +82,7 @@ export async function closeRedis(): Promise<void> {
   if (redisClient) {
     await redisClient.quit();
     redisClient = null;
-    console.log('[Redis] Connection closed');
+    logger.info('[Redis] Connection closed gracefully');
   }
 }
 
@@ -72,10 +94,13 @@ export interface CacheOptions {
 }
 
 /**
- * Get full cache key with namespace
+ * Get full cache key with namespace and global prefix
  */
 function getCacheKey(key: string, namespace?: string): string {
-  return namespace ? `${namespace}:${key}` : key;
+  const parts = [CACHE_CONFIG.keyPrefix];
+  if (namespace) parts.push(namespace);
+  parts.push(key);
+  return parts.join(':');
 }
 
 /**
@@ -95,11 +120,14 @@ export async function cacheGet<T>(
     // Try to parse JSON, return string if not valid JSON
     try {
       return JSON.parse(value) as T;
-    } catch {
+    } catch (error) {
+      logger.debug(`[Cache] Non-JSON value for ${cacheKey}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return value as unknown as T;
     }
   } catch (error) {
-    console.error(`[Cache] Get error for ${cacheKey}:`, error);
+    logger.error(`[Cache] Get error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
     return null;
   }
 }
@@ -114,14 +142,14 @@ export async function cacheSet(
 ): Promise<boolean> {
   const redis = getRedis();
   const cacheKey = getCacheKey(key, options?.namespace);
-  const ttl = options?.ttl || 300; // Default 5 minutes
+  const ttl = options?.ttl || CACHE_CONFIG.defaultTTL;
   
   try {
     const serialized = typeof value === 'string' ? value : JSON.stringify(value);
     await redis.setex(cacheKey, ttl, serialized);
     return true;
   } catch (error) {
-    console.error(`[Cache] Set error for ${cacheKey}:`, error);
+    logger.error(`[Cache] Set error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
     return false;
   }
 }
@@ -140,7 +168,7 @@ export async function cacheDelete(
     await redis.del(cacheKey);
     return true;
   } catch (error) {
-    console.error(`[Cache] Delete error for ${cacheKey}:`, error);
+    logger.error(`[Cache] Delete error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
     return false;
   }
 }
@@ -162,7 +190,7 @@ export async function cacheDeletePattern(
     await redis.del(...keys);
     return keys.length;
   } catch (error) {
-    console.error(`[Cache] Delete pattern error for ${fullPattern}:`, error);
+    logger.error(`[Cache] Delete pattern error for ${fullPattern}`, error instanceof Error ? error : new Error(String(error)));
     return 0;
   }
 }
@@ -181,7 +209,7 @@ export async function cacheExists(
     const result = await redis.exists(cacheKey);
     return result === 1;
   } catch (error) {
-    console.error(`[Cache] Exists error for ${cacheKey}:`, error);
+    logger.error(`[Cache] Exists error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
     return false;
   }
 }
@@ -304,7 +332,7 @@ export async function checkRateLimit(
       windowSeconds,
     };
   } catch (error) {
-    console.error(`[RateLimit] Error for ${cacheKey}:`, error);
+    logger.error(`[RateLimit] Error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
     // Fail open - allow the request if Redis is unavailable
     return {
       allowed: true,
@@ -354,7 +382,7 @@ export async function checkFixedRateLimit(
       windowSeconds,
     };
   } catch (error) {
-    console.error(`[RateLimit] Fixed error for ${cacheKey}:`, error);
+    logger.error(`[RateLimit] Fixed error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
     return {
       allowed: true,
       remaining: limit - 1,
@@ -385,7 +413,7 @@ export async function acquireLock(
     const result = await redis.set(lockKey, token, 'EX', ttlSeconds, 'NX');
     return result === 'OK' ? token : null;
   } catch (error) {
-    console.error(`[Lock] Acquire error for ${lockName}:`, error);
+    logger.error(`[Lock] Acquire error for ${lockName}`, error instanceof Error ? error : new Error(String(error)));
     return null;
   }
 }
@@ -415,7 +443,7 @@ export async function releaseLock(
     const result = await redis.eval(script, 1, lockKey, token);
     return result === 1;
   } catch (error) {
-    console.error(`[Lock] Release error for ${lockName}:`, error);
+    logger.error(`[Lock] Release error for ${lockName}`, error instanceof Error ? error : new Error(String(error)));
     return false;
   }
 }
@@ -444,7 +472,7 @@ export async function extendLock(
     const result = await redis.eval(script, 1, lockKey, token, ttlSeconds);
     return result === 1;
   } catch (error) {
-    console.error(`[Lock] Extend error for ${lockName}:`, error);
+    logger.error(`[Lock] Extend error for ${lockName}`, error instanceof Error ? error : new Error(String(error)));
     return false;
   }
 }
@@ -491,3 +519,4 @@ export async function pingRedis(): Promise<boolean> {
     return false;
   }
 }
+

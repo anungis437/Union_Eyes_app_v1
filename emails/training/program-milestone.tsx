@@ -481,3 +481,4 @@ const footerLink = {
   color: "#6366f1",
   textDecoration: "underline",
 };
+

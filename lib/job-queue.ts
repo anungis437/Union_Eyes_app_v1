@@ -618,3 +618,4 @@ export async function closeQueues() {
 // Register shutdown handlers
 process.on('SIGTERM', closeQueues);
 process.on('SIGINT', closeQueues);
+

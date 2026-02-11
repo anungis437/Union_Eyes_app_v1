@@ -168,3 +168,4 @@ export function BoxPlotChart({
 
 export { calculateBoxPlotStats };
 export default BoxPlotChart;
+

@@ -197,3 +197,4 @@ function buildSQLQuery(config: ReportConfig, tenantId: string): string {
 
   return query;
 }
+

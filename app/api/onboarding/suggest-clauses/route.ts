@@ -14,11 +14,24 @@ import { withRoleAuth } from '@/lib/role-middleware';
 import { suggestRelevantClauses } from '@/lib/utils/smart-onboarding';
 import { logger } from '@/lib/logger';
 import { eventBus, AppEvents } from '@/lib/events';
+import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
 export const POST = withRoleAuth('officer', async (request, context) => {
   const { userId, organizationId } = context;
 
   try {
+    const rateLimit = await checkRateLimit(userId, RATE_LIMITS.ONBOARDING);
+    if (!rateLimit.allowed) {
+      logger.warn('Onboarding rate limit exceeded', { userId, endpoint: 'suggest-clauses' });
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', resetIn: rateLimit.resetIn },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimit),
+        }
+      );
+    }
+
     const { organizationId: reqOrgId } = await request.json();
 
     if (!reqOrgId) {
@@ -64,3 +77,4 @@ export const POST = withRoleAuth('officer', async (request, context) => {
     );
   }
 });
+

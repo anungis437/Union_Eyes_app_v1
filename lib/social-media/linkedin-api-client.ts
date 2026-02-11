@@ -688,3 +688,4 @@ export function formatAsUrn(type: 'organization' | 'person' | 'share', id: strin
 }
 
 export default LinkedInAPIClient;
+

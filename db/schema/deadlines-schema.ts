@@ -96,7 +96,7 @@ export const deadlineRules = pgTable('deadline_rules', {
 export const deadlines = pgTable('claim_deadlines', {
   id: uuid('id').defaultRandom().primaryKey(),
   claimId: uuid('claim_id').notNull(),
-  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  organizationId: uuid('organization_id').notNull(),
   deadlineRuleId: uuid('deadline_rule_id'),
   deadlineName: varchar('deadline_name', { length: 255 }).notNull(),
   deadlineType: varchar('deadline_type', { length: 100 }).notNull(),
@@ -219,3 +219,4 @@ export const deadlineAlertsRelations = relations(deadlineAlerts, ({ one }) => ({
     references: [deadlines.id],
   }),
 }));
+

@@ -480,3 +480,4 @@ export function AttendanceTracker({ organizationId }: AttendanceTrackerProps) {
     </div>
   );
 }
+

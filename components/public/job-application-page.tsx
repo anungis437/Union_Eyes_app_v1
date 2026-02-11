@@ -508,3 +508,4 @@ export function PublicJobApplicationPage({ jobSlug }: JobApplicationPageProps) {
     </div>
   );
 }
+

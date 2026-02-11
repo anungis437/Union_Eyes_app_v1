@@ -14,7 +14,7 @@ import { RequestValidator } from '@/lib/middleware/request-validation';
 import { AuthenticationService, SUPPORTED_ROLES } from '@/lib/middleware/auth-middleware';
 import { db } from '@/db';
 import { organizationMembers } from '@/db/schema/organization-members-schema';
-import { tenantUsers } from '@/db/schema/user-management-schema';
+import { organizationUsers } from '@/db/schema/user-management-schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
@@ -38,11 +38,15 @@ type ApiHandlerWithAuth = (
 
 function resolveOrganizationIdFromRequest(request: NextRequest): string | null {
   const { searchParams } = new URL(request.url);
+  const cookieOrganizationId = request.cookies.get('selected_organization_id')?.value;
+  const cookieTenantId = request.cookies.get('selected_tenant_id')?.value;
   return (
     searchParams.get('organizationId') ||
     searchParams.get('orgId') ||
     request.headers.get('x-organization-id') ||
     request.headers.get('x-org-id') ||
+    cookieOrganizationId ||
+    cookieTenantId ||
     request.headers.get('x-tenant-id') ||
     searchParams.get('tenantId') ||
     null
@@ -85,14 +89,14 @@ async function resolveDbRoles(userId: string, organizationId: string): Promise<s
     return [normalizeRole(member.role)];
   }
 
-  const [tenantUser] = await db
-    .select({ role: tenantUsers.role })
-    .from(tenantUsers)
-    .where(and(eq(tenantUsers.userId, userId), eq(tenantUsers.tenantId, organizationId)))
+  const [OrganizationUser] = await db
+    .select({ role: organizationUsers.role })
+    .from(organizationUsers)
+    .where(and(eq(organizationUsers.userId, userId), eq(organizationUsers.organizationId, organizationId)))
     .limit(1);
 
-  if (tenantUser?.role) {
-    return [normalizeRole(tenantUser.role)];
+  if (OrganizationUser?.role) {
+    return [normalizeRole(OrganizationUser.role)];
   }
 
   return [];
@@ -508,3 +512,4 @@ export function logApiAuditEvent(event: ApiAuditEvent): void {
     details: event.details,
   });
 }
+

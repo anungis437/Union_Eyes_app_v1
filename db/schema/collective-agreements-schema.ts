@@ -149,3 +149,4 @@ export const cbaContacts = pgTable("cba_contacts", {
   cbaIdx: index("cba_contacts_cba_idx").on(table.cbaId),
   typeIdx: index("cba_contacts_type_idx").on(table.contactType),
 }));
+

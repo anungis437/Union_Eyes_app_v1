@@ -440,3 +440,4 @@ class OfflineQueue {
 // Export singleton instance
 export const offlineQueue = new OfflineQueue();
 export default offlineQueue;
+

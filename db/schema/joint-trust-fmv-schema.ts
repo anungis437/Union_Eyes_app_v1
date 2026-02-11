@@ -299,3 +299,4 @@ export const fmvAuditLog = pgTable("fmv_audit_log", {
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+

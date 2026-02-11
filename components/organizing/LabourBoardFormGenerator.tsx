@@ -439,3 +439,4 @@ export function LabourBoardFormGenerator({ campaignId, organizationId }: LabourB
     </div>
   );
 }
+

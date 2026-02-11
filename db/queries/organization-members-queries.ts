@@ -278,3 +278,4 @@ export async function searchMembers(
 
   return await query.orderBy(desc(organizationMembers.createdAt));
 }
+

@@ -222,14 +222,83 @@ export class MultiCurrencyTreasuryService {
       gainLoss: Decimal;
     }>;
   }> {
-    // This would query actual FX transactions and calculate realized/unrealized gains
-    // For now, return placeholder structure
-    return {
-      totalGain: new Decimal(0),
-      totalLoss: new Decimal(0),
-      netGainLoss: new Decimal(0),
-      transactions: [],
-    };
+    const { transactionCurrencyConversions } = await import('@/db/schema/transfer-pricing-schema');
+    const { and, gte, lte, eq } = await import('drizzle-orm');
+    
+    try {
+      // Query FX transactions from database
+      const fxTransactions = await db
+        .select({
+          id: transactionCurrencyConversions.id,
+          transactionDate: transactionCurrencyConversions.createdAt,
+          originalCurrency: transactionCurrencyConversions.originalCurrency,
+          originalAmount: transactionCurrencyConversions.originalAmount,
+          cadAmount: transactionCurrencyConversions.cadAmount,
+          fxRateUsed: transactionCurrencyConversions.fxRateUsed,
+          fxRateDate: transactionCurrencyConversions.fxRateDate,
+        })
+        .from(transactionCurrencyConversions)
+        .where(
+          and(
+            gte(transactionCurrencyConversions.createdAt, params.startDate),
+            lte(transactionCurrencyConversions.createdAt, params.endDate)
+          )
+        );
+      
+      // Calculate gains/losses for each transaction
+      const transactions = await Promise.all(
+        fxTransactions.map(async (tx) => {
+          // Get current exchange rate for comparison
+          const currentRate = await this.getExchangeRate(
+            tx.originalCurrency,
+            params.baseCurrency,
+            new Date()
+          );
+          
+          const originalAmount = new Decimal(tx.originalAmount);
+          const historicalValue = new Decimal(tx.cadAmount);
+          const currentValue = originalAmount.times(currentRate.rate);
+          const gainLoss = currentValue.minus(historicalValue);
+          
+          return {
+            date: new Date(tx.transactionDate),
+            fromCurrency: tx.originalCurrency,
+            toCurrency: params.baseCurrency,
+            amount: originalAmount,
+            gainLoss,
+          };
+        })
+      );
+      
+      // Aggregate gains and losses
+      let totalGain = new Decimal(0);
+      let totalLoss = new Decimal(0);
+      
+      for (const tx of transactions) {
+        if (tx.gainLoss.greaterThan(0)) {
+          totalGain = totalGain.plus(tx.gainLoss);
+        } else {
+          totalLoss = totalLoss.plus(tx.gainLoss.abs());
+        }
+      }
+      
+      const netGainLoss = totalGain.minus(totalLoss);
+      
+      return {
+        totalGain,
+        totalLoss,
+        netGainLoss,
+        transactions,
+      };
+    } catch (error) {
+      console.error('[MultiCurrencyTreasury] Error calculating FX gain/loss:', error);
+      return {
+        totalGain: new Decimal(0),
+        totalLoss: new Decimal(0),
+        netGainLoss: new Decimal(0),
+        transactions: [],
+      };
+    }
   }
 
   /**
@@ -406,3 +475,4 @@ export class MultiCurrencyTreasuryService {
     return entries;
   }
 }
+

@@ -80,7 +80,7 @@ class EncryptionService {
           if (!testKey) {
             throw new Error(
               'TEST_ENCRYPTION_KEY environment variable required in test environment. ' +
-              'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"
+              'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"'
             );
           }
           this.encryptionKey = Buffer.from(testKey, 'base64');
@@ -448,3 +448,4 @@ export async function migrateSINToEncrypted(plaintextSIN: string): Promise<strin
 export function generateEncryptionKey(): string {
   return crypto.randomBytes(KEY_LENGTH).toString('base64');
 }
+

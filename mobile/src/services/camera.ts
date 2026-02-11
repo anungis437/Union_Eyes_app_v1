@@ -497,3 +497,4 @@ class CameraService {
 }
 
 export default new CameraService();
+

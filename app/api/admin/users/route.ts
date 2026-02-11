@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminUsers } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -52,9 +52,9 @@ try {
       return withRLSContext(async (tx) => {
         // Verify admin role
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -174,9 +174,9 @@ try {
       return withRLSContext(async (tx) => {
         // Verify admin role
         const adminCheck = await tx
-          .select({ role: tenantUsers.role })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.userId, userId))
+          .select({ role: organizationUsers.role })
+          .from(organizationUsers)
+          .where(eq(organizationUsers.userId, userId))
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
@@ -211,10 +211,10 @@ try {
 
         // Add user to tenant
         const [newUser] = await tx
-          .insert(tenantUsers)
+          .insert(organizationUsers)
           .values({
             userId: targetUserId,
-            tenantId: tenantId,
+            organizationId: tenantId,
             role,
             isActive: true,
             joinedAt: new Date(),
@@ -263,4 +263,5 @@ try {
       );
     }
 });
+
 

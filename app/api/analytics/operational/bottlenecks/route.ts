@@ -45,3 +45,4 @@ async function handler(req: NextRequest) {
 }
 
 export const GET = withOrganizationAuth(handler);
+

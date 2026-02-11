@@ -417,3 +417,4 @@ export function AnalyticsWidgetLibrary({ onAddWidget }: AnalyticsWidgetLibraryPr
     </div>
   );
 }
+

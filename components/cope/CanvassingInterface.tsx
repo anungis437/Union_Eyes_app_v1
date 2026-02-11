@@ -447,3 +447,4 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
     </div>
   );
 }
+

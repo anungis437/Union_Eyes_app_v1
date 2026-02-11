@@ -199,3 +199,4 @@ export const benefitComparisons = pgTable("benefit_comparisons", {
   cbaIdx: index("benefit_comparisons_cba_idx").on(table.cbaId),
   typeIdx: index("benefit_comparisons_type_idx").on(table.benefitType),
 }));
+

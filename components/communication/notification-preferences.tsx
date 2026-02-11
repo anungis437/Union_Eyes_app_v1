@@ -530,3 +530,4 @@ export function NotificationPreferences({
     </div>
   );
 }
+

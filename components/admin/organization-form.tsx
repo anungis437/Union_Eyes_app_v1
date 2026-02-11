@@ -998,3 +998,4 @@ function getDefaultChildType(
   };
   return typeHierarchy[parentType] || 'local';
 }
+

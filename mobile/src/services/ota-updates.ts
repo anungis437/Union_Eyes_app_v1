@@ -378,3 +378,4 @@ export default {
   initializeUpdateService,
   useOTAUpdates,
 };
+

@@ -482,3 +482,4 @@ export function calculateWageIncrease(
 // =============================================================================
 
 export const statCanClient = new StatisticsCanadaClient();
+

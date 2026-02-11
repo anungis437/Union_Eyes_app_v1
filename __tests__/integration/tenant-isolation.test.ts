@@ -14,7 +14,7 @@
  * DROP FUNCTION IF EXISTS organization_members_search_vector();
  */
 
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { db } from '@/db';
 import { organizations, organizationMembers, claims } from '@/db/schema';
 import { users } from '@/db/schema/user-management-schema';
@@ -23,34 +23,28 @@ import { randomUUID } from 'crypto';
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
-// Skip if database not available or if search_vector trigger exists
+// Skip if database not available
 const shouldSkipTenantIsolation = await (async () => {
   if (!hasDatabase) {
     return true;
   }
 
   try {
-    // Check if the old search_vector trigger exists
-    // This trigger was not dropped when the column was removed in migration 0002
-    const triggerCheck = await db.execute(sql`
+    // Check if core tables exist for tenant isolation tests
+    const tableCheck = await db.execute(sql`
       SELECT 1
-      FROM information_schema.triggers
-      WHERE event_object_table = 'organization_members'
-        AND trigger_name LIKE '%search_vector%'
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'organization_members'
     `);
-    // Skip if trigger still exists(old database state)
-    if (triggerCheck.length > 0) {
-      return true;
-    }
-
-    return false;
+    return tableCheck.length === 0;
   } catch (error) {
     return true;
   }
 })();
 
 if (shouldSkipTenantIsolation) {
-  describe.skip('Tenant Isolation (schema migration needed - old search_vector trigger exists)', () => {
+  describe.skip('Tenant Isolation (database not available)', () => {
     test('skipped', () => {});
   });
 } else {
@@ -80,6 +74,18 @@ const testClaims = {
   org2Claim2: randomUUID(),
   org3Claim1: randomUUID(),
 };
+
+async function setSessionContext(userId: string, orgId: string) {
+  await db.execute(sql`SELECT set_config('app.current_user_id', ${userId}, false)`);
+  await db.execute(sql`SELECT set_config('app.current_organization_id', ${orgId}, false)`);
+  await db.execute(sql`SELECT set_config('app.current_tenant_id', ${orgId}, false)`);
+}
+
+async function clearSessionContext() {
+  await db.execute(sql`RESET app.current_user_id`);
+  await db.execute(sql`RESET app.current_organization_id`);
+  await db.execute(sql`RESET app.current_tenant_id`);
+}
 
 // =====================================================================================
 // SETUP & TEARDOWN
@@ -155,6 +161,7 @@ beforeAll(async () => {
   }
 
   // Create test claims for each organization
+  await setSessionContext(testUsers.org1Admin, testOrgs.org1);
   await db.insert(claims).values([
     {
       claimId: testClaims.org1Claim1,
@@ -182,6 +189,10 @@ beforeAll(async () => {
       description: 'Second test claim for Org 1',
       desiredOutcome: 'Back pay',
     },
+  ]).onConflictDoNothing();
+
+  await setSessionContext(testUsers.org2Admin, testOrgs.org2);
+  await db.insert(claims).values([
     {
       claimId: testClaims.org2Claim1,
       claimNumber: `ORG2-CLAIM-001-${testClaims.org2Claim1.slice(0, 8)}`,
@@ -208,6 +219,10 @@ beforeAll(async () => {
       description: 'Second test claim for Org 2',
       desiredOutcome: 'Investigation',
     },
+  ]).onConflictDoNothing();
+
+  await setSessionContext(testUsers.org3Admin, testOrgs.org3);
+  await db.insert(claims).values([
     {
       claimId: testClaims.org3Claim1,
       claimNumber: `ORG3-CLAIM-001-${testClaims.org3Claim1.slice(0, 8)}`,
@@ -222,27 +237,71 @@ beforeAll(async () => {
       desiredOutcome: 'Fair treatment',
     },
   ]).onConflictDoNothing();
+
+  await clearSessionContext();
+});
+
+beforeEach(async () => {
+  await setSessionContext(testUsers.org1Admin, testOrgs.org1);
+});
+
+afterEach(async () => {
+  await clearSessionContext();
 });
 
 afterAll(async () => {
   // Cleanup test data
+  await setSessionContext(testUsers.org1Admin, testOrgs.org1);
   await db.delete(claims).where(
-    sql`claim_id IN (${testClaims.org1Claim1}, ${testClaims.org1Claim2}, ${testClaims.org2Claim1}, ${testClaims.org2Claim2}, ${testClaims.org3Claim1})`
+    sql`claim_id IN (${testClaims.org1Claim1}, ${testClaims.org1Claim2})`
   );
 
+  await setSessionContext(testUsers.org2Admin, testOrgs.org2);
+  await db.delete(claims).where(
+    sql`claim_id IN (${testClaims.org2Claim1}, ${testClaims.org2Claim2})`
+  );
+
+  await setSessionContext(testUsers.org3Admin, testOrgs.org3);
+  await db.delete(claims).where(
+    sql`claim_id IN (${testClaims.org3Claim1})`
+  );
+
+  await setSessionContext(testUsers.org1Admin, testOrgs.org1);
   await db.execute(sql`
     DELETE FROM organization_members
-    WHERE user_id IN (${testUsers.org1Admin}, ${testUsers.org1Member}, ${testUsers.org2Admin}, ${testUsers.org2Member}, ${testUsers.org3Admin})
+    WHERE user_id IN (${testUsers.org1Admin}, ${testUsers.org1Member})
   `);
 
-  await db.delete(organizations).where(
-    sql`id IN (${testOrgs.org1}, ${testOrgs.org2}, ${testOrgs.org3})`
-  );
+  await setSessionContext(testUsers.org2Admin, testOrgs.org2);
+  await db.execute(sql`
+    DELETE FROM organization_members
+    WHERE user_id IN (${testUsers.org2Admin}, ${testUsers.org2Member})
+  `);
 
-  // Delete test users
-  await db.delete(users).where(
-    sql`user_id IN (${testUsers.org1Admin}, ${testUsers.org1Member}, ${testUsers.org2Admin}, ${testUsers.org2Member}, ${testUsers.org3Admin})`
-  );
+  await setSessionContext(testUsers.org3Admin, testOrgs.org3);
+  await db.execute(sql`
+    DELETE FROM organization_members
+    WHERE user_id IN (${testUsers.org3Admin})
+  `);
+
+  await setSessionContext(testUsers.org1Admin, testOrgs.org1);
+  await db.delete(organizations).where(eq(organizations.id, testOrgs.org1));
+
+  await setSessionContext(testUsers.org2Admin, testOrgs.org2);
+  await db.delete(organizations).where(eq(organizations.id, testOrgs.org2));
+
+  await setSessionContext(testUsers.org3Admin, testOrgs.org3);
+  await db.delete(organizations).where(eq(organizations.id, testOrgs.org3));
+
+  await clearSessionContext();
+
+  try {
+    await db.delete(users).where(
+      sql`user_id IN (${testUsers.org1Admin}, ${testUsers.org1Member}, ${testUsers.org2Admin}, ${testUsers.org2Member}, ${testUsers.org3Admin})`
+    );
+  } catch (error) {
+    // User cleanup can be blocked by append-only audit constraints.
+  }
 });
 
 // =====================================================================================
@@ -308,7 +367,8 @@ describe('Tenant Isolation - Read Operations', () => {
     `);
 
     expect(Number(org1Count[0].count)).toBeGreaterThanOrEqual(2);
-    expect(Number(org2Count[0].count)).toBeGreaterThanOrEqual(2);
+    const org2VisibleCount = org2Count[0]?.count ? Number(org2Count[0].count) : 0;
+    expect(org2VisibleCount).toBe(0);
   });
 });
 

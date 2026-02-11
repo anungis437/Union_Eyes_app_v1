@@ -24,6 +24,8 @@ import {
   votes,
   votingSessions,
   profiles,
+  smsMessages,
+  smsCampaignRecipients,
   type NewUserConsent,
   type NewCookieConsent,
   type NewGdprDataRequest,
@@ -32,6 +34,7 @@ import {
 import { eq, and, desc, sql, or } from "drizzle-orm";
 import { createHash } from "crypto";
 import { NotificationService } from "@/lib/services/notification-service";
+import { logger } from "@/lib/logger";
 
 /**
  * Consent Management
@@ -695,7 +698,11 @@ export class DataErasureService {
         },
       });
     } catch (error) {
-      console.error("Data erasure failed:", error);
+      logger.error("Data erasure failed", error instanceof Error ? error : new Error(String(error)), {
+        userId,
+        tenantId,
+        requestId,
+      });
       throw new Error("Failed to complete data erasure");
     }
   }
@@ -721,32 +728,130 @@ export class DataErasureService {
         .where(eq(profiles.userId, userId));
 
       // Log GDPR anonymization
-      console.log(`[GDPR] Profile anonymized for user ${userId}`);
+      logger.info("[GDPR] Profile anonymized", { userId });
 
       return {
-      table: "profiles",
-      recordsAffected: 1,
-      fieldsAnonymized: ["email", "firstName", "lastName", "phoneNumber"],
-    };
+        table: "profiles",
+        recordsAffected: 1,
+        fieldsAnonymized: ["email", "firstName", "lastName", "phoneNumber"],
+      };
+    } catch (error) {
+      logger.error("[GDPR] Profile anonymization failed", error instanceof Error ? error : new Error(String(error)), {
+        userId,
+      });
+      throw error;
+    }
   }
 
   private static async eraseCommunications(userId: string, tenantId: string) {
-    // Delete communication records
-    // TODO: Implement based on your schema
+    // Delete message threads and messages (cascade delete handles related records)
+    const deletedThreads = await db
+      .delete(messageThreads)
+      .where(
+        and(
+          eq(messageThreads.organizationId, tenantId),
+          or(
+            eq(messageThreads.memberId, userId),
+            eq(messageThreads.staffId, userId)
+          )
+        )
+      )
+      .returning();
+
+    // Delete individual messages sent by user
+    const deletedMessages = await db
+      .delete(messages)
+      .where(eq(messages.senderId, userId))
+      .returning();
+
+    // Delete SMS message records
+    const deletedSms = await db
+      .delete(smsMessages)
+      .where(
+        and(
+          eq(smsMessages.organizationId, tenantId),
+          eq(smsMessages.recipientUserId, userId)
+        )
+      )
+      .returning();
+
+    // Delete SMS campaign recipient records
+    const deletedCampaignRecipients = await db
+      .delete(smsCampaignRecipients)
+      .where(eq(smsCampaignRecipients.recipientUserId, userId))
+      .returning();
+
+    const totalDeleted = 
+      deletedThreads.length + 
+      deletedMessages.length + 
+      deletedSms.length + 
+      deletedCampaignRecipients.length;
+
+    // Log GDPR communication erasure
+    logger.info("[GDPR] Communications erased", {
+      userId,
+      threads: deletedThreads.length,
+      messages: deletedMessages.length,
+      sms: deletedSms.length,
+      campaignRecipients: deletedCampaignRecipients.length,
+    });
+
     return {
       table: "communications",
-      recordsAffected: 0,
-      fieldsAnonymized: [],
+      recordsAffected: totalDeleted,
+      fieldsAnonymized: ["content", "phoneNumber", "metadata"],
     };
   }
 
   private static async anonymizeClaims(userId: string, tenantId: string) {
-    // Anonymize claims while keeping statistical data
-    // TODO: Implement based on your schema
+    // Anonymize claims while keeping statistical data for analytics
+    // We preserve: claim type, status, dates, amounts (for aggregate statistics)
+    // We anonymize: description, witness details, personal identifiers
+    
+    const anonymizedClaims = await db
+      .update(claims)
+      .set({
+        memberId: `GDPR-ERASED-${createHash("sha256").update(userId).digest("hex").substring(0, 16)}`,
+        description: "[Description removed per GDPR data erasure request]",
+        desiredOutcome: "[Desired outcome removed per GDPR data erasure request]",
+        witnessDetails: null,
+        previousReportDetails: null,
+        location: "[Location anonymized]",
+        // Keep statistical fields for analytics
+        // claimType, status, priority, amounts remain for aggregate reporting
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(claims.organizationId, tenantId),
+          eq(claims.memberId, userId)
+        )
+      )
+      .returning();
+
+    // Anonymize claim updates/notes
+    const anonymizedUpdates = await db
+      .update(claimUpdates)
+      .set({
+        updateText: "[Update removed per GDPR data erasure request]",
+        updatedAt: new Date(),
+      })
+      .where(
+        eq(claimUpdates.updatedBy, userId)
+      )
+      .returning();
+
+    // Log GDPR claims anonymization
+    logger.info("[GDPR] Claims anonymized", {
+      userId,
+      claims: anonymizedClaims.length,
+      updates: anonymizedUpdates.length,
+    });
+
     return {
       table: "claims",
-      recordsAffected: 0,
-      fieldsAnonymized: ["description", "notes"],
+      recordsAffected: anonymizedClaims.length + anonymizedUpdates.length,
+      fieldsAnonymized: ["description", "desiredOutcome", "witnessDetails", "previousReportDetails", "location", "updateText"],
     };
   }
 
@@ -845,3 +950,4 @@ export default {
   DataExportService,
   DataErasureService,
 };
+

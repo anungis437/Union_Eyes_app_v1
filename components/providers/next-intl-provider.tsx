@@ -16,3 +16,4 @@ export function NextIntlProvider({ children, locale, messages }: Props) {
     </NextIntlClientProvider>
   );
 }
+

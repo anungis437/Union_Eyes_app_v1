@@ -493,3 +493,4 @@ export default {
   complianceMetrics,
   generateSecurityImplementationReport
 };
+

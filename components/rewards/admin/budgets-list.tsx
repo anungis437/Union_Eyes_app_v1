@@ -60,3 +60,4 @@ export function BudgetsList({ budgets }: BudgetsListProps) {
     </div>
   );
 }
+

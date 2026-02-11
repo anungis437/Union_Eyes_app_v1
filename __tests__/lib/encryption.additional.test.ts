@@ -1,12 +1,22 @@
-import { describe, it, expect } from 'vitest';
-import {
-  encryptionService,
-  encryptSIN,
-  decryptSIN,
-  formatSINForDisplay,
-  migrateSINToEncrypted,
-  generateEncryptionKey,
-} from '@/lib/encryption';
+import { describe, it, expect, beforeAll } from 'vitest';
+
+let encryptionService: typeof import('@/lib/encryption').encryptionService;
+let encryptSIN: typeof import('@/lib/encryption').encryptSIN;
+let decryptSIN: typeof import('@/lib/encryption').decryptSIN;
+let formatSINForDisplay: typeof import('@/lib/encryption').formatSINForDisplay;
+let migrateSINToEncrypted: typeof import('@/lib/encryption').migrateSINToEncrypted;
+let generateEncryptionKey: typeof import('@/lib/encryption').generateEncryptionKey;
+
+beforeAll(async () => {
+  process.env.TEST_ENCRYPTION_KEY = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
+  const mod = await import('@/lib/encryption');
+  encryptionService = mod.encryptionService;
+  encryptSIN = mod.encryptSIN;
+  decryptSIN = mod.decryptSIN;
+  formatSINForDisplay = mod.formatSINForDisplay;
+  migrateSINToEncrypted = mod.migrateSINToEncrypted;
+  generateEncryptionKey = mod.generateEncryptionKey;
+});
 
 describe('encryption', () => {
   it('exposes encryption helpers', () => {

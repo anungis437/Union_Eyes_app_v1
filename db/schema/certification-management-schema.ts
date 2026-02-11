@@ -220,3 +220,4 @@ export const certificationAuditLog = pgTable("certification_audit_log", {
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+

@@ -220,3 +220,4 @@ export default function DashboardTopbar({ profile, onMenuClick }: DashboardTopba
     </motion.div>
   );
 }
+

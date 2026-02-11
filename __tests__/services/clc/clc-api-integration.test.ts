@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createHmac } from 'crypto';
 
 const mockDb = vi.hoisted(() => ({
   select: vi.fn(),
   update: vi.fn(),
   insert: vi.fn(),
 }));
+
+vi.hoisted(() => {
+  process.env.CLC_WEBHOOK_SECRET = 'test-secret';
+  return {};
+});
 
 vi.mock('@/db', () => ({
   db: mockDb,
@@ -22,6 +28,7 @@ vi.mock('drizzle-orm', () => ({
   isNotNull: vi.fn((arg) => ({ isNotNull: arg })),
 }));
 
+
 import {
   syncOrganization,
   syncAllOrganizations,
@@ -33,6 +40,7 @@ const buildSelectWithLimit = (rows: any[]) => ({
   from: vi.fn().mockReturnValue({
     where: vi.fn().mockReturnValue({
       limit: vi.fn().mockResolvedValue(rows),
+      then: (resolve: (value: any[]) => void) => resolve(rows),
     }),
   }),
 });
@@ -41,7 +49,15 @@ describe('clc-api-integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal('fetch', vi.fn());
+    process.env.CLC_WEBHOOK_SECRET = 'test-secret';
   });
+
+  const signWebhookPayload = (payload: any) => {
+    const { signature, ...payloadWithoutSig } = payload;
+    return createHmac('sha256', process.env.CLC_WEBHOOK_SECRET || '')
+      .update(JSON.stringify(payloadWithoutSig))
+      .digest('hex');
+  };
 
   it('exports expected functions', () => {
     expect(syncOrganization).toBeDefined();
@@ -187,7 +203,7 @@ describe('clc-api-integration', () => {
   });
 
   it('handles webhook with unknown type', async () => {
-    const result = await handleWebhook({
+    const payload = {
       id: 'webhook-1',
       type: 'organization.unknown',
       timestamp: new Date().toISOString(),
@@ -205,8 +221,11 @@ describe('clc-api-integration', () => {
         membershipCount: 10,
         lastUpdated: new Date().toISOString(),
       },
-      signature: 'sig',
-    } as any);
+      signature: ''
+    } as any;
+    payload.signature = signWebhookPayload(payload);
+
+    const result = await handleWebhook(payload);
 
     expect(result.success).toBe(false);
     expect(result.message).toBe('Unknown webhook type');
@@ -242,24 +261,23 @@ describe('clc-api-integration', () => {
       json: async () => clcOrg,
     });
 
-    const result = await handleWebhook({
+    const payload = {
       id: 'webhook-2',
       type: 'organization.created',
       timestamp: new Date().toISOString(),
       data: clcOrg,
-      signature: 'sig',
-    });
+      signature: ''
+    };
+    payload.signature = signWebhookPayload(payload);
+
+    const result = await handleWebhook(payload);
 
     expect(result.success).toBe(true);
     expect(result.message).toContain('created');
   });
 
   it('syncs all organizations with no entries', async () => {
-    mockDb.select.mockReturnValueOnce({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([]),
-      }),
-    });
+    mockDb.select.mockReturnValueOnce(buildSelectWithLimit([]));
 
     const result = await syncAllOrganizations();
 
@@ -278,7 +296,7 @@ describe('clc-api-integration', () => {
     ]));
     mockDb.update.mockReturnValue({ set: setSpy });
 
-    const result = await handleWebhook({
+    const payload = {
       id: 'webhook-3',
       type: 'organization.deleted',
       timestamp: new Date().toISOString(),
@@ -296,8 +314,11 @@ describe('clc-api-integration', () => {
         membershipCount: 10,
         lastUpdated: new Date().toISOString(),
       },
-      signature: 'sig',
-    });
+      signature: ''
+    };
+    payload.signature = signWebhookPayload(payload);
+
+    const result = await handleWebhook(payload);
 
     expect(result.success).toBe(true);
     expect(setSpy).toHaveBeenCalled();
@@ -360,7 +381,7 @@ describe('clc-api-integration', () => {
     ]));
     mockDb.update.mockReturnValue({ set: setSpy });
 
-    const result = await handleWebhook({
+    const payload = {
       id: 'webhook-4',
       type: 'membership.updated',
       timestamp: new Date().toISOString(),
@@ -378,8 +399,11 @@ describe('clc-api-integration', () => {
         membershipCount: 123,
         lastUpdated: new Date().toISOString(),
       },
-      signature: 'sig',
-    });
+      signature: ''
+    };
+    payload.signature = signWebhookPayload(payload);
+
+    const result = await handleWebhook(payload);
 
     expect(result.success).toBe(true);
     expect(result.message).toContain('updated');

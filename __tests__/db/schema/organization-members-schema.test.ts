@@ -5,24 +5,28 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { memberRoleEnum, memberStatusEnum, organizationMembers } from '@/lib/../db/schema/organization-members-schema';
+import { memberCategoryEnum, organizationMembers } from '@/lib/../db/schema/organization-members-schema';
 
 describe('organization-members-schema', () => {
-  describe('memberRoleEnum', () => {
+  describe('memberCategoryEnum', () => {
     it('is defined', () => {
-      expect(memberRoleEnum).toBeDefined();
-    });
-  });
-
-  describe('memberStatusEnum', () => {
-    it('is defined', () => {
-      expect(memberStatusEnum).toBeDefined();
+      expect(memberCategoryEnum).toBeDefined();
     });
   });
 
   describe('organizationMembers', () => {
     it('is defined', () => {
       expect(organizationMembers).toBeDefined();
+    });
+
+    it('has expected fields', () => {
+      const columns = Object.keys(organizationMembers);
+      expect(columns).toContain('id');
+      expect(columns).toContain('userId');
+      expect(columns).toContain('organizationId');
+      expect(columns).toContain('role');
+      expect(columns).toContain('status');
+      expect(columns).toContain('memberCategory');
     });
   });
 });

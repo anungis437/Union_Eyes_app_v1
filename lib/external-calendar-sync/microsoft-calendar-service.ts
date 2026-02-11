@@ -622,3 +622,4 @@ export function getDeltaLink(connection: any, microsoftCalendarId: string): stri
   const mappings = connection.calendarMappings || {};
   return mappings[microsoftCalendarId]?.deltaLink || null;
 }
+

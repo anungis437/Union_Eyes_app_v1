@@ -420,3 +420,4 @@ export function getRoleLevel(role: UserRole): number {
 export function hasHigherOrEqualRole(role1: UserRole, role2: UserRole): boolean {
   return getRoleLevel(role1) >= getRoleLevel(role2);
 }
+

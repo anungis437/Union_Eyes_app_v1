@@ -471,3 +471,4 @@ openApiConfig.paths = {
   ...claimsApiPaths,
   // Add more endpoint documentation as needed
 };
+

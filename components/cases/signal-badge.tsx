@@ -125,3 +125,4 @@ export function SignalTypeBadge({ signal }: { signal: Signal }) {
     </span>
   );
 }
+

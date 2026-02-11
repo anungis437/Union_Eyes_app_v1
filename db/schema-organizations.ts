@@ -393,3 +393,4 @@ export function isLocalUnion(org: Organization): boolean {
 export function isFederation(org: Organization): boolean {
   return org.organizationType === 'federation';
 }
+

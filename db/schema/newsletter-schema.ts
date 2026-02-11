@@ -436,3 +436,4 @@ export interface CampaignStats {
   bounceRate: number; // bounced / sent
   unsubscribeRate: number; // unsubscribed / delivered
 }
+

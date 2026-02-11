@@ -182,3 +182,4 @@ function generateFollowUpSuggestions(
   // Return up to 3 suggestions
   return suggestions.slice(0, 3);
 }
+

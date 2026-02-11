@@ -259,3 +259,4 @@ export async function chaosMiddleware(): Promise<void> {
   // Inject network failures (2% chance)
   chaos.injectNetworkFailure(0.02);
 }
+

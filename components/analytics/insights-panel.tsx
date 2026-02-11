@@ -289,3 +289,4 @@ export function InsightsPanel({ insights, compact = false }: InsightsPanelProps)
     </div>
   );
 }
+

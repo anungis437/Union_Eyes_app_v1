@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getOrganizationIdForUser, validateOrganizationExists } from "@/lib/organization-utils";
-import { requireUser, requireUserForOrganization } from "@/lib/auth/unified-auth";
+import { requireUser, requireUserForOrganization } from "@/lib/api-auth-guard";
 import { cookies } from "next/headers";
 
 export interface OrganizationContext {
@@ -149,3 +149,4 @@ export async function getOrganizationIdFromRequest(
   // Fall back to user's default organization
   return getOrganizationIdForUser(userId);
 }
+

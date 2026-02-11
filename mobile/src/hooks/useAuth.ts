@@ -9,3 +9,4 @@ export function useAuthCheck() {
     isLoading: !isLoaded,
   };
 }
+

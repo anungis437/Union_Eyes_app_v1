@@ -196,3 +196,4 @@ export function isPublicRoute(path: string): boolean {
 export function isCronRoute(path: string): boolean {
   return CRON_API_ROUTES.some(route => matchesRoutePattern(route.pattern, path));
 }
+

@@ -704,3 +704,4 @@ export type InsertGrievanceSettlement = typeof grievanceSettlements.$inferInsert
 
 export type GrievanceCommunication = typeof grievanceCommunications.$inferSelect;
 export type InsertGrievanceCommunication = typeof grievanceCommunications.$inferInsert;
+

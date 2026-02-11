@@ -515,3 +515,4 @@ export const bankTransactionsRelations = relations(bankTransactions, ({ one }) =
     references: [bankAccounts.id],
   }),
 }));
+

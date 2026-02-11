@@ -443,3 +443,4 @@ function EventDetails({ event }: { event: CalendarEvent }) {
     </div>
   );
 }
+

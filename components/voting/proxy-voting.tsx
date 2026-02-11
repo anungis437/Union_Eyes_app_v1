@@ -654,3 +654,4 @@ export function ProxyVoting({
     </div>
   );
 }
+

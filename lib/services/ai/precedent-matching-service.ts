@@ -517,3 +517,4 @@ Generate memorandum.`,
     return 'Failed to generate legal memorandum';
   }
 }
+

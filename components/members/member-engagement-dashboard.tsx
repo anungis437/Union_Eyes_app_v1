@@ -369,3 +369,4 @@ function ActivityTimeline({ activities }: { activities: ActivityData[] }) {
     </div>
   );
 }
+

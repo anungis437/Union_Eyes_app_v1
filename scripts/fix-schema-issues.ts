@@ -5,35 +5,35 @@ async function fixSchemaIssues() {
   console.log('\n=== Fixing Schema Issues ===\n');
   
   try {
-    // 1. Check if user_management.tenant_users table exists
-    console.log('1. Checking tenant_users table...');
+    // 1. Check if user_management.organization_users table exists
+    console.log('1. Checking organization_users table...');
     const tableCheck = await db.execute(sql`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'user_management' 
-        AND table_name = 'tenant_users'
+        AND table_name = 'organization_users'
       ) as exists
     `);
     
-    const tenantUsersExists = tableCheck[0].exists;
-    console.log(`   tenant_users exists: ${tenantUsersExists}`);
+    const organizationUsersExists = tableCheck[0].exists;
+    console.log(`   organization_users exists: ${organizationUsersExists}`);
     
-    if (tenantUsersExists) {
-      // Show tenant_users structure
+    if (organizationUsersExists) {
+      // Show organization_users structure
       const columns = await db.execute(sql`
         SELECT column_name, data_type 
         FROM information_schema.columns 
-        WHERE table_schema = 'user_management' AND table_name = 'tenant_users'
+        WHERE table_schema = 'user_management' AND table_name = 'organization_users'
         ORDER BY ordinal_position
       `);
-      console.log('\n   tenant_users columns:', columns.map((c: any) => `${c.column_name}(${c.data_type})`).join(', '));
+      console.log('\n   organization_users columns:', columns.map((c: any) => `${c.column_name}(${c.data_type})`).join(', '));
       
-      // Synchronize data to tenant_users
-      console.log('\n2. Synchronizing organization_members to tenant_users...');
+      // Synchronize data to organization_users
+      console.log('\n2. Synchronizing organization_members to organization_users...');
       
       const syncResult = await db.execute(sql`
-        INSERT INTO user_management.tenant_users (
-          tenant_id, 
+        INSERT INTO user_management.organization_users (
+          organization_id, 
           user_id, 
           role, 
           is_active, 
@@ -49,7 +49,7 @@ async function fixSchemaIssues() {
              WHERE o.slug = om.organization_id LIMIT 1),
             -- Then try to match if organization_id is already a UUID in tenants
             (SELECT tenant_id FROM tenant_management.tenants WHERE tenant_id::text = om.organization_id LIMIT 1)
-          ) as tenant_id,
+          ) as organization_id,
           om.user_id::varchar,
           COALESCE(om.role, 'member') as role,
           CASE WHEN om.status = 'active' THEN true ELSE false END as is_active,
@@ -58,7 +58,7 @@ async function fixSchemaIssues() {
           om.updated_at
         FROM organization_members om
         WHERE NOT EXISTS (
-          SELECT 1 FROM user_management.tenant_users tu 
+          SELECT 1 FROM user_management.organization_users tu 
           WHERE tu.user_id = om.user_id
         )
         AND EXISTS (
@@ -71,9 +71,9 @@ async function fixSchemaIssues() {
         ON CONFLICT DO NOTHING
       `);
       
-      console.log('   ✅ Synchronized organization_members to tenant_users');
+      console.log('   ✅ Synchronized organization_members to organization_users');
     } else {
-      console.log('   ⚠️  tenant_users table does not exist - will be created by drizzle-kit push');
+      console.log('   ⚠️  organization_users table does not exist - will be created by drizzle-kit push');
     }
     
     // 3. Check organizations table for missing columns

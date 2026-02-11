@@ -723,3 +723,4 @@ export type NewEmployerResponse = typeof employerResponses.$inferInsert;
 
 export type OrganizingCampaignMilestone = typeof organizingCampaignMilestones.$inferSelect;
 export type NewOrganizingCampaignMilestone = typeof organizingCampaignMilestones.$inferInsert;
+

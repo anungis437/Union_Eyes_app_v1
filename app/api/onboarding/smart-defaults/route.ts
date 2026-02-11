@@ -51,3 +51,4 @@ export const GET = withRoleAuth('member', async (request, context) => {
     );
   }
 });
+

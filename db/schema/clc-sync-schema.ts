@@ -280,3 +280,4 @@ export const clcApiConfigRelations = relations(clcApiConfig, ({ one }) => ({
     references: [organizations.id],
   }),
 }));
+

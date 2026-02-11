@@ -7,7 +7,7 @@
  */
 
 import { tenants } from "@/db/schema/tenant-management-schema";
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -36,6 +36,9 @@ export const DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001";
  * @returns The tenant ID UUID string
  * @throws Error if tenant not found
  */
+/**
+ * @deprecated Use getOrganizationIdForUser instead. This function remains for backward compatibility.
+ */
 export async function getTenantIdForUser(
   clerkUserId: string,
   tx?: NodePgDatabase<any>
@@ -44,35 +47,39 @@ export async function getTenantIdForUser(
     try {
       // Check if user has selected a specific tenant via cookie
       const cookieStore = await cookies();
+      const selectedOrganizationId = cookieStore.get("selected_organization_id")?.value;
       const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
+      const selectedScopeId = selectedOrganizationId ?? selectedTenantId;
       
       console.log('[getTenantIdForUser] Cookie check:', { 
         userId: clerkUserId, 
+        selectedOrganizationId,
         selectedTenantId,
+        selectedScopeId,
         allCookies: cookieStore.getAll().map(c => c.name)
       });
       
-      if (selectedTenantId) {
-        // Verify user has access to the selected tenant
+      if (selectedScopeId) {
+        // Verify user has access to the selected tenant/organization
         const userTenant = await dbOrTx
-          .select({ tenantId: tenantUsers.tenantId })
-          .from(tenantUsers)
+          .select({ organizationId: organizationUsers.organizationId })
+          .from(organizationUsers)
           .where(
             and(
-              eq(tenantUsers.userId, clerkUserId),
-              eq(tenantUsers.tenantId, selectedTenantId)
+              eq(organizationUsers.userId, clerkUserId),
+              eq(organizationUsers.organizationId, selectedScopeId)
             )
           )
           .limit(1);
         
         console.log('[getTenantIdForUser] Access check:', {
-          selectedTenantId,
+          selectedScopeId,
           hasAccess: userTenant.length > 0
         });
         
         if (userTenant.length > 0) {
-          console.log('[getTenantIdForUser] ✅ Using selected tenant:', selectedTenantId);
-          return selectedTenantId;
+          console.log('[getTenantIdForUser] ✅ Using selected scope:', selectedScopeId);
+          return selectedScopeId;
         } else {
           console.log('[getTenantIdForUser] ⚠️ User has no access to selected tenant, falling back');
         }
@@ -80,14 +87,14 @@ export async function getTenantIdForUser(
       
       // Fall back to user's first available tenant
       const userTenants = await dbOrTx
-        .select({ tenantId: tenantUsers.tenantId })
-        .from(tenantUsers)
-        .where(eq(tenantUsers.userId, clerkUserId))
+        .select({ organizationId: organizationUsers.organizationId })
+        .from(organizationUsers)
+        .where(eq(organizationUsers.userId, clerkUserId))
         .limit(1);
       
       if (userTenants.length > 0) {
-        console.log('[getTenantIdForUser] ⚠️ Fallback to first tenant:', userTenants[0].tenantId);
-        return userTenants[0].tenantId;
+        console.log('[getTenantIdForUser] ⚠️ Fallback to first tenant:', userTenants[0].organizationId);
+        return userTenants[0].organizationId;
       }
       
       // Final fallback to default tenant
@@ -138,6 +145,9 @@ export function getDefaultTenantId(): string {
  * @param tx - Optional transaction context for RLS enforcement
  * @returns True if tenant exists, false otherwise
  */
+/**
+ * @deprecated Use validateOrganizationExists instead. This function remains for backward compatibility.
+ */
 export async function validateTenantExists(
   tenantId: string,
   tx?: NodePgDatabase<any>
@@ -174,6 +184,9 @@ export async function validateTenantExists(
  * @param tx - Optional transaction context for RLS enforcement
  * @returns Tenant information
  */
+/**
+ * @deprecated Use getOrganizationInfo instead. This function remains for backward compatibility.
+ */
 export async function getTenantInfo(
   clerkUserId: string,
   tx?: NodePgDatabase<any>
@@ -200,3 +213,44 @@ export async function getTenantInfo(
     return withRLSContext(async (tx) => executeQuery(tx));
   }
 }
+
+/**
+ * Get the organization ID for a given Clerk user ID.
+ *
+ * Legacy implementation backed by organization_users and tenants tables.
+ * This will be migrated to organizations in a later phase.
+ */
+export async function getOrganizationIdForUser(
+  clerkUserId: string,
+  tx?: NodePgDatabase<any>
+): Promise<string> {
+  return getTenantIdForUser(clerkUserId, tx);
+}
+
+/**
+ * Get the default organization ID (legacy tenant ID).
+ */
+export function getDefaultOrganizationId(): string {
+  return getDefaultTenantId();
+}
+
+/**
+ * Validate that an organization exists (legacy tenants table).
+ */
+export async function validateOrganizationExists(
+  organizationId: string,
+  tx?: NodePgDatabase<any>
+): Promise<boolean> {
+  return validateTenantExists(organizationId, tx);
+}
+
+/**
+ * Get organization info for a user (legacy tenants table).
+ */
+export async function getOrganizationInfo(
+  clerkUserId: string,
+  tx?: NodePgDatabase<any>
+) {
+  return getTenantInfo(clerkUserId, tx);
+}
+

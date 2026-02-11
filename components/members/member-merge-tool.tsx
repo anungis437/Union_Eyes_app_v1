@@ -413,3 +413,4 @@ function FieldComparisonRow({
     </div>
   );
 }
+

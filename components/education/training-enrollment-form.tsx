@@ -563,3 +563,4 @@ export function TrainingEnrollmentForm({
     </div>
   );
 }
+

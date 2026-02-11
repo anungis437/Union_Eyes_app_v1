@@ -557,3 +557,4 @@ export async function getAllTags(organizationId: string): Promise<string[]> {
     throw new Error("Failed to fetch all tags");
   }
 }
+

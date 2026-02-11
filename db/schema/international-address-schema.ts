@@ -342,3 +342,4 @@ export type CountryAddressFormat = typeof countryAddressFormats.$inferSelect;
 export type NewCountryAddressFormat = typeof countryAddressFormats.$inferInsert;
 export type AddressValidationCache = typeof addressValidationCache.$inferSelect;
 export type AddressChangeHistory = typeof addressChangeHistory.$inferSelect;
+

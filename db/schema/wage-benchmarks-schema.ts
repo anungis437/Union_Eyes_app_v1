@@ -297,3 +297,4 @@ export type ContributionRateInsert = typeof contributionRates.$inferInsert;
 
 export type ExternalDataSyncLog = typeof externalDataSyncLog.$inferSelect;
 export type ExternalDataSyncLogInsert = typeof externalDataSyncLog.$inferInsert;
+

@@ -395,3 +395,4 @@ export async function generateStrikeFundTaxReport(taxYear: number): Promise<{
     deadline: `Feb 28, ${taxYear + 1} (CRA requirement)`
   };
 }
+

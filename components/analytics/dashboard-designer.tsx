@@ -535,3 +535,4 @@ export function DashboardDesigner({ existingDashboard, onSave }: DashboardDesign
     </div>
   );
 }
+

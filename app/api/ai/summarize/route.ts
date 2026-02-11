@@ -301,3 +301,4 @@ ${claim.notes}
 
   return content;
 }
+

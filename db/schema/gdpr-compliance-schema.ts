@@ -381,3 +381,4 @@ export type DataRetentionPolicy = typeof dataRetentionPolicies.$inferSelect;
 export type NewDataRetentionPolicy = typeof dataRetentionPolicies.$inferInsert;
 export type DataAnonymizationLog = typeof dataAnonymizationLog.$inferSelect;
 export type NewDataAnonymizationLog = typeof dataAnonymizationLog.$inferInsert;
+

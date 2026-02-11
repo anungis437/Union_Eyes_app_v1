@@ -287,3 +287,4 @@ export const aggregationService = new AnalyticsAggregationService();
 export async function getTenantMetrics(organizationId: string): Promise<TenantMetrics> {
   return await aggregationService.computeTenantMetrics(organizationId);
 }
+

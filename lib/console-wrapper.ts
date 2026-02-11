@@ -97,3 +97,4 @@ export function restoreConsole(): void {
 export function getOriginalConsole() {
   return originalConsole;
 }
+

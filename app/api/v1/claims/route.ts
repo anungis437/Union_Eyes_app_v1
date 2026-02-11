@@ -87,3 +87,4 @@ const versionedHandler = withVersioning({
 });
 
 export const GET = withApiAuth(versionedHandler);
+

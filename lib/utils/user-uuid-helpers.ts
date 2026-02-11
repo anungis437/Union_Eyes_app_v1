@@ -29,3 +29,4 @@ export async function getOrCreateUserUuid(clerkUserId: string): Promise<string> 
 
   return newMapping.userUuid;
 }
+

@@ -455,3 +455,4 @@ function ApprovalHistory({ history }: { history: ApprovalHistoryEntry[] }) {
     </div>
   );
 }
+

@@ -188,3 +188,4 @@ export function KPIGrid({ kpis }: KPIGridProps) {
     </div>
   );
 }
+

@@ -386,3 +386,4 @@ export const stripeWebhookEventsRelations = relations(stripeWebhookEvents, ({ on
     references: [organizations.id],
   }),
 }));
+

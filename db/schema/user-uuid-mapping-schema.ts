@@ -23,3 +23,4 @@ export const userUuidMapping = pgTable(
 
 export type UserUuidMapping = typeof userUuidMapping.$inferSelect;
 export type NewUserUuidMapping = typeof userUuidMapping.$inferInsert;
+

@@ -106,3 +106,4 @@ export const POST = async (request: NextRequest) =>
       return NextResponse.json({ error: "Failed to issue golden share" }, { status: 500 });
     }
   })(request, {});
+

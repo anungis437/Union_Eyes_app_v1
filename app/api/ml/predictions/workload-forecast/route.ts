@@ -481,3 +481,4 @@ function generateResourceRecommendations(
 
   return recommendations;
 }
+

@@ -137,3 +137,4 @@ const footer = {
   padding: '0 40px',
   marginTop: '12px',
 };
+

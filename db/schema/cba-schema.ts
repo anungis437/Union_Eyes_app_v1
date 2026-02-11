@@ -21,3 +21,4 @@ export const cba = pgTable("collective_agreements", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+

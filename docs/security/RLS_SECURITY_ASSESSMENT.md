@@ -70,7 +70,7 @@ SELECT * FROM course_registrations WHERE member_id = 'user_123';
 |-------|------------|--------------|----------|
 | `users` | ❌ No | 1 (overly permissive) | **HIGH** |
 | `oauth_providers` | ❌ No | 0 | **HIGH** |
-| `tenant_users` | ❌ No | 0 | **HIGH** |
+| `organization_users` | ❌ No | 0 | **HIGH** |
 | `user_sessions` | ❌ No | 0 | **HIGH** |
 
 **Impact**:
@@ -213,7 +213,7 @@ CREATE POLICY table_delete ON table
 | `users` | 4 | ✅ Full CRUD |
 | `oauth_providers` | 3 | ✅ SELECT/INSERT/DELETE |
 | `user_sessions` | 4 | ✅ Full CRUD |
-| `tenant_users` | 4 | ✅ Full CRUD (admin-managed) |
+| `organization_users` | 4 | ✅ Full CRUD (admin-managed) |
 | `claims` | 4 | ✅ Full CRUD (adds DELETE) |
 | `claim_updates` | 4 | ✅ Full CRUD |
 | `course_registrations` | 4 | ✅ Full CRUD |

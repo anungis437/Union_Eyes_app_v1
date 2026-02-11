@@ -162,3 +162,4 @@ export function TreemapChart({
 }
 
 export default TreemapChart;
+

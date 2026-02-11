@@ -233,3 +233,4 @@ function formatDuration(ms: number): string {
   }
   return `${seconds} second${seconds === 1 ? "" : "s"}`;
 }
+

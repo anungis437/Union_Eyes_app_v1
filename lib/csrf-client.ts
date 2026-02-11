@@ -295,3 +295,4 @@ export async function submitJSONWithCSRF<T = any>(
 
   return response.json();
 }
+

@@ -373,6 +373,8 @@ describe('NotificationService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.RESEND_API_KEY;
+    process.env.EMAIL_PROVIDER = 'sendgrid';
     process.env.SENDGRID_API_KEY = 'test_key';
     process.env.TWILIO_ACCOUNT_SID = 'AC_test';
     process.env.TWILIO_AUTH_TOKEN = 'test_token';

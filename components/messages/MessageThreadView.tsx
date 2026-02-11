@@ -282,3 +282,4 @@ export function MessageThreadView({ threadId, onBack }: MessageThreadViewProps) 
     </div>
   );
 }
+

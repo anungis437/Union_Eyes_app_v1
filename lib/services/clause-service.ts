@@ -566,3 +566,4 @@ export async function getMostViewedClauses(
     throw new Error("Failed to fetch most viewed clauses");
   }
 }
+

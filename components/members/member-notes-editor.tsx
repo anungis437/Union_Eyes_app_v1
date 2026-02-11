@@ -432,3 +432,4 @@ function NoteCard({
     </Card>
   );
 }
+

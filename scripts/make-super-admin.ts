@@ -51,10 +51,10 @@ async function makeSuperAdmin() {
     `);
     console.log('✅ Updated organization_members.role to admin');
     
-    // Check if tenant_users table exists and update it
+    // Check if organization_users table exists and update it
     try {
       await db.execute(sql`
-        INSERT INTO user_management.tenant_users (organization_id, user_id, role, is_active, joined_at, created_at, updated_at)
+        INSERT INTO user_management.organization_users (organization_id, user_id, role, is_active, joined_at, created_at, updated_at)
         SELECT 
           o.id::uuid as organization_id,
           ${userId}::varchar as user_id,
@@ -65,22 +65,22 @@ async function makeSuperAdmin() {
           NOW() as updated_at
         FROM organizations o
         WHERE NOT EXISTS (
-          SELECT 1 FROM user_management.tenant_users tu 
+          SELECT 1 FROM user_management.organization_users tu 
           WHERE tu.user_id = ${userId} AND tu.organization_id = o.id
         )
       `);
-      console.log('✅ Added user to tenant_users with admin role');
+      console.log('✅ Added user to organization_users with admin role');
     } catch (error: any) {
       if (error.code === '42P01') {
-        console.log('ℹ️  tenant_users table does not exist - skipping');
+        console.log('ℹ️  organization_users table does not exist - skipping');
       } else if (error.code === '23505') {
         // Update existing records
         await db.execute(sql`
-          UPDATE user_management.tenant_users 
+          UPDATE user_management.organization_users 
           SET role = 'admin', is_active = true, updated_at = NOW()
           WHERE user_id = ${userId}
         `);
-        console.log('✅ Updated existing tenant_users records');
+        console.log('✅ Updated existing organization_users records');
       } else {
         throw error;
       }

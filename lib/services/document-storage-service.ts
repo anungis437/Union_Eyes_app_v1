@@ -11,9 +11,6 @@
  */
 
 import { logger } from "@/lib/logger";
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { BlobServiceClient } from "@azure/storage-blob";
 import crypto from "crypto";
 
 // ============================================================================
@@ -56,8 +53,15 @@ export interface StorageResult {
 class DocumentStorageService {
   private backend: StorageBackend;
   private bucket: string;
-  private s3Client?: S3Client;
-  private blobServiceClient?: BlobServiceClient;
+  private s3Client?: any;
+  private s3Sdk?: {
+    PutObjectCommand: any;
+    GetObjectCommand: any;
+    DeleteObjectCommand: any;
+    getSignedUrl: any;
+  };
+  private blobServiceClient?: any;
+  private azureConnectionString?: string;
   private r2Endpoint?: string;
 
   constructor() {
@@ -65,14 +69,61 @@ class DocumentStorageService {
     if (process.env.AZURE_STORAGE_CONNECTION_STRING) {
       this.backend = "azure";
       this.bucket = process.env.AZURE_STORAGE_CONTAINER || "signatures";
-      this.blobServiceClient = BlobServiceClient.fromConnectionString(
-        process.env.AZURE_STORAGE_CONNECTION_STRING
-      );
+      this.azureConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
     } else if (process.env.CLOUDFLARE_R2_ENDPOINT) {
       this.backend = "r2";
       this.bucket = process.env.CLOUDFLARE_R2_BUCKET || "union-eyes-signatures";
       this.r2Endpoint = process.env.CLOUDFLARE_R2_ENDPOINT;
-      this.s3Client = new S3Client({
+    } else {
+      this.backend = "s3";
+      this.bucket = process.env.AWS_SIGNATURES_BUCKET || "union-eyes-signatures";
+    }
+    logger.info("Document storage service initialized", {
+      backend: this.backend,
+      bucket: this.bucket,
+    });
+  }
+
+  private async ensureAzureClient(): Promise<any> {
+    if (this.blobServiceClient) {
+      return this.blobServiceClient;
+    }
+
+    const moduleLoader = await import("module");
+    const require = moduleLoader.createRequire(import.meta.url);
+    const azureModule = require("@azure/storage-blob");
+
+    this.blobServiceClient = azureModule.BlobServiceClient.fromConnectionString(
+      this.azureConnectionString!
+    );
+
+    return this.blobServiceClient;
+  }
+
+  private async ensureS3Client(): Promise<{
+    PutObjectCommand: any;
+    GetObjectCommand: any;
+    DeleteObjectCommand: any;
+    getSignedUrl: any;
+  }> {
+    if (this.s3Client && this.s3Sdk) {
+      return this.s3Sdk;
+    }
+
+    const moduleLoader = await import("module");
+    const require = moduleLoader.createRequire(import.meta.url);
+    const s3Module = require("@aws-sdk/client-s3");
+    const presignerModule = require("@aws-sdk/s3-request-presigner");
+
+    this.s3Sdk = {
+      PutObjectCommand: s3Module.PutObjectCommand,
+      GetObjectCommand: s3Module.GetObjectCommand,
+      DeleteObjectCommand: s3Module.DeleteObjectCommand,
+      getSignedUrl: presignerModule.getSignedUrl,
+    };
+
+    if (this.backend === "r2") {
+      this.s3Client = new s3Module.S3Client({
         region: "us-east-1",
         endpoint: this.r2Endpoint,
         credentials: {
@@ -81,9 +132,7 @@ class DocumentStorageService {
         },
       });
     } else {
-      this.backend = "s3";
-      this.bucket = process.env.AWS_SIGNATURES_BUCKET || "union-eyes-signatures";
-      this.s3Client = new S3Client({
+      this.s3Client = new s3Module.S3Client({
         region: process.env.AWS_REGION || "us-east-1",
         credentials: {
           accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
@@ -92,10 +141,7 @@ class DocumentStorageService {
       });
     }
 
-    logger.info("Document storage service initialized", {
-      backend: this.backend,
-      bucket: this.bucket,
-    });
+    return this.s3Sdk;
   }
 
   /**
@@ -113,7 +159,8 @@ class DocumentStorageService {
 
       if (this.backend === "azure") {
         // Upload to Azure Blob Storage
-        const containerClient = this.blobServiceClient!.getContainerClient(this.bucket);
+        const blobServiceClient = await this.ensureAzureClient();
+        const containerClient = blobServiceClient.getContainerClient(this.bucket);
         const blockBlobClient = containerClient.getBlockBlobClient(key);
 
         await blockBlobClient.upload(doc.documentBuffer, doc.documentBuffer.length, {
@@ -133,7 +180,7 @@ class DocumentStorageService {
         });
 
         // Generate read-only SAS URL valid for 1 year
-        const url = `${this.blobServiceClient!.url}${this.bucket}/${key}`;
+        const url = `${blobServiceClient.url}${this.bucket}/${key}`;
 
         return {
           url,
@@ -144,6 +191,7 @@ class DocumentStorageService {
         };
       } else {
         // Upload to S3 or Cloudflare R2
+        const { PutObjectCommand, GetObjectCommand, getSignedUrl } = await this.ensureS3Client();
         const command = new PutObjectCommand({
           Bucket: this.bucket,
           Key: key,
@@ -200,7 +248,8 @@ class DocumentStorageService {
     try {
       if (this.backend === "azure") {
         // Download from Azure Blob Storage
-        const containerClient = this.blobServiceClient!.getContainerClient(this.bucket);
+        const blobServiceClient = await this.ensureAzureClient();
+        const containerClient = blobServiceClient.getContainerClient(this.bucket);
         const blockBlobClient = containerClient.getBlockBlobClient(key);
         const downloadBlockBlobResponse = await blockBlobClient.download(0);
         const downloadedData = await streamToBuffer(downloadBlockBlobResponse.readableStreamBody!);
@@ -209,6 +258,7 @@ class DocumentStorageService {
         return downloadedData;
       } else {
         // Download from S3 or Cloudflare R2
+        const { GetObjectCommand } = await this.ensureS3Client();
         const command = new GetObjectCommand({
           Bucket: this.bucket,
           Key: key,
@@ -233,12 +283,14 @@ class DocumentStorageService {
     try {
       if (this.backend === "azure") {
         // Delete from Azure Blob Storage
-        const containerClient = this.blobServiceClient!.getContainerClient(this.bucket);
+        const blobServiceClient = await this.ensureAzureClient();
+        const containerClient = blobServiceClient.getContainerClient(this.bucket);
         await containerClient.deleteBlob(key);
 
         logger.info("Document deleted from Azure Blob Storage", { key });
       } else {
         // Delete from S3 or Cloudflare R2
+        const { DeleteObjectCommand } = await this.ensureS3Client();
         const command = new DeleteObjectCommand({
           Bucket: this.bucket,
           Key: key,
@@ -297,3 +349,4 @@ export function getDocumentStorageService(): DocumentStorageService {
 // ============================================================================
 
 export default DocumentStorageService;
+

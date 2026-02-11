@@ -62,7 +62,7 @@ CREATE POLICY course_reg_insert ON course_registrations
 - ✅ `member_certifications`: 4 policies (full CRUD)
 - ✅ `program_enrollments`: 4 policies (full CRUD)
 - ✅ `claim_updates`: 4 policies (full CRUD)
-- ✅ `tenant_users`: 4 policies (full CRUD)
+- ✅ `organization_users`: 4 policies (full CRUD)
 - ✅ `oauth_providers`: 3 policies (no UPDATE needed)
 - ✅ `user_sessions`: 4 policies (full CRUD)
 - ✅ `audit_logs`: 2 policies (SELECT + INSERT only, immutable)

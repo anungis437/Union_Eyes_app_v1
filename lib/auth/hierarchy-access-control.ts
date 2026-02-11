@@ -24,7 +24,7 @@
  */
 
 import { db } from '@/db';
-import { organizations, organizationMembers } from '@/db/schema';
+import { organizations, organizationMembers, congressMemberships } from '@/db/schema';
 import { eq, and, or, inArray } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -198,7 +198,7 @@ export async function validateSharingLevel(
     // Congress sharing requires CLC affiliation
     const sourceOrg = await db.query.organizations.findFirst({
       where: eq(organizations.id, sourceOrgId),
-      columns: { clcAffiliated: true },
+      columns: { clcAffiliated: true, id: true },
     });
 
     if (!sourceOrg?.clcAffiliated) {
@@ -216,7 +216,25 @@ export async function validateSharingLevel(
       };
     }
 
-    logger.info('Congress sharing validated', { userId, sourceOrgId, userOrgId: userOrg.id });
+    const [userOrgMembershipValid, sourceOrgMembershipValid] = await Promise.all([
+      validateCongressMembership(userId, userOrg.id),
+      validateCongressMembership(userId, sourceOrgId),
+    ]);
+
+    if (!userOrgMembershipValid || !sourceOrgMembershipValid) {
+      return {
+        allowed: false,
+        reason: 'Congress sharing requires active congress memberships for both organizations',
+      };
+    }
+
+    logger.info('Congress sharing validated', {
+      userId,
+      sourceOrgId,
+      userOrgId: userOrg.id,
+      sharingLevel: 'congress',
+    });
+
     return { allowed: true };
   }
 
@@ -297,14 +315,55 @@ function checkActionPermission(role: string, action: ActionType): boolean {
 }
 
 /**
- * Validates congress membership (stub for future implementation)
+ * Validates congress membership (CLC federation membership validation)
+ * 
+ * Checks if an organization is an active member of a congress/federation.
+ * This is used to validate cross-organizational sharing within a federation.
+ * 
+ * @param userId - The user requesting validation (for audit logging)
+ * @param organizationId - The organization to check membership for
+ * @returns Promise<boolean> - True if the organization has active congress membership
  */
 export async function validateCongressMembership(
   userId: string,
   organizationId: string
 ): Promise<boolean> {
-  // TODO: Implement congress membership validation
-  // This should check against a congress_memberships table
-  logger.warn('Congress membership validation not implemented', { userId, organizationId });
-  return false;
+  try {
+    // Query congress_memberships table for active membership
+    const memberships = await db
+      .select()
+      .from(congressMemberships)
+      .where(
+        and(
+          eq(congressMemberships.organizationId, organizationId),
+          eq(congressMemberships.status, 'active')
+        )
+      )
+      .limit(1);
+
+    const hasActiveMembership = memberships.length > 0;
+
+    if (hasActiveMembership) {
+      logger.info('Congress membership validated', {
+        userId,
+        organizationId,
+        membershipId: memberships[0].id,
+        congressId: memberships[0].congressId,
+      });
+    } else {
+      logger.debug('No active congress membership found', {
+        userId,
+        organizationId,
+      });
+    }
+
+    return hasActiveMembership;
+  } catch (error) {
+    logger.error('Congress membership validation error', error as Error, {
+      userId,
+      organizationId,
+    });
+    return false;
+  }
 }
+

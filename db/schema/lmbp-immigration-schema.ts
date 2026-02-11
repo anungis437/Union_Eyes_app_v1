@@ -297,3 +297,4 @@ export type NewLMBPComplianceAlert = typeof lmbpComplianceAlerts.$inferInsert;
 
 export type LMBPComplianceReport = typeof lmbpComplianceReports.$inferSelect;
 export type NewLMBPComplianceReport = typeof lmbpComplianceReports.$inferInsert;
+

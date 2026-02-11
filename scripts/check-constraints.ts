@@ -22,10 +22,10 @@ async function checkConstraints() {
         ON ccu.constraint_name = tc.constraint_name
       WHERE tc.constraint_type = 'FOREIGN KEY'
         AND tc.table_schema = 'user_management'
-        AND tc.table_name = 'tenant_users'
+        AND tc.table_name = 'organization_users'
     `);
     
-    console.log('Foreign Key Constraints on tenant_users:');
+    console.log('Foreign Key Constraints on organization_users:');
     console.log(JSON.stringify(constraints, null, 2));
     
   } catch (error) {

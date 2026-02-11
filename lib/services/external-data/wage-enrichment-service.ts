@@ -707,3 +707,4 @@ export class WageEnrichmentService {
 
 // Singleton export
 export const wageEnrichmentService = new WageEnrichmentService();
+

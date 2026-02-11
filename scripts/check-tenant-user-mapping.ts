@@ -5,21 +5,21 @@ async function checkTenantUserMapping() {
   const userId = 'user_35NlrrNcfTv0DMh2kzBHyXZRtpb';
   const targetTenantId = '903ab6db-7e36-4457-a41e-45b3c75374ca';
 
-  console.log(`\n🔍 Checking tenant_users mapping for user: ${userId}`);
+  console.log(`\n🔍 Checking organization_users mapping for user: ${userId}`);
   console.log(`🎯 Target tenant: ${targetTenantId}\n`);
 
-  // Check tenant_users table
-  const tenantUsersResult = await db.execute(sql`
-    SELECT tenant_id, user_id, role, created_at
-    FROM user_management.tenant_users
+  // Check organization_users table
+  const organizationUsersResult = await db.execute(sql`
+    SELECT organization_id, user_id, role, created_at
+    FROM user_management.organization_users
     WHERE user_id = ${userId}
     ORDER BY created_at
   `);
 
-  console.log(`📊 Found ${tenantUsersResult.length} tenant_users records:\n`);
-  tenantUsersResult.forEach((row: any) => {
-    const isTarget = row.tenant_id === targetTenantId;
-    console.log(`  ${isTarget ? '✅' : '  '} tenant_id: ${row.tenant_id}`);
+  console.log(`📊 Found ${organizationUsersResult.length} organization_users records:\n`);
+  organizationUsersResult.forEach((row: any) => {
+    const isTarget = row.organization_id === targetTenantId;
+    console.log(`  ${isTarget ? '✅' : '  '} organization_id: ${row.organization_id}`);
     console.log(`     role: ${row.role}`);
     console.log(`     created_at: ${row.created_at}\n`);
   });

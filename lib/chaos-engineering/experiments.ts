@@ -143,3 +143,4 @@ export async function runAllExperiments(chaos: ChaosMonkey): Promise<void> {
 
   console.log('🎉 All experiments completed!');
 }
+

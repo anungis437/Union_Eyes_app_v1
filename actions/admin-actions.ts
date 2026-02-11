@@ -13,7 +13,7 @@ import { auth } from '@/lib/api-auth-guard';
 import { requireAdmin } from '@/lib/auth/rbac-server';
 import { db } from '@/db/db';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { tenantUsers, users } from "@/db/schema/user-management-schema";
+import { organizationUsers, users } from "@/db/schema/user-management-schema";
 import { tenants, tenantConfigurations, tenantUsage } from "@/db/schema/tenant-management-schema";
 import { eq, and, desc, sql, count, like, or, isNull } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -72,8 +72,8 @@ export async function getSystemStats(tx: NodePgDatabase<any>): Promise<SystemSta
     // Total unique users across all tenants
     const totalMembersResult = await tx
       .select({ count: count() })
-      .from(tenantUsers)
-      .where(eq(tenantUsers.isActive, true));
+      .from(organizationUsers)
+      .where(eq(organizationUsers.isActive, true));
 
     // Total tenants
     const totalTenantsResult = await tx
@@ -101,10 +101,10 @@ export async function getSystemStats(tx: NodePgDatabase<any>): Promise<SystemSta
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const activeTodayResult = await tx
       .select({ count: count() })
-      .from(tenantUsers)
+      .from(organizationUsers)
       .where(and(
-        eq(tenantUsers.isActive, true),
-        sql`${tenantUsers.lastAccessAt} > ${oneDayAgo}`
+        eq(organizationUsers.isActive, true),
+        sql`${organizationUsers.lastAccessAt} > ${oneDayAgo}`
       ));
 
     return {
@@ -135,17 +135,17 @@ export async function getAdminUsers(
     const conditions = [isNull(tenants.deletedAt)];
     
     if (tenantId) {
-      conditions.push(eq(tenantUsers.tenantId, tenantId));
+      conditions.push(eq(organizationUsers.organizationId, tenantId));
     }
     
     if (role) {
-      conditions.push(eq(tenantUsers.role, role));
+      conditions.push(eq(organizationUsers.role, role));
     }
     
     if (searchQuery) {
       conditions.push(
         or(
-          like(tenantUsers.userId, `%${searchQuery}%`),
+          like(organizationUsers.userId, `%${searchQuery}%`),
           like(tenants.tenantName, `%${searchQuery}%`)
         )!
       );
@@ -153,18 +153,18 @@ export async function getAdminUsers(
 
     const results = await tx
       .select({
-        userId: tenantUsers.userId,
-        role: tenantUsers.role,
-        tenantId: tenantUsers.tenantId,
+        userId: organizationUsers.userId,
+        role: organizationUsers.role,
+        tenantId: organizationUsers.organizationId,
         tenantName: tenants.tenantName,
-        isActive: tenantUsers.isActive,
-        lastAccessAt: tenantUsers.lastAccessAt,
-        joinedAt: tenantUsers.joinedAt,
+        isActive: organizationUsers.isActive,
+        lastAccessAt: organizationUsers.lastAccessAt,
+        joinedAt: organizationUsers.joinedAt,
       })
-      .from(tenantUsers)
-      .innerJoin(tenants, eq(tenants.tenantId, tenantUsers.tenantId))
+      .from(organizationUsers)
+      .innerJoin(tenants, eq(tenants.tenantId, organizationUsers.organizationId))
       .where(and(...conditions))
-      .orderBy(desc(tenantUsers.lastAccessAt));
+      .orderBy(desc(organizationUsers.lastAccessAt));
 
     return results.map(u => ({
       id: u.userId,
@@ -222,10 +222,10 @@ export async function getAdminTenants(searchQuery?: string): Promise<TenantWithS
         const [userCount] = await db
           .select({ 
             total: count(),
-            active: sql<number>`COUNT(*) FILTER (WHERE ${tenantUsers.isActive} = true)`
+            active: sql<number>`COUNT(*) FILTER (WHERE ${organizationUsers.isActive} = true)`
           })
-          .from(tenantUsers)
-          .where(eq(tenantUsers.tenantId, tenant.tenantId));
+          .from(organizationUsers)
+          .where(eq(organizationUsers.organizationId, tenant.tenantId));
 
         const [usage] = await db
           .select({ storageUsed: tenantUsage.storageUsedGb })
@@ -269,14 +269,14 @@ export async function updateUserRole(
 ): Promise<void> {
   try {
     await tx
-      .update(tenantUsers)
+      .update(organizationUsers)
       .set({ 
         role: newRole,
         updatedAt: new Date()
       })
       .where(and(
-        eq(tenantUsers.userId, userId),
-        eq(tenantUsers.tenantId, tenantId)
+        eq(organizationUsers.userId, userId),
+        eq(organizationUsers.organizationId, tenantId)
       ));
 
     logger.info("User role updated", {
@@ -303,11 +303,11 @@ export async function toggleUserStatus(
 ): Promise<void> {
   try {
     const [user] = await tx
-      .select({ isActive: tenantUsers.isActive })
-      .from(tenantUsers)
+      .select({ isActive: organizationUsers.isActive })
+      .from(organizationUsers)
       .where(and(
-        eq(tenantUsers.userId, userId),
-        eq(tenantUsers.tenantId, tenantId)
+        eq(organizationUsers.userId, userId),
+        eq(organizationUsers.organizationId, tenantId)
       ))
       .limit(1);
 
@@ -316,14 +316,14 @@ export async function toggleUserStatus(
     }
 
     await tx
-      .update(tenantUsers)
+      .update(organizationUsers)
       .set({ 
         isActive: !user.isActive,
         updatedAt: new Date()
       })
       .where(and(
-        eq(tenantUsers.userId, userId),
-        eq(tenantUsers.tenantId, tenantId)
+        eq(organizationUsers.userId, userId),
+        eq(organizationUsers.organizationId, tenantId)
       ));
 
     logger.info("User status toggled", {
@@ -350,10 +350,10 @@ export async function deleteUserFromTenant(
 ): Promise<void> {
   try {
     await tx
-      .delete(tenantUsers)
+      .delete(organizationUsers)
       .where(and(
-        eq(tenantUsers.userId, userId),
-        eq(tenantUsers.tenantId, tenantId)
+        eq(organizationUsers.userId, userId),
+        eq(organizationUsers.organizationId, tenantId)
       ));
 
     logger.info("User removed from tenant", {
@@ -539,15 +539,15 @@ export async function getRecentActivity(tx: NodePgDatabase<any>, limit: number =
     // For now, return recent user joins
     const recentUsers = await tx
       .select({
-        userId: tenantUsers.userId,
+        userId: organizationUsers.userId,
         tenantName: tenants.tenantName,
-        role: tenantUsers.role,
-        joinedAt: tenantUsers.joinedAt,
+        role: organizationUsers.role,
+        joinedAt: organizationUsers.joinedAt,
       })
-      .from(tenantUsers)
-      .innerJoin(tenants, eq(tenants.tenantId, tenantUsers.tenantId))
+      .from(organizationUsers)
+      .innerJoin(tenants, eq(tenants.tenantId, organizationUsers.organizationId))
       .where(isNull(tenants.deletedAt))
-      .orderBy(desc(tenantUsers.joinedAt))
+      .orderBy(desc(organizationUsers.joinedAt))
       .limit(limit);
 
     return recentUsers.map(u => ({
@@ -562,3 +562,4 @@ export async function getRecentActivity(tx: NodePgDatabase<any>, limit: number =
     return [];
   }
 }
+

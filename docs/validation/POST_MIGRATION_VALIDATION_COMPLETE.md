@@ -250,7 +250,7 @@ Tests are database-dependent and will:
 
 ### Database Changes
 
-- **Tables Modified:** 12 (users, oauth_providers, tenant_users, user_sessions, audit_logs, security_events, claims, claim_updates, course_registrations, member_certifications, program_enrollments, tenant_configurations)
+- **Tables Modified:** 12 (users, oauth_providers, organization_users, user_sessions, audit_logs, security_events, claims, claim_updates, course_registrations, member_certifications, program_enrollments, tenant_configurations)
 - **Columns Converted:** 16 (UUID → varchar(255))
 - **Records Migrated:** 27,309 claims + 8 users + training/certification records
 - **FK Constraints:** 13 total (9 + 4 new)

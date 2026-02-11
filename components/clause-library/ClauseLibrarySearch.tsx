@@ -390,3 +390,4 @@ export function ClauseLibrarySearch({ onSearch, isLoading }: ClauseLibrarySearch
     </div>
   );
 }
+

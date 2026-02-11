@@ -319,3 +319,4 @@ async function logAiQuery({
     console.error('Failed to log AI query:', err);
   }
 }
+

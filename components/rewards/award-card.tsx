@@ -164,3 +164,4 @@ export function AwardCard({ award, onReact, onComment, showActions = true }: Awa
     </Card>
   );
 }
+

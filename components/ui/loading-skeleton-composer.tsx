@@ -203,3 +203,4 @@ export function SkeletonImage({
     <Skeleton className={cn("w-full rounded-md", aspectMap[aspect], className)} />
   );
 }
+

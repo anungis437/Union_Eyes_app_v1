@@ -116,3 +116,4 @@ export function getValidRecipients(recipients: EmailRecipient[]): EmailRecipient
     return true;
   });
 }
+

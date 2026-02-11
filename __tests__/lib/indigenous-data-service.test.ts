@@ -15,6 +15,15 @@ import { IndigenousDataService, indigenousDataService, setupOnPremiseStorage } f
 // Mock database
 vi.mock('@/db', () => ({
   db: {
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => ({
+          limit: vi.fn().mockResolvedValue([
+            { bandCouncilId: 'bc-001' }
+          ])
+        }))
+      }))
+    })),
     query: {
       members: {
         findFirst: vi.fn().mockResolvedValue(null)

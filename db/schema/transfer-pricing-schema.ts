@@ -292,3 +292,4 @@ export const crossBorderTransactions = pgTable("cross_border_transactions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+

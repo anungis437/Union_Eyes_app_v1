@@ -592,3 +592,4 @@ export default function ApprenticeshipPortal({
     </div>
   );
 }
+

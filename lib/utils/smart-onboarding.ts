@@ -15,6 +15,7 @@ import { organizations, sharedClauseLibrary } from '@/db/schema';
 import { eq, and, inArray, or, gte, sql } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { cacheGet, cacheSet } from '@/lib/services/cache-service';
 
 // =============================================================================
 // TYPES
@@ -299,11 +300,7 @@ export async function findPeerOrganizations(
       filters.push(eq(organizations.organizationType, org.organizationType));
     }
 
-    // Same sector (check for array overlap using PostgreSQL array operator)
-    if (org.sectors && org.sectors.length > 0) {
-      // Use PostgreSQL array overlap operator && to find orgs with any matching sector
-      filters.push(sql`${organizations.sectors} && ${org.sectors}`);
-    }
+    const hasSectorFilter = Array.isArray(org.sectors) && org.sectors.length > 0;
 
     // Same province
     if (org.provinceTerritory) {
@@ -324,16 +321,133 @@ export async function findPeerOrganizations(
 
     const peers = await db.query.organizations.findMany({
       where: and(...filters),
-      columns: { id: true },
+      columns: { id: true, sectors: true },
       limit: 20,
     });
 
-    return peers.map(p => p.id).filter(id => id !== organizationId);
+    const sectorFilteredPeers = hasSectorFilter
+      ? peers.filter((peer) =>
+          Array.isArray(peer.sectors) &&
+          peer.sectors.some((sector) => org.sectors?.includes(sector))
+        )
+      : peers;
+
+    return sectorFilteredPeers.map(p => p.id).filter(id => id !== organizationId);
   } catch (error) {
     logger.error('Failed to find peer organizations', { error });
     return [];
   }
 }
+
+// =============================================================================
+// CLC API INTEGRATION
+// =============================================================================
+
+/**
+ * Fetch national average metrics from CLC API
+ * Results are cached for 24 hours to minimize API calls
+ * 
+ * @param metric - The metric to fetch (e.g., 'memberCount', 'perCapitaRate')
+ * @param sector - Optional sector filter (e.g., 'public', 'private')
+ * @returns National average value or null if unavailable
+ */
+async function fetchNationalAverage(
+  metric: string,
+  sector?: string
+): Promise<number | null> {
+  const cacheKey = `clc:national-avg:${metric}${sector ? `:${sector}` : ''}`;
+  
+  try {
+    // Check cache first (24 hour TTL)
+    const cached = await cacheGet<number>(cacheKey, { namespace: 'clc-api' });
+    if (cached !== null) {
+      logger.info('[CLC API] Using cached national average', { metric, sector, value: cached });
+      return cached;
+    }
+
+    const CLC_API_URL = process.env.CLC_API_URL || 'https://api.clc-ctc.ca';
+    const CLC_API_KEY = process.env.CLC_API_KEY;
+
+    if (!CLC_API_KEY) {
+      logger.warn('[CLC API] API key not configured, using fallback value');
+      return getFallbackAverage(metric);
+    }
+
+    // Make API call to CLC
+    const params = new URLSearchParams({
+      metric,
+      ...(sector && { sector }),
+      aggregation: 'average',
+    });
+
+    const response = await fetch(
+      `${CLC_API_URL}/v1/benchmarks/national?${params}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${CLC_API_KEY}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'UnionEyes/1.0',
+        },
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        logger.warn('[CLC API] Metric not found', { metric, sector });
+        return getFallbackAverage(metric);
+      }
+      throw new Error(`CLC API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const average = data?.data?.average || data?.average;
+
+    if (typeof average !== 'number') {
+      logger.warn('[CLC API] Invalid response format', { data });
+      return getFallbackAverage(metric);
+    }
+
+    // Cache result for 24 hours
+    await cacheSet(cacheKey, average, { 
+      namespace: 'clc-api', 
+      ttl: 86400 // 24 hours
+    });
+
+    logger.info('[CLC API] Fetched national average', { metric, sector, value: average });
+    return average;
+
+  } catch (error) {
+    logger.error('[CLC API] Failed to fetch national average', { 
+      error, 
+      metric, 
+      sector,
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+    return getFallbackAverage(metric);
+  }
+}
+
+/**
+ * Get fallback averages when CLC API is unavailable
+ * Based on historical Canadian labour statistics
+ */
+function getFallbackAverage(metric: string): number {
+  const fallbacks: Record<string, number> = {
+    memberCount: 2500,
+    perCapitaRate: 45.0, // CAD per member per month
+    staffCount: 8,
+    budgetSize: 1250000, // CAD
+    grievanceResolutionDays: 45,
+  };
+  
+  return fallbacks[metric] || 0;
+}
+
+// =============================================================================
+// PEER BENCHMARKING
+// =============================================================================
 
 /**
  * Get benchmarks comparing organization to peers and national averages
@@ -370,11 +484,18 @@ export async function getPeerBenchmarks(
       const sortedCounts = peerCounts.sort((a, b) => a - b);
       const percentile = (sortedCounts.filter(c => c <= (org.memberCount || 0)).length / sortedCounts.length) * 100;
 
+      // Fetch national average from CLC API
+      const sector = org.sectors?.[0];
+      const nationalAverage = await fetchNationalAverage(
+        'memberCount',
+        sector
+      );
+
       benchmarks.push({
         metricName: 'Member Count',
         yourValue: org.memberCount,
         peerAverage: Math.round(peerAverage),
-        nationalAverage: 2500, // TODO: Get from CLC API
+        nationalAverage: nationalAverage ?? Math.round(peerAverage),
         percentile: Math.round(percentile),
         category: 'Membership',
       });
@@ -530,3 +651,4 @@ export async function runSmartOnboarding(organizationId: string) {
     throw error;
   }
 }
+

@@ -7,7 +7,7 @@
  * - Notification history/audit log
  */
 
-import { pgTable, text, timestamp, boolean, jsonb, uuid, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, jsonb, uuid, pgEnum, integer } from 'drizzle-orm/pg-core';
 
 // ============================================
 // Enums
@@ -26,6 +26,32 @@ export const notificationStatusEnum = pgEnum('notification_status', [
   'failed',
   'partial',
   'pending',
+]);
+
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'payment_confirmation',
+  'payment_failed',
+  'payment_reminder',
+  'donation_received',
+  'stipend_approved',
+  'stipend_disbursed',
+  'low_balance_alert',
+  'arrears_warning',
+  'strike_announcement',
+  'picket_reminder',
+  'claim_update',
+  'document_update',
+  'deadline_alert',
+  'system_announcement',
+  'security_alert',
+  'general',
+]);
+
+export const notificationPriorityEnum = pgEnum('notification_priority', [
+  'low',
+  'normal',
+  'high',
+  'urgent',
 ]);
 
 export const digestFrequencyEnum = pgEnum('digest_frequency', [
@@ -69,6 +95,52 @@ export const userNotificationPreferences = pgTable('user_notification_preference
   securityAlerts: boolean('security_alerts').notNull().default(true),
   
   // Metadata
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ============================================
+// Notification Tracking Table (for NotificationService)
+// ============================================
+
+export const notificationTracking = pgTable('notification_tracking', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').notNull(),
+  recipientId: uuid('recipient_id'),
+  
+  // Notification type and priority
+  type: notificationTypeEnum('type').notNull(),
+  status: notificationStatusEnum('status').notNull().default('pending'),
+  priority: notificationPriorityEnum('priority').notNull().default('normal'),
+  
+  // Content
+  subject: text('subject'),
+  body: text('body').notNull(),
+  htmlBody: text('html_body'),
+  
+  // Template information
+  templateId: text('template_id'),
+  templateData: jsonb('template_data'),
+  
+  // Provider information
+  providerId: text('provider_id'),
+  externalMessageId: text('external_message_id'),
+  
+  // Action button
+  actionUrl: text('action_url'),
+  actionLabel: text('action_label'),
+  
+  // Delivery tracking
+  sentAt: timestamp('sent_at'),
+  deliveredAt: timestamp('delivered_at'),
+  failureReason: text('failure_reason'),
+  failureCount: integer('failure_count').default(0),
+  lastFailureAt: timestamp('last_failure_at'),
+  
+  // Additional metadata
+  metadata: jsonb('metadata'),
+  
+  // Tracking fields
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -133,6 +205,9 @@ export const notificationHistory = pgTable('notification_history', {
   // External IDs for tracking
   metadata: jsonb('metadata'), // e.g., { twilioSid, sendgridId, channels: [] }
 });
+
+export type NotificationTracking = typeof notificationTracking.$inferSelect;
+export type NewNotificationTracking = typeof notificationTracking.$inferInsert;
 
 // ============================================
 // Scheduled Notifications (for deadlines, reminders, etc.)
@@ -254,12 +329,7 @@ export const notificationQueueStatusEnum = pgEnum('notification_queue_status', [
   'retrying',
 ]);
 
-export const notificationPriorityEnum = pgEnum('notification_priority', [
-  'low',
-  'normal',
-  'high',
-  'urgent',
-]);
+// notificationPriorityEnum already defined above (line 50)
 
 export const notificationQueue = pgTable('notification_queue', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -379,3 +449,4 @@ export const notificationBounces = pgTable('notification_bounces', {
 //
 // CREATE INDEX idx_notification_bounces_email ON notification_bounces(email);
 // CREATE INDEX idx_notification_bounces_active ON notification_bounces(is_active);
+

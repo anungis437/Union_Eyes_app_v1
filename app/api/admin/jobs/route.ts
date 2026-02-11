@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { tenantUsers } from '@/db/schema/user-management-schema';
+import { organizationUsers } from '@/db/schema/user-management-schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
@@ -29,9 +29,9 @@ const jobsQuerySchema = z.object({
 async function checkAdminRole(userId: string): Promise<boolean> {
   try {
     const admin = await db
-      .select({ role: tenantUsers.role })
-      .from(tenantUsers)
-      .where(eq(tenantUsers.userId, userId))
+      .select({ role: organizationUsers.role })
+      .from(organizationUsers)
+      .where(eq(organizationUsers.userId, userId))
       .limit(1);
     return admin.length > 0 && admin[0].role === 'admin';
   } catch (_error) {
@@ -142,4 +142,5 @@ export const GET = withRoleAuth(90, async (request, context) => {
       throw error;
     }
 });
+
 

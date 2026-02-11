@@ -636,3 +636,4 @@ export interface SuspiciousActivity {
   severity: 'low' | 'medium' | 'high';
   timestamp: Date;
 }
+

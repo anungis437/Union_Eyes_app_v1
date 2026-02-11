@@ -376,3 +376,4 @@ const createStyles = (isDark: boolean) =>
       justifyContent: 'center',
     },
   });
+

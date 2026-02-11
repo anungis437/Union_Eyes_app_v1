@@ -373,3 +373,4 @@ export function CertificationTracker({
     </div>
   );
 }
+

@@ -77,3 +77,4 @@ export const messageNotifications = pgTable('message_notifications', {
   notifiedAt: timestamp('notified_at').defaultNow().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+

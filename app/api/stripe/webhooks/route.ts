@@ -502,3 +502,4 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
     logger.error('Error processing setup intent success', error as Error, { setupIntentId: setupIntent.id });
   }
 } */
+

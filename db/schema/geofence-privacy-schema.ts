@@ -206,3 +206,4 @@ export const locationTrackingConfig = pgTable("location_tracking_config", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   updatedBy: varchar("updated_by", { length: 255 }),
 });
+

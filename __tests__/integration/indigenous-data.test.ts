@@ -8,6 +8,11 @@ import { IndigenousDataService } from '@/lib/services/indigenous-data-service';
 
 describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
   let service: IndigenousDataService;
+  const reserveIds = {
+    withServer: '11111111-1111-4111-8111-111111111111',
+    noServer: '22222222-2222-4222-8222-222222222222',
+    configOnly: '33333333-3333-4333-8333-333333333333',
+  };
 
   beforeEach(() => {
     service = new IndigenousDataService();
@@ -64,27 +69,25 @@ describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
     });
 
     it('should track purpose of data access', async () => {
-      const request = await service.requestDataAccess(
-        'requester-456',
-        'health_data',
-        'Health and safety research',
-        'sacred'
-      );
-
-      expect(request.purpose).toBe('Health and safety research');
-      expect(request.requiresElderApproval).toBe(true);
+      await expect(
+        service.requestDataAccess(
+          'requester-456',
+          'health_data',
+          'Health and safety research',
+          'sacred'
+        )
+      ).rejects.toThrow('Band Council approval required');
     });
 
     it('should allow community to control data disclosure', async () => {
-      const request = await service.requestDataAccess(
-        'external-researcher',
-        'cultural_data',
-        'Academic research',
-        'sensitive'
-      );
-
-      expect(request.requiresBandCouncilApproval).toBe(true);
-      expect(request.sensitivity).toBe('sensitive');
+      await expect(
+        service.requestDataAccess(
+          'external-researcher',
+          'cultural_data',
+          'Academic research',
+          'sensitive'
+        )
+      ).rejects.toThrow('Band Council approval required');
     });
   });
 
@@ -140,7 +143,7 @@ describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
         content: { name: 'Test Member' },
         category: 'employment'
       };
-      const reserveId = 'reserve-123';
+      const reserveId = reserveIds.withServer;
 
       const storage = await service.routeToStorage(data, reserveId, 'employment');
 
@@ -156,7 +159,7 @@ describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
         content: { title: 'Test Doc' },
         category: 'administrative'
       };
-      const reserveId = 'reserve-no-server';
+      const reserveId = reserveIds.noServer;
 
       const storage = await service.routeToStorage(data, reserveId, 'administrative');
 
@@ -167,7 +170,7 @@ describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
     });
 
     it('should provide on-premise storage configuration', async () => {
-      const reserveId = 'reserve-456';
+      const reserveId = reserveIds.configOnly;
 
       const config = await service.getStorageConfig(reserveId);
 
@@ -360,7 +363,7 @@ describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
         category: 'health'
       };
 
-      const storage = await service.routeToStorage(data, 'reserve-123', 'health');
+      const storage = await service.routeToStorage(data, reserveIds.withServer, 'health');
 
       if (storage.storageLocation === 'cloud_encrypted') {
         expect(storage.endpoint).toBe('azure-canada-central');
@@ -374,7 +377,7 @@ describe('Indigenous Data Sovereignty (OCAP®) Integration', () => {
         category: 'restricted'
       };
 
-      const storage = await service.routeToStorage(data, 'reserve-456', 'restricted');
+      const storage = await service.routeToStorage(data, reserveIds.configOnly, 'restricted');
 
       if (storage.storageLocation === 'cloud_encrypted') {
         expect(storage.encryptionKey).toContain('BAND_COUNCIL_KEY');

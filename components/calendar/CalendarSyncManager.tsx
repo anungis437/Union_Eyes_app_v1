@@ -403,3 +403,4 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
     </Dialog>
   );
 }
+

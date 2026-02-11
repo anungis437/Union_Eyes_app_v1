@@ -150,3 +150,4 @@ export type AwardTemplate = typeof awardTemplates.$inferSelect;
 export type AwardHistoryRecord = typeof awardHistory.$inferSelect;
 export type RewardWallet = typeof rewardWalletLedger.$inferSelect;
 export type BudgetPool = typeof budgetPool.$inferSelect;
+

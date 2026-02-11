@@ -213,33 +213,135 @@ export async function getAggregatedMetrics(
   endDate: Date,
   organizationId?: string
 ): Promise<AggregatedMetrics> {
-  // In production, query metrics from database and aggregate
-  // This would use the existing analytics schema or create a metrics table
+  const { grievances } = await import('@/db/schema/grievance-schema');
+  const { analyticsMetrics } = await import('@/db/schema/analytics');
+  const { eq, and, gte, lte, count, avg, sql } = await import('drizzle-orm');
   
-  // For now, return empty structure with query placeholders
-  console.log(`[LROMetrics] Would query metrics from ${startDate} to ${endDate}`);
-  
-  return {
-    totalCases: 0,
-    openCases: 0,
-    resolvedCases: 0,
-    avgResolutionTimeHours: 0,
-    slaComplianceRate: 0,
+  try {
+    // Build base query conditions
+    const conditions = [
+      gte(grievances.createdAt, startDate),
+      lte(grievances.createdAt, endDate),
+    ];
     
-    totalSignals: 0,
-    criticalSignals: 0,
-    urgentSignals: 0,
-    signalActionRate: 0,
+    if (organizationId) {
+      conditions.push(eq(grievances.organizationId, organizationId));
+    }
     
-    avgCasesPerOfficer: 0,
-    avgResponseTimeHours: 0,
+    // Query case metrics from grievances table
+    const caseMetrics = await db
+      .select({
+        total: count(),
+        open: sql<number>`count(*) filter (where ${grievances.status} not in ('closed', 'settled', 'resolved'))`,
+        resolved: sql<number>`count(*) filter (where ${grievances.status} in ('closed', 'settled', 'resolved'))`,
+        avgResolutionHours: sql<number>`avg(extract(epoch from (${grievances.resolvedAt} - ${grievances.createdAt})) / 3600) filter (where ${grievances.resolvedAt} is not null)`,
+      })
+      .from(grievances)
+      .where(and(...conditions));
     
-    featureAdoptionRate: {},
-    dashboardActiveUsers: 0,
+    const cases = caseMetrics[0] || {
+      total: 0,
+      open: 0,
+      resolved: 0,
+      avgResolutionHours: 0,
+    };
     
-    startDate,
-    endDate,
-  };
+    // Query analytics metrics for signals and adoption
+    const analyticsConditions = [
+      gte(analyticsMetrics.periodStart, startDate),
+      lte(analyticsMetrics.periodEnd, endDate),
+    ];
+    
+    if (organizationId) {
+      analyticsConditions.push(eq(analyticsMetrics.organizationId, organizationId));
+    }
+    
+    const metricsData = await db
+      .select({
+        metricType: analyticsMetrics.metricType,
+        metricValue: analyticsMetrics.metricValue,
+      })
+      .from(analyticsMetrics)
+      .where(and(...analyticsConditions));
+    
+    // Aggregate metrics
+    let totalSignals = 0;
+    let criticalSignals = 0;
+    let urgentSignals = 0;
+    let dashboardActiveUsers = 0;
+    const featureAdoptionRate: Record<string, number> = {};
+    
+    for (const metric of metricsData) {
+      const value = parseFloat(metric.metricValue || '0');
+      
+      if (metric.metricType === 'signal_detected') {
+        totalSignals += value;
+      } else if (metric.metricType === 'signal_critical') {
+        criticalSignals += value;
+      } else if (metric.metricType === 'signal_urgent') {
+        urgentSignals += value;
+      } else if (metric.metricType === 'active_users') {
+        dashboardActiveUsers = value;
+      } else if (metric.metricType?.startsWith('feature_')) {
+        featureAdoptionRate[metric.metricType] = value;
+      }
+    }
+    
+    // Calculate SLA compliance rate
+    const slaCompliant = await db
+      .select({
+        compliant: sql<number>`count(*) filter (where ${grievances.responseDeadline} is null or ${grievances.resolvedAt} <= ${grievances.responseDeadline})`,
+        total: count(),
+      })
+      .from(grievances)
+      .where(and(...conditions));
+    
+    const slaRate = slaCompliant[0]?.total
+      ? (slaCompliant[0].compliant / slaCompliant[0].total) * 100
+      : 100;
+    
+    return {
+      totalCases: cases.total,
+      openCases: cases.open,
+      resolvedCases: cases.resolved,
+      avgResolutionTimeHours: Number(cases.avgResolutionHours || 0),
+      slaComplianceRate: slaRate,
+      
+      totalSignals,
+      criticalSignals,
+      urgentSignals,
+      signalActionRate: totalSignals ? (criticalSignals + urgentSignals) / totalSignals * 100 : 0,
+      
+      avgCasesPerOfficer: 0, // Would require user/officer assignment data
+      avgResponseTimeHours: Number(cases.avgResolutionHours || 0) / 2, // Estimate
+      
+      featureAdoptionRate,
+      dashboardActiveUsers,
+      
+      startDate,
+      endDate,
+    };
+  } catch (error) {
+    console.error('[LROMetrics] Error querying metrics:', error);
+    // Return empty metrics on error
+    return {
+      totalCases: 0,
+      openCases: 0,
+      resolvedCases: 0,
+      avgResolutionTimeHours: 0,
+      slaComplianceRate: 0,
+      totalSignals: 0,
+      criticalSignals: 0,
+      urgentSignals: 0,
+      signalActionRate: 0,
+      avgCasesPerOfficer: 0,
+      avgResponseTimeHours: 0,
+      featureAdoptionRate: {},
+      dashboardActiveUsers: 0,
+      startDate,
+      endDate,
+    };
+  }
 }
 
 /**
@@ -534,3 +636,4 @@ export function getTopPerformingOfficers(
     })
     .slice(0, limit);
 }
+

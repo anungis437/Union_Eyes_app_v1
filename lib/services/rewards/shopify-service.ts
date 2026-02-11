@@ -537,3 +537,4 @@ export async function getProductByHandle(
     return null;
   }
 }
+

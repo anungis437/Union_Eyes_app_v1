@@ -389,3 +389,4 @@ export const glTrialBalanceRelations = relations(glTrialBalance, ({ one }) => ({
     references: [chartOfAccounts.id],
   }),
 }));
+

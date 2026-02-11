@@ -176,3 +176,4 @@ export function StatusUpdate({ claimId, currentStatus, onStatusUpdated }: Status
     </Card>
   );
 }
+

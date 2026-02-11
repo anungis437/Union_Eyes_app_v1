@@ -110,7 +110,7 @@ Open browser DevTools → Network tab:
 ### Tenant selector keeps resetting
 
 - Check that cookie `selected_tenant_id` is being set
-- Verify user is in `tenant_users` table for selected tenant
+- Verify user is in `organization_users` table for selected tenant
 - Check browser console for errors
 
 ### Seeing all claims regardless of tenant
@@ -121,7 +121,7 @@ Open browser DevTools → Network tab:
 
 ### Can't switch to certain tenants
 
-- Verify user is associated with tenant in `tenant_users` table
+- Verify user is associated with tenant in `organization_users` table
 - Check `/api/tenant/switch` response for 403 errors
 - Confirm tenant status is 'active' in database
 

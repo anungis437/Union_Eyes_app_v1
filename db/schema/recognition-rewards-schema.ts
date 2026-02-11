@@ -559,3 +559,4 @@ export type NewWebhookReceipt = typeof webhookReceipts.$inferInsert;
 
 export type AutomationRule = typeof automationRules.$inferSelect;
 export type NewAutomationRule = typeof automationRules.$inferInsert;
+

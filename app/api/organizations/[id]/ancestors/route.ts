@@ -1,4 +1,4 @@
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 /**
  * API Route: Organization Ancestors
  * Get all ancestors of an organization up to the root

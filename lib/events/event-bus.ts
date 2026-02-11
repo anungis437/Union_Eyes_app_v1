@@ -400,3 +400,4 @@ export interface VoteCastEvent {
   tenantId: TenantId;
   ballotId: string;
 }
+

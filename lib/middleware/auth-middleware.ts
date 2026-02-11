@@ -494,3 +494,4 @@ export function isValidBearerToken(token: string): boolean {
   // Basic validation - token should be non-empty and contain valid characters
   return /^[A-Za-z0-9._-]+$/.test(token) && token.length >= 20;
 }
+

@@ -148,3 +148,4 @@ export type VotingNotification = typeof votingNotifications.$inferSelect;
 export type NewVotingNotification = typeof votingNotifications.$inferInsert;
 export type VotingAuditLog = typeof votingAuditLog.$inferSelect;
 export type NewVotingAuditLog = typeof votingAuditLog.$inferInsert;
+

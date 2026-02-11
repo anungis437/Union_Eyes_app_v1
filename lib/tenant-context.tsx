@@ -200,3 +200,4 @@ export function useTenantTier(): string | null {
   const { currentTenant } = useTenant();
   return currentTenant?.subscriptionTier || null;
 }
+

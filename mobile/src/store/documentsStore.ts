@@ -294,3 +294,4 @@ export const selectDocumentsByClaimId =
   (state: DocumentsStore): Document[] => {
     return state.documents.filter((doc) => doc.claimId === claimId);
   };
+

@@ -321,3 +321,4 @@ export function DensityHeatMap({ organizationId, campaignId }: DensityHeatMapPro
     </div>
   );
 }
+

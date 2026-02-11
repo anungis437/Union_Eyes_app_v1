@@ -462,3 +462,4 @@ export type SignatureTemplate = typeof signatureTemplates.$inferSelect;
 export type NewSignatureTemplate = typeof signatureTemplates.$inferInsert;
 export type SignatureWebhookLog = typeof signatureWebhooksLog.$inferSelect;
 export type NewSignatureWebhookLog = typeof signatureWebhooksLog.$inferInsert;
+

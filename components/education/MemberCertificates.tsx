@@ -360,3 +360,4 @@ export function MemberCertificates({ memberId, organizationId }: MemberCertifica
 }
 
 export default MemberCertificates;
+

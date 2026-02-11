@@ -786,3 +786,4 @@ export async function getDocumentStatistics(tenantId: string): Promise<{
     throw new Error("Failed to get document statistics");
   }
 }
+

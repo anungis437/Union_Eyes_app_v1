@@ -418,3 +418,4 @@ export function PublicJobBoardPage({ organizationSlug }: JobBoardPageProps) {
     </div>
   );
 }
+

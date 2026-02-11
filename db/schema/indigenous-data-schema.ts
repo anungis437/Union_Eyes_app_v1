@@ -185,3 +185,4 @@ export const traditionalKnowledgeRegistry = pgTable("traditional_knowledge_regis
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+

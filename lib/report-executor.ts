@@ -587,3 +587,4 @@ export function getFieldMetadata(
 
   return dataSource.fields.find(f => f.id === fieldId);
 }
+

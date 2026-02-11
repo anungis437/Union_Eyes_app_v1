@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, withValidatedBody, logApiAuditEvent } from '@/lib/middleware/api-security';
-import { requireUser } from '@/lib/auth/unified-auth';
+import { requireUser } from '@/lib/api-auth-guard';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
 import { createClient } from "@/packages/supabase/server";

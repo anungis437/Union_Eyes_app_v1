@@ -11,6 +11,7 @@
  */
 
 import { createHash } from "crypto";
+import { logger } from "@/lib/logger";
 
 /**
  * Base interface for all signature providers
@@ -95,85 +96,242 @@ export class DocuSignProvider implements SignatureProvider {
   async createEnvelope(
     request: CreateEnvelopeRequest
   ): Promise<EnvelopeResponse> {
-    // Implementation would use DocuSign REST API
-    // This is a simplified example
-    
-    const envelope = {
-      emailSubject: request.subject,
-      emailBlurb: request.message,
-      status: "sent",
-      documents: [
-        {
-          documentBase64: request.document.content.toString("base64"),
-          name: request.document.name,
-          fileExtension: request.document.fileType,
-          documentId: "1",
-        },
-      ],
-      recipients: {
-        signers: request.signers.map((signer, index) => ({
-          email: signer.email,
-          name: signer.name,
-          recipientId: String(index + 1),
-          routingOrder: signer.order || index + 1,
-          tabs: {
-            signHereTabs: [
-              {
-                documentId: "1",
-                pageNumber: "1",
-                xPosition: "100",
-                yPosition: "100",
-              },
-            ],
-          },
-        })),
-      },
-    };
-
-    // TODO: Make actual API call
-    // const response = await fetch(`${this.baseUrl}/accounts/${this.accountId}/envelopes`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${this.apiKey}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify(envelope)
-    // });
-
-    // Mock response for demonstration
-    return {
-      envelopeId: `docusign_${Date.now()}`,
-      status: "sent",
-      signers: request.signers.map((s, i) => ({
-        email: s.email,
-        signerId: `signer_${i + 1}`,
+    try {
+      const envelope = {
+        emailSubject: request.subject,
+        emailBlurb: request.message || "",
         status: "sent",
-        signUrl: `https://demo.docusign.net/signing/${Date.now()}`,
-      })),
-      createdAt: new Date(),
-    };
+        documents: [
+          {
+            documentBase64: request.document.content.toString("base64"),
+            name: request.document.name,
+            fileExtension: request.document.fileType,
+            documentId: "1",
+          },
+        ],
+        recipients: {
+          signers: request.signers.map((signer, index) => ({
+            email: signer.email,
+            name: signer.name,
+            recipientId: String(index + 1),
+            routingOrder: signer.order || index + 1,
+            tabs: {
+              signHereTabs: [
+                {
+                  documentId: "1",
+                  pageNumber: "1",
+                  xPosition: "100",
+                  yPosition: "100",
+                },
+              ],
+            },
+          })),
+        },
+        ...(request.callbackUrl && { eventNotification: {
+          url: request.callbackUrl,
+          loggingEnabled: true,
+          requireAcknowledgment: true,
+          includeDocuments: false,
+          envelopeEvents: [
+            { envelopeEventStatusCode: "sent" },
+            { envelopeEventStatusCode: "delivered" },
+            { envelopeEventStatusCode: "signed" },
+            { envelopeEventStatusCode: "completed" },
+            { envelopeEventStatusCode: "declined" },
+            { envelopeEventStatusCode: "voided" },
+          ],
+        }}),
+      };
+
+      const response = await fetch(
+        `${this.baseUrl}/accounts/${this.accountId}/envelopes`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(envelope),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `DocuSign API error (${response.status}): ${errorText}`
+        );
+      }
+
+      const data = await response.json();
+
+      return {
+        envelopeId: data.envelopeId,
+        status: data.status,
+        signers: request.signers.map((s, i) => ({
+          email: s.email,
+          signerId: `signer_${i + 1}`,
+          status: "sent",
+          signUrl: data.recipients?.signers?.[i]?.embeddedRecipientStartURL,
+        })),
+        createdAt: new Date(),
+      };
+    } catch (error) {
+      logger.error("[DocuSign] Failed to create envelope", error instanceof Error ? error : new Error(String(error)));
+      throw new Error(
+        `Failed to create DocuSign envelope: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   }
 
   async getEnvelopeStatus(envelopeId: string): Promise<EnvelopeStatus> {
-    // TODO: Implement actual DocuSign API call
-    return {
-      envelopeId,
-      status: "sent",
-      signers: [],
-    };
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/accounts/${this.accountId}/envelopes/${envelopeId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `DocuSign API error (${response.status}): ${errorText}`
+        );
+      }
+
+      const data = await response.json();
+
+      return {
+        envelopeId: data.envelopeId,
+        status: data.status?.toLowerCase() || "sent",
+        signers: (data.recipients?.signers || []).map((signer: any) => ({
+          signerId: signer.recipientId,
+          email: signer.email,
+          status: signer.status?.toLowerCase() || "sent",
+          signedAt: signer.signedDateTime
+            ? new Date(signer.signedDateTime)
+            : undefined,
+          viewedAt: signer.deliveredDateTime
+            ? new Date(signer.deliveredDateTime)
+            : undefined,
+          declinedReason: signer.declinedReason,
+        })),
+        completedAt: data.completedDateTime
+          ? new Date(data.completedDateTime)
+          : undefined,
+      };
+    } catch (error) {
+      logger.error("[DocuSign] Failed to get envelope status", error instanceof Error ? error : new Error(String(error)));
+      throw new Error(
+        `Failed to get DocuSign envelope status: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   }
 
   async downloadDocument(envelopeId: string): Promise<Buffer> {
-    // TODO: Implement actual document download
-    return Buffer.from("");
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/accounts/${this.accountId}/envelopes/${envelopeId}/documents/combined`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            Accept: "application/pdf",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `DocuSign API error (${response.status}): ${errorText}`
+        );
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (error) {
+      logger.error("[DocuSign] Failed to download document", error instanceof Error ? error : new Error(String(error)));
+      throw new Error(
+        `Failed to download DocuSign document: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   }
 
   async voidEnvelope(envelopeId: string, reason: string): Promise<void> {
-    // TODO: Implement actual void call
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/accounts/${this.accountId}/envelopes/${envelopeId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            status: "voided",
+            voidedReason: reason,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `DocuSign API error (${response.status}): ${errorText}`
+        );
+      }
+    } catch (error) {
+      logger.error("[DocuSign] Failed to void envelope", error instanceof Error ? error : new Error(String(error)));
+      throw new Error(
+        `Failed to void DocuSign envelope: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   }
 
   async sendReminder(envelopeId: string, signerId: string): Promise<void> {
-    // TODO: Implement reminder
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/accounts/${this.accountId}/envelopes/${envelopeId}/notification`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            useAccountDefaults: false,
+            expirations: {
+              expireEnabled: false,
+            },
+            reminders: {
+              reminderEnabled: true,
+              reminderDelay: "0",
+              reminderFrequency: "0",
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `DocuSign API error (${response.status}): ${errorText}`
+        );
+      }
+    } catch (error) {
+      logger.error("[DocuSign] Failed to send reminder", error instanceof Error ? error : new Error(String(error)));
+      throw new Error(
+        `Failed to send DocuSign reminder: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   }
 }
 
@@ -202,7 +360,7 @@ export class HelloSignProvider implements SignatureProvider {
     const blob = new Blob([request.document.content], {
       type: "application/pdf",
     });
-    formData.append("file", blob, request.document.name);
+   formData.append("file", blob, request.document.name);
 
     // Add signers
     request.signers.forEach((signer, index) => {
@@ -211,44 +369,189 @@ export class HelloSignProvider implements SignatureProvider {
       formData.append(`signers[${index}][order]`, String(signer.order || 0));
     });
 
-    // TODO: Make actual API call
-    // const response = await fetch(`${this.baseUrl}/signature_request/send`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`
-    //   },
-    //   body: formData
-    // });
+    try {
+      const response = await fetch(`${this.baseUrl}/signature_request/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`
+        },
+        body: formData
+      });
 
-    // Mock response
-    return {
-      envelopeId: `hellosign_${Date.now()}`,
-      status: "sent",
-      signers: request.signers.map((s, i) => ({
-        email: s.email,
-        signerId: `signer_${i + 1}`,
-        status: "sent",
-      })),
-      createdAt: new Date(),
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: { error_msg: 'Unknown error' } }));
+        throw new SignatureError(
+          `HelloSign API error: ${errorData.error?.error_msg || response.statusText}`,
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      const signatureRequest = data.signature_request;
+
+      return {
+        envelopeId: signatureRequest.signature_request_id,
+        status: this.mapHelloSignStatus(signatureRequest.is_complete, signatureRequest.is_declined),
+        signers: signatureRequest.signatures.map((sig: any) => ({
+          email: sig.signer_email_address,
+          signerId: sig.signature_id,
+          status: this.mapSignerStatus(sig.status_code),
+        })),
+        createdAt: new Date(signatureRequest.created_at * 1000),
+      };
+    } catch (error) {
+      logger.error('HelloSign send envelope failed', error instanceof Error ? error : new Error(String(error)), {
+        documentName: request.document.name,
+        signerCount: request.signers.length,
+      });
+      throw error;
+    }
+  }
+
+  private mapHelloSignStatus(isComplete: boolean, isDeclined: boolean): EnvelopeStatus['status'] {
+    if (isDeclined) return 'declined';
+    if (isComplete) return 'completed';
+    return 'sent';
+  }
+
+  private mapSignerStatus(statusCode: string): string {
+    const statusMap: Record<string, string> = {
+      'awaiting_signature': 'sent',
+      'signed': 'completed',
+      'declined': 'declined',
+      'error': 'error',
     };
+    return statusMap[statusCode] || 'sent';
   }
 
   async getEnvelopeStatus(envelopeId: string): Promise<EnvelopeStatus> {
-    // TODO: Implement
-    return {
-      envelopeId,
-      status: "sent",
-      signers: [],
-    };
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/signature_request/${envelopeId}`,
+        {
+          headers: {
+            'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new SignatureError(
+          `Failed to get envelope status: ${response.statusText}`,
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      const signatureRequest = data.signature_request;
+
+      return {
+        envelopeId,
+        status: this.mapHelloSignStatus(signatureRequest.is_complete, signatureRequest.is_declined),
+        signers: signatureRequest.signatures.map((sig: any) => ({
+          email: sig.signer_email_address,
+          signerId: sig.signature_id,
+          status: this.mapSignerStatus(sig.status_code),
+        })),
+      };
+    } catch (error) {
+      logger.error('HelloSign get envelope status failed', error instanceof Error ? error : new Error(String(error)), {
+        envelopeId,
+      });
+      throw error;
+    }
   }
 
   async downloadDocument(envelopeId: string): Promise<Buffer> {
-    return Buffer.from("");
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/signature_request/files/${envelopeId}`,
+        {
+          headers: {
+            'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new SignatureError(
+          `Failed to download document: ${response.statusText}`,
+          response.status
+        );
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (error) {
+      logger.error('HelloSign download document failed', error instanceof Error ? error : new Error(String(error)), {
+        envelopeId,
+      });
+      throw error;
+    }
   }
 
-  async voidEnvelope(envelopeId: string, reason: string): Promise<void> {}
+  async voidEnvelope(envelopeId: string, reason: string): Promise<void> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/signature_request/cancel/${envelopeId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-  async sendReminder(envelopeId: string, signerId: string): Promise<void> {}
+      if (!response.ok) {
+        throw new SignatureError(
+          `Failed to cancel signature request: ${response.statusText}`,
+          response.status
+        );
+      }
+
+      logger.info('HelloSign envelope cancelled', { envelopeId, reason });
+    } catch (error) {
+      logger.error('HelloSign void envelope failed', error instanceof Error ? error : new Error(String(error)), {
+        envelopeId,
+        reason,
+      });
+      throw error;
+    }
+  }
+
+  async sendReminder(envelopeId: string, signerId: string): Promise<void> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/signature_request/remind/${envelopeId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email_address: signerId, // HelloSign uses email address as identifier
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new SignatureError(
+          `Failed to send reminder: ${response.statusText}`,
+          response.status
+        );
+      }
+
+      logger.info('HelloSign reminder sent', { envelopeId, signerId });
+    } catch (error) {
+      logger.error('HelloSign send reminder failed', error instanceof Error ? error : new Error(String(error)), {
+        envelopeId,
+        signerId,
+      });
+      throw error;
+    }
+  }
 }
 
 /**
@@ -377,3 +680,4 @@ SignatureProviderFactory.initialize({
 });
 
 export default SignatureProviderFactory;
+

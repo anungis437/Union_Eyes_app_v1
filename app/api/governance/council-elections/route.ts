@@ -128,3 +128,4 @@ export const POST = async (request: NextRequest) =>
       return NextResponse.json({ error: "Failed to create council election" }, { status: 500 });
     }
   })(request, {});
+

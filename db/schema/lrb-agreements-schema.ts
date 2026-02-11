@@ -225,3 +225,4 @@ export type LRBUnionInsert = typeof lrbUnions.$inferInsert;
 
 export type LRBSyncLog = typeof lrbSyncLog.$inferSelect;
 export type LRBSyncLogInsert = typeof lrbSyncLog.$inferInsert;
+

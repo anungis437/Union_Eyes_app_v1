@@ -350,3 +350,4 @@ export type OrganizationContact = typeof organizationContacts.$inferSelect;
 export type NewOrganizationContact = typeof organizationContacts.$inferInsert;
 export type NotificationLogEntry = typeof notificationLog.$inferSelect;
 export type NewNotificationLogEntry = typeof notificationLog.$inferInsert;
+

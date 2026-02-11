@@ -81,9 +81,6 @@ export class IndigenousDataService {
       // Get member's indigenous data classification
       const memberData = await db.query.indigenousMemberData.findFirst({
         where: eq(indigenousMemberData.userId, memberId),
-        with: {
-          bandCouncil: true,
-        },
       });
 
       if (!memberData?.bandCouncilId) {
@@ -104,9 +101,13 @@ export class IndigenousDataService {
 
       console.log(`[OCAP®] Verifying Band Council ownership for member ${memberId}`);
       
+      const bandCouncil = await db.query.bandCouncils.findFirst({
+        where: eq(bandCouncils.id, memberData.bandCouncilId),
+      });
+
       return {
         hasAgreement: !!consent,
-        bandName: memberData.bandCouncil?.bandName || undefined,
+        bandName: bandCouncil?.bandName || undefined,
         agreementId: consent?.id,
         expiresAt: consent?.expiresAt || undefined,
       };
@@ -135,11 +136,30 @@ export class IndigenousDataService {
     const requiresBandCouncilApproval = ['sensitive', 'sacred'].includes(sensitivity);
     const requiresElderApproval = sensitivity === 'sacred';
 
-    // Insert the access request
+    // Determine band council from the requester's indigenous data
+    const { indigenousMemberData } = await import('@/db/schema/indigenous-data-schema');
+    const { eq } = await import('drizzle-orm');
+    
+    // Get requester's band council
+    const requesterData = await db
+      .select({
+        bandCouncilId: indigenousMemberData.bandCouncilId,
+      })
+      .from(indigenousMemberData)
+      .where(eq(indigenousMemberData.userId, requesterId))
+      .limit(1);
+    
+    const userBandCouncilId = requesterData[0]?.bandCouncilId;
+    
+    if (!userBandCouncilId && requiresBandCouncilApproval) {
+      throw new Error('Band Council approval required but requester is not associated with a Band Council');
+    }
+    
+    // Insert the access request with actual band council ID
     const id = uuidv4();
     await db.insert(bandCouncilConsent).values({
       id,
-      bandCouncilId: sql`'00000000-0000-0000-0000-000000000000'`, // Placeholder - would be set by requester
+      bandCouncilId: userBandCouncilId || sql`'00000000-0000-0000-0000-000000000000'`,
       consentType: `data_access_${sensitivity}`,
       consentGiven: false,
       purposeOfCollection: purpose,
@@ -693,3 +713,4 @@ export async function setupOnPremiseStorage(
     config
   };
 }
+

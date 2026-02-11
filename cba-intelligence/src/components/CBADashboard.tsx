@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -132,7 +132,7 @@ export function CBADashboard({ className }: CBADashboardProps) {
                             <Building2 className="h-3 w-3" />
                             {cba.employerName}
                           </span>
-                          <span>•</span>
+                          <span>�</span>
                           <span>{cba.unionName}</span>
                         </div>
                       </div>
@@ -207,3 +207,4 @@ export function CBADashboard({ className }: CBADashboardProps) {
 }
 
 export default CBADashboard;
+

@@ -186,3 +186,4 @@ export function useHasCrossOrgAccess(): boolean {
   const { role } = useUserRole();
   return role === UserRole.ADMIN || role === UserRole.CONGRESS_STAFF || role === UserRole.FEDERATION_STAFF;
 }
+

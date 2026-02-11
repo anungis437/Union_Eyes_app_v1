@@ -1,54 +1,42 @@
-import { pgTable, text, timestamp, uuid, varchar, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, varchar, pgEnum, boolean } from "drizzle-orm/pg-core";
 import { organizations } from "../schema-organizations";
 import { users } from "./user-management-schema";
-import { sql } from "drizzle-orm";
 
 // Enums
-export const memberRoleEnum = pgEnum("member_role", ["member", "steward", "officer", "admin"]);
-export const memberStatusEnum = pgEnum("member_status", ["active", "inactive", "on-leave"]);
+export const memberCategoryEnum = pgEnum("member_category", [
+  "full_member",
+  "associate",
+  "honorary",
+  "retired",
+]);
 
 // Organization Members table
 export const organizationMembers = pgTable("organization_members", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: varchar("user_id", { length: 255 }).notNull().references(() => users.userId),
+  userId: text("user_id").notNull(), // Changed from varchar to text to match database
   organizationId: uuid("organization_id").notNull().references(() => organizations.id),
-  
-  // Basic Info
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
+  tenantId: uuid("tenant_id"),
   
   // Role & Status
-  role: memberRoleEnum("role").notNull().default("member"),
-  status: memberStatusEnum("status").notNull().default("active"),
-  
-  // Work Info
-  department: varchar("department", { length: 100 }),
-  position: varchar("position", { length: 200 }),
-  hireDate: timestamp("hire_date"),
+  role: text("role").notNull(),
+  status: text("status").notNull(),
   
   // Union Info
-  membershipNumber: varchar("membership_number", { length: 50 }),
-  seniority: text("seniority"), // Years/months calculated
-  unionJoinDate: timestamp("union_join_date"),
+  membershipNumber: text("membership_number"),
   
-  // Contact Preferences
-  preferredContactMethod: varchar("preferred_contact_method", { length: 20 }).default("email"),
-  
-  // Metadata
-  metadata: text("metadata"), // JSON string for additional flexible data
-  
-  // Search
-  searchVector: text("search_vector"), // Full-text search vector (tsvector in DB)
+  // Membership Details
+  isPrimary: boolean("is_primary"),
+  memberCategory: memberCategoryEnum("member_category"),
+  exemptFromPerCapita: boolean("exempt_from_per_capita"),
+  exemptionReason: text("exemption_reason"),
+  exemptionApprovedBy: varchar("exemption_approved_by", { length: 255 }),
+  exemptionApprovedAt: timestamp("exemption_approved_at", { withTimezone: true }),
   
   // Timestamps
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-  deletedAt: timestamp("deleted_at"),
+  joinedAt: timestamp("joined_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
 export type InsertOrganizationMember = typeof organizationMembers.$inferInsert;
 export type SelectOrganizationMember = typeof organizationMembers.$inferSelect;
+

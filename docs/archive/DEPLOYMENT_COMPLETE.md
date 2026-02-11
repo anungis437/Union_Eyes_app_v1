@@ -139,7 +139,7 @@ Successfully deployed UnionEyes claims management application to Azure with:
 5. `tenant_usage` - Usage tracking per tenant
 6. `tenants` - Organization/tenant data
 7. `oauth_providers` - OAuth integrations
-8. `tenant_users` - User-tenant relationships
+8. `organization_users` - User-tenant relationships
 9. `user_sessions` - Session management
 10. `users` - Core user accounts
 11. `audit_logs` - Security and compliance logs

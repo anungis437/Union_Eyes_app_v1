@@ -305,3 +305,4 @@ export const signatureVerificationRelations = relations(signatureVerification, (
     references: [signers.id],
   }),
 }));
+

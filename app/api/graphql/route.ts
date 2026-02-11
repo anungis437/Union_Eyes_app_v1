@@ -28,3 +28,4 @@ const yoga = createYoga({
 
 export const GET = withApiAuth(async (request, context) => yoga.fetch(request, context));
 export const POST = withApiAuth(async (request, context) => yoga.fetch(request, context));
+

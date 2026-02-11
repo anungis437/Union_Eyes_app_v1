@@ -275,3 +275,4 @@ export const conflictAuditLog = pgTable("conflict_audit_log", {
   
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+

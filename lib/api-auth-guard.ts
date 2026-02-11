@@ -533,7 +533,7 @@ export async function isSystemAdmin(userIdOverride?: string): Promise<boolean> {
 
     return user?.isSystemAdmin ?? false;
   } catch (error) {
-    console.error('[Auth] Error checking system admin status:', error);
+    logger.error('[Auth] Error checking system admin status', error instanceof Error ? error : new Error(String(error)), { userId });
     return false;
   }
 }
@@ -644,7 +644,7 @@ export async function hasRoleInOrganization(
     
     return userRoleLevel >= requiredRoleLevel;
   } catch (error) {
-    console.error('[Auth] Error checking organization role:', error);
+    logger.error('[Auth] Error checking organization role', error instanceof Error ? error : new Error(String(error)), { userId, organizationId });
     return false;
   }
 }
@@ -663,20 +663,20 @@ export async function getUserRole(
   organizationId: string
 ): Promise<UserRole | null> {
   try {
-    const { tenantUsers } = await import('@/db/schema/user-management-schema');
+    const { organizationUsers } = await import('@/db/schema/user-management-schema');
     const { tenants } = await import('@/db/schema/tenant-management-schema');
     const { and } = await import('drizzle-orm');
     
     // Join with tenants table to support both slug and UUID lookup
     const [result] = await db
-      .select({ role: tenantUsers.role })
-      .from(tenantUsers)
+      .select({ role: organizationUsers.role })
+      .from(organizationUsers)
       .innerJoin(
         tenants,
-        eq(tenants.tenantId, tenantUsers.tenantId)
+        eq(tenants.tenantId, organizationUsers.organizationId)
       )
       .where(and(
-        eq(tenantUsers.userId, userId),
+        eq(organizationUsers.userId, userId),
         // Check both tenant_slug and tenant_id to support both formats
         organizationId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
           ? eq(tenants.tenantId, organizationId)
@@ -730,7 +730,15 @@ export function withRoleAuth<TContext extends Record<string, any> = { params?: R
   handler: ApiRouteHandler<TContext>
 ): ApiRouteHandler<TContext> {
   return withApiAuth(async (request: NextRequest, context: TContext) => {
-    const user = await getCurrentUser();
+    let user: AuthUser | null = null;
+    try {
+      user = await getCurrentUser();
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Authentication required' },
+        { status: 401 }
+      );
+    }
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized: Authentication required' },
@@ -1573,3 +1581,4 @@ export async function requireAuth(): Promise<AuthUser> {
   
   return user;
 }
+

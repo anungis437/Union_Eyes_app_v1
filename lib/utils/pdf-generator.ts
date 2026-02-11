@@ -387,3 +387,4 @@ export function addFooter(
 }
 
 export default generatePDF;
+

@@ -320,3 +320,4 @@ export function PoliticalCampaignDashboard({ organizationId }: PoliticalCampaign
     </div>
   );
 }
+

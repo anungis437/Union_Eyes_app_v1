@@ -430,6 +430,17 @@ export const RATE_LIMITS = {
   },
 
   /**
+   * Onboarding operations (federation discovery, clause suggestions, benchmarks)
+   * Moderate limit to prevent abuse while allowing legitimate onboarding workflow
+   * 30 requests per hour per user
+   */
+  ONBOARDING: {
+    limit: 30,
+    window: 3600, // 1 hour
+    identifier: 'onboarding',
+  },
+
+  /**
    * Member operations (profile updates, role changes)
    * Moderate limit
    * 50 operations per hour per user
@@ -797,3 +808,4 @@ export function createRateLimitHeaders(result: RateLimitResult): Record<string, 
     'Retry-After': result.resetIn.toString(),
   };
 }
+

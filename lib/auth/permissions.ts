@@ -145,3 +145,4 @@ function mapOrganizationRoleToUserRole(role: string): UserRole {
  * Re-export permission system
  */
 export { UserRole, Permission, ROLE_PERMISSIONS };
+

@@ -9,7 +9,7 @@ export const transactionTypeEnum = pgEnum('transaction_type', ['charge', 'paymen
 
 export const duesTransactions = pgTable('dues_transactions', {
   id: uuid('id').defaultRandom().primaryKey(),
-  tenantId: uuid('tenant_id').notNull(),
+  organizationId: uuid('organization_id').notNull(),
   memberId: uuid('member_id').notNull(),
   assignmentId: uuid('assignment_id'),
   ruleId: uuid('rule_id'),
@@ -63,3 +63,4 @@ export const duesTransactions = pgTable('dues_transactions', {
 
 export type DuesTransaction = typeof duesTransactions.$inferSelect;
 export type NewDuesTransaction = typeof duesTransactions.$inferInsert;
+

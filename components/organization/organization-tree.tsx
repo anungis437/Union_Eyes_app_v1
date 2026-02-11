@@ -294,3 +294,4 @@ function TreeNode({ node, path, depth, maxDepth, onToggle, onSelect, selectedId,
     </div>
   );
 }
+

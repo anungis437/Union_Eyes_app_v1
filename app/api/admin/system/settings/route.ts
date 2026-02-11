@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { tenantUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/user-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
@@ -38,9 +38,9 @@ async function checkAdminRole(userId: string): Promise<boolean> {
   try {
     return withRLSContext(async (tx) => {
       const admin = await tx
-        .select({ role: tenantUsers.role })
-        .from(tenantUsers)
-        .where(eq(tenantUsers.userId, userId))
+        .select({ role: organizationUsers.role })
+        .from(organizationUsers)
+        .where(eq(organizationUsers.userId, userId))
         .limit(1);
       return admin.length > 0 && admin[0].role === "admin";
     });
@@ -234,4 +234,5 @@ try {
       throw error;
     }
 });
+
 
