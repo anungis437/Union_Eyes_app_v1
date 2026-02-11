@@ -60,8 +60,7 @@ export function CookieConsentBanner({ tenantId, userId }: CookieConsentBannerPro
         setPreferences(saved.preferences);
         applyConsent(saved.preferences);
       } catch (e) {
-        console.error("Failed to load cookie preferences", e);
-      }
+}
     }
   }, []);
 
@@ -149,8 +148,7 @@ export function CookieConsentBanner({ tenantId, userId }: CookieConsentBannerPro
         }),
       });
     } catch (error) {
-      console.error("Failed to save cookie consent to backend:", error);
-    }
+}
 
     applyConsent(prefs);
   };
@@ -415,8 +413,7 @@ export function useCookieConsent() {
         const { preferences: saved } = JSON.parse(consentData);
         setPreferences(saved);
       } catch (e) {
-        console.error("Failed to load cookie preferences", e);
-      }
+}
     }
   }, []);
 
@@ -431,8 +428,7 @@ export function useCookieConsent() {
         data.preferences = updated;
         localStorage.setItem("cookie_consent", JSON.stringify(data));
       } catch (e) {
-        console.error("Failed to update cookie preferences", e);
-      }
+}
     }
   };
 

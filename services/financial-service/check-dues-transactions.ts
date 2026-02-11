@@ -24,22 +24,16 @@ async function checkDuesTransactions() {
       AND table_name = 'dues_transactions'
       ORDER BY ordinal_position;
     `;
-    
-    console.log('dues_transactions columns:');
-    columns.forEach(col => {
-      console.log(`  ${col.column_name}: ${col.data_type}`);
-    });
+columns.forEach(col => {
+});
     
     // Check for amount-related columns
     const amountCols = columns.filter(c => c.column_name.includes('amount'));
-    console.log('\nAmount columns:');
-    amountCols.forEach(col => {
-      console.log(`  ✓ ${col.column_name}`);
-    });
+amountCols.forEach(col => {
+});
     
   } catch (error) {
-    console.error('Error:', error);
-  } finally {
+} finally {
     await sql.end();
   }
 }

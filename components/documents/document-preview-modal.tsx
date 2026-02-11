@@ -74,8 +74,7 @@ export function DocumentPreviewModal({
       const data = await response.json();
       setVersionHistory(data.versions || []);
     } catch (err) {
-      console.error('Failed to fetch version history:', err);
-      setVersionHistory([]);
+setVersionHistory([]);
     }
   }, []);
 
@@ -318,7 +317,7 @@ export function DocumentPreviewModal({
               <DialogDescription className="flex items-center gap-2 mt-1">
                 <Badge variant="outline">{document.file_type.toUpperCase()}</Badge>
                 <span>{formatFileSize(document.file_size)}</span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span>Version {document.version}</span>
               </DialogDescription>
             </div>
@@ -566,7 +565,7 @@ export function DocumentPreviewModal({
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <User className="h-3 w-3" />
                               <span>{version.uploaded_by_name}</span>
-                              <span>•</span>
+                              <span>â€¢</span>
               <span>{formatFileSize(version.file_size)}</span>
                             </div>
                             <Button variant="outline" size="sm" className="w-full">

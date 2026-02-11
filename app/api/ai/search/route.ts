@@ -47,8 +47,7 @@ export const POST = async (request: NextRequest) => {
         // 2. Get OpenAI API key from environment
         const openaiApiKey = process.env.OPENAI_API_KEY;
         if (!openaiApiKey) {
-          console.error('OPENAI_API_KEY not configured');
-          return NextResponse.json(
+return NextResponse.json(
             { error: 'AI service not configured' },
             { status: 503 }
           );
@@ -57,22 +56,54 @@ export const POST = async (request: NextRequest) => {
         // 3. Create Supabase client
         const supabase = await createClient();
 
-      // 4. Search for similar chunks using keyword search (temporary until pgvector enabled)
-      // TODO: Replace with vector search once pgvector enabled
-      // Note: For now, this returns empty results - it's a placeholder until pgvector is enabled
-      const { data: chunks, error: searchError } = await supabase
-        .from('ai_chunks')
-        .select('id, document_id, content, metadata')
-        .eq('organization_id', (organizationId || 'test-tenant-001') as any)
-        .textSearch('content', query, { type: 'websearch', config: 'english' })
-        .limit(maxSources * 2);
+        const openaiClient = createOpenAIClient({
+          apiKey: openaiApiKey,
+          baseURL: process.env.OPENAI_BASE_URL,
+        });
 
-      if (searchError) {
-        console.error('Search error:', searchError);
-        return NextResponse.json(
-          { error: 'Search failed', details: searchError.message },
-          { status: 500 }
-        );
+      // 4. Search for similar chunks using vector search when available, fallback to keyword search
+      const useVectorSearch = process.env.AI_VECTOR_SEARCH === 'true';
+      let chunks: any[] = [];
+      let usedVectorSearch = false;
+
+      if (useVectorSearch) {
+        try {
+          const embedding = await generateEmbedding(openaiClient, query, {
+            model: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-ada-002',
+          });
+
+          const { data: vectorChunks, error: vectorError } = await supabase.rpc('search_ai_chunks', {
+            query_embedding: embedding,
+            org_id: (organizationId || 'test-tenant-001') as any,
+            max_results: maxSources * 2,
+            similarity_threshold: 0.7,
+          });
+
+          if (vectorError) {
+} else if (vectorChunks) {
+            chunks = vectorChunks as any[];
+            usedVectorSearch = true;
+          }
+        } catch (error) {
+}
+      }
+
+      if (!usedVectorSearch) {
+        const { data: keywordChunks, error: searchError } = await supabase
+          .from('ai_chunks')
+          .select('id, document_id, content, metadata')
+          .eq('organization_id', (organizationId || 'test-tenant-001') as any)
+          .textSearch('content', query, { type: 'websearch', config: 'english' })
+          .limit(maxSources * 2);
+
+        if (searchError) {
+return NextResponse.json(
+            { error: 'Search failed', details: searchError.message },
+            { status: 500 }
+          );
+        }
+
+        chunks = keywordChunks || [];
       }
 
       // 7. Apply filters if provided
@@ -140,16 +171,16 @@ export const POST = async (request: NextRequest) => {
 
       // 9. Format chunks for prompt
       const retrievedChunks = filteredChunks.map((chunk: any, index: number) => ({
-        id: chunk.chunk_id,
+        id: chunk.chunk_id ?? chunk.id,
         documentId: chunk.document_id,
         content: chunk.content,
         metadata: chunk.metadata,
-        relevanceScore: 0.7, // Default relevance for keyword search
+        relevanceScore: usedVectorSearch ? (chunk.similarity ?? 0.7) : 0.7,
         index,
       }));
 
-      // 10. Calculate confidence (lower for keyword search vs vector search)
-      const confidence = 'medium' as const; // Conservative confidence for keyword search
+      // 10. Calculate confidence
+      const confidence = (usedVectorSearch ? 'high' : 'medium') as const;
 
       // 11. Build prompt using OpenAI
       if (!openaiApiKey) {
@@ -173,11 +204,6 @@ export const POST = async (request: NextRequest) => {
           confidence: 'low',
         } as AiAnswer);
       }
-
-      const openaiClient = createOpenAIClient({
-        apiKey: openaiApiKey,
-        baseURL: process.env.OPENAI_BASE_URL,
-      });
 
       const prompt = buildSearchPrompt(query, retrievedChunks, filters);
 
@@ -226,9 +252,7 @@ export const POST = async (request: NextRequest) => {
       const latency = Date.now() - startTime;
 
       // Log error
-      console.error('AI search error:', error);
-
-      // Validation error
+// Validation error
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           {
@@ -313,10 +337,8 @@ async function logAiQuery({
     });
 
     if (error) {
-      console.error('Failed to log AI query:', error);
-    }
+}
   } catch (err) {
-    console.error('Failed to log AI query:', err);
-  }
+}
 }
 

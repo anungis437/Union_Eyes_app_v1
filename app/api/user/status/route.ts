@@ -28,7 +28,6 @@ export async function GET() {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error("Error fetching user status:", error);
-    return NextResponse.json({ error: "Failed to fetch status" }, { status: 500 });
+return NextResponse.json({ error: "Failed to fetch status" }, { status: 500 });
   }
 } 

@@ -57,7 +57,6 @@ export function MemberAIPortal() {
     e.preventDefault();
     
     // In production, send to API endpoint
-    console.log('Feedback submitted:', feedbackForm);
     
     // Show success message
     setFeedbackSubmitted(true);

@@ -57,8 +57,7 @@ export default function ClaimsPage() {
             memberId="current-member-id"
             tenantId="current-tenant-id"
             onSubmit={async (data) => {
-              console.log("Claim submitted:", data);
-              // Handle claim submission
+// Handle claim submission
               setActiveTab("list");
             }}
             onCancel={() => setActiveTab("list")}
@@ -89,7 +88,7 @@ export default function ClaimsPage() {
             createdAt: new Date(),
             updatedAt: new Date(),
           }}
-          onStatusChange={(status) => console.log("Status:", status)}
+          onStatusChange={(status) => undefined}
         />
       )}
     </div>

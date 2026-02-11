@@ -97,8 +97,7 @@ try {
             : arrearsCase.contactHistory;
         }
       } catch (parseError) {
-        console.error('Error parsing contact history:', parseError);
-        contactHistory = [];
+contactHistory = [];
       }
 
       // Create new contact entry

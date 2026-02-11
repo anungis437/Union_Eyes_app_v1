@@ -83,8 +83,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching polls:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch polls' },
       { status: 500 }
     );
@@ -150,8 +149,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating poll:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create poll' },
       { status: 500 }
     );

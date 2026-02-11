@@ -91,8 +91,7 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
       setCertifications(data.certifications);
       setStats(data.stats);
     } catch (error) {
-      console.error("Error fetching certifications:", error);
-      toast.error("Failed to load certifications");
+toast.error("Failed to load certifications");
     } finally {
       setLoading(false);
     }
@@ -107,8 +106,7 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
       const data = await response.json();
       setCourses(data.courses);
     } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
+}
   }, [organizationId]);
 
   useEffect(() => {
@@ -150,8 +148,7 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
       resetIssueForm();
       fetchCertifications();
     } catch (error) {
-      console.error("Error issuing certification:", error);
-      toast.error("Failed to issue certification");
+toast.error("Failed to issue certification");
     }
   };
 
@@ -174,8 +171,7 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
         toast.info(`Generating certificate for ${cert.firstName} ${cert.lastName}...`);
         successCount++;
       } catch (error) {
-        console.error("Error generating certificate:", error);
-        failCount++;
+failCount++;
       }
     }
 
@@ -192,9 +188,25 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
       return;
     }
 
-    // TODO: Implement renewal reminder email sending
-    toast.success(`Sent renewal reminders for ${selectedCertifications.size} certifications`);
-    setSelectedCertifications(new Set());
+    try {
+      const response = await fetch('/api/education/certifications/renewal-reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          certificationIds: Array.from(selectedCertifications),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send renewal reminders');
+      }
+
+      const data = await response.json();
+      toast.success(`Sent ${data.sent || selectedCertifications.size} renewal reminder emails`);
+      setSelectedCertifications(new Set());
+    } catch (error) {
+toast.error('Failed to send renewal reminders');
+    }
   };
 
   const handleRevokeCertification = async (certificationId: string) => {
@@ -212,8 +224,7 @@ export function CertificationManager({ organizationId }: CertificationManagerPro
       toast.success("Certification revoked successfully");
       fetchCertifications();
     } catch (error) {
-      console.error("Error revoking certification:", error);
-      toast.error("Failed to revoke certification");
+toast.error("Failed to revoke certification");
     }
   };
 

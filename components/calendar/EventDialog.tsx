@@ -130,8 +130,7 @@ export function EventDialog({
       await onSave(formData);
       onOpenChange(false);
     } catch (error) {
-      console.error('Error saving event:', error);
-      alert('Failed to save event');
+alert('Failed to save event');
     } finally {
       setLoading(false);
     }
@@ -146,8 +145,7 @@ export function EventDialog({
         await onDelete(event.id);
         onOpenChange(false);
       } catch (error) {
-        console.error('Error deleting event:', error);
-        alert('Failed to delete event');
+alert('Failed to delete event');
       } finally {
         setLoading(false);
       }
@@ -327,7 +325,7 @@ export function EventDialog({
                       onClick={() => handleRemoveAttendee(email)}
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      ×
+                      Ã—
                     </button>
                   </div>
                 ))}

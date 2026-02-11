@@ -67,8 +67,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       });
 
     } catch (error) {
-      console.error('Error fetching certificate:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch certificate', details: (error as Error).message },
         { status: 500 }
       );
@@ -121,8 +120,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       });
 
     } catch (error) {
-      console.error('Error revoking certificate:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to revoke certificate', details: (error as Error).message },
         { status: 500 }
       );

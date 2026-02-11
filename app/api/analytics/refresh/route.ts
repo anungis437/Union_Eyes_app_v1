@@ -62,8 +62,7 @@ async function postHandler(req: NextRequest, context) {
       totalDurationMs: duration,
     });
   } catch (error) {
-    console.error('Refresh views error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to refresh analytics views' },
       { status: 500 }
     );
@@ -92,8 +91,7 @@ async function getHandler(req: NextRequest, context) {
       })),
     });
   } catch (error) {
-    console.error('Get view refresh stats error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch view refresh stats' },
       { status: 500 }
     );

@@ -9,9 +9,6 @@
  * Version: 1.0.0
  * Created: December 6, 2025
  */
-// TODO: Migrate to withApiAuth wrapper pattern for consistency
-// Original pattern used getCurrentUser() with manual auth checks
-
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -22,7 +19,7 @@ import {
   profiles 
 } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 
 const addSubscribersSchema = z.object({
   profileIds: z.array(z.string()).min(1, 'At least one profile ID required'),
@@ -32,17 +29,16 @@ const removeSubscribersSchema = z.object({
   subscriberIds: z.array(z.string()).min(1, 'At least one subscriber ID required'),
 });
 
-export async function GET(
+export const GET = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     // Verify list exists and user has access
@@ -52,7 +48,7 @@ export async function GET(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.organizationId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, organizationId)
         )
       );
 
@@ -77,25 +73,23 @@ export async function GET(
 
     return NextResponse.json({ subscribers });
   } catch (error) {
-    console.error('Error fetching subscribers:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch subscribers' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(
+export const POST = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -108,7 +102,7 @@ export async function POST(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.organizationId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, organizationId)
         )
       );
 
@@ -154,26 +148,23 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    console.error('Error adding subscribers:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to add subscribers' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -196,11 +187,9 @@ export async function DELETE(
         { status: 400 }
       );
     }
-
-    console.error('Error removing subscribers:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to remove subscribers' },
       { status: 500 }
     );
   }
-}
+});

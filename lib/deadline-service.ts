@@ -333,12 +333,12 @@ export async function markDeadlineComplete(
   completedBy: string,
   notes?: string
 ): Promise<void> {
-  console.log(`Completing deadline ${deadlineId}`);
+  logger.info(`Completing deadline ${deadlineId}`);
   
   await completeDeadline(deadlineId, completedBy, notes);
   
   // Auto-complete related alerts
-  console.log('Related alerts marked as resolved');
+  logger.info("Related alerts marked as resolved");
 }
 
 /**
@@ -349,7 +349,7 @@ export async function autoCompleteClaimDeadlines(
   completedBy: string,
   claimStatus: string
 ): Promise<void> {
-  console.log(`Auto-completing deadlines for claim ${claimId} (status: ${claimStatus})`);
+  logger.info(`Auto-completing deadlines for claim ${claimId} (status: ${claimStatus})`);
   
   const deadlines = await getPendingClaimDeadlines(claimId);
   
@@ -484,7 +484,7 @@ export function getDeadlineStatus(deadline: ClaimDeadline): {
  * Main deadline monitoring job - run every 5 minutes
  */
 export async function runDeadlineMonitoringJob(tenantId: string): Promise<void> {
-  console.log(`\n=== Deadline Monitoring Job (${new Date().toISOString()}) ===`);
+  logger.info(`=== Deadline Monitoring Job (${new Date().toISOString()}) ===`);
   
   try {
     // Update statuses
@@ -493,9 +493,9 @@ export async function runDeadlineMonitoringJob(tenantId: string): Promise<void> 
     // Generate alerts
     const alertsGenerated = await generateDeadlineAlerts(tenantId);
     
-    console.log(`Job complete: ${markedOverdue} overdue, ${alertsGenerated} alerts`);
+     logger.info(`Job complete: ${markedOverdue} overdue, ${alertsGenerated} alerts`);
   } catch (error) {
-    console.error('Deadline monitoring job failed:', error);
+     logger.error("Deadline monitoring job failed", { error });
   }
 }
 
@@ -503,13 +503,13 @@ export async function runDeadlineMonitoringJob(tenantId: string): Promise<void> 
  * Escalation job - run every 15 minutes
  */
 export async function runEscalationJob(tenantId: string): Promise<void> {
-  console.log(`\n=== Escalation Job (${new Date().toISOString()}) ===`);
+  logger.info(`=== Escalation Job (${new Date().toISOString()}) ===`);
   
   try {
     const escalated = await escalateOverdueDeadlines(tenantId);
-    console.log(`Escalated ${escalated} deadlines`);
+    logger.info(`Escalated ${escalated} deadlines`);
   } catch (error) {
-    console.error('Escalation job failed:', error);
+    logger.error("Escalation job failed", { error });
   }
 }
 
@@ -517,14 +517,14 @@ export async function runEscalationJob(tenantId: string): Promise<void> {
  * Daily digest job - run at 8 AM daily
  */
 export async function runDailyDigestJob(tenantId: string): Promise<void> {
-  console.log(`\n=== Daily Digest Job (${new Date().toISOString()}) ===`);
+  logger.info(`=== Daily Digest Job (${new Date().toISOString()}) ===`);
   
   try {
     // Get all members who opted in for digests
     // Send digest to each
-    console.log('Daily digests would be sent');
+    logger.info("Daily digests would be sent");
   } catch (error) {
-    console.error('Daily digest job failed:', error);
+    logger.error("Daily digest job failed", { error });
   }
 }
 

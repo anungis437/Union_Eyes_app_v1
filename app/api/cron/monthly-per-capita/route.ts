@@ -20,30 +20,19 @@ export async function GET(request: NextRequest) {
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    console.log('[CRON] Starting monthly per-capita calculation...');
-
-    // Run monthly calculation
+// Run monthly calculation
     const result = await processMonthlyPerCapita();
 
     // Mark overdue remittances
     const overdueCount = await markOverdueRemittances();
-
-    console.log('[CRON] Monthly per-capita calculation complete');
-    console.log(`[CRON] Calculated: ${result.calculated} organizations`);
-    console.log(`[CRON] Saved: ${result.saved} remittances`);
-    console.log(`[CRON] Errors: ${result.errors} organizations`);
-    console.log(`[CRON] Marked overdue: ${overdueCount} remittances`);
-
-    return NextResponse.json({
+return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
       calculation: result,
       overdueMarked: overdueCount,
     });
   } catch (error) {
-    console.error('[CRON] Error in monthly per-capita calculation:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         error: 'Cron job failed',
         message: error instanceof Error ? error.message : 'Unknown error',

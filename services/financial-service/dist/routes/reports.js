@@ -45,8 +45,7 @@ router.get('/dashboard', authorize(['admin', 'financial_admin', 'financial_viewe
         });
     }
     catch (error) {
-        console.error('Dashboard error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Failed to generate dashboard',
         });
@@ -78,8 +77,7 @@ router.get('/collection-metrics', authorize(['admin', 'financial_admin', 'financ
         });
     }
     catch (error) {
-        console.error('Collection metrics error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Failed to calculate collection metrics',
         });
@@ -99,8 +97,7 @@ router.get('/arrears-statistics', authorize(['admin', 'financial_admin', 'financ
         });
     }
     catch (error) {
-        console.error('Arrears statistics error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Failed to calculate arrears statistics',
         });
@@ -132,8 +129,7 @@ router.get('/revenue-analysis', authorize(['admin', 'financial_admin', 'financia
         });
     }
     catch (error) {
-        console.error('Revenue analysis error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Failed to analyze revenue',
         });
@@ -169,8 +165,7 @@ router.get('/member-payment-patterns', authorize(['admin', 'financial_admin', 'f
         });
     }
     catch (error) {
-        console.error('Member payment patterns error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Failed to analyze member payment patterns',
         });
@@ -244,8 +239,7 @@ router.get('/export', authorize(['admin', 'financial_admin']), async (req, res) 
         }
     }
     catch (error) {
-        console.error('Export error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Failed to export report',
         });

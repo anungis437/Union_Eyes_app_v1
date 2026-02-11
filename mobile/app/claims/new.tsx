@@ -128,7 +128,6 @@ export default function NewClaimScreen() {
         setAttachments([...attachments, newAttachment]);
       }
     } catch (error) {
-      console.error('Error picking document:', error);
       Alert.alert('Error', 'Failed to pick document');
     }
   };
@@ -159,7 +158,6 @@ export default function NewClaimScreen() {
         setAttachments([...attachments, newAttachment]);
       }
     } catch (error) {
-      console.error('Error taking photo:', error);
       Alert.alert('Error', 'Failed to take photo');
     }
   };

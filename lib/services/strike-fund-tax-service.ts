@@ -248,7 +248,7 @@ export async function processYearEndTaxSlips(
   .catch(() => []);
 
   if (payments.length === 0) {
-    console.warn(`No strike payments found for tax year ${taxYear}`);
+    logger.warn('No strike payments found for tax year', { taxYear });
   }
 
   const uniqueMembers = payments.filter(p => (p.totalAmount || 0) > 500);
@@ -270,7 +270,7 @@ export async function processYearEndTaxSlips(
       .catch(() => null);
 
     if (!member) {
-      console.error(`Member ${memberId} not found for tax slip generation`);
+      logger.error('Member not found for tax slip generation', { memberId, taxYear });
       continue;
     }
 
@@ -280,7 +280,7 @@ export async function processYearEndTaxSlips(
       // Store T4A in database (would need taxSlips table)
       t4aCount++;
     } catch (error) {
-      console.error(`Failed to generate T4A for ${memberId}:`, error);
+      logger.error('Failed to generate T4A', { error, memberId, taxYear });
     }
 
     // Generate RL-1 for Quebec members
@@ -290,7 +290,7 @@ export async function processYearEndTaxSlips(
         // Store RL-1 in database
         rl1Count++;
       } catch (error) {
-        console.error(`Failed to generate RL-1 for ${memberId}:`, error);
+        logger.error('Failed to generate RL-1', { error, memberId, taxYear });
       }
     }
   }

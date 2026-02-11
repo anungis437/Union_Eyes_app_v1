@@ -81,8 +81,7 @@ export class ComplianceReportingService {
             return { success: true, data: report };
         }
         catch (error) {
-            console.error('Failed to generate SOC2 report:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -427,8 +426,7 @@ export class ComplianceReportingService {
             return { success: true, data: report };
         }
         catch (error) {
-            console.error('Failed to generate GDPR report:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -564,8 +562,7 @@ export class ComplianceReportingService {
             return { success: true, data: report };
         }
         catch (error) {
-            console.error('Failed to generate HIPAA report:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -575,19 +572,19 @@ export class ComplianceReportingService {
         const findings = [];
         let controlsImplemented = 0;
         const controlsRequired = 5;
-        // Access control (§164.312(a)(1))
+        // Access control (Â§164.312(a)(1))
         const accessControl = logs.filter(l => l.action_type.includes('rbac.'));
         if (accessControl.length > 0)
             controlsImplemented++;
-        // Audit controls (§164.312(b))
+        // Audit controls (Â§164.312(b))
         controlsImplemented++; // We have audit logging
-        // Integrity (§164.312(c)(1))
+        // Integrity (Â§164.312(c)(1))
         controlsImplemented++;
-        // Person or entity authentication (§164.312(d))
+        // Person or entity authentication (Â§164.312(d))
         const authEvents = logs.filter(l => l.action_type.includes('auth.'));
         if (authEvents.length > 0)
             controlsImplemented++;
-        // Transmission security (§164.312(e)(1))
+        // Transmission security (Â§164.312(e)(1))
         controlsImplemented++;
         return {
             compliant: controlsImplemented >= 5,
@@ -640,8 +637,7 @@ export class ComplianceReportingService {
             return { success: true, data: report };
         }
         catch (error) {
-            console.error('Failed to generate user activity report:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

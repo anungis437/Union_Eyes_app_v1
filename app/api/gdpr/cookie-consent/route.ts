@@ -48,8 +48,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json(consent);
   } catch (error) {
-    console.error("Cookie consent error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to save cookie consent" },
       { status: 500 }
     );
@@ -79,8 +78,7 @@ export const GET = async (request: NextRequest) => {
 
     return NextResponse.json(consent);
   } catch (error) {
-    console.error("Get cookie consent error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to retrieve cookie consent" },
       { status: 500 }
     );

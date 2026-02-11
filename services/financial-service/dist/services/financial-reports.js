@@ -13,8 +13,7 @@ const drizzle_orm_1 = require("drizzle-orm");
 async function getCollectionMetrics(tenantId, dateRange) {
     try {
         const { startDate, endDate } = dateRange;
-        console.log('[getCollectionMetrics] Starting with params:', { tenantId, startDate, endDate });
-        // Total dues charged in period
+// Total dues charged in period
         const chargedResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT 
         COALESCE(SUM(amount), 0) as total,
@@ -79,9 +78,7 @@ async function getCollectionMetrics(tenantId, dateRange) {
         };
     }
     catch (error) {
-        console.error('[getCollectionMetrics] Error:', error);
-        console.error('[getCollectionMetrics] Stack:', error instanceof Error ? error.stack : 'No stack');
-        throw error;
+throw error;
     }
 }
 /**
@@ -89,8 +86,7 @@ async function getCollectionMetrics(tenantId, dateRange) {
  */
 async function getArrearsStatistics(tenantId) {
     try {
-        console.log('[getArrearsStatistics] Starting with params:', { tenantId });
-        // Total cases and amount
+// Total cases and amount
         const totalResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT 
         COUNT(*) as count,
@@ -164,9 +160,7 @@ async function getArrearsStatistics(tenantId) {
         };
     }
     catch (error) {
-        console.error('[getArrearsStatistics] Error:', error);
-        console.error('[getArrearsStatistics] Stack:', error instanceof Error ? error.stack : 'No stack');
-        throw error;
+throw error;
     }
 }
 /**
@@ -175,8 +169,7 @@ async function getArrearsStatistics(tenantId) {
 async function getRevenueAnalysis(tenantId, dateRange) {
     try {
         const { startDate, endDate } = dateRange;
-        console.log('[getRevenueAnalysis] Starting with params:', { tenantId, startDate, endDate });
-        // Total revenue from payments
+// Total revenue from payments
         const revenueResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT COALESCE(SUM(amount), 0) as total
       FROM dues_transactions
@@ -237,9 +230,7 @@ async function getRevenueAnalysis(tenantId, dateRange) {
         };
     }
     catch (error) {
-        console.error('[getRevenueAnalysis] Error:', error);
-        console.error('[getRevenueAnalysis] Stack:', error instanceof Error ? error.stack : 'No stack');
-        throw error;
+throw error;
     }
 }
 /**
@@ -248,8 +239,7 @@ async function getRevenueAnalysis(tenantId, dateRange) {
 async function getMemberPaymentPatterns(tenantId, dateRange, limit = 100) {
     try {
         const { startDate, endDate } = dateRange;
-        console.log('[getMemberPaymentPatterns] Starting with params:', { tenantId, startDate, endDate, limit });
-        const patternsResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
+const patternsResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT 
         member_id,
         COUNT(*) as total_transactions,
@@ -291,9 +281,7 @@ async function getMemberPaymentPatterns(tenantId, dateRange, limit = 100) {
         });
     }
     catch (error) {
-        console.error('[getMemberPaymentPatterns] Error:', error);
-        console.error('[getMemberPaymentPatterns] Stack:', error instanceof Error ? error.stack : 'No stack');
-        throw error;
+throw error;
     }
 }
 /**
@@ -301,8 +289,7 @@ async function getMemberPaymentPatterns(tenantId, dateRange, limit = 100) {
  */
 async function getFinancialDashboard(tenantId, dateRange) {
     try {
-        console.log('[getFinancialDashboard] Starting with params:', { tenantId, dateRange });
-        const [collectionMetrics, arrearsStats, revenueAnalysis, topPayers] = await Promise.all([
+const [collectionMetrics, arrearsStats, revenueAnalysis, topPayers] = await Promise.all([
             getCollectionMetrics(tenantId, dateRange),
             getArrearsStatistics(tenantId),
             getRevenueAnalysis(tenantId, dateRange),
@@ -317,9 +304,7 @@ async function getFinancialDashboard(tenantId, dateRange) {
         };
     }
     catch (error) {
-        console.error('[getFinancialDashboard] Error:', error);
-        console.error('[getFinancialDashboard] Stack:', error instanceof Error ? error.stack : 'No stack');
-        throw error;
+throw error;
     }
 }
 //# sourceMappingURL=financial-reports.js.map

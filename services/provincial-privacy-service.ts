@@ -6,8 +6,10 @@ import {
   provincialDataHandling,
   dataSubjectAccessRequests,
 } from "@/db/schema/provincial-privacy-schema";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, isNull } from "drizzle-orm";
+import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { NotificationService } from "@/lib/services/notification-service";
+import { logger } from "@/lib/logger";
 
 /**
  * Provincial Privacy Service
@@ -436,7 +438,7 @@ export class ProvincialPrivacyService {
       .from(privacyBreaches)
       .where(
         and(
-          eq(privacyBreaches.usersNotifiedAt, null),
+            isNull(privacyBreaches.usersNotifiedAt),
           lte(privacyBreaches.notificationDeadline, in24Hours)
         )
       );
@@ -446,7 +448,7 @@ export class ProvincialPrivacyService {
    * Trigger urgent breach notification (internal - integrated with notification system)
    */
   private static async triggerUrgentBreachNotification(breachId: string) {
-    console.warn(`URGENT: Breach ${breachId} approaching 72-hour notification deadline`);
+    logger.warn('URGENT: Breach approaching 72-hour notification deadline', { breachId });
     
     try {
       // Get breach details
@@ -457,39 +459,51 @@ export class ProvincialPrivacyService {
         .limit(1);
       
       if (breach) {
+        const orgMember = await db
+          .select({ organizationId: organizationMembers.organizationId })
+          .from(organizationMembers)
+          .where(eq(organizationMembers.userId, breach.reportedBy))
+          .limit(1);
+
+        const organizationId = orgMember[0]?.organizationId;
+        if (!organizationId) {
+          logger.warn('No organization found for breach reporter', { breachId, reportedBy: breach.reportedBy });
+          return;
+        }
+
         const notificationService = new NotificationService();
         
         // Notify privacy officer/DPO
         await notificationService.send({
-          organizationId: breach.tenantId,
+          organizationId,
           recipientEmail: process.env.PRIVACY_OFFICER_EMAIL || process.env.DPO_EMAIL || process.env.ADMIN_EMAIL || 'admin@unioneyes.app',
           type: 'email',
           priority: 'urgent',
           subject: '⚠️ URGENT: Privacy Breach Notification Deadline Approaching',
-          body: `URGENT: Privacy breach ${breachId} is approaching the 72-hour notification deadline.\n\nBreach Type: ${breach.breachType}\nSeverity: ${breach.severityLevel}\nDiscovered: ${breach.discoveredAt?.toLocaleString()}\nDeadline: ${breach.notificationDeadline?.toLocaleString()}\n\nImmediate action required to comply with notification requirements.`,
+          body: `URGENT: Privacy breach ${breachId} is approaching the 72-hour notification deadline.\n\nBreach Type: ${breach.breachType}\nSeverity: ${breach.severity}\nDiscovered: ${breach.discoveredAt?.toLocaleString()}\nDeadline: ${breach.notificationDeadline?.toLocaleString()}\n\nImmediate action required to comply with notification requirements.`,
           htmlBody: `
             <h2 style="color: red;">⚠️ URGENT: Privacy Breach Notification Deadline Approaching</h2>
             <p><strong>A privacy breach is approaching the 72-hour notification deadline.</strong></p>
             <ul>
               <li><strong>Breach ID:</strong> ${breachId}</li>
               <li><strong>Breach Type:</strong> ${breach.breachType}</li>
-              <li><strong>Severity:</strong> ${breach.severityLevel}</li>
+              <li><strong>Severity:</strong> ${breach.severity}</li>
               <li><strong>Discovered:</strong> ${breach.discoveredAt?.toLocaleString()}</li>
               <li><strong>Notification Deadline:</strong> ${breach.notificationDeadline?.toLocaleString()}</li>
-              <li><strong>Affected Records:</strong> ${breach.affectedRecords}</li>
+              <li><strong>Affected Records:</strong> ${breach.affectedUserCount}</li>
             </ul>
             <p><strong style="color: red;">IMMEDIATE ACTION REQUIRED</strong> to comply with notification requirements under provincial privacy legislation.</p>
           `,
           metadata: {
             breachId,
             breachType: breach.breachType,
-            severityLevel: breach.severityLevel,
+            severity: breach.severity,
             notificationDeadline: breach.notificationDeadline?.toISOString(),
           },
         });
       }
     } catch (error) {
-      console.error('Failed to send urgent breach notification:', error);
+      logger.error('Failed to send urgent breach notification', { error, breachId });
       // Log but don't throw - this is a background notification
     }
   }

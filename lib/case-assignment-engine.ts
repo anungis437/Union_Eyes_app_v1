@@ -183,8 +183,7 @@ export async function autoAssignGrievance(
       recommendations: qualifiedRecommendations.slice(0, 5),
     };
   } catch (error) {
-    console.error("Error auto-assigning grievance:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -276,8 +275,7 @@ export async function manuallyAssignGrievance(
       role,
     };
   } catch (error) {
-    console.error("Error manually assigning grievance:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -336,8 +334,7 @@ export async function reassignGrievance(
 
     return result;
   } catch (error) {
-    console.error("Error reassigning grievance:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -367,8 +364,7 @@ export async function getAssignmentRecommendations(
 
     return recommendations.slice(0, 10); // Top 10 recommendations
   } catch (error) {
-    console.error("Error getting assignment recommendations:", error);
-    return [];
+return [];
   }
 }
 
@@ -427,8 +423,7 @@ async function getEligibleOfficers(
 
     return profiles;
   } catch (error) {
-    console.error("Error getting eligible officers:", error);
-    return [];
+return [];
   }
 }
 
@@ -601,8 +596,9 @@ export async function getOfficerWorkload(
         where: and(
           eq(organizationMembers.userId, userId),
           eq(organizationMembers.organizationId, tenantId)
-      ),
-    });
+        ),
+      })
+    );
 
     const metadata: Record<string, any> = {};
     const maxCaseload = metadata.maxCaseload || 20;
@@ -620,7 +616,6 @@ export async function getOfficerWorkload(
       utilizationRate,
     };
   } catch (error) {
-    console.error("Error getting officer workload:", error);
     return null;
   }
 }
@@ -639,12 +634,13 @@ export async function getTenantWorkloadReport(
           eq(organizationMembers.organizationId, tenantId),
           or(
             eq(organizationMembers.role, "union_officer"),
-          eq(organizationMembers.role, "union_steward"),
-          eq(organizationMembers.role, "admin")
+            eq(organizationMembers.role, "union_steward"),
+            eq(organizationMembers.role, "admin")
+          ),
+          eq(organizationMembers.status, "active")
         ),
-        eq(organizationMembers.status, "active")
-      ),
-    });
+      })
+    );
 
     const workloadStats: WorkloadStats[] = [];
 
@@ -658,7 +654,6 @@ export async function getTenantWorkloadReport(
     // Sort by utilization rate (descending)
     return workloadStats.sort((a, b) => b.utilizationRate - a.utilizationRate);
   } catch (error) {
-    console.error("Error getting tenant workload report:", error);
     return [];
   }
 }
@@ -724,8 +719,7 @@ export async function suggestWorkloadBalancing(
 
     return suggestions;
   } catch (error) {
-    console.error("Error suggesting workload balancing:", error);
-    return [];
+return [];
   }
 }
 
@@ -794,8 +788,7 @@ export async function removeCollaborator(
 
     return { success: true };
   } catch (error) {
-    console.error("Error removing collaborator:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -839,8 +832,7 @@ export async function getGrievanceTeam(
 
     return enriched;
   } catch (error) {
-    console.error("Error getting grievance team:", error);
-    return [];
+return [];
   }
 }
 

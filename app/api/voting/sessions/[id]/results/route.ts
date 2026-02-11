@@ -148,8 +148,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
 
       return NextResponse.json(results);
     } catch (error) {
-      console.error('Error fetching voting results:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

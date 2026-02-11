@@ -32,8 +32,7 @@ export class SessionManagement {
             return (data || []).map(this.mapSessionData);
         }
         catch (error) {
-            console.error('Error fetching user sessions:', error);
-            return [];
+return [];
         }
     }
     /**
@@ -75,8 +74,7 @@ export class SessionManagement {
             };
         }
         catch (error) {
-            console.error('Error fetching current session:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -98,8 +96,7 @@ export class SessionManagement {
             return (data || []).map(this.mapSessionData);
         }
         catch (error) {
-            console.error('Error fetching all sessions:', error);
-            return [];
+return [];
         }
     }
     /**
@@ -126,8 +123,7 @@ export class SessionManagement {
             return true;
         }
         catch (error) {
-            console.error('Error terminating session:', error);
-            return false;
+return false;
         }
     }
     /**
@@ -154,8 +150,7 @@ export class SessionManagement {
             return data?.length || 0;
         }
         catch (error) {
-            console.error('Error terminating other sessions:', error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -179,8 +174,7 @@ export class SessionManagement {
             return data?.length || 0;
         }
         catch (error) {
-            console.error('Error terminating all user sessions:', error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -196,8 +190,7 @@ export class SessionManagement {
                 .eq('id', sessionId);
         }
         catch (error) {
-            console.error('Error updating session activity:', error);
-        }
+}
     }
     /**
      * Check concurrent session limit
@@ -217,8 +210,7 @@ export class SessionManagement {
             };
         }
         catch (error) {
-            console.error('Error checking concurrent session limit:', error);
-            return { allowed: true, activeCount: 0 };
+return { allowed: true, activeCount: 0 };
         }
     }
     /**
@@ -241,8 +233,7 @@ export class SessionManagement {
             return data?.length || 0;
         }
         catch (error) {
-            console.error('Error cleaning up expired sessions:', error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -267,8 +258,7 @@ export class SessionManagement {
             }));
         }
         catch (error) {
-            console.error('Error fetching session activity:', error);
-            return [];
+return [];
         }
     }
     /**

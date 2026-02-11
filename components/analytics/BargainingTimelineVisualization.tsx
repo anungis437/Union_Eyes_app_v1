@@ -117,8 +117,7 @@ export function BargainingTimelineVisualization({
 
       setEvents(filtered);
     } catch (err) {
-      console.error('Error fetching bargaining notes:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load timeline');
+setError(err instanceof Error ? err.message : 'Failed to load timeline');
     } finally {
       setLoading(false);
     }

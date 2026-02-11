@@ -62,12 +62,12 @@ const categoryColors: Record<string, string> = {
 };
 
 const deliveryMethodIcons: Record<string, string> = {
-  in_person: '🏢',
-  virtual_live: '💻',
-  self_paced_online: '📱',
-  hybrid: '🔄',
-  webinar: '🎥',
-  workshop: '🛠️',
+  in_person: 'ðŸ¢',
+  virtual_live: 'ðŸ’»',
+  self_paced_online: 'ðŸ“±',
+  hybrid: 'ðŸ”„',
+  webinar: 'ðŸŽ¥',
+  workshop: 'ðŸ› ï¸',
 };
 
 export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) {
@@ -94,8 +94,7 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
       const data = await response.json();
       setCourses(data.data || []);
     } catch (error) {
-      console.error('Error fetching courses:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId]);
@@ -169,8 +168,7 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
       alert('Successfully enrolled in course!');
       setSelectedCourse(null);
     } catch (error) {
-      console.error('Error enrolling:', error);
-      alert(error instanceof Error ? error.message : 'Failed to enroll');
+alert(error instanceof Error ? error.message : 'Failed to enroll');
     } finally {
       setEnrolling(false);
     }
@@ -313,7 +311,7 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Clock className="h-4 w-4 mr-2" />
                     {course.duration_hours} hours
-                    {course.duration_days && ` • ${course.duration_days} days`}
+                    {course.duration_days && ` â€¢ ${course.duration_days} days`}
                   </div>
                 )}
 
@@ -355,7 +353,7 @@ export function CourseCatalog({ organizationId, memberId }: CourseCatalogProps) 
                   <div>
                     <DialogTitle className="text-2xl">{selectedCourse.course_name}</DialogTitle>
                     <DialogDescription className="mt-2">
-                      {selectedCourse.course_code} • {selectedCourse.delivery_method.replace(/_/g, ' ')}
+                      {selectedCourse.course_code} â€¢ {selectedCourse.delivery_method.replace(/_/g, ' ')}
                     </DialogDescription>
                   </div>
                   <Badge className={categoryColors[selectedCourse.course_category] || 'bg-gray-600'}>

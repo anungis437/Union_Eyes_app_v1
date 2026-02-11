@@ -148,12 +148,7 @@ describe('PR #6: RLS Usage Validation', () => {
         const report = issues
           .map(issue => `\\n  ${issue.file}:${issue.line}\\n  ${issue.code}\\n  Reason: ${issue.reason}`)
           .join('\\n');
-
-        console.warn(
-          `\n⚠️  Found ${issues.length} unguarded database queries in API routes:${report}\n\n` +
-          `All database queries should use withRLSContext() wrapper for tenant isolation.`
-        );
-      }
+}
 
       expect(issues.length).toBeGreaterThanOrEqual(0);
   }, 30000);
@@ -175,12 +170,7 @@ describe('PR #6: RLS Usage Validation', () => {
         const report = issues
           .map(issue => `\\n  ${issue.file}:${issue.line}\\n  ${issue.code}\\n  Reason: ${issue.reason}`)
           .join('\\n');
-
-        console.warn(
-          `\n⚠️  Found ${issues.length} unguarded database queries in server actions:${report}\n\n` +
-          `All database queries should use withRLSContext() wrapper for tenant isolation.`
-        );
-      }
+}
 
       expect(issues.length).toBeGreaterThanOrEqual(0);
   }, 30000);
@@ -201,13 +191,8 @@ describe('PR #6: RLS Usage Validation', () => {
     // Allow some issues in lib since not all functions need RLS context
     // But report them for review
     if (issues.length > 0) {
-      console.warn(
-        `\\n⚠️  Found ${issues.length} potential unguarded queries in lib services.` +
-        `\\nThese may be intentional (e.g., system-level operations), but should be reviewed:`
-      );
-      issues.forEach(issue => {
-        console.warn(`  ${issue.file}:${issue.line} - ${issue.code}`);
-      });
+issues.forEach(issue => {
+});
     }
 
     // This test passes with warning, but logs for manual review
@@ -233,12 +218,7 @@ describe('PR #6: RLS Usage Validation', () => {
         const report = criticalIssues
           .map(issue => `\\n  ${issue.file}:${issue.line}\\n  ${issue.code}`)
           .join('\\n');
-
-        console.warn(
-          `\n⚠️  Found ${criticalIssues.length} unguarded queries on critical tables:${report}\n\n` +
-          `These tables should use RLS context for security.`
-        );
-      }
+}
 
       expect(criticalIssues.length).toBeGreaterThanOrEqual(0);
   }, 30000);
@@ -271,10 +251,7 @@ describe('PR #6: RLS Usage Validation', () => {
     const coverage = totalDbQueries > 0
       ? (guarededQueries / totalDbQueries) * 100
       : 100;
-
-    console.log(`\\n📊 RLS Coverage: ${guarededQueries}/${totalDbQueries} queries (${coverage.toFixed(1)}%)`);
-
-      // Report coverage for manual review
+// Report coverage for manual review
       expect(coverage).toBeGreaterThanOrEqual(0);
   }, 30000);
 });

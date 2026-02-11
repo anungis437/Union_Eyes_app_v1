@@ -187,8 +187,7 @@ export function MemberDataAnonymizer({
         setShowPreview(true);
       }
     } catch (error) {
-      console.error("Preview failed:", error);
-    }
+}
   };
 
   const handleAnonymize = async () => {
@@ -463,7 +462,7 @@ export function MemberDataAnonymizer({
                         By {job.createdBy.name} on{" "}
                         {job.createdAt.toLocaleDateString()}
                         {job.completedAt && (
-                          <span> • Completed {job.completedAt.toLocaleDateString()}</span>
+                          <span> â€¢ Completed {job.completedAt.toLocaleDateString()}</span>
                         )}
                       </div>
 

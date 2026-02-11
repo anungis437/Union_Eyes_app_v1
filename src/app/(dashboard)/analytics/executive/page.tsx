@@ -73,7 +73,6 @@ export default function ExecutiveDashboard() {
       setSummary(data.summary);
       setTrends(data.trends);
     } catch (error) {
-      console.error('Failed to fetch executive dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -91,7 +90,6 @@ export default function ExecutiveDashboard() {
       // Then reload dashboard data
       await fetchDashboardData();
     } catch (error) {
-      console.error('Failed to refresh data:', error);
     } finally {
       setRefreshing(false);
     }
@@ -110,7 +108,6 @@ export default function ExecutiveDashboard() {
       const data = await response.json();
       alert(`Export job created: ${data.jobId}. Check /exports for status.`);
     } catch (error) {
-      console.error('Export failed:', error);
     }
   };
 

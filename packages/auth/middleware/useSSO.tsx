@@ -8,6 +8,7 @@
 import React, { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../unified-auth';
 import { SessionManager } from '../session-manager';
+import { logger } from '../src/utils/logger';
 
 // =========================================================================
 // TYPES
@@ -48,8 +49,12 @@ interface SSOEvent {
  *   useSSO({
  *     enabled: true,
  *     checkInterval: 30000, // Check every 30 seconds
- *     onSSOLogin: (userId) => console.log('User logged in via SSO:', userId),
- *     onSSOLogout: () => console.log('User logged out via SSO')
+ *     onSSOLogin: (userId) => {
+ *       // handle SSO login
+ *     },
+ *     onSSOLogout: () => {
+ *       // handle SSO logout
+ *     }
  *   });
  *   
  *   return <YourApp />;
@@ -74,7 +79,7 @@ export const useSSO = (config: SSOConfig = {}) => {
    */
   const log = useCallback((message: string, ...args: any[]) => {
     if (debug) {
-      console.log(`[SSO] ${message}`, ...args);
+      logger.debug(`[SSO] ${message}`, args);
     }
   }, [debug]);
 
@@ -86,7 +91,7 @@ export const useSSO = (config: SSOConfig = {}) => {
       localStorage.setItem('courtlens_sso_event', JSON.stringify(event));
       log('Broadcasted SSO event:', event.type);
     } catch (error) {
-      console.error('[SSO] Failed to broadcast event:', error);
+      logger.error('[SSO] Failed to broadcast event:', error);
     }
   }, [log]);
 
@@ -101,7 +106,7 @@ export const useSSO = (config: SSOConfig = {}) => {
       await refreshSession();
       onSSOLogin?.(userId);
     } catch (error) {
-      console.error('[SSO] Failed to refresh session on SSO login:', error);
+      logger.error('[SSO] Failed to refresh session on SSO login:', error);
     }
   }, [refreshSession, onSSOLogin, log]);
 
@@ -155,7 +160,7 @@ export const useSSO = (config: SSOConfig = {}) => {
           break;
       }
     } catch (error) {
-      console.error('[SSO] Error processing SSO event:', error);
+      logger.error('[SSO] Error processing SSO event:', error);
     }
   }, [user, handleSSOLogin, handleSSOLogout, refreshSession, log]);
 

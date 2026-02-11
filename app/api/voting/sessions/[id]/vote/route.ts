@@ -185,15 +185,13 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
           },
         }, { status: 201 });
       } catch (error) {
-        console.error('Cryptographic error during vote casting:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Vote submission failed - security configuration error' },
           { status: 500 }
         );
       }
     } catch (error) {
-      console.error('Error submitting vote:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

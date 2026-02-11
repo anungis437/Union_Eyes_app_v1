@@ -75,8 +75,7 @@ async function handler(req: NextRequest) {
     return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Error fetching financial trends:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch financial trends' },
       { status: 500 }
     );

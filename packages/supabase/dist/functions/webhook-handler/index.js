@@ -163,8 +163,7 @@ serve(async (req) => {
         });
     }
     catch (error) {
-        console.error('Webhook processing error:', error);
-        if (webhookEvent) {
+if (webhookEvent) {
             await logWebhookEvent(webhookEvent, 'error', { error: error.message });
             // Queue for retry if applicable
             if (webhookEvent.retryCount < WEBHOOK_CONFIG.retry.maxRetries) {
@@ -226,8 +225,7 @@ async function verifyWebhookSignature(payload, signature, provider) {
     }
     const secretKey = await getProviderSecret(provider.name);
     if (!secretKey) {
-        console.warn(`No secret key configured for provider: ${provider.name}`);
-        return false;
+return false;
     }
     try {
         switch (provider.verificationMethod) {
@@ -242,8 +240,7 @@ async function verifyWebhookSignature(payload, signature, provider) {
         }
     }
     catch (error) {
-        console.error('Signature verification error:', error);
-        return false;
+return false;
     }
 }
 function verifyHmacSha256(payload, signature, secret) {
@@ -312,8 +309,7 @@ async function processWebhookEvent(event) {
         };
     }
     catch (error) {
-        console.error(`Event processing failed for ${event.provider.name}:`, error);
-        return {
+return {
             success: false,
             eventId: event.id,
             processingTime: Date.now() - startTime,
@@ -354,8 +350,7 @@ async function processStripeEvent(event, actions) {
             });
             break;
         default:
-            console.log(`Unhandled Stripe event: ${type}`);
-    }
+}
 }
 async function processWestlawEvent(event, actions) {
     const { eventType, data } = event.payload;
@@ -377,8 +372,7 @@ async function processWestlawEvent(event, actions) {
             });
             break;
         default:
-            console.log(`Unhandled Westlaw event: ${eventType}`);
-    }
+}
 }
 async function processDocuSignEvent(event, actions) {
     const { event: eventType, data } = event.payload;
@@ -400,8 +394,7 @@ async function processDocuSignEvent(event, actions) {
             });
             break;
         default:
-            console.log(`Unhandled DocuSign event: ${eventType}`);
-    }
+}
 }
 // ============================================================================
 // HELPER FUNCTIONS
@@ -504,36 +497,27 @@ async function updatePaymentStatus(paymentId, status) {
 }
 async function processInvoicePayment(invoice) {
     // Process invoice payment logic
-    console.log('Processing invoice payment:', invoice.id);
 }
 async function updateSubscription(subscription) {
     // Update subscription logic
-    console.log('Updating subscription:', subscription.id);
 }
 async function updateCaseInformation(caseData) {
     // Update case information from Westlaw
-    console.log('Updating case information:', caseData);
 }
 async function processResearchResults(results) {
     // Process research results
-    console.log('Processing research results:', results);
 }
 async function processCompletedEnvelope(envelope) {
     // Process completed DocuSign envelope
-    console.log('Processing completed envelope:', envelope);
 }
 async function processDeclinedEnvelope(envelope) {
     // Process declined DocuSign envelope
-    console.log('Processing declined envelope:', envelope);
 }
 // Additional provider processors would be implemented here...
 async function processLexisNexisEvent(event, actions) {
-    console.log('Processing LexisNexis event:', event.eventType);
 }
 async function processPacerEvent(event, actions) {
-    console.log('Processing PACER event:', event.eventType);
 }
 async function processQuickBooksEvent(event, actions) {
-    console.log('Processing QuickBooks event:', event.eventType);
 }
 //# sourceMappingURL=index.js.map

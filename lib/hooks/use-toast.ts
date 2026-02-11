@@ -27,8 +27,7 @@ export function useToast() {
     }, 5000);
     
     // For now, just use console
-    console.log(`[Toast - ${variant}] ${title}${description ? `: ${description}` : ""}`);
-  };
+};
 
   return { toast, toasts };
 }

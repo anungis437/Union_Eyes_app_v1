@@ -76,7 +76,7 @@ Currently handles payment success for authenticated users only:
 ```typescript
 export async function handlePaymentSuccess(data: any) {
   const eventId = data.id || Date.now().toString();
-  console.log(`[Event ${eventId}] START: Processing payment success`);
+  logger.info(`[Event ${eventId}] START: Processing payment success`);
 
   try {
     // First check if this is a traditional flow (with clerkUserId)
@@ -94,11 +94,11 @@ export async function handlePaymentSuccess(data: any) {
     const token = data.metadata?.token;
     
     if (!email && !token) {
-      console.error(`[Event ${eventId}] Payment has no clerkUserId, email or token. Cannot process.`);
+      logger.error(`[Event ${eventId}] Payment has no clerkUserId, email or token. Cannot process.`);
       return;
     }
     
-    console.log(`[Event ${eventId}] Processing frictionless payment for email: ${email}`);
+    logger.info(`[Event ${eventId}] Processing frictionless payment for email: ${email}`);
     
     // Create a pending profile with payment details
     await createPendingProfile({
@@ -111,7 +111,7 @@ export async function handlePaymentSuccess(data: any) {
       // ... other payment details
     });
   } catch (error) {
-    console.error(`[Event ${eventId}] Error in payment processing:`, error);
+    logger.error(`[Event ${eventId}] Error in payment processing`, { error });
   }
 }
 

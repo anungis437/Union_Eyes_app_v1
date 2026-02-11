@@ -22,8 +22,7 @@ export const GET = async (request: NextRequest) => {
       // Redirect to Microsoft authorization page
       return NextResponse.redirect(authUrl);
     } catch (error) {
-      console.error('Microsoft auth initiation error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to initiate Microsoft Calendar authorization' },
         { status: 500 }
       );

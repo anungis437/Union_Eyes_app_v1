@@ -291,7 +291,6 @@ DATABASE_TYPE=azure-sql pnpm test
 ```typescript
 // Check connection
 const health = await checkDatabaseHealth();
-console.log(health);
 ```
 
 **Azure SQL**:

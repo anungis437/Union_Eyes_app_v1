@@ -74,8 +74,7 @@ describe('Clerk User ID Migration - Smoke Tests', () => {
         createdOrgId = created[0]?.id ?? null;
         testOrgId = createdOrgId;
       } catch (error) {
-        console.warn('  ⚠️  Unable to create test organization, org-dependent tests may be skipped');
-      }
+}
     }
   });
 

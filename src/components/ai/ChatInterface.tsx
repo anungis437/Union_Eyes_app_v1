@@ -153,7 +153,6 @@ export function ChatInterface({
         setSuggestedQuestions(suggestions);
       }
     } catch (err) {
-      console.error('Failed to fetch suggestions:', err);
     }
   };
 

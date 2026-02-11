@@ -48,9 +48,7 @@ export async function createTableBackup(
   const backupTableName = `${tableName}_${suffix}_${Date.now()}`;
 
   try {
-    console.log(`📦 Creating backup: ${tableName} → ${backupTableName}`);
-
-    // Create backup table with same structure
+// Create backup table with same structure
     await db.execute(sql.raw(`
       CREATE TABLE ${backupTableName} AS 
       SELECT * FROM ${tableName}
@@ -62,17 +60,13 @@ export async function createTableBackup(
     `));
 
     const rowCount = Number(countResult[0]?.count || 0);
-
-    console.log(`✅ Backup created: ${rowCount} rows`);
-
-    return {
+return {
       success: true,
       backupTableName,
       rowCount,
     };
   } catch (error) {
-    console.error(`❌ Failed to create backup for ${tableName}:`, error);
-    return {
+return {
       success: false,
       backupTableName: "",
       rowCount: 0,
@@ -97,10 +91,7 @@ export async function createAllBackups(): Promise<Map<string, BackupInfo>> {
     "grievances",
     "strike_votes",
   ];
-
-  console.log("\n📦 Creating backups for all tables...\n");
-
-  for (const tableName of tables) {
+for (const tableName of tables) {
     const backupTableName = `${tableName}_backup_${timestamp}`;
 
     try {
@@ -122,15 +113,10 @@ export async function createAllBackups(): Promise<Map<string, BackupInfo>> {
         createdAt: new Date(),
         schemaMatches: true,
       });
-
-      console.log(`✅ ${tableName}: ${rowCount} rows backed up`);
-    } catch (error) {
-      console.error(`❌ Failed to backup ${tableName}:`, error);
-    }
+} catch (error) {
+}
   }
-
-  console.log(`\n✅ Created ${backups.size} backups\n`);
-  return backups;
+return backups;
 }
 
 /**
@@ -175,8 +161,7 @@ export async function listBackups(): Promise<BackupInfo[]> {
 
     return backups;
   } catch (error) {
-    console.error("Error listing backups:", error);
-    return [];
+return [];
   }
 }
 
@@ -194,21 +179,16 @@ export async function cleanupBackups(olderThanDays: number = 7): Promise<number>
       const backupTime = backup.createdAt.getTime();
 
       if (backupTime < cutoffTime) {
-        console.log(`🗑️  Deleting old backup: ${backup.backupTableName}`);
-
-        await db.execute(sql.raw(`
+await db.execute(sql.raw(`
           DROP TABLE IF EXISTS ${backup.backupTableName}
         `));
 
         deletedCount++;
       }
     }
-
-    console.log(`✅ Deleted ${deletedCount} old backup tables`);
-    return deletedCount;
+return deletedCount;
   } catch (error) {
-    console.error("Error cleaning up backups:", error);
-    return 0;
+return 0;
   }
 }
 
@@ -233,9 +213,7 @@ export async function rollbackTable(
   };
 
   try {
-    console.log(`\n🔄 Rolling back table: ${tableName}`);
-
-    // Find most recent backup if not specified
+// Find most recent backup if not specified
     if (!backupTableName) {
       const backups = await listBackups();
       const tableBackups = backups.filter((b) => b.tableName === tableName);
@@ -250,10 +228,7 @@ export async function rollbackTable(
       );
       backupTableName = tableBackups[0].backupTableName;
     }
-
-    console.log(`   Using backup: ${backupTableName}`);
-
-    // Clear organization_id from current table
+// Clear organization_id from current table
     await db.execute(sql.raw(`
       UPDATE ${tableName}
       SET organization_id = NULL,
@@ -271,11 +246,7 @@ export async function rollbackTable(
     result.rowsRestored = Number(countResult[0]?.count || 0);
     result.status = "completed";
     result.duration = Date.now() - startTime;
-
-    console.log(`   ✅ Rolled back ${result.rowsRestored} rows`);
-    console.log(`   Duration: ${(result.duration / 1000).toFixed(2)}s`);
-
-    return result;
+return result;
   } catch (error) {
     result.status = "failed";
     result.duration = Date.now() - startTime;
@@ -283,9 +254,7 @@ export async function rollbackTable(
       row: {},
       error: error instanceof Error ? error.message : "Unknown error",
     });
-
-    console.error(`❌ Rollback failed for ${tableName}:`, error);
-    return result;
+return result;
   }
 }
 
@@ -306,10 +275,7 @@ export async function rollbackAllTables(): Promise<Map<string, RollbackResult>> 
     "claims",
     "profiles",
   ];
-
-  console.log("\n🔄 Rolling back all tables...\n");
-
-  for (const tableName of tables) {
+for (const tableName of tables) {
     const result = await rollbackTable(tableName);
     results.set(tableName, result);
   }
@@ -319,25 +285,14 @@ export async function rollbackAllTables(): Promise<Map<string, RollbackResult>> 
     (sum, r) => sum + r.rowsRestored,
     0
   );
-
-  console.log("\n" + "=".repeat(60));
-  console.log("📊 ROLLBACK SUMMARY");
-  console.log("=".repeat(60));
-  console.log(`Total duration: ${(totalDuration / 1000).toFixed(2)}s`);
-  console.log(`Total rows restored: ${totalRestored}`);
-  console.log(`Tables rolled back: ${results.size}`);
-  console.log("=".repeat(60) + "\n");
-
-  return results;
+return results;
 }
 
 /**
  * Rollback specific tenant's migration
  */
 export async function rollbackTenant(tenantId: string): Promise<boolean> {
-  console.log(`\n🔄 Rolling back tenant: ${tenantId}`);
-
-  const tables = [
+const tables = [
     "profiles",
     "claims",
     "documents",
@@ -371,18 +326,14 @@ export async function rollbackTenant(tenantId: string): Promise<boolean> {
       totalRestored += restored;
 
       if (restored > 0) {
-        console.log(`   ${tableName}: ${restored} rows restored`);
-      }
+}
     }
 
     // Update mapping status
     await updateMappingStatus(tenantId, "rolled_back");
-
-    console.log(`\n✅ Tenant rollback completed: ${totalRestored} records restored`);
-    return true;
+return true;
   } catch (error) {
-    console.error(`❌ Failed to rollback tenant ${tenantId}:`, error);
-    return false;
+return false;
   }
 }
 
@@ -433,8 +384,7 @@ export async function verifyRollback(tableName: string): Promise<{
       issues,
     };
   } catch (error) {
-    console.error(`Error verifying rollback for ${tableName}:`, error);
-    return {
+return {
       success: false,
       withOrgId: 0,
       withoutOrgId: 0,
@@ -469,20 +419,13 @@ export async function verifyAllRollbacks(): Promise<
     "grievances",
     "strike_votes",
   ];
-
-  console.log("\n🔍 Verifying rollback for all tables...\n");
-
-  for (const tableName of tables) {
+for (const tableName of tables) {
     const result = await verifyRollback(tableName);
     results.set(tableName, result);
 
-    const status = result.success ? "✅" : "❌";
-    console.log(`${status} ${tableName}:`);
-    console.log(`   With org_id: ${result.withOrgId}`);
-    console.log(`   Without org_id: ${result.withoutOrgId}`);
-
-    if (result.issues.length > 0) {
-      result.issues.forEach((issue) => console.log(`   ⚠️  ${issue}`));
+    const status = result.success ? "Ã¢Å“â€¦" : "Ã¢ÂÅ’";
+if (result.issues.length > 0) {
+      result.issues.forEach((issue) => undefined);
     }
   }
 
@@ -542,8 +485,7 @@ export async function compareWithBackup(
       details,
     };
   } catch (error) {
-    console.error(`Error comparing with backup:`, error);
-    return {
+return {
       matches: false,
       differences: 1,
       details: [error instanceof Error ? error.message : "Unknown error"],
@@ -563,9 +505,7 @@ export async function emergencyRollback(): Promise<{
   tablesRolledBack: number;
   errors: string[];
 }> {
-  console.log("\n🚨 EMERGENCY ROLLBACK INITIATED\n");
-
-  const errors: string[] = [];
+const errors: string[] = [];
   let tablesRolledBack = 0;
 
   try {
@@ -587,19 +527,13 @@ export async function emergencyRollback(): Promise<{
           updated_at = NOW()
       WHERE migration_status IN ('in_progress', 'failed')
     `));
-
-    console.log("\n✅ Emergency rollback completed");
-    console.log(`   Tables rolled back: ${tablesRolledBack}`);
-    console.log(`   Errors: ${errors.length}`);
-
-    return {
+return {
       success: errors.length === 0,
       tablesRolledBack,
       errors,
     };
   } catch (error) {
-    console.error("\n❌ Emergency rollback failed:", error);
-    return {
+return {
       success: false,
       tablesRolledBack,
       errors: [error instanceof Error ? error.message : "Unknown error"],

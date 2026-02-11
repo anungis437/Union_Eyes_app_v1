@@ -75,7 +75,6 @@ export function AiSearchPanel({ onSearchComplete }: AiSearchPanelProps) {
         onSearchComplete(data);
       }
     } catch (err) {
-      console.error('Search error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
@@ -236,7 +235,6 @@ function AiAnswerCard({ answer, queryId }: AiAnswerCardProps) {
 
   const handleFeedback = async (rating: 'good' | 'bad') => {
     if (!queryId) {
-      console.warn('Cannot submit feedback without query ID');
       return;
     }
 
@@ -254,7 +252,6 @@ function AiAnswerCard({ answer, queryId }: AiAnswerCardProps) {
 
       setFeedbackSubmitted(true);
     } catch (err) {
-      console.error('Failed to submit feedback:', err);
     }
   };
 

@@ -74,8 +74,7 @@ export function BulkOperations({
       setShowStatusDialog(false);
       setNewStatus("");
     } catch (err) {
-      console.error("Error updating status:", err);
-      alert("Failed to update organization status");
+alert("Failed to update organization status");
     } finally {
       setProcessing(false);
     }
@@ -100,8 +99,7 @@ export function BulkOperations({
       setShowParentDialog(false);
       setNewParentId("");
     } catch (err) {
-      console.error("Error updating parent:", err);
-      alert("Failed to update organization parent");
+alert("Failed to update organization parent");
     } finally {
       setProcessing(false);
     }
@@ -124,8 +122,7 @@ export function BulkOperations({
       
       onSuccess();
     } catch (err) {
-      console.error("Error archiving:", err);
-      alert("Failed to archive organizations");
+alert("Failed to archive organizations");
     } finally {
       setProcessing(false);
     }
@@ -146,8 +143,7 @@ export function BulkOperations({
       
       onSuccess();
     } catch (err) {
-      console.error("Error activating:", err);
-      alert("Failed to activate organizations");
+alert("Failed to activate organizations");
     } finally {
       setProcessing(false);
     }
@@ -188,8 +184,7 @@ export function BulkOperations({
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Error exporting:", err);
-      alert("Failed to export organizations");
+alert("Failed to export organizations");
     } finally {
       setProcessing(false);
     }

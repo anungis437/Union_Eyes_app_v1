@@ -26,6 +26,9 @@ packages/**/node_modules/
 /build
 dist/
 **/dist/
+# Explicit dist outputs (services/packages)
+services/**/dist/
+packages/**/dist/
 
 # turbo
 .turbo/

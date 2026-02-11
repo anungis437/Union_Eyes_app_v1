@@ -1,7 +1,7 @@
 /**
  * CBA Precedents API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -143,8 +143,7 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
       });
       }, organizationId);
   } catch (error) {
-    console.error("Error searching precedents:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );

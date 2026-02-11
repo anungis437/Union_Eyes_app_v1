@@ -135,8 +135,7 @@ export async function uploadDocument(
 
     return { success: true, documentId: document.id };
   } catch (error) {
-    console.error("Error uploading document:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Upload failed",
     };
@@ -232,8 +231,7 @@ export async function uploadDocumentVersion(
 
     return { success: true, documentId: newVersion.id };
   } catch (error) {
-    console.error("Error uploading document version:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Upload failed",
     };
@@ -280,8 +278,7 @@ export async function getDocumentVersions(
       status: v.versionStatus || "draft",
     }));
   } catch (error) {
-    console.error("Error getting document versions:", error);
-    return [];
+return [];
   }
 }
 
@@ -329,8 +326,7 @@ export async function restoreDocumentVersion(
 
     return { success: true };
   } catch (error) {
-    console.error("Error restoring document version:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Restore failed",
     };
@@ -444,8 +440,7 @@ export async function searchDocuments(
     // Sort by relevance
     return results.sort((a, b) => b.relevance - a.relevance);
   } catch (error) {
-    console.error("Error searching documents:", error);
-    return [];
+return [];
   }
 }
 
@@ -549,8 +544,7 @@ export async function requestESignature(
       signatureRequestId: `sig_${document.id}_${Date.now()}`,
     };
   } catch (error) {
-    console.error("Error requesting e-signature:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Signature request failed",
     };
@@ -594,8 +588,7 @@ export async function markDocumentSigned(
 
     return { success: true };
   } catch (error) {
-    console.error("Error marking document as signed:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to mark as signed",
     };
@@ -630,8 +623,7 @@ export async function getSignatureStatus(
       envelopeId: signatureData?.envelope_id,
     };
   } catch (error) {
-    console.error("Error getting signature status:", error);
-    return null;
+return null;
   }
 }
 
@@ -682,8 +674,7 @@ export async function applyRetentionPolicy(
 
     return { archivedCount, deletedCount };
   } catch (error) {
-    console.error("Error applying retention policy:", error);
-    return { archivedCount: 0, deletedCount: 0 };
+return { archivedCount: 0, deletedCount: 0 };
   }
 }
 
@@ -707,8 +698,7 @@ export async function archiveDocument(
 
     return { success: true };
   } catch (error) {
-    console.error("Error archiving document:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Archive failed",
     };
@@ -755,8 +745,7 @@ export async function getGrievanceDocuments(
 
     return documents;
   } catch (error) {
-    console.error("Error getting grievance documents:", error);
-    return [];
+return [];
   }
 }
 
@@ -788,8 +777,7 @@ async function queueOCRProcessing(documentId: string, fileUrl: string): Promise<
       await updateDocumentOCR(documentId, ocrText);
     }
   } catch (error) {
-    console.error("OCR processing failed:", error);
-  }
+}
 }
 
 /**
@@ -810,8 +798,7 @@ export async function updateDocumentOCR(
 
     return { success: true };
   } catch (error) {
-    console.error("Error updating document OCR:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "OCR update failed",
     };
@@ -853,10 +840,8 @@ async function sendSignatureRequestNotification(
         requestId: request.id,
       },
     });
-    console.log(`Signature request notification sent to ${request.signerEmail}`);
-  } catch (error) {
-    console.error('Failed to send signature request notification:', error);
-    // Don't throw - notification failure shouldn't block the request
+} catch (error) {
+// Don't throw - notification failure shouldn't block the request
   }
 }
 

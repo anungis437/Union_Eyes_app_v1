@@ -84,12 +84,10 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   const loadUserOrganizations = useCallback(async (abortSignal?: AbortSignal) => {
     // Wait for auth to be loaded before attempting to fetch
     if (!authLoaded) {
-      console.log('[OrganizationContext] Auth not loaded yet, skipping fetch');
       return;
     }
 
     if (!userId) {
-      console.log('[OrganizationContext] No userId, user not authenticated');
       setIsLoading(false);
       return;
     }
@@ -97,8 +95,6 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
     try {
       setIsLoading(true);
       setError(null);
-
-      console.log('[OrganizationContext] Fetching organizations for user:', userId);
 
       // Get user's organization memberships with timeout
       const controller = new AbortController();
@@ -116,11 +112,10 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[OrganizationContext] API error:', response.status, errorText);
+        void errorText;
         
         // If 401, it means user session expired or not authenticated
         if (response.status === 401) {
-          console.log('[OrganizationContext] Unauthorized - user needs to sign in');
           setIsLoading(false);
           setError('Please sign in to continue');
           return;
@@ -130,11 +125,6 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       }
 
       const data = await response.json();
-      console.log('[OrganizationContext] Received data:', {
-        organizationsCount: data.organizations?.length || 0,
-        membershipsCount: data.memberships?.length || 0,
-      });
-
       setUserOrganizations(data.organizations || []);
       setUserMemberships(data.memberships || []);
 
@@ -183,18 +173,15 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       } else if (data.memberships && data.memberships.length > 0) {
         // User has memberships but no organizations found
         // This can happen if organization records don't exist in DB
-        console.error('[OrganizationContext] User has memberships but no organizations found');
-        console.error('[OrganizationContext] Membership slugs:', data.memberships.map((m: OrganizationMember) => m.organizationId));
+        void data;
         setError('Organization data not found. Please contact support.');
       }
     } catch (err) {
       // Don't show error if request was aborted (cleanup)
       if (err instanceof Error && err.name === 'AbortError') {
-        console.log('[OrganizationContext] Request aborted');
         return;
       }
       
-      console.error('[OrganizationContext] Error loading organizations:', err);
       setError(err instanceof Error ? err.message : 'Failed to load organizations');
     } finally {
       setIsLoading(false);
@@ -214,7 +201,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         setOrganizationPath(result.data || []);
       }
     } catch (err) {
-      console.error('Error loading organization path:', err);
+      void err;
     }
   }, []);
 
@@ -231,7 +218,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
         setOrganizationTree(result.data || []);
       }
     } catch (err) {
-      console.error('Error loading organization tree:', err);
+      void err;
     }
   }, []);
 
@@ -280,7 +267,6 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       // Reload the page to refresh all data with new organization context
       window.location.reload();
     } catch (err) {
-      console.error('Error switching organization:', err);
       setError(err instanceof Error ? err.message : 'Failed to switch organization');
       setIsLoading(false);
     }
@@ -311,12 +297,10 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
   // Set API cookie when organization changes
   useEffect(() => {
     if (organization && organizationId) {
-      console.log('[OrganizationContext] Setting API cookie for organization:', organization.slug);
       // Set both slug and ID cookies for backward compatibility
       document.cookie = `active-organization=${organization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`; // 30 days
       document.cookie = `selected_organization_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
       document.cookie = `selected_tenant_id=${organizationId}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year (for tenant middleware)
-      console.log('[OrganizationContext] Cookies set:', `active-organization=${organization.slug}, selected_organization_id=${organizationId}, selected_tenant_id=${organizationId}`);
     }
   }, [organization, organizationId]);
 

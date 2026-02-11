@@ -94,8 +94,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     return NextResponse.json({ recommendations });
     
   } catch (error) {
-    console.error('Recommendations error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to generate recommendations' },
       { status: 500 }
     );
@@ -198,8 +197,7 @@ async function generateStewardRecommendations(
     }
 
   } catch (error) {
-    console.error('Steward recommendations error:', error);
-  }
+}
 
   return recommendations;
 }
@@ -280,8 +278,7 @@ async function generateDeadlineRecommendations(
     }
 
   } catch (error) {
-    console.error('Deadline recommendations error:', error);
-  }
+}
 
   return recommendations;
 }
@@ -335,8 +332,7 @@ async function generateStrategyRecommendations(
     }
 
   } catch (error) {
-    console.error('Strategy recommendations error:', error);
-  }
+}
 
   return recommendations;
 }
@@ -388,8 +384,7 @@ async function generatePriorityRecommendations(
     }
 
   } catch (error) {
-    console.error('Priority recommendations error:', error);
-  }
+}
 
   return recommendations;
 }

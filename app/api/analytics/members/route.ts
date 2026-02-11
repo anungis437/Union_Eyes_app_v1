@@ -66,8 +66,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       },
     });
   } catch (error) {
-    console.error('Member analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch member analytics' },
       { status: 500 }
     );

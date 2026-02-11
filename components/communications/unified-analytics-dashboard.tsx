@@ -195,8 +195,7 @@ export default function UnifiedAnalyticsDashboard() {
       const result = await response.json();
       setData(result);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [dateRange, customStartDate, customEndDate]);
@@ -271,8 +270,7 @@ export default function UnifiedAnalyticsDashboard() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error exporting:', error);
-    }
+}
   };
 
   const handleExportPDF = async () => {
@@ -298,8 +296,7 @@ export default function UnifiedAnalyticsDashboard() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error exporting:', error);
-    }
+}
   };
 
   // =============================================

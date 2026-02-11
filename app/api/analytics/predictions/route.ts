@@ -91,8 +91,7 @@ export const POST = async (request: NextRequest) => {
         }
       });
     } catch (error) {
-      console.error('Error in predictions API:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -135,8 +134,7 @@ export const GET = async (request: NextRequest) => {
         predictions
       });
     } catch (error) {
-      console.error('Error fetching predictions:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

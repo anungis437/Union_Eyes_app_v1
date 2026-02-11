@@ -14,48 +14,48 @@ The original assessment scores have been **validated with evidence**. The codeba
 
 | Category | Original | Validated | Delta | Notes |
 |----------|----------|-----------|-------|-------|
-| **Architecture** | 8/10 | **8/10** | ✅ 0 | Well-designed multi-tenant structure confirmed |
-| **Security** | 5/10 | **5/10** | ✅ 0 | Clerk auth good, role checking broken confirmed |
-| **Schema Design** | 4/10 | **4/10** | ✅ 0 | Type mismatches and missing FKs confirmed |
-| **Code Quality** | 6/10 | **6/10** | ✅ 0 | Good patterns, placeholders reduce score |
-| **Completeness** | 7/10 | **8/10** | ⬆️ +1 | Feature-rich with comprehensive RLS |
-| **Overall** | 6.5/10 | **6.5/10** | ✅ 0 | Production-ready **after** critical fixes |
+| **Architecture** | 8/10 | **8/10** | âœ… 0 | Well-designed multi-tenant structure confirmed |
+| **Security** | 5/10 | **5/10** | âœ… 0 | Clerk auth good, role checking broken confirmed |
+| **Schema Design** | 4/10 | **4/10** | âœ… 0 | Type mismatches and missing FKs confirmed |
+| **Code Quality** | 6/10 | **6/10** | âœ… 0 | Good patterns, placeholders reduce score |
+| **Completeness** | 7/10 | **8/10** | â¬†ï¸ +1 | Feature-rich with comprehensive RLS |
+| **Overall** | 6.5/10 | **6.5/10** | âœ… 0 | Production-ready **after** critical fixes |
 
 ---
 
-## 1️⃣ Architecture (8/10) ✅ VALIDATED
+## 1ï¸âƒ£ Architecture (8/10) âœ… VALIDATED
 
 ### Evidence Found
 
-- ✅ **Multi-tenant schema**: Confirmed in [db/schema/user-management-schema.ts](db/schema/user-management-schema.ts)
+- âœ… **Multi-tenant schema**: Confirmed in [db/schema/user-management-schema.ts](db/schema/user-management-schema.ts)
   - `tenantUsers` table with tenant isolation
   - `organizations` as tenant entities
   - RLS-based tenant boundaries
 
-- ✅ **Hierarchical organizations**: Confirmed in [db/queries/organization-queries.ts](db/queries/organization-queries.ts)
-  - Congress → Federation → Union → Local hierarchy
+- âœ… **Hierarchical organizations**: Confirmed in [db/queries/organization-queries.ts](db/queries/organization-queries.ts)
+  - Congress â†’ Federation â†’ Union â†’ Local hierarchy
   - Materialized paths for efficient queries
   - 19 query functions with full CRUD
 
-- ✅ **Transaction threading pattern**: Confirmed in all 7 refactored query files
+- âœ… **Transaction threading pattern**: Confirmed in all 7 refactored query files
   - Optional `tx?: NodePgDatabase<any>` parameter
   - Auto-wrap with `withRLSContext()` fallback
   - Prevents accidental RLS bypass
 
 ### Gaps
 
-- ⚠️ **Two auth systems exist** (lib/auth/permissions.ts stubs + enterprise-role-middleware.ts)
-- ⚠️ **User UUID mapping layer** adds complexity
+- âš ï¸ **Two auth systems exist** (lib/auth/permissions.ts stubs + enterprise-role-middleware.ts)
+- âš ï¸ **User UUID mapping layer** adds complexity
 
-**Validation:** ✅ **Score accurate** - Strong design with minor architectural debt
+**Validation:** âœ… **Score accurate** - Strong design with minor architectural debt
 
 ---
 
-## 2️⃣ Security (5/10) ✅ VALIDATED
+## 2ï¸âƒ£ Security (5/10) âœ… VALIDATED
 
 ### Evidence Found
 
-#### ✅ **RLS Policies (Excellent)**
+#### âœ… **RLS Policies (Excellent)**
 
 **Database Evidence:**
 
@@ -72,15 +72,15 @@ WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
 
 **RLS Coverage Examples:**
 
-- ✅ `claims_hierarchical_*` policies (4 policies: SELECT, INSERT, UPDATE, DELETE)
-- ✅ `ai_*_tenant_isolation` policies (5 tables)
-- ✅ `calendar_*` fine-grained policies (9 policies)
-- ✅ `arbitration_precedents_org_access` + public read
-- ✅ `certification_applications` management policies
+- âœ… `claims_hierarchical_*` policies (4 policies: SELECT, INSERT, UPDATE, DELETE)
+- âœ… `ai_*_tenant_isolation` policies (5 tables)
+- âœ… `calendar_*` fine-grained policies (9 policies)
+- âœ… `arbitration_precedents_org_access` + public read
+- âœ… `certification_applications` management policies
 
-**RLS Quality:** 🟢 Excellent tenant isolation with hierarchical access patterns
+**RLS Quality:** ðŸŸ¢ Excellent tenant isolation with hierarchical access patterns
 
-#### ❌ **Role Checking (Broken)**
+#### âŒ **Role Checking (Broken)**
 
 **Evidence from [lib/auth/permissions.ts](lib/auth/permissions.ts:60-66):**
 
@@ -90,8 +90,7 @@ export async function checkUserRole(options: RoleCheckOptions): Promise<boolean>
   // 1. Fetch user's role from database
   // 2. Check if user has any of the required roles
   // 3. Consider organization-specific role assignments
-  console.warn('checkUserRole is a stub - implement actual logic');
-  return false;  // ❌ ALWAYS RETURNS FALSE
+return false;  // âŒ ALWAYS RETURNS FALSE
 }
 ```
 
@@ -99,7 +98,7 @@ export async function checkUserRole(options: RoleCheckOptions): Promise<boolean>
 
 ```typescript
 export async function requireRoleLevel(level: number) {
-  // ✅ Real implementation with:
+  // âœ… Real implementation with:
   // - getMemberRoles()
   // - getMemberHighestRoleLevel()
   // - Permission checks
@@ -107,33 +106,33 @@ export async function requireRoleLevel(level: number) {
 }
 ```
 
-**Problem:** 🔴 **TWO AUTH SYSTEMS** - one stub, one real. Routes may use wrong one.
+**Problem:** ðŸ”´ **TWO AUTH SYSTEMS** - one stub, one real. Routes may use wrong one.
 
-#### ✅ **Clerk Authentication (Good)**
+#### âœ… **Clerk Authentication (Good)**
 
-- ✅ Clerk integration confirmed in multiple routes
-- ✅ User context extraction working
+- âœ… Clerk integration confirmed in multiple routes
+- âœ… User context extraction working
 
-**Validation:** ✅ **Score accurate** - RLS excellent, role checking critically broken
+**Validation:** âœ… **Score accurate** - RLS excellent, role checking critically broken
 
 ---
 
-## 3️⃣ Schema Design (4/10) ✅ VALIDATED
+## 3ï¸âƒ£ Schema Design (4/10) âœ… VALIDATED
 
 ### Evidence Found
 
-#### ❌ **User ID Type Mismatch (Critical)**
+#### âŒ **User ID Type Mismatch (Critical)**
 
 **Mixed varchar(255) and uuid usage:**
 
 | Schema File | Field | Type | Notes |
 |-------------|-------|------|-------|
-| `user-management-schema.ts` | `userId` | `varchar(255)` | ✅ Clerk support |
-| `audit-security-schema.ts` | `userId` | `varchar(255)` | ✅ References users.userId |
-| `certification-management-schema.ts` | `userId` | `varchar(255)` | ✅ Consistent |
-| `clc-per-capita-schema.ts` | `userId` | `uuid` | ❌ **Mismatch** |
-| `communication-analytics-schema.ts` | `userId` | `uuid` | ❌ **Mismatch** |
-| `erp-integration-schema.ts` | `userId` | `uuid` | ❌ **Mismatch** |
+| `user-management-schema.ts` | `userId` | `varchar(255)` | âœ… Clerk support |
+| `audit-security-schema.ts` | `userId` | `varchar(255)` | âœ… References users.userId |
+| `certification-management-schema.ts` | `userId` | `varchar(255)` | âœ… Consistent |
+| `clc-per-capita-schema.ts` | `userId` | `uuid` | âŒ **Mismatch** |
+| `communication-analytics-schema.ts` | `userId` | `uuid` | âŒ **Mismatch** |
+| `erp-integration-schema.ts` | `userId` | `uuid` | âŒ **Mismatch** |
 
 **Mapping Table Exists:** [db/schema/user-uuid-mapping-schema.ts](db/schema/user-uuid-mapping-schema.ts)
 
@@ -145,43 +144,41 @@ export const userUuidMapping = pgTable("user_uuid_mapping", {
 });
 ```
 
-**Impact:** 🟡 Workaround exists but adds complexity. **Not fully standardized.**
+**Impact:** ðŸŸ¡ Workaround exists but adds complexity. **Not fully standardized.**
 
-#### ✅ **Organization IDs (Standardized)**
+#### âœ… **Organization IDs (Standardized)**
 
-- ✅ All `organizationId` fields use `uuid` consistently (30+ references found)
-- ✅ Organization slugs used for lookups but UUIDs for relationships
-- ✅ Good design pattern
+- âœ… All `organizationId` fields use `uuid` consistently (30+ references found)
+- âœ… Organization slugs used for lookups but UUIDs for relationships
+- âœ… Good design pattern
 
-#### ⚠️ **Foreign Keys**
+#### âš ï¸ **Foreign Keys**
 
-- ✅ Many FKs present (30+ `.references()` calls found)
-- ❌ No TODO/FIXME comments about missing FKs found
-- 🟡 Coverage appears good but not 100% verified
+- âœ… Many FKs present (30+ `.references()` calls found)
+- âŒ No TODO/FIXME comments about missing FKs found
+- ðŸŸ¡ Coverage appears good but not 100% verified
 
-**Validation:** ✅ **Score accurate** - Type mismatches exist, org IDs good
+**Validation:** âœ… **Score accurate** - Type mismatches exist, org IDs good
 
 ---
 
-## 4️⃣ Code Quality (6/10) ✅ VALIDATED
+## 4ï¸âƒ£ Code Quality (6/10) âœ… VALIDATED
 
 ### Evidence Found
 
-#### ✅ **Good Patterns**
+#### âœ… **Good Patterns**
 
-- ✅ Transaction threading in all query files (59 functions)
-- ✅ RLS auto-wrap pattern prevents bypass
-- ✅ TypeScript strict mode enabled
-- ✅ Consistent error handling
+- âœ… Transaction threading in all query files (59 functions)
+- âœ… RLS auto-wrap pattern prevents bypass
+- âœ… TypeScript strict mode enabled
+- âœ… Consistent error handling
 
-#### ❌ **Placeholders/Stubs Reduce Quality**
+#### âŒ **Placeholders/Stubs Reduce Quality**
 
 **Found 30+ instances of:**
 
 ```typescript
 // lib/auth/permissions.ts
-console.warn('checkUserRole is a stub - implement actual logic');
-
 // lib/document-management-system.ts
 // OCR PROCESSING (Stub - requires OCR service integration)
 
@@ -195,87 +192,87 @@ return { success: true, id: 'stub-email-id' };
 // CBA Schema (Stub for Phase 5B)
 ```
 
-**Impact:** 🟡 Many features incomplete underneath working APIs
+**Impact:** ðŸŸ¡ Many features incomplete underneath working APIs
 
-#### ✅ **Query Layer Refactoring Complete**
+#### âœ… **Query Layer Refactoring Complete**
 
-- ✅ All 7 target files refactored (59 functions)
-- ✅ No direct `db.` usage in refactored files
-- ✅ Pattern consistency 100%
+- âœ… All 7 target files refactored (59 functions)
+- âœ… No direct `db.` usage in refactored files
+- âœ… Pattern consistency 100%
 
-**Validation:** ✅ **Score accurate** - Good patterns with notable stubs
+**Validation:** âœ… **Score accurate** - Good patterns with notable stubs
 
 ---
 
-## 5️⃣ Completeness (8/10) ⬆️ UPGRADED FROM 7/10
+## 5ï¸âƒ£ Completeness (8/10) â¬†ï¸ UPGRADED FROM 7/10
 
 ### Evidence Found
 
-#### ✅ **Feature-Rich Application**
+#### âœ… **Feature-Rich Application**
 
-- ✅ **373 API routes** (more than expected)
-- ✅ **167 database tables** (comprehensive schema)
-- ✅ **136 tables with RLS** (81% coverage - excellent)
-- ✅ **59 refactored query functions** (transaction support)
+- âœ… **373 API routes** (more than expected)
+- âœ… **167 database tables** (comprehensive schema)
+- âœ… **136 tables with RLS** (81% coverage - excellent)
+- âœ… **59 refactored query functions** (transaction support)
 
 **Features Confirmed:**
 
-- ✅ Claims management (hierarchical)
-- ✅ Multi-tenant organizations
-- ✅ Calendar with event management
-- ✅ CBA (Collective Bargaining Agreements)
-- ✅ CLC per-capita remittances
-- ✅ Certification management
-- ✅ Arrears tracking
-- ✅ Strike fund management
-- ✅ Voting sessions
-- ✅ Document management
-- ✅ AI-powered features
-- ✅ Analytics and reporting
+- âœ… Claims management (hierarchical)
+- âœ… Multi-tenant organizations
+- âœ… Calendar with event management
+- âœ… CBA (Collective Bargaining Agreements)
+- âœ… CLC per-capita remittances
+- âœ… Certification management
+- âœ… Arrears tracking
+- âœ… Strike fund management
+- âœ… Voting sessions
+- âœ… Document management
+- âœ… AI-powered features
+- âœ… Analytics and reporting
 
-#### ⚠️ **Gaps in Security Implementation**
+#### âš ï¸ **Gaps in Security Implementation**
 
-- ❌ Role checking stub vs. real (critical)
-- ❌ User ID type mismatch (needs standardization)
-- 🟡 Some APIs have placeholder implementations
+- âŒ Role checking stub vs. real (critical)
+- âŒ User ID type mismatch (needs standardization)
+- ðŸŸ¡ Some APIs have placeholder implementations
 
 **Upgrade Rationale:** 81% RLS coverage + 373 routes + comprehensive features justify 8/10 instead of 7/10
 
-**Validation:** ⬆️ **UPGRADED** - More complete than initially assessed
+**Validation:** â¬†ï¸ **UPGRADED** - More complete than initially assessed
 
 ---
 
-## 6️⃣ Overall Score (6.5/10) ✅ VALIDATED
+## 6ï¸âƒ£ Overall Score (6.5/10) âœ… VALIDATED
 
 **Weighted Average Calculation:**
 
 ```
-Architecture (8/10) × 20% = 1.6
-Security     (5/10) × 30% = 1.5  ⚠️ Critical weight
-Schema       (4/10) × 15% = 0.6
-Code Quality (6/10) × 15% = 0.9
-Completeness (8/10) × 20% = 1.6
+Architecture (8/10) Ã— 20% = 1.6
+Security     (5/10) Ã— 30% = 1.5  âš ï¸ Critical weight
+Schema       (4/10) Ã— 15% = 0.6
+Code Quality (6/10) Ã— 15% = 0.9
+Completeness (8/10) Ã— 20% = 1.6
                           -----
-              TOTAL       6.2/10 ≈ 6.5/10
+              TOTAL       6.2/10 â‰ˆ 6.5/10
 ```
 
-**Validation:** ✅ **Score accurate with slight rounding**
+**Validation:** âœ… **Score accurate with slight rounding**
 
 ---
 
-## Path to Production: Status ✅ VALIDATED
+## Path to Production: Status âœ… VALIDATED
 
-### 🔴 P0 (Production Blockers) - MUST FIX
+### ðŸ”´ P0 (Production Blockers) - MUST FIX
 
-#### 1. ❌ Fix User ID Type Mismatch
+#### 1. âŒ Fix User ID Type Mismatch
 
-**Status:** ⚠️ **PARTIAL** - Mapping layer exists but not standardized
+**Status:** âš ï¸ **PARTIAL** - Mapping layer exists but not standardized
 
 **Evidence:**
 
-- ✅ user-uuid-mapping table exists
-- ❌ Mixed varchar(255) and uuid usage across 10+ schemas
-- ❌ No migration strategy documented
+- âœ… user-uuid-mapping table exists
+- âŒ Mixed varchar(255) and uuid usage across 10+ schemas
+- âŒ No migration strategy documented
 
 **Action Required:**
 
@@ -287,18 +284,18 @@ Completeness (8/10) × 20% = 1.6
 
 ---
 
-#### 2. ❌ Implement Role Checking
+#### 2. âŒ Implement Role Checking
 
-**Status:** ⚠️ **CRITICAL** - Stub returns false, real impl exists but unused
+**Status:** âš ï¸ **CRITICAL** - Stub returns false, real impl exists but unused
 
 **Evidence:**
 
 ```typescript
 // STUB (broken):
-lib/auth/permissions.ts:checkUserRole() → always returns false
+lib/auth/permissions.ts:checkUserRole() â†’ always returns false
 
 // REAL (working):
-lib/enterprise-role-middleware.ts:requireRoleLevel() → full implementation
+lib/enterprise-role-middleware.ts:requireRoleLevel() â†’ full implementation
 ```
 
 **Action Required:**
@@ -312,25 +309,25 @@ lib/enterprise-role-middleware.ts:requireRoleLevel() → full implementation
 
 ---
 
-### 🟡 P1 (High Priority) - SHOULD FIX
+### ðŸŸ¡ P1 (High Priority) - SHOULD FIX
 
-#### 3. ✅ Standardize Organization IDs
+#### 3. âœ… Standardize Organization IDs
 
-**Status:** ✅ **COMPLETE** - All organizationId fields use uuid
+**Status:** âœ… **COMPLETE** - All organizationId fields use uuid
 
 **Evidence:**
 
-- ✅ 30+ organizationId references all use uuid
-- ✅ Slugs used for lookup, UUIDs for relationships
-- ✅ Consistent pattern throughout
+- âœ… 30+ organizationId references all use uuid
+- âœ… Slugs used for lookup, UUIDs for relationships
+- âœ… Consistent pattern throughout
 
-**No action required** ✅
+**No action required** âœ…
 
 ---
 
-#### 4. ✅ Add Comprehensive Tests
+#### 4. âœ… Add Comprehensive Tests
 
-**Status:** ✅ **EXCELLENT** - 170 test files with coverage thresholds
+**Status:** âœ… **EXCELLENT** - 170 test files with coverage thresholds
 
 **Evidence from [vitest.config.ts](vitest.config.ts:24-28):**
 
@@ -349,22 +346,22 @@ coverage: {
 
 **Coverage:** Targets 80% lines/functions/statements, 75% branches
 
-**No critical action required** ✅
+**No critical action required** âœ…
 
 ---
 
-### 🟢 P2 (Nice to Have) - FUTURE WORK
+### ðŸŸ¢ P2 (Nice to Have) - FUTURE WORK
 
-#### 5. ⚠️ Complete API Documentation
+#### 5. âš ï¸ Complete API Documentation
 
-**Status:** ⚠️ **PARTIAL** - Migration status comments but no OpenAPI
+**Status:** âš ï¸ **PARTIAL** - Migration status comments but no OpenAPI
 
 **Evidence:**
 
-- ✅ 49+ routes have "MIGRATION STATUS" comments
-- ✅ Some routes have @module tags
-- ❌ NO OpenAPI/Swagger documentation found
-- ❌ Inconsistent documentation patterns
+- âœ… 49+ routes have "MIGRATION STATUS" comments
+- âœ… Some routes have @module tags
+- âŒ NO OpenAPI/Swagger documentation found
+- âŒ Inconsistent documentation patterns
 
 **Action Required:**
 
@@ -377,17 +374,17 @@ coverage: {
 
 ---
 
-#### 6. ✅ Audit RLS Policies
+#### 6. âœ… Audit RLS Policies
 
-**Status:** ✅ **EXCELLENT** - 81% coverage with comprehensive patterns
+**Status:** âœ… **EXCELLENT** - 81% coverage with comprehensive patterns
 
 **Evidence:**
 
-- ✅ 136/167 tables have RLS policies (81%)
-- ✅ Hierarchical patterns (claims_hierarchical_*)
-- ✅ Tenant isolation (ai_*_tenant_isolation)
-- ✅ Fine-grained access (calendar_*)
-- ✅ Public read + org access patterns
+- âœ… 136/167 tables have RLS policies (81%)
+- âœ… Hierarchical patterns (claims_hierarchical_*)
+- âœ… Tenant isolation (ai_*_tenant_isolation)
+- âœ… Fine-grained access (calendar_*)
+- âœ… Public read + org access patterns
 
 **Remaining 31 tables likely:**
 
@@ -403,20 +400,20 @@ coverage: {
 
 ## Production Readiness Checklist
 
-### 🔴 Blocking Issues (Must Fix Before Production)
+### ðŸ”´ Blocking Issues (Must Fix Before Production)
 
 - [ ] **Fix user ID type mismatch** (8-12h) - P0
 - [ ] **Implement real role checking** (12-16h) - P0
 - [ ] **Remove placeholder implementations from critical paths** (8-10h) - P0
 
-### 🟡 High Priority (Fix Before Scale)
+### ðŸŸ¡ High Priority (Fix Before Scale)
 
-- [x] **Standardize organization IDs** ✅ COMPLETE
-- [x] **Add comprehensive tests** ✅ COMPLETE (170 tests)
+- [x] **Standardize organization IDs** âœ… COMPLETE
+- [x] **Add comprehensive tests** âœ… COMPLETE (170 tests)
 - [ ] **Complete email service integration** (4-6h)
 - [ ] **Implement OCR processing** (16-20h)
 
-### 🟢 Nice to Have (Post-Launch)
+### ðŸŸ¢ Nice to Have (Post-Launch)
 
 - [ ] **Complete API documentation** (16-24h)
 - [ ] **Audit remaining 31 tables for RLS** (4-6h)
@@ -452,25 +449,25 @@ coverage: {
 
 ## Conclusion
 
-### Assessment Validation: ✅ **CONFIRMED ACCURATE**
+### Assessment Validation: âœ… **CONFIRMED ACCURATE**
 
 The original assessment scores are **validated with evidence**. The codebase demonstrates:
 
 **Strengths:**
 
-- ✅ Excellent RLS coverage (81%)
-- ✅ Strong architectural patterns
-- ✅ Comprehensive test suite (170 tests)
-- ✅ Feature-rich application (373 routes)
-- ✅ Transaction threading throughout query layer
+- âœ… Excellent RLS coverage (81%)
+- âœ… Strong architectural patterns
+- âœ… Comprehensive test suite (170 tests)
+- âœ… Feature-rich application (373 routes)
+- âœ… Transaction threading throughout query layer
 
 **Critical Gaps:**
 
-- ❌ Role checking system broken/inconsistent
-- ❌ User ID type mismatch across schemas
-- ⚠️ Many placeholder implementations
+- âŒ Role checking system broken/inconsistent
+- âŒ User ID type mismatch across schemas
+- âš ï¸ Many placeholder implementations
 
-### Production Readiness: ⚠️ **NOT YET READY**
+### Production Readiness: âš ï¸ **NOT YET READY**
 
 **Estimated time to production:** 28-38 hours of critical fixes
 
@@ -489,35 +486,35 @@ The original assessment scores are **validated with evidence**. The codebase dem
 
 ### Files Analyzed
 
-- ✅ 7 query files (59 functions refactored)
-- ✅ 170 test files
-- ✅ 373 API routes
-- ✅ 40+ schema files
-- ✅ 167 database tables
-- ✅ 136 RLS policies
+- âœ… 7 query files (59 functions refactored)
+- âœ… 170 test files
+- âœ… 373 API routes
+- âœ… 40+ schema files
+- âœ… 167 database tables
+- âœ… 136 RLS policies
 
 ### Database Queries Executed
 
 ```sql
 -- RLS policy count
 SELECT COUNT(DISTINCT tablename) FROM pg_policies WHERE schemaname = 'public';
-→ 136 tables with RLS
+â†’ 136 tables with RLS
 
 -- Total tables
 SELECT COUNT(*) FROM information_schema.tables 
 WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
-→ 167 tables
+â†’ 167 tables
 
 -- RLS Coverage: 136/167 = 81%
 ```
 
 ### Code Patterns Verified
 
-- ✅ Transaction threading: 59/59 functions (100%)
-- ✅ RLS auto-wrap: 7/7 files (100%)
-- ✅ TypeScript strict: Enabled
-- ⚠️ Role checking: 1/2 systems working (50%)
-- ⚠️ User ID types: ~60% standardized
+- âœ… Transaction threading: 59/59 functions (100%)
+- âœ… RLS auto-wrap: 7/7 files (100%)
+- âœ… TypeScript strict: Enabled
+- âš ï¸ Role checking: 1/2 systems working (50%)
+- âš ï¸ User ID types: ~60% standardized
 
 ---
 

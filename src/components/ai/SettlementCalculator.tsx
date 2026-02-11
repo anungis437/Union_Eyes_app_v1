@@ -92,7 +92,6 @@ export function SettlementCalculator({
         onCalculate(prediction);
       }
     } catch (error) {
-      console.error('Settlement calculation failed:', error);
       alert('Failed to calculate settlement. Please try again.');
     } finally {
       setIsCalculating(false);
@@ -127,7 +126,6 @@ export function SettlementCalculator({
         setHistoricalAverage(average);
       }
     } catch (error) {
-      console.error('Failed to fetch historical data:', error);
     }
   };
 

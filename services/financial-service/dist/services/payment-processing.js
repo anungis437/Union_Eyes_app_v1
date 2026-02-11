@@ -96,8 +96,7 @@ async function createDuesPaymentIntent(request) {
         };
     }
     catch (error) {
-        console.error('Error creating dues payment intent:', error);
-        throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : 'Unknown error'}`);
+throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 /**
@@ -123,8 +122,7 @@ async function confirmDuesPayment(request) {
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.duesTransactions.id, transactionId), (0, drizzle_orm_1.eq)(schema.duesTransactions.tenantId, tenantId)));
     }
     catch (error) {
-        console.error('Error confirming dues payment:', error);
-        throw error;
+throw error;
     }
 }
 /**
@@ -164,8 +162,7 @@ async function createStipendPayout(request) {
         };
     }
     catch (error) {
-        console.error('Error creating stipend payout:', error);
-        throw new Error(`Failed to create payout: ${error instanceof Error ? error.message : 'Unknown error'}`);
+throw new Error(`Failed to create payout: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 /**
@@ -263,8 +260,7 @@ async function createDonationPaymentIntent(request) {
         };
     }
     catch (error) {
-        console.error('Error creating donation payment intent:', error);
-        throw new Error(`Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+throw new Error(`Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 /**
@@ -299,8 +295,7 @@ async function confirmDonationPayment(request) {
         return donation.id;
     }
     catch (error) {
-        console.error('Error confirming donation payment:', error);
-        throw error;
+throw error;
     }
 }
 /**
@@ -321,12 +316,10 @@ async function processStripeWebhook(event, signature, webhookSecret) {
                 await handleChargeRefunded(event.data.object);
                 break;
             default:
-                console.log(`Unhandled event type: ${event.type}`);
-        }
+}
     }
     catch (error) {
-        console.error('Error processing webhook:', error);
-        throw error;
+throw error;
     }
 }
 async function handlePaymentIntentSucceeded(paymentIntent) {

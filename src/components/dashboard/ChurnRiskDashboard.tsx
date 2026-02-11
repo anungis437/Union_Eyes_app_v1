@@ -90,7 +90,6 @@ export function ChurnRiskDashboard() {
       setPredictions(data.predictions || []);
       setSummary(data.summary || null);
     } catch (error) {
-      console.error('Error loading churn predictions:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);

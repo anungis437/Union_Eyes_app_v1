@@ -139,8 +139,7 @@ export function PublicDonationPage({ campaignSlug }: DonationPageProps) {
         setSelectedAmount(data.suggestedAmounts[1] || data.suggestedAmounts[0]);
       }
     } catch (error) {
-      console.error('Error fetching campaign:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -165,8 +164,7 @@ export function PublicDonationPage({ campaignSlug }: DonationPageProps) {
       setClientSecret(data.clientSecret);
       setShowCheckout(true);
     } catch (error) {
-      console.error('Error creating payment intent:', error);
-    }
+}
   };
 
   const progressPercentage = campaign
@@ -432,7 +430,7 @@ export function PublicDonationPage({ campaignSlug }: DonationPageProps) {
                     className="w-full mt-4"
                     onClick={() => setShowCheckout(false)}
                   >
-                    ← Back
+                    â† Back
                   </Button>
                 </>
               )}

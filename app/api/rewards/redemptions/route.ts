@@ -67,8 +67,7 @@ export const GET = async (request: NextRequest) => {
       );
 
     } catch (error) {
-      console.error('[Redemptions API] GET error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -125,9 +124,7 @@ export const POST = async (request: NextRequest) => {
       );
 
     } catch (error: any) {
-      console.error('[Redemptions API] POST error:', error);
-
-      // Handle specific business logic errors
+// Handle specific business logic errors
       if (error.message?.includes('Insufficient credits')) {
         return NextResponse.json(
           { error: error.message },
@@ -184,9 +181,7 @@ export const DELETE = async (request: NextRequest) => {
       );
 
     } catch (error: any) {
-      console.error('[Redemptions API] DELETE error:', error);
-
-      // Handle specific business logic errors
+// Handle specific business logic errors
       if (error.message?.includes('Cannot cancel')) {
         return NextResponse.json(
           { error: error.message },

@@ -94,8 +94,7 @@ export const GET = async (request: NextRequest) => {
       const { data: campaigns, error, count } = await query;
 
       if (error) {
-        console.error('Error fetching campaigns:', error);
-        return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 });
       }
 
       // Calculate campaign metrics
@@ -144,8 +143,7 @@ export const GET = async (request: NextRequest) => {
         offset,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Internal server error',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -237,14 +235,12 @@ export const POST = async (request: NextRequest) => {
         .single();
 
       if (error) {
-        console.error('Error creating campaign:', error);
-        return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
       }
 
       return NextResponse.json({ campaign }, { status: 201 });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to create campaign',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -333,14 +329,12 @@ export const PUT = async (request: NextRequest) => {
         .single();
 
       if (updateError) {
-        console.error('Error updating campaign:', updateError);
-        return NextResponse.json({ error: 'Failed to update campaign' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to update campaign' }, { status: 500 });
       }
 
       return NextResponse.json({ campaign: updatedCampaign });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to update campaign',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -403,8 +397,7 @@ export const DELETE = async (request: NextRequest) => {
         .eq('id', campaignId);
 
       if (deleteError) {
-        console.error('Error deleting campaign:', deleteError);
-        return NextResponse.json({ error: 'Failed to delete campaign' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to delete campaign' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -412,8 +405,7 @@ export const DELETE = async (request: NextRequest) => {
         campaign_id: campaignId,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to delete campaign',
           details: error instanceof Error ? error.message : 'Unknown error',

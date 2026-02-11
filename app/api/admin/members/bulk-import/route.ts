@@ -1,7 +1,7 @@
 /**
  * Bulk Import Members API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * 
@@ -362,7 +362,7 @@ export const POST = async (request: NextRequest) => {
 
         createdMembers.push(...insertedMembers);
       } catch (error) {
-        console.error("Error inserting members:", error);
+        logger.error("Error inserting members", { error });
         return NextResponse.json(
           { 
             error: "Failed to create members", 
@@ -380,7 +380,7 @@ export const POST = async (request: NextRequest) => {
         message: `Successfully imported ${createdMembers.length} member(s)`,
       });
     } catch (error) {
-      console.error("Error bulk importing members:", error);
+      logger.error("Error bulk importing members", { error });
       return NextResponse.json(
         { 
           error: "Failed to bulk import members",

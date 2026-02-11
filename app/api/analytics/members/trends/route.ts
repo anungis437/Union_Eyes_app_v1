@@ -108,8 +108,7 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(engagementTrends);
   } catch (error) {
-    console.error('Engagement trends error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch engagement trends' },
       { status: 500 }
     );

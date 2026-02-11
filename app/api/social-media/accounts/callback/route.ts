@@ -49,8 +49,7 @@ export const GET = async (request: NextRequest) => {
 
       // Handle OAuth errors
       if (error) {
-        console.error('OAuth error:', error, errorDescription);
-        return NextResponse.redirect(
+return NextResponse.redirect(
           `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=${encodeURIComponent(errorDescription || error)}`
         );
       }
@@ -152,16 +151,14 @@ export const GET = async (request: NextRequest) => {
           `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?success=Account connected successfully`
         );
       } catch (error) {
-        console.error('Callback handling error:', error);
-        return NextResponse.redirect(
+return NextResponse.redirect(
           `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=${encodeURIComponent(
             error instanceof Error ? error.message : 'Failed to connect account'
           )}`
         );
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.redirect(
+return NextResponse.redirect(
         `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/social-media?error=Internal server error`
       );
     }
@@ -205,8 +202,7 @@ async function handleMetaCallback(
       try {
         instagramAccount = await metaClientWithToken.getInstagramAccount(page.id);
       } catch (error) {
-        console.error('Failed to get Instagram account:', error);
-      }
+}
     }
 
     const accountPlatform = instagramAccount ? 'instagram' : 'facebook';

@@ -158,8 +158,7 @@ export function DistributionListManager() {
       const data = await response.json();
       setLists(data.lists || []);
     } catch (error) {
-      console.error('Error fetching lists:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load distribution lists',
         variant: 'destructive',
@@ -182,8 +181,7 @@ export function DistributionListManager() {
       const data = await response.json();
       setSubscribers(data.subscribers || []);
     } catch (error) {
-      console.error('Error fetching subscribers:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load subscribers',
         variant: 'destructive',
@@ -212,8 +210,7 @@ export function DistributionListManager() {
       const data = await response.json();
       setAvailableProfiles(data.profiles || []);
     } catch (error) {
-      console.error('Error fetching profiles:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load member profiles',
         variant: 'destructive',
@@ -267,8 +264,7 @@ export function DistributionListManager() {
       setCreateDialogOpen(false);
       resetForm();
     } catch (error) {
-      console.error('Error creating list:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to create distribution list',
         variant: 'destructive',
@@ -305,8 +301,7 @@ export function DistributionListManager() {
       setAddSubscribersOpen(false);
       setSelectedProfiles(new Set());
     } catch (error) {
-      console.error('Error adding subscribers:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to add subscribers',
         variant: 'destructive',
@@ -337,8 +332,7 @@ export function DistributionListManager() {
       setSubscribers((prev) => prev.filter((s) => s.id !== subscriberId));
       fetchLists(); // Update subscriber count
     } catch (error) {
-      console.error('Error removing subscriber:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to remove subscriber',
         variant: 'destructive',
@@ -370,8 +364,7 @@ export function DistributionListManager() {
       }
       setDeleteConfirm(null);
     } catch (error) {
-      console.error('Error deleting list:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to delete list',
         variant: 'destructive',
@@ -406,8 +399,7 @@ export function DistributionListManager() {
         description: 'List exported successfully',
       });
     } catch (error) {
-      console.error('Error exporting list:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to export list',
         variant: 'destructive',

@@ -63,8 +63,7 @@ export async function POST(
 
     return NextResponse.json({ template: duplicate }, { status: 201 });
   } catch (error) {
-    console.error('Error duplicating template:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to duplicate template' },
       { status: 500 }
     );

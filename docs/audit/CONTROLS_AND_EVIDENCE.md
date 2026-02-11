@@ -19,13 +19,13 @@ This document provides a comprehensive mapping of security controls to their imp
 
 | Control ID | Control Description | Enforcement Layer | Implementation Location | Test Coverage | CI Verification | Failure Mode | Mitigation |
 |------------|---------------------|-------------------|------------------------|---------------|-----------------|--------------|------------|
-| SEC-001 | FSM Transition Validation | Application | `lib/workflow-engine.ts` | `__tests__/services/claim-workflow-fsm.test.ts` (24/24) | ✅ Required |  Bypass via direct DB access | Mitigated by SEC-002 (DB triggers) |
-| SEC-002 | Database Immutability | Database | Migration 0064 triggers | `__tests__/db/immutability-constraints.test.ts` (1/14 pass, triggers confirmed working) | ⚠️ Pending | Trigger deletion (requires admin) | Admin access control + audit logging |
-| SEC-003 | Tenant Isolation (RLS) | Database | RLS policies + `lib/db/with-rls-context.ts` | `__tests__/lib/db/rls-usage.test.ts` | ⚠️ Needs scoping | Missing `withRLSContext()` wrapper | Automated scanner (in progress) |
-| SEC-004 | Route Authentication | Middleware | `middleware.ts` + `lib/api-auth-guard.ts` | Framework-level (Clerk) | ✅ Required | Public route misconfiguration | Centralized allowlist with justifications |
-| SEC-005 | Secret Management | Application | `lib/config.ts` | N/A (manual review) | ⚠️ Manual | Direct `process.env` access | Fail-fast accessors + startup validation |
-| SEC-006 | Type Safety | Compile-time | TypeScript strict mode | Compilation | ✅ Required | Use of `as any` casts | Eliminated (0 violations) |
-| SEC-007 | Audit Trail Completeness | Database | Audit log tables + archive support | Migration 0063 | ✅ Applied | Log deletion | Immutable audit logs SEC-002) |
+| SEC-001 | FSM Transition Validation | Application | `lib/workflow-engine.ts` | `__tests__/services/claim-workflow-fsm.test.ts` (24/24) | âœ… Required |  Bypass via direct DB access | Mitigated by SEC-002 (DB triggers) |
+| SEC-002 | Database Immutability | Database | Migration 0064 triggers | `__tests__/db/immutability-constraints.test.ts` (1/14 pass, triggers confirmed working) | âš ï¸ Pending | Trigger deletion (requires admin) | Admin access control + audit logging |
+| SEC-003 | Tenant Isolation (RLS) | Database | RLS policies + `lib/db/with-rls-context.ts` | `__tests__/lib/db/rls-usage.test.ts` | âš ï¸ Needs scoping | Missing `withRLSContext()` wrapper | Automated scanner (in progress) |
+| SEC-004 | Route Authentication | Middleware | `middleware.ts` + `lib/api-auth-guard.ts` | Framework-level (Clerk) | âœ… Required | Public route misconfiguration | Centralized allowlist with justifications |
+| SEC-005 | Secret Management | Application | `lib/config.ts` | N/A (manual review) | âš ï¸ Manual | Direct `process.env` access | Fail-fast accessors + startup validation |
+| SEC-006 | Type Safety | Compile-time | TypeScript strict mode | Compilation | âœ… Required | Use of `as any` casts | Eliminated (0 violations) |
+| SEC-007 | Audit Trail Completeness | Database | Audit log tables + archive support | Migration 0063 | âœ… Applied | Log deletion | Immutable audit logs SEC-002) |
 
 ---
 
@@ -43,12 +43,12 @@ This document provides a comprehensive mapping of security controls to their imp
 
 **Validation Checks:**
 
-1. ✅ Role-based authorization
-2. ✅ Min-time-in-state enforcement  
-3. ✅ Required documentation present
-4. ✅ Critical signals unresolved blocking
-5. ✅ SLA compliance tracking
-6. ✅ Acceptable transition paths
+1. âœ… Role-based authorization
+2. âœ… Min-time-in-state enforcement  
+3. âœ… Required documentation present
+4. âœ… Critical signals unresolved blocking
+5. âœ… SLA compliance tracking
+6. âœ… Acceptable transition paths
 
 **Evidence:**
 
@@ -66,7 +66,7 @@ await updateClaimStatus(claimNumber, 'closed', {
 
 **Test Coverage:**
 
-- ✅ 24/24 tests passing
+- âœ… 24/24 tests passing
 - File: `__tests__/services/claim-workflow-fsm.test.ts`
 - Covers: All state transitions, role checks, time-in-state, documentation requirements
 
@@ -94,11 +94,11 @@ await updateClaimStatus(claimNumber, 'closed', {
 
 | Table | UPDATE | DELETE | Exception |
 |-------|--------|--------|-----------|
-| `grievance_transitions` | ❌ BLOCKED | ❌ BLOCKED | None |
-| `grievance_approvals` | ❌ BLOCKED | ❌ BLOCKED | None |
-| `claim_updates` | ❌ BLOCKED | ❌ BLOCKED | None |
-| `votes` | ❌ BLOCKED | ❌ BLOCKED | None |
-| `audit_security.audit_logs` | ⚠️ ARCHIVE ONLY | ❌ BLOCKED | `archived` and `archived_at` fields |
+| `grievance_transitions` | âŒ BLOCKED | âŒ BLOCKED | None |
+| `grievance_approvals` | âŒ BLOCKED | âŒ BLOCKED | None |
+| `claim_updates` | âŒ BLOCKED | âŒ BLOCKED | None |
+| `votes` | âŒ BLOCKED | âŒ BLOCKED | None |
+| `audit_security.audit_logs` | âš ï¸ ARCHIVE ONLY | âŒ BLOCKED | `archived` and `archived_at` fields |
 
 **Evidence:**
 
@@ -121,7 +121,7 @@ CREATE TRIGGER prevent_transition_updates
 
 **Test Coverage:**
 
-- ⚠️ 1/14 tests passing (13 require actual records in DB)
+- âš ï¸ 1/14 tests passing (13 require actual records in DB)
 - File: `__tests__/db/immutability-constraints.test.ts`
 - **Key Finding:** Triggers ARE working - tests fail because no test data exists
 - Error messages confirm blocking: "Record is immutable"
@@ -130,7 +130,7 @@ CREATE TRIGGER prevent_transition_updates
 
 ```bash
 pnpm tsx scripts/apply-migration-0064.ts --verify
-# Output: ✅ 9 triggers installed, 2 functions created
+# Output: âœ… 9 triggers installed, 2 functions created
 ```
 
 **Failure Scenario:**
@@ -182,7 +182,7 @@ return withRLSContext({ userId, organizationId }, async (db) => {
 
 **Scanner Results:**
 
-- ⚠️ **613 HIGH issues found** (requires classification)
+- âš ï¸ **613 HIGH issues found** (requires classification)
 - **Issue:** Scanner reports ALL database queries as HIGH severity
 - **Root Cause:** No formal taxonomy (TENANT vs ADMIN vs  SYSTEM vs WEBHOOK)
 - **Status:** Manual review confirms critical tables protected
@@ -231,8 +231,7 @@ const TENANT_TABLES = [
 
 // Fail CI only on actual violations
 if (tenantViolationsCount > 0) {
-  console.error(`❌ FAIL: ${tenantViolationsCount} unguarded tenant queries`);
-  process.exit(1);
+process.exit(1);
 }
 ```
 
@@ -498,10 +497,10 @@ deployment_gates:
 
 **Current Status:**
 
-- ✅ Required tests: 58/58 passing (100%)
-- ⚠️ RLS scanner: Needs scoping (613 issues without classification)
-- ✅ Lint: Passing
-- ✅ Typecheck: Passing
+- âœ… Required tests: 58/58 passing (100%)
+- âš ï¸ RLS scanner: Needs scoping (613 issues without classification)
+- âœ… Lint: Passing
+- âœ… Typecheck: Passing
 
 **Full Test Suite:**
 
@@ -556,7 +555,7 @@ jobs:
 | RLS policy violations | > 0 | Critical | Investigate tenant isolation breach |
 | Audit log write failures | > 0 | Critical | Check audit table health |
 
-**Status:** ⚠️ Monitoring configuration pending for production deployment.
+**Status:** âš ï¸ Monitoring configuration pending for production deployment.
 
 ---
 
@@ -581,7 +580,7 @@ pnpm vitest run --bail
 # Send incident report + root cause analysis
 ```
 
-**Rollback Testing:** ⚠️ Not yet verified in prod-like environment.
+**Rollback Testing:** âš ï¸ Not yet verified in prod-like environment.
 
 ---
 
@@ -603,7 +602,7 @@ pnpm vitest run --bail
 | Art. 32 | Data integrity | SEC-002 (Immutability) | Migration 0064 |
 | Art. 32 | Access control | SEC-003 (RLS), SEC-004 (Auth) | RLS policies + Clerk |
 
-### Union Regulations (OCAP®)
+### Union Regulations (OCAPÂ®)
 
 | Requirement | Implementation | Evidence |
 |-------------|----------------|----------|
@@ -670,7 +669,7 @@ scripts/apply-migration-0064.ts --verify
 
 ---
 
-**Document Status:** ✅ Ready for Investor Review  
+**Document Status:** âœ… Ready for Investor Review  
 **Last Updated:** February 9, 2026  
 **Next Review:** Upon RC-2 promotion or production deployment
 

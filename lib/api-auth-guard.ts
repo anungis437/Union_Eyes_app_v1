@@ -969,7 +969,7 @@ export function withEnhancedRoleAuth<T = any>(
       // Call handler with enhanced context
       return await handler(request, enhancedContext);
     } catch (error) {
-      console.error('Enhanced RBAC middleware error:', error);
+      logger.error('Enhanced RBAC middleware error', { error });
       return NextResponse.json(
         { error: 'Authorization failed. Please try again.' },
         { status: 500 }
@@ -1093,7 +1093,7 @@ export function withPermission<T = any>(
       // Call handler
       return await handler(request, enhancedContext);
     } catch (error) {
-      console.error('Permission middleware error:', error);
+      logger.error('Permission middleware error', { error });
       return NextResponse.json({ error: 'Authorization failed.' }, { status: 500 });
     }
   });
@@ -1219,7 +1219,7 @@ export function withScopedRoleAuth<T = any>(
 
       return await handler(request, enhancedContext);
     } catch (error) {
-      console.error('Scoped role middleware error:', error);
+      logger.error('Scoped role middleware error', { error });
       return NextResponse.json({ error: 'Authorization failed.' }, { status: 500 });
     }
   });
@@ -1284,7 +1284,7 @@ export function withApiAuth<TContext extends Record<string, any> = { params?: Re
           );
         }
       } catch (error) {
-        console.error('[Auth] Guard check failed:', error);
+        logger.error('[Auth] Guard check failed', { error });
         return NextResponse.json(
           { error: 'Authentication error' },
           { status: 401 }
@@ -1507,7 +1507,7 @@ export function canAccessMemberResource(
  * ```typescript
  * export const GET = withEnhancedRoleAuth(40, async (request, context) => {
  *   const primaryRole = getPrimaryRole(context);
- *   console.log(`User's primary role: ${primaryRole?.roleName}`);
+ *   logger.info(`User's primary role: ${primaryRole?.roleName}`);
  * });
  * ```
  */
@@ -1527,7 +1527,7 @@ export function getPrimaryRole(context: EnhancedRoleContext): MemberRoleWithDeta
  * ```typescript
  * export const GET = withEnhancedRoleAuth(40, async (request, context) => {
  *   const deptRoles = getRolesFor Scope(context, 'department', 'Manufacturing');
- *   console.log(`User has ${deptRoles.length} roles in Manufacturing dept`);
+ *   logger.info(`User has ${deptRoles.length} roles in Manufacturing dept`);
  * });
  * ```
  */

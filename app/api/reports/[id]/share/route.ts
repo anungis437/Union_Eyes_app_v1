@@ -69,8 +69,7 @@ async function getHandler(
     });
 
   } catch (error: any) {
-    console.error('Get report shares error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch report shares' },
       { status: 500 }
     );
@@ -207,8 +206,7 @@ async function postHandler(
         }
       }
     } catch (error) {
-      console.error('Failed to send share notifications:', error);
-      // Don't fail the share operation if notifications fail
+// Don't fail the share operation if notifications fail
     }
 
     return NextResponse.json({ 
@@ -217,8 +215,7 @@ async function postHandler(
     }, { status: 201 });
 
   } catch (error: any) {
-    console.error('Share report error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to share report' },
       { status: 500 }
     );
@@ -282,8 +279,7 @@ async function deleteHandler(
     });
 
   } catch (error: any) {
-    console.error('Revoke report share error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to revoke report share' },
       { status: 500 }
     );

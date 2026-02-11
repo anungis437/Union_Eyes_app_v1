@@ -23,8 +23,8 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * 
  * <WorkflowBuilder
  *   tenantId="tenant-123"
- *   onSave={(workflow) => console.log('Saved:', workflow)}
- *   onTest={(workflow) => console.log('Testing:', workflow)}
+ *   onSave={(workflow) => undefined}
+ *   onTest={(workflow) => undefined}
  * />
  * ```
  * 
@@ -56,7 +56,7 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * <ApprovalQueue
  *   tenantId="tenant-123"
  *   userId="user-789"
- *   onApprovalProcessed={(id, approved) => console.log('Processed:', id, approved)}
+ *   onApprovalProcessed={(id, approved) => undefined}
  * />
  * ```
  * 
@@ -67,9 +67,9 @@ export { WorkflowAnalytics } from './WorkflowAnalytics';
  * <WorkflowTemplateGallery
  *   tenantId="tenant-123"
  *   onCreateFromTemplate={(templateId, customizations) => {
- *     console.log('Creating from template:', templateId);
+ *     handleTemplateCreate(templateId, customizations);
  *   }}
- *   onPreview={(template) => console.log('Preview:', template)}
+ *   onPreview={(template) => undefined}
  * />
  * ```
  * 

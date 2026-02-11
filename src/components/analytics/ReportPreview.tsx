@@ -112,10 +112,7 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
       const result = await response.json();
       setData(result.data || []);
     } catch (err: any) {
-      console.error('Error executing report:', err);
-      
       // Fallback to mock data if API fails
-      console.log('Falling back to mock data generation');
       const mockData = generateMockData(config);
       setData(mockData);
       
@@ -200,7 +197,6 @@ export function ReportPreview({ open, onClose, config }: ReportPreviewProps) {
         alert(`Export as ${format.toUpperCase()} started successfully!`);
       }
     } catch (error: any) {
-      console.error('Export error:', error);
       alert(`Failed to export: ${error.message}`);
     }
   };

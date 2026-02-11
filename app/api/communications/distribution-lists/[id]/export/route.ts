@@ -81,8 +81,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error exporting list:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to export list' },
       { status: 500 }
     );

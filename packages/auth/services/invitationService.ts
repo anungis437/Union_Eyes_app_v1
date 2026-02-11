@@ -100,7 +100,7 @@ export class InvitationService {
       const buffer = nodeCrypto.randomBytes(size);
       return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     } catch (err) {
-      // As a last resort, use insecure Math.random (very unlikely) — still URL-safe
+      // As a last resort, use insecure Math.random (very unlikely) â€” still URL-safe
       const fallback = Array.from({ length: size }, () => Math.floor(Math.random() * 256));
       let binary = '';
       for (let i = 0; i < fallback.length; i++) binary += String.fromCharCode(fallback[i]);
@@ -169,8 +169,7 @@ export class InvitationService {
 
       return this.mapInvitationData(invitation);
     } catch (error) {
-      console.error('Error creating invitation:', error);
-      return null;
+return null;
     }
   }
 
@@ -189,8 +188,7 @@ export class InvitationService {
 
       return this.mapInvitationData(data);
     } catch (error) {
-      console.error('Error fetching invitation:', error);
-      return null;
+return null;
     }
   }
 
@@ -235,8 +233,7 @@ export class InvitationService {
         invitation,
       };
     } catch (error) {
-      console.error('Error checking invitation status:', error);
-      return {
+return {
         valid: false,
         error: 'Failed to check invitation status',
       };
@@ -306,8 +303,7 @@ export class InvitationService {
         userId: authData.user.id,
       };
     } catch (error) {
-      console.error('Error accepting invitation:', error);
-      return {
+return {
         success: false,
         error: 'Failed to accept invitation',
       };
@@ -334,8 +330,7 @@ export class InvitationService {
 
       return !error;
     } catch (error) {
-      console.error('Error cancelling invitation:', error);
-      return false;
+return false;
     }
   }
 
@@ -378,8 +373,7 @@ export class InvitationService {
 
       return true;
     } catch (error) {
-      console.error('Error resending invitation:', error);
-      return false;
+return false;
     }
   }
 
@@ -407,8 +401,7 @@ export class InvitationService {
 
       return (data || []).map(this.mapInvitationData);
     } catch (error) {
-      console.error('Error listing invitations:', error);
-      return [];
+return [];
     }
   }
 
@@ -424,8 +417,7 @@ export class InvitationService {
 
       return !error;
     } catch (error) {
-      console.error('Error deleting invitation:', error);
-      return false;
+return false;
     }
   }
 
@@ -445,8 +437,7 @@ export class InvitationService {
 
       return data?.length || 0;
     } catch (error) {
-      console.error('Error cleaning up expired invitations:', error);
-      return 0;
+return 0;
     }
   }
 
@@ -504,14 +495,12 @@ export class InvitationService {
       });
 
       if (!response.success) {
-        console.error('Error sending invitation email:', response.error);
-        return false;
+return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Error sending invitation email:', error);
-      return false;
+return false;
     }
   }
 
@@ -548,7 +537,7 @@ export class InvitationService {
 <body>
   <div class="container">
     <div class="header">
-      <h1>You're Invited! 🎉</h1>
+      <h1>You're Invited! ðŸŽ‰</h1>
       <p>${inviterName} has invited you to join ${organizationName}</p>
     </div>
     
@@ -573,7 +562,7 @@ export class InvitationService {
       <p style="word-break: break-all; color: #667eea;">${invitationUrl}</p>
       
       <div class="warning">
-        <p><strong>⏰ This invitation expires in ${daysUntilExpiration} day${daysUntilExpiration !== 1 ? 's' : ''}</strong></p>
+        <p><strong>â° This invitation expires in ${daysUntilExpiration} day${daysUntilExpiration !== 1 ? 's' : ''}</strong></p>
         <p style="margin: 0;">If you don't accept within ${daysUntilExpiration} day${daysUntilExpiration !== 1 ? 's' : ''}, you'll need to request a new invitation.</p>
       </div>
       
@@ -583,7 +572,7 @@ export class InvitationService {
     </div>
     
     <div class="footer">
-      <p>© ${new Date().getFullYear()} CourtLens. All rights reserved.</p>
+      <p>Â© ${new Date().getFullYear()} CourtLens. All rights reserved.</p>
       <p>This invitation was sent to ${email}</p>
     </div>
   </div>
@@ -623,7 +612,7 @@ If you have any questions or didn't expect this invitation, please contact ${inv
 Best regards,
 The CourtLens Team
 
-© ${new Date().getFullYear()} CourtLens. All rights reserved.
+Â© ${new Date().getFullYear()} CourtLens. All rights reserved.
     `.trim();
   }
 

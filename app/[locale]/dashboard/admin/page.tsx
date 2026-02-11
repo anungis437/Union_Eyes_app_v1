@@ -109,8 +109,7 @@ export default function AdminPage() {
         setSystemStats(data.data);
       }
     } catch (error) {
-      console.error("Failed to load system stats:", error);
-    }
+}
   };
 
   const loadRecentActivity = async () => {
@@ -121,8 +120,7 @@ export default function AdminPage() {
         setActivity(data.data);
       }
     } catch (error) {
-      console.error("Failed to load activity:", error);
-    }
+}
   };
 
   const loadUsers = useCallback(async () => {
@@ -136,8 +134,7 @@ export default function AdminPage() {
         setUsers(data.data);
       }
     } catch (error) {
-      console.error("Failed to load users:", error);
-      toast.error("Failed to load users");
+toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -167,8 +164,7 @@ export default function AdminPage() {
         );
       }
     } catch (error) {
-      console.error("Failed to load organizations:", error);
-      toast.error("Failed to load organizations");
+toast.error("Failed to load organizations");
     } finally {
       setLoading(false);
     }
@@ -190,8 +186,7 @@ export default function AdminPage() {
         toast.error(data.error || "Failed to remove user");
       }
     } catch (error) {
-      console.error("Failed to delete user:", error);
-      toast.error("Failed to remove user");
+toast.error("Failed to remove user");
     }
   };
 
@@ -210,8 +205,7 @@ export default function AdminPage() {
         toast.error(data.error || "Failed to update user");
       }
     } catch (error) {
-      console.error("Failed to toggle user status:", error);
-      toast.error("Failed to update user");
+toast.error("Failed to update user");
     }
   };
 
@@ -228,8 +222,7 @@ export default function AdminPage() {
         toast.error(data.error || "Failed to clear cache");
       }
     } catch (error) {
-      console.error("Failed to clear cache:", error);
-      toast.error("Failed to clear cache");
+toast.error("Failed to clear cache");
     } finally {
       setLoading(false);
     }
@@ -248,8 +241,7 @@ export default function AdminPage() {
         toast.error(data.error || "Failed to optimize database");
       }
     } catch (error) {
-      console.error("Failed to optimize database:", error);
-      toast.error("Failed to optimize database");
+toast.error("Failed to optimize database");
     } finally {
       setLoading(false);
     }
@@ -571,7 +563,7 @@ export default function AdminPage() {
                           {item.action}
                         </p>
                         <p className="text-xs text-gray-600">
-                          {item.user} • {item.tenant}
+                          {item.user} â€¢ {item.tenant}
                         </p>
                       </div>
                       <p className="text-xs text-gray-500">
@@ -1050,16 +1042,16 @@ export default function AdminPage() {
                         if (responseDiv) {
                           if (response.ok) {
                             responseDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                            responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                            responseDiv.textContent = `âœ… SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
                           } else {
                             responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                            responseDiv.textContent = `❌ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                            responseDiv.textContent = `âŒ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
                           }
                         }
                       } catch (error) {
                         if (responseDiv) {
                           responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                          responseDiv.textContent = `❌ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
+                          responseDiv.textContent = `âŒ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
                         }
                       }
                     }}
@@ -1109,16 +1101,16 @@ export default function AdminPage() {
                         if (responseDiv) {
                           if (response.ok) {
                             responseDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                            responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                            responseDiv.textContent = `âœ… SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
                           } else {
                             responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                            responseDiv.textContent = `❌ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                            responseDiv.textContent = `âŒ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
                           }
                         }
                       } catch (error) {
                         if (responseDiv) {
                           responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                          responseDiv.textContent = `❌ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
+                          responseDiv.textContent = `âŒ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
                         }
                       }
                     }}
@@ -1183,16 +1175,16 @@ export default function AdminPage() {
                         if (responseDiv) {
                           if (response.ok) {
                             responseDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                            responseDiv.textContent = `✅ SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                            responseDiv.textContent = `âœ… SUCCESS (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
                           } else {
                             responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                            responseDiv.textContent = `❌ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
+                            responseDiv.textContent = `âŒ ERROR (${response.status})\n\n${JSON.stringify(data, null, 2)}`;
                           }
                         }
                       } catch (error) {
                         if (responseDiv) {
                           responseDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg font-mono text-xs overflow-auto max-h-64';
-                          responseDiv.textContent = `❌ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
+                          responseDiv.textContent = `âŒ NETWORK ERROR\n\n${error instanceof Error ? error.message : String(error)}`;
                         }
                       }
                     }}
@@ -1207,7 +1199,7 @@ export default function AdminPage() {
 
               {/* Test Data Info */}
               <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">📊 Test Data Reference</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">ðŸ“Š Test Data Reference</h3>
                 <div className="space-y-2 text-sm text-gray-700">
                   <p><strong>Query ID:</strong> <code className="bg-white px-2 py-1 rounded">7ba567db-5c19-4f61-b492-385ca10d8ba0</code></p>
                   <p><strong>Tenant ID:</strong> <code className="bg-white px-2 py-1 rounded">test-tenant-001</code></p>
@@ -1288,7 +1280,7 @@ export default function AdminPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">User Login</p>
-                          <p className="text-xs text-gray-600">admin@union.ca • {new Date().toLocaleString()}</p>
+                          <p className="text-xs text-gray-600">admin@union.ca â€¢ {new Date().toLocaleString()}</p>
                         </div>
                         <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Success</span>
                       </div>
@@ -1636,8 +1628,7 @@ export default function AdminPage() {
                         const data = await response.json();
                         if (data.success) {
                           toast.success("Database health check complete");
-                          console.log("Database Health:", data.data);
-                        }
+}
                       } catch (error) {
                         toast.error("Failed to fetch database health");
                       }
@@ -1720,23 +1711,23 @@ export default function AdminPage() {
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-600 font-bold mt-0.5">•</span>
+                      <span className="text-blue-600 font-bold mt-0.5">â€¢</span>
                       <span>Run ANALYZE after bulk data changes to update statistics</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-600 font-bold mt-0.5">•</span>
+                      <span className="text-blue-600 font-bold mt-0.5">â€¢</span>
                       <span>Add indexes on frequently filtered columns (status, createdAt, tenantId)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-600 font-bold mt-0.5">•</span>
+                      <span className="text-blue-600 font-bold mt-0.5">â€¢</span>
                       <span>Use query limits and pagination for large result sets</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-600 font-bold mt-0.5">•</span>
+                      <span className="text-blue-600 font-bold mt-0.5">â€¢</span>
                       <span>Monitor connection pool usage - alert if approaching max connections</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-600 font-bold mt-0.5">•</span>
+                      <span className="text-blue-600 font-bold mt-0.5">â€¢</span>
                       <span>Schedule database optimization during off-peak hours</span>
                     </li>
                   </ul>
@@ -1758,23 +1749,23 @@ export default function AdminPage() {
               </h3>
               <ul className="space-y-1 text-sm text-gray-700">
                 <li>
-                  • <strong>User Management:</strong> Add, edit, or deactivate
+                  â€¢ <strong>User Management:</strong> Add, edit, or deactivate
                   user accounts and assign roles
                 </li>
                 <li>
-                  • <strong>Local Sections:</strong> Manage local section
+                  â€¢ <strong>Local Sections:</strong> Manage local section
                   details, membership, and leadership
                 </li>
                 <li>
-                  • <strong>System Settings:</strong> Configure global system
+                  â€¢ <strong>System Settings:</strong> Configure global system
                   preferences and features
                 </li>
                 <li>
-                  • <strong>Security:</strong> Monitor access logs and manage
+                  â€¢ <strong>Security:</strong> Monitor access logs and manage
                   permissions
                 </li>
                 <li>
-                  • <strong>Reports:</strong> Generate and export system-wide
+                  â€¢ <strong>Reports:</strong> Generate and export system-wide
                   analytics
                 </li>
               </ul>

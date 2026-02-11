@@ -142,8 +142,7 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
     return NextResponse.json({ prediction });
     
   } catch (error) {
-    console.error('Claim outcome prediction error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to predict claim outcome' },
       { status: 500 }
     );

@@ -71,8 +71,7 @@ export function ComparativeAnalysis({ organizationId }: ComparativeAnalysisProps
         setIndustryBenchmark(data.industryBenchmark || null);
       }
     } catch (error) {
-      console.error('Failed to fetch comparative data:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }

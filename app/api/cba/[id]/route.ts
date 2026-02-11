@@ -1,7 +1,7 @@
 /**
  * CBA Detail API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -60,8 +60,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         });
       });
     } catch (error) {
-      console.error("Error fetching CBA:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -96,8 +95,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         return NextResponse.json(updatedCba);
       });
     } catch (error) {
-      console.error("Error updating CBA:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -124,8 +122,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         return NextResponse.json({ success: true, deletedId: id });
       });
     } catch (error) {
-      console.error("Error deleting CBA:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

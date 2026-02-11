@@ -4,6 +4,7 @@ config(); // Load environment variables first
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
+import { logger } from '@/lib/logger';
 
 // Database connection configuration
 const connectionString = process.env.DATABASE_URL || '';
@@ -31,7 +32,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     await client`SELECT 1`;
     return true;
   } catch (error) {
-    console.error('Database connection failed:', error);
+    logger.error('Database connection failed', { error });
     return false;
   }
 }

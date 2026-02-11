@@ -104,8 +104,7 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(performance);
   } catch (error) {
-    console.error('Steward performance analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch steward performance' },
       { status: 500 }
     );

@@ -130,8 +130,7 @@ export default function OrganizationsPage() {
       
       mutate();
     } catch (error) {
-      console.error("Error archiving organization:", error);
-      alert("Failed to archive organization");
+alert("Failed to archive organization");
     }
   };
 

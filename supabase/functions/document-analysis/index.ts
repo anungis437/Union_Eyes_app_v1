@@ -194,8 +194,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Document analysis error:', error);
-    
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Internal server error',
@@ -271,8 +269,6 @@ async function analyzeDocument(request: AnalysisRequest): Promise<AnalysisResult
     return result;
 
   } catch (error) {
-    console.error('Analysis failed:', error);
-    
     const failedResult: AnalysisResult = {
       documentId: request.documentId,
       status: 'failed',
@@ -328,7 +324,6 @@ async function extractEntities(text: string): Promise<ExtractedEntity[]> {
     }));
 
   } catch (error) {
-    console.error('Entity extraction failed:', error);
     return [];
   }
 }
@@ -366,7 +361,6 @@ async function detectClauses(text: string): Promise<DetectedClause[]> {
     ];
 
   } catch (error) {
-    console.error('Clause detection failed:', error);
     return [];
   }
 }
@@ -405,7 +399,6 @@ async function assessRisk(text: string, clauses?: DetectedClause[]): Promise<Ris
     };
 
   } catch (error) {
-    console.error('Risk assessment failed:', error);
     return {
       overallRisk: 'low',
       riskFactors: [],
@@ -445,7 +438,6 @@ async function generateSummary(text: string): Promise<DocumentSummary> {
     };
 
   } catch (error) {
-    console.error('Summary generation failed:', error);
     return {
       executiveSummary: 'Summary generation failed',
       keyTerms: [],
@@ -572,6 +564,5 @@ async function sendWebhookNotification(
       })
     });
   } catch (error) {
-    console.error('Webhook notification failed:', error);
   }
 }

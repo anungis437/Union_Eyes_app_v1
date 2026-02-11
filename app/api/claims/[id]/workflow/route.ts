@@ -1,7 +1,7 @@
 /**
  * Claims Workflow API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -98,8 +98,7 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
       dataType: 'CLAIMS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-    console.error("Error getting workflow status:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to get workflow status" },
       { status: 500 }
     );

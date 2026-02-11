@@ -32,11 +32,10 @@
 
 import { db } from '@/db';
 import { organizations } from '@/db/schema';
+import { clcOrganizationSyncLog, clcWebhookLog } from '@/db/schema/clc-sync-audit-schema';
 import { eq, desc, and, gte, isNotNull } from 'drizzle-orm';
 import { createHmac, timingSafeEqual } from 'crypto';
-
-// TODO: Create schema tables for CLC sync
-// import { clcSyncLog, clcWebhookLog } from '@/db/schema';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -269,7 +268,7 @@ export async function syncAllOrganizations(): Promise<SyncStatistics> {
   stats.duration = Date.now() - startTime;
 
   // Log overall sync statistics
-  console.log('CLC Sync Completed:', stats);
+  logger.info('CLC Sync Completed', { stats });
 
   return stats;
 }
@@ -663,13 +662,13 @@ function getConflictReason(field: string, resolution: string): string {
 function verifyWebhookSignature(payload: CLCWebhookPayload): boolean {
   // Require webhook secret in production
   if (!WEBHOOK_SECRET) {
-    console.error('CLC_WEBHOOK_SECRET not configured - rejecting webhook');
+    logger.error('CLC_WEBHOOK_SECRET not configured - rejecting webhook');
     return false;
   }
 
   // Verify signature is present
   if (!payload.signature) {
-    console.error('Webhook payload missing signature');
+    logger.error('Webhook payload missing signature');
     return false;
   }
 
@@ -688,19 +687,19 @@ function verifyWebhookSignature(payload: CLCWebhookPayload): boolean {
     
     // Ensure both buffers are same length before comparison
     if (signatureBuffer.length !== expectedBuffer.length) {
-      console.error('Webhook signature length mismatch');
+      logger.error('Webhook signature length mismatch');
       return false;
     }
     
     const isValid = timingSafeEqual(signatureBuffer, expectedBuffer);
     
     if (!isValid) {
-      console.error('Webhook signature verification failed');
+      logger.error('Webhook signature verification failed');
     }
     
     return isValid;
   } catch (error) {
-    console.error('Error verifying webhook signature:', error);
+    logger.error('Error verifying webhook signature', { error });
     return false;
   }
 }
@@ -719,42 +718,43 @@ async function logSync(
   error?: string
 ): Promise<void> {
   try {
-    // TODO: Enable after creating clcSyncLog schema table
-    // await db.insert(clcSyncLog).values({
-    //   organizationId,
-    //   affiliateCode,
-    //   action,
-    //   changes: changes ? changes.join('; ') : null,
-    //   conflicts: conflicts ? JSON.stringify(conflicts) : null,
-    //   duration,
-    //   error,
-    //   syncedAt: new Date()
-    // });
-    console.log('Sync logged:', { organizationId, affiliateCode, action });
+    await db.insert(clcOrganizationSyncLog).values({
+      organizationId,
+      affiliateCode,
+      action,
+      changes: changes ? changes.join('; ') : null,
+      conflicts: conflicts || null,
+      duration,
+      error,
+      syncedAt: new Date().toISOString(),
+    });
+    logger.info('Sync logged', { organizationId, affiliateCode, action });
   } catch (err) {
-    console.error('Failed to log sync:', err);
+    logger.error('Failed to log sync', { error: err });
   }
 }
 
 async function logWebhook(
   payload: CLCWebhookPayload,
   status: 'processed' | 'rejected' | 'failed',
-  message: string
+  message: string,
+  processingDuration?: number
 ): Promise<void> {
   try {
-    // TODO: Enable after creating clcWebhookLog schema table
-    // await db.insert(clcWebhookLog).values({
-    //   webhookId: payload.id,
-    //   type: payload.type,
-    //   affiliateCode: payload.data.affiliateCode,
-    //   status,
-    //   message,
-    //   payload: JSON.stringify(payload),
-    //   receivedAt: new Date()
-    // });
-    console.log('Webhook logged:', { type: payload.type, status });
+    await db.insert(clcWebhookLog).values({
+      webhookId: payload.id,
+      type: payload.type,
+      affiliateCode: payload.data.affiliateCode,
+      payload: payload as any,
+      status,
+      message,
+      processingDuration: processingDuration || null,
+      receivedAt: payload.timestamp,
+      processedAt: new Date().toISOString(),
+    });
+    logger.info('Webhook logged', { type: payload.type, status });
   } catch (err) {
-    console.error('Failed to log webhook:', err);
+    logger.error('Failed to log webhook', { error: err });
   }
 }
 

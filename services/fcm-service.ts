@@ -7,14 +7,6 @@
  * Install with: pnpm add firebase-admin
  */
 
-// Optional import - will be checked at runtime
-let admin: any = null;
-try {
-  admin = require('firebase-admin');
-} catch (error) {
-  console.warn('firebase-admin not installed. FCM push notifications will be disabled.');
-}
-
 import { db } from '@/db';
 import {
   pushDevices,
@@ -24,6 +16,15 @@ import {
   type PushNotification,
 } from '@/db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
+
+// Optional import - will be checked at runtime
+let admin: any = null;
+try {
+  admin = require('firebase-admin');
+} catch (error) {
+  logger.warn('firebase-admin not installed. FCM push notifications will be disabled.');
+}
 
 // =============================================
 // TYPES
@@ -93,7 +94,7 @@ export function initializeFirebase() {
     // Check if service account is configured
     const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!serviceAccount) {
-      console.warn('Firebase service account not configured. Push notifications will not work.');
+      logger.warn('Firebase service account not configured. Push notifications will not work.');
       return null;
     }
 
@@ -107,10 +108,10 @@ export function initializeFirebase() {
       });
     }
 
-    console.log('Firebase Admin SDK initialized successfully');
+    logger.info('Firebase Admin SDK initialized successfully');
     return firebaseApp;
   } catch (error) {
-    console.error('Failed to initialize Firebase Admin SDK:', error);
+    logger.error('Failed to initialize Firebase Admin SDK', { error });
     return null;
   }
 }
@@ -125,7 +126,7 @@ function getMessaging(): any | null { // Messaging
   try {
     return admin?.messaging(app);
   } catch (error) {
-    console.error('Failed to get Firebase Messaging instance:', error);
+    logger.error('Failed to get Firebase Messaging instance', { error });
     return null;
   }
 }
@@ -307,7 +308,7 @@ export async function sendToDevice(
       messageId: response,
     };
   } catch (error: any) {
-    console.error('Error sending to device:', error);
+    logger.error('Error sending to device', { error, deviceId, notificationId });
 
     // Handle specific FCM errors
     let errorCode = 'unknown';
@@ -492,7 +493,7 @@ export async function sendToTopic(
       messageId: response,
     };
   } catch (error: any) {
-    console.error('Error sending to topic:', error);
+    logger.error('Error sending to topic', { error, topic });
 
     return {
       success: false,
@@ -533,7 +534,7 @@ export async function subscribeToTopic(
       errors: response.errors,
     };
   } catch (error: any) {
-    console.error('Error subscribing to topic:', error);
+    logger.error('Error subscribing to topic', { error, topic });
 
     return {
       successCount: 0,
@@ -568,7 +569,7 @@ export async function unsubscribeFromTopic(
       errors: response.errors,
     };
   } catch (error: any) {
-    console.error('Error unsubscribing from topic:', error);
+    logger.error('Error unsubscribing from topic', { error, topic });
 
     return {
       successCount: 0,

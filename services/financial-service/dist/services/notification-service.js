@@ -74,8 +74,7 @@ async function processPendingNotifications(batchSize = 50) {
             processed++;
         }
         catch (error) {
-            console.error(`Failed to send notification ${notification.id}:`, error);
-            // Continue processing other notifications
+// Continue processing other notifications
         }
     }
     return processed;
@@ -179,9 +178,7 @@ async function sendThroughChannel(channel, type, userId, tenantId, data) {
  */
 async function sendEmail(userId, subject, body, data) {
     // TODO: Integrate with email service (SendGrid, AWS SES, etc.)
-    console.log(`[EMAIL] To: ${userId}, Subject: ${subject}`);
-    console.log(`[EMAIL] Body: ${body}`);
-    // Simulated email send
+// Simulated email send
     // In production, would call:
     // await emailService.send({ to: userEmail, subject, html: body });
 }
@@ -190,8 +187,7 @@ async function sendEmail(userId, subject, body, data) {
  */
 async function sendSMS(userId, message) {
     // TODO: Integrate with SMS service (Twilio, AWS SNS, etc.)
-    console.log(`[SMS] To: ${userId}, Message: ${message}`);
-    // Simulated SMS send
+// Simulated SMS send
     // In production, would call:
     // await smsService.send({ to: userPhone, message });
 }
@@ -200,8 +196,7 @@ async function sendSMS(userId, message) {
  */
 async function sendPushNotification(userId, title, body, data) {
     // TODO: Integrate with push service (Firebase, OneSignal, etc.)
-    console.log(`[PUSH] To: ${userId}, Title: ${title}, Body: ${body}`);
-    // Simulated push send
+// Simulated push send
     // In production, would call:
     // await pushService.send({ userId, title, body, data });
 }
@@ -210,8 +205,7 @@ async function sendPushNotification(userId, title, body, data) {
  */
 async function createInAppNotification(tenantId, userId, type, message, data) {
     // Store in database for in-app display
-    console.log(`[IN-APP] User: ${userId}, Type: ${type}, Message: ${message}`);
-    // In production, would insert into in_app_notifications table
+// In production, would insert into in_app_notifications table
 }
 // ============================================================================
 // TEMPLATE MANAGEMENT
@@ -480,8 +474,7 @@ async function retryFailedNotifications(maxAttempts = 3) {
             retried++;
         }
         catch (error) {
-            console.error(`Retry failed for notification ${notification.id}:`, error);
-        }
+}
     }
     return retried;
 }

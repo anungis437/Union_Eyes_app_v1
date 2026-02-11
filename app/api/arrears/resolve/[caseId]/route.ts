@@ -205,8 +205,7 @@ export const POST = async (
             severity: 'high',
             details: { error: error instanceof Error ? error.message : 'Unknown error', caseId: params.caseId },
           });
-          console.error('Resolve case error:', error);
-          return NextResponse.json(
+return NextResponse.json(
             { error: 'Failed to resolve case' },
             { status: 500 }
           );

@@ -88,8 +88,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       const { data: posts, error, count } = await query;
 
       if (error) {
-        console.error('Error fetching posts:', error);
-        return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -99,8 +98,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
         offset,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 });
 
@@ -207,8 +205,7 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
         failed: failureCount,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Internal server error',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -258,8 +255,7 @@ export const DELETE = withRoleAuth(20, async (request: NextRequest, context) => 
         post_id: postId,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to delete post',
           details: error instanceof Error ? error.message : 'Unknown error',

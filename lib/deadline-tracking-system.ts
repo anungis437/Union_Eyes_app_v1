@@ -216,8 +216,7 @@ export async function createDeadline(
       dueDate,
     };
   } catch (error) {
-    console.error("Error creating deadline:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to create deadline",
     };
@@ -263,8 +262,7 @@ export async function createGrievanceStepDeadlines(
 
     return { success: true, deadlineIds };
   } catch (error) {
-    console.error("Error creating grievance step deadlines:", error);
-    return {
+return {
       success: false,
       deadlineIds: [],
       error: error instanceof Error ? error.message : "Failed to create deadlines",
@@ -299,8 +297,7 @@ export async function completeDeadline(
 
     return { success: true };
   } catch (error) {
-    console.error("Error completing deadline:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to complete deadline",
     };
@@ -362,8 +359,7 @@ export async function requestDeadlineExtension(
 
     return { success: true };
   } catch (error) {
-    console.error("Error requesting deadline extension:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to request extension",
     };
@@ -414,8 +410,7 @@ export async function approveDeadlineExtension(
 
     return { success: true };
   } catch (error) {
-    console.error("Error approving deadline extension:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to approve extension",
     };
@@ -448,8 +443,7 @@ export async function getUpcomingDeadlines(
 
     return deadlines.map((d) => createDeadlineAlert(d));
   } catch (error) {
-    console.error("Error getting upcoming deadlines:", error);
-    return [];
+return [];
   }
 }
 
@@ -471,8 +465,7 @@ export async function getOverdueDeadlines(tenantId: string): Promise<DeadlineAle
 
     return deadlines.map((d) => createDeadlineAlert(d));
   } catch (error) {
-    console.error("Error getting overdue deadlines:", error);
-    return [];
+return [];
   }
 }
 
@@ -494,8 +487,7 @@ export async function getGrievanceDeadlines(
 
     return deadlines;
   } catch (error) {
-    console.error("Error getting grievance deadlines:", error);
-    return [];
+return [];
   }
 }
 
@@ -526,8 +518,7 @@ export async function escalateMissedDeadlines(tenantId: string): Promise<number>
 
     return escalatedCount;
   } catch (error) {
-    console.error("Error escalating missed deadlines:", error);
-    return 0;
+return 0;
   }
 }
 
@@ -607,8 +598,7 @@ async function scheduleReminders(
       }
     }
   } catch (error) {
-    console.error("Error scheduling reminders:", error);
-  }
+}
 }
 
 /**
@@ -627,8 +617,7 @@ async function cancelDeadlineReminders(deadlineId: string): Promise<void> {
         )
       );
   } catch (error) {
-    console.error("Error canceling deadline reminders:", error);
-  }
+}
 }
 
 /**
@@ -679,7 +668,6 @@ async function sendEscalationNotification(alert: DeadlineAlert): Promise<void> {
       });
     }
   } catch (error) {
-    console.error("Error sending escalation notification:", error);
-  }
+}
 }
 

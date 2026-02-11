@@ -1,7 +1,7 @@
 /**
  * CBA Clauses Compare API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -120,8 +120,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       return NextResponse.json(savedComparison);
     });
   } catch (error) {
-    console.error("Error comparing clauses:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
@@ -226,8 +225,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json({ comparisons });
   } catch (error) {
-    console.error("Error fetching comparisons:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );

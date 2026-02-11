@@ -128,15 +128,65 @@ export function SurveyBuilder({ tenantId, surveyId, onSave, onCancel }: SurveyBu
 
   // Load existing survey
   const loadSurvey = useCallback(async () => {
+    if (!surveyId) return;
+    
     try {
-      // TODO: Implement API call
+      const response = await fetch(`/api/communications/surveys/${surveyId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to load survey');
+      }
+
+      const data = await response.json();
+      const { survey, questions: loadedQuestions } = data;
+
+      // Set survey metadata
+      setTitle(survey.title || '');
+      setDescription(survey.description || '');
+      setSurveyType(survey.surveyType || 'general');
+      setWelcomeMessage(survey.welcomeMessage || '');
+      setThankYouMessage(survey.thankYouMessage || '');
+      
+      // Set survey settings
+      setAllowAnonymous(survey.allowAnonymous || false);
+      setRequireAuthentication(survey.requireAuthentication || false);
+      setShuffleQuestions(survey.shuffleQuestions || false);
+      setShowResults(survey.showResults || false);
+
+      // Convert loaded questions to component format
+      const formattedQuestions: Question[] = loadedQuestions.map((q: any) => ({
+        id: q.id,
+        questionText: q.questionText,
+        questionType: q.questionType,
+        description: q.description,
+        orderIndex: q.orderIndex,
+        section: q.section,
+        required: q.required,
+        choices: q.choices?.map((text: string, idx: number) => ({
+          id: `opt${idx + 1}`,
+          text,
+          order: idx,
+        })),
+        allowOther: q.allowOther,
+        minChoices: q.minChoices,
+        maxChoices: q.maxChoices,
+        ratingMin: q.ratingMin,
+        ratingMax: q.ratingMax,
+        ratingMinLabel: q.ratingMinLabel,
+        ratingMaxLabel: q.ratingMaxLabel,
+        minLength: q.minLength,
+        maxLength: q.maxLength,
+        placeholder: q.placeholder,
+      }));
+
+      setQuestions(formattedQuestions);
+
       toast({
-        title: 'Info',
-        description: 'Survey loading not yet implemented',
+        title: 'Success',
+        description: 'Survey loaded successfully',
       });
     } catch (error) {
-      console.error('Failed to load survey:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load survey',
         variant: 'destructive',
@@ -291,11 +341,14 @@ export function SurveyBuilder({ tenantId, surveyId, onSave, onCancel }: SurveyBu
     setIsSaving(true);
 
     try {
-      const response = await fetch('/api/communications/surveys', {
+      const url = surveyId 
+        ? `/api/communications/surveys/${surveyId}`
+        : '/api/communications/surveys';
+      
+      const response = await fetch(url, {
         method: surveyId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...(surveyId && { id: surveyId }),
           tenantId,
           title,
           description,
@@ -339,8 +392,7 @@ export function SurveyBuilder({ tenantId, surveyId, onSave, onCancel }: SurveyBu
 
       if (onSave) onSave();
     } catch (error) {
-      console.error('Failed to save survey:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to save survey',
         variant: 'destructive',

@@ -357,8 +357,7 @@ export async function sendBulkMonthlyReminders(
         failed++;
       }
     } catch (error) {
-      console.error(`Failed to send reminder to org ${org.id}:`, error);
-      failed++;
+failed++;
     }
   }
 
@@ -424,8 +423,7 @@ export async function processOverdueRemittances(): Promise<{
         criticalRemittances.push(remittance.id);
       }
     } catch (error) {
-      console.error(`Failed to send overdue alert for remittance ${remittance.id}:`, error);
-      failedCount++;
+failedCount++;
     }
   }
 
@@ -611,7 +609,7 @@ function generatePaymentConfirmationTemplate(
       <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background-color: #16a34a; color: white; padding: 20px; text-align: center;">
-            <h1>✓ Payment Confirmed</h1>
+            <h1>âœ“ Payment Confirmed</h1>
           </div>
           
           <div style="padding: 20px; background-color: #f9fafb;">
@@ -670,7 +668,7 @@ function generateMonthlyReminderTemplate(
       <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background-color: #2563eb; color: white; padding: 20px; text-align: center;">
-            <h1>📅 Monthly Remittance Reminder</h1>
+            <h1>ðŸ“… Monthly Remittance Reminder</h1>
           </div>
           
           <div style="padding: 20px; background-color: #f9fafb;">
@@ -732,7 +730,7 @@ function generateExecutiveEscalationTemplate(
       <html>
         <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto;">
           <div style="background-color: #991b1b; color: white; padding: 20px; text-align: center;">
-            <h1>🚨 EXECUTIVE ESCALATION</h1>
+            <h1>ðŸš¨ EXECUTIVE ESCALATION</h1>
             <p style="font-size: 18px; margin: 10px 0;">Critical Non-Compliance Alert</p>
           </div>
           
@@ -865,8 +863,7 @@ async function sendEmail(
       messageId: result.data?.id
     };
   } catch (error) {
-    console.error('Email send failed:', error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     };
@@ -877,18 +874,29 @@ async function sendSMS(
   to: string,
   message: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  // SMS implementation would use Twilio or similar service
-  // Placeholder for now
   try {
-    // TODO: Implement actual SMS sending via Twilio
-    console.log(`SMS to ${to}: ${message}`);
-    return {
-      success: true,
-      messageId: `sms_${Date.now()}`
-    };
+    // Import and use the Twilio SMS service
+    const { sendSms } = await import('@/services/twilio-sms-service');
+    
+    const result = await sendSms({
+      phoneNumber: to,
+      message,
+      organizationId: process.env.DEFAULT_ORGANIZATION_ID,
+    });
+
+    if (result.success) {
+return {
+        success: true,
+        messageId: result.twilioSid ?? result.messageId
+      };
+    } else {
+return {
+        success: false,
+        error: result.error
+      };
+    }
   } catch (error) {
-    console.error('SMS send failed:', error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     };
@@ -924,8 +932,7 @@ async function logNotifications(
       sentAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Failed to log notification:', error);
-  }
+}
 }
 
 // ============================================================================

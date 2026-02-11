@@ -66,8 +66,7 @@ export function ClaimStatusUpdate({ claimId, onStatusUpdated }: ClaimStatusUpdat
         const data = await response.json();
         setWorkflow(data.workflow);
       } catch (err) {
-        console.error("Error loading workflow:", err);
-        setError("Failed to load workflow status");
+setError("Failed to load workflow status");
       } finally {
         setLoadingWorkflow(false);
       }

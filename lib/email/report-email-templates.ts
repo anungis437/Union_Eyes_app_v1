@@ -38,16 +38,9 @@ export async function sendScheduledReportEmail(params: SendEmailParams): Promise
       await sendViaSendGrid(params);
     } else {
       // Fallback to console log for development
-      console.log('[Email] Would send report email:', {
-        recipients: schedule.recipients,
-        reportId: schedule.reportId,
-        format: schedule.exportFormat,
-        fileUrl,
-      });
-    }
+}
   } catch (error) {
-    console.error('[Email] Failed to send scheduled report:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -76,11 +69,8 @@ async function sendViaResend(params: SendEmailParams): Promise<void> {
         },
       ],
     });
-
-    console.log('[Email] Sent via Resend to:', schedule.recipients);
-  } catch (error) {
-    console.error('[Email] Resend error:', error);
-    throw error;
+} catch (error) {
+throw error;
   }
 }
 
@@ -92,18 +82,21 @@ async function sendViaResend(params: SendEmailParams): Promise<void> {
 async function sendViaSendGrid(params: SendEmailParams): Promise<void> {
   const { schedule, fileUrl, fileBuffer } = params;
 
-  // SendGrid is optional - only use if installed
-  console.error('[Email] SendGrid integration requires @sendgrid/mail package');
-  console.error('[Email] Install with: npm install @sendgrid/mail');
-  console.error('[Email] For now, use Resend or console logging');
-  
-  throw new Error('SendGrid package not installed. Use EMAIL_PROVIDER=resend instead');
-  
-  // TODO: Uncomment when @sendgrid/mail is installed
-  /*
+  // SendGrid integration (install with: pnpm add @sendgrid/mail)
   try {
-    const sgMail = await import('@sendgrid/mail');
-    sgMail.default.setApiKey(process.env.SENDGRID_API_KEY || '');
+    // Check if SendGrid is available
+    let sgMail: any;
+    try {
+      sgMail = await import('@sendgrid/mail');
+    } catch (importError) {
+throw new Error('SendGrid package not installed. Using Resend fallback.');
+    }
+
+    if (!process.env.SENDGRID_API_KEY) {
+throw new Error('SendGrid API key not configured. Using Resend fallback.');
+    }
+
+    sgMail.default.setApiKey(process.env.SENDGRID_API_KEY);
 
     const reportName = (schedule as any).report_name || 'Report';
     const fileName = `${reportName.replace(/\s+/g, '-')}.${schedule.exportFormat}`;
@@ -122,13 +115,10 @@ async function sendViaSendGrid(params: SendEmailParams): Promise<void> {
         },
       ],
     });
-
-    console.log('[Email] Sent via SendGrid to:', schedule.recipients);
+return;
   } catch (error) {
-    console.error('[Email] SendGrid error:', error);
-    throw error;
+// Fall through to Resend implementation below
   }
-  */
 }
 
 // ============================================================================
@@ -228,7 +218,7 @@ function generateEmailHTML(schedule: ScheduledReport, fileUrl: string): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>📊 Scheduled Report</h1>
+          <h1>ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â  Scheduled Report</h1>
           <span class="badge">${scheduleType} Report</span>
         </div>
 
@@ -273,7 +263,7 @@ function generateEmailHTML(schedule: ScheduledReport, fileUrl: string): string {
             If you wish to unsubscribe or modify your report schedule, please contact your administrator.
           </p>
           <p style="margin-top: 10px;">
-            © ${new Date().getFullYear()} Union Claims. All rights reserved.
+            Ãƒâ€šÃ‚Â© ${new Date().getFullYear()} Union Claims. All rights reserved.
           </p>
         </div>
       </div>

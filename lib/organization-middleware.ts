@@ -75,8 +75,7 @@ export function withOrganizationAuth<T = any>(
           { status: 403 }
         );
       }
-      console.error("Organization middleware error:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -110,8 +109,7 @@ export async function validateOrganizationAccess(
     
     return true;
   } catch (error) {
-    console.error("Error validating organization access:", error);
-    return false;
+return false;
   }
 }
 

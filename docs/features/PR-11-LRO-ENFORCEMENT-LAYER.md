@@ -1,13 +1,13 @@
 # PR-11: LRO Enforcement Layer - "This Is How It MUST Be Done"
 
-**Status:** ✅ Complete  
+**Status:** âœ… Complete  
 **Tests:** 35/35 passing (24 FSM + 11 CI enforcement)  
 **Total LRO Tests:** 188/188 passing  
 **Principle:** "Excellence is not encouraged. Excellence is enforced."
 
 ---
 
-## Executive Summary: From Guidance → Governance
+## Executive Summary: From Guidance â†’ Governance
 
 **The Validator's Challenge:**
 > *"You're one decisive layer away. Right now: excellence is encouraged, but not enforced."*  
@@ -56,7 +56,7 @@ const validation = validateClaimTransition({
 validateClaimTransition({
   currentStatus: 'submitted',
   targetStatus: 'rejected',
-  userRole: 'member', // ❌ BLOCKED
+  userRole: 'member', // âŒ BLOCKED
 });
 // Result: { allowed: false, reason: "User role 'member' not authorized" }
 
@@ -64,7 +64,7 @@ validateClaimTransition({
 validateClaimTransition({
   currentStatus: 'submitted',
   targetStatus: 'rejected',
-  userRole: 'admin', // ✅ ALLOWED
+  userRole: 'admin', // âœ… ALLOWED
 });
 ```
 
@@ -88,19 +88,19 @@ validateClaimTransition({
   currentStatus: 'resolved',
   targetStatus: 'closed',
   hasRequiredDocumentation: false,
-  notes: undefined, // ❌ BLOCKED
+  notes: undefined, // âŒ BLOCKED
 });
 // Result: { allowed: false, reason: "Cannot transition from 'resolved' without required documentation or detailed notes." }
 ```
 
-**Enforcement Layer 5: Critical Signal Blocking** ⭐ *Most Important*
+**Enforcement Layer 5: Critical Signal Blocking** â­ *Most Important*
 
 ```typescript
 // BLOCKS: Closure with unresolved critical signals
 validateClaimTransition({
   currentStatus: 'resolved',
   targetStatus: 'closed',
-  hasUnresolvedCriticalSignals: true, // ❌ BLOCKED (member not notified, SLA breach, etc.)
+  hasUnresolvedCriticalSignals: true, // âŒ BLOCKED (member not notified, SLA breach, etc.)
 });
 // Result: { 
 //   allowed: false, 
@@ -158,7 +158,7 @@ const validation = validateClaimTransition({
   userRole: 'steward',
   priority,
   statusChangedAt: claim.updatedAt,
-  hasUnresolvedCriticalSignals, // ⭐ Signals block closure
+  hasUnresolvedCriticalSignals, // â­ Signals block closure
   hasRequiredDocumentation,
   notes,
 });
@@ -194,29 +194,29 @@ await tx.insert(claimUpdates).values({
 
 **11 tests that PROVE the governance layer cannot be bypassed:**
 
-✅ **API Route Guards**
+âœ… **API Route Guards**
 
 - Scans all routes in `app/api`
 - Identifies 82 potentially unguarded routes (logged as warning)
 - **ENFORCES**: Critical routes (claims/status) MUST have auth guards
 
-✅ **FSM Enforcement**
+âœ… **FSM Enforcement**
 
 - 8 illegal transitions tested (all blocked)
 - Role-based permissions enforced (members/stewards blocked from admin actions)
 - Minimum time-in-state enforced (24h, 72h, 168h for key states)
 
-✅ **Signal-Based Blocking**
+âœ… **Signal-Based Blocking**
 
 - Critical signals block closure (tested via FSM)
 - Closure allowed only when signals resolved
 
-✅ **SLA Tracking**
+âœ… **SLA Tracking**
 
 - SLA calculated for all cases
 - Breaches generate warnings (not blocking, but logged)
 
-✅ **Documentation Requirements**
+âœ… **Documentation Requirements**
 
 - Transitions requiring docs blocked without notes
 - Notes accepted as documentation substitute
@@ -227,14 +227,14 @@ await tx.insert(claimUpdates).values({
 // Test: should reject all illegal state transitions
 for (const [from, to] of illegalTransitions) {
   const result = validateClaimTransition({ ... });
-  expect(result.allowed).toBe(false); // ✅ ALL REJECTED
+  expect(result.allowed).toBe(false); // âœ… ALL REJECTED
 }
 
 // Test: should block closure when critical signals exist
 const result = validateClaimTransition({
   hasUnresolvedCriticalSignals: true,
 });
-expect(result.allowed).toBe(false); // ✅ BLOCKED
+expect(result.allowed).toBe(false); // âœ… BLOCKED
 expect(result.reason).toContain('critical signals');
 ```
 
@@ -242,32 +242,32 @@ expect(result.reason).toContain('critical signals');
 
 ## Addressing the Validator's Scorecard
 
-### 1️⃣ Hard State Machines ✅ COMPLETE
+### 1ï¸âƒ£ Hard State Machines âœ… COMPLETE
 
 **Before:** "Transitions feel guided, not governed."  
 **After:** **Transitions ARE governed. 8 states, 6 enforcement layers, illegal moves impossible.**
 
-- ✅ 24 FSM tests proving enforcement
-- ✅ Role-based authorization (stewards ≠ admins)
-- ✅ Time-based constraints (min 24h, 72h, 168h)
-- ✅ Documentation requirements enforced
-- ✅ Signals block closure (critical signal = no close)
+- âœ… 24 FSM tests proving enforcement
+- âœ… Role-based authorization (stewards â‰  admins)
+- âœ… Time-based constraints (min 24h, 72h, 168h)
+- âœ… Documentation requirements enforced
+- âœ… Signals block closure (critical signal = no close)
 
-### 2️⃣ Defensibility as First-Class Object 🔧 PLANNED
+### 2ï¸âƒ£ Defensibility as First-Class Object ðŸ”§ PLANNED
 
 **Status:** Architecture ready, full integration pending
 
 **What's Working:**
 
-- ✅ defensibility-pack.ts service exists (PR-6)
-- ✅ SHA-256 integrity hashing
-- ✅ Dual timeline (member vs staff visibility)
+- âœ… defensibility-pack.ts service exists (PR-6)
+- âœ… SHA-256 integrity hashing
+- âœ… Dual timeline (member vs staff visibility)
 
 **What's Needed:**
 
-- 🔧 Auto-generation trigger on claim resolution
-- 🔧 Database schema for pack storage
-- 🔧 Download API for pack retrieval
+- ðŸ”§ Auto-generation trigger on claim resolution
+- ðŸ”§ Database schema for pack storage
+- ðŸ”§ Download API for pack retrieval
 
 **Current Approach:**
 
@@ -275,20 +275,19 @@ expect(result.reason).toContain('critical signals');
 // workflow-engine.ts (commented until full integration)
 if (newStatus === 'resolved' || newStatus === 'closed') {
   // TODO: await generateDefensibilityPack(...);
-  console.log('[DEFENSIBILITY PACK] Auto-generation triggered');
 }
 ```
 
-### 3️⃣ Enforcement Proof ✅ COMPLETE
+### 3ï¸âƒ£ Enforcement Proof âœ… COMPLETE
 
 **Before:** "Policy enforcement still not mechanically impossible to bypass."  
 **After:** **CI tests prove policies cannot be bypassed.**
 
-- ✅ 11 CI enforcement tests
-- ✅ All illegal transitions rejected (100% coverage)
-- ✅ Critical routes verified for auth guards
-- ✅ Signal-based blocking proven
-- ✅ Documentation requirements enforced
+- âœ… 11 CI enforcement tests
+- âœ… All illegal transitions rejected (100% coverage)
+- âœ… Critical routes verified for auth guards
+- âœ… Signal-based blocking proven
+- âœ… Documentation requirements enforced
 
 ---
 
@@ -302,15 +301,15 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 **Total LRO Test Suite:**
 
 ```
-✅ 188/188 tests passing (100%)
-├── PR-5: Case Workflow FSM (31 tests)
-├── PR-5: SLA Calculator (22 tests)
-├── PR-6: Defensibility Pack (25 tests)
-├── PR-7: LRO Signals (30 tests)
-├── PR-8: UI Components (28 tests)
-├── PR-10: LRO Metrics (17 tests)
-├── PR-11: Claim Workflow FSM (24 tests) ⭐ NEW
-└── PR-11: CI Enforcement (11 tests) ⭐ NEW
+âœ… 188/188 tests passing (100%)
+â”œâ”€â”€ PR-5: Case Workflow FSM (31 tests)
+â”œâ”€â”€ PR-5: SLA Calculator (22 tests)
+â”œâ”€â”€ PR-6: Defensibility Pack (25 tests)
+â”œâ”€â”€ PR-7: LRO Signals (30 tests)
+â”œâ”€â”€ PR-8: UI Components (28 tests)
+â”œâ”€â”€ PR-10: LRO Metrics (17 tests)
+â”œâ”€â”€ PR-11: Claim Workflow FSM (24 tests) â­ NEW
+â””â”€â”€ PR-11: CI Enforcement (11 tests) â­ NEW
 ```
 
 ---
@@ -323,9 +322,9 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
 
 - Officer clicks "Close Case"
 - System allows (no enforcement)
-- Member not notified ❌
-- SLA breach not captured ❌
-- Documentation missing ❌
+- Member not notified âŒ
+- SLA breach not captured âŒ
+- Documentation missing âŒ
 
 **After PR-11:**
 
@@ -346,9 +345,9 @@ const result = await updateClaimStatus('CASE-123', 'closed', 'officer_456');
 **Before PR-11:**
 
 - Admin closes case
-- Member never notified of resolution ❌
-- SLA breach not addressed ❌
-- Case closed anyway ❌
+- Member never notified of resolution âŒ
+- SLA breach not addressed âŒ
+- Case closed anyway âŒ
 
 **After PR-11:**
 
@@ -377,7 +376,7 @@ const result = await updateClaimStatus('CASE-456', 'closed', 'admin_789');
 
 - Member has API access
 - Could potentially call status change
-- No role enforcement ❌
+- No role enforcement âŒ
 
 **After PR-11:**
 
@@ -387,7 +386,7 @@ const result = await updateClaimStatus('CASE-456', 'closed', 'admin_789');
 const result = validateClaimTransition({
   currentStatus: 'submitted',
   targetStatus: 'rejected',
-  userRole: 'member', // ❌ NOT AUTHORIZED
+  userRole: 'member', // âŒ NOT AUTHORIZED
 });
 
 // FSM BLOCKS:
@@ -494,7 +493,7 @@ await tx.insert(claimUpdates).values({
    ```typescript
    // Adjust based on real performance data
    export const CLAIM_SLA_STANDARDS = {
-     investigation: 240, // 10 days → tune to 168 if org can meet 7 days consistently
+     investigation: 240, // 10 days â†’ tune to 168 if org can meet 7 days consistently
    };
    ```
 
@@ -547,22 +546,22 @@ await tx.insert(claimUpdates).values({
 ### "Right now, the system says: 'Here's how you can do it'. World-class systems say: 'This is how it must be done'."
 
 **PR-11 Response:**
-✅ **The system now says: "This is how it MUST be done."**
+âœ… **The system now says: "This is how it MUST be done."**
 
-- ❌ You CANNOT close a case with critical signals
-- ❌ You CANNOT skip the investigation phase before 72 hours
-- ❌ You CANNOT close without documentation
-- ❌ You CANNOT reject a claim as a member (admin-only)
-- ❌ You CANNOT bypass the 7-day cooling-off period
-- ✅ You MUST follow the FSM
-- ✅ You MUST resolve signals before closure
-- ✅ You MUST provide documentation
-- ✅ You MUST have the correct role
+- âŒ You CANNOT close a case with critical signals
+- âŒ You CANNOT skip the investigation phase before 72 hours
+- âŒ You CANNOT close without documentation
+- âŒ You CANNOT reject a claim as a member (admin-only)
+- âŒ You CANNOT bypass the 7-day cooling-off period
+- âœ… You MUST follow the FSM
+- âœ… You MUST resolve signals before closure
+- âœ… You MUST provide documentation
+- âœ… You MUST have the correct role
 
 ### "The system does not yet interrupt bad outcomes. Signals are visible, but not authoritative."
 
 **PR-11 Response:**
-✅ **Signals are now AUTHORITATIVE. They block actions.**
+âœ… **Signals are now AUTHORITATIVE. They block actions.**
 
 ```typescript
 // Critical signals BLOCK closure
@@ -574,10 +573,10 @@ if (hasUnresolvedCriticalSignals) {
 }
 ```
 
-### "This is where the shift begins — and where excitement starts."
+### "This is where the shift begins â€” and where excitement starts."
 
 **PR-11 Response:**
-🚀 **The shift is complete. Bad practice is now IMPOSSIBLE.**
+ðŸš€ **The shift is complete. Bad practice is now IMPOSSIBLE.**
 
 ---
 
@@ -587,14 +586,14 @@ PR-11 closes the gap between "capable platform" and "opinionated system."
 
 **What Changed:**
 
-- Excellence was encouraged → Excellence is now **enforced**
-- Transitions were guided → Transitions are now **governed**
-- Signals were visible → Signals now **block**
-- Best practices suggested → Best practices **required**
+- Excellence was encouraged â†’ Excellence is now **enforced**
+- Transitions were guided â†’ Transitions are now **governed**
+- Signals were visible â†’ Signals now **block**
+- Best practices suggested â†’ Best practices **required**
 
 **The Result:**
 > "This is how it MUST be done."
 
 **Test Proof:** 188/188 tests passing (including 35 new enforcement tests)
 
-UnionEyes → **Labour Relations Operating System** ✅
+UnionEyes â†’ **Labour Relations Operating System** âœ…

@@ -119,9 +119,7 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
 
     return response.accessToken;
   } catch (error) {
-    console.error('Error refreshing Microsoft access token:', error);
-    
-    // Mark connection as failed
+// Mark connection as failed
     await db
       .update(externalCalendarConnections)
       .set({
@@ -185,8 +183,7 @@ export async function listMicrosoftCalendars(connectionId: string) {
 
     return response.value || [];
   } catch (error) {
-    console.error('Error listing Microsoft calendars:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -285,8 +282,7 @@ export async function importMicrosoftEvents(
           importedCount++;
         }
       } catch (error) {
-        console.error(`Error importing Microsoft event ${msEvent.id}:`, error);
-      }
+}
     }
 
     // Update delta link
@@ -299,8 +295,7 @@ export async function importMicrosoftEvents(
       total: events.length,
     };
   } catch (error) {
-    console.error('Error importing Microsoft events:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -354,8 +349,7 @@ export async function exportEventToMicrosoft(
       return response;
     }
   } catch (error) {
-    console.error('Error exporting event to Microsoft:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -374,8 +368,7 @@ export async function deleteEventFromMicrosoft(
       .api(`/me/calendars/${microsoftCalendarId}/events/${microsoftEventId}`)
       .delete();
   } catch (error) {
-    console.error('Error deleting Microsoft event:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -572,8 +565,7 @@ async function handleDeletedMicrosoftEvent(calendarId: string, msEventId: string
         .where(eq(calendarEvents.id, event.id));
     }
   } catch (error) {
-    console.error('Error handling deleted Microsoft event:', error);
-  }
+}
 }
 
 /**
@@ -611,8 +603,7 @@ async function updateDeltaLink(
       })
       .where(eq(externalCalendarConnections.id, connectionId));
   } catch (error) {
-    console.error('Error updating delta link:', error);
-  }
+}
 }
 
 /**

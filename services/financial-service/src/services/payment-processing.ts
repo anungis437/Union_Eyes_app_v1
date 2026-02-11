@@ -13,6 +13,7 @@ import Stripe from 'stripe';
 import { db } from '../db';
 import * as schema from '../db/schema';
 import { eq, and, sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Initialize Stripe (use test key in development)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
@@ -95,7 +96,7 @@ export async function createDuesPaymentIntent(
       status: paymentIntent.status,
     };
   } catch (error) {
-    console.error('Error creating dues payment intent:', error);
+    logger.error('Error creating dues payment intent', { error, tenantId: request.tenantId, memberId: request.memberId });
     throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -137,7 +138,7 @@ export async function confirmDuesPayment(
       ));
 
   } catch (error) {
-    console.error('Error confirming dues payment:', error);
+    logger.error('Error confirming dues payment', { error, tenantId, transactionId });
     throw error;
   }
 }
@@ -214,7 +215,7 @@ export async function createStipendPayout(
     };
 
   } catch (error) {
-    console.error('Error creating stipend payout:', error);
+    logger.error('Error creating stipend payout', { error, tenantId, disbursementId });
     throw new Error(`Failed to create payout: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -385,7 +386,7 @@ export async function createDonationPaymentIntent(
       status: paymentIntent.status,
     };
   } catch (error) {
-    console.error('Error creating donation payment intent:', error);
+    logger.error('Error creating donation payment intent', { error, tenantId, strikeFundId });
     throw new Error(`Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
@@ -434,7 +435,7 @@ export async function confirmDonationPayment(
     return donation.id;
 
   } catch (error) {
-    console.error('Error confirming donation payment:', error);
+    logger.error('Error confirming donation payment', { error, tenantId, paymentIntentId });
     throw error;
   }
 }
@@ -477,11 +478,11 @@ export async function processStripeWebhook(
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info('Unhandled webhook event type', { eventType: event.type });
     }
 
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    logger.error('Error processing webhook', { error, eventType: event.type });
     throw error;
   }
 }

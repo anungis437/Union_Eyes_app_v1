@@ -76,8 +76,7 @@ export const GET = async (req: NextRequest) => {
           );
       }
     } catch (error: any) {
-      console.error('❌ SMS GET error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: error.message || 'Internal server error' },
         { status: 500 }
       );
@@ -117,8 +116,7 @@ export const POST = async (req: NextRequest) => {
           );
       }
     } catch (error: any) {
-      console.error('❌ SMS POST error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: error.message || 'Internal server error' },
         { status: 500 }
       );

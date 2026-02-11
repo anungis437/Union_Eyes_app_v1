@@ -244,8 +244,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Webhook processing error:', error);
-
     if (webhookEvent) {
       await logWebhookEvent(webhookEvent, 'error', { error: error.message });
       
@@ -327,7 +325,6 @@ async function verifyWebhookSignature(
 
   const secretKey = await getProviderSecret(provider.name);
   if (!secretKey) {
-    console.warn(`No secret key configured for provider: ${provider.name}`);
     return false;
   }
 
@@ -343,7 +340,6 @@ async function verifyWebhookSignature(
         return false;
     }
   } catch (error) {
-    console.error('Signature verification error:', error);
     return false;
   }
 }
@@ -429,8 +425,6 @@ async function processWebhookEvent(event: WebhookEvent): Promise<ProcessingResul
     };
 
   } catch (error) {
-    console.error(`Event processing failed for ${event.provider.name}:`, error);
-    
     return {
       success: false,
       eventId: event.id,
@@ -478,7 +472,7 @@ async function processStripeEvent(event: WebhookEvent, actions: ProcessedAction[
       break;
 
     default:
-      console.log(`Unhandled Stripe event: ${type}`);
+      break;
   }
 }
 
@@ -505,7 +499,7 @@ async function processWestlawEvent(event: WebhookEvent, actions: ProcessedAction
       break;
 
     default:
-      console.log(`Unhandled Westlaw event: ${eventType}`);
+      break;
   }
 }
 
@@ -532,7 +526,7 @@ async function processDocuSignEvent(event: WebhookEvent, actions: ProcessedActio
       break;
 
     default:
-      console.log(`Unhandled DocuSign event: ${eventType}`);
+      break;
   }
 }
 
@@ -665,43 +659,34 @@ async function updatePaymentStatus(paymentId: string, status: string): Promise<v
 
 async function processInvoicePayment(invoice: any): Promise<void> {
   // Process invoice payment logic
-  console.log('Processing invoice payment:', invoice.id);
 }
 
 async function updateSubscription(subscription: any): Promise<void> {
   // Update subscription logic
-  console.log('Updating subscription:', subscription.id);
 }
 
 async function updateCaseInformation(caseData: any): Promise<void> {
   // Update case information from Westlaw
-  console.log('Updating case information:', caseData);
 }
 
 async function processResearchResults(results: any): Promise<void> {
   // Process research results
-  console.log('Processing research results:', results);
 }
 
 async function processCompletedEnvelope(envelope: any): Promise<void> {
   // Process completed DocuSign envelope
-  console.log('Processing completed envelope:', envelope);
 }
 
 async function processDeclinedEnvelope(envelope: any): Promise<void> {
   // Process declined DocuSign envelope
-  console.log('Processing declined envelope:', envelope);
 }
 
 // Additional provider processors would be implemented here...
 async function processLexisNexisEvent(event: WebhookEvent, actions: ProcessedAction[]): Promise<void> {
-  console.log('Processing LexisNexis event:', event.eventType);
 }
 
 async function processPacerEvent(event: WebhookEvent, actions: ProcessedAction[]): Promise<void> {
-  console.log('Processing PACER event:', event.eventType);
 }
 
 async function processQuickBooksEvent(event: WebhookEvent, actions: ProcessedAction[]): Promise<void> {
-  console.log('Processing QuickBooks event:', event.eventType);
 }

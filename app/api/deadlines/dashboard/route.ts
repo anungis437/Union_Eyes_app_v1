@@ -20,8 +20,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const summary = await getDashboardSummary(tenantId);
     return NextResponse.json(summary);
   } catch (error) {
-    console.error('Failed to fetch dashboard summary:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch summary' },
       { status: 500 }
     );

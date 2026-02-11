@@ -108,8 +108,7 @@ export const POST = async (request: NextRequest) => {
           );
       }
     } catch (error) {
-      console.error('Precedent matching error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Precedent matching failed',
           details: error instanceof Error ? error.message : 'Unknown error',

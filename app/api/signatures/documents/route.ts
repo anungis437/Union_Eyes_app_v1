@@ -70,8 +70,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-    console.error("Signature request error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to create signature request" },
       { status: 500 }
     );
@@ -105,8 +104,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json(documents);
   } catch (error) {
-    console.error("Get documents error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to retrieve documents" },
       { status: 500 }
     );

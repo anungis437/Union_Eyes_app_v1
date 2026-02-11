@@ -79,15 +79,13 @@ export function createMultiTenantFramework(config) {
             // Initialize isolation service
             await isolationService.initialize();
             // Additional initialization can be added here
-            console.log('Multi-tenant framework initialized successfully');
-        },
+},
         async cleanup() {
             // Cleanup isolation service
             await isolationService.cleanup();
             // Clear middleware cache
             middleware.clearCache();
-            console.log('Multi-tenant framework cleaned up successfully');
-        }
+}
     };
 }
 // Predefined configurations for common use cases

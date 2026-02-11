@@ -17,8 +17,6 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
-// TODO: BubbleMenu was removed from @tiptap/react v3 - needs refactoring to use floating-ui directly
-// import { BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -456,44 +454,6 @@ export function NewsletterEditor({
 
       {/* Editor Content */}
       <div className="bg-white">
-        {/* TODO: BubbleMenu was removed from @tiptap/react v3 - needs refactoring to use floating-ui directly
-        {editable && (
-          <BubbleMenu
-            editor={editor}
-            tippyOptions={{ duration: 100 }}
-            className="bg-gray-900 text-white rounded-lg shadow-lg p-1 flex gap-1"
-          >
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              active={editor.isActive('bold')}
-              variant="bubble"
-            >
-              <Bold className="w-4 h-4" />
-            </ToolbarButton>
-
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              active={editor.isActive('italic')}
-              variant="bubble"
-            >
-              <Italic className="w-4 h-4" />
-            </ToolbarButton>
-
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              active={editor.isActive('underline')}
-              variant="bubble"
-            >
-              <UnderlineIcon className="w-4 h-4" />
-            </ToolbarButton>
-
-            <ToolbarButton onClick={addLink} variant="bubble">
-              <LinkIcon className="w-4 h-4" />
-            </ToolbarButton>
-          </BubbleMenu>
-        )}
-        */}
-
         <EditorContent editor={editor} />
       </div>
 

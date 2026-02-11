@@ -6,14 +6,15 @@
  * - GET /api/admin/clc/remittances/[id] - Get remittance details
  * - PUT /api/admin/clc/remittances/[id] - Update remittance
  * - DELETE /api/admin/clc/remittances/[id] - Delete remittance
- * 
- * TODO: Implement perCapitaRemittances schema to enable this functionality
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+import { db } from '@/db';
+import { perCapitaRemittances } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 // =====================================================================================
 // GET - Get remittance details
@@ -42,19 +43,40 @@ export const GET = async (
     }
 
     logApiAuditEvent({
-      timestamp: new Date().toISOString(), userId,
-        endpoint: '/api/admin/clc/remittances/[id]',
-        method: 'GET',
-        eventType: 'validation_failed',
-        severity: 'low',
-        details: { reason: 'Not yet implemented', remittanceId: params.id },
-      });
-      
-      // TODO: Implement when perCapitaRemittances schema is created
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: '/api/admin/clc/remittances/[id]',
+      method: 'GET',
+      eventType: 'clc_remittance_view',
+      severity: 'low',
+      details: { remittanceId: params.id },
+    });
+
+    try {
+      // Fetch remittance details
+      const remittance = await db
+        .select()
+        .from(perCapitaRemittances)
+        .where(eq(perCapitaRemittances.id, params.id))
+        .limit(1);
+
+      if (remittance.length === 0) {
+        return NextResponse.json(
+          { error: 'Remittance not found' },
+          { status: 404 }
+        );
+      }
+
       return NextResponse.json(
-        { error: 'Per-capita remittances schema not yet implemented' },
-        { status: 501 }
+        { remittance: remittance[0] },
+        { status: 200, headers: createRateLimitHeaders(rateLimitResult) }
       );
+    } catch (error) {
+return NextResponse.json(
+        { error: 'Failed to fetch remittance details' },
+        { status: 500 }
+      );
+    }
   })(request, { params });
 };
 
@@ -69,20 +91,67 @@ export const PUT = async (
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
 
-    logApiAuditEvent({
-      timestamp: new Date().toISOString(), userId,
+    try {
+      const body = await request.json();
+      
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
         endpoint: '/api/admin/clc/remittances/[id]',
         method: 'PUT',
-        eventType: 'validation_failed',
-        severity: 'low',
-        details: { reason: 'Not yet implemented', remittanceId: params.id },
+        eventType: 'clc_remittance_update',
+        severity: 'medium',
+        details: { remittanceId: params.id, updates: Object.keys(body) },
       });
-      
-      // TODO: Implement when perCapitaRemittances schema is created
+
+      // Check if remittance exists
+      const existing = await db
+        .select()
+        .from(perCapitaRemittances)
+        .where(eq(perCapitaRemittances.id, params.id))
+        .limit(1);
+
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { error: 'Remittance not found' },
+          { status: 404 }
+        );
+      }
+
+      // Update remittance
+      const updated = await db
+        .update(perCapitaRemittances)
+        .set({
+          ...body,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(perCapitaRemittances.id, params.id))
+        .returning();
+
       return NextResponse.json(
-        { error: 'Per-capita remittances schema not yet implemented' },
-        { status: 501 }
+        { 
+          success: true,
+          remittance: updated[0],
+          message: 'Remittance updated successfully'
+        },
+        { status: 200 }
       );
+    } catch (error) {
+logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
+        endpoint: '/api/admin/clc/remittances/[id]',
+        method: 'PUT',
+        eventType: 'clc_remittance_update_failed',
+        severity: 'high',
+        details: { remittanceId: params.id, error: String(error) },
+      });
+
+      return NextResponse.json(
+        { error: 'Failed to update remittance' },
+        { status: 500 }
+      );
+    }
   })(request, { params });
 };
 
@@ -98,18 +167,66 @@ export const DELETE = async (
     const { userId } = context;
 
     logApiAuditEvent({
-      timestamp: new Date().toISOString(), userId,
+      timestamp: new Date().toISOString(), 
+      userId,
+      endpoint: '/api/admin/clc/remittances/[id]',
+      method: 'DELETE',
+      eventType: 'clc_remittance_delete',
+      severity: 'high',
+      details: { remittanceId: params.id },
+    });
+
+    try {
+      // Check if remittance exists
+      const existing = await db
+        .select()
+        .from(perCapitaRemittances)
+        .where(eq(perCapitaRemittances.id, params.id))
+        .limit(1);
+
+      if (existing.length === 0) {
+        return NextResponse.json(
+          { error: 'Remittance not found' },
+          { status: 404 }
+        );
+      }
+
+      // Only allow deletion if status is 'draft' or 'pending'
+      const status = existing[0].status;
+      if (status !== 'draft' && status !== 'pending') {
+        return NextResponse.json(
+          { error: `Cannot delete remittance with status: ${status}` },
+          { status: 403 }
+        );
+      }
+
+      // Delete remittance
+      await db
+        .delete(perCapitaRemittances)
+        .where(eq(perCapitaRemittances.id, params.id));
+
+      return NextResponse.json(
+        { 
+          success: true,
+          message: 'Remittance deleted successfully'
+        },
+        { status: 200 }
+      );
+    } catch (error) {
+logApiAuditEvent({
+        timestamp: new Date().toISOString(), 
+        userId,
         endpoint: '/api/admin/clc/remittances/[id]',
         method: 'DELETE',
-        eventType: 'validation_failed',
-        severity: 'low',
-        details: { reason: 'Not yet implemented', remittanceId: params.id },
+        eventType: 'clc_remittance_delete_failed',
+        severity: 'high',
+        details: { remittanceId: params.id, error: String(error) },
       });
-      
-      // TODO: Implement when perCapitaRemittances schema is created
+
       return NextResponse.json(
-        { error: 'Per-capita remittances schema not yet implemented' },
-        { status: 501 }
+        { error: 'Failed to delete remittance' },
+        { status: 500 }
       );
+    }
   })(request, { params });
 };

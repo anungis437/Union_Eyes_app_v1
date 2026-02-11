@@ -6,6 +6,7 @@ import { breakGlassService } from './break-glass-service';
 import { db } from '@/db';
 import { forceMajeureEvents, forceMajeureActivations } from '@/db/schema/force-majeure-schema';
 import { eq, and, gte, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * Force Majeure Integration Service
@@ -144,7 +145,10 @@ export class ForceMajeureIntegrationService {
           );
           closedSessions++;
         } catch (error) {
-          console.error(`Failed to close break-glass session ${activation.breakGlassSessionId}:`, error);
+            logger.error('Failed to close break-glass session', {
+              error,
+              breakGlassSessionId: activation.breakGlassSessionId,
+            });
         }
       }
     }

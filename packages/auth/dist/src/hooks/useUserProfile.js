@@ -39,8 +39,7 @@ export function useUserProfile(options = {}) {
             setProfile(data);
         }
         catch (err) {
-            console.error('[useUserProfile] Error fetching profile:', err);
-            setError(err);
+setError(err);
         }
         finally {
             setLoading(false);
@@ -79,8 +78,7 @@ export function useUserProfile(options = {}) {
             }
         }
         catch (err) {
-            console.error('[useUserProfile] Error updating profile:', err);
-            setError(err);
+setError(err);
             // Revert optimistic update on error
             await fetchProfile();
             throw err;
@@ -110,8 +108,7 @@ export function useUserProfile(options = {}) {
             return data;
         }
         catch (err) {
-            console.error('[useUserProfile] Error uploading avatar:', err);
-            setError(err);
+setError(err);
             throw err;
         }
     }, [userId, profile, profileService]);
@@ -136,8 +133,7 @@ export function useUserProfile(options = {}) {
             await fetchProfile();
         }
         catch (err) {
-            console.error('[useUserProfile] Error deleting avatar:', err);
-            setError(err);
+setError(err);
             // Revert on error
             await fetchProfile();
             throw err;
@@ -177,8 +173,7 @@ export function useUserProfile(options = {}) {
             }
         }
         catch (err) {
-            console.error('[useUserProfile] Error updating notification preferences:', err);
-            setError(err);
+setError(err);
             await fetchProfile();
             throw err;
         }
@@ -212,8 +207,7 @@ export function useUserProfile(options = {}) {
             }
         }
         catch (err) {
-            console.error('[useUserProfile] Error updating UI preferences:', err);
-            setError(err);
+setError(err);
             await fetchProfile();
             throw err;
         }
@@ -247,8 +241,7 @@ export function useUserProfile(options = {}) {
             }
         }
         catch (err) {
-            console.error('[useUserProfile] Error updating privacy settings:', err);
-            setError(err);
+setError(err);
             await fetchProfile();
             throw err;
         }
@@ -282,8 +275,7 @@ export function useUserProfile(options = {}) {
             }
         }
         catch (err) {
-            console.error('[useUserProfile] Error updating security settings:', err);
-            setError(err);
+setError(err);
             await fetchProfile();
             throw err;
         }
@@ -304,8 +296,7 @@ export function useUserProfile(options = {}) {
             await fetchProfile();
         }
         catch (err) {
-            console.error('[useUserProfile] Error completing onboarding step:', err);
-            setError(err);
+setError(err);
             throw err;
         }
     }, [userId, profileService, fetchProfile]);
@@ -328,8 +319,7 @@ export function useUserProfile(options = {}) {
             }
         }
         catch (err) {
-            console.error('[useUserProfile] Error updating onboarding progress:', err);
-            setError(err);
+setError(err);
             throw err;
         }
     }, [userId, profile, profileService]);
@@ -354,8 +344,7 @@ export function useUserProfile(options = {}) {
         }
         catch (err) {
             // Silently fail for activity updates
-            console.warn('[useUserProfile] Error updating activity:', err);
-        }
+}
     }, [userId, profile, profileService]);
     // ===========================================================================
     // COMPUTED PROPERTIES
@@ -401,8 +390,7 @@ export function useUserProfile(options = {}) {
             table: 'user_profiles',
             filter: `user_id=eq.${userId}`
         }, (payload) => {
-            console.log('[useUserProfile] Real-time update received:', payload);
-            if (payload.eventType === 'UPDATE') {
+if (payload.eventType === 'UPDATE') {
                 // Refresh profile on update
                 fetchProfile();
             }

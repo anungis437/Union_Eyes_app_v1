@@ -11,10 +11,10 @@
  * 5. Verify integrity
  * 
  * Validator Requirement #2: "Defensibility as First-Class Object"
- * - Auto-generation on resolution ✅
- * - Database storage ✅
- * - Download API ✅
- * - Integrity verification ✅
+ * - Auto-generation on resolution Ã¢Å“â€¦
+ * - Database storage Ã¢Å“â€¦
+ * - Download API Ã¢Å“â€¦
+ * - Integrity verification Ã¢Å“â€¦
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -665,37 +665,29 @@ describe('PR-12: Defensibility Pack Integration', () => {
       );
 
       // Leadership requirements:
-      // 1. Complete timeline ✅
+      // 1. Complete timeline Ã¢Å“â€¦
       expect(pack.memberVisibleTimeline.length).toBeGreaterThan(0);
       expect(pack.staffVisibleTimeline.length).toBeGreaterThan(0);
 
-      // 2. Full audit trail ✅
+      // 2. Full audit trail Ã¢Å“â€¦
       expect(pack.auditTrail.length).toBeGreaterThan(0);
       expect(pack.auditTrail[0].ipAddress).toBe('192.168.1.1');
 
-      // 3. State transition history ✅
+      // 3. State transition history Ã¢Å“â€¦
       expect(pack.stateTransitions.length).toBe(2);
       expect(pack.stateTransitions[0].fromState).toBe('draft');
       expect(pack.stateTransitions[1].toState).toBe('investigation');
 
-      // 4. Cryptographic integrity ✅
+      // 4. Cryptographic integrity Ã¢Å“â€¦
       expect(pack.integrity.combinedHash).toMatch(/^[a-f0-9]{64}$/);
 
-      // 5. Clear export metadata ✅
+      // 5. Clear export metadata Ã¢Å“â€¦
       expect(pack.exportMetadata.purpose).toBe('arbitration');
       expect(pack.generatedBy).toBe('export-system');
 
-      // 6. Case summary ✅
+      // 6. Case summary Ã¢Å“â€¦
       expect(pack.caseSummary.title).toBe('Wrongful Termination Arbitration');
       expect(pack.caseSummary.priority).toBe('critical');
-
-      console.log('[VALIDATOR TEST] ✅ Leadership can say: "Show me the record"');
-      console.log(`[VALIDATOR TEST]    - Case: ${pack.caseSummary.title}`);
-      console.log(`[VALIDATOR TEST]    - Timeline events: ${pack.staffVisibleTimeline.length}`);
-      console.log(`[VALIDATOR TEST]    - Audit entries: ${pack.auditTrail.length}`);
-      console.log(`[VALIDATOR TEST]    - State transitions: ${pack.stateTransitions.length}`);
-      console.log(`[VALIDATOR TEST]    - Integrity hash: ${pack.integrity.combinedHash.substring(0, 16)}...`);
-      console.log('[VALIDATOR TEST]    - Export is immutable, SHA-256 verified, arbitration-ready');
-    });
+});
   });
 });

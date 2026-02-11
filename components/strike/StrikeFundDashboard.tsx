@@ -90,8 +90,7 @@ export function StrikeFundDashboard({ organizationId }: StrikeFundDashboardProps
         }
       }
     } catch (error) {
-      console.error('Error fetching strike funds:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId, selectedFund]);
@@ -109,8 +108,7 @@ export function StrikeFundDashboard({ organizationId }: StrikeFundDashboardProps
         setPicketLines(data.data);
       }
     } catch (error) {
-      console.error('Error fetching picket lines:', error);
-    }
+}
   };
 
   const fetchRecentDisbursements = async (fundId: string) => {
@@ -122,8 +120,7 @@ export function StrikeFundDashboard({ organizationId }: StrikeFundDashboardProps
         setRecentDisbursements(data.data);
       }
     } catch (error) {
-      console.error('Error fetching disbursements:', error);
-    }
+}
   };
 
   const getStatusColor = (status: string) => {

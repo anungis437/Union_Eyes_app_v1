@@ -84,10 +84,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
           { status: 403 }
         );
       }
-
-      console.log('[create-payment-intent] Request body:', { requestedUserId, amount, savePaymentMethod });
-
-      // Get member record
+// Get member record
       const [member] = await db
         .select()
         .from(members)
@@ -179,9 +176,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error creating payment intent:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create payment intent' },
         { status: 500 }
       );

@@ -9,6 +9,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { SimpleLogger } from '../utils/logger';
 
 // =====================================================
 // TYPE DEFINITIONS
@@ -167,6 +168,8 @@ export interface OrganizationWithMembers extends Organization {
 // =====================================================
 
 export class OrganizationService {
+  private logger = new SimpleLogger('OrganizationService');
+
   constructor(private supabase: SupabaseClient) {}
 
   // =====================================================
@@ -713,7 +716,7 @@ export class OrganizationService {
         status: 'success',
       });
     } catch (error) {
-      console.error('Failed to log audit event:', error);
+      this.logger.error('Failed to log audit event', { error });
     }
   }
 }

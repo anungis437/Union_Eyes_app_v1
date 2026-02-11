@@ -143,8 +143,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         throw syncError;
       }
     } catch (error) {
-      console.error('Error syncing calendar:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to sync calendar',
           details: error instanceof Error ? error.message : 'Unknown error',

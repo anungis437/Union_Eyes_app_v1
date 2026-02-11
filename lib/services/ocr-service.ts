@@ -15,6 +15,7 @@
  */
 
 import { createWorker, recognize } from "tesseract.js";
+import { logger } from "@/lib/logger";
 
 export interface OCRResult {
   text: string;
@@ -75,7 +76,7 @@ async function processTesseractOCR(
   const worker = await createWorker(language, 1, {
     logger: (m: any) => {
       if (m.status === "recognizing text") {
-        console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+        logger.debug("OCR progress", { percent: Math.round(m.progress * 100) });
       }
     },
   });
@@ -349,7 +350,7 @@ export async function preprocessImage(
       .toBuffer();
   } catch (error) {
     if ((error as any).code === "MODULE_NOT_FOUND") {
-      console.warn("Sharp not installed. Image preprocessing disabled. Run: npm install sharp");
+      logger.warn("Sharp not installed. Image preprocessing disabled. Run: npm install sharp");
       return imageBuffer;
     }
     throw error;

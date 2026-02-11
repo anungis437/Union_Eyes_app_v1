@@ -66,8 +66,7 @@ router.post('/queue', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Queue notification error:', error);
-        res.status(400).json({
+res.status(400).json({
             success: false,
             error: error.message,
         });
@@ -94,8 +93,7 @@ router.get('/preferences', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get preferences error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -123,8 +121,7 @@ router.put('/preferences', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Update preferences error:', error);
-        res.status(400).json({
+res.status(400).json({
             success: false,
             error: error.message,
         });
@@ -153,8 +150,7 @@ router.get('/history', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Get history error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -175,8 +171,7 @@ router.post('/process', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Process notifications error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -197,8 +192,7 @@ router.post('/retry-failed', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Retry failed notifications error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -240,8 +234,7 @@ router.post('/test', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Test notification error:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: error.message,
         });

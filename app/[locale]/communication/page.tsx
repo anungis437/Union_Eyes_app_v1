@@ -58,8 +58,7 @@ export default function CommunicationPage() {
         <TabsContent value="email">
           <EmailTemplateBuilder
             onSave={async (template) => {
-              console.log("Email template saved:", template);
-            }}
+}}
           />
         </TabsContent>
 
@@ -111,8 +110,7 @@ export default function CommunicationPage() {
           departments={[]}
           roles={[]}
           onPublish={async (announcement) => {
-            console.log("Announcement published:", announcement);
-            setShowAnnouncementComposer(false);
+setShowAnnouncementComposer(false);
           }}
           onCancel={() => setShowAnnouncementComposer(false)}
         />

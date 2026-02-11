@@ -139,8 +139,7 @@ export function ComplianceMetricsDashboard() {
       const { reportId } = await response.json();
       window.location.href = `/api/admin/compliance/reports/${reportId}/download`;
     } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export compliance report');
+alert('Failed to export compliance report');
     }
   };
 
@@ -554,7 +553,7 @@ function ControlStatusCard({ icon: Icon, title, control }: ControlStatusCardProp
           <ul className="space-y-1">
             {control.evidence.map((item, index) => (
               <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                <span className="text-green-600 mt-0.5">•</span>
+                <span className="text-green-600 mt-0.5">â€¢</span>
                 <span>{item}</span>
               </li>
             ))}
@@ -571,7 +570,7 @@ function ControlStatusCard({ icon: Icon, title, control }: ControlStatusCardProp
             <ul className="space-y-1">
               {control.issues.map((item, index) => (
                 <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-red-600 mt-0.5">•</span>
+                  <span className="text-red-600 mt-0.5">â€¢</span>
                   <span>{item}</span>
                 </li>
               ))}

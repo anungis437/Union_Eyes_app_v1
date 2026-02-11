@@ -8,7 +8,7 @@
 // ============================================================================
 
 import { db } from "@/db/db";
-import { eq, and, desc, asc, isNull, lte, gte, sql } from "drizzle-orm";
+import { eq, and, or, desc, asc, isNull, lte, gte, sql } from "drizzle-orm";
 import { 
   validateClaimTransition, 
   type ClaimStatus,
@@ -22,7 +22,6 @@ import {
   grievanceStages,
   grievanceTransitions,
   grievanceApprovals,
-  grievanceDeadlines,
   grievanceAssignments,
   type GrievanceWorkflow,
   type GrievanceStage,
@@ -32,6 +31,7 @@ import {
   type StageCondition,
   type StageAction,
 } from "@/db/schema";
+import { grievanceDeadlines } from "@/db/schema/grievance-workflow-schema";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { getNotificationService } from "@/lib/services/notification-service";
 import { logger } from "@/lib/logger";
@@ -152,7 +152,7 @@ async function getUserRole(userId: string, tenantId: string): Promise<string> {
     // Default to 'member' if no role found
     return 'member';
   } catch (error) {
-    console.error('Error fetching user role:', error);
+    logger.error("Error fetching user role", { error });
     return 'member';
   }
 }
@@ -218,7 +218,7 @@ async function checkClaimOverdue(claimId: string): Promise<boolean> {
     
     return overdueDeadlines.length > 0;
   } catch (error) {
-    console.error('Error checking claim overdue status:', error);
+    logger.error("Error checking claim overdue status", { error });
     return false;
   }
 }
@@ -276,7 +276,7 @@ export async function initializeWorkflow(
 
     return await startWorkflow(claimId, workflow.id, tenantId, userId);
   } catch (error) {
-    console.error("Error initializing workflow:", error);
+    logger.error("Error initializing workflow", { error });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -336,7 +336,7 @@ async function startWorkflow(
 
     return { success: true, workflowId };
   } catch (error) {
-    console.error("Error starting workflow:", error);
+    logger.error("Error starting workflow", { error });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -456,7 +456,7 @@ export async function transitionToStage(
 
     // Log FSM warnings (if any) but allow transition
     if (fsmValidation.warnings && fsmValidation.warnings.length > 0) {
-      console.warn('FSM Warnings for transition:', fsmValidation.warnings);
+      logger.warn('FSM warnings for transition', { warnings: fsmValidation.warnings });
     }
 
     // ========================================================================
@@ -558,7 +558,7 @@ export async function transitionToStage(
       },
     };
   } catch (error) {
-    console.error("Error transitioning stage:", error);
+    logger.error("Error transitioning stage", { error });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -619,7 +619,7 @@ export async function approveTransition(
       }
     );
   } catch (error) {
-    console.error("Error approving transition:", error);
+    logger.error("Error approving transition", { error });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -674,7 +674,7 @@ export async function rejectTransition(
 
     return { success: true };
   } catch (error) {
-    console.error("Error rejecting transition:", error);
+    logger.error("Error rejecting transition", { error });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -745,13 +745,16 @@ export async function getWorkflowStatus(
     const progress = Math.round((completedStages / allStages.length) * 100);
 
     // Get upcoming deadlines
-    const deadlines = await db.query.grievanceDeadlines.findMany({
-      where: and(
-        eq(grievanceDeadlines.claimId, claimId),
-        isNull(grievanceDeadlines.isMet)
-      ),
-      orderBy: [asc(grievanceDeadlines.deadlineDate)],
-    });
+    const deadlines = await db
+      .select()
+      .from(grievanceDeadlines)
+      .where(
+        and(
+          eq(grievanceDeadlines.claimId, claimId),
+          isNull(grievanceDeadlines.isMet)
+        )
+      )
+      .orderBy(asc(grievanceDeadlines.deadlineDate));
 
     const upcomingDeadlines = deadlines.map((deadline) => {
       const deadlineDate = deadline.deadlineDate || new Date();
@@ -787,7 +790,7 @@ export async function getWorkflowStatus(
       daysInCurrentStage,
     };
   } catch (error) {
-    console.error("Error getting workflow status:", error);
+    logger.error("Error getting workflow status", { error });
     return null;
   }
 }
@@ -805,7 +808,7 @@ async function updateClaimProgress(claimId: string, tenantId: string): Promise<v
         .where(eq(claims.claimId, claimId));
     }
   } catch (error) {
-    console.error("Error updating claim progress:", error);
+    logger.error("Error updating claim progress", { error });
   }
 }
 
@@ -864,10 +867,10 @@ async function executeStageActions(
           break;
 
         default:
-          console.warn(`Unknown action type: ${action.action_type}`);
+          logger.warn(`Unknown action type: ${action.action_type}`);
       }
     } catch (error) {
-      console.error(`Error executing action ${action.action_type}:`, error);
+      logger.error(`Error executing action ${action.action_type}`, { error });
     }
   }
 
@@ -927,7 +930,7 @@ async function evaluateConditions(
     if (fieldName in claim) {
       return (claim as Record<string, unknown>)[fieldName];
     }
-    console.warn(`Invalid field name: ${fieldName}`);
+    logger.warn(`Invalid field name: ${fieldName}`, { fieldName });
     return undefined;
   };
 
@@ -942,12 +945,22 @@ async function evaluateConditions(
       case "not_equals":
         if (fieldValue === condition.value) return false;
         break;
-      case "greater_than":
-        if (!(fieldValue > condition.value)) return false;
+      case "greater_than": {
+        const fieldNumber = Number(fieldValue);
+        const compareNumber = Number(condition.value);
+        if (Number.isNaN(fieldNumber) || Number.isNaN(compareNumber) || fieldNumber <= compareNumber) {
+          return false;
+        }
         break;
-      case "less_than":
-        if (!(fieldValue < condition.value)) return false;
+      }
+      case "less_than": {
+        const fieldNumber = Number(fieldValue);
+        const compareNumber = Number(condition.value);
+        if (Number.isNaN(fieldNumber) || Number.isNaN(compareNumber) || fieldNumber >= compareNumber) {
+          return false;
+        }
         break;
+      }
       case "contains":
         if (!String(fieldValue).includes(condition.value)) return false;
         break;
@@ -1012,7 +1025,7 @@ async function sendStageNotification(
     for (const assignment of assignments) {
       await notificationService.send({
         organizationId: tenantId,
-        recipientUserId: assignment.assignedTo,
+        recipientId: assignment.assignedTo,
         type: 'email',
         priority: 'normal',
         title: `Grievance Stage ${action}`,
@@ -1052,7 +1065,7 @@ async function sendActionNotification(
 
     await notificationService.send({
       organizationId: tenantId,
-      recipientUserId: recipientId,
+      recipientId: recipientId,
       recipientEmail: recipientEmail,
       type: config.notificationType || 'email',
       priority: config.priority || 'normal',
@@ -1254,7 +1267,7 @@ async function sendTransitionRejectedNotification(
     
     await notificationService.send({
       organizationId: tenantId,
-      recipientUserId: requesterId,
+      recipientId: requesterId,
       type: 'email',
       priority: 'high',
       title: 'Stage Transition Rejected',
@@ -1285,14 +1298,17 @@ async function sendTransitionRejectedNotification(
  */
 export async function processOverdueDeadlines(): Promise<void> {
   try {
-    const overdueDeadlines = await db.query.grievanceDeadlines.findMany({
-      where: and(
-        isNull(grievanceDeadlines.isMet),
-        lte(grievanceDeadlines.deadlineDate, new Date().toISOString().split("T")[0]),
-        eq(grievanceDeadlines.escalateOnMiss, true),
-        isNull(grievanceDeadlines.escalatedAt)
-      ),
-    });
+    const overdueDeadlines = await db
+      .select()
+      .from(grievanceDeadlines)
+      .where(
+        and(
+          isNull(grievanceDeadlines.isMet),
+          lte(grievanceDeadlines.deadlineDate, new Date().toISOString().split("T")[0]),
+          eq(grievanceDeadlines.escalateOnMiss, true),
+          isNull(grievanceDeadlines.escalatedAt)
+        )
+      );
 
     for (const deadline of overdueDeadlines) {
       // Mark as escalated
@@ -1307,7 +1323,7 @@ export async function processOverdueDeadlines(): Promise<void> {
           const notificationService = getNotificationService();
           await notificationService.send({
             organizationId: deadline.organizationId,
-            recipientUserId: deadline.escalateTo,
+            recipientId: deadline.escalateTo,
             type: 'email',
             priority: 'urgent',
             title: 'ESCALATION: Overdue Deadline',
@@ -1328,7 +1344,7 @@ export async function processOverdueDeadlines(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error("Error processing overdue deadlines:", error);
+    logger.error("Error processing overdue deadlines", { error });
   }
 }
 
@@ -1338,12 +1354,15 @@ export async function processOverdueDeadlines(): Promise<void> {
  */
 export async function sendDeadlineReminders(): Promise<void> {
   try {
-    const allDeadlines = await db.query.grievanceDeadlines.findMany({
-      where: and(
-        isNull(grievanceDeadlines.isMet),
-        gte(grievanceDeadlines.deadlineDate, new Date().toISOString().split("T")[0])
-      ),
-    });
+    const allDeadlines = await db
+      .select()
+      .from(grievanceDeadlines)
+      .where(
+        and(
+          isNull(grievanceDeadlines.isMet),
+          gte(grievanceDeadlines.deadlineDate, new Date().toISOString().split("T")[0])
+        )
+      );
 
     for (const deadline of allDeadlines) {
       const deadlineDate = deadline.deadlineDate || new Date();
@@ -1399,7 +1418,7 @@ export async function sendDeadlineReminders(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error("Error sending deadline reminders:", error);
+    logger.error("Error sending deadline reminders", { error });
   }
 }
 

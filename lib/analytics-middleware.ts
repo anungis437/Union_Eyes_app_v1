@@ -44,8 +44,7 @@ export function withAnalyticsCache<T>(
 
       return NextResponse.json(data);
     } catch (error) {
-      console.error(`Error in ${endpoint}:`, error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -76,8 +75,6 @@ export async function handleDataChange(
       analyticsCache.invalidate(organizationId, 'members');
       break;
   }
-
-  console.log(`Cache invalidated for tenant ${organizationId} (${changeType})`);
 }
 
 /**
@@ -99,19 +96,15 @@ export async function getAnalyticsDashboard(organizationId: string) {
  * Cache warming utility - pre-populate cache with common queries
  */
 export async function warmAnalyticsCache(organizationId: string): Promise<void> {
-  console.log(`Warming cache for tenant ${organizationId}...`);
-
-  const commonTimeRanges = [7, 30, 90];
+const commonTimeRanges = [7, 30, 90];
   
   try {
     // Warm up dashboard cache
     await getAnalyticsDashboard(organizationId);
 
     // Can add more cache warming for specific endpoints
-    console.log(`Cache warmed for tenant ${organizationId}`);
-  } catch (error) {
-    console.error(`Error warming cache for tenant ${organizationId}:`, error);
-  }
+} catch (error) {
+}
 }
 
 /**

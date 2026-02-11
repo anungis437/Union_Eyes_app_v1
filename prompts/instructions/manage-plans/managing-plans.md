@@ -186,7 +186,7 @@ async function checkAndRenewCredits(profile: any): Promise<any> {
   
   // If current time has passed the renewal date, reset used credits
   if (now > renewalDate) {
-    console.log(`Resetting used credits for user ${profile.userId} based on 4-week cycle`);
+    logger.info(`Resetting used credits for user ${profile.userId} based on 4-week cycle`);
     
     // Calculate next renewal date (4 weeks from now)
     const nextRenewal = new Date();
@@ -201,7 +201,7 @@ async function checkAndRenewCredits(profile: any): Promise<any> {
     // Update profile with reset used credits and new renewal date
     const updatedProfile = await updateProfile(profile.userId, updateData);
     
-    console.log(`Used credits reset to 0 for ${profile.membership} user. Next renewal: ${nextRenewal.toISOString()}`);
+    logger.info(`Used credits reset to 0 for ${profile.membership} user. Next renewal: ${nextRenewal.toISOString()}`);
     
     return updatedProfile;
   }
@@ -286,7 +286,7 @@ A key innovation in our system is the "just-in-time" approach to handling subscr
      
      if (billingCycleEnd > now) {
        // User still has time left in their billing cycle
-       console.log(`User canceled but has active billing until ${billingCycleEnd}`);
+       logger.info(`User canceled but has active billing until ${billingCycleEnd}`);
        
        // Mark as free but preserve credits until billing cycle ends
        await updateProfile(userId, {
@@ -316,7 +316,7 @@ A key innovation in our system is the "just-in-time" approach to handling subscr
      
      // If the billing cycle has ended and they still have pro-level credits
      if (now > billingCycleEnd && (profile.usageCredits || 0) > 5) {
-       console.log(`User has canceled subscription with expired billing cycle`);
+       logger.info(`User has canceled subscription with expired billing cycle`);
        
        // Update profile with free tier credit limit
        profile = await updateProfile(userId, {
@@ -359,14 +359,14 @@ Our system handles billing cycles with these key components:
    if (data.renewal_period_end) {
      const renewalDate = new Date(data.renewal_period_end);
      updateData.billingCycleEnd = renewalDate;
-     console.log(`Setting billing cycle end to ${renewalDate.toISOString()}`);
+     logger.info(`Setting billing cycle end to ${renewalDate.toISOString()}`);
    } else {
      // Calculate ourselves - assume monthly for now
      // TODO: Add support for plan duration (monthly, yearly)
      const billingCycleEnd = new Date();
      billingCycleEnd.setDate(billingCycleEnd.getDate() + 30); // Assume 30 days
      updateData.billingCycleEnd = billingCycleEnd;
-     console.log(`Calculated billing cycle end: ${billingCycleEnd.toISOString()}`);
+     logger.info(`Calculated billing cycle end: ${billingCycleEnd.toISOString()}`);
    }
    ```
 

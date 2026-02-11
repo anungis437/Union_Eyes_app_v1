@@ -298,12 +298,12 @@ const TRIGGER_TYPES = [
 
 const CONDITION_OPERATORS = [
   { value: 'equals', label: 'Equals (=)' },
-  { value: 'not_equals', label: 'Not Equals (≠)' },
+  { value: 'not_equals', label: 'Not Equals (â‰ )' },
   { value: 'greater_than', label: 'Greater Than (>)' },
   { value: 'less_than', label: 'Less Than (<)' },
-  { value: 'contains', label: 'Contains (∋)' },
-  { value: 'is_null', label: 'Is Null (∅)' },
-  { value: 'is_not_null', label: 'Is Not Null (≠∅)' },
+  { value: 'contains', label: 'Contains (âˆ‹)' },
+  { value: 'is_null', label: 'Is Null (âˆ…)' },
+  { value: 'is_not_null', label: 'Is Not Null (â‰ âˆ…)' },
 ];
 
 export default function AutomationWorkflowBuilder() {
@@ -390,14 +390,12 @@ export default function AutomationWorkflowBuilder() {
 
   // Save workflow
   const saveWorkflow = () => {
-    console.log('Saving automation workflow:', workflow);
-    // API call would go here
+// API call would go here
   };
 
   // Test workflow
   const testWorkflow = () => {
-    console.log('Testing automation workflow:', workflow);
-    // API call would go here
+// API call would go here
   };
 
   // Get selected step

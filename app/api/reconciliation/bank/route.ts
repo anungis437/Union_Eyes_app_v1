@@ -184,8 +184,7 @@ export const GET = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error('Bank reconciliation error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to perform bank reconciliation' },
         { status: 500 }
       );

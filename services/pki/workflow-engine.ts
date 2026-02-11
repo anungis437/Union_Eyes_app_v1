@@ -14,9 +14,11 @@
 // =====================================================================================
 
 import { db } from '@/db';
-import { digitalSignatures } from '@/db/schema';
+import { digitalSignatures } from '@/services/financial-service/src/db/schema';
+import { signatureWorkflows } from '@/db/schema/signature-workflows-schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 // =====================================================================================
 // TYPES
@@ -103,6 +105,105 @@ export interface WorkflowAdvanceResult {
 
 const workflowStore = new Map<string, WorkflowDefinition>();
 
+const mapWorkflowStatus = (status: WorkflowStatus) => {
+  switch (status) {
+    case 'draft':
+      return 'draft';
+    case 'pending':
+      return 'sent';
+    case 'in_progress':
+      return 'in_progress';
+    case 'completed':
+      return 'completed';
+    case 'expired':
+      return 'expired';
+    case 'cancelled':
+      return 'cancelled';
+    case 'rejected':
+      return 'declined';
+    default:
+      return 'draft';
+  }
+};
+
+const serializeWorkflow = (workflow: WorkflowDefinition) => ({
+  ...workflow,
+  createdAt: workflow.createdAt.toISOString(),
+  completedAt: workflow.completedAt?.toISOString(),
+  dueDate: workflow.dueDate?.toISOString(),
+  expiresAt: workflow.expiresAt?.toISOString(),
+  steps: workflow.steps.map((step) => ({
+    ...step,
+    startedAt: step.startedAt?.toISOString(),
+    completedAt: step.completedAt?.toISOString(),
+    signers: step.signers.map((signer) => ({
+      ...signer,
+      signedAt: signer.signedAt?.toISOString(),
+    })),
+  })),
+});
+
+const countCompletedSignatures = (workflow: WorkflowDefinition) =>
+  workflow.steps.reduce(
+    (count, step) => count + step.signers.filter((signer) => signer.status === 'signed').length,
+    0
+  );
+
+const countTotalSignatures = (workflow: WorkflowDefinition) =>
+  workflow.steps.reduce((count, step) => count + step.signers.length, 0);
+
+const persistNewWorkflow = async (workflow: WorkflowDefinition) => {
+  try {
+    await db.insert(signatureWorkflows).values({
+      organizationId: workflow.organizationId,
+      documentId: workflow.documentId,
+      name: workflow.name,
+      description: workflow.description,
+      status: mapWorkflowStatus(workflow.status),
+      provider: 'signrequest',
+      externalEnvelopeId: workflow.id,
+      externalWorkflowId: workflow.id,
+      totalSigners: countTotalSignatures(workflow),
+      completedSignatures: countCompletedSignatures(workflow),
+      sentAt: new Date(),
+      expiresAt: workflow.expiresAt,
+      completedAt: workflow.completedAt,
+      workflowData: serializeWorkflow(workflow),
+      createdBy: workflow.createdBy,
+    }).onConflictDoUpdate({
+      target: signatureWorkflows.externalEnvelopeId,
+      set: {
+        status: mapWorkflowStatus(workflow.status),
+        completedSignatures: countCompletedSignatures(workflow),
+        expiresAt: workflow.expiresAt,
+        completedAt: workflow.completedAt,
+        workflowData: serializeWorkflow(workflow),
+        updatedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to persist workflow', { error, workflowId: workflow.id });
+  }
+};
+
+const updateWorkflowInDb = async (workflow: WorkflowDefinition) => {
+  try {
+    await db
+      .update(signatureWorkflows)
+      .set({
+        status: mapWorkflowStatus(workflow.status),
+        completedSignatures: countCompletedSignatures(workflow),
+        completedAt: workflow.completedAt,
+        expiresAt: workflow.expiresAt,
+        workflowData: serializeWorkflow(workflow),
+        updatedAt: new Date(),
+      })
+      .where(eq(signatureWorkflows.externalEnvelopeId, workflow.id));
+  } catch (error) {
+    logger.error('Failed to update workflow persistence', { error, workflowId: workflow.id });
+  }
+};
+
 // =====================================================================================
 // WORKFLOW CREATION
 // =====================================================================================
@@ -131,8 +232,10 @@ export function createWorkflow(params: WorkflowCreateParams): WorkflowDefinition
     expiresAt: params.expiresAt,
   };
 
-  // Store in memory (TODO: persist to database when table created)
+  // Store in memory for fast access
   workflowStore.set(workflow.id, workflow);
+
+  void persistNewWorkflow(workflow);
 
   return workflow;
 }
@@ -157,6 +260,8 @@ export function startWorkflow(workflowId: string): WorkflowDefinition {
     workflow.steps[0].status = 'in_progress';
     workflow.steps[0].startedAt = new Date();
   }
+
+  void updateWorkflowInDb(workflow);
 
   return workflow;
 }
@@ -213,8 +318,12 @@ export async function recordSignature(
     currentStep.completedAt = new Date();
 
     // Advance to next step or complete workflow
-    return advanceWorkflow(workflowId);
+    const result = advanceWorkflow(workflowId);
+    await updateWorkflowInDb(workflow);
+    return result;
   }
+
+  await updateWorkflowInDb(workflow);
 
   // Step not complete yet, return current state
   return {
@@ -260,6 +369,8 @@ export function recordRejection(
     workflow.status = 'rejected';
     currentStep.status = 'completed';
   }
+
+  void updateWorkflowInDb(workflow);
 }
 
 /**
@@ -293,6 +404,8 @@ export function advanceWorkflow(workflowId: string): WorkflowAdvanceResult {
   const nextStep = workflow.steps[nextStepIndex];
   nextStep.status = 'in_progress';
   nextStep.startedAt = new Date();
+
+  void updateWorkflowInDb(workflow);
 
   return {
     workflowId,

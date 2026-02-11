@@ -158,8 +158,7 @@ export default function ApprenticeshipManager({
       const data = await response.json();
       setPrograms(data.programs);
     } catch (error) {
-      console.error("Error fetching programs:", error);
-      toast.error("Failed to load programs");
+toast.error("Failed to load programs");
     } finally {
       setLoading(false);
     }
@@ -175,8 +174,7 @@ export default function ApprenticeshipManager({
       const data = await response.json();
       setMembers(data.members || data);
     } catch (error) {
-      console.error("Error fetching members:", error);
-    }
+}
   }, [organizationId]);
 
   const fetchCourses = useCallback(async () => {
@@ -189,8 +187,7 @@ export default function ApprenticeshipManager({
       const data = await response.json();
       setCourses(data.courses || data);
     } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
+}
   }, [organizationId]);
 
   useEffect(() => {
@@ -216,8 +213,7 @@ export default function ApprenticeshipManager({
       const data = await response.json();
       setEnrollments(data.enrollments);
     } catch (error) {
-      console.error("Error fetching enrollments:", error);
-      toast.error("Failed to load enrollments");
+toast.error("Failed to load enrollments");
     }
   };
 
@@ -252,8 +248,7 @@ export default function ApprenticeshipManager({
         requiredCourses: [],
       });
     } catch (error) {
-      console.error("Error creating program:", error);
-      toast.error("Failed to create program");
+toast.error("Failed to create program");
     }
   };
 
@@ -289,8 +284,7 @@ export default function ApprenticeshipManager({
         currentLevel: "orientation",
       });
     } catch (error: any) {
-      console.error("Error enrolling member:", error);
-      toast.error(error.message || "Failed to enroll member");
+toast.error(error.message || "Failed to enroll member");
     }
   };
 
@@ -315,8 +309,7 @@ export default function ApprenticeshipManager({
       fetchEnrollments(programId);
       fetchPrograms();
     } catch (error) {
-      console.error("Error updating enrollment:", error);
-      toast.error("Failed to update enrollment");
+toast.error("Failed to update enrollment");
     }
   };
 
@@ -345,8 +338,7 @@ export default function ApprenticeshipManager({
       toast.success("Program deactivated");
       fetchPrograms();
     } catch (error: any) {
-      console.error("Error deactivating program:", error);
-      toast.error(error.message || "Failed to deactivate program");
+toast.error(error.message || "Failed to deactivate program");
     }
   };
 
@@ -629,7 +621,7 @@ export default function ApprenticeshipManager({
                               })
                             }
                           >
-                            {course?.courseCode} ✕
+                            {course?.courseCode} âœ•
                           </Badge>
                         );
                       })}
@@ -961,7 +953,7 @@ export default function ApprenticeshipManager({
                             </Badge>
                           </div>
                           <p className="text-sm text-gray-600">
-                            {enrollment.memberNumber} • {enrollment.email}
+                            {enrollment.memberNumber} â€¢ {enrollment.email}
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-sm">
                             <div>

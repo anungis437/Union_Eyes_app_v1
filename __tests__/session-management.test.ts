@@ -364,6 +364,5 @@ describeIf("Phase 1: Session Management & Attendance Tracking", () => {
   // Cleanup
   afterAll(async () => {
     // Clean up test data if needed
-    console.log("Session management tests completed");
-  });
+});
 });

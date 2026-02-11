@@ -16,21 +16,13 @@
 export function determinePlanType(planId: string): "monthly" | "yearly" {
   const monthlyPlanId = process.env.WHOP_PLAN_ID_MONTHLY;
   const yearlyPlanId = process.env.WHOP_PLAN_ID_YEARLY;
-  
-  console.log(`Checking plan ID ${planId} against environment variables`);
-  console.log(`Monthly plan ID from env: ${monthlyPlanId}`);
-  console.log(`Yearly plan ID from env: ${yearlyPlanId}`);
-  
-  if (planId === yearlyPlanId) {
-    console.log(`Plan ID matches yearly plan ID: ${yearlyPlanId}`);
-    return "yearly";
+if (planId === yearlyPlanId) {
+return "yearly";
   } else if (planId === monthlyPlanId) {
-    console.log(`Plan ID matches monthly plan ID: ${monthlyPlanId}`);
-    return "monthly";
+return "monthly";
   } else {
     // Default to monthly if we can't determine
-    console.log(`Plan ID ${planId} doesn't match any known plan IDs, defaulting to monthly`);
-    return "monthly";
+return "monthly";
   }
 }
 

@@ -20,6 +20,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, like, desc, asc, sql, inArray, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -91,7 +92,7 @@ export async function getPrecedentById(
 
     return decision;
   } catch (error) {
-    console.error("Error fetching precedent by ID:", error);
+    logger.error("Error fetching precedent by ID", { error, id });
     throw new Error("Failed to fetch precedent");
   }
 }
@@ -109,7 +110,7 @@ export async function getPrecedentByCaseNumber(
 
     return decision || null;
   } catch (error) {
-    console.error("Error fetching precedent by case number:", error);
+    logger.error("Error fetching precedent by case number", { error, caseNumber });
     throw new Error("Failed to fetch precedent by case number");
   }
 }
@@ -241,7 +242,7 @@ export async function listPrecedents(
       limit
     };
   } catch (error) {
-    console.error("Error listing precedents:", error);
+    logger.error("Error listing precedents", { error, filters, pagination });
     throw new Error("Failed to list precedents");
   }
 }
@@ -267,7 +268,7 @@ export async function createPrecedent(data: NewArbitrationDecision): Promise<Arb
 
     return newDecision;
   } catch (error) {
-    console.error("Error creating precedent:", error);
+    logger.error("Error creating precedent", { error, data });
     throw new Error("Failed to create precedent");
   }
 }
@@ -291,7 +292,7 @@ export async function updatePrecedent(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating precedent:", error);
+    logger.error("Error updating precedent", { error, id });
     throw new Error("Failed to update precedent");
   }
 }
@@ -307,7 +308,7 @@ export async function deletePrecedent(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting precedent:", error);
+    logger.error("Error deleting precedent", { error, id });
     throw new Error("Failed to delete precedent");
   }
 }
@@ -371,7 +372,7 @@ export async function searchPrecedents(
 
     return results as any;
   } catch (error) {
-    console.error("Error searching precedents:", error);
+    logger.error("Error searching precedents", { error, query, filters, limit });
     throw new Error("Failed to search precedents");
   }
 }
@@ -394,7 +395,7 @@ export async function getPrecedentsByIssueType(
 
     return results;
   } catch (error) {
-    console.error("Error fetching precedents by issue type:", error);
+    logger.error("Error fetching precedents by issue type", { error, issueType, limit });
     throw new Error("Failed to fetch precedents by issue type");
   }
 }
@@ -444,7 +445,7 @@ export async function getRelatedPrecedents(
 
     return related as any;
   } catch (error) {
-    console.error("Error fetching related precedents:", error);
+    logger.error("Error fetching related precedents", { error, decisionId, limit });
     throw new Error("Failed to fetch related precedents");
   }
 }
@@ -464,7 +465,7 @@ export async function getArbitratorProfile(name: string): Promise<ArbitratorProf
 
     return profile || null;
   } catch (error) {
-    console.error("Error fetching arbitrator profile:", error);
+    logger.error("Error fetching arbitrator profile", { error, name });
     throw new Error("Failed to fetch arbitrator profile");
   }
 }
@@ -543,7 +544,7 @@ export async function updateArbitratorStats(arbitratorName: string): Promise<voi
         });
     }
   } catch (error) {
-    console.error("Error updating arbitrator stats:", error);
+    logger.error("Error updating arbitrator stats", { error, arbitratorName });
     // Don't throw - this is a background operation
   }
 }
@@ -562,7 +563,7 @@ export async function getTopArbitrators(limit: number = 20): Promise<ArbitratorP
 
     return profiles;
   } catch (error) {
-    console.error("Error fetching top arbitrators:", error);
+    logger.error("Error fetching top arbitrators", { error, limit });
     throw new Error("Failed to fetch top arbitrators");
   }
 }
@@ -602,7 +603,7 @@ export async function getPrecedentStatistics() {
       byTribunal,
     };
   } catch (error) {
-    console.error("Error fetching precedent statistics:", error);
+    logger.error("Error fetching precedent statistics", { error });
     throw new Error("Failed to fetch precedent statistics");
   }
 }
@@ -620,7 +621,7 @@ export async function getMostCitedPrecedents(limit: number = 10): Promise<Arbitr
 
     return precedents;
   } catch (error) {
-    console.error("Error fetching most cited precedents:", error);
+    logger.error("Error fetching most cited precedents", { error, limit });
     throw new Error("Failed to fetch most cited precedents");
   }
 }

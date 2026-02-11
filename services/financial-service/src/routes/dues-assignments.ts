@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db, schema } from '../db';
 import { eq, and, desc, isNull } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -66,7 +67,7 @@ router.get('/', async (req: Request, res: Response) => {
       total: assignments.length,
     });
   } catch (error) {
-    console.error('Error fetching dues assignments:', error);
+    logger.error('Error fetching dues assignments', { error });
     res.status(500).json({ success: false, error: 'Failed to fetch dues assignments' });
   }
 });
@@ -102,7 +103,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     res.json({ success: true, data: assignment });
   } catch (error) {
-    console.error('Error fetching dues assignment:', error);
+    logger.error('Error fetching dues assignment', { error });
     res.status(500).json({ success: false, error: 'Failed to fetch dues assignment' });
   }
 });
@@ -151,7 +152,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
     }
-    console.error('Error creating dues assignment:', error);
+    logger.error('Error creating dues assignment', { error });
     res.status(500).json({ success: false, error: 'Failed to create dues assignment' });
   }
 });
@@ -203,7 +204,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
     }
-    console.error('Error updating dues assignment:', error);
+    logger.error('Error updating dues assignment', { error });
     res.status(500).json({ success: false, error: 'Failed to update dues assignment' });
   }
 });
@@ -240,7 +241,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
     res.json({ success: true, message: 'Assignment ended successfully' });
   } catch (error) {
-    console.error('Error deleting dues assignment:', error);
+    logger.error('Error deleting dues assignment', { error });
     res.status(500).json({ success: false, error: 'Failed to delete dues assignment' });
   }
 });

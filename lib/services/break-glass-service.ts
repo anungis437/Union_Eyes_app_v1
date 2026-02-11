@@ -349,8 +349,10 @@ export class BreakGlassService {
     const auditDeadline = new Date();
     auditDeadline.setDate(auditDeadline.getDate() + this.AUDIT_DEADLINE_DAYS);
 
-    console.log(`[AUDIT] Independent audit scheduled for Emergency ${emergencyId}`);
-    console.log(`Deadline: ${auditDeadline.toISOString()}`);
+    logger.info('Independent audit scheduled for emergency', {
+      emergencyId,
+      auditDeadline: auditDeadline.toISOString(),
+    });
 
     return {
       auditDeadline,
@@ -375,7 +377,7 @@ export class BreakGlassService {
       .where(eq(emergencyDeclarations.id, emergencyId));
 
     // Schedule post-incident review
-    console.log('[EMERGENCY] Emergency resolved. Post-incident review scheduled.');
+    logger.info('Emergency resolved. Post-incident review scheduled.');
 
     return {
       success: true,
@@ -460,7 +462,7 @@ export const breakGlassService = new BreakGlassService();
  * Tests 48-hour recovery capability
  */
 export async function quarterlyRecoveryDrill() {
-  console.log('[DRILL] Quarterly 48-hour recovery drill starting...');
+  logger.info('Quarterly 48-hour recovery drill starting');
   
   // Simulate break-glass activation (in test environment only)
   const testKeyHolders: KeyHolderAuth[] = [
@@ -498,16 +500,17 @@ export async function quarterlyRecoveryDrill() {
       activation.coldStorageAccess
     );
 
-    console.log('[DRILL] Recovery Results:');
-    console.log(`  Recovery Time: ${recovery.recoveryTimeHours.toFixed(2)} hours`);
-    console.log(`  Within 48 Hours: ${recovery.within48Hours ? 'YES ✓' : 'NO ✗'}`);
-    console.log(`  Data Loss: ${recovery.dataLoss} records`);
-    console.log(`  Backup Source: ${recovery.backupSource}`);
+    logger.info('Recovery results', {
+      recoveryTimeHours: recovery.recoveryTimeHours.toFixed(2),
+      within48Hours: recovery.within48Hours,
+      dataLoss: recovery.dataLoss,
+      backupSource: recovery.backupSource,
+    });
 
     return recovery;
   }
 
-  console.error('[DRILL] Break-glass activation failed');
+  logger.error('Break-glass activation failed');
   return null;
 }
 

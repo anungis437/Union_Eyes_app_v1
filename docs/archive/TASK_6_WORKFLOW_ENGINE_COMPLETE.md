@@ -64,40 +64,40 @@ type ClaimStatus =
 ### Valid Transitions
 
 ```
-submitted →
-  ├─ under_review (steward)
-  ├─ assigned (steward)
-  └─ rejected (steward)
+submitted â†’
+  â”œâ”€ under_review (steward)
+  â”œâ”€ assigned (steward)
+  â””â”€ rejected (steward)
 
-under_review →
-  ├─ assigned (steward)
-  ├─ investigation (steward)
-  ├─ pending_documentation (steward)
-  ├─ resolved (steward)
-  └─ rejected (steward)
+under_review â†’
+  â”œâ”€ assigned (steward)
+  â”œâ”€ investigation (steward)
+  â”œâ”€ pending_documentation (steward)
+  â”œâ”€ resolved (steward)
+  â””â”€ rejected (steward)
 
-assigned →
-  ├─ investigation (steward/admin)
-  ├─ pending_documentation (steward/admin)
-  └─ under_review (steward/admin)
+assigned â†’
+  â”œâ”€ investigation (steward/admin)
+  â”œâ”€ pending_documentation (steward/admin)
+  â””â”€ under_review (steward/admin)
 
-investigation →
-  ├─ pending_documentation (steward/admin)
-  ├─ resolved (steward/admin)
-  └─ rejected (steward/admin)
+investigation â†’
+  â”œâ”€ pending_documentation (steward/admin)
+  â”œâ”€ resolved (steward/admin)
+  â””â”€ rejected (steward/admin)
 
-pending_documentation →
-  ├─ investigation (steward/admin)
-  ├─ resolved (steward/admin)
-  └─ rejected (steward/admin)
+pending_documentation â†’
+  â”œâ”€ investigation (steward/admin)
+  â”œâ”€ resolved (steward/admin)
+  â””â”€ rejected (steward/admin)
 
-resolved →
-  └─ closed (steward/admin)
+resolved â†’
+  â””â”€ closed (steward/admin)
 
-rejected →
-  └─ closed (steward/admin)
+rejected â†’
+  â””â”€ closed (steward/admin)
 
-closed →
+closed â†’
   (terminal state - no transitions)
 ```
 
@@ -113,7 +113,7 @@ closed →
 
 ```typescript
 Workplace Safety Claims:
-  - Submitted → Under Review: 24 hours
+  - Submitted â†’ Under Review: 24 hours
   - Investigation: 2 business days
   - Total SLA: 2 days (critical priority)
 
@@ -312,7 +312,6 @@ const result = await updateClaimStatus(
 );
 
 if (!result.success) {
-  console.error("Invalid transition:", result.error);
 }
 ```
 
@@ -402,8 +401,8 @@ CREATE TABLE claim_updates (
 ### Manual Testing Steps
 
 1. **Create test claim** via UI or API
-2. **Test valid transition**: submitted → under_review
-3. **Test invalid transition**: submitted → resolved (should fail)
+2. **Test valid transition**: submitted â†’ under_review
+3. **Test invalid transition**: submitted â†’ resolved (should fail)
 4. **Test role permission**: member tries to update status (should fail)
 5. **Verify deadline calculation**: Check deadline matches claim type SLA
 6. **Test overdue monitoring**: Query overdue endpoint
@@ -456,17 +455,17 @@ Add monitoring for:
 
 ## Completion Status
 
-- ✅ Core workflow engine implementation
-- ✅ API endpoints (4 routes)
-- ✅ React UI components (2 components)
-- ✅ Deadline calculation logic
-- ✅ Role-based permissions
-- ✅ Audit trail recording
-- ⏳ Unit tests (pending)
-- ⏳ Integration tests (pending)
-- ⏳ Manual testing (pending)
-- ⏳ Integration with email notifications (Task 7)
-- ⏳ Dashboard widgets for overdue claims (Task 8)
+- âœ… Core workflow engine implementation
+- âœ… API endpoints (4 routes)
+- âœ… React UI components (2 components)
+- âœ… Deadline calculation logic
+- âœ… Role-based permissions
+- âœ… Audit trail recording
+- â³ Unit tests (pending)
+- â³ Integration tests (pending)
+- â³ Manual testing (pending)
+- â³ Integration with email notifications (Task 7)
+- â³ Dashboard widgets for overdue claims (Task 8)
 
 ## Next Steps
 
@@ -490,14 +489,14 @@ Add monitoring for:
 
 ## Success Criteria
 
-- ✅ Status transitions follow defined state machine
-- ✅ Role permissions enforced on all transitions
-- ✅ Deadlines calculated correctly per claim type
-- ✅ Overdue claims can be monitored
-- ✅ Audit trail records all status changes
-- ⏳ UI components work smoothly (pending testing)
-- ⏳ API endpoints handle errors gracefully (pending testing)
-- ⏳ Performance acceptable under load (pending testing)
+- âœ… Status transitions follow defined state machine
+- âœ… Role permissions enforced on all transitions
+- âœ… Deadlines calculated correctly per claim type
+- âœ… Overdue claims can be monitored
+- âœ… Audit trail records all status changes
+- â³ UI components work smoothly (pending testing)
+- â³ API endpoints handle errors gracefully (pending testing)
+- â³ Performance acceptable under load (pending testing)
 
 ---
 

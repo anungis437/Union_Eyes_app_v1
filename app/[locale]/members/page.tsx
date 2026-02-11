@@ -58,16 +58,14 @@ export default function MembersPage() {
             members={[]}
             onView={(member) => {
               // Navigate to member detail page
-              console.log("View member:", member.id);
-            }}
+}}
           />
         </TabsContent>
 
         <TabsContent value="onboard">
           <MemberOnboardingWizard
             onComplete={async (data) => {
-              console.log("Member onboarded:", data);
-              setActiveTab("list");
+setActiveTab("list");
             }}
             onCancel={() => setActiveTab("list")}
           />
@@ -96,8 +94,7 @@ export default function MembersPage() {
           <BulkMemberOperations
             selectedMemberIds={[]}
             onOperationComplete={(operation, results) => {
-              console.log("Operation completed:", operation, results);
-              setActiveTab("list");
+setActiveTab("list");
             }}
           />
         </TabsContent>

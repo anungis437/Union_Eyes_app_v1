@@ -146,8 +146,7 @@ export async function generateSettlementRecommendation(
       potentialSettlementValue: calculatePotentialSettlement(claim, precedents),
     };
   } catch (error) {
-    console.error("Error generating settlement recommendation:", error);
-    return null;
+return null;
   }
 }
 
@@ -229,8 +228,7 @@ async function findSimilarPrecedents(
     // Sort by similarity (descending)
     return precedents.sort((a, b) => b.similarityScore - a.similarityScore);
   } catch (error) {
-    console.error("Error finding similar precedents:", error);
-    return [];
+return [];
   }
 }
 
@@ -349,8 +347,7 @@ async function findRelevantClauses(
     // Sort by relevance
     return clauseReferences.sort((a, b) => b.relevanceScore - a.relevanceScore);
   } catch (error) {
-    console.error("Error finding relevant clauses:", error);
-    return [];
+return [];
   }
 }
 

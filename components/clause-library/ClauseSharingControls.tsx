@@ -123,8 +123,7 @@ export function ClauseSharingControls({
       });
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to save sharing settings:", error);
-    } finally {
+} finally {
       setIsSaving(false);
     }
   };

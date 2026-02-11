@@ -89,7 +89,6 @@ export function WorkflowAnalytics({
       const data = await response.json();
       setWorkflows(data.map((w: any) => ({ id: w.id, name: w.name })));
     } catch (error) {
-      console.error('Error fetching workflows:', error);
     }
   }, [tenantId]);
 
@@ -107,7 +106,6 @@ export function WorkflowAnalytics({
       const data = await response.json();
       setAnalytics(data);
     } catch (error) {
-      console.error('Error fetching workflow analytics:', error);
     }
   }, [tenantId]);
 
@@ -125,7 +123,6 @@ export function WorkflowAnalytics({
       const data = await response.json();
       setOverview(data);
     } catch (error) {
-      console.error('Error fetching overview analytics:', error);
     }
   }, [tenantId]);
 

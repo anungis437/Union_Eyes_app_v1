@@ -67,8 +67,7 @@ export async function downloadMultiple(
   for (const doc of docs) {
     try {
       if (!doc.fileUrl) {
-        console.warn(`Document ${doc.id} has no file URL`);
-        continue;
+continue;
       }
 
       // Fetch file content
@@ -95,8 +94,7 @@ export async function downloadMultiple(
       archive.append(buffer, { name: fileName });
       filesAdded++;
     } catch (error) {
-      console.error(`Error adding document ${doc.id} to archive:`, error);
-    }
+}
   }
 
   if (filesAdded === 0) {

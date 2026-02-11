@@ -196,9 +196,9 @@ async function handlePaymentSuccess(event: Stripe.Event) {
         billingCycleEnd
       });
       
-      console.log(`Reset usage credits to ${DEFAULT_USAGE_CREDITS} for Stripe customer ${customerId}`);
+      logger.info(`Reset usage credits to ${DEFAULT_USAGE_CREDITS} for Stripe customer ${customerId}`);
     } catch (error) {
-      console.error(`Error processing payment success: ${error}`);
+      logger.error('Error processing payment success', { error, customerId });
     }
   }
 }
@@ -252,7 +252,7 @@ async function handleDuesPaymentSuccess(event: Stripe.Event) {
         })
         .where(eq(duesTransactions.id, transaction.id));
       
-      console.log(`Dues payment succeeded for transaction ${transaction.id}`);
+      logger.info(`Dues payment succeeded for transaction ${transaction.id}`);
       
       // Update AutoPay settings if this was an AutoPay charge
       const [settings] = await db
@@ -278,7 +278,7 @@ async function handleDuesPaymentSuccess(event: Stripe.Event) {
           })
           .where(eq(autopaySettings.id, settings.id));
         
-        console.log(`Updated AutoPay settings for member ${transaction.memberId}`);
+        logger.info(`Updated AutoPay settings for member ${transaction.memberId}`);
       }
       
       // Send payment confirmation email
@@ -305,14 +305,14 @@ async function handleDuesPaymentSuccess(event: Stripe.Event) {
           });
         }
       } catch (emailError) {
-        console.error('Failed to send payment confirmation email:', emailError);
+        logger.error('Failed to send payment confirmation email', { error: emailError });
         // Don't fail the webhook if email fails
       }
     } else {
-      console.warn(`No transaction found for payment intent ${paymentIntent.id}`);
+      logger.warn(`No transaction found for payment intent ${paymentIntent.id}`);
     }
   } catch (error) {
-    console.error(`Error processing dues payment success: ${error}`);
+    logger.error('Error processing dues payment success', { error });
   }
 }
 
@@ -342,7 +342,9 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
         })
         .where(eq(duesTransactions.id, transaction.id));
       
-      console.log(`Dues payment failed for transaction ${transaction.id}: ${paymentIntent.last_payment_error?.message}`);
+      logger.warn(
+        `Dues payment failed for transaction ${transaction.id}: ${paymentIntent.last_payment_error?.message}`
+      );
       
       // Update AutoPay settings if this was an AutoPay charge
       const [settings] = await db
@@ -372,7 +374,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
           })
           .where(eq(autopaySettings.id, settings.id));
         
-        console.log(`Updated AutoPay failure count to ${newFailureCount} for member ${transaction.memberId}`);
+        logger.info(`Updated AutoPay failure count to ${newFailureCount} for member ${transaction.memberId}`);
         
         // Disable AutoPay after 3 failures
         if (parseInt(newFailureCount) >= 3) {
@@ -384,7 +386,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
             })
             .where(eq(autopaySettings.id, settings.id));
           
-          console.log(`Disabled AutoPay for member ${transaction.memberId} after 3 failures`);
+          logger.info(`Disabled AutoPay for member ${transaction.memberId} after 3 failures`);
         }
       }
       
@@ -423,14 +425,14 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
           }
         }
       } catch (emailError) {
-        console.error('Failed to send payment failure email:', emailError);
+        logger.error('Failed to send payment failure email', { error: emailError });
         // Don't fail the webhook if email fails
       }
     } else {
-      console.warn(`No transaction found for payment intent ${paymentIntent.id}`);
+      logger.warn(`No transaction found for payment intent ${paymentIntent.id}`);
     }
   } catch (error) {
-    console.error(`Error processing dues payment failure: ${error}`);
+    logger.error('Error processing dues payment failure', { error });
   }
 }
 
@@ -459,7 +461,7 @@ async function handleDuesPaymentFailed(event: Stripe.Event) {
       .limit(1);
     
     if (existing) {
-      console.log(`Payment method ${setupIntent.payment_method} already saved`);
+      logger.info(`Payment method ${setupIntent.payment_method} already saved`);
       return;
     }
     

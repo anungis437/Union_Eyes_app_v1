@@ -235,8 +235,7 @@ export class SignatureService {
       
       return !!membership;
     } catch (error) {
-      console.error('[SignatureService] Error checking org membership:', error);
-      return false;
+return false;
     }
   }
 
@@ -341,8 +340,7 @@ export class SignatureService {
         }
       }
     } catch (error) {
-      console.error("Failed to sync document status:", error);
-    }
+}
   }
 
   private static mapProviderSignerStatus(status: string):
@@ -475,8 +473,7 @@ export class SignatureService {
         );
         await provider.voidEnvelope(document.providerEnvelopeId, reason);
       } catch (error) {
-        console.error("Failed to void with provider:", error);
-      }
+}
     }
 
     // Update document
@@ -539,8 +536,7 @@ export class SignatureService {
         },
       });
     } catch (error) {
-      console.error('Failed to send signature reminder:', error);
-      // Continue with audit log even if notification fails
+// Continue with audit log even if notification fails
     }
 
     await AuditTrailService.log({

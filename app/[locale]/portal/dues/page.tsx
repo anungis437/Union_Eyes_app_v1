@@ -54,8 +54,7 @@ export default function MemberDuesPage() {
           setTransactions(data.transactions || []);
         }
       } catch (error) {
-        console.error('Error fetching dues info:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     }
@@ -80,8 +79,7 @@ export default function MemberDuesPage() {
         }
       }
     } catch (error) {
-      console.error('Error initiating payment:', error);
-    } finally {
+} finally {
       setPaymentProcessing(false);
     }
   };

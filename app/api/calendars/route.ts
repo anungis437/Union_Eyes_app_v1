@@ -73,8 +73,7 @@ export const GET = async (request: NextRequest) => {
         ],
       });
     } catch (error) {
-      console.error('List calendars error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to list calendars' },
         { status: 500 }
       );
@@ -111,9 +110,16 @@ export const POST = async (request: NextRequest) => {
         );
       }
 
-      // Get tenant ID from user metadata or use default
-      // TODO: Extract from user's organization
-      const tenantId = 'default';
+      // Validate organization context
+      if (!organizationId) {
+        return NextResponse.json(
+          { error: 'No active organization' },
+          { status: 400 }
+        );
+      }
+
+      // Use organization ID as tenant ID for proper multi-tenant isolation
+      const tenantId = organizationId;
 
       const [newCalendar] = await db
         .insert(calendars)
@@ -141,8 +147,7 @@ export const POST = async (request: NextRequest) => {
         calendar: newCalendar,
       }, { status: 201 });
     } catch (error) {
-      console.error('Create calendar error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create calendar' },
         { status: 500 }
       );

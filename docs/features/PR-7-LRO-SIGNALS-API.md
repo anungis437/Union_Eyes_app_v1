@@ -1,6 +1,6 @@
 # PR-7: LRO Signals API
 
-**Status:** ✅ Complete  
+**Status:** Ã¢Å“â€¦ Complete  
 **Tests:** 30/30 passing  
 **Principle:** "Signal what needs attention. Suppress what doesn't."
 
@@ -87,8 +87,6 @@ const caseData = {
 const signals = detectSignals(caseData, new Date());
 
 signals.forEach(signal => {
-  console.log(`${signal.severity.toUpperCase()}: ${signal.title}`);
-  console.log(`Action: ${signal.actionText}`);
 });
 ```
 
@@ -103,12 +101,6 @@ const signals = detectAllSignals(allCases);
 
 // Get dashboard summary
 const stats = getDashboardStats(signals);
-
-console.log(`Critical Alerts: ${stats.totalCritical}`);
-console.log(`Urgent Alerts: ${stats.totalUrgent}`);
-console.log(`Breached Cases: ${stats.breachedCases}`);
-console.log(`At-Risk Cases: ${stats.atRiskCases}`);
-console.log(`Awaiting Acknowledgment: ${stats.awaitingAcknowledgment}`);
 ```
 
 **Filter by Severity:**
@@ -145,7 +137,7 @@ signals.forEach(async (signal) => {
   await fetch('https://hooks.slack.com/services/YOUR/WEBHOOK/URL', {
     method: 'POST',
     body: JSON.stringify({
-      text: `🚨 ${payload.signal.severity.toUpperCase()}: ${payload.signal.title}`,
+      text: `Ã°Å¸Å¡Â¨ ${payload.signal.severity.toUpperCase()}: ${payload.signal.title}`,
       attachments: [{
         title: payload.case.title,
         title_link: payload.case.url,
@@ -168,7 +160,6 @@ const allSignals = detectAllSignals(allCases);
 const highestPerCase = getHighestSeverityPerCase(allSignals);
 
 highestPerCase.forEach(signal => {
-  console.log(`Case ${signal.caseId}: ${signal.severity} - ${signal.title}`);
 });
 ```
 
@@ -302,10 +293,10 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 
 function SignalCard({ signal }: { signal: Signal }) {
   const severityIcon = {
-    critical: '🔴',
-    urgent: '🟠',
-    warning: '🟡',
-    info: '🔵',
+    critical: 'Ã°Å¸â€Â´',
+    urgent: 'Ã°Å¸Å¸Â ',
+    warning: 'Ã°Å¸Å¸Â¡',
+    info: 'Ã°Å¸â€Âµ',
   }[signal.severity];
   
   return (
@@ -319,7 +310,7 @@ function SignalCard({ signal }: { signal: Signal }) {
           <p className="text-sm text-gray-600 mt-1">{signal.description}</p>
           {signal.actionable && (
             <button className="text-sm text-blue-600 hover:underline mt-2">
-              {signal.actionText} →
+              {signal.actionText} Ã¢â€ â€™
             </button>
           )}
         </div>
@@ -337,45 +328,45 @@ function SignalCard({ signal }: { signal: Signal }) {
 ### Test Categories
 
 **detectSignals (12 tests):**
-✅ No signals for terminal states (closed, resolved)  
-✅ SLA breached detection (critical)  
-✅ SLA at-risk detection (urgent)  
-✅ Acknowledgment overdue detection  
-✅ Member waiting detection  
-✅ Stale case detection  
-✅ Escalation needed detection  
-✅ Urgent state detection (info)  
-✅ Signal suppression (urgent state suppressed when other signals present)  
-✅ Case context inclusion in all signals  
-✅ SLA breach prioritization over at-risk
+Ã¢Å“â€¦ No signals for terminal states (closed, resolved)  
+Ã¢Å“â€¦ SLA breached detection (critical)  
+Ã¢Å“â€¦ SLA at-risk detection (urgent)  
+Ã¢Å“â€¦ Acknowledgment overdue detection  
+Ã¢Å“â€¦ Member waiting detection  
+Ã¢Å“â€¦ Stale case detection  
+Ã¢Å“â€¦ Escalation needed detection  
+Ã¢Å“â€¦ Urgent state detection (info)  
+Ã¢Å“â€¦ Signal suppression (urgent state suppressed when other signals present)  
+Ã¢Å“â€¦ Case context inclusion in all signals  
+Ã¢Å“â€¦ SLA breach prioritization over at-risk
 
 **detectAllSignals (2 tests):**
-✅ Signal detection across multiple cases  
-✅ Severity-based sorting (critical → urgent → warning → info)
+Ã¢Å“â€¦ Signal detection across multiple cases  
+Ã¢Å“â€¦ Severity-based sorting (critical Ã¢â€ â€™ urgent Ã¢â€ â€™ warning Ã¢â€ â€™ info)
 
 **Filtering Functions (4 tests):**
-✅ Filter by single severity  
-✅ Filter by multiple severities  
-✅ Filter by single type  
-✅ Filter by multiple types
+Ã¢Å“â€¦ Filter by single severity  
+Ã¢Å“â€¦ Filter by multiple severities  
+Ã¢Å“â€¦ Filter by single type  
+Ã¢Å“â€¦ Filter by multiple types
 
 **Dashboard Stats (2 tests):**
-✅ Calculate statistics from signals  
-✅ Handle empty signal list
+Ã¢Å“â€¦ Calculate statistics from signals  
+Ã¢Å“â€¦ Handle empty signal list
 
 **Utility Functions (5 tests):**
-✅ Generate webhook payload  
-✅ Get actionable signals only  
-✅ Group signals by case ID  
-✅ Get highest severity per case  
-✅ Configuration constants validation
+Ã¢Å“â€¦ Generate webhook payload  
+Ã¢Å“â€¦ Get actionable signals only  
+Ã¢Å“â€¦ Group signals by case ID  
+Ã¢Å“â€¦ Get highest severity per case  
+Ã¢Å“â€¦ Configuration constants validation
 
 **Edge Cases (5 tests):**
-✅ Empty timeline handling  
-✅ Minimal timeline handling  
-✅ Withdrawn state handling  
-✅ Multiple breached SLAs  
-✅ High priority cases
+Ã¢Å“â€¦ Empty timeline handling  
+Ã¢Å“â€¦ Minimal timeline handling  
+Ã¢Å“â€¦ Withdrawn state handling  
+Ã¢Å“â€¦ Multiple breached SLAs  
+Ã¢Å“â€¦ High priority cases
 
 ## Business Value
 
@@ -391,7 +382,7 @@ function SignalCard({ signal }: { signal: Signal }) {
 
 - Automated case prioritization (< 1 second)
 - Proactive breach prevention (80% threshold)
-- Systematic urgency ranking (critical → urgent → warning)
+- Systematic urgency ranking (critical Ã¢â€ â€™ urgent Ã¢â€ â€™ warning)
 - Officers see only what needs attention
 - Automated stale case detection
 
@@ -444,18 +435,18 @@ function SignalCard({ signal }: { signal: Signal }) {
 
 ## Acceptance Criteria
 
-✅ Detect 7 signal types with correct severity  
-✅ Calculate SLA compliance (acknowledgment, first response, investigation)  
-✅ Filter signals by severity (critical, urgent, warning, info)  
-✅ Filter signals by type  
-✅ Generate dashboard statistics  
-✅ Group signals by case  
-✅ Get highest severity per case  
-✅ Generate webhook payloads  
-✅ Suppress low-priority signals when higher-priority exist  
-✅ 30/30 tests passing  
-✅ Handle edge cases (empty timeline, terminal states)  
-✅ No breaking changes to existing case API
+Ã¢Å“â€¦ Detect 7 signal types with correct severity  
+Ã¢Å“â€¦ Calculate SLA compliance (acknowledgment, first response, investigation)  
+Ã¢Å“â€¦ Filter signals by severity (critical, urgent, warning, info)  
+Ã¢Å“â€¦ Filter signals by type  
+Ã¢Å“â€¦ Generate dashboard statistics  
+Ã¢Å“â€¦ Group signals by case  
+Ã¢Å“â€¦ Get highest severity per case  
+Ã¢Å“â€¦ Generate webhook payloads  
+Ã¢Å“â€¦ Suppress low-priority signals when higher-priority exist  
+Ã¢Å“â€¦ 30/30 tests passing  
+Ã¢Å“â€¦ Handle edge cases (empty timeline, terminal states)  
+Ã¢Å“â€¦ No breaking changes to existing case API
 
 ## Configuration
 

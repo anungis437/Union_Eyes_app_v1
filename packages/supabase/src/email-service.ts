@@ -47,13 +47,11 @@ export class EmailService {
       });
 
       if (error) {
-        console.error('Email send error:', error);
         return { success: false, error: error.message };
       }
 
       return { success: true, message: data?.message };
     } catch (error) {
-      console.error('Email service error:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 

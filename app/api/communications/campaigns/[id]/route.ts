@@ -80,8 +80,7 @@ export async function GET(
 
       return NextResponse.json({ campaign });
     } catch (error) {
-      console.error('Error fetching campaign:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch campaign' },
         { status: 500 }
       );
@@ -168,9 +167,7 @@ export async function PUT(
           { status: 400 }
         );
       }
-
-      console.error('Error updating campaign:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to update campaign' },
         { status: 500 }
       );
@@ -240,8 +237,7 @@ export async function DELETE(
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error('Error deleting campaign:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to delete campaign' },
         { status: 500 }
       );

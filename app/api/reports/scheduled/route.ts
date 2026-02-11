@@ -46,8 +46,7 @@ async function getHandler(req: NextRequest, context: OrganizationContext) {
       count: schedules.length,
     });
   } catch (error) {
-    console.error('Error fetching scheduled reports:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch scheduled reports' },
       { status: 500 }
     );
@@ -115,8 +114,7 @@ async function postHandler(req: NextRequest, context: OrganizationContext) {
 
     return NextResponse.json(schedule, { status: 201 });
   } catch (error) {
-    console.error('Error creating scheduled report:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create scheduled report' },
       { status: 500 }
     );

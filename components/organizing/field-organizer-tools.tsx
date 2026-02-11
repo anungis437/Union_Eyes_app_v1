@@ -177,8 +177,7 @@ export default function FieldOrganizerTools({ campaignId }: { campaignId: string
           setGpsEnabled(true);
         },
         (error) => {
-          console.error("GPS error:", error);
-          alert("Unable to access GPS. Location tracking will not be available.");
+alert("Unable to access GPS. Location tracking will not be available.");
         }
       );
     }
@@ -397,7 +396,7 @@ export default function FieldOrganizerTools({ campaignId }: { campaignId: string
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {contact.jobTitle} • {contact.department}
+                          {contact.jobTitle} â€¢ {contact.department}
                         </p>
                         {contact.lastContactDate && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -444,9 +443,9 @@ export default function FieldOrganizerTools({ campaignId }: { campaignId: string
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {ACTIVITY_TYPES.find((t) => t.value === activity.activityType)?.label}
-                            {" • "}
+                            {" â€¢ "}
                             {activity.duration} min
-                            {" • "}
+                            {" â€¢ "}
                             {format(new Date(activity.activityDate), "MMM dd, h:mm a")}
                           </p>
                           <div className="flex items-center gap-2 mt-2">

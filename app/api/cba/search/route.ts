@@ -1,7 +1,7 @@
 /**
  * CBA Search API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -118,8 +118,7 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       });
       }, user.organizationId);
   } catch (error) {
-    console.error("Error searching CBAs:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
@@ -176,8 +175,7 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
 
     return NextResponse.json({ results });
   } catch (error) {
-    console.error("Error fetching CBAs:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );

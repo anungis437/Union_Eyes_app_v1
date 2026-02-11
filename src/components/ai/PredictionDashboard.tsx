@@ -93,7 +93,6 @@ export function PredictionDashboard({
         fetchSettlementEstimate(),
       ]);
     } catch (error) {
-      console.error('Failed to load predictions:', error);
     } finally {
       setIsLoading(false);
     }

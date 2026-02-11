@@ -18,6 +18,7 @@
 import { db } from '@/db';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { crossBorderTransactions, exchangeRates } from '@/db/schema/transfer-pricing-schema';
+import { logger } from '@/lib/logger';
 
 export type Currency = 'CAD' | 'USD' | 'EUR' | 'GBP' | 'MXN';
 
@@ -97,10 +98,11 @@ export class CurrencyService {
     const rate = await this.getBankOfCanadaNoonRate(date);
     const amountCAD = amountUSD * rate;
 
-    console.log('[CURRENCY] USD to CAD conversion:');
-    console.log(`  Amount USD: $${amountUSD.toFixed(2)}`);
-    console.log(`  Rate: ${rate}`);
-    console.log(`  Amount CAD: $${amountCAD.toFixed(2)}`);
+    logger.info('USD to CAD conversion', {
+      amountUSD: amountUSD.toFixed(2),
+      rate,
+      amountCAD: amountCAD.toFixed(2),
+    });
 
     return {
       amountCAD,
@@ -127,15 +129,15 @@ export class CurrencyService {
       });
 
       if (cachedRate) {
-        console.log(`[CURRENCY] Using cached BOC rate: ${cachedRate.rate}`);
+        logger.info('Using cached BOC rate', { rate: cachedRate.rate });
         return cachedRate.rate;
       }
 
       // Fallback to default rate (would fetch from BOC API in production)
-      console.log('[CURRENCY] No cached BOC rate found, using fallback');
+      logger.warn('No cached BOC rate found, using fallback');
       return 1.35; // Fallback rate
     } catch (error) {
-      console.error('[CURRENCY] Error fetching BOC rate:', error);
+      logger.error('Error fetching BOC rate', { error });
       return 1.35; // Fallback rate
     }
   }
@@ -249,12 +251,14 @@ export class CurrencyService {
       status: 'pending',
     }).returning();
 
-    console.log('[TRANSFER PRICING] Cross-border transaction recorded:');
-    console.log(`  ID: ${transaction.id}`);
-    console.log(`  Amount: ${data.originalAmount} ${data.originalCurrency}`);
-    console.log(`  CAD: $${cadConversion.amount.toFixed(2)}`);
-    console.log(`  Related Party: ${data.relatedParty}`);
-    console.log(`  T106 Required: ${cadConversion.amount >= this.T106_THRESHOLD && data.relatedParty}`);
+    logger.info('Cross-border transaction recorded', {
+      id: transaction.id,
+      originalAmount: data.originalAmount,
+      originalCurrency: data.originalCurrency,
+      cadAmount: cadConversion.amount.toFixed(2),
+      relatedParty: data.relatedParty,
+      t106Required: cadConversion.amount >= this.T106_THRESHOLD && data.relatedParty,
+    });
 
     return {
       transactionId: transaction.id,
@@ -360,11 +364,12 @@ export class CurrencyService {
     }
 
     // In production, submit to CRA via API or XML upload
-    console.log('[TRANSFER PRICING] Filing T106 with CRA...');
-    console.log(`  Tax Year: ${form.taxYear}`);
-    console.log(`  Business Number: ${form.businessNumber}`);
-    console.log(`  Transactions: ${form.transactions.length}`);
-    console.log(`  Total Amount: $${form.transactions.reduce((sum, t) => sum + t.amountCAD, 0).toLocaleString()} CAD`);
+    logger.info('Filing T106 with CRA', {
+      taxYear: form.taxYear,
+      businessNumber: form.businessNumber,
+      transactionCount: form.transactions.length,
+      totalAmountCad: form.transactions.reduce((sum, t) => sum + t.amountCAD, 0),
+    });
 
     // Simulate filing
     const confirmationNumber = `CRA-T106-${form.taxYear}-${Date.now()}`;
@@ -410,12 +415,13 @@ export class CurrencyService {
 
     const compliant = variance <= acceptableVariance;
 
-    console.log('[TRANSFER PRICING] Arm\'s length price validation:');
-    console.log(`  Transaction: ${transactionId}`);
-    console.log(`  Market Rate: ${marketRate}`);
-    console.log(`  Actual Rate: ${actualRate}`);
-    console.log(`  Variance: ${(variance * 100).toFixed(2)}%`);
-    console.log(`  Compliant: ${compliant}`);
+    logger.info("Arm's length price validation", {
+      transactionId,
+      marketRate,
+      actualRate,
+      variancePercent: (variance * 100).toFixed(2),
+      compliant,
+    });
 
     return {
       compliant,
@@ -478,17 +484,18 @@ export async function annualT106Reminder() {
   const currentYear = new Date().getFullYear();
   const lastYear = currentYear - 1;
 
-  console.log(`[TRANSFER PRICING] Annual T106 Reminder for tax year ${lastYear}`);
+  logger.info('Annual T106 reminder', { taxYear: lastYear });
   
   const t106Data = await currencyService.getT106RequiredTransactions(lastYear);
   
   if (t106Data.count > 0) {
-    console.log(`⚠️  T106 FILING REQUIRED`);
-    console.log(`  Tax Year: ${lastYear}`);
-    console.log(`  Transactions: ${t106Data.count}`);
-    console.log(`  Total Amount: $${t106Data.totalAmount.toLocaleString()} CAD`);
-    console.log(`  Deadline: June 30, ${currentYear}`);
-    console.log(`  Days Remaining: ${30 - new Date().getDate()}`);
+    logger.warn('T106 filing required', {
+      taxYear: lastYear,
+      transactionCount: t106Data.count,
+      totalAmountCad: t106Data.totalAmount,
+      deadline: `June 30, ${currentYear}`,
+      daysRemaining: 30 - new Date().getDate(),
+    });
     
     // In production, send email to treasurer/CTO
     // await sendEmail({
@@ -497,7 +504,7 @@ export async function annualT106Reminder() {
     //   template: 't106-reminder'
     // });
   } else {
-    console.log(`✓ No T106 filing required for ${lastYear}`);
+    logger.info('No T106 filing required', { taxYear: lastYear });
   }
 }
 

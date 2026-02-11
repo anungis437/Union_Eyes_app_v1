@@ -9,16 +9,13 @@
  * Version: 1.0.0
  * Created: December 6, 2025
  */
-// TODO: Migrate to withApiAuth wrapper pattern for consistency
-// Original pattern used getCurrentUser() with manual auth checks
-
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterTemplates } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 
 const updateTemplateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -38,17 +35,16 @@ const updateTemplateSchema = z.object({
   thumbnailUrl: z.string().optional(),
 });
 
-export async function GET(
+export const GET = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'Template ID required' }, { status: 400 });
     }
 
     const [template] = await db
@@ -57,7 +53,7 @@ export async function GET(
       .where(
         and(
           eq(newsletterTemplates.id, params.id),
-          eq(newsletterTemplates.organizationId, user.tenantId)
+          eq(newsletterTemplates.organizationId, organizationId)
         )
       );
 
@@ -67,25 +63,23 @@ export async function GET(
 
     return NextResponse.json({ template });
   } catch (error) {
-    console.error('Error fetching template:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch template' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function PUT(
+export const PUT = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'Template ID required' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -98,7 +92,7 @@ export async function PUT(
       .where(
         and(
           eq(newsletterTemplates.id, params.id),
-          eq(newsletterTemplates.organizationId, user.tenantId)
+          eq(newsletterTemplates.organizationId, organizationId)
         )
       );
 
@@ -127,26 +121,23 @@ export async function PUT(
         { status: 400 }
       );
     }
-
-    console.error('Error updating template:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update template' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'Template ID required' }, { status: 400 });
     }
 
     // Check if template exists and is not a system template
@@ -156,7 +147,7 @@ export async function DELETE(
       .where(
         and(
           eq(newsletterTemplates.id, params.id),
-          eq(newsletterTemplates.organizationId, user.tenantId)
+          eq(newsletterTemplates.organizationId, organizationId)
         )
       );
 
@@ -177,10 +168,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting template:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to delete template' },
       { status: 500 }
     );
   }
-}
+});

@@ -240,8 +240,7 @@ export function AuditLogsDashboard() {
       // Download the report
       window.location.href = `/api/admin/compliance/reports/${reportId}/download`;
     } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export audit logs');
+alert('Failed to export audit logs');
     }
   };
 

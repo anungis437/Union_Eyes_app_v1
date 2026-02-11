@@ -11,6 +11,7 @@
  */
 
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // ============================================================================
@@ -362,7 +363,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log auth event:', error);
+      logger.error('Failed to log auth event:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -405,7 +406,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log data access:', error);
+      logger.error('Failed to log data access:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -452,7 +453,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log data modification:', error);
+      logger.error('Failed to log data modification:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -497,7 +498,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log permission check:', error);
+      logger.error('Failed to log permission check:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -535,7 +536,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log security event:', error);
+      logger.error('Failed to log security event:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -584,7 +585,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log login attempt:', error);
+      logger.error('Failed to log login attempt:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -617,7 +618,7 @@ export class SecurityAuditService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to log session event:', error);
+      logger.error('Failed to log session event:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -664,7 +665,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data.id };
     } catch (error) {
-      console.error('Failed to log API access:', error);
+      logger.error('Failed to log API access:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -706,7 +707,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data.id };
     } catch (error) {
-      console.error('Failed to create audit log:', error);
+      logger.error('Failed to create audit log:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -753,7 +754,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data.map(r => r.id) };
     } catch (error) {
-      console.error('Failed to batch create audit logs:', error);
+      logger.error('Failed to batch create audit logs:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -815,7 +816,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data || [] };
     } catch (error) {
-      console.error('Failed to get audit logs:', error);
+      logger.error('Failed to get audit logs:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -839,7 +840,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data || [] };
     } catch (error) {
-      console.error('Failed to search audit logs:', error);
+      logger.error('Failed to search audit logs:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -888,7 +889,7 @@ export class SecurityAuditService {
 
       return { success: true, data: timeline.slice(0, options.limit || 100) };
     } catch (error) {
-      console.error('Failed to get security timeline:', error);
+      logger.error('Failed to get security timeline:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -928,7 +929,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data || [] };
     } catch (error) {
-      console.error('Failed to get login history:', error);
+      logger.error('Failed to get login history:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -965,7 +966,7 @@ export class SecurityAuditService {
         limit: options.limit || 100
       });
     } catch (error) {
-      console.error('Failed to get data access history:', error);
+      logger.error('Failed to get data access history:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -1003,7 +1004,7 @@ export class SecurityAuditService {
 
       return { success: true, data: summary };
     } catch (error) {
-      console.error('Failed to get user activity:', error);
+      logger.error('Failed to get user activity:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -1029,7 +1030,7 @@ export class SecurityAuditService {
         limit: options.limit || 100
       });
     } catch (error) {
-      console.error('Failed to get high-risk events:', error);
+      logger.error('Failed to get high-risk events:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -1068,7 +1069,7 @@ export class SecurityAuditService {
 
       return { success: true, data: data || [] };
     } catch (error) {
-      console.error('Failed to get security events:', error);
+      logger.error('Failed to get security events:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
@@ -1107,7 +1108,7 @@ export class SecurityAuditService {
 
       return { success: true, data: exportData };
     } catch (error) {
-      console.error('Failed to export audit logs:', error);
+      logger.error('Failed to export audit logs:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 

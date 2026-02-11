@@ -140,8 +140,8 @@ const calculateDaysOpen = (createdAt: Date): number => {
   return diffDays;
 };
 
-// Convert database claim to UI case
-const mapDbClaimToCase = (claim: DbClaim): Case => ({
+// Convert database claim to UI case (now with member details from API)
+const mapDbClaimToCase = (claim: DbClaim & { memberName?: string; memberEmail?: string; memberPhone?: string }): Case => ({
   id: claim.claimNumber,
   title: claimTypeLabels[claim.claimType] || claim.claimType,
   description: claim.description,
@@ -150,9 +150,9 @@ const mapDbClaimToCase = (claim: DbClaim): Case => ({
   category: claimTypeLabels[claim.claimType] || claim.claimType,
   submittedDate: new Date(claim.createdAt).toISOString().split('T')[0],
   lastUpdate: new Date(claim.updatedAt).toISOString().split('T')[0],
-  memberName: claim.isAnonymous ? "Anonymous Member" : "Member", // TODO: Fetch actual member name
-  memberEmail: claim.isAnonymous ? "" : "member@union.com", // TODO: Fetch actual member email
-  memberPhone: claim.isAnonymous ? "" : "", // TODO: Fetch actual member phone
+  memberName: claim.memberName || (claim.isAnonymous ? "Anonymous Member" : "Unknown Member"),
+  memberEmail: claim.memberEmail || (claim.isAnonymous ? "" : ""),
+  memberPhone: claim.memberPhone || (claim.isAnonymous ? "" : ""),
   assignedTo: claim.assignedTo || null,
   notes: claim.resolutionNotes ? [claim.resolutionNotes] : [],
   daysOpen: calculateDaysOpen(claim.createdAt),
@@ -373,8 +373,7 @@ export default function WorkbenchPage() {
         const mappedCases = data.claims.map(mapDbClaimToCase);
         setCases(mappedCases);
       } catch (err) {
-        console.error('Error fetching assigned claims:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load assigned claims');
+setError(err instanceof Error ? err.message : 'Failed to load assigned claims');
       } finally {
         setIsLoading(false);
       }
@@ -728,7 +727,7 @@ export default function WorkbenchPage() {
                       {label}
                       {sortField === field && (
                         <span className="text-xs">
-                          {sortOrder === "asc" ? "↑" : "↓"}
+                          {sortOrder === "asc" ? "â†‘" : "â†“"}
                         </span>
                       )}
                     </button>
@@ -996,11 +995,11 @@ export default function WorkbenchPage() {
                     LRO Best Practices
                   </h3>
                   <ul className="text-gray-600 space-y-1 text-sm mb-4">
-                    <li>• Review and assign pending cases within 24 hours</li>
-                    <li>• Update case notes regularly to track progress</li>
-                    <li>• Prioritize urgent and high-priority cases first</li>
-                    <li>• Contact members promptly to gather additional information</li>
-                    <li>• Coordinate with HR and management as needed</li>
+                    <li>â€¢ Review and assign pending cases within 24 hours</li>
+                    <li>â€¢ Update case notes regularly to track progress</li>
+                    <li>â€¢ Prioritize urgent and high-priority cases first</li>
+                    <li>â€¢ Contact members promptly to gather additional information</li>
+                    <li>â€¢ Coordinate with HR and management as needed</li>
                   </ul>
                   <button className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
                     View LRO Guidelines

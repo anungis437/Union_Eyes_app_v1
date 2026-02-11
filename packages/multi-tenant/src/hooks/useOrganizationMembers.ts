@@ -308,13 +308,12 @@ export function useOrganizationMembers(
               filter: `organization_id=eq.${organizationId}`,
             },
             async (payload) => {
-              console.log('Member change:', payload);
               await refresh();
             }
           )
           .subscribe();
       } catch (err) {
-        console.error('Failed to setup realtime:', err);
+        setError(err as Error);
       }
     };
 

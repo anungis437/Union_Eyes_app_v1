@@ -137,9 +137,7 @@ export const GET = withRoleAuth(90, async (request, context) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error fetching job queue stats:', error);
-      throw error;
+throw error;
     }
 });
 

@@ -149,8 +149,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     });
 
   } catch (error) {
-    console.error('Error fetching usage metrics:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch usage metrics' },
       { status: 500 }
     );

@@ -95,8 +95,7 @@ export function FileUpload({
 
       onUploadComplete?.(newAttachment);
     } catch (error) {
-      console.error('Upload error:', error);
-      toast({
+toast({
         title: 'Upload failed',
         description: error instanceof Error ? error.message : 'Failed to upload file',
         variant: 'destructive',
@@ -128,8 +127,7 @@ export function FileUpload({
 
       onDeleteComplete?.(attachment.url);
     } catch (error) {
-      console.error('Delete error:', error);
-      toast({
+toast({
         title: 'Delete failed',
         description: error instanceof Error ? error.message : 'Failed to delete file',
         variant: 'destructive',
@@ -255,7 +253,7 @@ export function FileUpload({
                         {attachment.fileName}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatFileSize(attachment.fileSize)} • {new Date(attachment.uploadedAt).toLocaleDateString()}
+                        {formatFileSize(attachment.fileSize)} â€¢ {new Date(attachment.uploadedAt).toLocaleDateString()}
                       </p>
                     </div>
 

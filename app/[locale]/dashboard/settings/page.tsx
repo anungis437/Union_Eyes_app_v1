@@ -119,8 +119,7 @@ export default function OrganizationSettingsPage() {
   };
 
   const handleSave = () => {
-    console.log("Saving organization settings:", orgSettings);
-    setHasChanges(false);
+setHasChanges(false);
   };
 
   const handleDiscard = () => {
@@ -698,7 +697,7 @@ export default function OrganizationSettingsPage() {
                             }}
                             className="text-blue-700 hover:text-blue-900"
                           >
-                            ×
+                            Ã—
                           </button>
                         </div>
                       ))}

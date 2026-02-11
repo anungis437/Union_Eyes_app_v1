@@ -55,8 +55,7 @@ router.get('/', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error fetching dues assignments:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch dues assignments' });
+res.status(500).json({ success: false, error: 'Failed to fetch dues assignments' });
     }
 });
 /**
@@ -82,8 +81,7 @@ router.get('/:id', async (req, res) => {
         res.json({ success: true, data: assignment });
     }
     catch (error) {
-        console.error('Error fetching dues assignment:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch dues assignment' });
+res.status(500).json({ success: false, error: 'Failed to fetch dues assignment' });
     }
 });
 /**
@@ -122,8 +120,7 @@ router.post('/', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-        console.error('Error creating dues assignment:', error);
-        res.status(500).json({ success: false, error: 'Failed to create dues assignment' });
+res.status(500).json({ success: false, error: 'Failed to create dues assignment' });
     }
 });
 /**
@@ -165,8 +162,7 @@ router.put('/:id', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-        console.error('Error updating dues assignment:', error);
-        res.status(500).json({ success: false, error: 'Failed to update dues assignment' });
+res.status(500).json({ success: false, error: 'Failed to update dues assignment' });
     }
 });
 /**
@@ -195,8 +191,7 @@ router.delete('/:id', async (req, res) => {
         res.json({ success: true, message: 'Assignment ended successfully' });
     }
     catch (error) {
-        console.error('Error deleting dues assignment:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete dues assignment' });
+res.status(500).json({ success: false, error: 'Failed to delete dues assignment' });
     }
 });
 exports.default = router;

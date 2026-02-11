@@ -54,8 +54,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Process tasks
     if (task === 'anniversaries' || task === 'all') {
-      console.log('[Cron] Processing anniversary awards...');
-      const anniversaryResults = await Promise.allSettled(
+const anniversaryResults = await Promise.allSettled(
         organizations.map((org) => processAnniversaryAwards(org.id))
       );
       
@@ -72,8 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (task === 'expirations' || task === 'all') {
-      console.log('[Cron] Processing expiration warnings...');
-      const expirationResult = await sendBatchExpirationWarnings();
+const expirationResult = await sendBatchExpirationWarnings();
       
       results.executed.push({
         task: 'expirations',
@@ -82,8 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (task === 'scheduled' || task === 'all') {
-      console.log('[Cron] Processing scheduled awards...');
-      const scheduledResults = await Promise.allSettled(
+const scheduledResults = await Promise.allSettled(
         organizations.map((org) => processScheduledAwards(org.id))
       );
       
@@ -98,16 +95,12 @@ export async function POST(request: NextRequest) {
         })),
       });
     }
-
-    console.log('[Cron] Completed:', results);
-
-    return NextResponse.json({
+return NextResponse.json({
       success: true,
       data: results,
     });
   } catch (error: any) {
-    console.error('[Cron] Error executing scheduled tasks:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error.message || 'Failed to execute scheduled tasks' },
       { status: 500 }
     );

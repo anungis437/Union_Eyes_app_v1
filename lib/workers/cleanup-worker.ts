@@ -42,10 +42,7 @@ const TEMP_DIR = process.env.TEMP_DIR || './temp';
 async function cleanupLogs(olderThanDays: number) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
-
-  console.log(`Archiving audit logs older than ${cutoffDate.toISOString()}`);
-
-  const result = await db
+const result = await db
     .update(auditLogs)
     .set({
       archived: true,
@@ -53,10 +50,7 @@ async function cleanupLogs(olderThanDays: number) {
       archivedPath: null, // Can be set to S3/filesystem path in future
     })
     .where(lt(auditLogs.createdAt, cutoffDate));
-
-  console.log(`Archived ${result.rowCount || 0} audit logs`);
-
-  return { archived: result.rowCount || 0 };
+return { archived: result.rowCount || 0 };
 }
 
 /**
@@ -65,25 +59,17 @@ async function cleanupLogs(olderThanDays: number) {
 async function cleanupNotificationHistory(olderThanDays: number) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
-
-  console.log(`Cleaning up notification history older than ${cutoffDate.toISOString()}`);
-
-  const result = await db
+const result = await db
     .delete(notificationHistory)
     .where(lt(notificationHistory.sentAt, cutoffDate));
-
-  console.log(`Deleted old notification history`);
-
-  return { deleted: result.length };
+return { deleted: result.length };
 }
 
 /**
  * Clean up old sessions
  */
 async function cleanupSessions() {
-  console.log('Cleaning up expired sessions');
-
-  try {
+try {
     // Import user session schema dynamically to avoid build issues
     const { userSessions } = await import('../../db/schema/user-management-schema');
     
@@ -93,9 +79,7 @@ async function cleanupSessions() {
       .where(lt(userSessions.expiresAt, new Date()));
 
     const deletedCount = result.rowCount || 0;
-    console.log(`Deleted ${deletedCount} expired sessions`);
-
-    // Also clean up inactive sessions older than 90 days
+// Also clean up inactive sessions older than 90 days
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     
@@ -106,12 +90,9 @@ async function cleanupSessions() {
       );
 
     const inactiveCount = inactiveResult.rowCount || 0;
-    console.log(`Deleted ${inactiveCount} inactive sessions (90+ days old)`);
-
-    return { deleted: deletedCount + inactiveCount };
+return { deleted: deletedCount + inactiveCount };
   } catch (error) {
-    console.error('Error cleaning up sessions:', error);
-    return { deleted: 0 };
+return { deleted: 0 };
   }
 }
 
@@ -122,10 +103,7 @@ async function cleanupTempFiles(olderThanDays: number) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
   const cutoffTime = cutoffDate.getTime();
-
-  console.log(`Cleaning up temporary files older than ${cutoffDate.toISOString()}`);
-
-  let deleted = 0;
+let deleted = 0;
 
   try {
     const files = await fs.readdir(TEMP_DIR);
@@ -140,12 +118,8 @@ async function cleanupTempFiles(olderThanDays: number) {
       }
     }
   } catch (error) {
-    console.error('Error cleaning up temp files:', error);
-  }
-
-  console.log(`Deleted ${deleted} temporary files`);
-
-  return { deleted };
+}
+return { deleted };
 }
 
 /**
@@ -155,10 +129,7 @@ async function cleanupExports(olderThanDays: number) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
   const cutoffTime = cutoffDate.getTime();
-
-  console.log(`Cleaning up exported reports older than ${cutoffDate.toISOString()}`);
-
-  let deleted = 0;
+let deleted = 0;
 
   try {
     const files = await fs.readdir(REPORTS_DIR);
@@ -173,12 +144,8 @@ async function cleanupExports(olderThanDays: number) {
       }
     }
   } catch (error) {
-    console.error('Error cleaning up exports:', error);
-  }
-
-  console.log(`Deleted ${deleted} exported reports`);
-
-  return { deleted };
+}
+return { deleted };
 }
 
 /**
@@ -186,10 +153,7 @@ async function cleanupExports(olderThanDays: number) {
  */
 async function processCleanupJob(job: any) {
   const { target, olderThanDays } = job.data;
-
-  console.log(`Processing cleanup job ${job.id}: ${target} (${olderThanDays} days)`);
-
-  await job.updateProgress(10);
+await job.updateProgress(10);
 
   let result;
 
@@ -215,10 +179,7 @@ async function processCleanupJob(job: any) {
   }
 
   await job.updateProgress(100);
-
-  console.log(`Cleanup completed for ${target}:`, result);
-
-  return {
+return {
     success: true,
     target,
     ...result,
@@ -239,23 +200,18 @@ export const cleanupWorker = new Worker(
 
 // Event handlers
 cleanupWorker.on('completed', (job: any) => {
-  console.log(`Cleanup job ${job.id} completed`);
 });
 
 cleanupWorker.on('failed', (job: any, err: any) => {
-  console.error(`Cleanup job ${job?.id} failed:`, err.message);
 });
 
 cleanupWorker.on('error', (err: any) => {
-  console.error('Cleanup worker error:', err);
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('Shutting down cleanup worker...');
-  await cleanupWorker.close();
+await cleanupWorker.close();
   await connection.quit();
-  console.log('Cleanup worker stopped');
 }
 
 process.on('SIGTERM', shutdown);

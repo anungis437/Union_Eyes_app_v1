@@ -254,9 +254,7 @@ class AnalyticsAggregationService {
    * Should be called daily via cron job
    */
   async runDailyAggregations(): Promise<void> {
-    console.log('Running daily analytics aggregations...');
-    
-    // Get all unique tenant IDs
+// Get all unique tenant IDs
     const tenants = await db
       .selectDistinct({ organizationId: claims.organizationId })
       .from(claims);
@@ -268,14 +266,10 @@ class AnalyticsAggregationService {
     for (const { organizationId } of tenants) {
       try {
         await this.computeDailyAggregation(organizationId, yesterday);
-        console.log(`Completed aggregation for tenant ${organizationId}`);
-      } catch (error) {
-        console.error(`Error aggregating for tenant ${organizationId}:`, error);
-      }
+} catch (error) {
+}
     }
-
-    console.log('Daily aggregations complete');
-  }
+}
 }
 
 // Singleton instance

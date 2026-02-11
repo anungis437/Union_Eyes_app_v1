@@ -93,8 +93,7 @@ export function ClaimJurisdictionInfo({
           }
         }
       } catch (err) {
-        console.error('Error fetching jurisdiction data:', err);
-        setError(
+setError(
           err instanceof Error ? err.message : 'Failed to load jurisdiction'
         );
       } finally {

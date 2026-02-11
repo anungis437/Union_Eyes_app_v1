@@ -175,8 +175,7 @@ try {
           organizationId
         },
       });
-      console.error("Error performing bulk member operation:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to perform bulk operation", details: error instanceof Error ? error.message : "Unknown error" },
         { status: 500 }
       );

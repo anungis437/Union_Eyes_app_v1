@@ -84,8 +84,7 @@ export const GET = async (request: NextRequest) => {
       const { data: analytics, error } = await query;
 
       if (error) {
-        console.error('Error fetching analytics:', error);
-        return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
       }
 
       // Group analytics by account
@@ -141,8 +140,7 @@ export const GET = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Internal server error',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -226,8 +224,7 @@ export const POST = async (request: NextRequest) => {
       const { data: posts, error, count } = await query;
 
       if (error) {
-        console.error('Error fetching post analytics:', error);
-        return NextResponse.json({ error: 'Failed to fetch post analytics' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch post analytics' }, { status: 500 });
       }
 
       // Calculate summary metrics
@@ -273,8 +270,7 @@ export const POST = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to fetch post analytics',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -456,8 +452,7 @@ export const PUT = async (request: NextRequest) => {
         top_posts: [...(posts || [])].sort((a, b) => (b.engagement || 0) - (a.engagement || 0)).slice(0, 5),
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to fetch campaign analytics',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -676,8 +671,7 @@ export const DELETE = async (request: NextRequest) => {
         exported_at: new Date().toISOString(),
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to export analytics',
           details: error instanceof Error ? error.message : 'Unknown error',

@@ -15,6 +15,7 @@ import { OpenAI } from 'openai';
 import { db } from '@/db';
 import { cbaClause, arbitrationDecisions } from '@/db/schema';
 import { eq, sql, and, or } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -58,7 +59,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
     return response.data[0].embedding;
   } catch (error) {
-    console.error('Error generating embedding:', error);
+    logger.error('Error generating embedding', { error });
     throw new Error('Failed to generate embedding');
   }
 }
@@ -126,7 +127,7 @@ export async function semanticClauseSearch(
       },
     })).filter((result: any) => result.similarity >= threshold);
   } catch (error) {
-    console.error('Error in semantic clause search:', error);
+    logger.error('Error in semantic clause search', { error, query, options });
     throw new Error('Semantic search failed');
   }
 }
@@ -195,7 +196,7 @@ export async function findSimilarClauses(
       }))
       .filter((result: any) => result.similarity >= threshold);
   } catch (error) {
-    console.error('Error finding similar clauses:', error);
+    logger.error('Error finding similar clauses', { error, clauseId, options });
     throw new Error('Failed to find similar clauses');
   }
 }
@@ -265,7 +266,11 @@ export async function semanticPrecedentSearch(
       }))
       .filter((result: any) => result.similarity >= threshold);
   } catch (error) {
-    console.error('Error in semantic precedent search:', error);
+    logger.error('Error in semantic precedent search', {
+      error,
+      query,
+      options,
+    });
     throw new Error('Semantic precedent search failed');
   }
 }
@@ -299,7 +304,7 @@ export async function generateClauseEmbeddings(
     });
 
     const total = clauses.length;
-    console.log(`Generating embeddings for ${total} clauses...`);
+    logger.info('Generating clause embeddings', { total });
 
     // Process in batches
     for (let i = 0; i < clauses.length; i += batchSize) {
@@ -320,7 +325,10 @@ export async function generateClauseEmbeddings(
           success++;
           return true;
         } catch (error) {
-          console.error(`Failed to generate embedding for clause ${clause.id}:`, error);
+          logger.error('Failed to generate embedding for clause', {
+            error,
+            clauseId: clause.id,
+          });
           failed++;
           return false;
         }
@@ -333,10 +341,10 @@ export async function generateClauseEmbeddings(
       }
     }
 
-    console.log(`✅ Embedding generation complete: ${success} success, ${failed} failed`);
+    logger.info('Clause embedding generation complete', { success, failed });
     return { success, failed };
   } catch (error) {
-    console.error('Error generating clause embeddings:', error);
+    logger.error('Error generating clause embeddings', { error });
     return { success, failed };
   }
 }
@@ -361,7 +369,7 @@ export async function generatePrecedentEmbeddings(
     });
 
     const total = precedents.length;
-    console.log(`Generating embeddings for ${total} precedents...`);
+    logger.info('Generating precedent embeddings', { total });
 
     for (let i = 0; i < precedents.length; i += batchSize) {
       const batch = precedents.slice(i, i + batchSize);
@@ -380,7 +388,10 @@ export async function generatePrecedentEmbeddings(
           success++;
           return true;
         } catch (error) {
-          console.error(`Failed to generate embedding for precedent ${precedent.id}:`, error);
+          logger.error('Failed to generate embedding for precedent', {
+            error,
+            precedentId: precedent.id,
+          });
           failed++;
           return false;
         }
@@ -393,10 +404,10 @@ export async function generatePrecedentEmbeddings(
       }
     }
 
-    console.log(`✅ Precedent embedding generation complete: ${success} success, ${failed} failed`);
+    logger.info('Precedent embedding generation complete', { success, failed });
     return { success, failed };
   } catch (error) {
-    console.error('Error generating precedent embeddings:', error);
+    logger.error('Error generating precedent embeddings', { error });
     return { success, failed };
   }
 }

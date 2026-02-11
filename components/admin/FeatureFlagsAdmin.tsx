@@ -30,8 +30,7 @@ export function FeatureFlagsAdmin() {
       const data = await response.json();
       setFlags(data);
     } catch (error) {
-      console.error('Failed to fetch flags', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -53,8 +52,7 @@ export function FeatureFlagsAdmin() {
         f.name === name ? { ...f, enabled } : f
       ));
     } catch (error) {
-      console.error('Failed to toggle flag', error);
-    }
+}
   };
 
   const filteredFlags = flags.filter(flag => {

@@ -139,8 +139,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
-      console.error('Get event error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to get event' },
         { status: 500 }
       );
@@ -292,8 +291,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
-      console.error('Update event error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to update event' },
         { status: 500 }
       );
@@ -355,8 +353,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         const { cancelEventReminders } = await import('@/lib/calendar-reminder-scheduler');
         await cancelEventReminders(eventId);
       } catch (reminderError) {
-        console.error('Failed to cancel reminders:', reminderError);
-        // Don't fail event cancellation if reminder cancellation fails
+// Don't fail event cancellation if reminder cancellation fails
       }
 
       // Send cancellation notifications to attendees via email
@@ -401,16 +398,14 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
           }
         }
       } catch (notificationError) {
-        console.error('Failed to send cancellation notifications:', notificationError);
-        // Don't fail event cancellation if notifications fail
+// Don't fail event cancellation if notifications fail
       }
 
       return NextResponse.json({
         message: 'Event cancelled successfully',
       });
     } catch (error) {
-      console.error('Delete event error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to delete event' },
         { status: 500 }
       );

@@ -62,9 +62,7 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error("Voice transcription error:", error);
-      
-      return NextResponse.json(
+return NextResponse.json(
         { 
           error: "Failed to transcribe audio",
           details: error instanceof Error ? error.message : "Unknown error"

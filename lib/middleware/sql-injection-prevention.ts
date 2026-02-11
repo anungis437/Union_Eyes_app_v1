@@ -188,10 +188,7 @@ class SQLSecurityAuditLog {
 
     // Log critical events immediately
     if (auditEvent.severity === 'critical') {
-      console.error(
-        `⚠️ CRITICAL SQL INJECTION ATTEMPT detected on ${auditEvent.endpoint}: ${auditEvent.detectedPatterns.join(', ')}`
-      );
-    }
+}
   }
 
   static getEvents(filter?: { severity?: string; eventType?: string }): SecurityAuditEvent[] {
@@ -245,8 +242,7 @@ export async function executeParameterizedQuery<T>(
 
     return result;
   } catch (error) {
-    console.error('Query execution failed:', error);
-    throw error;
+throw error;
   }
 }
 

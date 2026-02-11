@@ -57,11 +57,7 @@ export async function validateTenantAccess(
   userId: string,
   requestedTenantId: string
 ): Promise<boolean> {
-  console.warn('validateTenantAccess is deprecated. Use validateOrganizationAccess instead.', {
-    userId,
-    requestedTenantId,
-  });
-  return validateOrganizationAccess(userId, requestedTenantId);
+return validateOrganizationAccess(userId, requestedTenantId);
 }
 
 /**
@@ -76,9 +72,6 @@ export async function getTenantIdFromRequest(
   request: NextRequest,
   userId: string
 ): Promise<string> {
-  console.warn('getTenantIdFromRequest is deprecated. Use getOrganizationIdFromRequest instead.', {
-    userId,
-  });
-  return getOrganizationIdFromRequest(request, userId);
+return getOrganizationIdFromRequest(request, userId);
 }
 

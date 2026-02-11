@@ -116,6 +116,7 @@ export * from "./example-schema";
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db/db";
+import { logger } from "@/lib/logger";
 import { InsertExample, SelectExample } from "../schema/example-schema";
 import { exampleTable } from "./../schema/example-schema";
 
@@ -124,7 +125,7 @@ export const createExample = async (data: InsertExample) => {
     const [newExample] = await db.insert(exampleTable).values(data).returning();
     return newExample;
   } catch (error) {
-    console.error("Error creating example:", error);
+    logger.error("Error creating example", { error });
     throw new Error("Failed to create example");
   }
 };
@@ -139,7 +140,7 @@ export const getExampleById = async (id: string) => {
     }
     return example;
   } catch (error) {
-    console.error("Error getting example by ID:", error);
+    logger.error("Error getting example by ID", { error });
     throw new Error("Failed to get example");
   }
 };
@@ -153,7 +154,7 @@ export const updateExample = async (id: string, data: Partial<InsertExample>) =>
     const [updatedExample] = await db.update(exampleTable).set(data).where(eq(exampleTable.id, id)).returning();
     return updatedExample;
   } catch (error) {
-    console.error("Error updating example:", error);
+    logger.error("Error updating example", { error });
     throw new Error("Failed to update example");
   }
 };
@@ -162,7 +163,7 @@ export const deleteExample = async (id: string) => {
   try {
     await db.delete(exampleTable).where(eq(exampleTable.id, id));
   } catch (error) {
-    console.error("Error deleting example:", error);
+    logger.error("Error deleting example", { error });
     throw new Error("Failed to delete example");
   }
 };

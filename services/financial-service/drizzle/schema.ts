@@ -1,5 +1,17 @@
-import { pgTable, foreignKey, uuid, boolean, text, numeric, varchar, jsonb, timestamp, integer, index, unique, inet, bigint, date, uniqueIndex, time, point, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, uuid, boolean, text, numeric, varchar, jsonb, timestamp, integer, index, unique, inet, bigint, date, uniqueIndex, time, point, pgEnum, customType } from "drizzle-orm/pg-core"
   import { sql } from "drizzle-orm"
+
+const tsvector = customType<{ data: string; driverData: string }>({
+	dataType() {
+		return "tsvector";
+	},
+});
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+	dataType() {
+		return "bytea";
+	},
+});
 
 export const alertSeverity = pgEnum("alert_severity", ['info', 'warning', 'urgent', 'critical'])
 export const assignmentRole = pgEnum("assignment_role", ['primary_officer', 'secondary_officer', 'legal_counsel', 'external_arbitrator', 'management_rep', 'witness', 'observer'])
@@ -908,8 +920,7 @@ export const organizationMembers = pgTable("organization_members", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
 	tenantId: uuid("tenant_id").notNull(),
-	// TODO: failed to parse database type 'tsvector'
-	searchVector: unknown("search_vector"),
+	searchVector: tsvector("search_vector"),
 	joinedAt: timestamp("joined_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	isPrimary: boolean("is_primary").default(false),
 },
@@ -2828,8 +2839,7 @@ export const messageNotifications = pgTable("message_notifications", {
 export const encryptionKeys = pgTable("encryption_keys", {
 	keyId: uuid("key_id").defaultRandom().primaryKey().notNull(),
 	keyName: varchar("key_name", { length: 100 }).notNull(),
-	// TODO: failed to parse database type 'bytea'
-	keyValue: unknown("key_value").notNull(),
+	keyValue: bytea("key_value").notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	rotatedAt: timestamp("rotated_at", { mode: 'string' }),
 	isActive: boolean("is_active").default(true),

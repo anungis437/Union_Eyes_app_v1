@@ -69,7 +69,6 @@ export default function CalendarPage() {
         setSelectedCalendarId(data.calendars[0].id);
       }
     } catch (error) {
-      console.error('Error fetching calendars:', error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +81,6 @@ export default function CalendarPage() {
       
       setEvents(data.events || []);
     } catch (error) {
-      console.error('Error fetching events:', error);
     }
   };
 
@@ -119,7 +117,6 @@ export default function CalendarPage() {
       // Refresh events
       await fetchEvents(selectedCalendarId);
     } catch (error) {
-      console.error('Error saving event:', error);
       throw error;
     }
   };
@@ -133,7 +130,6 @@ export default function CalendarPage() {
       // Refresh events
       await fetchEvents(selectedCalendarId);
     } catch (error) {
-      console.error('Error deleting event:', error);
       throw error;
     }
   };
@@ -181,8 +177,7 @@ export default function CalendarPage() {
       setNewCalendarName('');
       setNewCalendarDescription('');
     } catch (error) {
-      console.error('Error creating calendar:', error);
-      alert('Failed to create calendar');
+alert('Failed to create calendar');
     } finally {
       setIsCreatingCalendar(false);
     }
@@ -206,8 +201,7 @@ export default function CalendarPage() {
       // Refresh events
       await fetchEvents(selectedCalendarId);
     } catch (error) {
-      console.error('Error syncing calendar:', error);
-      alert('Failed to sync calendar');
+alert('Failed to sync calendar');
     }
   };
 
@@ -261,7 +255,7 @@ export default function CalendarPage() {
             calendarId={selectedCalendarId}
             events={visibleEvents}
             onEventClick={handleEditEvent}
-            onDateClick={(date) => console.log('Date clicked:', date)}
+            onDateClick={(date) => undefined}
             onCreateEvent={handleCreateEvent}
           />
         ) : (

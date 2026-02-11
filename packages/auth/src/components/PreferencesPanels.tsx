@@ -40,7 +40,6 @@ export const NotificationPreferencesPanel: React.FC<NotificationPreferencesPanel
         [channel]: { ...preferences[channel], enabled }
       });
     } catch (error) {
-      console.error('Error updating notification preferences:', error);
     } finally {
       setSaving(false);
     }
@@ -53,7 +52,6 @@ export const NotificationPreferencesPanel: React.FC<NotificationPreferencesPanel
         [channel]: { ...preferences[channel], frequency }
       });
     } catch (error) {
-      console.error('Error updating notification preferences:', error);
     } finally {
       setSaving(false);
     }
@@ -241,7 +239,6 @@ export const UIPreferencesPanel: React.FC<UIPreferencesPanelProps> = ({
       setSaving(true);
       await updateUIPreferences({ [key]: value });
     } catch (error) {
-      console.error('Error updating UI preferences:', error);
     } finally {
       setSaving(false);
     }
@@ -442,7 +439,6 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
       setSaving(true);
       await updatePrivacySettings({ [key]: value });
     } catch (error) {
-      console.error('Error updating privacy settings:', error);
     } finally {
       setSaving(false);
     }
@@ -617,7 +613,6 @@ export const SecuritySettingsPanel: React.FC<SecuritySettingsPanelProps> = ({
         alert('Two-factor authentication has been enabled. Please configure your authentication app.');
       }
     } catch (error) {
-      console.error('Error updating 2FA:', error);
     } finally {
       setSaving(false);
     }
@@ -628,7 +623,6 @@ export const SecuritySettingsPanel: React.FC<SecuritySettingsPanelProps> = ({
       setSaving(true);
       await updateSecuritySettings({ sessionTimeout: timeout });
     } catch (error) {
-      console.error('Error updating session timeout:', error);
     } finally {
       setSaving(false);
     }

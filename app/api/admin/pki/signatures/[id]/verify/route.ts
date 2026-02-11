@@ -44,8 +44,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       }
 
     } catch (error) {
-      console.error('Error verifying signature:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to verify signature', details: (error as Error).message },
         { status: 500 }
       );

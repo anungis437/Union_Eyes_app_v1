@@ -4,7 +4,7 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, Upload, Download, Plus, Search, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface Organization {
+  id: string;
+  name: string;
+}
+
 export default function AdminMembersPage() {
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrg, setSelectedOrg] = useState<string>("all");
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Load organizations on mount
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        setIsLoadingOrgs(true);
+        const response = await fetch('/api/organizations');
+        if (response.ok) {
+          const data = await response.json();
+          setOrganizations(data.organizations || []);
+        }
+      } catch (error) {
+        void error;
+      } finally {
+        setIsLoadingOrgs(false);
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
+
+  // Function to trigger member list refresh
+  const refreshMemberList = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -106,7 +139,7 @@ export default function AdminMembersPage() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle>
             <Filter className="w-5 h-5" />
             Filters
           </CardTitle>
@@ -134,7 +167,15 @@ export default function AdminMembersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Organizations</SelectItem>
-                  {/* TODO: Load organizations dynamically */}
+                  {isLoadingOrgs ? (
+                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                  ) : (
+                    organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        {org.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -232,7 +273,7 @@ export default function AdminMembersPage() {
         onOpenChange={setBulkImportOpen}
         onSuccess={() => {
           setBulkImportOpen(false);
-          // TODO: Refresh member list
+          refreshMemberList();
         }}
       />
     </div>

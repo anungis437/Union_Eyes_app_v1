@@ -48,8 +48,7 @@ class CameraService {
       }
 
       return true;
-    } catch (error) {
-      console.error('Error requesting camera permissions:', error);
+    } catch {
       return false;
     }
   }
@@ -70,8 +69,7 @@ class CameraService {
         granted: status === 'granted',
         canAskAgain,
       };
-    } catch (error) {
-      console.error('Error checking camera permissions:', error);
+    } catch {
       return { granted: false, canAskAgain: true };
     }
   }
@@ -103,8 +101,7 @@ class CameraService {
       }
 
       return true;
-    } catch (error) {
-      console.error('Error requesting gallery permissions:', error);
+    } catch {
       return false;
     }
   }
@@ -159,8 +156,7 @@ class CameraService {
         base64: asset.base64 || undefined,
         exif: asset.exif || undefined,
       };
-    } catch (error) {
-      console.error('Error capturing photo:', error);
+    } catch {
       Alert.alert('Error', 'Failed to capture photo. Please try again.');
       return null;
     }
@@ -206,8 +202,7 @@ class CameraService {
         base64: asset.base64 || undefined,
         exif: asset.exif || undefined,
       }));
-    } catch (error) {
-      console.error('Error picking image from gallery:', error);
+    } catch {
       Alert.alert('Error', 'Failed to pick image. Please try again.');
       return [];
     }
@@ -236,8 +231,7 @@ class CameraService {
       );
 
       return manipulatedImage.uri;
-    } catch (error) {
-      console.error('Error optimizing image:', error);
+    } catch {
       return uri; // Return original if optimization fails
     }
   }
@@ -274,8 +268,7 @@ class CameraService {
       );
 
       return manipulatedImage.uri;
-    } catch (error) {
-      console.error('Error auto-cropping document:', error);
+    } catch {
       return uri;
     }
   }
@@ -319,8 +312,7 @@ class CameraService {
       });
 
       return manipulatedImage.uri;
-    } catch (error) {
-      console.error('Error applying perspective correction:', error);
+    } catch {
       return uri;
     }
   }
@@ -362,8 +354,7 @@ class CameraService {
         bottomLeft: { x: margin, y: height - margin },
         bottomRight: { x: width - margin, y: height - margin },
       };
-    } catch (error) {
-      console.error('Error detecting document edges:', error);
+    } catch {
       return null;
     }
   }
@@ -379,8 +370,7 @@ class CameraService {
       });
 
       return manipulatedImage.uri;
-    } catch (error) {
-      console.error('Error rotating image:', error);
+    } catch {
       return uri;
     }
   }
@@ -405,8 +395,7 @@ class CameraService {
       });
 
       return manipulatedImage.uri;
-    } catch (error) {
-      console.error('Error applying filter:', error);
+    } catch {
       return uri;
     }
   }
@@ -439,8 +428,7 @@ class CameraService {
     try {
       const info = await FileSystem.getInfoAsync(uri);
       return info.exists && 'size' in info ? info.size : 0;
-    } catch (error) {
-      console.error('Error getting file size:', error);
+    } catch {
       return 0;
     }
   }
@@ -458,7 +446,6 @@ class CameraService {
 
       return newUri;
     } catch (error) {
-      console.error('Error copying file:', error);
       throw error;
     }
   }
@@ -469,8 +456,7 @@ class CameraService {
   async deleteFile(uri: string): Promise<void> {
     try {
       await FileSystem.deleteAsync(uri, { idempotent: true });
-    } catch (error) {
-      console.error('Error deleting file:', error);
+    } catch {
     }
   }
 
@@ -489,8 +475,7 @@ class CameraService {
       );
 
       return manipulatedImage.uri;
-    } catch (error) {
-      console.error('Error generating thumbnail:', error);
+    } catch {
       return uri;
     }
   }

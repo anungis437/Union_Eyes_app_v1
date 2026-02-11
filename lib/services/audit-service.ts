@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { auditLogs } from '@/db/schema/audit-security-schema';
 import { eq, desc, and, gte, lte, like, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 export interface AuditLogEntry {
   organizationId: string;
@@ -55,10 +56,14 @@ export async function createAuditLog(entry: AuditLogEntry): Promise<string> {
       timestamp: new Date(),
     });
 
-    console.log(`[Audit] Created audit log: ${entry.action} on ${entry.resourceType}:${entry.resourceId}`);
+    logger.info('Created audit log', {
+      action: entry.action,
+      resourceType: entry.resourceType,
+      resourceId: entry.resourceId,
+    });
     return id;
   } catch (error) {
-    console.error('[Audit] Failed to create audit log:', error);
+    logger.error('Failed to create audit log', { error });
     // Return ID anyway to prevent cascading failures
     return id;
   }
@@ -215,7 +220,10 @@ export async function archiveOldAuditLogs(
       )
     );
 
-  console.log(`[Audit] Archived ${result.rowCount} audit logs before ${beforeDate.toISOString()}`);
+  logger.info('Archived audit logs', {
+    count: result.rowCount,
+    beforeDate: beforeDate.toISOString(),
+  });
   return result.rowCount || 0;
 }
 
@@ -258,7 +266,7 @@ export async function exportAuditLogs(
   const exportId = `AUDIT-EXPORT-${Date.now()}`;
   
   // In production, would write to S3/Azure Blob and return download URL
-  console.log(`[Audit] Exported ${total} audit log entries (export ID: ${exportId})`);
+  logger.info('Exported audit log entries', { total, exportId });
   
   return exportId;
 }

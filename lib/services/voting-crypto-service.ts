@@ -10,6 +10,7 @@
 
 import { createHmac, randomBytes, pbkdf2Sync, createVerify, createPublicKey } from 'crypto';
 import { db } from '@/db/db';
+import { logger } from '@/lib/logger';
 
 interface VoteReceipt {
   receiptId: string;
@@ -119,7 +120,7 @@ export function verifyVoteSignature(
     // Check timestamp freshness
     const now = Date.now() / 1000;
     if (now - voteData.timestamp > maxAgeSeconds) {
-      console.warn('Vote signature expired');
+      logger.warn('Vote signature expired', { sessionId: voteData.sessionId });
       return false;
     }
 
@@ -137,7 +138,7 @@ export function verifyVoteSignature(
 
     // Check vote hash matches
     if (expectedVoteHash !== signature.voteHash) {
-      console.warn('Vote hash mismatch');
+      logger.warn('Vote hash mismatch', { sessionId: voteData.sessionId });
       return false;
     }
 
@@ -148,13 +149,13 @@ export function verifyVoteSignature(
       .digest('hex');
 
     if (expectedSignature !== signature.signature) {
-      console.warn('Vote signature verification failed');
+      logger.warn('Vote signature verification failed', { sessionId: voteData.sessionId });
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Vote signature verification error:', error);
+    logger.error('Vote signature verification error', { error });
     return false;
   }
 }
@@ -307,15 +308,15 @@ export async function createVotingAuditLog(
         auditMetadata: {},
       });
       
-      console.info('Voting audit log stored successfully', { receiptId: receipt.receiptId });
+      logger.info('Voting audit log stored successfully', { receiptId: receipt.receiptId });
     } catch (dbError) {
-      console.error('Failed to store voting audit log:', dbError);
+      logger.error('Failed to store voting audit log', { error: dbError });
       // Continue anyway, return audit entry even if database storage fails
     }
 
     return auditEntry;
   } catch (error) {
-    console.error('Failed to create voting audit log:', error);
+    logger.error('Failed to create voting audit log', { error, sessionId, memberId });
     throw error;
   }
 }
@@ -395,7 +396,7 @@ export async function verifyElectionIntegrity(
       }
     }
 
-    console.info('Election integrity verification completed', {
+    logger.info('Election integrity verification completed', {
       sessionId,
       voteCount: auditLogs.length,
       tamperedVotes,
@@ -410,7 +411,7 @@ export async function verifyElectionIntegrity(
       issues: issues.length > 0 ? issues : undefined,
     };
   } catch (error) {
-    console.error('Failed to verify election integrity:', error);
+    logger.error('Failed to verify election integrity', { error, sessionId });
     return {
       valid: false,
       voteCount: 0,

@@ -277,13 +277,76 @@ export const POST = async (request: NextRequest) => {
         )
       );
 
-      // TODO: If sendEmail=true, send email notification with certificate
-      if (sendEmail) {
-        logger.info("Email notification requested", { registrationId });
-        // Implement email sending using Resend
+      if (!response.ok) {
+        return response;
       }
 
-      return response;
+      const certificateData = await response.json();
+
+      // If sendEmail=true, send email notification with certificate
+      if (sendEmail && certificateData.certificateUrl) {
+        try {
+          const { sendEmail: sendEmailFn } = await import('@/lib/email-service');
+          
+          // Fetch member details for email
+          const [registration] = await db
+            .select({
+              email: members.email,
+              firstName: members.firstName,
+              lastName: members.lastName,
+              courseName: trainingCourses.courseName,
+              completionDate: courseRegistrations.completionDate,
+            })
+            .from(courseRegistrations)
+            .innerJoin(members, eq(courseRegistrations.memberId, members.id))
+            .innerJoin(trainingCourses, eq(courseRegistrations.courseId, trainingCourses.id))
+            .where(eq(courseRegistrations.id, registrationId))
+            .limit(1);
+
+          if (registration?.email) {
+            const emailContent = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #2563eb;">Congratulations on Your Certification!</h2>
+                
+                <p>Dear ${registration.firstName} ${registration.lastName},</p>
+                
+                <p>We are pleased to inform you that you have successfully completed your training and earned your certification!</p>
+                
+                <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <p style="margin: 5px 0;"><strong>Course:</strong> ${registration.courseName}</p>
+                  <p style="margin: 5px 0;"><strong>Certificate Number:</strong> ${certificateData.certificateNumber}</p>
+                  <p style="margin: 5px 0;"><strong>Completion Date:</strong> ${new Date(registration.completionDate).toLocaleDateString()}</p>
+                </div>
+                
+                <p>Your certificate is attached to this email and can also be accessed at:</p>
+                <p><a href="${certificateData.certificateUrl}" style="color: #2563eb;">Download Certificate</a></p>
+                
+                <p>Keep this certificate for your records and share it with pride!</p>
+                
+                <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+                  Congratulations again on this achievement!
+                </p>
+              </div>
+            `;
+
+            await sendEmailFn({
+              to: [{ 
+                email: registration.email, 
+                name: `${registration.firstName} ${registration.lastName}` 
+              }],
+              subject: `Your Training Certificate - ${registration.courseName}`,
+              html: emailContent,
+            });
+
+            logger.info("Certificate email sent", { registrationId, email: registration.email });
+          }
+        } catch (emailError) {
+          logger.error("Failed to send certificate email", { error: emailError, registrationId });
+          // Don't fail the entire request if email fails
+        }
+      }
+
+      return NextResponse.json(certificateData);
     } catch (error) {
       logger.error("Error generating certificate via POST", { error });
       return NextResponse.json(

@@ -42,9 +42,7 @@ describe('Financial Workflows - End-to-End Tests', () => {
   
   beforeAll(async () => {
     // Create test tenant and base data
-    console.log('Setting up test data...');
-    
-    // Create test strike fund
+// Create test strike fund
     const fundResult = await db.insert(strikeFunds).values({
       tenantId: TEST_TENANT_ID,
       fundName: 'Test Strike Fund',
@@ -88,15 +86,11 @@ describe('Financial Workflows - End-to-End Tests', () => {
       isActive: true,
     } as any).returning();
     testDuesRuleId = ruleResult[0].id;
-    
-    console.log('Test data created successfully');
-  });
+});
   
   afterAll(async () => {
     // Cleanup test data
-    console.log('Cleaning up test data...');
-    
-    await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
+await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
     await db.delete(picketAttendance).where(eq(picketAttendance.tenantId, TEST_TENANT_ID));
     await db.delete(arrears).where(eq(arrears.tenantId, TEST_TENANT_ID));
     await db.delete(duesTransactions).where(eq(duesTransactions.tenantId, TEST_TENANT_ID));
@@ -104,9 +98,7 @@ describe('Financial Workflows - End-to-End Tests', () => {
     await db.delete(duesRules).where(eq(duesRules.tenantId, TEST_TENANT_ID));
     await db.delete(members).where(eq(members.organizationId, TEST_TENANT_ID));
     await db.delete(strikeFunds).where(eq(strikeFunds.tenantId, TEST_TENANT_ID));
-    
-    console.log('Test data cleaned up');
-  });
+});
   
   beforeEach(async () => {
     // Clean up transactions between tests
@@ -715,7 +707,7 @@ describe('Financial Workflows - End-to-End Tests', () => {
   
   describe('Integration Tests - Full Workflow Chains', () => {
     
-    it('should handle complete cycle: dues → overdue → payment → resolved', async () => {
+    it('should handle complete cycle: dues â†’ overdue â†’ payment â†’ resolved', async () => {
       // 1. Create dues assignment and calculate dues
       const today = new Date();
       const yearFromNow = new Date(today);

@@ -180,8 +180,7 @@ export function generateRecurringInstances(
 
     return instances;
   } catch (error) {
-    console.error('Error generating recurring instances:', error);
-    return [];
+return [];
   }
 }
 
@@ -260,14 +259,12 @@ export async function createRecurringInstances(
 
         createdCount++;
       } catch (error) {
-        console.error('Error creating recurring instance:', error);
-      }
+}
     }
 
     return createdCount;
   } catch (error) {
-    console.error('Error creating recurring instances:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -303,8 +300,7 @@ export async function deleteFutureInstances(
 
     return instances.length;
   } catch (error) {
-    console.error('Error deleting future instances:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -365,8 +361,7 @@ export async function addRecurrenceException(
         .where(eq(calendarEvents.id, instanceOnDate[0].id));
     }
   } catch (error) {
-    console.error('Error adding recurrence exception:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -451,8 +446,7 @@ export async function needsInstanceGeneration(
 
     return instances.length === 0;
   } catch (error) {
-    console.error('Error checking instance generation:', error);
-    return false;
+return false;
   }
 }
 

@@ -29,8 +29,7 @@ export const POST = withRoleAuth<SmsConversationContext>('steward', async (reque
 
     return NextResponse.json({ conversation });
   } catch (error) {
-    console.error('Error archiving SMS conversation:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to archive conversation' },
       { status: 500 }
     );

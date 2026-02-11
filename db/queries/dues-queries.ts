@@ -4,6 +4,7 @@ import { eq, and, desc, sql, sum, gte, lte } from "drizzle-orm";
 import { duesTransactions, type DuesTransaction, type NewDuesTransaction } from "../schema/dues-transactions-schema";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/rls-middleware";
+import { logger } from "@/lib/logger";
 
 /**
  * Get dues balance summary for a member
@@ -42,7 +43,7 @@ export const getDuesBalanceByMember = async (
         transactions,
       };
     } catch (error) {
-      console.error("Error getting dues balance:", error);
+      logger.error("Error getting dues balance", { error, memberId });
       throw new Error("Failed to get dues balance");
     }
   };
@@ -98,7 +99,7 @@ export const getDuesTransactionsByMember = async (
 
       return filtered;
     } catch (error) {
-      console.error("Error getting dues transactions:", error);
+      logger.error("Error getting dues transactions", { error, memberId });
       throw new Error("Failed to get dues transactions");
     }
   };
@@ -146,7 +147,7 @@ export const getDuesTransactionsByOrganization = async (
 
       return filtered;
     } catch (error) {
-      console.error("Error getting organization dues:", error);
+      logger.error("Error getting organization dues", { error, organizationId });
       throw new Error("Failed to get organization dues");
     }
   };
@@ -174,7 +175,7 @@ export const createDuesTransaction = async (
 
       return transaction;
     } catch (error) {
-      console.error("Error creating dues transaction:", error);
+      logger.error("Error creating dues transaction", { error, organizationId: data.tenantId });
       throw new Error("Failed to create dues transaction");
     }
   };
@@ -223,7 +224,7 @@ export const updateDuesTransactionStatus = async (
 
       return updated;
     } catch (error) {
-      console.error("Error updating dues transaction:", error);
+      logger.error("Error updating dues transaction", { error, transactionId });
       throw new Error("Failed to update dues transaction");
     }
   };
@@ -261,7 +262,7 @@ export const markOverdueTransactions = async (
 
       return updated.length;
     } catch (error) {
-      console.error("Error marking overdue transactions:", error);
+      logger.error("Error marking overdue transactions", { error });
       throw new Error("Failed to mark overdue transactions");
     }
   };
@@ -321,7 +322,7 @@ export const getOrganizationDuesSummary = async (
         },
       };
     } catch (error) {
-      console.error("Error getting organization dues summary:", error);
+      logger.error("Error getting organization dues summary", { error, organizationId });
       throw new Error("Failed to get organization dues summary");
     }
   };

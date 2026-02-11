@@ -128,17 +128,14 @@ export default function ClauseLibraryPage() {
           setClausesData(data);
         } else if (response.status === 401) {
           // Authentication error - stop retrying to prevent infinite loop
-          console.error("Authentication failed. Please refresh the page and log in again.");
-          setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
+setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
         } else {
-          console.error("Failed to fetch clauses:", response.status, response.statusText);
-          setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
+setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
         }
       } catch (error: any) {
         // Ignore abort errors
         if (error.name !== 'AbortError') {
-          console.error("Failed to fetch clauses:", error);
-          // Set empty data to prevent further retries
+// Set empty data to prevent further retries
           setClausesData({ clauses: [], total: 0, page: currentPage, limit: pageSize });
         }
       } finally {
@@ -186,8 +183,7 @@ export default function ClauseLibraryPage() {
         setSelectedClause(null);
       }
     } catch (error) {
-      console.error("Failed to fetch clause:", error);
-      toast({
+toast({
         title: "Error",
         description: "Failed to load clause details",
         variant: "destructive",
@@ -238,8 +234,7 @@ export default function ClauseLibraryPage() {
         setComparisonData(null);
       }
     } catch (error) {
-      console.error("Failed to fetch comparison:", error);
-      toast({
+toast({
         title: "Error",
         description: "Failed to load comparison",
         variant: "destructive",

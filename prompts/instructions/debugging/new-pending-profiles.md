@@ -189,14 +189,14 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
     const existingProfile = await getProfileByEmail(email);
     
     if (existingProfile && existingProfile.userId && !existingProfile.userId.startsWith('temp_')) {
-      console.log(`${logPrefix} Found existing profile with email ${email} and userId ${existingProfile.userId}`);
-      console.log(`${logPrefix} Will update existing profile with payment details`);
+      logger.info(`${logPrefix} Found existing profile with email ${email} and userId ${existingProfile.userId}`);
+      logger.info(`${logPrefix} Will update existing profile with payment details`);
       
       // If profile exists with a userId, update it like a normal authenticated payment
       // This handles the case where someone uses the frictionless flow with an email that already has an account
       const updateData = prepareProfileUpdateData(data);
       await updateProfile(existingProfile.userId, updateData);
-      console.log(`${logPrefix} Updated existing profile for ${email} with userId ${existingProfile.userId}`);
+      logger.info(`${logPrefix} Updated existing profile for ${email} with userId ${existingProfile.userId}`);
       return true;
     }
     
@@ -232,7 +232,7 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
       claimedAt: null,
     };
     
-    console.log(`${logPrefix} Creating/updating pending profile with data:`, JSON.stringify({
+    logger.info(`${logPrefix} Creating/updating pending profile with data:`, JSON.stringify({
       id: pendingProfileData.id,
       email: pendingProfileData.email,
       planDuration: pendingProfileData.planDuration,
@@ -247,17 +247,17 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
         .set(pendingProfileData)
         .where(eq(pendingProfilesTable.email, email))
         .returning();
-      console.log(`${logPrefix} Updated existing pending profile for email: ${email}`);
+      logger.info(`${logPrefix} Updated existing pending profile for email: ${email}`);
     } else {
       // Create a new pending profile
       await createPendingProfile(pendingProfileData);
-      console.log(`${logPrefix} Created new pending profile for email: ${email} with ID: ${pendingProfileData.id}`);
+      logger.info(`${logPrefix} Created new pending profile for email: ${email} with ID: ${pendingProfileData.id}`);
     }
     
-    console.log(`${logPrefix} Successfully processed unauthenticated payment for email: ${email}`);
+    logger.info(`${logPrefix} Successfully processed unauthenticated payment for email: ${email}`);
     return true;
   } catch (error) {
-    console.error(`${logPrefix} Failed to create/update pending profile:`, error);
+    logger.error(`${logPrefix} Failed to create/update pending profile`, { error });
     return false;
   }
 }
@@ -290,33 +290,33 @@ export async function claimPendingProfile(
   token?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log(`===== CLAIM PROFILE START =====`);
-    console.log(`Attempting to claim pending profile for user ${userId} with email ${email}`);
+    logger.info(`===== CLAIM PROFILE START =====`);
+    logger.info(`Attempting to claim pending profile for user ${userId} with email ${email}`);
     
     if (!userId || !email) {
-      console.log(`Missing required parameters: userId=${!!userId}, email=${!!email}`);
+      logger.info(`Missing required parameters: userId=${!!userId}, email=${!!email}`);
       return { success: false, error: "Missing required parameters for claiming profile" };
     }
 
     // First, check if the user already has a profile
-    console.log(`Checking if user ${userId} already has a profile...`);
+    logger.info(`Checking if user ${userId} already has a profile...`);
     const existingUserProfile = await getProfileByUserId(userId);
-    console.log(`Existing profile check result:`, existingUserProfile ? {
+    logger.info(`Existing profile check result:`, existingUserProfile ? {
       userId: existingUserProfile.userId,
       email: existingUserProfile.email,
       membership: existingUserProfile.membership
     } : 'No profile found');
     
     if (existingUserProfile?.membership === "pro") {
-      console.log(`User ${userId} already has a pro membership, no need to claim`);
+      logger.info(`User ${userId} already has a pro membership, no need to claim`);
       return { success: true };
     }
 
     // Look for a pending profile with matching email from the new table
-    console.log(`Looking for pending profile with email: ${email}`);
+    logger.info(`Looking for pending profile with email: ${email}`);
     const pendingProfile = await getPendingProfileByEmail(email);
     
-    console.log(`Pending profile search result:`, pendingProfile ? {
+    logger.info(`Pending profile search result:`, pendingProfile ? {
       id: pendingProfile.id,
       email: pendingProfile.email,
       membership: pendingProfile.membership,
@@ -327,35 +327,35 @@ export async function claimPendingProfile(
     if (!pendingProfile) {
       // Fall back to checking the old system (temporary profiles in the profiles table)
       // This is for backward compatibility during migration
-      console.log(`No pending profile found in new table, checking old system...`);
+      logger.info(`No pending profile found in new table, checking old system...`);
       const oldPendingProfile = await getProfileByEmail(email);
       
       if (oldPendingProfile && oldPendingProfile.userId.startsWith('temp_')) {
-        console.log(`Found old temporary profile with ID: ${oldPendingProfile.userId}`);
+        logger.info(`Found old temporary profile with ID: ${oldPendingProfile.userId}`);
         // Proceed with the old method - use the existing code with minimal changes
         return claimOldPendingProfile(userId, email, oldPendingProfile);
       }
       
-      console.log(`No pending profile found for email: ${email} in either system`);
+      logger.info(`No pending profile found for email: ${email} in either system`);
       return { success: false, error: "No pending profile found for this email. Your purchase may not have been processed yet." };
     }
     
     if (pendingProfile.claimed && pendingProfile.claimedByUserId !== userId) {
-      console.log(`Profile for email ${email} is already claimed by user ${pendingProfile.claimedByUserId}`);
+      logger.info(`Profile for email ${email} is already claimed by user ${pendingProfile.claimedByUserId}`);
       return { success: false, error: "This profile has already been claimed by another account" };
     }
     
     // Verify token if provided (optional additional security)
     if (token && pendingProfile.token && token !== pendingProfile.token) {
-      console.log(`Token mismatch: provided=${token}, stored=${pendingProfile.token}`);
+      logger.info(`Token mismatch: provided=${token}, stored=${pendingProfile.token}`);
       return { success: false, error: "Invalid verification token" };
     }
 
-    console.log(`Found pending profile for email ${email}, proceeding to claim...`);
+    logger.info(`Found pending profile for email ${email}, proceeding to claim...`);
     
     // If the user already has a profile, merge the pending profile's data into it
     if (existingUserProfile) {
-      console.log(`MERGE FLOW: User ${userId} already has a profile, merging pending profile data`);
+      logger.info(`MERGE FLOW: User ${userId} already has a profile, merging pending profile data`);
       
       // Copy all pro-related data from pending profile to existing profile
       const updateData = {
@@ -373,16 +373,16 @@ export async function claimPendingProfile(
         email: email // Make sure email is also updated
       };
       
-      console.log(`Updating existing profile with data:`, updateData);
+      logger.info(`Updating existing profile with data:`, updateData);
       const updatedProfile = await updateProfile(userId, updateData);
-      console.log(`Existing profile updated:`, updatedProfile ? { 
+      logger.info(`Existing profile updated:`, updatedProfile ? { 
         userId: updatedProfile.userId,
         membership: updatedProfile.membership,
         usageCredits: updatedProfile.usageCredits 
       } : 'Failed to update');
     } else {
       // User doesn't have a profile yet, create a new one with data from pending profile
-      console.log(`CREATE FLOW: Creating new profile from pending profile`);
+      logger.info(`CREATE FLOW: Creating new profile from pending profile`);
       
       // Extract only the fields we need
       const profileData = {
@@ -401,7 +401,7 @@ export async function claimPendingProfile(
         status: "active"
       };
       
-      console.log(`Creating new profile with data:`, {
+      logger.info(`Creating new profile with data:`, {
         userId: profileData.userId,
         email: profileData.email,
         membership: profileData.membership,
@@ -409,7 +409,7 @@ export async function claimPendingProfile(
       });
       
       const result = await createProfile(profileData);
-      console.log(`New profile creation result:`, result ? {
+      logger.info(`New profile creation result:`, result ? {
         userId: result.userId,
         membership: result.membership,
         usageCredits: result.usageCredits
@@ -418,22 +418,22 @@ export async function claimPendingProfile(
     
     // Mark the pending profile as claimed
     await markPendingProfileAsClaimed(pendingProfile.id, userId);
-    console.log(`Marked pending profile as claimed by user ${userId}`);
+    logger.info(`Marked pending profile as claimed by user ${userId}`);
     
     // Note: We don't delete the pending profile to maintain a record for analytics and support
     
     // Revalidate relevant paths
-    console.log(`Revalidating paths`);
+    logger.info(`Revalidating paths`);
     revalidatePath("/");
     revalidatePath("/notes");
     revalidatePath("/dashboard");
     
-    console.log(`Successfully claimed profile for user ${userId} with email ${email}`);
-    console.log(`===== CLAIM PROFILE SUCCESS =====`);
+    logger.info(`Successfully claimed profile for user ${userId} with email ${email}`);
+    logger.info(`===== CLAIM PROFILE SUCCESS =====`);
     return { success: true };
   } catch (error) {
-    console.error(`===== CLAIM PROFILE ERROR =====`);
-    console.error("Error claiming pending profile:", error);
+    logger.error(`===== CLAIM PROFILE ERROR =====`);
+    logger.error("Error claiming pending profile", { error });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : "Unknown error claiming profile" 
@@ -455,10 +455,10 @@ async function claimOldPendingProfile(
     // [Keep the existing code from lines 144-246 of actions/whop-actions.ts]
     // ...
     
-    console.log(`Successfully claimed profile using legacy method`);
+    logger.info(`Successfully claimed profile using legacy method`);
     return { success: true };
   } catch (error) {
-    console.error("Error in legacy profile claiming:", error);
+    logger.error("Error in legacy profile claiming", { error });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : "Unknown error claiming profile" 
@@ -493,29 +493,29 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         
         if (email) {
           // Check if there's a pending profile with this email
-          console.log(`Checking for pending profile with email ${email} for user ${userId}`);
+          logger.info(`Checking for pending profile with email ${email} for user ${userId}`);
           
           // Try to claim any pending profile first
           const claimResult = await claimPendingProfile(userId, email);
           
           if (!claimResult.success) {
             // Only create a new profile if we couldn't claim a pending one
-            console.log(`No pending profile found, creating new profile for user ${userId} with email ${email}`);
+            logger.info(`No pending profile found, creating new profile for user ${userId} with email ${email}`);
             await createProfileAction({ 
               userId,
               email
             });
           } else {
-            console.log(`Successfully claimed pending profile for user ${userId} with email ${email}`);
+            logger.info(`Successfully claimed pending profile for user ${userId} with email ${email}`);
           }
         } else {
           // No email available, create a basic profile
-          console.log(`Creating basic profile for user ${userId} with no email`);
+          logger.info(`Creating basic profile for user ${userId} with no email`);
           await createProfileAction({ userId });
         }
       }
     } catch (error) {
-      console.error("Error checking/creating user profile:", error);
+      logger.error("Error checking/creating user profile", { error });
     }
   }
 
@@ -537,13 +537,14 @@ import {
   markPendingProfileAsClaimed,
   deletePendingProfile 
 } from "@/db/queries/pending-profiles-queries";
+import { logger } from "@/lib/logger";
 
 export async function getPendingProfileByEmailAction(email: string) {
   try {
     const profile = await getPendingProfileByEmail(email);
     return { success: true, data: profile };
   } catch (error) {
-    console.error("Error getting pending profile by email:", error);
+    logger.error("Error getting pending profile by email", { error });
     return { success: false, error: "Failed to get pending profile" };
   }
 }
@@ -553,7 +554,7 @@ export async function getUnclaimedPendingProfilesAction() {
     const profiles = await getUnclaimedPendingProfiles();
     return { success: true, data: profiles };
   } catch (error) {
-    console.error("Error getting unclaimed pending profiles:", error);
+    logger.error("Error getting unclaimed pending profiles", { error });
     return { success: false, error: "Failed to get unclaimed profiles" };
   }
 }
@@ -563,7 +564,7 @@ export async function markPendingProfileAsClaimedAction(id: string, userId: stri
     const updated = await markPendingProfileAsClaimed(id, userId);
     return { success: true, data: updated };
   } catch (error) {
-    console.error("Error marking pending profile as claimed:", error);
+    logger.error("Error marking pending profile as claimed", { error });
     return { success: false, error: "Failed to mark profile as claimed" };
   }
 }
@@ -573,7 +574,7 @@ export async function deletePendingProfileAction(id: string) {
     const deleted = await deletePendingProfile(id);
     return { success: true, data: deleted };
   } catch (error) {
-    console.error("Error deleting pending profile:", error);
+    logger.error("Error deleting pending profile", { error });
     return { success: false, error: "Failed to delete pending profile" };
   }
 }

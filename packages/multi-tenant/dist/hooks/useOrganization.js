@@ -181,21 +181,16 @@ export function useOrganization(options) {
     }, [loadOrganizations]);
     // Set cookie when current organization changes
     useEffect(() => {
-        console.log('[useOrganization] Setting cookie - currentOrganization:', currentOrganization);
-        if (currentOrganization) {
+if (currentOrganization) {
             try {
                 const cookieValue = `active-organization=${currentOrganization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`;
-                console.log('[useOrganization] Setting cookie:', cookieValue);
-                document.cookie = cookieValue; // 30 days
-                console.log('[useOrganization] Cookie set successfully');
-            }
+document.cookie = cookieValue; // 30 days
+}
             catch (error) {
-                console.error('[useOrganization] Error setting cookie:', error);
-            }
+}
         }
         else {
-            console.log('[useOrganization] No current organization, skipping cookie');
-        }
+}
     }, [currentOrganization]);
     // Load specific organization if ID provided
     useEffect(() => {
@@ -227,8 +222,7 @@ export function useOrganization(options) {
                     schema: 'public',
                     table: 'organizations',
                 }, async (payload) => {
-                    console.log('Organization change:', payload);
-                    await refresh();
+await refresh();
                 })
                     .on('postgres_changes', {
                     event: '*',
@@ -236,14 +230,12 @@ export function useOrganization(options) {
                     table: 'organization_members',
                     filter: `user_id=eq.${user.id}`,
                 }, async (payload) => {
-                    console.log('Membership change:', payload);
-                    await refresh();
+await refresh();
                 })
                     .subscribe();
             }
             catch (err) {
-                console.error('Failed to setup realtime:', err);
-            }
+}
         };
         setupRealtime();
         return () => {

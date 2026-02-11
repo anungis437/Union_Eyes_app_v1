@@ -1,6 +1,6 @@
 # PR-5: Opinionated Workflow Rules
 
-**Status:** ✅ Complete  
+**Status:** âœ… Complete  
 **Tests:** 53/53 passing  
 **Principle:** "Encode best practices as enforced rules, not suggestions"
 
@@ -19,13 +19,13 @@ A finite state machine enforcing union grievance workflow progression.
 #### 10 Case States
 
 ```
-draft → submitted → acknowledged → investigating → pending_response 
-  ↓                      ↓               ↓              ↓
-  └── withdrawn ←────────┴───────────────┴──────────────┘
-                                         ↓
-                                   negotiating → resolved → closed
-                                         ↓
-                                    escalated → (external arbitration)
+draft â†’ submitted â†’ acknowledged â†’ investigating â†’ pending_response 
+  â†“                      â†“               â†“              â†“
+  â””â”€â”€ withdrawn â†â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                         â†“
+                                   negotiating â†’ resolved â†’ closed
+                                         â†“
+                                    escalated â†’ (external arbitration)
 ```
 
 **Terminal States:** `closed`, `resolved`, `escalated` (no further transitions)
@@ -56,13 +56,13 @@ draft → submitted → acknowledged → investigating → pending_response
 
 **Conditional Requirements:**
 
-- `investigating → [any]`: Requires `hasSufficientEvidence: true`
-  - **Admin Exception:** Admin can bypass this when closing (`investigating → closed`)
-- `pending_response → negotiating`: Only officer/admin (not steward)
+- `investigating â†’ [any]`: Requires `hasSufficientEvidence: true`
+  - **Admin Exception:** Admin can bypass this when closing (`investigating â†’ closed`)
+- `pending_response â†’ negotiating`: Only officer/admin (not steward)
 
 **SLA Enforcement:**
 
-- `submitted → acknowledged`: Must occur within 2 business days
+- `submitted â†’ acknowledged`: Must occur within 2 business days
   - Validated via `context.daysInCurrentState`
   - Transition rejected if SLA expired
 
@@ -81,7 +81,6 @@ if (result.valid) {
   // Proceed with transition
   await updateCaseState(caseId, 'acknowledged');
 } else {
-  console.error(result.error, result.message);
 }
 
 // Get allowed next states
@@ -106,13 +105,13 @@ Automated SLA tracking with early breach warning.
 #### SLA Status Logic
 
 - **within_sla:** < 80% of time elapsed
-- **at_risk:** ≥ 80% of time elapsed (early warning)
-- **breached:** ≥ 100% of time elapsed
+- **at_risk:** â‰¥ 80% of time elapsed (early warning)
+- **breached:** â‰¥ 100% of time elapsed
 
 **Example:** Investigation complete in 14 days
 
 - 14 / 15 = 93% elapsed
-- 93% ≥ 80% threshold → **at_risk**
+- 93% â‰¥ 80% threshold â†’ **at_risk**
 
 #### Usage Example
 
@@ -127,16 +126,14 @@ const timeline = [
 ];
 
 const assessment = calculateCaseSlaStatus('case-123', timeline, new Date('2025-01-15'));
-
-console.log(assessment.acknowledgment.status); // 'within_sla'
-console.log(assessment.firstResponse.status);  // 'within_sla'
-console.log(assessment.investigation.status);  // 'at_risk' (14 days = 93% of 15)
-console.log(assessment.criticalSlas);          // ['investigation']
+// 'within_sla'
+// 'within_sla'
+// 'at_risk' (14 days = 93% of 15)
+// ['investigation']
 
 // Get all at-risk cases
 const atRiskCases = await getAtRiskCases();
 atRiskCases.forEach(c => {
-  console.log(`⚠️ Case ${c.caseId}: ${c.criticalSlas.join(', ')} at risk`);
 });
 ```
 
@@ -195,7 +192,7 @@ export function CaseList({ cases }: { cases: Case[] }) {
             <p>State: {c.state}</p>
             {urgent && (
               <div className="text-red-600">
-                ⚠️ SLA at risk: {sla.criticalSlas.join(', ')}
+                âš ï¸ SLA at risk: {sla.criticalSlas.join(', ')}
               </div>
             )}
           </div>
@@ -214,16 +211,16 @@ export function CaseList({ cases }: { cases: Case[] }) {
 
 31 tests covering:
 
-✅ Valid state transitions  
-✅ Invalid transition rejection  
-✅ Role-based permission enforcement  
-✅ SLA expiration blocking  
-✅ Conditional requirements (evidence)  
-✅ Admin override capability  
-✅ Complete workflow paths (escalation, withdrawal)  
-✅ Terminal state detection  
-✅ Reopening prevention  
-✅ Urgent state identification
+âœ… Valid state transitions  
+âœ… Invalid transition rejection  
+âœ… Role-based permission enforcement  
+âœ… SLA expiration blocking  
+âœ… Conditional requirements (evidence)  
+âœ… Admin override capability  
+âœ… Complete workflow paths (escalation, withdrawal)  
+âœ… Terminal state detection  
+âœ… Reopening prevention  
+âœ… Urgent state identification
 
 **Key Test Cases:**
 
@@ -237,15 +234,15 @@ export function CaseList({ cases }: { cases: Case[] }) {
 
 22 tests covering:
 
-✅ Acknowledgment SLA (2 days)  
-✅ First Response SLA (5 days)  
-✅ Investigation SLA (15 days)  
-✅ Business day calculations  
-✅ Weekend spanning  
-✅ At-risk threshold (80%)  
-✅ Breach detection  
-✅ Multiple simultaneous SLAs  
-✅ Case list filtering (at-risk, breached)
+âœ… Acknowledgment SLA (2 days)  
+âœ… First Response SLA (5 days)  
+âœ… Investigation SLA (15 days)  
+âœ… Business day calculations  
+âœ… Weekend spanning  
+âœ… At-risk threshold (80%)  
+âœ… Breach detection  
+âœ… Multiple simultaneous SLAs  
+âœ… Case list filtering (at-risk, breached)
 
 **Key Test Cases:**
 
@@ -277,16 +274,16 @@ export function CaseList({ cases }: { cases: Case[] }) {
 
 ## Acceptance Criteria
 
-✅ FSM enforces 10 case states with defined transitions  
-✅ Role-based permissions prevent unauthorized actions  
-✅ SLA validation blocks late acknowledgments  
-✅ Admin can override conditions when closing cases  
-✅ SLA calculator tracks 3 standards (acknowledge, response, investigation)  
-✅ At-risk warning triggers at 80% threshold  
-✅ Business day calculations exclude weekends  
-✅ 53/53 tests passing  
-✅ Integration examples documented  
-✅ No breaking changes to existing case API
+âœ… FSM enforces 10 case states with defined transitions  
+âœ… Role-based permissions prevent unauthorized actions  
+âœ… SLA validation blocks late acknowledgments  
+âœ… Admin can override conditions when closing cases  
+âœ… SLA calculator tracks 3 standards (acknowledge, response, investigation)  
+âœ… At-risk warning triggers at 80% threshold  
+âœ… Business day calculations exclude weekends  
+âœ… 53/53 tests passing  
+âœ… Integration examples documented  
+âœ… No breaking changes to existing case API
 
 ## Next Steps
 

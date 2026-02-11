@@ -25,6 +25,7 @@
 import { auth } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 /**
  * Execute database operation with automatic RLS context
@@ -50,6 +51,12 @@ import { sql } from 'drizzle-orm';
  */
 export async function withRLSContext<T>(
   operation: () => Promise<T>
+): Promise<T>;
+export async function withRLSContext<T>(
+  operation: (tx: NodePgDatabase<any>) => Promise<T>
+): Promise<T>;
+export async function withRLSContext<T>(
+  operation: ((tx: NodePgDatabase<any>) => Promise<T>) | (() => Promise<T>)
 ): Promise<T> {
   // Get authenticated user from Clerk
   const { userId } = await auth();
@@ -67,7 +74,7 @@ export async function withRLSContext<T>(
     await tx.execute(sql`SET LOCAL app.current_user_id = ${userId}`);
     
     // Execute the operation with user context set
-    const result = await operation();
+    const result = await operation(tx);
     
     // Transaction commit automatically clears SET LOCAL variables
     return result;
@@ -170,7 +177,7 @@ export async function withSystemContext<T>(
  *   return withRLSContext(async () => {
  *     // Double-check context before sensitive operation
  *     const contextUserId = await validateRLSContext();
- *     console.log('Operating as user:', contextUserId);
+ *     logger.info('Operating as user', { contextUserId });
  *     
  *     await db.insert(financialTransactions).values({...});
  *     return NextResponse.json({ success: true });
@@ -192,9 +199,7 @@ export async function validateRLSContext(): Promise<string> {
     return userId;
   } catch (error) {
     // Log security violation
-    console.error('🚨 RLS Context Validation Failed:', error);
-    
-    throw new Error(
+throw new Error(
       'RLS context not set. Database queries must be wrapped in withRLSContext(). ' +
       'See: docs/security/RLS_AUTH_RBAC_ALIGNMENT.md'
     );
@@ -213,9 +218,9 @@ export async function validateRLSContext(): Promise<string> {
  * // Check if context is set without throwing
  * const userId = await getCurrentRLSContext();
  * if (userId) {
- *   console.log('RLS context active for user:', userId);
+ *   logger.info('RLS context active for user', { userId });
  * } else {
- *   console.warn('No RLS context set - system operation?');
+ *   logger.warn('No RLS context set - system operation?');
  * }
  */
 export async function getCurrentRLSContext(): Promise<string | null> {

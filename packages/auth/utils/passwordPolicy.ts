@@ -11,6 +11,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../src/utils/logger';
 
 // ============================================================================
 // Types
@@ -419,7 +420,7 @@ export async function checkPasswordHistory(
     // For now, we'll assume the comparison happens server-side
     return true; // Password not in history
   } catch (error) {
-    console.error('Error checking password history:', error);
+    logger.error('Error checking password history:', error);
     return true; // Allow password on error
   }
 }

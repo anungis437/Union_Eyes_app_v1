@@ -56,8 +56,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       message: `Emergency recovery initiated for ${emergencyId}. Location data will be purged within 48 hours.`,
     } as EmergencyRecoveryResponse);
   } catch (error) {
-    console.error('Recovery initiation error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         error: `Recovery failed: ${error}`,
@@ -111,8 +110,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       message: `Recovery in progress for emergency ${emergencyId}`,
     } as EmergencyRecoveryResponse);
   } catch (error) {
-    console.error('Recovery status error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         error: `Failed to get recovery status: ${error}`,

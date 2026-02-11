@@ -39,8 +39,7 @@ export const GET = async () => {
         }
       });
     } catch (error) {
-      console.error('Debug endpoint error:', error);
-      return NextResponse.json({ 
+return NextResponse.json({ 
         error: 'Internal error', 
         details: error instanceof Error ? error.message : 'Unknown error' 
       }, { status: 500 });

@@ -163,8 +163,7 @@ export function WageBenchmarking({
       setJurisdictions(uniqueJurisdictions);
       setJobTitles(uniqueJobTitles);
     } catch (err) {
-      console.error('Error fetching wage data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load wage benchmarks');
+setError(err instanceof Error ? err.message : 'Failed to load wage benchmarks');
     } finally {
       setLoading(false);
     }

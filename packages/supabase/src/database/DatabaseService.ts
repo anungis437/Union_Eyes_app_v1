@@ -853,7 +853,6 @@ export function useComplianceMonitoring(organizationId?: string) {
       setDashboard(dashboardData[0] || null);
       setSecurityOverview(securityData);
     } catch (error) {
-      console.error('Failed to refresh compliance data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -893,7 +892,6 @@ export function useAuditLogs(organizationId: string) {
       const auditLogs = await service.getAuditLogs(organizationId, options);
       setLogs(auditLogs);
     } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
     } finally {
       setIsLoading(false);
     }

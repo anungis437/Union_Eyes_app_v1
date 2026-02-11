@@ -33,8 +33,7 @@ export function PaymentStatusAlert() {
         const { paymentFailed } = await checkPaymentFailedAction();
         setHasPaymentFailed(paymentFailed);
       } catch (error) {
-        console.error("Error checking payment status:", error);
-      } finally {
+} finally {
         setIsLoading(false);
       }
     };

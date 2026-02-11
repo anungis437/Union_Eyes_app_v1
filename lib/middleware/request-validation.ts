@@ -273,8 +273,7 @@ export class RequestValidator {
         try {
           sanitized[key as keyof T] = rule(sanitized[key as keyof T]) as never;
         } catch (error) {
-          console.warn(`Sanitization error for field ${key}:`, error);
-        }
+}
       }
     });
 

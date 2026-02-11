@@ -11,6 +11,7 @@
 
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES
@@ -262,7 +263,9 @@ export async function getCriticalDeadlines(organizationId: string): Promise<any[
     `);
     
     if (!viewCheck[0]?.view_exists) {
-      console.log('[getCriticalDeadlines] v_critical_deadlines view does not exist, returning empty array');
+      logger.warn('Critical deadlines view missing; returning empty array', {
+        organizationId,
+      });
       return [];
     }
 
@@ -279,7 +282,7 @@ export async function getCriticalDeadlines(organizationId: string): Promise<any[
     `);
     return result as any[];
   } catch (error) {
-    console.error('[getCriticalDeadlines] Error:', error);
+    logger.error('Error fetching critical deadlines', { error, organizationId });
     return [];
   }
 }

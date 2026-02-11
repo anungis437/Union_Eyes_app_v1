@@ -212,8 +212,7 @@ export const createTestMember = (overrides = {}) => ({
 export const skipIfNoDatabaseConnection = () => {
   const hasDbConnection = process.env.DATABASE_URL || process.env.SUPABASE_URL;
   if (!hasDbConnection) {
-    console.warn('⚠️  Skipping integration test: No database connection configured');
-    return true;
+return true;
   }
   return false;
 };

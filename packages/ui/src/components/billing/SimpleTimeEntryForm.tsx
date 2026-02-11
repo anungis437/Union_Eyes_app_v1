@@ -143,7 +143,6 @@ export function SimpleTimeEntryForm({
       setNotes('');
       setTimeError('');
     } catch (error) {
-      console.error('Failed to submit time entry:', error);
     } finally {
       setIsLoading(false);
     }

@@ -85,8 +85,7 @@ export async function POST(
         : 'Extension granted automatically',
     });
   } catch (error) {
-    console.error('Error requesting extension:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to request extension' },
       { status: 500 }
     );

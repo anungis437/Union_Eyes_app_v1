@@ -32,13 +32,12 @@ async function sendInsightNotifications(organizationId: string, insights: any[])
     });
 
     if (admins.length === 0) {
-      console.log(`[Analytics Cron] No admins found for organization ${organizationId}`);
-      return;
+return;
     }
 
     // Create notification message
     const insightSummary = insights
-      .map((insight) => `• ${insight.title} (${insight.priority})`)
+      .map((insight) => `Ã¢â‚¬Â¢ ${insight.title} (${insight.priority})`)
       .join('\n');
 
     // Send email to each admin
@@ -60,15 +59,11 @@ Log in to the dashboard to view full details and recommendations.`,
           actionLabel: 'View Insights',
           userId: 'system',
         }).catch((err) => {
-          console.error(`[Analytics Cron] Failed to send notification to ${admin.email}:`, err);
-        });
+});
       }
     }
-
-    console.log(`[Analytics Cron] Sent ${insights.length} insight notifications to ${admins.length} admins`);
-  } catch (error) {
-    console.error(`[Analytics Cron] Error sending insight notifications:`, error);
-    throw error;
+} catch (error) {
+throw error;
   }
 }
 
@@ -79,17 +74,11 @@ export async function GET(request: NextRequest) {
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    console.log('[Analytics Cron] Starting daily analytics calculation...');
-    
-    // Get all active organizations
+// Get all active organizations
     const allOrgs = await db.query.organizations.findMany({
       where: (orgs, { eq }) => eq(orgs.status, 'active')
     });
-    
-    console.log(`[Analytics Cron] Processing ${allOrgs.length} organizations`);
-    
-    const results = {
+const results = {
       organizations: allOrgs.length,
       metricsCalculated: 0,
       predictionsGenerated: 0,
@@ -200,33 +189,25 @@ export async function GET(request: NextRequest) {
             
             // Send notifications for critical insights
             await sendInsightNotifications(org.id, criticalInsights).catch((err) => {
-              console.error(`[Analytics Cron] Failed to send notifications for org ${org.id}:`, err);
-            });
+});
           }
         } catch (error) {
-          console.error(`[Analytics Cron] Error generating insights for org ${org.id}:`, error);
-          results.errors.push(`Org ${org.id}: Failed to generate insights - ${error instanceof Error ? error.message : 'Unknown error'}`);
+results.errors.push(`Org ${org.id}: Failed to generate insights - ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
         
         
       } catch (error) {
-        console.error(`[Analytics Cron] Error processing org ${org.id}:`, error);
-        results.errors.push(`Org ${org.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+results.errors.push(`Org ${org.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
-    
-    console.log('[Analytics Cron] Daily analytics calculation completed');
-    console.log(`[Analytics Cron] Results:`, results);
-    
-    return NextResponse.json({
+return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
       results
     });
     
   } catch (error) {
-    console.error('[Analytics Cron] Fatal error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 

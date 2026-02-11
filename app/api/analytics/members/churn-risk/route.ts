@@ -105,8 +105,7 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(churnRisk);
   } catch (error) {
-    console.error('Churn risk analysis error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch churn risk analysis' },
       { status: 500 }
     );

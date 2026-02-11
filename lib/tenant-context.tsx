@@ -83,8 +83,7 @@ export function TenantProvider({ children }: TenantProviderProps) {
       setCurrentTenant(data.tenant);
       setTenants(data.availableTenants || [data.tenant]);
     } catch (err) {
-      console.error("Error fetching tenant info:", err);
-      setError(err instanceof Error ? err : new Error("Unknown error"));
+setError(err instanceof Error ? err : new Error("Unknown error"));
     } finally {
       setIsLoading(false);
     }
@@ -116,8 +115,7 @@ export function TenantProvider({ children }: TenantProviderProps) {
       // Reload the page to refresh all tenant-specific data
       window.location.reload();
     } catch (err) {
-      console.error("Error switching tenant:", err);
-      setError(err instanceof Error ? err : new Error("Unknown error"));
+setError(err instanceof Error ? err : new Error("Unknown error"));
       throw err;
     } finally {
       setIsLoading(false);

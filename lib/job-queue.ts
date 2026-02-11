@@ -595,9 +595,7 @@ export async function resumeQueue(queueName: string) {
 // ============================================
 
 export async function closeQueues() {
-  console.log('Closing job queues...');
-  
-  const conn = getConnection();
+const conn = getConnection();
   await Promise.all([
     getEmailQueue()?.close(),
     getSmsQueue()?.close(),
@@ -611,8 +609,6 @@ export async function closeQueues() {
     getCleanupQueueEvents()?.close(),
     conn?.quit(),
   ].filter(Boolean));
-
-  console.log('All queues closed');
 }
 
 // Register shutdown handlers

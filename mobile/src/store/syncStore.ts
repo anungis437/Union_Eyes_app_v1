@@ -34,8 +34,7 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
       // Implement actual sync logic here
       await new Promise((resolve) => setTimeout(resolve, 2000));
       set({ lastSyncTime: new Date(), pendingChanges: 0 });
-    } catch (error) {
-      console.error('Sync failed:', error);
+    } catch {
     } finally {
       set({ isSyncing: false });
     }

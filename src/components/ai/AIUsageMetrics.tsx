@@ -85,7 +85,6 @@ export function AIUsageMetrics({ tenantId, className = '' }: AIUsageMetricsProps
       setTrendData(data.trendData || []);
       setTotalStats(data.totalStats || totalStats);
     } catch (error) {
-      console.error('Failed to fetch AI usage metrics:', error);
     } finally {
       setIsLoading(false);
     }

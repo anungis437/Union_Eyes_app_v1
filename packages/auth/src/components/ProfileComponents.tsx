@@ -78,7 +78,6 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
         await onUpload(file);
         setPreviewUrl(null);
       } catch (error) {
-        console.error('Error uploading avatar:', error);
         alert('Failed to upload avatar');
       } finally {
         setUploading(false);
@@ -95,7 +94,6 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
         await onDelete();
         setPreviewUrl(null);
       } catch (error) {
-        console.error('Error deleting avatar:', error);
         alert('Failed to delete avatar');
       } finally {
         setUploading(false);
@@ -351,7 +349,6 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
       await updateProfile(formData);
       onSave?.();
     } catch (error) {
-      console.error('Error saving profile:', error);
       alert('Failed to save profile');
     } finally {
       setSaving(false);

@@ -112,9 +112,7 @@ export const GET = withEnhancedRoleAuth(10, async (
       headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
-    console.error("Error fetching event:", error);
-    
-    await logApiAuditEvent({
+await logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
       organizationId,
@@ -238,9 +236,7 @@ export const PATCH = withEnhancedRoleAuth(40, async (
       headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
-    console.error("Error updating event:", error);
-    
-    await logApiAuditEvent({
+await logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
       organizationId,
@@ -337,9 +333,7 @@ export const DELETE = withEnhancedRoleAuth(40, async (
       headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
-    console.error("Error deleting event:", error);
-    
-    await logApiAuditEvent({
+await logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
       organizationId,

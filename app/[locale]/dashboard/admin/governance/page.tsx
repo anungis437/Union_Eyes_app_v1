@@ -134,8 +134,7 @@ export default function GovernancePage() {
       const data = await response.json();
       setDashboard(data.data);
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to load governance dashboard");
+toast.error("Unable to load governance dashboard");
     } finally {
       setLoading(false);
     }
@@ -196,8 +195,7 @@ export default function GovernancePage() {
       setShareForm({ certificateNumber: "", issueDate: "", councilMembersJson: "" });
       fetchDashboard();
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to issue golden share");
+toast.error("Unable to issue golden share");
     }
   };
 
@@ -236,8 +234,7 @@ export default function GovernancePage() {
       });
       fetchDashboard();
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to create reserved matter");
+toast.error("Unable to create reserved matter");
     }
   };
 
@@ -258,8 +255,7 @@ export default function GovernancePage() {
       setClassAVoteForm({ voteId: "", votesFor: "", votesAgainst: "", abstain: "" });
       fetchDashboard();
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to record Class A vote");
+toast.error("Unable to record Class A vote");
     }
   };
 
@@ -294,8 +290,7 @@ export default function GovernancePage() {
       });
       fetchDashboard();
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to record Class B vote");
+toast.error("Unable to record Class B vote");
     }
   };
 
@@ -334,8 +329,7 @@ export default function GovernancePage() {
       });
       fetchDashboard();
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to create mission audit");
+toast.error("Unable to create mission audit");
     }
   };
 
@@ -378,8 +372,7 @@ export default function GovernancePage() {
       });
       fetchDashboard();
     } catch (error) {
-      console.error(error);
-      toast.error("Unable to record council election");
+toast.error("Unable to record council election");
     }
   };
 

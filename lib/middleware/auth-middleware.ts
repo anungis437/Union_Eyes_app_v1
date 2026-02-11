@@ -29,7 +29,6 @@ try {
   const clerkAuth = require('@clerk/nextjs/server');
   getAuthSession = clerkAuth.auth;
 } catch {
-  console.warn('Clerk auth not available - auth will be bypassed');
 }
 
 /**
@@ -138,8 +137,7 @@ export class AuthenticationService {
   static async getCurrentUser(): Promise<AuthenticatedUser | null> {
     try {
       if (!getAuthSession) {
-        console.warn('Auth not available - returning null');
-        return null;
+return null;
       }
 
       const session = await getAuthSession();
@@ -171,8 +169,7 @@ export class AuthenticationService {
         metadata: sessionData?.publicMetadata,
       };
     } catch (error) {
-      console.error('Failed to get current user:', error);
-      return null;
+return null;
     }
   }
 
@@ -247,8 +244,7 @@ class AuthenticationAuditLog {
 
     // Log critical auth failures
     if (event.eventType === 'LOGIN_FAILED' || event.eventType === 'INVALID_TOKEN') {
-      console.warn(`⚠️ Authentication failure: ${event.eventType} - ${event.reason}`);
-    }
+}
   }
 
   static getEvents(filter?: { userId?: string; eventType?: string }) {

@@ -54,10 +54,7 @@ class LocalDatabase {
         await this.migrate(metadata.version || 0, this.SCHEMA_VERSION);
         this.setMetadata({ version: this.SCHEMA_VERSION });
       }
-
-      console.log('[LocalDB] Initialized, version:', this.SCHEMA_VERSION);
-    } catch (error) {
-      console.error('[LocalDB] Initialization failed:', error);
+    } catch {
     }
   }
 
@@ -68,8 +65,7 @@ class LocalDatabase {
     try {
       const data = metadataStorage.getString(this.METADATA_KEY);
       return data ? JSON.parse(data) : {};
-    } catch (error) {
-      console.error('[LocalDB] Failed to get metadata:', error);
+    } catch {
       return {};
     }
   }
@@ -81,8 +77,7 @@ class LocalDatabase {
     try {
       const existing = this.getMetadata();
       metadataStorage.set(this.METADATA_KEY, JSON.stringify({ ...existing, ...metadata }));
-    } catch (error) {
-      console.error('[LocalDB] Failed to set metadata:', error);
+    } catch {
     }
   }
 
@@ -90,12 +85,9 @@ class LocalDatabase {
    * Run database migrations
    */
   private async migrate(fromVersion: number, toVersion: number): Promise<void> {
-    console.log(`[LocalDB] Migrating from version ${fromVersion} to ${toVersion}`);
-
     // Add migration logic here for future schema changes
     if (fromVersion === 0 && toVersion === 1) {
       // Initial migration
-      console.log('[LocalDB] Running initial migration');
     }
   }
 
@@ -114,7 +106,6 @@ class LocalDatabase {
         simpleStorage.set(key, value);
       }
     } catch (error) {
-      console.error(`[LocalDB] Failed to set simple value for key ${key}:`, error);
       throw error;
     }
   }
@@ -131,8 +122,7 @@ class LocalDatabase {
       if (num !== undefined) return num;
 
       return simpleStorage.getBoolean(key);
-    } catch (error) {
-      console.error(`[LocalDB] Failed to get simple value for key ${key}:`, error);
+    } catch {
       return undefined;
     }
   }
@@ -143,8 +133,7 @@ class LocalDatabase {
   deleteSimple(key: string): void {
     try {
       simpleStorage.delete(key);
-    } catch (error) {
-      console.error(`[LocalDB] Failed to delete simple value for key ${key}:`, error);
+    } catch {
     }
   }
 
@@ -178,10 +167,7 @@ class LocalDatabase {
 
       await AsyncStorage.setItem(key, JSON.stringify(dataWithMetadata));
       this.updateIndices(entity, data);
-
-      console.log(`[LocalDB] Saved ${entity}:${data.id}`);
     } catch (error) {
-      console.error(`[LocalDB] Failed to save ${entity}:`, error);
       throw error;
     }
   }
@@ -216,9 +202,7 @@ class LocalDatabase {
       );
 
       await AsyncStorage.multiSet(pairs);
-      console.log(`[LocalDB] Saved ${items.length} ${entity} entities`);
     } catch (error) {
-      console.error(`[LocalDB] Failed to save many ${entity}:`, error);
       throw error;
     }
   }
@@ -241,8 +225,7 @@ class LocalDatabase {
       }
 
       return parsed as T;
-    } catch (error) {
-      console.error(`[LocalDB] Failed to find ${entity}:${id}:`, error);
+    } catch {
       return null;
     }
   }
@@ -291,8 +274,7 @@ class LocalDatabase {
       }
 
       return results;
-    } catch (error) {
-      console.error(`[LocalDB] Failed to find all ${entity}:`, error);
+    } catch {
       return [];
     }
   }
@@ -314,8 +296,7 @@ class LocalDatabase {
 
       const filtered = this.applyFilters(items, where);
       return filtered.length;
-    } catch (error) {
-      console.error(`[LocalDB] Failed to count ${entity}:`, error);
+    } catch {
       return 0;
     }
   }
@@ -330,20 +311,17 @@ class LocalDatabase {
       if (hard) {
         await AsyncStorage.removeItem(key);
         this.removeFromIndices(entity, id);
-        console.log(`[LocalDB] Hard deleted ${entity}:${id}`);
       } else {
         const existing = await this.find(entity, id);
         if (existing) {
           (existing as any)._metadata.deleted = true;
           (existing as any)._metadata.updatedAt = Date.now();
           await AsyncStorage.setItem(key, JSON.stringify(existing));
-          console.log(`[LocalDB] Soft deleted ${entity}:${id}`);
         }
       }
 
       return true;
-    } catch (error) {
-      console.error(`[LocalDB] Failed to delete ${entity}:${id}:`, error);
+    } catch {
       return false;
     }
   }
@@ -359,8 +337,7 @@ class LocalDatabase {
         if (success) deleted++;
       }
       return deleted;
-    } catch (error) {
-      console.error(`[LocalDB] Failed to delete many ${entity}:`, error);
+    } catch {
       return 0;
     }
   }
@@ -377,10 +354,8 @@ class LocalDatabase {
       if (entityKeys.length > 0) {
         await AsyncStorage.multiRemove(entityKeys);
         this.indices.delete(entity);
-        console.log(`[LocalDB] Cleared ${entityKeys.length} ${entity} entities`);
       }
-    } catch (error) {
-      console.error(`[LocalDB] Failed to clear ${entity}:`, error);
+    } catch {
     }
   }
 
@@ -416,10 +391,7 @@ class LocalDatabase {
         }
       }
 
-      console.log(`[LocalDB] Transaction completed: ${operations.length} operations`);
     } catch (error) {
-      console.error('[LocalDB] Transaction failed, rolling back:', error);
-
       // Rollback
       for (const { key, value } of rollbackData) {
         if (value !== null) {
@@ -446,7 +418,6 @@ class LocalDatabase {
     if (!entityIndices.has(field)) {
       entityIndices.set(field, new Set());
     }
-    console.log(`[LocalDB] Created index on ${entity}.${field}`);
   }
 
   /**
@@ -481,7 +452,6 @@ class LocalDatabase {
    */
   async queryByIndex<T>(entity: string, field: string, value: any): Promise<T[]> {
     if (!this.indices.has(entity) || !this.indices.get(entity)!.has(field)) {
-      console.warn(`[LocalDB] No index on ${entity}.${field}, falling back to full scan`);
       return this.findAll<T>(entity, { where: { [field]: value } });
     }
 
@@ -556,8 +526,7 @@ class LocalDatabase {
         entities: entityStats,
         totalSize: keys.length,
       };
-    } catch (error) {
-      console.error('[LocalDB] Failed to get stats:', error);
+    } catch {
       return { entities: {}, totalSize: 0 };
     }
   }
@@ -571,9 +540,7 @@ class LocalDatabase {
       simpleStorage.clearAll();
       metadataStorage.clearAll();
       this.indices.clear();
-      console.log('[LocalDB] Cleared all data');
-    } catch (error) {
-      console.error('[LocalDB] Failed to clear all data:', error);
+    } catch {
     }
   }
 }

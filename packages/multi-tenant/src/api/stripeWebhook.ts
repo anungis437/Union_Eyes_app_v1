@@ -9,6 +9,7 @@
 
 import Stripe from 'stripe';
 import { BillingService } from '../services/billingService';
+import { SimpleLogger } from '../utils/logger';
 
 export interface WebhookHandlerConfig {
   /** Stripe webhook signing secret */
@@ -65,6 +66,7 @@ export class StripeWebhookHandler {
   private stripe: Stripe;
   private webhookSecret: string;
   private billingService: BillingService;
+  private logger = new SimpleLogger('StripeWebhookHandler');
 
   constructor(config: WebhookHandlerConfig) {
     this.stripe = new Stripe(config.stripeSecretKey, {
@@ -104,7 +106,7 @@ export class StripeWebhookHandler {
         event,
       };
     } catch (error) {
-      console.error('Webhook handler error:', error);
+      this.logger.error('Webhook handler error', { error });
       
       if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
         return {
@@ -144,7 +146,7 @@ export class StripeWebhookHandler {
    * Process webhook event based on type
    */
   private async processEvent(event: Stripe.Event): Promise<void> {
-    console.log(`Processing webhook event: ${event.type}`);
+    this.logger.info('Processing webhook event', { eventType: event.type });
 
     switch (event.type) {
       case 'customer.subscription.created':
@@ -172,7 +174,7 @@ export class StripeWebhookHandler {
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        this.logger.info('Unhandled event type', { eventType: event.type });
     }
   }
 
@@ -180,7 +182,7 @@ export class StripeWebhookHandler {
    * Handle subscription created event
    */
   private async handleSubscriptionCreated(subscription: Stripe.Subscription): Promise<void> {
-    console.log('Subscription created:', subscription.id);
+    this.logger.info('Subscription created', { subscriptionId: subscription.id });
     
     // The subscription is already created by billingService.createSubscription()
     // This webhook confirms the subscription was successfully created in Stripe
@@ -202,7 +204,7 @@ export class StripeWebhookHandler {
 
       // Log subscription creation in audit log
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
-      console.log('Subscription created - Audit log entry:', {
+      this.logger.info('Subscription created - Audit log entry', {
         action: 'subscription.created',
         customerId,
         subscriptionId: subscription.id,
@@ -213,7 +215,7 @@ export class StripeWebhookHandler {
 
       // Send welcome email to customer
       // Note: Email implementation depends on the consuming application's email service
-      console.log('Welcome email should be sent to customer:', {
+      this.logger.info('Welcome email should be sent to customer', {
         subscriptionId: subscription.id,
         customerId,
         status: subscription.status,
@@ -221,7 +223,7 @@ export class StripeWebhookHandler {
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
       });
     } catch (error) {
-      console.error('Error handling subscription created:', error);
+      this.logger.error('Error handling subscription created', { error });
       throw error;
     }
   }
@@ -230,7 +232,7 @@ export class StripeWebhookHandler {
    * Handle subscription updated event
    */
   private async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
-    console.log('Subscription updated:', subscription.id);
+    this.logger.info('Subscription updated', { subscriptionId: subscription.id });
     
     try {
       await this.billingService.handleWebhook({
@@ -247,7 +249,7 @@ export class StripeWebhookHandler {
 
       // Log subscription update in audit log
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
-      console.log('Subscription updated - Audit log entry:', {
+      this.logger.info('Subscription updated - Audit log entry', {
         action: 'subscription.updated',
         customerId,
         subscriptionId: subscription.id,
@@ -266,7 +268,7 @@ export class StripeWebhookHandler {
         ? 'Your subscription has been updated'
         : `Your subscription status has changed to: ${subscription.status}`;
       
-      console.log('Subscription update notification should be sent to customer:', {
+      this.logger.info('Subscription update notification should be sent to customer', {
         subscriptionId: subscription.id,
         customerId,
         status: subscription.status,
@@ -274,7 +276,7 @@ export class StripeWebhookHandler {
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
     } catch (error) {
-      console.error('Error handling subscription updated:', error);
+      this.logger.error('Error handling subscription updated', { error });
       throw error;
     }
   }
@@ -283,7 +285,7 @@ export class StripeWebhookHandler {
    * Handle subscription deleted event
    */
   private async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
-    console.log('Subscription deleted:', subscription.id);
+    this.logger.info('Subscription deleted', { subscriptionId: subscription.id });
     
     try {
       await this.billingService.handleWebhook({
@@ -300,7 +302,7 @@ export class StripeWebhookHandler {
 
       // Log subscription deletion in audit log
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
-      console.log('Subscription deleted - Audit log entry:', {
+      this.logger.info('Subscription deleted - Audit log entry', {
         action: 'subscription.deleted',
         customerId,
         subscriptionId: subscription.id,
@@ -311,7 +313,7 @@ export class StripeWebhookHandler {
       // Archive organization data (if applicable)
       // Note: Data archival should be implemented by the consuming application
       // This is a business decision that varies by application
-      console.log('Organization data archival should be considered for:', {
+      this.logger.info('Organization data archival should be considered for', {
         subscriptionId: subscription.id,
         customerId,
         metadata: subscription.metadata,
@@ -319,14 +321,14 @@ export class StripeWebhookHandler {
 
       // Send cancellation confirmation email
       // Note: Email implementation depends on the consuming application's email service
-      console.log('Cancellation confirmation email should be sent to customer:', {
+      this.logger.info('Cancellation confirmation email should be sent to customer', {
         subscriptionId: subscription.id,
         customerId,
         canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
         endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000).toISOString() : null,
       });
     } catch (error) {
-      console.error('Error handling subscription deleted:', error);
+      this.logger.error('Error handling subscription deleted', { error });
       throw error;
     }
   }
@@ -335,7 +337,7 @@ export class StripeWebhookHandler {
    * Handle invoice payment succeeded event
    */
   private async handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
-    console.log('Invoice payment succeeded:', invoice.id);
+    this.logger.info('Invoice payment succeeded', { invoiceId: invoice.id });
     
     try {
       await this.billingService.handleWebhook({
@@ -356,7 +358,7 @@ export class StripeWebhookHandler {
         const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
         const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
         
-        console.log('Payment succeeded - Audit log entry:', {
+        this.logger.info('Payment succeeded - Audit log entry', {
           action: 'invoice.payment_succeeded',
           customerId,
           subscriptionId,
@@ -370,14 +372,14 @@ export class StripeWebhookHandler {
       // Note: Email implementation depends on the consuming application's email service
       // Applications should implement email sending by listening to webhook events or
       // extending this handler with their email service
-      console.log('Payment receipt email should be sent to customer:', {
+      this.logger.info('Payment receipt email should be sent to customer', {
         invoiceId: invoice.id,
         customerEmail: invoice.customer_email,
         amountPaid: invoice.amount_paid / 100,
         currency: invoice.currency.toUpperCase(),
       });
     } catch (error) {
-      console.error('Error handling invoice payment succeeded:', error);
+      this.logger.error('Error handling invoice payment succeeded', { error });
       throw error;
     }
   }
@@ -386,7 +388,7 @@ export class StripeWebhookHandler {
    * Handle invoice payment failed event
    */
   private async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-    console.log('Invoice payment failed:', invoice.id);
+    this.logger.info('Invoice payment failed', { invoiceId: invoice.id });
     
     try {
       await this.billingService.handleWebhook({
@@ -415,9 +417,9 @@ export class StripeWebhookHandler {
             },
           });
           
-          console.log('Subscription marked as past_due:', subscriptionId);
+          this.logger.info('Subscription marked as past_due', { subscriptionId });
         } catch (error) {
-          console.error('Failed to update subscription status:', error);
+          this.logger.error('Failed to update subscription status', { error });
         }
       }
 
@@ -425,7 +427,7 @@ export class StripeWebhookHandler {
       const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
       const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
       
-      console.log('Payment failed - Audit log entry:', {
+      this.logger.info('Payment failed - Audit log entry', {
         action: 'invoice.payment_failed',
         customerId,
         subscriptionId,
@@ -437,7 +439,7 @@ export class StripeWebhookHandler {
 
       // Send payment failed notification email
       // Note: Email implementation depends on the consuming application's email service
-      console.log('Payment failed notification should be sent to customer:', {
+      this.logger.info('Payment failed notification should be sent to customer', {
         invoiceId: invoice.id,
         customerEmail: invoice.customer_email,
         amountDue: invoice.amount_due / 100,
@@ -446,7 +448,7 @@ export class StripeWebhookHandler {
         nextPaymentAttempt: invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000).toISOString() : null,
       });
     } catch (error) {
-      console.error('Error handling invoice payment failed:', error);
+      this.logger.error('Error handling invoice payment failed', { error });
       throw error;
     }
   }
@@ -455,7 +457,7 @@ export class StripeWebhookHandler {
    * Handle trial will end event (3 days before trial ends)
    */
   private async handleTrialWillEnd(subscription: Stripe.Subscription): Promise<void> {
-    console.log('Trial will end soon:', subscription.id);
+    this.logger.info('Trial will end soon', { subscriptionId: subscription.id });
     
     try {
       // Calculate days remaining
@@ -465,7 +467,7 @@ export class StripeWebhookHandler {
 
       // Log trial reminder in audit log
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
-      console.log('Trial ending reminder - Audit log entry:', {
+      this.logger.info('Trial ending reminder - Audit log entry', {
         action: 'subscription.trial_will_end',
         customerId,
         subscriptionId: subscription.id,
@@ -478,7 +480,7 @@ export class StripeWebhookHandler {
       
       // Prompt user to add payment method if not already added
       if (!hasPaymentMethod) {
-        console.log('Customer needs to add payment method before trial ends:', {
+        this.logger.info('Customer needs to add payment method before trial ends', {
           subscriptionId: subscription.id,
           customerId,
           daysRemaining,
@@ -488,7 +490,7 @@ export class StripeWebhookHandler {
 
       // Send trial ending reminder email with days remaining
       // Note: Email implementation depends on the consuming application's email service
-      console.log('Trial ending reminder email should be sent to customer:', {
+      this.logger.info('Trial ending reminder email should be sent to customer', {
         subscriptionId: subscription.id,
         customerId,
         daysRemaining,
@@ -497,9 +499,12 @@ export class StripeWebhookHandler {
         actionRequired: !hasPaymentMethod ? 'Add payment method' : 'No action required',
       });
       
-      console.log(`Trial ends in ${daysRemaining} days for subscription ${subscription.id}`);
+      this.logger.info('Trial ends in days for subscription', {
+        subscriptionId: subscription.id,
+        daysRemaining,
+      });
     } catch (error) {
-      console.error('Error handling trial will end:', error);
+      this.logger.error('Error handling trial will end', { error });
       throw error;
     }
   }

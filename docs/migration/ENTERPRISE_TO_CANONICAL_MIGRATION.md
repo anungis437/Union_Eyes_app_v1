@@ -12,17 +12,17 @@ All **enterprise-role-middleware** features have been **consolidated into the ca
 
 ### What's Changing
 
-- ✅ **Import path only**: `@/lib/enterprise-role-middleware` → `@/lib/api-auth-guard`
-- ✅ **No API changes**: All function signatures remain identical
-- ✅ **Zero functionality changes**: Behavior is exactly the same
-- ✅ **All features preserved**: Multi-role, permissions, scoping, audit logging
+- Ã¢Å“â€¦ **Import path only**: `@/lib/enterprise-role-middleware` Ã¢â€ â€™ `@/lib/api-auth-guard`
+- Ã¢Å“â€¦ **No API changes**: All function signatures remain identical
+- Ã¢Å“â€¦ **Zero functionality changes**: Behavior is exactly the same
+- Ã¢Å“â€¦ **All features preserved**: Multi-role, permissions, scoping, audit logging
 
 ### Why Consolidate
 
-- 🎯 **Single source of truth** for all authentication patterns
-- 📚 **Simplified documentation** - one module to learn
-- 🔧 **Easier maintenance** - changes in one place
-- 🚀 **Better discoverability** - all auth functions in one import
+- Ã°Å¸Å½Â¯ **Single source of truth** for all authentication patterns
+- Ã°Å¸â€œÅ¡ **Simplified documentation** - one module to learn
+- Ã°Å¸â€Â§ **Easier maintenance** - changes in one place
+- Ã°Å¸Å¡â‚¬ **Better discoverability** - all auth functions in one import
 
 ---
 
@@ -56,16 +56,16 @@ export const GET = withEnhancedRoleAuth(50, async (request, context) => {
 
 | **Old Module** | **New Module** | **Notes** |
 |---|---|---|
-| `withEnhancedRoleAuth()` | `withEnhancedRoleAuth()` | ✅ Identical API |
-| `withPermission()` | `withPermission()` | ✅ Identical API |
-| `withScopedRoleAuth()` | `withScopedRoleAuth()` | ✅ Identical API |
-| `requirePermission()` | `requirePermission()` | ✅ Identical API |
-| `requireRoleLevel()` | `requireRoleLevel()` | ✅ Identical API |
-| `requireScope()` | `requireScope()` | ✅ Identical API |
-| `canAccessMemberResource()` | `canAccessMemberResource()` | ✅ Identical API |
-| `getPrimaryRole()` | `getPrimaryRole()` | ✅ Identical API |
-| `getRolesForScope()` | `getRolesForScope()` | ✅ Identical API |
-| `EnhancedRoleContext` type | `EnhancedRoleContext` type | ✅ Identical interface |
+| `withEnhancedRoleAuth()` | `withEnhancedRoleAuth()` | Ã¢Å“â€¦ Identical API |
+| `withPermission()` | `withPermission()` | Ã¢Å“â€¦ Identical API |
+| `withScopedRoleAuth()` | `withScopedRoleAuth()` | Ã¢Å“â€¦ Identical API |
+| `requirePermission()` | `requirePermission()` | Ã¢Å“â€¦ Identical API |
+| `requireRoleLevel()` | `requireRoleLevel()` | Ã¢Å“â€¦ Identical API |
+| `requireScope()` | `requireScope()` | Ã¢Å“â€¦ Identical API |
+| `canAccessMemberResource()` | `canAccessMemberResource()` | Ã¢Å“â€¦ Identical API |
+| `getPrimaryRole()` | `getPrimaryRole()` | Ã¢Å“â€¦ Identical API |
+| `getRolesForScope()` | `getRolesForScope()` | Ã¢Å“â€¦ Identical API |
+| `EnhancedRoleContext` type | `EnhancedRoleContext` type | Ã¢Å“â€¦ Identical interface |
 
 ---
 
@@ -100,7 +100,7 @@ foreach ($file in $files) {
             Set-Content -Path $file.FullName -Value $newContent -NoNewline
             
             $migratedCount++
-            Write-Host "  ✅ Migrated successfully" -ForegroundColor Green
+            Write-Host "  Ã¢Å“â€¦ Migrated successfully" -ForegroundColor Green
         }
     }
     catch {
@@ -108,7 +108,7 @@ foreach ($file in $files) {
             File = $file.FullName
             Error = $_.Exception.Message
         }
-        Write-Host "  ❌ Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  Ã¢ÂÅ’ Error: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -154,9 +154,7 @@ async function migrateFiles() {
 
       // Check if file uses enterprise-role-middleware
       if (content.includes('@/lib/enterprise-role-middleware')) {
-        console.log(`Migrating: ${file}`);
-
-        // Replace import path
+// Replace import path
         content = content.replace(
           /from ['"]@\/lib\/enterprise-role-middleware['"]/g,
           "from '@/lib/api-auth-guard'"
@@ -166,32 +164,21 @@ async function migrateFiles() {
         writeFileSync(file, content, 'utf8');
 
         migratedCount++;
-        console.log(`  ✅ Migrated successfully`);
-      }
+}
     } catch (error) {
       errors.push({
         file,
         error: error instanceof Error ? error.message : String(error),
       });
-      console.error(`  ❌ Error: ${error}`);
-    }
+}
   }
-
-  console.log('\n================================');
-  console.log('Migration Complete!');
-  console.log('================================');
-  console.log(`Files migrated: ${migratedCount}`);
-  console.log(`Errors: ${errors.length}`);
-
-  if (errors.length > 0) {
-    console.log('\nErrors encountered:');
-    errors.forEach(({ file, error }) => {
-      console.log(`  - ${file}: ${error}`);
-    });
+if (errors.length > 0) {
+errors.forEach(({ file, error }) => {
+});
   }
 }
 
-migrateFiles().catch(console.error);
+migrateFiles().catch(() => undefined);
 ```
 
 **Run it:**
@@ -231,10 +218,10 @@ import { withEnhancedRoleAuth, withPermission } from '@/lib/api-auth-guard';
 
 ### Step 3: Verify No Changes Needed
 
-✅ All handler code remains identical  
-✅ All context properties remain the same  
-✅ All options remain the same  
-✅ No type changes needed
+Ã¢Å“â€¦ All handler code remains identical  
+Ã¢Å“â€¦ All context properties remain the same  
+Ã¢Å“â€¦ All options remain the same  
+Ã¢Å“â€¦ No type changes needed
 
 ---
 
@@ -445,12 +432,12 @@ Get-ChildItem -Path "app\api" -Recurse -Filter "*.ts" | `
 
 ## Success Criteria
 
-✅ All 111 files migrated to use `@/lib/api-auth-guard`  
-✅ No TypeScript compilation errors  
-✅ All tests passing  
-✅ Manual testing confirms identical behavior  
-✅ No runtime errors in staging environment  
-✅ `enterprise-role-middleware.ts` marked as deprecated but retained for backwards compatibility
+Ã¢Å“â€¦ All 111 files migrated to use `@/lib/api-auth-guard`  
+Ã¢Å“â€¦ No TypeScript compilation errors  
+Ã¢Å“â€¦ All tests passing  
+Ã¢Å“â€¦ Manual testing confirms identical behavior  
+Ã¢Å“â€¦ No runtime errors in staging environment  
+Ã¢Å“â€¦ `enterprise-role-middleware.ts` marked as deprecated but retained for backwards compatibility
 
 ---
 
@@ -498,7 +485,7 @@ If you encounter issues during migration:
 
 3. **Update documentation** to reference only canonical module
 
-4. **Celebrate!** 🎉 You've consolidated to a single auth system
+4. **Celebrate!** Ã°Å¸Å½â€° You've consolidated to a single auth system
 
 ---
 

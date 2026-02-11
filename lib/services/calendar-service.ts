@@ -18,6 +18,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, desc, asc, sql, inArray, count, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -112,7 +113,7 @@ export async function getCalendarById(id: string): Promise<Calendar | null> {
 
     return calendar || null;
   } catch (error) {
-    console.error("Error fetching calendar:", error);
+    logger.error("Error fetching calendar", { error, id });
     throw new Error("Failed to fetch calendar");
   }
 }
@@ -157,7 +158,7 @@ export async function listCalendars(
 
     return results;
   } catch (error) {
-    console.error("Error listing calendars:", error);
+    logger.error("Error listing calendars", { error, filters });
     throw new Error("Failed to list calendars");
   }
 }
@@ -174,7 +175,7 @@ export async function createCalendar(data: NewCalendar): Promise<Calendar> {
 
     return calendar;
   } catch (error) {
-    console.error("Error creating calendar:", error);
+    logger.error("Error creating calendar", { error });
     throw new Error("Failed to create calendar");
   }
 }
@@ -195,7 +196,7 @@ export async function updateCalendar(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating calendar:", error);
+    logger.error("Error updating calendar", { error, id });
     throw new Error("Failed to update calendar");
   }
 }
@@ -211,7 +212,7 @@ export async function deleteCalendar(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting calendar:", error);
+    logger.error("Error deleting calendar", { error, id });
     throw new Error("Failed to delete calendar");
   }
 }
@@ -235,7 +236,7 @@ export async function createEvent(data: Omit<CalendarEvent, "id" | "createdAt" |
 
     return event;
   } catch (error) {
-    console.error("Error creating event:", error);
+    logger.error("Error creating event", { error });
     throw new Error("Failed to create event");
   }
 }
@@ -248,7 +249,7 @@ export async function getEventById(id: string): Promise<CalendarEvent | null> {
     // In production, query calendar_events table
     return null;
   } catch (error) {
-    console.error("Error fetching event:", error);
+    logger.error("Error fetching event", { error, id });
     throw new Error("Failed to fetch event");
   }
 }
@@ -264,7 +265,7 @@ export async function updateEvent(
     // In production, update calendar_events table
     return null;
   } catch (error) {
-    console.error("Error updating event:", error);
+    logger.error("Error updating event", { error, id });
     throw new Error("Failed to update event");
   }
 }
@@ -278,7 +279,7 @@ export async function deleteEvent(id: string, deleteRecurring = false): Promise<
     // If deleteRecurring is true, delete all instances of recurring event
     return true;
   } catch (error) {
-    console.error("Error deleting event:", error);
+    logger.error("Error deleting event", { error, id });
     throw new Error("Failed to delete event");
   }
 }
@@ -299,7 +300,7 @@ export async function listEvents(
     // In production, query calendar_events table with filters
     return [];
   } catch (error) {
-    console.error("Error listing events:", error);
+    logger.error("Error listing events", { error, calendarId });
     throw new Error("Failed to list events");
   }
 }
@@ -317,7 +318,7 @@ export async function getEventsForDateRange(
     // Filter by calendar IDs and date range
     return [];
   } catch (error) {
-    console.error("Error fetching events for date range:", error);
+    logger.error("Error fetching events for date range", { error, calendarIds });
     throw new Error("Failed to fetch events for date range");
   }
 }
@@ -347,7 +348,7 @@ export async function generateRecurringInstances(
     const rruleParts = parseRRule(rruleString);
     
     if (!rruleParts.FREQ) {
-      console.warn(`Invalid RRULE: ${rruleString}`);
+      logger.warn("Invalid RRULE", { rruleString });
       return [];
     }
 
@@ -399,7 +400,7 @@ export async function generateRecurringInstances(
           currentDate.setFullYear(currentDate.getFullYear() + interval);
           break;
         default:
-          console.warn(`Unsupported frequency: ${rruleParts.FREQ}`);
+          logger.warn("Unsupported frequency", { frequency: rruleParts.FREQ });
           return instances;
       }
 
@@ -413,7 +414,7 @@ export async function generateRecurringInstances(
 
     return instances;
   } catch (error) {
-    console.error("Error generating recurring instances:", error);
+    logger.error("Error generating recurring instances", { error, eventId });
     throw new Error("Failed to generate recurring instances");
   }
 }
@@ -470,7 +471,7 @@ export async function addRecurringException(
 
     return await updateEvent(eventId, { exceptionDates });
   } catch (error) {
-    console.error("Error adding recurring exception:", error);
+    logger.error("Error adding recurring exception", { error, eventId });
     throw new Error("Failed to add recurring exception");
   }
 }
@@ -504,7 +505,7 @@ export async function updateRecurringInstance(
 
     return newEvent;
   } catch (error) {
-    console.error("Error updating recurring instance:", error);
+    logger.error("Error updating recurring instance", { error, eventId });
     throw new Error("Failed to update recurring instance");
   }
 }
@@ -530,7 +531,7 @@ export async function addAttendee(
 
     return newAttendee;
   } catch (error) {
-    console.error("Error adding attendee:", error);
+    logger.error("Error adding attendee", { error, eventId });
     throw new Error("Failed to add attendee");
   }
 }
@@ -546,7 +547,7 @@ export async function updateAttendeeResponse(
     // In production, update event_attendees table
     return null;
   } catch (error) {
-    console.error("Error updating attendee response:", error);
+    logger.error("Error updating attendee response", { error, attendeeId });
     throw new Error("Failed to update attendee response");
   }
 }
@@ -559,7 +560,7 @@ export async function removeAttendee(attendeeId: string): Promise<boolean> {
     // In production, delete from event_attendees table
     return true;
   } catch (error) {
-    console.error("Error removing attendee:", error);
+    logger.error("Error removing attendee", { error, attendeeId });
     throw new Error("Failed to remove attendee");
   }
 }
@@ -572,7 +573,7 @@ export async function getEventAttendees(eventId: string): Promise<EventAttendee[
     // In production, query event_attendees table
     return [];
   } catch (error) {
-    console.error("Error fetching event attendees:", error);
+    logger.error("Error fetching event attendees", { error, eventId });
     throw new Error("Failed to fetch event attendees");
   }
 }
@@ -595,7 +596,7 @@ export async function listMeetingRooms(
     // In production, query meeting_rooms table
     return [];
   } catch (error) {
-    console.error("Error listing meeting rooms:", error);
+    logger.error("Error listing meeting rooms", { error, filters });
     throw new Error("Failed to list meeting rooms");
   }
 }
@@ -613,7 +614,7 @@ export async function checkRoomAvailability(
     // Check for overlapping bookings
     return true;
   } catch (error) {
-    console.error("Error checking room availability:", error);
+    logger.error("Error checking room availability", { error, roomId });
     throw new Error("Failed to check room availability");
   }
 }
@@ -646,7 +647,7 @@ export async function bookMeetingRoom(
 
     return booking;
   } catch (error) {
-    console.error("Error booking meeting room:", error);
+    logger.error("Error booking meeting room", { error, roomId });
     throw new Error("Failed to book meeting room");
   }
 }
@@ -659,7 +660,7 @@ export async function cancelRoomBooking(bookingId: string): Promise<boolean> {
     // In production, delete from room_bookings table
     return true;
   } catch (error) {
-    console.error("Error canceling room booking:", error);
+    logger.error("Error canceling room booking", { error, bookingId });
     throw new Error("Failed to cancel room booking");
   }
 }
@@ -686,7 +687,7 @@ export async function getUserAvailability(
 
     return slots;
   } catch (error) {
-    console.error("Error fetching user availability:", error);
+    logger.error("Error fetching user availability", { error, userId });
     throw new Error("Failed to fetch user availability");
   }
 }
@@ -710,7 +711,7 @@ export async function findCommonAvailability(
 
     return commonSlots;
   } catch (error) {
-    console.error("Error finding common availability:", error);
+    logger.error("Error finding common availability", { error, userIds });
     throw new Error("Failed to find common availability");
   }
 }
@@ -748,7 +749,7 @@ export async function syncExternalCalendar(
       syncedEvents: 0,
     };
   } catch (error) {
-    console.error("Error syncing external calendar:", error);
+    logger.error("Error syncing external calendar", { error, calendarId, provider });
 
     await updateCalendar(calendarId, {
       syncStatus: "failed",
@@ -783,7 +784,7 @@ export async function enableCalendarSync(
 
     return updated;
   } catch (error) {
-    console.error("Error enabling calendar sync:", error);
+    logger.error("Error enabling calendar sync", { error, calendarId, provider });
     throw new Error("Failed to enable calendar sync");
   }
 }
@@ -798,7 +799,7 @@ export async function disableCalendarSync(calendarId: string): Promise<Calendar 
       syncStatus: "disconnected",
     });
   } catch (error) {
-    console.error("Error disabling calendar sync:", error);
+    logger.error("Error disabling calendar sync", { error, calendarId });
     throw new Error("Failed to disable calendar sync");
   }
 }
@@ -826,7 +827,7 @@ export async function addEventReminder(
 
     return reminder;
   } catch (error) {
-    console.error("Error adding event reminder:", error);
+    logger.error("Error adding event reminder", { error, eventId });
     throw new Error("Failed to add event reminder");
   }
 }
@@ -845,7 +846,7 @@ export async function getPendingReminders(
 
     return [];
   } catch (error) {
-    console.error("Error fetching pending reminders:", error);
+    logger.error("Error fetching pending reminders", { error, lookAheadMinutes });
     throw new Error("Failed to fetch pending reminders");
   }
 }
@@ -878,7 +879,12 @@ export async function getCalendarStatistics(
       busyHours: 0,
     };
   } catch (error) {
-    console.error("Error fetching calendar statistics:", error);
+    logger.error("Error fetching calendar statistics", {
+      error,
+      calendarId,
+      startDate,
+      endDate,
+    });
     throw new Error("Failed to fetch calendar statistics");
   }
 }

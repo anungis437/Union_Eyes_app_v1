@@ -124,13 +124,13 @@ Promise<ActionState>
 import { createProfile, deleteProfile, getAllProfiles, getProfileByUserId, updateProfile } from "@/db/queries/profiles-queries";
 import { InsertProfile, SelectProfile } from "@/db/schema/profiles-schema";
 import { ActionState } from "@/types";
-import console from "console";
+import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 
 export async function createProfileAction(data: InsertProfile): Promise<ActionState<SelectProfile>> {
   try {
     const newProfile = await createProfile(data);
-    console.log("New profile created", newProfile);
+    logger.info("New profile created", { profileId: newProfile?.userId });
     revalidatePath("/");
     return { status: "success", message: "Profile created successfully", data: newProfile };
   } catch (error) {

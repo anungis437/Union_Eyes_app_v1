@@ -73,8 +73,7 @@ export default function CrossUnionAnalyticsPage() {
         setPrecedentStats(precedentData);
         setOrgActivity(orgData);
       } catch (error) {
-        console.error("Error fetching analytics:", error);
-      } finally {
+} finally {
         setIsLoading(false);
       }
     };
@@ -494,7 +493,7 @@ export default function CrossUnionAnalyticsPage() {
                     <div className="flex-1">
                       <p className="font-medium">{arb.arbitratorName}</p>
                       <p className="text-sm text-muted-foreground">
-                        {arb.count} cases • {arb.totalCitations} citations
+                        {arb.count} cases â€¢ {arb.totalCitations} citations
                       </p>
                     </div>
                     <div className="text-right text-sm">
@@ -559,7 +558,7 @@ export default function CrossUnionAnalyticsPage() {
                   metricLabel: "accesses",
                   secondaryMetric: org.views,
                   secondaryMetricLabel: "views",
-                  badge: `${org.clauseAccesses} clauses • ${org.precedentAccesses} precedents`,
+                  badge: `${org.clauseAccesses} clauses â€¢ ${org.precedentAccesses} precedents`,
                   badgeVariant: "secondary" as const,
                 })) || []
               }
@@ -577,7 +576,7 @@ export default function CrossUnionAnalyticsPage() {
                   metricLabel: "resources",
                   secondaryMetric: org.clauseViews + org.precedentViews,
                   secondaryMetricLabel: "views",
-                  badge: `${org.totalClauses} clauses • ${org.totalPrecedents} precedents`,
+                  badge: `${org.totalClauses} clauses â€¢ ${org.totalPrecedents} precedents`,
                   badgeVariant: "outline" as const,
                 })) || []
               }

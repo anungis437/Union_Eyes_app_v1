@@ -264,20 +264,17 @@ export default function AlertManagementDashboard() {
 
   // Toggle alert rule
   const toggleAlertRule = (id: string) => {
-    console.log('Toggling alert rule:', id);
-    // API call would go here
+// API call would go here
   };
 
   // Delete alert rule
   const deleteAlertRule = (id: string) => {
-    console.log('Deleting alert rule:', id);
-    // API call would go here
+// API call would go here
   };
 
   // Test alert rule
   const testAlertRule = (id: string) => {
-    console.log('Testing alert rule:', id);
-    // API call would go here
+// API call would go here
   };
 
   return (

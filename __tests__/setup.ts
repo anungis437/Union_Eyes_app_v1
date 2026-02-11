@@ -188,8 +188,9 @@ Element.prototype.getBoundingClientRect = vi.fn().mockReturnValue({
 });
 
 // Suppress console errors for expected test failures
-const originalConsoleError = console.error;
-console.error = (...args) => {
+const consoleRef = globalThis.console;
+const originalConsoleError = consoleRef.error;
+consoleRef.error = (...args) => {
   // Suppress React 18 hydration warnings in tests
   if (
     typeof args[0] === 'string' &&
@@ -200,7 +201,7 @@ console.error = (...args) => {
   ) {
     return;
   }
-  originalConsoleError.apply(console, args);
+  originalConsoleError.apply(consoleRef, args);
 };
 
 // Clear all mocks after each test

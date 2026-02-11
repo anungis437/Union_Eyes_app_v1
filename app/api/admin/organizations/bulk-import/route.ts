@@ -1,7 +1,7 @@
 /**
  * Bulk Import Organizations API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * 
@@ -332,8 +332,7 @@ export const POST = async (request: NextRequest) => {
           parentSlugMap.set(row.slug, newOrg.id);
           createdOrgs.push(newOrg);
         } catch (error) {
-          console.error("Error creating organization:", error);
-          validationErrors.push({
+validationErrors.push({
             row: validRows.indexOf(row) + 2,
             field: "general",
             message: error instanceof Error ? error.message : "Failed to create organization",
@@ -349,8 +348,7 @@ export const POST = async (request: NextRequest) => {
         message: `Successfully imported ${createdOrgs.length} organization(s)`,
       });
     } catch (error) {
-      console.error("Error bulk importing organizations:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to bulk import organizations" },
         { status: 500 }
       );

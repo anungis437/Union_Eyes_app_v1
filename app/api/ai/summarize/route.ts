@@ -61,8 +61,7 @@ export const POST = async (request: NextRequest) => {
         // 2. Get OpenAI API key from environment
         const openaiApiKey = process.env.OPENAI_API_KEY;
         if (!openaiApiKey) {
-          console.error('OPENAI_API_KEY not configured');
-          return NextResponse.json(
+return NextResponse.json(
             { error: 'AI service not configured' },
             { status: 503 }
           );
@@ -128,8 +127,7 @@ export const POST = async (request: NextRequest) => {
       // 9. Validate summary structure
       const validation = validateSummaryStructure(summaryText);
       if (!validation.valid) {
-        console.warn('Generated summary missing sections:', validation.missingSections);
-      }
+}
 
       // 10. Store summary in database
       const { data: summary, error: summaryError } = await supabase
@@ -150,8 +148,7 @@ export const POST = async (request: NextRequest) => {
         .single();
 
       if (summaryError) {
-        console.error('Failed to store summary:', summaryError);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to store summary', details: summaryError.message },
           { status: 500 }
         );
@@ -170,9 +167,7 @@ export const POST = async (request: NextRequest) => {
         warning: 'This is an AI-generated draft. Human review required before use.',
       });
     } catch (error) {
-      console.error('AI summarize error:', error);
-
-      // Validation error
+// Validation error
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           {
@@ -224,8 +219,7 @@ export const GET = async (request: NextRequest) => {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Failed to fetch summaries:', error);
-          return NextResponse.json(
+return NextResponse.json(
             { error: 'Failed to fetch summaries', details: error.message },
             { status: 500 }
           );
@@ -236,9 +230,7 @@ export const GET = async (request: NextRequest) => {
           summaries: summaries || [],
         });
       } catch (error) {
-        console.error('AI summary fetch error:', error);
-
-        return NextResponse.json(
+return NextResponse.json(
           {
             error: 'Failed to fetch summaries',
             message: error instanceof Error ? error.message : 'Unknown error',

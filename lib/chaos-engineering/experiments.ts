@@ -113,19 +113,11 @@ export async function runExperiment(
   experiment: ChaosExperiment,
   chaos: ChaosMonkey
 ): Promise<void> {
-  console.log(`\n🔬 Running experiment: ${experiment.name}`);
-  console.log(`📋 Description: ${experiment.description}`);
-  console.log(`💡 Hypothesis: ${experiment.hypothesis}\n`);
-
-  try {
+try {
     await experiment.method(chaos);
-    console.log(`✅ Experiment completed successfully\n`);
-  } catch (error) {
-    console.error(`❌ Experiment failed:`, error);
-    
-    if (experiment.rollback) {
-      console.log(`⏮️  Rolling back...`);
-      experiment.rollback();
+} catch (error) {
+if (experiment.rollback) {
+experiment.rollback();
     }
   }
 }
@@ -134,13 +126,9 @@ export async function runExperiment(
  * Run all experiments sequentially
  */
 export async function runAllExperiments(chaos: ChaosMonkey): Promise<void> {
-  console.log('🚀 Starting chaos engineering experiments...\n');
-
-  for (const experiment of CHAOS_EXPERIMENTS) {
+for (const experiment of CHAOS_EXPERIMENTS) {
     await runExperiment(experiment, chaos);
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
-
-  console.log('🎉 All experiments completed!');
 }
 

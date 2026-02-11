@@ -84,12 +84,9 @@ class SyncEngine {
     // Listen to network changes
     networkStatus.addConnectionListener((isConnected) => {
       if (isConnected) {
-        console.log('[SyncEngine] Network connected, triggering sync');
         this.syncAll();
       }
     });
-
-    console.log('[SyncEngine] Initialized');
   }
 
   /**
@@ -142,7 +139,6 @@ class SyncEngine {
    */
   registerStrategy(strategy: EntitySyncStrategy): void {
     this.strategies.set(strategy.entity, strategy);
-    console.log(`[SyncEngine] Registered strategy for ${strategy.entity}`);
   }
 
   /**
@@ -155,7 +151,6 @@ class SyncEngine {
 
     this.syncInterval = setInterval(() => {
       if (networkStatus.isOnline() && !this.isSyncing) {
-        console.log('[SyncEngine] Auto-sync triggered');
         this.syncAll();
       }
     }, this.config.syncInterval);
@@ -168,7 +163,6 @@ class SyncEngine {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
-      console.log('[SyncEngine] Auto-sync stopped');
     }
   }
 
@@ -177,19 +171,16 @@ class SyncEngine {
    */
   async syncAll(force: boolean = false): Promise<void> {
     if (this.isSyncing && !force) {
-      console.log('[SyncEngine] Sync already in progress');
       return;
     }
 
     if (!networkStatus.isOnline()) {
-      console.log('[SyncEngine] Offline, skipping sync');
       return;
     }
 
     this.isSyncing = true;
     const startTime = Date.now();
 
-    console.log('[SyncEngine] Starting full sync...');
     this.notifyListeners({ issyncing: true, pendingChanges: 0, failedOperations: 0 }, 'started');
 
     try {
@@ -201,9 +192,7 @@ class SyncEngine {
 
       // Process offline queue
       await offlineQueue.processQueue();
-
       const duration = Date.now() - startTime;
-      console.log(`[SyncEngine] Full sync completed in ${duration}ms`);
 
       this.notifyListeners(
         {
@@ -216,7 +205,6 @@ class SyncEngine {
         'completed'
       );
     } catch (error: any) {
-      console.error('[SyncEngine] Full sync failed:', error);
       this.notifyListeners(
         {
           issyncing: false,
@@ -242,11 +230,9 @@ class SyncEngine {
     }
 
     if (!networkStatus.isOnline()) {
-      console.log(`[SyncEngine] Offline, skipping ${entity} sync`);
       return;
     }
 
-    console.log(`[SyncEngine] Syncing ${entity} (${direction})`);
     this.updateStatus(entity, { issyncing: true, pendingChanges: 0, failedOperations: 0 });
 
     try {
@@ -266,9 +252,7 @@ class SyncEngine {
         failedOperations: 0,
       });
 
-      console.log(`[SyncEngine] ${entity} sync completed`);
     } catch (error: any) {
-      console.error(`[SyncEngine] ${entity} sync failed:`, error);
       this.updateStatus(entity, {
         issyncing: false,
         lastSyncAt: Date.now(),
@@ -310,11 +294,8 @@ class SyncEngine {
     });
 
     if (unsynced.length === 0) {
-      console.log(`[SyncEngine] No unsynced ${entity} to push`);
       return;
     }
-
-    console.log(`[SyncEngine] Pushing ${unsynced.length} ${entity} to server`);
 
     // Batch push
     const batches = this.chunkArray(unsynced, this.config.batchSize);
@@ -332,8 +313,7 @@ class SyncEngine {
 
       try {
         await this.pushBatch(strategy, batch);
-      } catch (error) {
-        console.error(`[SyncEngine] Failed to push ${entity} batch ${i + 1}:`, error);
+      } catch {
         // Continue with next batch
       }
     }
@@ -365,8 +345,6 @@ class SyncEngine {
           }
         }
       } catch (error: any) {
-        console.error(`[SyncEngine] Failed to push ${entity}:${itemId}:`, error);
-
         // Queue for retry
         await offlineQueue.enqueue({
           type: OperationType.UPDATE,
@@ -406,8 +384,6 @@ class SyncEngine {
     // Get last sync timestamp for delta sync
     const lastSync = localDB.getSimple(lastSyncKey) as number | undefined;
     const url = pullEndpoint || endpoint;
-
-    console.log(`[SyncEngine] Pulling ${entity} from server (delta: ${!!lastSync})`);
 
     try {
       let page = 0;
@@ -451,16 +427,13 @@ class SyncEngine {
 
         // Check if we should continue (bandwidth-aware)
         if (!networkStatus.shouldSyncNow({ minQuality: NetworkQuality.GOOD })) {
-          console.log(`[SyncEngine] Network quality degraded, pausing ${entity} pull`);
           break;
         }
       }
 
       // Update last sync timestamp
       localDB.setSimple(lastSyncKey, Date.now());
-      console.log(`[SyncEngine] Pulled ${totalPulled} ${entity} from server`);
     } catch (error: any) {
-      console.error(`[SyncEngine] Failed to pull ${entity}:`, error);
       throw error;
     }
   }
@@ -603,8 +576,7 @@ class SyncEngine {
     this.listeners.forEach((listener) => {
       try {
         listener(status, event);
-      } catch (error) {
-        console.error('[SyncEngine] Listener error:', error);
+      } catch {
       }
     });
   }
@@ -617,7 +589,6 @@ class SyncEngine {
     this.listeners.clear();
     this.syncStatus.clear();
     this.strategies.clear();
-    console.log('[SyncEngine] Destroyed');
   }
 }
 

@@ -190,8 +190,6 @@ function configureSecurityMiddleware(app) {
         extended: true, 
         limit: '10mb' 
     }));
-
-    console.log('✅ Security middleware configured successfully');
 }
 
 /**
@@ -242,9 +240,7 @@ function configureAuthMiddleware() {
 
             next();
         } catch (error) {
-            console.error('Token verification error:', error);
-            
-            if (error.name === 'JsonWebTokenError') {
+if (error.name === 'JsonWebTokenError') {
                 return res.status(401).json({
                     error: 'Invalid token',
                     message: 'Please log in again'
@@ -432,10 +428,7 @@ function configureSecurityLogging() {
             userRole: req.user?.role,
             ...additionalData
         };
-
-        console.log('SECURITY_EVENT:', JSON.stringify(securityLog));
-        
-        // In production, send to security monitoring system
+// In production, send to security monitoring system
         if (process.env.NODE_ENV === 'production') {
             // Send to Azure Monitor, Sentry, or security SIEM
         }

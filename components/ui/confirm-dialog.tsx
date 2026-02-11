@@ -80,8 +80,7 @@ export function ConfirmDialog({
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      console.error("Confirmation action failed:", error);
-    }
+}
   };
 
   return (

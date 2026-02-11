@@ -15,6 +15,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { SecurityAuditService } from './securityAuditService';
 import type { AuditLog, AuditLogFilters } from './securityAuditService';
 
+import { logger } from '../utils/logger';
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
@@ -391,7 +392,7 @@ export class ComplianceReportingService {
 
       return { success: true, data: report };
     } catch (error) {
-      console.error('Failed to generate SOC2 report:', error);
+      logger.error('Failed to generate SOC2 report:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -814,7 +815,7 @@ export class ComplianceReportingService {
 
       return { success: true, data: report };
     } catch (error) {
-      console.error('Failed to generate GDPR report:', error);
+      logger.error('Failed to generate GDPR report:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -975,7 +976,7 @@ export class ComplianceReportingService {
 
       return { success: true, data: report };
     } catch (error) {
-      console.error('Failed to generate HIPAA report:', error);
+      logger.error('Failed to generate HIPAA report:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -1065,7 +1066,7 @@ export class ComplianceReportingService {
 
       return { success: true, data: report };
     } catch (error) {
-      console.error('Failed to generate user activity report:', error);
+      logger.error('Failed to generate user activity report:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'

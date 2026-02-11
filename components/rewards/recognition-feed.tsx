@@ -47,8 +47,7 @@ export function RecognitionFeed({
       
       setHasMore(data.hasMore);
     } catch (error) {
-      console.error('Failed to fetch awards:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -104,14 +103,12 @@ export function RecognitionFeed({
         })
       );
     } catch (error) {
-      console.error('Failed to react:', error);
-    }
+}
   };
 
   const handleComment = (awardId: string) => {
     // Open comment dialog (to be implemented)
-    console.log('Comment on award:', awardId);
-  };
+};
 
   const handleRefresh = () => {
     fetchAwards(true);

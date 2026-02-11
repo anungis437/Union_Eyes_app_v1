@@ -23,8 +23,7 @@ export function useRealtimePresence({ organizationId, user, enabled = true }) {
                 setIsConnected(true);
             }
             catch (error) {
-                console.error('Failed to setup presence tracking:', error);
-                setIsConnected(false);
+setIsConnected(false);
             }
         };
         // Listen for presence events

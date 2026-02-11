@@ -11,6 +11,7 @@
 
 import { Resend } from 'resend';
 import { Decimal } from 'decimal.js';
+import { logger } from '@/lib/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -62,9 +63,12 @@ export class FinancialEmailService {
         html: this.generatePaymentConfirmationHTML(params),
       });
 
-      console.log(`Payment confirmation email sent to ${params.to} for transaction ${params.transactionId}`);
+      logger.info('Payment confirmation email sent', {
+        to: params.to,
+        transactionId: params.transactionId,
+      });
     } catch (error) {
-      console.error('Failed to send payment confirmation email:', error);
+      logger.error('Failed to send payment confirmation email', { error });
       throw error;
     }
   }
@@ -81,9 +85,9 @@ export class FinancialEmailService {
         html: this.generatePaymentFailureHTML(params),
       });
 
-      console.log(`Payment failure email sent to ${params.to}`);
+      logger.info('Payment failure email sent', { to: params.to });
     } catch (error) {
-      console.error('Failed to send payment failure email:', error);
+      logger.error('Failed to send payment failure email', { error });
       throw error;
     }
   }
@@ -104,9 +108,9 @@ export class FinancialEmailService {
         }] : undefined,
       });
 
-      console.log(`Invoice email sent to ${params.to} for invoice ${params.invoiceNumber}`);
+      logger.info('Invoice email sent', { to: params.to, invoiceNumber: params.invoiceNumber });
     } catch (error) {
-      console.error('Failed to send invoice email:', error);
+      logger.error('Failed to send invoice email', { error });
       throw error;
     }
   }
@@ -145,7 +149,7 @@ export class FinancialEmailService {
         }] : undefined,
       });
     } catch (error) {
-      console.error('Failed to send receipt email:', error);
+      logger.error('Failed to send receipt email', { error });
       throw error;
     }
   }
@@ -187,7 +191,7 @@ export class FinancialEmailService {
         `,
       });
     } catch (error) {
-      console.error('Failed to send payment reminder email:', error);
+      logger.error('Failed to send payment reminder email', { error });
       throw error;
     }
   }
@@ -221,7 +225,7 @@ export class FinancialEmailService {
         `,
       });
     } catch (error) {
-      console.error('Failed to send autopay confirmation email:', error);
+      logger.error('Failed to send autopay confirmation email', { error });
       throw error;
     }
   }
@@ -251,7 +255,7 @@ export class FinancialEmailService {
         `,
       });
     } catch (error) {
-      console.error('Failed to send autopay disabled email:', error);
+      logger.error('Failed to send autopay disabled email', { error });
       throw error;
     }
   }

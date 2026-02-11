@@ -7,39 +7,108 @@ export const GET = async (req: NextRequest, { params }: { params: { jobId: strin
   return withRoleAuth('steward', async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
 
-  try {
+    try {
       const jobId = params.jobId;
 
-      // TODO: Implement job status retrieval from job queue
-      // For now, return mock status
-      // In production, this would:
-      // 1. Query jobs table for job details
-      // 2. Get current status from job queue
-      // 3. Return progress (sent/failed counts)
-      // 4. Return estimated completion time
-      // 5. Return any errors encountered
+      // Query newsletter campaigns to get batch job status
+      // Job ID format: "campaign-{campaignId}" or "batch-{timestamp}"
+      let status = 'processing';
+      let progress = {
+        total: 0,
+        sent: 0,
+        failed: 0,
+        pending: 0,
+      };
+      let startedAt = new Date().toISOString();
+      let estimatedCompletion = null;
+      let errors: any[] = [];
+
+      // Check if this is a newsletter campaign job
+      if (jobId.startsWith('campaign-')) {
+        const campaignId = jobId.replace('campaign-', '');
+        
+        const { newsletterCampaigns, newsletterRecipients } = await import('@/db/schema');
+        const { db } = await import('@/db');
+        const { eq, and, sql } = await import('drizzle-orm');
+
+        // Get campaign details
+        const [campaign] = await db
+          .select()
+          .from(newsletterCampaigns)
+          .where(
+            and(
+              eq(newsletterCampaigns.id, campaignId),
+              eq(newsletterCampaigns.organizationId, context.organizationId)
+            )
+          )
+          .limit(1);
+
+        if (campaign) {
+          // Get recipient stats
+          const [stats] = await db
+            .select({
+              total: sql<number>`count(*)::int`,
+              sent: sql<number>`count(*) filter (where status = 'sent')::int`,
+              failed: sql<number>`count(*) filter (where status = 'failed')::int`,
+              pending: sql<number>`count(*) filter (where status = 'pending')::int`,
+            })
+            .from(newsletterRecipients)
+            .where(eq(newsletterRecipients.campaignId, campaignId));
+
+          progress = {
+            total: stats?.total || 0,
+            sent: stats?.sent || 0,
+            failed: stats?.failed || 0,
+            pending: stats?.pending || 0,
+          };
+
+          status = campaign.status === 'sent' ? 'completed' : 
+                   campaign.status === 'sending' ? 'processing' :
+                   campaign.status === 'paused' ? 'paused' :
+                   campaign.status === 'cancelled' ? 'failed' : 'queued';
+
+          startedAt = campaign.sentAt?.toISOString() || campaign.updatedAt?.toISOString() || startedAt;
+
+          // Estimate completion (assume 100 emails per minute)
+          if (progress.pending > 0 && status === 'processing') {
+            const remainingMinutes = Math.ceil(progress.pending / 100);
+            estimatedCompletion = new Date(Date.now() + remainingMinutes * 60000).toISOString();
+          }
+
+          // Get failed recipients as errors
+          if (progress.failed > 0) {
+            const failedRecipients = await db
+              .select({
+                email: newsletterRecipients.email,
+                error: newsletterRecipients.failureReason,
+              })
+              .from(newsletterRecipients)
+              .where(
+                and(
+                  eq(newsletterRecipients.campaignId, campaignId),
+                  eq(newsletterRecipients.status, 'failed')
+                )
+              )
+              .limit(10);
+
+            errors = failedRecipients.map(r => ({
+              recipientEmail: r.email,
+              error: r.error || 'Unknown error',
+            }));
+          }
+        }
+      }
 
       return NextResponse.json({
         jobId,
-        status: 'processing', // queued, processing, completed, failed
-        progress: {
-          total: 100,
-          sent: 45,
-          failed: 2,
-          pending: 53,
-        },
-        startedAt: new Date().toISOString(),
-        estimatedCompletion: new Date(Date.now() + 300000).toISOString(), // +5 minutes
-        errors: [
-          {
-            recipientEmail: 'invalid@example.com',
-            error: 'Invalid email address',
-          },
-        ],
+        status,
+        progress,
+        startedAt,
+        estimatedCompletion,
+        errors,
       });
 
     } catch (error) {
-      console.error('Get batch status error:', error);
       return NextResponse.json(
         { error: 'Failed to get batch status' },
         { status: 500 }

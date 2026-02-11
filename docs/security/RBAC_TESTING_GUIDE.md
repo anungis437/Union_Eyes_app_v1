@@ -2,21 +2,21 @@
 
 **Union Claims Management System**
 
-## ✅ Build Status
+## Ã¢Å“â€¦ Build Status
 
 **Build Completed Successfully!**
 
-- ✅ TypeScript compilation: 0 errors
-- ✅ Import resolution: All paths correct (`@/db/db` fix applied)
-- ✅ All 36 pages generated
-- ✅ API route `/api/auth/role` compiles successfully
-- ✅ Dev server running at <http://localhost:3000>
+- Ã¢Å“â€¦ TypeScript compilation: 0 errors
+- Ã¢Å“â€¦ Import resolution: All paths correct (`@/db/db` fix applied)
+- Ã¢Å“â€¦ All 36 pages generated
+- Ã¢Å“â€¦ API route `/api/auth/role` compiles successfully
+- Ã¢Å“â€¦ Dev server running at <http://localhost:3000>
 
-## 🎯 What Was Implemented
+## Ã°Å¸Å½Â¯ What Was Implemented
 
 ### Role System
 
-- **5 User Roles**: Admin → Union Rep → Staff Rep → Member → Guest (hierarchical)
+- **5 User Roles**: Admin Ã¢â€ â€™ Union Rep Ã¢â€ â€™ Staff Rep Ã¢â€ â€™ Member Ã¢â€ â€™ Guest (hierarchical)
 - **40+ Permissions**: Granular control over features (claims, members, voting, CBA, analytics, etc.)
 - **Role Hierarchy**: Higher roles inherit lower role permissions
 
@@ -44,13 +44,13 @@
 - `app/admin/members/page.tsx` - Added MANAGE_USERS guard
 - `app/admin/voting/page.tsx` - Added MANAGE_VOTING guard
 
-## 🧪 Manual Testing Steps
+## Ã°Å¸Â§Âª Manual Testing Steps
 
 ### Step 1: Test Current User Role
 
 1. Navigate to <http://localhost:3000>
-2. Open browser DevTools (F12) → Console
-3. Run: `fetch('/api/auth/role').then(r => r.json()).then(console.log)`
+2. Open browser DevTools (F12) Ã¢â€ â€™ Console
+3. Run: `fetch('/api/auth/role').then(r => r.json()).then(logger.info)`
 4. Expected output: `{ userId: "user_...", role: "...", success: true }`
 
 **Current User**: `user_35NlrrNcfTv0DMh2kzBHyXZRtpb`
@@ -101,66 +101,66 @@ Refresh the page after setting role. Check sidebar navigation:
 
 Expected navigation items:
 
-- ✅ Dashboard
-- ✅ My Claims
-- ✅ Collective Agreements
-- ✅ Voting
-- ✅ Members
-- ✅ Analytics
-- ✅ Settings
-- ✅ Admin Panel (click to access admin routes)
+- Ã¢Å“â€¦ Dashboard
+- Ã¢Å“â€¦ My Claims
+- Ã¢Å“â€¦ Collective Agreements
+- Ã¢Å“â€¦ Voting
+- Ã¢Å“â€¦ Members
+- Ã¢Å“â€¦ Analytics
+- Ã¢Å“â€¦ Settings
+- Ã¢Å“â€¦ Admin Panel (click to access admin routes)
 
 #### Union Rep Role
 
 Expected navigation items:
 
-- ✅ Dashboard
-- ✅ My Claims
-- ✅ Collective Agreements
-- ✅ Voting
-- ✅ Members
-- ✅ Analytics
-- ✅ Settings
-- ✅ Admin Panel
+- Ã¢Å“â€¦ Dashboard
+- Ã¢Å“â€¦ My Claims
+- Ã¢Å“â€¦ Collective Agreements
+- Ã¢Å“â€¦ Voting
+- Ã¢Å“â€¦ Members
+- Ã¢Å“â€¦ Analytics
+- Ã¢Å“â€¦ Settings
+- Ã¢Å“â€¦ Admin Panel
 
 #### Staff Rep Role
 
 Expected navigation items:
 
-- ✅ Dashboard
-- ✅ My Claims
-- ✅ Collective Agreements
-- ✅ Voting
-- ✅ Members
-- ✅ Analytics
-- ✅ Settings
-- ❌ Admin Panel (should NOT appear)
+- Ã¢Å“â€¦ Dashboard
+- Ã¢Å“â€¦ My Claims
+- Ã¢Å“â€¦ Collective Agreements
+- Ã¢Å“â€¦ Voting
+- Ã¢Å“â€¦ Members
+- Ã¢Å“â€¦ Analytics
+- Ã¢Å“â€¦ Settings
+- Ã¢ÂÅ’ Admin Panel (should NOT appear)
 
 #### Member Role
 
 Expected navigation items:
 
-- ✅ Dashboard
-- ✅ My Claims
-- ✅ Collective Agreements
-- ✅ Voting
-- ✅ Settings
-- ❌ Members (should NOT appear)
-- ❌ Analytics (should NOT appear)
-- ❌ Admin Panel (should NOT appear)
+- Ã¢Å“â€¦ Dashboard
+- Ã¢Å“â€¦ My Claims
+- Ã¢Å“â€¦ Collective Agreements
+- Ã¢Å“â€¦ Voting
+- Ã¢Å“â€¦ Settings
+- Ã¢ÂÅ’ Members (should NOT appear)
+- Ã¢ÂÅ’ Analytics (should NOT appear)
+- Ã¢ÂÅ’ Admin Panel (should NOT appear)
 
 #### Guest Role
 
 Expected navigation items:
 
-- ✅ Dashboard (view only)
-- ✅ Collective Agreements (view only)
-- ❌ My Claims (should NOT appear)
-- ❌ Voting (should NOT appear)
-- ❌ Members (should NOT appear)
-- ❌ Analytics (should NOT appear)
-- ❌ Settings (should NOT appear)
-- ❌ Admin Panel (should NOT appear)
+- Ã¢Å“â€¦ Dashboard (view only)
+- Ã¢Å“â€¦ Collective Agreements (view only)
+- Ã¢ÂÅ’ My Claims (should NOT appear)
+- Ã¢ÂÅ’ Voting (should NOT appear)
+- Ã¢ÂÅ’ Members (should NOT appear)
+- Ã¢ÂÅ’ Analytics (should NOT appear)
+- Ã¢ÂÅ’ Settings (should NOT appear)
+- Ã¢ÂÅ’ Admin Panel (should NOT appear)
 
 ### Step 4: Test Page Access Control
 
@@ -195,13 +195,13 @@ Use browser console or Postman:
 
 ```javascript
 // Test role endpoint
-fetch('/api/auth/role').then(r => r.json()).then(console.log);
+fetch('/api/auth/role').then(r => r.json()).then(logger.info);
 
 // Test claims endpoint (requires authentication)
-fetch('/api/claims?limit=5').then(r => r.json()).then(console.log);
+fetch('/api/claims?limit=5').then(r => r.json()).then(logger.info);
 
 // Test analytics endpoint (requires VIEW_ANALYTICS permission)
-fetch('/api/analytics/dashboard?timeRange=30').then(r => r.json()).then(console.log);
+fetch('/api/analytics/dashboard?timeRange=30').then(r => r.json()).then(logger.info);
 ```
 
 Expected:
@@ -210,7 +210,7 @@ Expected:
 - Unauthenticated requests return 401 Unauthorized
 - Insufficient permissions redirect or return error
 
-## 📋 Test Checklist
+## Ã°Å¸â€œâ€¹ Test Checklist
 
 ### Navigation Tests
 
@@ -245,7 +245,7 @@ Expected:
 - [ ] Member has basic permissions only
 - [ ] Guest has view-only permissions
 
-## 🚨 Known Issues & Pending Work
+## Ã°Å¸Å¡Â¨ Known Issues & Pending Work
 
 ### Pending Guards
 
@@ -272,16 +272,16 @@ The following pages still need permission guards added:
 6. **Feature Flags**: Combine RBAC with feature flags
 7. **Custom Permissions**: Allow creating custom permissions per tenant
 
-## 🔐 Security Best Practices
+## Ã°Å¸â€Â Security Best Practices
 
-✅ **Always validate on server-side** - Client checks are UX, server checks are security
-✅ **Check permissions per action** - Don't just check role, check specific permission
-✅ **Use requirePermission()** in all protected pages and API routes
-✅ **Never expose sensitive data** in API responses for unauthorized users
-✅ **Log permission failures** for security monitoring
-✅ **Use role hierarchy** - Avoid hardcoding specific roles, use permissions
+Ã¢Å“â€¦ **Always validate on server-side** - Client checks are UX, server checks are security
+Ã¢Å“â€¦ **Check permissions per action** - Don't just check role, check specific permission
+Ã¢Å“â€¦ **Use requirePermission()** in all protected pages and API routes
+Ã¢Å“â€¦ **Never expose sensitive data** in API responses for unauthorized users
+Ã¢Å“â€¦ **Log permission failures** for security monitoring
+Ã¢Å“â€¦ **Use role hierarchy** - Avoid hardcoding specific roles, use permissions
 
-## 📚 Additional Resources
+## Ã°Å¸â€œÅ¡ Additional Resources
 
 - **Complete Documentation**: `/docs/RBAC_DOCUMENTATION.md`
 - **Role Definitions**: `/lib/auth/roles.ts`
@@ -289,19 +289,19 @@ The following pages still need permission guards added:
 - **Client Hooks**: `/lib/auth/rbac-hooks.ts`
 - **API Route**: `/app/api/auth/role/route.ts`
 
-## 🎉 Quick Start Testing
+## Ã°Å¸Å½â€° Quick Start Testing
 
 1. **Set your role to admin** (see Step 2 SQL)
 2. **Refresh browser** (<http://localhost:3000>)
 3. **Open browser console** (F12)
-4. **Run**: `fetch('/api/auth/role').then(r => r.json()).then(console.log)`
+4. **Run**: `fetch('/api/auth/role').then(r => r.json()).then(logger.info)`
 5. **Verify**: Should see `{ role: "admin", ... }`
 6. **Check sidebar**: Should see all 8 navigation items including "Admin Panel"
 7. **Click through pages**: All should load without errors
 8. **Try unauthorized access**: Change role to "member", try accessing /admin
 9. **Expected**: Redirected to dashboard with error parameter
 
-## 🐛 Troubleshooting
+## Ã°Å¸Ââ€º Troubleshooting
 
 ### Role API Returns Null/Error
 
@@ -329,20 +329,20 @@ The following pages still need permission guards added:
 - Check: Role has required permission in `ROLE_PERMISSIONS` mapping
 - Verify: Route permission mapping in `ROUTE_PERMISSIONS`
 - Check: Page has `requirePermission()` guard
-- Debug: Add console.log in rbac-server.ts to see which permission is checked
+- Debug: Add console log in rbac-server.ts to see which permission is checked
 
-## ✅ Success Criteria
+## Ã¢Å“â€¦ Success Criteria
 
 **RBAC is working correctly when:**
 
-1. ✅ Build completes with 0 TypeScript errors
-2. ✅ Dev server starts without MODULE_NOT_FOUND errors
-3. ✅ API endpoint `/api/auth/role` returns user's role
-4. ✅ Sidebar shows different items for different roles
-5. ✅ Protected pages redirect unauthorized users
-6. ✅ Role hierarchy is enforced (Admin > Union Rep > Staff Rep > Member > Guest)
-7. ✅ API routes require proper permissions
-8. ✅ No console errors related to role checking
+1. Ã¢Å“â€¦ Build completes with 0 TypeScript errors
+2. Ã¢Å“â€¦ Dev server starts without MODULE_NOT_FOUND errors
+3. Ã¢Å“â€¦ API endpoint `/api/auth/role` returns user's role
+4. Ã¢Å“â€¦ Sidebar shows different items for different roles
+5. Ã¢Å“â€¦ Protected pages redirect unauthorized users
+6. Ã¢Å“â€¦ Role hierarchy is enforced (Admin > Union Rep > Staff Rep > Member > Guest)
+7. Ã¢Å“â€¦ API routes require proper permissions
+8. Ã¢Å“â€¦ No console errors related to role checking
 
 **You're ready for production when:**
 
@@ -354,6 +354,6 @@ The following pages still need permission guards added:
 
 ---
 
-**Current Status**: ✅ **Core RBAC Implementation Complete - Ready for Testing**
+**Current Status**: Ã¢Å“â€¦ **Core RBAC Implementation Complete - Ready for Testing**
 
 Last Updated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")

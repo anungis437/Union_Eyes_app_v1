@@ -64,15 +64,9 @@ export default function SignUpPage() {
     
     try {
       setClaimingProfile(true);
-      
-      console.log(`Attempting to claim profile for user ${userId} with email ${email}`);
-      
-      // Call the action to claim the profile
+// Call the action to claim the profile
       const result = await claimPendingProfile(userId, email, token || undefined);
-      
-      console.log(`Profile claim result:`, result);
-      
-      if (result.success) {
+if (result.success) {
         setClaimResult({
           success: true,
           message: "Your purchase has been successfully linked to your account!"
@@ -94,8 +88,7 @@ export default function SignUpPage() {
         }, 3000);
       }
     } catch (error) {
-      console.error("Error in handleProfileClaiming:", error);
-      setClaimResult({
+setClaimResult({
         success: false,
         message: "An unexpected error occurred while linking your purchase."
       });
@@ -112,39 +105,22 @@ export default function SignUpPage() {
   // Handle redirect after signup completes
   useEffect(() => {
     const checkAndClaimProfile = async () => {
-      console.log("Signup status check:", {
-        isLoaded,
-        signUpStatus: signUp?.status,
-        hasUserId: !!signUp?.createdUserId,
-        hasEmail: !!email,
-        signUpCompleted: isLoaded && signUp?.status === 'complete'
-      });
-      
-      if (isLoaded && signUp?.status === 'complete') {
-        console.log("Signup complete, setting signupComplete state");
-        setSignupComplete(true);
+if (isLoaded && signUp?.status === 'complete') {
+setSignupComplete(true);
         
         // Only attempt to claim if we have both email and userId
         if (email && signUp?.createdUserId) {
-          console.log("Attempting to claim profile", {
-            userId: signUp.createdUserId,
-            email,
-            hasToken: !!token
-          });
-          
-          try {
+try {
             await handleProfileClaiming(signUp.createdUserId);
           } catch (error) {
-            console.error("Error claiming profile:", error);
-            // Even if claiming fails, redirect to dashboard after a short delay
+// Even if claiming fails, redirect to dashboard after a short delay
             setTimeout(() => {
               router.push("/dashboard");
             }, 2000);
           }
         } else {
           // If no purchase to claim, just redirect to dashboard
-          console.log("No email found, redirecting to dashboard without claiming");
-          router.push("/dashboard");
+router.push("/dashboard");
         }
       }
     };

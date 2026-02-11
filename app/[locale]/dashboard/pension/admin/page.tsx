@@ -258,8 +258,7 @@ export default function PensionAdminPage() {
       ]);
 
     } catch (error) {
-      console.error('Error loading admin data:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -478,7 +477,7 @@ export default function PensionAdminPage() {
                       <div>
                         <p className="font-medium">{contribution.memberName}</p>
                         <p className="text-sm text-muted-foreground">
-                          {contribution.period} • {formatCurrency(contribution.amount)}
+                          {contribution.period} â€¢ {formatCurrency(contribution.amount)}
                         </p>
                       </div>
                     </div>
@@ -656,7 +655,7 @@ export default function PensionAdminPage() {
                       <div>
                         <p className="font-medium">{record.memberName}</p>
                         <p className="text-sm text-muted-foreground">
-                          Tax Year {record.taxYear} • Pension Income: {formatCurrency(record.pensionIncome)}
+                          Tax Year {record.taxYear} â€¢ Pension Income: {formatCurrency(record.pensionIncome)}
                         </p>
                         {record.generatedDate && (
                           <p className="text-xs text-muted-foreground">

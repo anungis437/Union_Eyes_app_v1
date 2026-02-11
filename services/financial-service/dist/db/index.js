@@ -65,8 +65,7 @@ async function checkDatabaseConnection() {
         return true;
     }
     catch (error) {
-        console.error('Database connection failed:', error);
-        return false;
+return false;
     }
 }
 // Graceful shutdown

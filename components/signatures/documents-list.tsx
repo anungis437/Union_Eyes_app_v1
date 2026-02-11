@@ -61,8 +61,7 @@ export function DocumentsList({ tenantId }: DocumentsListProps) {
         setDocuments(data);
       }
     } catch (error) {
-      console.error("Failed to load documents:", error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -151,7 +150,7 @@ export function DocumentsList({ tenantId }: DocumentsListProps) {
                   <div className="flex-1">
                     <CardTitle className="text-lg">{doc.title}</CardTitle>
                     <CardDescription>
-                      {doc.fileName} •{" "}
+                      {doc.fileName} â€¢{" "}
                       {formatDistanceToNow(new Date(doc.createdAt), {
                         addSuffix: true,
                       })}
@@ -197,7 +196,7 @@ export function DocumentsList({ tenantId }: DocumentsListProps) {
                   <div className="flex-1">
                     <CardTitle className="text-lg">{document.title}</CardTitle>
                     <CardDescription>
-                      {document.fileName} •{" "}
+                      {document.fileName} â€¢{" "}
                       {formatDistanceToNow(new Date(document.createdAt), {
                         addSuffix: true,
                       })}

@@ -64,8 +64,7 @@ async function getHandler(req: NextRequest, context) {
       count: reports.length,
     });
   } catch (error) {
-    console.error('Get reports error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch reports' },
       { status: 500 }
     );
@@ -135,8 +134,7 @@ async function postHandler(req: NextRequest, context) {
       message: 'Report created successfully',
     }, { status: 201 });
   } catch (error) {
-    console.error('Create report error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create report' },
       { status: 500 }
     );

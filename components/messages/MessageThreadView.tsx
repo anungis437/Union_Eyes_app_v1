@@ -82,8 +82,7 @@ export function MessageThreadView({ threadId, onBack }: MessageThreadViewProps) 
       setThread(data.thread);
       setMessages(data.messages);
     } catch (error) {
-      console.error('Failed to fetch thread:', error);
-      toast.error('Failed to load conversation');
+toast.error('Failed to load conversation');
     } finally {
       setLoading(false);
     }
@@ -124,8 +123,7 @@ export function MessageThreadView({ threadId, onBack }: MessageThreadViewProps) 
       fetchThread();
       toast.success('Message sent');
     } catch (error) {
-      console.error('Failed to send message:', error);
-      toast.error('Failed to send message');
+toast.error('Failed to send message');
     } finally {
       setSending(false);
     }
@@ -210,7 +208,7 @@ export function MessageThreadView({ threadId, onBack }: MessageThreadViewProps) 
                       rel="noopener noreferrer"
                       className="text-xs underline mt-2 block"
                     >
-                      📎 {message.fileName}
+                      ðŸ“Ž {message.fileName}
                     </a>
                   )}
                   <div className="flex items-center justify-end gap-1 mt-1">
@@ -232,7 +230,7 @@ export function MessageThreadView({ threadId, onBack }: MessageThreadViewProps) 
         <div className="border-t p-4">
           {selectedFile && (
             <div className="mb-2 p-2 bg-muted rounded text-sm">
-              📎 {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+              ðŸ“Ž {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
               <Button
                 variant="ghost"
                 size="sm"

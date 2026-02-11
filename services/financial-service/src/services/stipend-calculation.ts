@@ -11,6 +11,7 @@
 
 import { db, schema } from '../db';
 import { eq, and, between, desc, sql, sum } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Configuration constants
 const DEFAULT_MINIMUM_HOURS_PER_WEEK = 20; // Minimum hours to qualify for stipend
@@ -122,7 +123,7 @@ export async function calculateWeeklyStipends(
 
     return eligibilityResults;
   } catch (error: any) {
-    console.error('Stipend calculation error:', error);
+    logger.error('Stipend calculation error', { error, tenantId: request.tenantId, strikeFundId: request.strikeFundId });
     throw new Error(`Failed to calculate stipends: ${error.message}`);
   }
 }
@@ -285,7 +286,7 @@ export async function getMemberDisbursements(
       amount: parseFloat(d.totalAmount),
     }));
   } catch (error: any) {
-    console.error('Get disbursements error:', error);
+    logger.error('Get disbursements error', { error, tenantId, memberId, strikeFundId });
     return [];
   }
 }
@@ -315,7 +316,7 @@ export async function getPendingDisbursements(
       amount: parseFloat(d.totalAmount),
     }));
   } catch (error: any) {
-    console.error('Get pending disbursements error:', error);
+    logger.error('Get pending disbursements error', { error, tenantId, strikeFundId });
     return [];
   }
 }
@@ -365,7 +366,7 @@ export async function getStrikeFundDisbursementSummary(
 
     return summary;
   } catch (error: any) {
-    console.error('Get disbursement summary error:', error);
+    logger.error('Get disbursement summary error', { error, tenantId, strikeFundId });
     return {
       totalPending: 0,
       totalApproved: 0,

@@ -156,8 +156,7 @@ export const POST = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error('Upload reconciliation file error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to upload file' },
         { status: 500 }
       );

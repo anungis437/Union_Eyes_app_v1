@@ -247,7 +247,6 @@ export function ReportBuilder({
           setDataSources(apiDataSources);
         }
       } catch (error) {
-        console.error('Error fetching data sources:', error);
         // Keep using mock data if API fails
       } finally {
         setIsLoadingDataSources(false);
@@ -425,11 +424,9 @@ export function ReportBuilder({
         const data = await response.json();
         setPreviewData(data.results);
       } else {
-        console.error('Preview failed:', await response.text());
         setPreviewData(null);
       }
     } catch (error) {
-      console.error('Preview error:', error);
       setPreviewData(null);
     } finally {
       setPreviewLoading(false);
@@ -991,7 +988,6 @@ export function ReportBuilder({
                       const fieldData = JSON.parse(e.dataTransfer.getData('application/json'));
                       handleFieldSelectFromExplorer(fieldData);
                     } catch (error) {
-                      console.error('Invalid drag data:', error);
                     }
                   }}
                 >

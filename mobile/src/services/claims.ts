@@ -66,8 +66,7 @@ class ClaimsService {
       await localDB.saveMany('claims', response.items);
 
       return response;
-    } catch (error) {
-      console.error('Failed to get claims:', error);
+    } catch {
       // Fallback to local DB (without filters in offline mode)
       return await localDB.findAll<Claim>('claims');
     }
@@ -90,8 +89,7 @@ class ClaimsService {
       await localDB.save('claims', claim);
 
       return claim;
-    } catch (error) {
-      console.error(`Failed to get claim ${id}:`, error);
+    } catch {
       return await localDB.find<Claim>('claims', id);
     }
   }
@@ -163,7 +161,6 @@ class ClaimsService {
 
       return claim;
     } catch (error) {
-      console.error('Failed to create claim:', error);
       throw error;
     }
   }
@@ -220,7 +217,6 @@ class ClaimsService {
       await localDB.save('claims', claim);
       return claim;
     } catch (error) {
-      console.error(`Failed to update claim ${id}:`, error);
       throw error;
     }
   }
@@ -252,7 +248,6 @@ class ClaimsService {
       await claimsApi.deleteClaim(id);
       await localDB.delete('claims', id);
     } catch (error) {
-      console.error(`Failed to delete claim ${id}:`, error);
       throw error;
     }
   }
@@ -272,7 +267,6 @@ class ClaimsService {
       await localDB.save('claims', claim);
       return claim;
     } catch (error) {
-      console.error(`Failed to perform action on claim ${id}:`, error);
       throw error;
     }
   }
@@ -296,8 +290,7 @@ class ClaimsService {
       await localDB.saveMany('claim_comments', response.items);
 
       return response;
-    } catch (error) {
-      console.error(`Failed to get comments for claim ${claimId}:`, error);
+    } catch {
       return await localDB.findAll<ClaimComment>('claim_comments', { where: { claimId } });
     }
   }
@@ -349,7 +342,6 @@ class ClaimsService {
       await localDB.save('claim_comments', { ...comment, claimId });
       return comment;
     } catch (error) {
-      console.error(`Failed to add comment to claim ${claimId}:`, error);
       throw error;
     }
   }
@@ -387,8 +379,7 @@ class ClaimsService {
       try {
         const doc = await claimsApi.uploadClaimDocument(claimId, file);
         uploadedDocs.push(doc);
-      } catch (error) {
-        console.error(`Failed to upload document ${file.name}:`, error);
+      } catch {
       }
     }
 
@@ -455,8 +446,7 @@ class ClaimsService {
             autoSaved: true,
           });
         }
-      } catch (error) {
-        console.error('Auto-save failed:', error);
+      } catch {
       }
     }, DRAFT_AUTOSAVE_INTERVAL);
 
@@ -492,8 +482,7 @@ class ClaimsService {
           this.drafts.set(draft.localId, draft);
         });
       }
-    } catch (error) {
-      console.error('Failed to load drafts:', error);
+    } catch {
     }
   }
 
@@ -504,8 +493,7 @@ class ClaimsService {
     try {
       const drafts = Array.from(this.drafts.values());
       await storage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
-    } catch (error) {
-      console.error('Failed to persist drafts:', error);
+    } catch {
     }
   }
 

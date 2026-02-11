@@ -91,8 +91,8 @@ const PaymentForm = ({ customerId, apiEndpoint, onSuccess, onError }) => {
  *   stripePublishableKey={process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
  *   customerId={organization.stripe_customer_id}
  *   apiEndpoint="/api/billing/payment-methods"
- *   onPaymentMethodAdded={(id) => console.log('Added:', id)}
- *   onPaymentMethodRemoved={(id) => console.log('Removed:', id)}
+ *   onPaymentMethodAdded={(id) => undefined}
+ *   onPaymentMethodRemoved={(id) => undefined}
  * />
  * ```
  */
@@ -177,15 +177,15 @@ export const PaymentMethodManager = ({ stripePublishableKey, customerId, onPayme
         // Return card brand emoji or icon class
         switch (brandLower) {
             case 'visa':
-                return '💳';
+                return 'ðŸ’³';
             case 'mastercard':
-                return '💳';
+                return 'ðŸ’³';
             case 'amex':
-                return '💳';
+                return 'ðŸ’³';
             case 'discover':
-                return '💳';
+                return 'ðŸ’³';
             default:
-                return '💳';
+                return 'ðŸ’³';
         }
     };
     if (isLoading) {

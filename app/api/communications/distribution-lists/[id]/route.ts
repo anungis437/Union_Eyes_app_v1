@@ -9,16 +9,13 @@
  * Version: 1.0.0
  * Created: December 6, 2025
  */
-// TODO: Migrate to withApiAuth wrapper pattern for consistency
-// Original pattern used getCurrentUser() with manual auth checks
-
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterDistributionLists } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 
 const updateListSchema = z.object({
   name: z.string().min(1).optional(),
@@ -36,17 +33,16 @@ const updateListSchema = z.object({
   }).optional(),
 });
 
-export async function GET(
+export const GET = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     const [list] = await db
@@ -55,7 +51,7 @@ export async function GET(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.organizationId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, organizationId)
         )
       );
 
@@ -65,25 +61,23 @@ export async function GET(
 
     return NextResponse.json({ list });
   } catch (error) {
-    console.error('Error fetching distribution list:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch distribution list' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function PUT(
+export const PUT = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -95,7 +89,7 @@ export async function PUT(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.organizationId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, organizationId)
         )
       )
       .returning();
@@ -112,26 +106,23 @@ export async function PUT(
         { status: 400 }
       );
     }
-
-    console.error('Error updating distribution list:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update distribution list' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withOrganizationAuth(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context,
+  params?: { id: string }
+) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+    const { organizationId } = context;
+
+    if (!params?.id) {
+      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     await db
@@ -139,16 +130,15 @@ export async function DELETE(
       .where(
         and(
           eq(newsletterDistributionLists.id, params.id),
-          eq(newsletterDistributionLists.organizationId, user.tenantId)
+          eq(newsletterDistributionLists.organizationId, organizationId)
         )
       );
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting distribution list:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to delete distribution list' },
       { status: 500 }
     );
   }
-}
+});

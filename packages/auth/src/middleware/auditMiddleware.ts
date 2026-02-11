@@ -201,6 +201,7 @@ function extractIpAddress(req: NextRequest): string | undefined {
     undefined
   );
 }
+import { logger } from '../utils/logger';
 
 /**
  * Log API request
@@ -222,7 +223,7 @@ async function logRequest(context: RequestContext): Promise<void> {
       }
     });
   } catch (error) {
-    console.error('Failed to log request:', error);
+    logger.error('Failed to log request:', error);
   }
 }
 
@@ -247,7 +248,7 @@ async function logResponse(context: RequestContext, res: NextResponse): Promise<
       }
     });
   } catch (error) {
-    console.error('Failed to log response:', error);
+    logger.error('Failed to log response:', error);
   }
 }
 
@@ -269,7 +270,7 @@ async function logError(context: RequestContext, error: any): Promise<void> {
       }
     });
   } catch (err) {
-    console.error('Failed to log error:', err);
+    logger.error('Failed to log error:', err);
   }
 }
 
@@ -287,9 +288,9 @@ async function detectRequestAnomalies(context: RequestContext): Promise<void> {
     // - Suspicious patterns (e.g., scanning)
     
     // For now, just log that we're checking
-    console.log(`Checking anomalies for user ${context.userId}`);
+    logger.debug('Checking anomalies for user', { userId: context.userId });
   } catch (error) {
-    console.error('Failed to detect anomalies:', error);
+    logger.error('Failed to detect anomalies:', error);
   }
 }
 

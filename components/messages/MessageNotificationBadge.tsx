@@ -24,8 +24,7 @@ export function MessageNotificationBadge() {
         const data = await response.json();
         setUnreadCount(data.unreadCount);
       } catch (error) {
-        console.error('Failed to fetch unread count:', error);
-      }
+}
     };
 
     fetchUnreadCount();

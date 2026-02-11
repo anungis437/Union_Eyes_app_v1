@@ -62,8 +62,7 @@ export function PublicPageRenderer({ pageSlug }: PublicPageRendererProps) {
         updateMetaTag('og:image', data.ogImage, 'property');
       }
     } catch (error) {
-      console.error('Error fetching page:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };

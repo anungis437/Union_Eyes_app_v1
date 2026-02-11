@@ -16,6 +16,7 @@ import { claimUpdates, grievanceTransitions, claims, organizationMembers, users 
 import { eq, and, inArray, desc } from 'drizzle-orm';
 import { detectSignals, type CaseForSignals } from './lro-signals';
 import { NotificationService } from '@/lib/services/notification-service';
+import { logger } from '@/lib/logger';
 
 export type VisibilityScope = 'member' | 'staff' | 'admin' | 'system';
 
@@ -216,7 +217,7 @@ export async function addCaseEvent(payload: {
     await recomputeSignalsForCase(payload.claimId);
   } catch (error) {
     // Log error but don't fail timeline insertion
-    console.error(`[PR #13] Signal recomputation failed for case ${payload.claimId}:`, error);
+    logger.error('Signal recomputation failed for case', { error, claimId: payload.claimId });
   }
 
   return update.updateId;
@@ -261,7 +262,7 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
     .limit(1);
 
   if (!claim.length) {
-    console.warn(`[PR #13] Cannot recompute signals: Claim ${claimId} not found`);
+    logger.warn('Cannot recompute signals: Claim not found', { claimId });
     return;
   }
 
@@ -307,15 +308,19 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
 
   // Log signal changes (production: store in database)
   if (signals.length > 0) {
-    console.log(`[PR #13] Detected ${signals.length} signals for case ${claimId}:`);
-    signals.forEach(s => {
-      console.log(`  - [${s.severity.toUpperCase()}] ${s.title}`);
+    logger.info('Detected signals for case', {
+      claimId,
+      signalCount: signals.length,
+      signals: signals.map(s => ({ severity: s.severity, title: s.title })),
     });
 
     // Send notifications for critical signals
     const criticalSignals = signals.filter(s => s.severity === 'critical');
     if (criticalSignals.length > 0) {
-      console.log(`[PR #13] ⚠️  ${criticalSignals.length} CRITICAL signals detected!`);
+      logger.warn('Critical signals detected', {
+        claimId,
+        criticalCount: criticalSignals.length,
+      });
       
       // Send notification to assigned officer
       if (claimData.assignedTo) {
@@ -351,12 +356,12 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
             });
           }
         } catch (error) {
-          console.error('Failed to send critical signal notification:', error);
+          logger.error('Failed to send critical signal notification', { error, claimId });
         }
       }
     }
   } else {
-    console.log(`[PR #13] No signals detected for case ${claimId} (all clear)`);
+    logger.info('No signals detected for case', { claimId });
   }
 
   // Store signals in database with lastComputedAt timestamp
@@ -378,9 +383,9 @@ async function recomputeSignalsForCase(claimId: string): Promise<void> {
       },
     });
     
-    console.log(`[PR #13] ✅ Stored ${signals.length} signals for case ${claimId}`);
+    logger.info('Stored signals for case', { claimId, signalCount: signals.length });
   } catch (error) {
-    console.error(`[PR #13] ❌ Failed to store signals for case ${claimId}:`, error);
+    logger.error('Failed to store signals for case', { error, claimId });
   }
 }
 

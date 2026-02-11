@@ -113,8 +113,7 @@ export default function NewOrganizationPage() {
         const data = await response.json();
         setAvailableOrganizations(data.data || []);
       } catch (error) {
-        console.error("Failed to load organizations:", error);
-      }
+}
     };
     loadOrganizations();
   }, []);

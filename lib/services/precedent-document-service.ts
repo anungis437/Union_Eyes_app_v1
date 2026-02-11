@@ -4,6 +4,7 @@
  */
 
 import { put, del } from '@vercel/blob';
+import { logger } from '@/lib/logger';
 
 export interface DocumentUploadResult {
   url: string;
@@ -48,7 +49,12 @@ export async function uploadPrecedentDocument(
       size: file instanceof Blob ? file.size : file.length, // Blob has size, Buffer has length
     };
   } catch (error) {
-    console.error('[PrecedentDocumentService] Upload failed:', error);
+    logger.error('[PrecedentDocumentService] Upload failed', {
+      error,
+      precedentId: options.precedentId,
+      organizationId: options.organizationId,
+      filename: options.filename,
+    });
     throw new Error('Failed to upload document to blob storage');
   }
 }
@@ -60,7 +66,7 @@ export async function deletePrecedentDocument(url: string): Promise<void> {
   try {
     await del(url);
   } catch (error) {
-    console.error('[PrecedentDocumentService] Delete failed:', error);
+    logger.error('[PrecedentDocumentService] Delete failed', { error, url });
     throw new Error('Failed to delete document from blob storage');
   }
 }

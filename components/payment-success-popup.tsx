@@ -48,27 +48,19 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
       setIsLoading(true);
 
       if (!userId) {
-        console.error('Cannot refresh profile: No user ID available');
-        return;
+return;
       }
-      
-      console.log('Refreshing profile data...');
-      
-      // Use the server action instead of fetch
+// Use the server action instead of fetch
       const result = await getProfileByUserIdAction(userId);
       
       if (result.isSuccess && result.data) {
-        console.log('Fetched updated profile data:', result.data);
-        if (result.data.membership === 'pro') {
-          console.log('Pro membership confirmed in database!');
-          setProfile(result.data);
+if (result.data.membership === 'pro') {
+setProfile(result.data);
           return true;
         } else {
-          console.log('Database still shows membership as:', result.data.membership);
-          // If we've tried a few times but database still shows free, use optimistic UI
+// If we've tried a few times but database still shows free, use optimistic UI
           if (retryCount >= 2) {
-            console.log('Using optimistic UI for pro membership after multiple retries');
-            setProfile({
+setProfile({
               ...result.data,
               membership: "pro",
               usageCredits: 1000,
@@ -79,12 +71,10 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
           return false;
         }
       } else {
-        console.error('Error fetching profile:', result.message);
-        return false;
+return false;
       }
     } catch (error) {
-      console.error('Error refreshing profile data:', error);
-      return false;
+return false;
     } finally {
       setIsLoading(false);
     }
@@ -97,8 +87,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
         // Set active popup flag in localStorage to prevent other popups from showing
         localStorage.setItem('active_popup', 'payment_success');
       } catch (error) {
-        console.error('Error writing to localStorage:', error);
-      }
+}
     }
     
     // Clean up when this popup closes
@@ -111,8 +100,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
             localStorage.removeItem('active_popup');
           }
         } catch (error) {
-          console.error('Error accessing localStorage:', error);
-        }
+}
       }
     };
   }, [isOpen]);
@@ -125,15 +113,12 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
     const paymentStatus = searchParams.get('payment');
     
     if (paymentStatus === 'success' && !confettiShown.current) {
-      console.log('Payment success detected, showing success popup');
-      
-      // Check if another popup is already active
+// Check if another popup is already active
       try {
         // Payment success popup takes highest priority, so we'll force-close any other popup
         localStorage.setItem('active_popup', 'payment_success');
       } catch (error) {
-        console.error('Error writing to localStorage:', error);
-      }
+}
       
       // First refresh the profile data to make sure we have the latest
       const checkProfileUpdate = async () => {
@@ -155,9 +140,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
           // Retry with exponential backoff
           setRetryCount(prev => prev + 1);
           const backoffMs = 2000 * Math.pow(1.5, retryCount);
-          console.log(`Will retry profile refresh in ${backoffMs}ms (attempt ${retryCount + 1})`);
-          
-          const timer = setTimeout(checkProfileUpdate, backoffMs);
+const timer = setTimeout(checkProfileUpdate, backoffMs);
           return () => clearTimeout(timer);
         }
       };
@@ -177,8 +160,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
         localStorage.removeItem('active_popup');
       }
     } catch (error) {
-      console.error('Error accessing localStorage:', error);
-    }
+}
     
     // Remove the payment parameter from URL for a cleaner experience
     // Using replace with current pathname to remove query parameters
@@ -195,8 +177,7 @@ export default function PaymentSuccessPopup({ profile: initialProfile }: Payment
         origin: { y: 0.6 }
       });
     } catch (error) {
-      console.error("Error triggering confetti:", error);
-    }
+}
   };
   
   // Get plan details - use optimistic UI if the database is lagging

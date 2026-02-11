@@ -51,7 +51,6 @@ class SyncService {
 
     const netInfo = await NetInfo.fetch();
     if (!netInfo.isConnected) {
-      console.log('No internet connection, skipping sync');
       return;
     }
 
@@ -65,7 +64,6 @@ class SyncService {
         try {
           await this.processSyncItem(item);
         } catch (error) {
-          console.error('Sync item failed:', item, error);
           if (item.retries < this.maxRetries) {
             failedItems.push({ ...item, retries: item.retries + 1 });
           }
@@ -142,7 +140,6 @@ class SyncService {
       const profile = await apiService.getProfile();
       await storage.setItem(STORAGE_KEYS.USER_DATA, profile);
     } catch (error) {
-      console.error('Error syncing down data:', error);
     }
   }
 

@@ -70,8 +70,7 @@ export function ChartExporter({
       link.href = canvas.toDataURL('image/png', options.quality);
       link.click();
     } catch (error) {
-      console.error('PNG export failed:', error);
-      alert('Failed to export as PNG. Please try again.');
+alert('Failed to export as PNG. Please try again.');
     }
   };
 
@@ -97,8 +96,7 @@ export function ChartExporter({
 
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('SVG export failed:', error);
-      alert('Failed to export as SVG. Please try again.');
+alert('Failed to export as SVG. Please try again.');
     }
   };
 
@@ -127,8 +125,7 @@ export function ChartExporter({
       pdf.addImage(imgData, 'PNG', 0, 0, options.width!, options.height!);
       pdf.save(`${options.filename}.pdf`);
     } catch (error) {
-      console.error('PDF export failed:', error);
-      alert('Failed to export as PDF. Please try again.');
+alert('Failed to export as PDF. Please try again.');
     }
   };
 

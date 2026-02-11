@@ -1,7 +1,7 @@
 /**
  * Organization Management API Routes
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * 
@@ -189,7 +189,7 @@ try {
                 activeClaims = Number(claimsResult[0]?.count) || 0;
               } catch (error) {
                 // Claims table may not exist yet
-                console.warn("Could not fetch claims count:", error);
+                logger.warn("Could not fetch claims count", { error });
               }
 
               // Get parent name if exists
@@ -246,7 +246,7 @@ try {
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
 
-      console.error("Error fetching organizations:", error);
+      logger.error("Error fetching organizations", { error });
       throw error;
     }
 });
@@ -439,7 +439,7 @@ try {
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
 
-      console.error("Error creating organization:", error);
+      logger.error("Error creating organization", { error });
       throw error;
     }
 });
@@ -524,7 +524,7 @@ try {
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
 
-      console.error("Error bulk updating organizations:", error);
+      logger.error("Error bulk updating organizations", { error });
       throw error;
     }
 });
@@ -632,7 +632,7 @@ try {
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
 
-      console.error("Error bulk archiving organizations:", error);
+      logger.error("Error bulk archiving organizations", { error });
       throw error;
     }
 });

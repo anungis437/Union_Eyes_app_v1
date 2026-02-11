@@ -120,8 +120,7 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-      console.error("Error listing precedents:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -217,9 +216,7 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json({ precedent }, { status: 201 });
     } catch (error) {
-      console.error("Error creating precedent:", error);
-      
-      // Handle unique constraint violations
+// Handle unique constraint violations
       if ((error as any)?.code === "23505") {
         return NextResponse.json(
           { error: "Case number already exists" },

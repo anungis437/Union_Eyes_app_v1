@@ -6,7 +6,7 @@
  * Features:
  * - Eligibility verification (minimum hours threshold)
  * - Weekly stipend calculation
- * - Approval workflow (pending → approved → paid)
+ * - Approval workflow (pending â†’ approved â†’ paid)
  * - Payment tracking and reconciliation
  */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -75,8 +75,7 @@ async function calculateWeeklyStipends(request) {
         return eligibilityResults;
     }
     catch (error) {
-        console.error('Stipend calculation error:', error);
-        throw new Error(`Failed to calculate stipends: ${error.message}`);
+throw new Error(`Failed to calculate stipends: ${error.message}`);
     }
 }
 /**
@@ -202,8 +201,7 @@ async function getMemberDisbursements(tenantId, memberId, strikeFundId) {
         }));
     }
     catch (error) {
-        console.error('Get disbursements error:', error);
-        return [];
+return [];
     }
 }
 /**
@@ -222,8 +220,7 @@ async function getPendingDisbursements(tenantId, strikeFundId) {
         }));
     }
     catch (error) {
-        console.error('Get pending disbursements error:', error);
-        return [];
+return [];
     }
 }
 /**
@@ -259,8 +256,7 @@ async function getStrikeFundDisbursementSummary(tenantId, strikeFundId) {
         return summary;
     }
     catch (error) {
-        console.error('Get disbursement summary error:', error);
-        return {
+return {
             totalPending: 0,
             totalApproved: 0,
             totalPaid: 0,

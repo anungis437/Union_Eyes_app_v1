@@ -88,8 +88,7 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(breakdown);
   } catch (error) {
-    console.error('Category breakdown analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch category breakdown' },
       { status: 500 }
     );

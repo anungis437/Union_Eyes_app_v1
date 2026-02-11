@@ -1,7 +1,7 @@
 /**
  * CBA Footnotes API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -49,8 +49,7 @@ export const GET = async (request: NextRequest, { params }: { params: { clauseId
         });
       });
     } catch (error) {
-      console.error("Error fetching footnotes:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -107,8 +106,7 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
         return NextResponse.json(footnote);
       });
     } catch (error) {
-      console.error("Error creating footnote:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -139,8 +137,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { clause
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error("Error updating footnote:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

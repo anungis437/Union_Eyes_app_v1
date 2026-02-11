@@ -11,6 +11,7 @@ import {
   rewardBudgetEnvelopes,
   rewardRedemptions,
 } from '@/db/schema/recognition-rewards-schema';
+import { logger } from '@/lib/logger';
 
 /**
  * Convert array of objects to CSV string
@@ -144,7 +145,7 @@ export async function exportAwardsToCSV(
     
     return arrayToCSV(awards, headers);
   } catch (error) {
-    console.error('[CSV Export] Error exporting awards:', error);
+    logger.error('[CSV Export] Error exporting awards', { error, orgId });
     throw error;
   }
 }
@@ -225,7 +226,7 @@ export async function exportLedgerToCSV(
     
     return arrayToCSV(entries, headers);
   } catch (error) {
-    console.error('[CSV Export] Error exporting ledger:', error);
+    logger.error('[CSV Export] Error exporting ledger', { error, orgId });
     throw error;
   }
 }
@@ -302,7 +303,7 @@ export async function exportBudgetsToCSV(
     
     return arrayToCSV(budgets, headers);
   } catch (error) {
-    console.error('[CSV Export] Error exporting budgets:', error);
+    logger.error('[CSV Export] Error exporting budgets', { error, orgId });
     throw error;
   }
 }
@@ -376,7 +377,7 @@ export async function exportRedemptionsToCSV(
     
     return arrayToCSV(redemptions, headers);
   } catch (error) {
-    console.error('[CSV Export] Error exporting redemptions:', error);
+    logger.error('[CSV Export] Error exporting redemptions', { error, orgId });
     throw error;
   }
 }
@@ -425,7 +426,12 @@ export async function exportAnalyticsToCSV(
     
     return arrayToCSV(stats, headers);
   } catch (error) {
-    console.error('[CSV Export] Error exporting analytics:', error);
+    logger.error('[CSV Export] Error exporting analytics', {
+      error,
+      orgId,
+      startDate,
+      endDate,
+    });
     throw error;
   }
 }

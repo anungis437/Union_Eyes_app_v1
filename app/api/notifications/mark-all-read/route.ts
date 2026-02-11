@@ -32,8 +32,7 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

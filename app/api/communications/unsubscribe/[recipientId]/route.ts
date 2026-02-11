@@ -57,8 +57,7 @@ export async function POST(
       message: 'Successfully unsubscribed from newsletters',
     });
   } catch (error) {
-    console.error('Error unsubscribing:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to unsubscribe' },
       { status: 500 }
     );

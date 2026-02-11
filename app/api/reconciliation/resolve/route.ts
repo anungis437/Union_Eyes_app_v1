@@ -237,8 +237,7 @@ export const POST = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error('Resolve reconciliation error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to resolve reconciliation' },
         { status: 500 }
       );

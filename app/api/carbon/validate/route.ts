@@ -101,8 +101,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       message: `Carbon validation for ${claimType}: ${certificationEligible ? 'Eligible for certification' : 'Requires improvements'}`,
     } as CarbonValidationResponse);
   } catch (error) {
-    console.error('Carbon validation error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         valid: false,
         claimType: 'unknown',
@@ -162,8 +161,7 @@ export const GET = withApiAuth(async () => {
       },
     });
   } catch (error) {
-    console.error('Carbon standards error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         valid: false,
         claimType: 'informational',

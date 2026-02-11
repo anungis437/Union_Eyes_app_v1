@@ -102,8 +102,7 @@ export const POST = withRoleAuth('steward', async (request) => {
       message: `Emergency ${emergencyType} activated in ${affectedRegions.join(', ')}`,
     } as EmergencyActivationResponse);
   } catch (error) {
-    console.error('Emergency activation error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         error: 'Emergency activation failed',

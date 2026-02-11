@@ -10,16 +10,13 @@ dotenv.config();
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
-  console.error('❌ DATABASE_URL not found');
-  process.exit(1);
+process.exit(1);
 }
 
 const sql = postgres(DATABASE_URL, { ssl: 'require', max: 1 });
 
 async function checkTables() {
-  console.log('🔍 Checking database tables...\n');
-
-  const tablesToCheck = [
+const tablesToCheck = [
     'dues_rules',
     'member_dues_assignments',
     'dues_transactions',
@@ -44,9 +41,7 @@ async function checkTables() {
       `;
       
       const exists = result[0].exists;
-      console.log(`${exists ? '✅' : '❌'} ${table}: ${exists ? 'EXISTS' : 'MISSING'}`);
-      
-      if (exists) {
+if (exists) {
         // Check column count
         const columns = await sql`
           SELECT column_name 
@@ -55,14 +50,12 @@ async function checkTables() {
           AND table_name = ${table}
           ORDER BY ordinal_position
         `;
-        console.log(`   └─ ${columns.length} columns`);
-      }
+}
     } catch (error: any) {
-      console.log(`❌ ${table}: ERROR - ${error.message}`);
-    }
+}
   }
 
   await sql.end();
 }
 
-checkTables().catch(console.error);
+checkTables().catch(() => undefined);

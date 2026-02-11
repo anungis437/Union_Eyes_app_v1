@@ -105,8 +105,7 @@ export function MemberLearningPortal({ organizationId, memberId }: MemberLearnin
         setCompletions(compData.data || []);
       }
     } catch (error) {
-      console.error('Error fetching member data:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [memberId]);
@@ -256,7 +255,7 @@ export function MemberLearningPortal({ organizationId, memberId }: MemberLearnin
 
                       {course.venue_name && (
                         <div className="text-sm text-muted-foreground">
-                          📍 {course.venue_name}
+                          ðŸ“ {course.venue_name}
                         </div>
                       )}
 
@@ -298,7 +297,7 @@ export function MemberLearningPortal({ organizationId, memberId }: MemberLearnin
 
                       {course.venue_name && (
                         <div className="text-sm text-muted-foreground">
-                          📍 {course.venue_name}
+                          ðŸ“ {course.venue_name}
                         </div>
                       )}
 

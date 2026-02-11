@@ -111,7 +111,12 @@ export function OrganizationCard({
           </div>
         </div>
 
-        {/* TODO: Add description field to schema if needed */}
+        {/* Description */}
+        {organization.description && (
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+            {organization.description}
+          </p>
+        )}
 
         {/* Parent */}
         {showParent && organization.parentName && (

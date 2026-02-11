@@ -42,8 +42,7 @@ export async function getOrganizationJurisdiction(organizationId: string): Promi
     // Map the old enum value to new format
     return mapJurisdictionValue(rows[0].jurisdiction);
   } catch (error) {
-    console.error('Error fetching organization jurisdiction:', error);
-    return null;
+return null;
   }
 }
 
@@ -66,8 +65,7 @@ export async function getTenantJurisdiction(tenantId: string): Promise<CAJurisdi
     
     return null;
   } catch (error) {
-    console.error('Error fetching tenant jurisdiction:', error);
-    return null;
+return null;
   }
 }
 /**
@@ -100,8 +98,7 @@ export async function getJurisdictionDeadline(
       legalReference: rows[0].legal_reference,
     };
   } catch (error) {
-    console.error('Error fetching jurisdiction deadline:', error);
-    return null;
+return null;
   }
 }
 
@@ -129,8 +126,7 @@ export async function calculateBusinessDaysDeadline(
     
     return new Date(rows[0].deadline);
   } catch (error) {
-    console.error('Error calculating business days deadline:', error);
-    return null;
+return null;
   }
 }
 

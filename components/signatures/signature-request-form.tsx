@@ -159,8 +159,7 @@ export function SignatureRequestForm({
         onSuccess(result.document);
       }
     } catch (error) {
-      console.error("Signature request error:", error);
-      toast({
+toast({
         title: "Error",
         description: "Failed to send document for signature",
         variant: "destructive",

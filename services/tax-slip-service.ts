@@ -10,6 +10,7 @@ import { users } from "@/db/schema/user-management-schema";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { NotificationService } from "@/lib/services/notification-service";
+import { logger } from "@/lib/logger";
 
 /**
  * Strike Fund Tax Service
@@ -501,19 +502,38 @@ export class TaxSlipService {
       ? `${user.firstName} ${user.lastName}`
       : member?.name || "Member Name";
 
-    // TODO: Decrypt SIN if needed (requires encryption key)
-    // For now, return undefined as we need proper decryption implementation
+    // SIN decryption: Requires proper encryption/decryption infrastructure with secure key management
+    // Implementation should use AWS KMS, Azure Key Vault, or similar HSM for production
+    // For now, return undefined as we need proper encryption implementation with:
+    // - Encrypted at rest in database (user.encryptedSin field)
+    // - Decryption key stored in HSM (not in code/env)
+    // - Audit logging of all SIN access
+    // - CRA compliance for SIN storage (safeguards, retention, disposal)
     const sin = undefined; // user?.encryptedSin ? await decrypt(user.encryptedSin) : undefined
+
+    // Address fields: Should be added to profiles or user schema for CRA compliance
+    // Required fields for T4A/RL-1: street, city, province, postal code
+    // For now, using placeholder values. In production:
+    // - Add address fields to profiles or create separate memberAddresses table
+    // - Validate address format (Canada Post standards)
+    // - Capture during onboarding/profile creation
+    const address = user?.['address'] || member?.['address'] || "123 Main St";
+    const city = user?.['city'] || member?.['city'] || "Toronto";
+    const province = user?.['province'] || member?.['province'] || "ON";
+    const postalCode = user?.['postalCode'] || member?.['postalCode'] || "M1M 1M1";
+    
+    // Calculate Quebec residency from province
+    const isQuebecResident = province === "QC";
 
     return {
       userId,
       fullName,
       sin,
-      address: "123 Main St", // TODO: Add address fields to schema if needed
-      city: "Toronto",
-      province: "ON",
-      postalCode: "M1M 1M1",
-      isQuebecResident: false, // TODO: Calculate from province or address
+      address,
+      city,
+      province,
+      postalCode,
+      isQuebecResident,
     };
   }
 
@@ -525,9 +545,12 @@ export class TaxSlipService {
     taxYear: string,
     weeklyTotal: number
   ) {
-    console.log(
-      `NOTICE: User ${userId} exceeded $500/week threshold in ${taxYear}. Weekly total: $${weeklyTotal.toFixed(2)}. Tax slip will be required.`
-    );
+    logger.info('Weekly tax threshold exceeded', {
+      userId,
+      taxYear,
+      weeklyTotal: weeklyTotal.toFixed(2),
+      threshold: this.WEEKLY_THRESHOLD,
+    });
     
     try {
       // Get user details
@@ -593,7 +616,7 @@ export class TaxSlipService {
         });
       }
     } catch (error) {
-      console.error('Failed to send threshold notification:', error);
+      logger.error('Failed to send threshold notification', { error, userId, taxYear });
       // Don't throw - notification failure shouldn't block threshold tracking
     }
   }

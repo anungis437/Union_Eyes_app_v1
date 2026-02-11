@@ -15,6 +15,7 @@
 
 import { z } from 'zod';
 import type { ZodError } from 'zod';
+import { logger } from '@/lib/logger';
 
 /**
  * Environment variable schema definition
@@ -263,16 +264,16 @@ class EnvironmentManager {
         // Check for potentially unsafe configurations
         if (this.environment.NODE_ENV === 'production') {
           if (!this.environment.SENTRY_DSN) {
-            warnings.push('⚠️ SENTRY_DSN not configured - error tracking disabled');
+            warnings.push('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â SENTRY_DSN not configured - error tracking disabled');
           }
           if (!this.environment.STRIPE_SECRET_KEY && !this.environment.WHOP_WEBHOOK_SECRET) {
-            warnings.push('⚠️ Neither STRIPE nor WHOP webhook secrets configured');
+            warnings.push('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Neither STRIPE nor WHOP webhook secrets configured');
           }
           if (this.environment.EMAIL_PROVIDER === 'resend' && !this.environment.RESEND_API_KEY) {
-            warnings.push('⚠️ RESEND_API_KEY missing for EMAIL_PROVIDER=resend');
+            warnings.push('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â RESEND_API_KEY missing for EMAIL_PROVIDER=resend');
           }
           if (this.environment.EMAIL_PROVIDER === 'resend' && !this.environment.EMAIL_FROM) {
-            warnings.push('⚠️ EMAIL_FROM missing for Resend delivery');
+            warnings.push('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â EMAIL_FROM missing for Resend delivery');
           }
         }
       }
@@ -375,12 +376,14 @@ class EnvironmentManager {
 
     this.auditLog.push(auditEvent);
 
-    // Log to console in development
+    // Log to structured logger in development
     if (process.env.NODE_ENV !== 'production') {
-      const statusEmoji = event.status === 'PASSED' ? '✅' : event.status === 'FAILED' ? '❌' : 'ℹ️';
-      console.log(
-        `${statusEmoji} [ENV] ${event.eventType} - ${event.variable}: ${event.status}`
-      );
+      logger.info('Environment audit event', {
+        eventType: event.eventType,
+        variable: event.variable,
+        status: event.status,
+        details: event.details,
+      });
     }
   }
 
@@ -389,32 +392,30 @@ class EnvironmentManager {
    */
   printReport(): void {
     if (!this.validationResult) {
-      console.error('❌ Environment not validated');
       return;
     }
 
-    const { isValid, errors, warnings, environment } = this.validationResult;
+    const { isValid, errors, warnings } = this.validationResult;
 
     if (isValid) {
-      console.log('✅ Environment validation PASSED');
+      logger.info('Environment validation passed', {
+        errorCount: errors.length,
+        warningCount: warnings.length,
+      });
     } else {
-      console.error('❌ Environment validation FAILED');
+      logger.error('Environment validation failed', {
+        errorCount: errors.length,
+        warningCount: warnings.length,
+      });
     }
 
     if (errors.length > 0) {
-      console.error('\n🔴 Errors:');
-      errors.forEach(err => console.error(`  - ${err}`));
+      errors.forEach((err) => logger.error('Env validation error', { error: err }));
     }
 
     if (warnings.length > 0) {
-      console.warn('\n🟡 Warnings:');
-      warnings.forEach(warn => console.warn(`  - ${warn}`));
+      warnings.forEach((warn) => logger.warn('Env validation warning', { warning: warn }));
     }
-
-    console.log(`\n📊 Statistics:`);
-    console.log(`  - Total variables defined: ${Object.keys(environment).length}`);
-    console.log(`  - Access attempts: ${this.accessLog.size}`);
-    console.log(`  - Audit events: ${this.auditLog.length}`);
   }
 
   /**

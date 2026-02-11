@@ -47,9 +47,7 @@ interface IntegrityReport {
  * Run all pre-migration validation checks
  */
 export async function runPreMigrationValidation(): Promise<IntegrityReport> {
-  console.log("\n🔍 Running pre-migration validation checks...\n");
-
-  const issues: IntegrityIssue[] = [];
+const issues: IntegrityIssue[] = [];
   const recommendations: string[] = [];
 
   // Check 1: Validate all tenant_id values have organizations
@@ -70,18 +68,18 @@ export async function runPreMigrationValidation(): Promise<IntegrityReport> {
   // Generate recommendations
   if (issues.some((i) => i.severity === "critical")) {
     recommendations.push(
-      "❌ Critical issues found - migration should not proceed until resolved"
+      "ÃƒÂ¢Ã‚ÂÃ…â€™ Critical issues found - migration should not proceed until resolved"
     );
   }
 
   if (issues.some((i) => i.severity === "warning")) {
     recommendations.push(
-      "⚠️  Warnings found - review before proceeding with migration"
+      "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â  Warnings found - review before proceeding with migration"
     );
   }
 
   if (issues.length === 0) {
-    recommendations.push("✅ All pre-migration checks passed");
+    recommendations.push("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ All pre-migration checks passed");
   }
 
   const criticalIssues = issues.filter((i) => i.severity === "critical").length;
@@ -159,8 +157,7 @@ async function checkTenantOrganizationMapping(
         });
       }
     } catch (error) {
-      console.error(`Error checking ${tableName}:`, error);
-    }
+}
   }
 }
 
@@ -200,8 +197,7 @@ async function checkOrphanedRecords(issues: IntegrityIssue[]): Promise<void> {
       });
     }
   } catch (error) {
-    console.error("Error checking orphaned claims:", error);
-  }
+}
 
   // Check documents with non-existent claims
   try {
@@ -235,8 +231,7 @@ async function checkOrphanedRecords(issues: IntegrityIssue[]): Promise<void> {
       });
     }
   } catch (error) {
-    console.error("Error checking orphaned documents:", error);
-  }
+}
 }
 
 /**
@@ -274,8 +269,7 @@ async function checkNullTenantIds(issues: IntegrityIssue[]): Promise<void> {
         });
       }
     } catch (error) {
-      console.error(`Error checking null tenant_ids in ${tableName}:`, error);
-    }
+}
   }
 }
 
@@ -286,7 +280,7 @@ async function checkForeignKeyIntegrity(
   issues: IntegrityIssue[]
 ): Promise<void> {
   // This would check all foreign key relationships
-  // Example: claims.user_id → profiles.id
+  // Example: claims.user_id ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ profiles.id
   
   const foreignKeys = [
     {
@@ -331,8 +325,7 @@ async function checkForeignKeyIntegrity(
         });
       }
     } catch (error) {
-      console.error(`Error checking foreign key ${fk.table}.${fk.column}:`, error);
-    }
+}
   }
 }
 
@@ -360,8 +353,7 @@ async function checkDuplicateRecords(issues: IntegrityIssue[]): Promise<void> {
       });
     }
   } catch (error) {
-    console.error("Error checking duplicate organizations:", error);
-  }
+}
 }
 
 // =====================================================
@@ -372,9 +364,7 @@ async function checkDuplicateRecords(issues: IntegrityIssue[]): Promise<void> {
  * Run all post-migration validation checks
  */
 export async function runPostMigrationValidation(): Promise<IntegrityReport> {
-  console.log("\n🔍 Running post-migration validation checks...\n");
-
-  const issues: IntegrityIssue[] = [];
+const issues: IntegrityIssue[] = [];
   const recommendations: string[] = [];
 
   // Check 1: Verify all rows have organization_id
@@ -383,7 +373,7 @@ export async function runPostMigrationValidation(): Promise<IntegrityReport> {
   // Check 2: Verify organization_id references valid organizations
   await checkOrganizationIdValidity(issues);
 
-  // Check 3: Check data consistency (tenant → org mapping)
+  // Check 3: Check data consistency (tenant ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ org mapping)
   await checkMappingConsistency(issues);
 
   // Check 4: Verify no data loss
@@ -395,19 +385,19 @@ export async function runPostMigrationValidation(): Promise<IntegrityReport> {
   // Generate recommendations
   if (issues.some((i) => i.severity === "critical")) {
     recommendations.push(
-      "❌ Critical issues found - consider rolling back migration"
+      "ÃƒÂ¢Ã‚ÂÃ…â€™ Critical issues found - consider rolling back migration"
     );
   }
 
   if (issues.some((i) => i.severity === "warning")) {
     recommendations.push(
-      "⚠️  Warnings found - manual review recommended"
+      "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â  Warnings found - manual review recommended"
     );
   }
 
   if (issues.length === 0) {
-    recommendations.push("✅ All post-migration checks passed");
-    recommendations.push("✅ Migration successful - data integrity maintained");
+    recommendations.push("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ All post-migration checks passed");
+    recommendations.push("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Migration successful - data integrity maintained");
   }
 
   const criticalIssues = issues.filter((i) => i.severity === "critical").length;
@@ -471,8 +461,7 @@ async function checkOrganizationIdPopulation(
         });
       }
     } catch (error) {
-      console.error(`Error checking ${tableName}:`, error);
-    }
+}
   }
 }
 
@@ -515,8 +504,7 @@ async function checkOrganizationIdValidity(
         });
       }
     } catch (error) {
-      console.error(`Error checking ${tableName}:`, error);
-    }
+}
   }
 }
 
@@ -558,8 +546,7 @@ async function checkMappingConsistency(
         });
       }
     } catch (error) {
-      console.error(`Error checking mapping consistency in ${tableName}:`, error);
-    }
+}
   }
 }
 
@@ -606,8 +593,7 @@ async function checkDataCompleteness(issues: IntegrityIssue[]): Promise<void> {
         });
       }
     } catch (error) {
-      console.error(`Error checking data completeness in ${tableName}:`, error);
-    }
+}
   }
 }
 
@@ -647,8 +633,7 @@ async function checkHierarchicalIntegrity(
       });
     }
   } catch (error) {
-    console.error("Error checking hierarchical integrity:", error);
-  }
+}
 }
 
 // =====================================================
@@ -659,68 +644,42 @@ async function checkHierarchicalIntegrity(
  * Print integrity report
  */
 function printReport(report: IntegrityReport): void {
-  console.log("\n" + "=".repeat(70));
-  console.log(
-    `📋 DATA INTEGRITY REPORT - ${report.phase.toUpperCase()}`
-  );
-  console.log("=".repeat(70));
-  console.log(`Timestamp: ${report.timestamp.toISOString()}`);
-  console.log(`Status: ${getStatusEmoji(report.status)} ${report.status.toUpperCase()}`);
-  console.log(`Total Issues: ${report.totalIssues}`);
-  console.log(`  Critical: ${report.criticalIssues}`);
-  console.log(`  Warnings: ${report.warningIssues}`);
-  console.log(`  Info: ${report.infoIssues}`);
-  console.log("=".repeat(70));
-
-  if (report.issues.length > 0) {
-    console.log("\n📝 ISSUES FOUND:\n");
-
-    for (const issue of report.issues) {
+if (report.issues.length > 0) {
+for (const issue of report.issues) {
       const emoji = getSeverityEmoji(issue.severity);
-      console.log(`${emoji} [${issue.severity.toUpperCase()}] ${issue.table}`);
-      console.log(`   ${issue.description}`);
-      console.log(`   Count: ${issue.count}`);
-
-      if (issue.exampleIds && issue.exampleIds.length > 0) {
-        console.log(`   Examples: ${issue.exampleIds.slice(0, 3).join(", ")}`);
-      }
-
-      console.log();
-    }
+if (issue.exampleIds && issue.exampleIds.length > 0) {
+}
+}
   }
 
   if (report.recommendations.length > 0) {
-    console.log("💡 RECOMMENDATIONS:\n");
-    report.recommendations.forEach((rec) => console.log(`   ${rec}`));
-    console.log();
-  }
-
-  console.log("=".repeat(70) + "\n");
+report.recommendations.forEach((rec) => undefined);
+}
 }
 
 function getStatusEmoji(status: string): string {
   switch (status) {
     case "pass":
-      return "✅";
+      return "ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦";
     case "warning":
-      return "⚠️";
+      return "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â";
     case "fail":
-      return "❌";
+      return "ÃƒÂ¢Ã‚ÂÃ…â€™";
     default:
-      return "❓";
+      return "ÃƒÂ¢Ã‚ÂÃ¢â‚¬Å“";
   }
 }
 
 function getSeverityEmoji(severity: string): string {
   switch (severity) {
     case "critical":
-      return "🔴";
+      return "ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´";
     case "warning":
-      return "🟡";
+      return "ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¡";
     case "info":
-      return "🔵";
+      return "ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Âµ";
     default:
-      return "⚪";
+      return "ÃƒÂ¢Ã…Â¡Ã‚Âª";
   }
 }
 
@@ -734,11 +693,9 @@ export async function exportReport(
   try {
     const fs = require("fs");
     fs.writeFileSync(filePath, JSON.stringify(report, null, 2));
-    console.log(`✅ Report exported to: ${filePath}`);
-    return true;
+return true;
   } catch (error) {
-    console.error("Error exporting report:", error);
-    return false;
+return false;
   }
 }
 

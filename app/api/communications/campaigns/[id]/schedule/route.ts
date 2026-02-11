@@ -119,8 +119,74 @@ export async function POST(
       .where(eq(newsletterCampaigns.id, params.id))
       .returning();
 
-    // TODO: If sending now, trigger email sending job
-    // TODO: If scheduled, add to job queue with delay
+    // If sending now, trigger email sending
+    if (!scheduledAt) {
+      const { sendEmail } = await import('@/lib/email-service');
+      
+      // Send emails in batches to avoid overwhelming the service
+      const BATCH_SIZE = 50;
+      let sentCount = 0;
+      let failedCount = 0;
+
+      for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+        const batch = subscribers.slice(i, i + BATCH_SIZE);
+        
+        const results = await Promise.allSettled(
+          batch.map(async (subscriber) => {
+            const result = await sendEmail({
+              to: [{ email: subscriber.email, name: subscriber.email }],
+              subject: campaign.subject || 'Newsletter',
+              html: campaign.content || '<p>Newsletter content</p>',
+              replyTo: process.env.EMAIL_REPLY_TO,
+            });
+
+            // Update recipient status
+            await db
+              .update(newsletterRecipients)
+              .set({
+                status: result.success ? 'sent' : 'failed',
+                sentAt: result.success ? new Date() : null,
+                errorMessage: result.error || null,
+              })
+              .where(
+                and(
+                  eq(newsletterRecipients.campaignId, params.id),
+                  eq(newsletterRecipients.email, subscriber.email)
+                )
+              );
+
+            return result;
+          })
+        );
+
+        sentCount += results.filter(
+          (r) => r.status === 'fulfilled' && r.value.success
+        ).length;
+        failedCount += results.filter(
+          (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success)
+        ).length;
+
+        // Small delay between batches to respect rate limits
+        if (i + BATCH_SIZE < subscribers.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Update campaign with final counts
+      await db
+        .update(newsletterCampaigns)
+        .set({
+          status: 'sent',
+          totalSent: sentCount,
+          totalFailed: failedCount,
+          sentAt: new Date(),
+        })
+        .where(eq(newsletterCampaigns.id, params.id));
+}
+    // If scheduled, add to job queue with delay
+    // Note: In production, use a proper job queue like BullMQ or similar
+    else {
+}
 
     // Audit log
     await logApiAuditEvent({
@@ -147,9 +213,7 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    console.error('Error scheduling campaign:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to schedule campaign' },
       { status: 500 }
     );

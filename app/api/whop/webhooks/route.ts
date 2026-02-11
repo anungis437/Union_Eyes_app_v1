@@ -89,7 +89,7 @@ export async function POST(req: Request) {
         }
       });
     } catch (webhookError) {
-      console.error("Error in Whop webhook handler:", webhookError);
+      logger.error("Error in Whop webhook handler", webhookError as Error);
       // Return 200 even if there's an error in the webhook handler itself
       return new Response(JSON.stringify({ 
         status: "error", 
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       });
     }
   } catch (error) {
-    console.error("Error processing Whop webhook:", error);
+    logger.error("Error processing Whop webhook", error as Error);
     // Always return 200 status to Whop even for errors
     return new Response(JSON.stringify({ 
       status: "error", 

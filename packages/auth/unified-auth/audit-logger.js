@@ -51,7 +51,7 @@ export class AuditLogger {
             }
         }
         catch (error) {
-            console.error('Error logging auth event:', error);
+            void error;
         }
     }
     /**
@@ -77,13 +77,11 @@ export class AuditLogger {
                 .from('auth_audit_logs')
                 .insert(entries);
             if (error) {
-                console.error('Error flushing audit logs:', error);
                 // Re-add to queue on error
                 this.queue.unshift(...events);
             }
         }
         catch (error) {
-            console.error('Error flushing audit logs:', error);
             // Re-add to queue on error
             this.queue.unshift(...events);
         }
@@ -161,7 +159,7 @@ export class AuditLogger {
             return data || [];
         }
         catch (error) {
-            console.error('Error fetching audit logs:', error);
+            void error;
             return [];
         }
     }
@@ -185,7 +183,7 @@ export class AuditLogger {
             };
         }
         catch (error) {
-            console.error('Error getting user audit summary:', error);
+            void error;
             return {
                 totalEvents: 0,
                 signInCount: 0,

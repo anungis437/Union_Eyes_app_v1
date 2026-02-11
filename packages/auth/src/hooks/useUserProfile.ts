@@ -16,6 +16,7 @@ import {
   getUserProfileService
 } from '../services/userProfileService';
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -107,7 +108,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       
       setProfile(data);
     } catch (err: any) {
-      console.error('[useUserProfile] Error fetching profile:', err);
+      logger.error('[useUserProfile] Error fetching profile:', err);
       setError(err);
     } finally {
       setLoading(false);
@@ -150,7 +151,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
         setProfile(data);
       }
     } catch (err: any) {
-      console.error('[useUserProfile] Error updating profile:', err);
+      logger.error('[useUserProfile] Error updating profile:', err);
       setError(err);
       
       // Revert optimistic update on error
@@ -186,7 +187,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       
       return data;
     } catch (err: any) {
-      console.error('[useUserProfile] Error uploading avatar:', err);
+      logger.error('[useUserProfile] Error uploading avatar:', err);
       setError(err);
       throw err;
     }
@@ -214,7 +215,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       
       await fetchProfile();
     } catch (err: any) {
-      console.error('[useUserProfile] Error deleting avatar:', err);
+      logger.error('[useUserProfile] Error deleting avatar:', err);
       setError(err);
       
       // Revert on error
@@ -264,7 +265,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           });
         }
       } catch (err: any) {
-        console.error('[useUserProfile] Error updating notification preferences:', err);
+        logger.error('[useUserProfile] Error updating notification preferences:', err);
         setError(err);
         await fetchProfile();
         throw err;
@@ -304,7 +305,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           });
         }
       } catch (err: any) {
-        console.error('[useUserProfile] Error updating UI preferences:', err);
+        logger.error('[useUserProfile] Error updating UI preferences:', err);
         setError(err);
         await fetchProfile();
         throw err;
@@ -347,7 +348,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           });
         }
       } catch (err: any) {
-        console.error('[useUserProfile] Error updating privacy settings:', err);
+        logger.error('[useUserProfile] Error updating privacy settings:', err);
         setError(err);
         await fetchProfile();
         throw err;
@@ -390,7 +391,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           });
         }
       } catch (err: any) {
-        console.error('[useUserProfile] Error updating security settings:', err);
+        logger.error('[useUserProfile] Error updating security settings:', err);
         setError(err);
         await fetchProfile();
         throw err;
@@ -420,7 +421,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
         
         await fetchProfile();
       } catch (err: any) {
-        console.error('[useUserProfile] Error completing onboarding step:', err);
+        logger.error('[useUserProfile] Error completing onboarding step:', err);
         setError(err);
         throw err;
       }
@@ -451,7 +452,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           });
         }
       } catch (err: any) {
-        console.error('[useUserProfile] Error updating onboarding progress:', err);
+        logger.error('[useUserProfile] Error updating onboarding progress:', err);
         setError(err);
         throw err;
       }
@@ -481,7 +482,7 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
       }
     } catch (err: any) {
       // Silently fail for activity updates
-      console.warn('[useUserProfile] Error updating activity:', err);
+      logger.warn('[useUserProfile] Error updating activity:', err);
     }
   }, [userId, profile, profileService]);
 
@@ -538,8 +539,6 @@ export function useUserProfile(options: UseUserProfileOptions = {}): UseUserProf
           filter: `user_id=eq.${userId}`
         },
         (payload: any) => {
-          console.log('[useUserProfile] Real-time update received:', payload);
-          
           if (payload.eventType === 'UPDATE') {
             // Refresh profile on update
             fetchProfile();

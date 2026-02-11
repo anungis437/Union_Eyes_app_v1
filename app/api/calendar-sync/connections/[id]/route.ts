@@ -62,8 +62,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
           availableCalendars = await listMicrosoftCalendars(connectionId);
         }
       } catch (error) {
-        console.error('Error fetching calendars:', error);
-      }
+}
 
       return NextResponse.json({
         connection: {
@@ -82,8 +81,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         availableCalendars,
       });
     } catch (error) {
-      console.error('Error fetching connection:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch connection' },
         { status: 500 }
       );
@@ -136,8 +134,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         connection: updated,
       });
     } catch (error) {
-      console.error('Error updating connection:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to update connection' },
         { status: 500 }
       );
@@ -180,8 +177,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         message: 'Connection deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting connection:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to delete connection' },
         { status: 500 }
       );

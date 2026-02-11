@@ -12,6 +12,7 @@
 
 const os = require('os');
 const { performance } = require('perf_hooks');
+const { logger } = require('../../../lib/logger');
 
 class HealthCheckService {
     constructor() {
@@ -438,13 +439,16 @@ class HealthCheckService {
             });
         });
 
-        console.log('✅ Health check endpoints configured:');
-        console.log('  GET /health - Basic health check');
-        console.log('  GET /health/detailed - Detailed health with dependencies');
-        console.log('  GET /metrics - Application metrics');
-        console.log('  GET /status - Simple status check');
-        console.log('  GET /ready - Readiness probe');
-        console.log('  GET /live - Liveness probe');
+        logger.info('Health check endpoints configured', {
+            endpoints: [
+                'GET /health - Basic health check',
+                'GET /health/detailed - Detailed health with dependencies',
+                'GET /metrics - Application metrics',
+                'GET /status - Simple status check',
+                'GET /ready - Readiness probe',
+                'GET /live - Liveness probe',
+            ]
+        });
     }
 
     // Middleware to track request metrics

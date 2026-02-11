@@ -20,6 +20,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, like, desc, asc, sql, inArray, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -90,7 +91,7 @@ export async function getClauseById(
 
     return clause;
   } catch (error) {
-    console.error("Error fetching clause by ID:", error);
+    logger.error("Error fetching clause by ID", { error, id });
     throw new Error("Failed to fetch clause");
   }
 }
@@ -111,7 +112,7 @@ export async function getClausesByCBAId(
 
     return clauses;
   } catch (error) {
-    console.error("Error fetching clauses by CBA ID:", error);
+    logger.error("Error fetching clauses by CBA ID", { error, cbaId });
     throw new Error("Failed to fetch clauses");
   }
 }
@@ -180,7 +181,7 @@ export async function listClauses(
       limit
     };
   } catch (error) {
-    console.error("Error listing clauses:", error);
+    logger.error("Error listing clauses", { error, filters });
     throw new Error("Failed to list clauses");
   }
 }
@@ -201,7 +202,7 @@ export async function createClause(data: NewClause): Promise<Clause> {
 
     return newClause;
   } catch (error) {
-    console.error("Error creating clause:", error);
+    logger.error("Error creating clause", { error });
     throw new Error("Failed to create clause");
   }
 }
@@ -224,7 +225,7 @@ export async function bulkCreateClauses(clauses: NewClause[]): Promise<Clause[]>
 
     return newClauses;
   } catch (error) {
-    console.error("Error bulk creating clauses:", error);
+    logger.error("Error bulk creating clauses", { error, count: clauses.length });
     throw new Error("Failed to bulk create clauses");
   }
 }
@@ -248,7 +249,7 @@ export async function updateClause(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating clause:", error);
+    logger.error("Error updating clause", { error, id });
     throw new Error("Failed to update clause");
   }
 }
@@ -264,7 +265,7 @@ export async function deleteClause(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting clause:", error);
+    logger.error("Error deleting clause", { error, id });
     throw new Error("Failed to delete clause");
   }
 }
@@ -307,7 +308,7 @@ export async function searchClauses(
 
     return results;
   } catch (error) {
-    console.error("Error searching clauses:", error);
+    logger.error("Error searching clauses", { error, query });
     throw new Error("Failed to search clauses");
   }
 }
@@ -331,7 +332,7 @@ export async function getClausesByType(
 
     return clauses;
   } catch (error) {
-    console.error("Error fetching clauses by type:", error);
+    logger.error("Error fetching clauses by type", { error, clauseType });
     throw new Error("Failed to fetch clauses by type");
   }
 }
@@ -368,7 +369,7 @@ export async function getClauseHierarchy(clauseId: string): Promise<{
 
     return { parent, clause, children };
   } catch (error) {
-    console.error("Error fetching clause hierarchy:", error);
+    logger.error("Error fetching clause hierarchy", { error, clauseId });
     throw new Error("Failed to fetch clause hierarchy");
   }
 }
@@ -429,7 +430,7 @@ export async function compareClauses(
 
     return result;
   } catch (error) {
-    console.error("Error comparing clauses:", error);
+    logger.error("Error comparing clauses", { error, clauseIds: request.clauseIds });
     throw new Error("Failed to compare clauses");
   }
 }
@@ -461,7 +462,7 @@ export async function saveClauseComparison(
 
     return comparison;
   } catch (error) {
-    console.error("Error saving clause comparison:", error);
+    logger.error("Error saving clause comparison", { error, comparisonName });
     throw new Error("Failed to save clause comparison");
   }
 }
@@ -492,7 +493,7 @@ export async function getWageProgressions(
 
     return progressions;
   } catch (error) {
-    console.error("Error fetching wage progressions:", error);
+    logger.error("Error fetching wage progressions", { error, cbaId });
     throw new Error("Failed to fetch wage progressions");
   }
 }
@@ -511,7 +512,7 @@ export async function createWageProgression(
 
     return progression;
   } catch (error) {
-    console.error("Error creating wage progression:", error);
+    logger.error("Error creating wage progression", { error });
     throw new Error("Failed to create wage progression");
   }
 }
@@ -536,7 +537,7 @@ export async function getClauseTypeDistribution(cbaId: string) {
 
     return distribution;
   } catch (error) {
-    console.error("Error fetching clause type distribution:", error);
+    logger.error("Error fetching clause type distribution", { error, cbaId });
     throw new Error("Failed to fetch clause type distribution");
   }
 }
@@ -562,7 +563,7 @@ export async function getMostViewedClauses(
 
     return clauses;
   } catch (error) {
-    console.error("Error fetching most viewed clauses:", error);
+    logger.error("Error fetching most viewed clauses", { error, cbaId, limit });
     throw new Error("Failed to fetch most viewed clauses");
   }
 }

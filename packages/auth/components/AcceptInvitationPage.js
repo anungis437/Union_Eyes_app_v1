@@ -50,8 +50,7 @@ export function AcceptInvitationPage() {
             }
             catch (err) {
                 setError('Failed to validate invitation. Please try again later.');
-                console.error('Error checking invitation:', err);
-            }
+}
             finally {
                 setIsCheckingToken(false);
             }
@@ -99,8 +98,7 @@ export function AcceptInvitationPage() {
         }
         catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
-            console.error('Error accepting invitation:', err);
-        }
+}
         finally {
             setIsSubmitting(false);
         }

@@ -202,9 +202,7 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error fetching voting session:', error);
-      throw error;
+throw error;
     }
     })(request, { params });
 };
@@ -419,9 +417,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error updating voting session:', error);
-      throw error;
+throw error;
     }
     })(request, { params });
 };
@@ -556,9 +552,7 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error deleting voting session:', error);
-      throw error;
+throw error;
     }
     })(request, { params });
 };

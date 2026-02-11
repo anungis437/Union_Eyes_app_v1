@@ -145,8 +145,7 @@ export async function withPremiumFeature<T>(
       creditsRemaining: remaining 
     };
   } catch (error) {
-    console.error("Error in premium feature:", error);
-    return { 
+return { 
       success: false, 
       error: error instanceof Error ? error.message : "Unknown error in premium feature" 
     };
@@ -180,9 +179,7 @@ export async function checkCredits(
       
       // Only downgrade credits if the billing cycle has actually ended
       if (now > billingCycleEnd && (profile.usageCredits || 0) > 5) {
-        console.log(`User ${userId} has canceled subscription with expired billing cycle, downgrading credits to 5`);
-        
-        // Update profile with free tier credit limit
+// Update profile with free tier credit limit
         // Reset used credits to 0 for a clean slate when transitioning to free
         profile = await updateProfile(userId, {
           usageCredits: 5,
@@ -199,9 +196,7 @@ export async function checkCredits(
       } else {
         // User still has time left in their billing cycle
         // Don't reset credits yet, let them use what they paid for
-        console.log(`User ${userId} is on free plan but still has active billing until ${billingCycleEnd.toISOString()}`);
-        console.log(`Preserving ${profile.usageCredits} credits until billing cycle ends`);
-      }
+}
     }
     
     // Check if credits need to be renewed based on the 4-week cycle
@@ -262,8 +257,7 @@ export async function checkCredits(
     
     return { hasCredits: true, profile };
   } catch (error) {
-    console.error("Error checking credits:", error);
-    return { hasCredits: false, profile: null, error: "Server error checking credits" };
+return { hasCredits: false, profile: null, error: "Server error checking credits" };
   }
 }
 
@@ -301,9 +295,7 @@ export async function useCredits(
     });
     
     // Log credit usage
-    console.log(`User ${userId} used ${creditsToUse} credits for: ${description}. Remaining: ${usageCredits - newUsedCredits}`);
-    
-    // Revalidate any pages that might display credit information
+// Revalidate any pages that might display credit information
     revalidatePath("/notes");
     revalidatePath("/dashboard");
     
@@ -312,8 +304,7 @@ export async function useCredits(
       profile: updatedProfile 
     };
   } catch (error) {
-    console.error("Error using credits:", error);
-    return { success: false, error: "Failed to use credits" };
+return { success: false, error: "Failed to use credits" };
   }
 }
 
@@ -375,8 +366,7 @@ export async function getCreditStatus(): Promise<{
       membership: profile?.membership || "free"
     };
   } catch (error) {
-    console.error("Error getting credit status:", error);
-    return { 
+return { 
       total: 0, 
       used: 0, 
       remaining: 0, 
@@ -413,7 +403,6 @@ export async function hasReachedCreditLimit(): Promise<boolean> {
     
     return usedCredits >= usageCredits;
   } catch (error) {
-    console.error("Error checking credit limit:", error);
-    return false; // Default to false on error
+return false; // Default to false on error
   }
 } 

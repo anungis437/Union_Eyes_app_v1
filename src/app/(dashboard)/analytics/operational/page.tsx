@@ -104,7 +104,6 @@ export default function OperationalAnalytics() {
       setSlaMetrics(slaData);
       setBottlenecks(bottlenecksData);
     } catch (error) {
-      console.error('Error fetching operational data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -129,8 +128,7 @@ export default function OperationalAnalytics() {
     }
   };
 
-  const handleExport = (format: 'excel' | 'pdf' | 'csv') => {
-    console.log(`Exporting operational analytics as ${format}`);
+  const handleExport = (_format: 'excel' | 'pdf' | 'csv') => {
     // Export implementation
   };
 

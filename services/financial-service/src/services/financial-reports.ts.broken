@@ -64,9 +64,7 @@ export async function getCollectionMetrics(
 ): Promise<CollectionMetrics> {
   try {
     const { startDate, endDate } = dateRange;
-    console.log('[getCollectionMetrics] Starting with params:', { tenantId, startDate, endDate });
-
-    // Total dues charged in period
+// Total dues charged in period
     const chargedResult = await db.execute<{ total: string; count: string }>(sql`
       SELECT 
         COALESCE(SUM(amount), 0) as total,
@@ -140,9 +138,7 @@ export async function getCollectionMetrics(
       averagePaymentTime: Math.round(averagePaymentTime * 10) / 10,
     };
   } catch (error) {
-    console.error('[getCollectionMetrics] Error:', error);
-    console.error('[getCollectionMetrics] Stack:', error instanceof Error ? error.stack : 'No stack');
-    throw error;
+throw error;
   }
 }
 
@@ -153,9 +149,7 @@ export async function getArrearsStatistics(
   tenantId: string
 ): Promise<ArrearsStatistics> {
   try {
-    console.log('[getArrearsStatistics] Starting with params:', { tenantId });
-
-    // Total cases and amount
+// Total cases and amount
     const totalResult = await db.execute<{ count: string; total: string }>(sql`
     SELECT 
       COUNT(*) as count,
@@ -243,9 +237,7 @@ export async function getArrearsStatistics(
       oldestCase,
     };
   } catch (error) {
-    console.error('[getArrearsStatistics] Error:', error);
-    console.error('[getArrearsStatistics] Stack:', error instanceof Error ? error.stack : 'No stack');
-    throw error;
+throw error;
   }
 }
 
@@ -258,11 +250,8 @@ export async function getRevenueAnalysis(
 ): Promise<RevenueAnalysis> {
   try {
     const { startDate, endDate } = dateRange;
-    console.log('[getRevenueAnalysis] Starting with params:', { tenantId, startDate, endDate });
-    const { startDate, endDate } = dateRange;
-    console.log('[getRevenueAnalysis] Starting with params:', { tenantId, startDate, endDate });
-
-    // Total revenue from payments
+const { startDate, endDate } = dateRange;
+// Total revenue from payments
     const totalResult = await db.execute<{ total: string }>(sql`
     SELECT COALESCE(SUM(amount), 0) as total
     FROM dues_transactions
@@ -333,9 +322,7 @@ export async function getRevenueAnalysis(
       growthRate: Math.round(growthRate * 100) / 100,
     };
   } catch (error) {
-    console.error('[getRevenueAnalysis] Error:', error);
-    console.error('[getRevenueAnalysis] Stack:', error instanceof Error ? error.stack : 'No stack');
-    throw error;
+throw error;
   }
 }
 
@@ -349,9 +336,7 @@ export async function getMemberPaymentPatterns(
 ): Promise<MemberPaymentPattern[]> {
   try {
     const { startDate, endDate } = dateRange;
-    console.log('[getMemberPaymentPatterns] Starting with params:', { tenantId, startDate, endDate, limit });
-
-    const result = await db.execute<{
+const result = await db.execute<{
     member_id: string;
     total_transactions: string;
     total_paid: string;
@@ -404,9 +389,7 @@ export async function getMemberPaymentPatterns(
       };
     });
   } catch (error) {
-    console.error('[getMemberPaymentPatterns] Error:', error);
-    console.error('[getMemberPaymentPatterns] Stack:', error instanceof Error ? error.stack : 'No stack');
-    throw error;
+throw error;
   }
 }
 
@@ -418,9 +401,7 @@ export async function getFinancialDashboard(
   dateRange: DateRange
 ) {
   try {
-    console.log('[getFinancialDashboard] Starting with params:', { tenantId, dateRange });
-
-    const [
+const [
     collectionMetrics,
     arrearsStats,
     revenueAnalysis,
@@ -440,8 +421,6 @@ export async function getFinancialDashboard(
       generatedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('[getFinancialDashboard] Error:', error);
-    console.error('[getFinancialDashboard] Stack:', error instanceof Error ? error.stack : 'No stack');
-    throw error;
+throw error;
   }
 }

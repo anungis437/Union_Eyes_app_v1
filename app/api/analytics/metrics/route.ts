@@ -53,8 +53,7 @@ export const POST = async (request: NextRequest) => {
         metric: result.metric
       });
     } catch (error) {
-      console.error('Error in metrics API:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -93,8 +92,7 @@ export const GET = async (request: NextRequest) => {
         metrics: result.metrics
       });
     } catch (error) {
-      console.error('Error fetching metrics:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

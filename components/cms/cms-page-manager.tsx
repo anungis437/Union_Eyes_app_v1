@@ -59,8 +59,7 @@ export default function CMSPageManager() {
       const data = await response.json();
       router.push(`/cms/pages/${data.id}`);
     } catch (error) {
-      console.error('Error saving page:', error);
-      throw error;
+throw error;
     }
   };
 

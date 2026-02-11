@@ -42,8 +42,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       return NextResponse.json(result[0]);
     } catch (error) {
-      console.error('Error marking notification as read:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -78,8 +77,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error('Error deleting notification:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

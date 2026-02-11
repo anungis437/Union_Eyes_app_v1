@@ -68,8 +68,7 @@ export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) 
         setTrends(trendsData.trends);
       }
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load analytics data',
         variant: 'destructive'

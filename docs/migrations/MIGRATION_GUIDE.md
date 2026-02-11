@@ -192,7 +192,7 @@ node scripts/migration-cli.ts status --detailed
 Example output:
 
 ```
-📊 Migration Status
+ðŸ“Š Migration Status
 
 Overall Statistics:
    Total mappings: 150
@@ -205,9 +205,9 @@ Overall Statistics:
 
 Table Progress:
 
-   profiles                       ████████████████████████████░░ 93.2% (9,320/10,000)
-   claims                         ███████████████████████████░░░ 89.5% (17,900/20,000)
-   documents                      ████████████████████████████░░ 95.1% (9,510/10,000)
+   profiles                       â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘ 93.2% (9,320/10,000)
+   claims                         â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘â–‘ 89.5% (17,900/20,000)
+   documents                      â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘ 95.1% (9,510/10,000)
    ...
 ```
 
@@ -265,7 +265,7 @@ node scripts/migration-cli.ts verify --post --export post-migration-report.json
 
 - All migrated rows have organization_id
 - organization_id references valid organizations
-- Mapping consistency (same tenant → same org)
+- Mapping consistency (same tenant â†’ same org)
 - No data loss
 - Hierarchical integrity maintained
 
@@ -385,14 +385,12 @@ async function customMigration() {
 
   // Migrate with progress callback
   const results = await migrateAllTables(false, (table, progress) => {
-    console.log(`${table}: ${progress.toFixed(1)}%`);
-  });
+});
 
   // Verify
   const postReport = await runPostMigrationValidation();
   if (postReport.status === "fail") {
-    console.error("Post-migration validation failed - rolling back");
-    await emergencyRollback();
+await emergencyRollback();
   }
 
   return results;
@@ -476,7 +474,7 @@ Circular References     | PASS   | Organizations with circular references: 0
 
 ### Reset Migration (Development Only)
 
-⚠️ **DANGER**: This clears all organization_id values and resets mappings.
+âš ï¸ **DANGER**: This clears all organization_id values and resets mappings.
 
 ```sql
 SELECT reset_migration();

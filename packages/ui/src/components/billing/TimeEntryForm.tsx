@@ -148,7 +148,6 @@ export function TimeEntryForm({
       setParsedMinutes(0);
       setBillableAmount(0);
     } catch (error) {
-      console.error('Error submitting time entry:', error);
     } finally {
       setIsLoading(false);
     }

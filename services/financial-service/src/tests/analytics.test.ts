@@ -37,9 +37,7 @@ let testMemberId: string;
 describe('Analytics Endpoints - Comprehensive Tests', () => {
   
   beforeAll(async () => {
-    console.log('Setting up analytics test data...');
-    
-    // Create test member
+// Create test member
     const memberResult = await db.insert(members).values({
       organizationId: TEST_TENANT_ID,
       userId: TEST_USER_ID,
@@ -129,20 +127,14 @@ describe('Analytics Endpoints - Comprehensive Tests', () => {
     }
     
     await db.insert(stipendDisbursements).values(stipendData as any);
-    
-    console.log('Analytics test data created');
-  });
+});
   
   afterAll(async () => {
-    console.log('Cleaning up analytics test data...');
-    
-    await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
+await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
     await db.delete(donations).where(eq(donations.tenantId, TEST_TENANT_ID));
     await db.delete(strikeFunds).where(eq(strikeFunds.tenantId, TEST_TENANT_ID));
     await db.delete(members).where(eq(members.organizationId, TEST_TENANT_ID));
-    
-    console.log('Analytics test data cleaned up');
-  });
+});
   
   describe('GET /api/analytics/summary', () => {
     it('should return summary statistics for tenant', async () => {

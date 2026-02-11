@@ -59,8 +59,7 @@ export function FeatureFlagProvider({
         setFlags(data.flags || {});
       }
     } catch (error) {
-      console.error('[FeatureFlags] Failed to fetch flags:', error);
-    } finally {
+} finally {
       setIsLoading(false);
     }
   };
@@ -94,8 +93,7 @@ export function useFeatureFlag(featureName: string): boolean {
   const context = useContext(FeatureFlagContext);
   
   if (!context) {
-    console.warn('[FeatureFlags] useFeatureFlag used outside FeatureFlagProvider');
-    return false;
+return false;
   }
   
   return context.flags[featureName] ?? false;
@@ -119,8 +117,7 @@ export function useFeatureFlags(featureNames: string[]): Record<string, boolean>
   const context = useContext(FeatureFlagContext);
   
   if (!context) {
-    console.warn('[FeatureFlags] useFeatureFlags used outside FeatureFlagProvider');
-    return featureNames.reduce((acc, name) => {
+return featureNames.reduce((acc, name) => {
       acc[name] = false;
       return acc;
     }, {} as Record<string, boolean>);

@@ -63,14 +63,14 @@ export default function DocumentsPage() {
         <TabsContent value="library">
           <DocumentLibraryBrowser
             items={[]}
-            onNavigate={(folderId) => console.log("Navigate:", folderId)}
-            onUpload={() => console.log("Upload triggered")}
+            onNavigate={(folderId) => undefined}
+            onUpload={() => undefined}
           />
         </TabsContent>
 
         <TabsContent value="search">
           <DocumentSearchAdvanced
-            onSearch={(filters) => console.log("Search:", filters)}
+            onSearch={(filters) => undefined}
           />
         </TabsContent>
 
@@ -106,7 +106,7 @@ export default function DocumentsPage() {
         <TabsContent value="bulk">
           <DocumentBulkOperations
             selectedCount={0}
-            onClearSelection={() => console.log("Clear selection")}
+            onClearSelection={() => undefined}
           />
         </TabsContent>
       </Tabs>

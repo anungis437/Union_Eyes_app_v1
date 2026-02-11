@@ -165,8 +165,7 @@ describe('Case Timeline Service - Visibility Scopes', () => {
         await db.delete(claimUpdates).where(eq(claimUpdates.claimId, testClaimId));
         await db.delete(claims).where(eq(claims.claimId, testClaimId));
       } catch (error) {
-        console.warn('[Case Timeline] Cleanup skipped:', error);
-      }
+}
     }
     try {
       await db.delete(users).where(eq(users.userId, testMemberId));
@@ -178,14 +177,12 @@ describe('Case Timeline Service - Visibility Scopes', () => {
       }
       await db.delete(users).where(eq(users.userId, systemUserId));
     } catch (error) {
-      console.warn('[Case Timeline] User cleanup skipped:', error);
-    }
+}
     if (testOrgId) {
       try {
         await db.delete(organizations).where(eq(organizations.id, testOrgId));
       } catch (error) {
-        console.warn('[Case Timeline] Organization cleanup skipped:', error);
-      }
+}
     }
   });
 

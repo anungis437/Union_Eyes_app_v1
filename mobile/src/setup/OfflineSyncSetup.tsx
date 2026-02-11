@@ -60,7 +60,6 @@ function initializeSyncEngine() {
     pullPageSize: 50,
   });
 
-  console.log('[App] Sync engine initialized');
   return syncEngine;
 }
 
@@ -88,19 +87,15 @@ export function OfflineSyncProvider({ children }: { children: React.ReactNode })
         // Listen to network changes
         const unsubscribeNetwork = networkStatus.addChangeListener((status: NetStatus) => {
           setNetworkState(status);
-          console.log('[App] Network status changed:', status.type, status.quality);
         });
 
         // Listen to sync status
         const unsubscribeSync = engine.addListener((status: SyncStatus) => {
           setSyncStatus(status);
-          console.log('[App] Sync status:', status);
         });
 
         // Listen to offline queue events
         const unsubscribeQueue = offlineQueue.addListener((operation: any, event: any) => {
-          console.log(`[App] Queue event: ${event} for ${operation.entity}:${operation.type}`);
-
           if (event === 'failed') {
             Alert.alert(
               'Sync Failed',
@@ -111,8 +106,6 @@ export function OfflineSyncProvider({ children }: { children: React.ReactNode })
 
         // Listen to conflicts
         const unsubscribeConflicts = conflictResolver.addListener((conflict) => {
-          console.warn('[App] Conflict detected:', conflict.entity, conflict.entityId);
-
           if (conflict.strategy === ConflictResolutionStrategy.MANUAL) {
             Alert.alert(
               'Data Conflict',
@@ -132,7 +125,6 @@ export function OfflineSyncProvider({ children }: { children: React.ReactNode })
         });
 
         setIsInitialized(true);
-        console.log('[App] Offline-first architecture initialized');
 
         // Trigger initial sync if online
         if (status.isConnected && status.isInternetReachable) {
@@ -146,8 +138,7 @@ export function OfflineSyncProvider({ children }: { children: React.ReactNode })
           unsubscribeQueue();
           unsubscribeConflicts();
         };
-      } catch (error) {
-        console.error('[App] Failed to initialize offline-first architecture:', error);
+      } catch {
         Alert.alert('Error', 'Failed to initialize app. Please restart.');
       }
     };

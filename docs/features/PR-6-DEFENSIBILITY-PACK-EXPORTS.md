@@ -1,6 +1,6 @@
 # PR-6: Defensibility Pack Exports
 
-**Status:** ✅ Complete  
+**Status:** Ã¢Å“â€¦ Complete  
 **Tests:** 25/25 passing  
 **Principle:** "One system. One truth. Defensible evidence."
 
@@ -111,11 +111,8 @@ const pack = JSON.parse(await readFile('case-123-arbitration.json'));
 const verification = verifyPackIntegrity(pack);
 
 if (!verification.valid) {
-  console.error('⚠️ Integrity check failed!');
-  console.error('Failures:', verification.failures);
-  // Output: ["Timeline integrity check failed"]
+// Output: ["Timeline integrity check failed"]
 } else {
-  console.log('✅ Pack integrity verified');
 }
 ```
 
@@ -161,9 +158,9 @@ Investigation Complete: AT_RISK (14 of 15 business days elapsed)
 
 WORKFLOW PROGRESSION
 --------------------------------------------------------------------------------
-1. 2025-01-01T09:00:00.000Z: draft → submitted (member)
-2. 2025-01-02T09:00:00.000Z: submitted → acknowledged (officer) - SLA compliant acknowledgment
-3. 2025-01-03T09:00:00.000Z: acknowledged → investigating (officer)
+1. 2025-01-01T09:00:00.000Z: draft Ã¢â€ â€™ submitted (member)
+2. 2025-01-02T09:00:00.000Z: submitted Ã¢â€ â€™ acknowledged (officer) - SLA compliant acknowledgment
+3. 2025-01-03T09:00:00.000Z: acknowledged Ã¢â€ â€™ investigating (officer)
 
 MEMBER-VISIBLE TIMELINE
 --------------------------------------------------------------------------------
@@ -257,41 +254,41 @@ export async function POST(request: Request, { params }: { params: { id: string 
 ### Test Categories
 
 **generateDefensibilityPack (8 tests):**
-✅ Complete pack generation with all components  
-✅ Member-visible timeline filtering (member + staff scopes)  
-✅ Staff-visible timeline filtering (all except system)  
-✅ Complete audit trail inclusion  
-✅ State transition history  
-✅ SLA compliance calculation  
-✅ Integrity hash generation (SHA-256)  
-✅ Sensitive data flag respect
+Ã¢Å“â€¦ Complete pack generation with all components  
+Ã¢Å“â€¦ Member-visible timeline filtering (member + staff scopes)  
+Ã¢Å“â€¦ Staff-visible timeline filtering (all except system)  
+Ã¢Å“â€¦ Complete audit trail inclusion  
+Ã¢Å“â€¦ State transition history  
+Ã¢Å“â€¦ SLA compliance calculation  
+Ã¢Å“â€¦ Integrity hash generation (SHA-256)  
+Ã¢Å“â€¦ Sensitive data flag respect
 
 **verifyPackIntegrity (4 tests):**
-✅ Unmodified pack verification passes  
-✅ Timeline tampering detection  
-✅ Audit trail tampering detection  
-✅ State transition tampering detection
+Ã¢Å“â€¦ Unmodified pack verification passes  
+Ã¢Å“â€¦ Timeline tampering detection  
+Ã¢Å“â€¦ Audit trail tampering detection  
+Ã¢Å“â€¦ State transition tampering detection
 
 **generateArbitrationSummary (4 tests):**
-✅ Human-readable summary generation  
-✅ All SLA statuses included  
-✅ State transitions with reasons  
-✅ Integrity hashes in summary
+Ã¢Å“â€¦ Human-readable summary generation  
+Ã¢Å“â€¦ All SLA statuses included  
+Ã¢Å“â€¦ State transitions with reasons  
+Ã¢Å“â€¦ Integrity hashes in summary
 
 **exportToJson (2 tests):**
-✅ Formatted JSON export  
-✅ Valid JSON structure
+Ã¢Å“â€¦ Formatted JSON export  
+Ã¢Å“â€¦ Valid JSON structure
 
 **filterTimelineForAudience (3 tests):**
-✅ Member audience filtering (member scope only)  
-✅ Staff audience filtering (member + staff scopes)  
-✅ Admin audience filtering (all except system)
+Ã¢Å“â€¦ Member audience filtering (member scope only)  
+Ã¢Å“â€¦ Staff audience filtering (member + staff scopes)  
+Ã¢Å“â€¦ Admin audience filtering (all except system)
 
 **Edge Cases (4 tests):**
-✅ Empty timeline handling  
-✅ Empty audit trail handling  
-✅ No state transitions yet  
-✅ Hash consistency across multiple exports
+Ã¢Å“â€¦ Empty timeline handling  
+Ã¢Å“â€¦ Empty audit trail handling  
+Ã¢Å“â€¦ No state transitions yet  
+Ã¢Å“â€¦ Hash consistency across multiple exports
 
 ## Business Value
 
@@ -356,26 +353,26 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
 | Purpose | Audience | Includes Sensitive | Use Case |
 |---------|----------|-------------------|----------|
-| `arbitration` | External arbitrator | ❌ No | External arbitration submission |
-| `member_request` | Union member | ❌ No | Member FOI request |
-| `audit` | Union leadership | ✅ Optional | Internal review |
-| `compliance` | Regulators | ✅ Yes | Labor board investigation |
+| `arbitration` | External arbitrator | Ã¢ÂÅ’ No | External arbitration submission |
+| `member_request` | Union member | Ã¢ÂÅ’ No | Member FOI request |
+| `audit` | Union leadership | Ã¢Å“â€¦ Optional | Internal review |
+| `compliance` | Regulators | Ã¢Å“â€¦ Yes | Labor board investigation |
 
 ## Acceptance Criteria
 
-✅ Generate defensibility pack with all components  
-✅ Dual-surface timeline (member vs staff visibility)  
-✅ Complete audit trail inclusion  
-✅ State transition history with validation results  
-✅ SLA compliance for all three standards  
-✅ Cryptographic integrity hashes (SHA-256)  
-✅ Tamper detection via hash verification  
-✅ Human-readable arbitration summary  
-✅ JSON export for electronic filing  
-✅ Audience-specific timeline filtering  
-✅ 25/25 tests passing  
-✅ Handle edge cases (empty timeline, no transitions)  
-✅ No breaking changes to existing case API
+Ã¢Å“â€¦ Generate defensibility pack with all components  
+Ã¢Å“â€¦ Dual-surface timeline (member vs staff visibility)  
+Ã¢Å“â€¦ Complete audit trail inclusion  
+Ã¢Å“â€¦ State transition history with validation results  
+Ã¢Å“â€¦ SLA compliance for all three standards  
+Ã¢Å“â€¦ Cryptographic integrity hashes (SHA-256)  
+Ã¢Å“â€¦ Tamper detection via hash verification  
+Ã¢Å“â€¦ Human-readable arbitration summary  
+Ã¢Å“â€¦ JSON export for electronic filing  
+Ã¢Å“â€¦ Audience-specific timeline filtering  
+Ã¢Å“â€¦ 25/25 tests passing  
+Ã¢Å“â€¦ Handle edge cases (empty timeline, no transitions)  
+Ã¢Å“â€¦ No breaking changes to existing case API
 
 ## Integration with Previous PRs
 

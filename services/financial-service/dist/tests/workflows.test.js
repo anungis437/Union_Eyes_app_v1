@@ -30,8 +30,7 @@ let testStrikeFundId;
 (0, globals_1.describe)('Financial Workflows - End-to-End Tests', () => {
     (0, globals_1.beforeAll)(async () => {
         // Create test tenant and base data
-        console.log('Setting up test data...');
-        // Create test strike fund
+// Create test strike fund
         const fundResult = await db_1.db.insert(schema_1.strikeFunds).values({
             tenantId: TEST_TENANT_ID,
             fundName: 'Test Strike Fund',
@@ -74,12 +73,10 @@ let testStrikeFundId;
             isActive: true,
         }).returning();
         testDuesRuleId = ruleResult[0].id;
-        console.log('Test data created successfully');
-    });
+});
     (0, globals_1.afterAll)(async () => {
         // Cleanup test data
-        console.log('Cleaning up test data...');
-        await db_1.db.delete(schema_1.stipendDisbursements).where((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, TEST_TENANT_ID));
+await db_1.db.delete(schema_1.stipendDisbursements).where((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.picketAttendance).where((0, drizzle_orm_1.eq)(schema_1.picketAttendance.tenantId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.arrears).where((0, drizzle_orm_1.eq)(schema_1.arrears.tenantId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.duesTransactions).where((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, TEST_TENANT_ID));
@@ -87,8 +84,7 @@ let testStrikeFundId;
         await db_1.db.delete(schema_1.duesRules).where((0, drizzle_orm_1.eq)(schema_1.duesRules.tenantId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.members).where((0, drizzle_orm_1.eq)(schema_1.members.organizationId, TEST_TENANT_ID));
         await db_1.db.delete(schema_1.strikeFunds).where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, TEST_TENANT_ID));
-        console.log('Test data cleaned up');
-    });
+});
     (0, globals_1.beforeEach)(async () => {
         // Clean up transactions between tests
         await db_1.db.delete(schema_1.stipendDisbursements).where((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, TEST_TENANT_ID));
@@ -599,7 +595,7 @@ let testStrikeFundId;
         });
     });
     (0, globals_1.describe)('Integration Tests - Full Workflow Chains', () => {
-        (0, globals_1.it)('should handle complete cycle: dues → overdue → payment → resolved', async () => {
+        (0, globals_1.it)('should handle complete cycle: dues â†’ overdue â†’ payment â†’ resolved', async () => {
             // 1. Create dues assignment and calculate dues
             const today = new Date();
             const yearFromNow = new Date(today);

@@ -19,7 +19,7 @@ import fs from 'fs';
 import path from 'path';
 
 describe('[CI ENFORCEMENT] Governance Layer Integrity', () => {
-  describe('❌ BLOCK: API Routes Without Auth', () => {
+  describe('âŒ BLOCK: API Routes Without Auth', () => {
     it('should have no unguarded routes in app/api', async () => {
       const apiDir = path.join(process.cwd(), 'app', 'api');
       
@@ -74,8 +74,7 @@ describe('[CI ENFORCEMENT] Governance Layer Integrity', () => {
       
       // CI ENFORCEMENT: Report unguarded routes (warning for now, will become hard blocker)
       if (unguardedRoutes.length > 0) {
-        console.warn(`\n⚠️  Found ${unguardedRoutes.length} potentially unguarded routes (may need review):\n${unguardedRoutes.slice(0, 10).join('\n')}${unguardedRoutes.length > 10 ? '\n... and ' + (unguardedRoutes.length - 10) + ' more' : ''}\n`);
-      }
+}
       
       // For demo purposes: ensure FSM-related routes ARE guarded
       const criticalRoutes = routeFiles.filter(f => 
@@ -94,7 +93,7 @@ describe('[CI ENFORCEMENT] Governance Layer Integrity', () => {
     });
   });
 
-  describe('❌ BLOCK: State Transitions Without FSM', () => {
+  describe('âŒ BLOCK: State Transitions Without FSM', () => {
     it('should reject all illegal state transitions', () => {
       const illegalTransitions: Array<[ClaimStatus, ClaimStatus]> = [
         ['submitted', 'closed'],
@@ -178,7 +177,7 @@ describe('[CI ENFORCEMENT] Governance Layer Integrity', () => {
     });
   });
 
-  describe('❌ BLOCK: Closure With Critical Signals', () => {
+  describe('âŒ BLOCK: Closure With Critical Signals', () => {
     it('should block closure when critical signals exist (via FSM)', () => {
       // This test demonstrates FSM's signal-aware blocking WITHOUT calling detectAllSignals
       // (which requires full case timeline setup)
@@ -220,7 +219,7 @@ describe('[CI ENFORCEMENT] Governance Layer Integrity', () => {
     });
   });
 
-  describe('✅ REQUIRE: SLA Tracking', () => {
+  describe('âœ… REQUIRE: SLA Tracking', () => {
     it('should calculate SLA status for all cases', () => {
       const timeline: TimelineEvent[] = [
         {
@@ -265,7 +264,7 @@ describe('[CI ENFORCEMENT] Governance Layer Integrity', () => {
     });
   });
 
-  describe('✅ REQUIRE: Documentation Enforcement', () => {
+  describe('âœ… REQUIRE: Documentation Enforcement', () => {
     it('should block transitions requiring documentation without notes', () => {
       const result = validateClaimTransition({
         claimId: 'test',

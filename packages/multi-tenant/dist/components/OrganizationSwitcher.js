@@ -18,7 +18,7 @@ import { useOrganization } from '../hooks/useOrganization';
  * <OrganizationSwitcher
  *   supabase={supabase}
  *   enableRealtime={true}
- *   onSwitch={(org) => console.log('Switched to:', org.name)}
+ *   onSwitch={(org) => undefined}
  *   showCreateOption={true}
  *   onCreateClick={() => setShowCreateModal(true)}
  * />

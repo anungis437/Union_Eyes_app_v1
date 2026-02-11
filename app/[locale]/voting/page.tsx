@@ -65,8 +65,7 @@ export default function VotingPage() {
                 allowsAbstain: false,
               }}
               onSubmit={async (votes) => {
-                console.log("Vote submitted:", votes);
-                setActiveElectionId(null);
+setActiveElectionId(null);
               }}
               onCancel={() => setActiveElectionId(null)}
             />
@@ -124,8 +123,7 @@ export default function VotingPage() {
       {showBallotBuilder && (
         <BallotBuilder
           onSave={async (ballot) => {
-            console.log("Ballot created:", ballot);
-            setShowBallotBuilder(false);
+setShowBallotBuilder(false);
           }}
           onCancel={() => setShowBallotBuilder(false)}
         />

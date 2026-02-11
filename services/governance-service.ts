@@ -254,7 +254,7 @@ export class GovernanceService {
     // Determine pass/fail for each criterion
     const unionRevenuePass = data.unionRevenuePercent >= unionRevenueThreshold;
     const memberSatisfactionPass = data.memberSatisfactionPercent >= memberSatisfactionThreshold;
-    const dataViolationsPass = data.dataViolations <= dataViolationsThreshold;
+    const dataViolationsPass = (data.dataViolations ?? 0) <= dataViolationsThreshold;
     const overallPass = unionRevenuePass && memberSatisfactionPass && dataViolationsPass;
     
     const [audit] = await db.insert(missionAudits).values({

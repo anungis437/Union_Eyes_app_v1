@@ -48,8 +48,7 @@ export const GET = async (request: NextRequest) => {
         count: safeConnections.length,
       });
     } catch (error) {
-      console.error('Error fetching connections:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch connections' },
         { status: 500 }
       );
@@ -80,8 +79,7 @@ export const POST = async (request: NextRequest) => {
         authUrl,
       });
     } catch (error) {
-      console.error('Error creating connection:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create connection' },
         { status: 500 }
       );

@@ -2,7 +2,7 @@
 
 **Date:** February 6, 2026  
 **Security Standard:** OWASP CSRF Prevention Cheat Sheet  
-**Status:** ✅ Complete
+**Status:** âœ… Complete
 
 ---
 
@@ -508,9 +508,9 @@ if (!redis) {
 
 **Behavior:**
 
-- ⚠️ Less secure (no server-side token storage)
-- ✅ Still protects against basic CSRF attacks
-- ✅ Prevents application breakage
+- âš ï¸ Less secure (no server-side token storage)
+- âœ… Still protects against basic CSRF attacks
+- âœ… Prevents application breakage
 
 ---
 
@@ -522,7 +522,7 @@ if (!redis) {
 import { generateCSRFToken } from '@/lib/csrf-protection';
 
 const token = await generateCSRFToken('test-session');
-console.log('Token:', token);  // Should be 43-char base64url string
+// Should be 43-char base64url string
 ```
 
 ### 2. Test Token Validation
@@ -534,10 +534,10 @@ const sessionId = 'test-session';
 const token = await generateCSRFToken(sessionId);
 
 const valid = await validateCSRFToken(sessionId, token);
-console.log('Valid:', valid);  // Should be true
+// Should be true
 
 const invalid = await validateCSRFToken(sessionId, 'wrong-token');
-console.log('Invalid:', invalid);  // Should be false
+// Should be false
 ```
 
 ### 3. Test Protected Endpoint
@@ -565,15 +565,11 @@ curl -X POST http://localhost:3000/api/users \
 
 ```typescript
 import { fetchWithCSRF, hasCSRFToken } from '@/lib/csrf-client';
-
-console.log('Has token:', hasCSRFToken());
-
 const response = await fetchWithCSRF('/api/users', {
   method: 'POST',
   body: JSON.stringify({ name: 'Test' }),
 });
-
-console.log('Status:', response.status);  // Should be 200
+// Should be 200
 ```
 
 ### 5. Integration Test
@@ -611,13 +607,12 @@ describe('CSRF Protection', () => {
 
 ```typescript
 import { hasCSRFToken } from '@/lib/csrf-client';
-console.log('Has CSRF token:', hasCSRFToken());
 ```
 
 **Solutions:**
 
 1. Ensure server is setting cookie with `setCSRFCookie()`
-2. Check cookies in DevTools → Application → Cookies
+2. Check cookies in DevTools â†’ Application â†’ Cookies
 3. Verify `__Host-csrf-token` exists
 4. Ensure using HTTPS in production (required for `__Host-` prefix)
 
@@ -627,7 +622,6 @@ console.log('Has CSRF token:', hasCSRFToken());
 
 ```typescript
 import { getToken } from '@/lib/csrf-client';
-console.log('Token from cookie:', getToken());
 ```
 
 **Solutions:**
@@ -655,10 +649,7 @@ const CSRF_EXEMPT_PATHS = [
 
 ```typescript
 // Server side
-console.log('Server session:', req.headers.get('x-session-id'));
-
 // Client side
-console.log('Client session:', getSessionId());
 ```
 
 **Solution:** Ensure consistent session ID extraction:
@@ -696,7 +687,7 @@ console.log('Client session:', getSessionId());
 
 ## Security Checklist
 
-### ✅ Implemented
+### âœ… Implemented
 
 - [x] Cryptographically secure token generation
 - [x] Server-side token storage (Redis)
@@ -708,7 +699,7 @@ console.log('Client session:', getSessionId());
 - [x] Logging of validation failures
 - [x] Graceful degradation without Redis
 
-### ⏳ Recommended Enhancements
+### â³ Recommended Enhancements
 
 - [ ] Automatic token rotation on use
 - [ ] Rate limiting on validation failures
@@ -723,19 +714,19 @@ console.log('Client session:', getSessionId());
 
 ### OWASP CSRF Prevention
 
-✅ **Synchronizer Token Pattern** (with Redis storage)  
-✅ **Double Submit Cookie** (cookie + header)  
-✅ **SameSite Cookie Attribute**  
-✅ **Custom Request Headers** (x-csrf-token)  
-✅ **Verify Origin/Referer** (via middleware)
+âœ… **Synchronizer Token Pattern** (with Redis storage)  
+âœ… **Double Submit Cookie** (cookie + header)  
+âœ… **SameSite Cookie Attribute**  
+âœ… **Custom Request Headers** (x-csrf-token)  
+âœ… **Verify Origin/Referer** (via middleware)
 
 ### CWE-352 (CSRF)
 
 Protection against:
 
-- ✅ CWE-352: Cross-Site Request Forgery
-- ✅ CWE-284: Improper Access Control
-- ✅ CWE-346: Origin Validation Error
+- âœ… CWE-352: Cross-Site Request Forgery
+- âœ… CWE-284: Improper Access Control
+- âœ… CWE-346: Origin Validation Error
 
 ---
 
@@ -781,4 +772,4 @@ if (!valid) {
 - `lib/csrf-protection.ts` - Server-side protection
 - `lib/csrf-client.ts` - Client-side utilities
 
-**Security Level:** ✅ Production-ready with OWASP compliance
+**Security Level:** âœ… Production-ready with OWASP compliance

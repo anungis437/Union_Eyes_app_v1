@@ -22,8 +22,8 @@ import { SessionManager } from '../session-manager';
  *   useSSO({
  *     enabled: true,
  *     checkInterval: 30000, // Check every 30 seconds
- *     onSSOLogin: (userId) => console.log('User logged in via SSO:', userId),
- *     onSSOLogout: () => console.log('User logged out via SSO')
+ *     onSSOLogin: (userId) => undefined,
+ *     onSSOLogout: () => undefined
  *   });
  *
  *   return <YourApp />;
@@ -41,8 +41,7 @@ export const useSSO = (config = {}) => {
      */
     const log = useCallback((message, ...args) => {
         if (debug) {
-            console.log(`[SSO] ${message}`, ...args);
-        }
+}
     }, [debug]);
     /**
      * Broadcast SSO event to other tabs/apps
@@ -53,8 +52,7 @@ export const useSSO = (config = {}) => {
             log('Broadcasted SSO event:', event.type);
         }
         catch (error) {
-            console.error('[SSO] Failed to broadcast event:', error);
-        }
+}
     }, [log]);
     /**
      * Handle SSO login detected from another app
@@ -67,8 +65,7 @@ export const useSSO = (config = {}) => {
             onSSOLogin?.(userId);
         }
         catch (error) {
-            console.error('[SSO] Failed to refresh session on SSO login:', error);
-        }
+}
     }, [refreshSession, onSSOLogin, log]);
     /**
      * Handle SSO logout detected from another app
@@ -116,8 +113,7 @@ export const useSSO = (config = {}) => {
             }
         }
         catch (error) {
-            console.error('[SSO] Error processing SSO event:', error);
-        }
+}
     }, [user, handleSSOLogin, handleSSOLogout, refreshSession, log]);
     /**
      * Listen for storage events (cross-tab communication)

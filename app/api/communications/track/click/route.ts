@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { newsletterEngagement } from '@/db/schema';
+import { resolveIpGeolocation } from '@/lib/geo/ip-geolocation';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,6 +41,8 @@ export async function GET(request: NextRequest) {
                request.headers.get('x-real-ip') || 
                'unknown';
 
+    const location = await resolveIpGeolocation(ip);
+
     // Record engagement event
     await db
       .insert(newsletterEngagement)
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest) {
         eventType: 'click',
         eventData: {
           url,
-          location: {}, // TODO: Add IP geolocation
+          location,
           device: parseUserAgent(userAgent),
         },
         ipAddress: ip,
@@ -60,9 +63,7 @@ export async function GET(request: NextRequest) {
     // Redirect to destination URL
     return NextResponse.redirect(url);
   } catch (error) {
-    console.error('Error tracking click:', error);
-    
-    // Still redirect even on error
+// Still redirect even on error
     const { searchParams } = new URL(request.url);
     const url = searchParams.get('url');
     if (url) {

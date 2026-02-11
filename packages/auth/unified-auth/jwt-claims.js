@@ -32,12 +32,10 @@ export const updateUserJWTClaims = async (userId, claims) => {
         });
         if (error)
             throw error;
-        console.log('✅ JWT claims updated for user:', userId, claims);
-        return { error: null };
+return { error: null };
     }
     catch (error) {
-        console.error('❌ Error updating JWT claims:', error);
-        return { error: error };
+return { error: error };
     }
 };
 /**
@@ -73,8 +71,7 @@ export const populateJWTClaimsFromProfile = async (userId) => {
         return { claims, error: null };
     }
     catch (error) {
-        console.error('❌ Error populating JWT claims:', error);
-        return { claims: null, error: error };
+return { claims: null, error: error };
     }
 };
 /**
@@ -152,12 +149,10 @@ export const createUserProfileWithClaims = async (userId, role, organizationId, 
         const { error: claimsError } = await updateUserJWTClaims(userId, claims);
         if (claimsError)
             throw claimsError;
-        console.log('✅ User profile created with JWT claims:', userId);
-        return { error: null };
+return { error: null };
     }
     catch (error) {
-        console.error('❌ Error creating user profile with claims:', error);
-        return { error: error };
+return { error: error };
     }
 };
 /**
@@ -184,12 +179,10 @@ export const refreshJWTClaims = async () => {
         const { error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError)
             throw refreshError;
-        console.log('✅ JWT claims refreshed');
-        return { error: null };
+return { error: null };
     }
     catch (error) {
-        console.error('❌ Error refreshing JWT claims:', error);
-        return { error: error };
+return { error: error };
     }
 };
 //# sourceMappingURL=jwt-claims.js.map

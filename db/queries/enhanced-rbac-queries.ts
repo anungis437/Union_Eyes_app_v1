@@ -11,6 +11,7 @@
 
 import { db } from '@/db/db';
 import { eq, and, or, gte, lte, isNull, inArray, sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES
@@ -711,7 +712,10 @@ export async function logPermissionCheck(entry: {
       ${entry.isSensitive || false}
     )
   `).catch(err => {
-    console.error('Failed to write audit log:', err);
+    logger.error('Failed to write audit log', {
+      error: err,
+      organizationId: entry.organizationId,
+    });
     // Don't throw - audit logging should not break the application
   });
 }

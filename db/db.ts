@@ -19,6 +19,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 import { getDatabase as getUnifiedDatabase, checkDatabaseHealth } from "@/lib/database/multi-db-client";
+import { logger } from "@/lib/logger";
 
 // Legacy PostgreSQL client (for backward compatibility)
 // Consider migrating to getUnifiedDatabase() for multi-database support
@@ -68,12 +69,12 @@ export async function logDatabaseConnectionStatus(): Promise<void> {
   try {
     const status = await checkDatabaseConnection();
     if (status.ok) {
-      console.log(`✓ ${status.message}`);
+      logger.info(status.message);
     } else {
-      console.error(`✗ ${status.message}`);
+      logger.error(status.message);
     }
   } catch (error) {
-    console.error("Failed to check database connection:", error);
+    logger.error("Failed to check database connection", { error });
   }
 }
 

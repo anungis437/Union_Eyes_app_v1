@@ -45,6 +45,8 @@ export default function NewClaimPage() {
   const [recordingTime, setRecordingTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout>();
 
   // Form state
@@ -61,19 +63,74 @@ export default function NewClaimPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Voice recording simulation
-  const toggleRecording = () => {
+  // Voice recording with actual audio capture
+  const toggleRecording = async () => {
     if (isRecording) {
+      // Stop recording
       setIsRecording(false);
       clearInterval(timerRef.current);
+      
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      
+      // Process the recorded audio
+      if (audioChunks.length > 0) {
+        try {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'recording.webm');
+          
+          // Send to transcription API
+          const response = await fetch('/api/voice/transcribe', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Append transcribed text to description
+            setFormData(prev => ({
+              ...prev,
+              description: prev.description + (prev.description ? '\n\n' : '') + 
+                          'Voice Recording Transcript:\n' + data.transcription
+            }));
+          }
+        } catch (error) {
+}
+      }
+      
+      setAudioChunks([]);
       setRecordingTime(0);
-      // TODO: Process voice recording and convert to text
     } else {
-      setIsRecording(true);
-      setRecordingTime(0);
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        
+        const chunks: Blob[] = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+        
+        recorder.onstop = () => {
+          setAudioChunks(chunks);
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        recorder.start();
+        setMediaRecorder(recorder);
+        setIsRecording(true);
+        setRecordingTime(0);
+        
+        timerRef.current = setInterval(() => {
+          setRecordingTime(prev => prev + 1);
+        }, 1000);
+      } catch (error) {
+alert('Unable to access microphone. Please ensure you have granted permission.');
+      }
     }
   };
 
@@ -193,8 +250,7 @@ export default function NewClaimPage() {
           });
 
           if (!uploadResponse.ok) {
-            console.error(`Failed to upload ${file.name}`);
-          }
+}
         });
 
         await Promise.all(uploadPromises);
@@ -208,8 +264,7 @@ export default function NewClaimPage() {
         router.push("/dashboard/claims");
       }, 2000);
     } catch (error) {
-      console.error("Error submitting claim:", error);
-      setIsSubmitting(false);
+setIsSubmitting(false);
       alert(error instanceof Error ? error.message : "Failed to submit claim");
     }
   };
@@ -509,11 +564,11 @@ export default function NewClaimPage() {
                     <div>
                       <h4 className="font-semibold text-blue-900 mb-1">{t('forms.whatToInclude')}</h4>
                       <ul className="space-y-1 text-sm text-blue-800">
-                        <li>• {t('forms.whatHappenedWhen')}</li>
-                        <li>• {t('forms.whoInvolved')}</li>
-                        <li>• {t('forms.whereTookPlace')}</li>
-                        <li>• {t('forms.anyWitnessesDocumentation')}</li>
-                        <li>• {t('forms.howAffected')}</li>
+                        <li>â€¢ {t('forms.whatHappenedWhen')}</li>
+                        <li>â€¢ {t('forms.whoInvolved')}</li>
+                        <li>â€¢ {t('forms.whereTookPlace')}</li>
+                        <li>â€¢ {t('forms.anyWitnessesDocumentation')}</li>
+                        <li>â€¢ {t('forms.howAffected')}</li>
                       </ul>
                     </div>
                   </div>

@@ -156,8 +156,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     });
 
   } catch (error) {
-    console.error('Error fetching drift metrics:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch drift metrics' },
       { status: 500 }
     );

@@ -875,8 +875,6 @@ describe('locationTrackingService (singleton)', () => {
 describe('scheduledLocationPurge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock console.log
-    vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   it('should call purgeExpiredLocations and log result', async () => {
@@ -896,9 +894,6 @@ describe('scheduledLocationPurge', () => {
 
     expect(result.deletedCount).toBe(3);
     expect(result.message).toContain('Purged 3 expired location records');
-    expect(console.log).toHaveBeenCalledWith(
-      expect.stringContaining('[CRON] Location purge')
-    );
   });
 
   it('should handle zero expired locations', async () => {
@@ -911,9 +906,6 @@ describe('scheduledLocationPurge', () => {
     const result = await scheduledLocationPurge();
 
     expect(result.deletedCount).toBe(0);
-    expect(console.log).toHaveBeenCalledWith(
-      expect.stringContaining('Purged 0 expired location records')
-    );
   });
 
   it('should return result object with correct structure', async () => {

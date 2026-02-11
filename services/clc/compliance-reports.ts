@@ -30,8 +30,7 @@
  */
 
 import { db } from '@/db';
-import { organizations, perCapitaRemittances } from '@/db/schema';
-// TODO: Create chartOfAccounts schema table
+import { organizations, perCapitaRemittances, chartOfAccounts } from '@/db/schema';
 import { eq, and, gte, lte, sql, desc, asc, inArray } from 'drizzle-orm';
 import type { PerCapitaCalculation, RemittanceStatus } from '@/services/clc/per-capita-calculator';
 

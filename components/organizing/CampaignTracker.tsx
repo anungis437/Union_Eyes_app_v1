@@ -109,8 +109,7 @@ export function CampaignTracker({ organizationId }: CampaignTrackerProps) {
       );
       setFilings(filingsMap);
     } catch (error) {
-      console.error('Error fetching campaigns:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId, selectedStatus]);

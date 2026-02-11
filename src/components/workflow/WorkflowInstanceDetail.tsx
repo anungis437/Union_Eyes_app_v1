@@ -99,7 +99,6 @@ export function WorkflowInstanceDetail({
       const data = await response.json();
       setInstance(data);
     } catch (error) {
-      console.error('Error fetching instance details:', error);
     } finally {
       setLoading(false);
     }

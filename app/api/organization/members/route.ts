@@ -58,8 +58,7 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
       dataType: 'MEMBER_DATA',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-    console.error('Error fetching organization members:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { success: false, error: 'Failed to fetch members' },
       { status: 500 }
     );
@@ -141,9 +140,7 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
       dataType: 'MEMBER_DATA',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-    console.error('Error creating member:', error);
-    
-    // Handle unique constraint violations
+// Handle unique constraint violations
     if (error.code === '23505') {
       return NextResponse.json(
         { success: false, error: 'A member with this email or membership number already exists' },

@@ -99,8 +99,7 @@ function PaymentForm({
       }
 
     } catch (error) {
-      console.error('Payment error:', error);
-      setError('An unexpected error occurred');
+setError('An unexpected error occurred');
       toast({
         title: 'Payment Failed',
         description: 'There was an error processing your payment',
@@ -236,8 +235,7 @@ export default function DuesPaymentForm(props: DuesPaymentFormProps) {
         const { clientSecret } = await response.json();
         setClientSecret(clientSecret);
       } catch (error) {
-        console.error('Error initializing payment:', error);
-        setInitError(true);
+setInitError(true);
         toast({
           title: 'Error',
           description: 'Failed to initialize payment form',

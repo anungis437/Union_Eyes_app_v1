@@ -100,8 +100,7 @@ export const POST = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-      console.error('Error generating form:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

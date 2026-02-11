@@ -23,6 +23,7 @@ import { eq, and, or, desc, asc, sql, inArray, count, gte, lte } from "drizzle-o
 import type { SQL } from "drizzle-orm";
 import { createHash, createHmac } from "crypto";
 import { env, validateEnvironment } from "@/lib/config/env-validation";
+import { logger } from "@/lib/logger";
 import {
   deriveVotingSessionKey,
   signVote,
@@ -115,7 +116,7 @@ export async function getVotingSessionById(
 
     return session;
   } catch (error) {
-    console.error("Error fetching voting session:", error);
+    logger.error("Error fetching voting session", { error, id });
     throw new Error("Failed to fetch voting session");
   }
 }
@@ -176,7 +177,7 @@ export async function listVotingSessions(
       limit,
     };
   } catch (error) {
-    console.error("Error listing voting sessions:", error);
+    logger.error("Error listing voting sessions", { error, filters, pagination });
     throw new Error("Failed to list voting sessions");
   }
 }
@@ -195,7 +196,7 @@ export async function createVotingSession(
 
     return session;
   } catch (error) {
-    console.error("Error creating voting session:", error);
+    logger.error("Error creating voting session", { error, data });
     throw new Error("Failed to create voting session");
   }
 }
@@ -219,7 +220,7 @@ export async function updateVotingSession(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating voting session:", error);
+    logger.error("Error updating voting session", { error, id });
     throw new Error("Failed to update voting session");
   }
 }
@@ -235,7 +236,7 @@ export async function deleteVotingSession(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting voting session:", error);
+    logger.error("Error deleting voting session", { error, id });
     throw new Error("Failed to delete voting session");
   }
 }
@@ -258,7 +259,7 @@ export async function addVotingOption(
 
     return option;
   } catch (error) {
-    console.error("Error adding voting option:", error);
+    logger.error("Error adding voting option", { error, data });
     throw new Error("Failed to add voting option");
   }
 }
@@ -279,7 +280,7 @@ export async function updateVotingOption(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating voting option:", error);
+    logger.error("Error updating voting option", { error, id });
     throw new Error("Failed to update voting option");
   }
 }
@@ -295,7 +296,7 @@ export async function deleteVotingOption(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting voting option:", error);
+    logger.error("Error deleting voting option", { error, id });
     throw new Error("Failed to delete voting option");
   }
 }
@@ -318,7 +319,7 @@ export async function addVoterEligibility(
 
     return eligibility;
   } catch (error) {
-    console.error("Error adding voter eligibility:", error);
+    logger.error("Error adding voter eligibility", { error, data });
     throw new Error("Failed to add voter eligibility");
   }
 }
@@ -345,7 +346,11 @@ export async function bulkAddVoterEligibility(
 
     return inserted.length;
   } catch (error) {
-    console.error("Error bulk adding voter eligibility:", error);
+    logger.error("Error bulk adding voter eligibility", {
+      error,
+      sessionId,
+      memberCount: memberIds.length,
+    });
     throw new Error("Failed to bulk add voter eligibility");
   }
 }
@@ -367,7 +372,7 @@ export async function checkVoterEligibility(
 
     return eligibility || null;
   } catch (error) {
-    console.error("Error checking voter eligibility:", error);
+    logger.error("Error checking voter eligibility", { error, sessionId, memberId });
     throw new Error("Failed to check voter eligibility");
   }
 }
@@ -391,7 +396,7 @@ export async function updateVoterEligibility(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating voter eligibility:", error);
+    logger.error("Error updating voter eligibility", { error, id });
     throw new Error("Failed to update voter eligibility");
   }
 }
@@ -449,7 +454,7 @@ function generateAnonymousVoterId(
 
     return { voterId, voterHash };
   } catch (error) {
-    console.error("Failed to generate anonymous voter ID:", error);
+    logger.error("Failed to generate anonymous voter ID", { error, sessionId, memberId });
     throw new Error("Voting system initialization failed - VOTING_SECRET not configured or invalid");
   }
 }
@@ -503,7 +508,7 @@ export async function castVote(
 
     return vote;
   } catch (error) {
-    console.error("Error casting vote:", error);
+    logger.error("Error casting vote", { error, sessionId, optionId, memberId });
     throw new Error(error instanceof Error ? error.message : "Failed to cast vote");
   }
 }
@@ -526,7 +531,7 @@ export async function hasVoted(
 
     return !!vote;
   } catch (error) {
-    console.error("Error checking if voted:", error);
+    logger.error("Error checking if voted", { error, sessionId, memberId });
     return false;
   }
 }
@@ -593,7 +598,7 @@ export async function calculateResults(sessionId: string): Promise<VotingResults
       quorumMet,
     };
   } catch (error) {
-    console.error("Error calculating results:", error);
+    logger.error("Error calculating results", { error, sessionId });
     throw new Error("Failed to calculate results");
   }
 }
@@ -704,7 +709,7 @@ export async function calculateRankedChoiceResults(
 
       // Safety check: prevent infinite loops
       if (roundNumber > 50) {
-        console.error("IRV algorithm exceeded 50 rounds");
+        logger.error("IRV algorithm exceeded 50 rounds", { sessionId });
         break;
       }
     }
@@ -720,7 +725,7 @@ export async function calculateRankedChoiceResults(
       runnerUp: lastRound?.eliminated || "",
     };
   } catch (error) {
-    console.error("Error calculating ranked choice results:", error);
+    logger.error("Error calculating ranked choice results", { error, sessionId });
     throw new Error("Failed to calculate ranked choice results");
   }
 }
@@ -753,7 +758,7 @@ export async function setProxyVoter(
 
     return updated;
   } catch (error) {
-    console.error("Error setting proxy voter:", error);
+    logger.error("Error setting proxy voter", { error, sessionId, memberId, proxyMemberId });
     throw new Error("Failed to set proxy voter");
   }
 }
@@ -777,7 +782,7 @@ export async function removeProxyVoter(
 
     return updated;
   } catch (error) {
-    console.error("Error removing proxy voter:", error);
+    logger.error("Error removing proxy voter", { error, sessionId, memberId });
     throw new Error("Failed to remove proxy voter");
   }
 }
@@ -833,7 +838,7 @@ export async function getSessionStatistics(sessionId: string): Promise<{
       votesByHour,
     };
   } catch (error) {
-    console.error("Error getting session statistics:", error);
+    logger.error("Error getting session statistics", { error, sessionId });
     throw new Error("Failed to get session statistics");
   }
 }

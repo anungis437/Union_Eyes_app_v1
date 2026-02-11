@@ -130,7 +130,7 @@ export const GET = async (request: NextRequest) => {
         count: rooms.length,
       });
     } catch (error) {
-      console.error('List meeting rooms error:', error);
+      logger.error('List meeting rooms error', { error });
       return NextResponse.json(
         { error: 'Failed to list meeting rooms' },
         { status: 500 }
@@ -222,7 +222,7 @@ export const POST = async (request: NextRequest) => {
         room: newRoom,
       }, { status: 201 });
     } catch (error) {
-      console.error('Create meeting room error:', error);
+      logger.error('Create meeting room error', { error });
       return NextResponse.json(
         { error: 'Failed to create meeting room' },
         { status: 500 }

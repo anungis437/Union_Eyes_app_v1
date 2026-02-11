@@ -10,6 +10,7 @@
 
 import { db } from '@/db/client';
 import { eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export interface Invoice {
   invoiceId: string;
@@ -126,7 +127,7 @@ export async function getBankOfCanadaNoonRate(date: Date): Promise<number> {
 
     return rate;
   } catch (error) {
-    console.error(`Failed to fetch BOC rate:`, error);
+    logger.error('Failed to fetch BOC rate', { error, date: dateStr });
     throw error;
   }
 }

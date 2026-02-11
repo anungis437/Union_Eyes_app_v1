@@ -71,8 +71,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         try {
           workflowResult = await recordSignature(workflowId, userId, signature.signatureId);
         } catch (error) {
-          console.error('Error recording signature in workflow:', error);
-          // Continue even if workflow update fails
+// Continue even if workflow update fails
         }
       }
 
@@ -84,8 +83,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       });
 
     } catch (error) {
-      console.error('Error signing document:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to sign document', details: (error as Error).message },
         { status: 500 }
       );

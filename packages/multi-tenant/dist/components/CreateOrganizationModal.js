@@ -20,7 +20,7 @@ import { useOrganization } from '../hooks/useOrganization';
  *   supabase={supabase}
  *   isOpen={showModal}
  *   onClose={() => setShowModal(false)}
- *   onCreate={(id) => console.log('Created org:', id)}
+ *   onCreate={(id) => undefined}
  * />
  * ```
  */

@@ -7,6 +7,7 @@ import {
   getMemberPaymentPatterns,
   getFinancialDashboard,
 } from '../services/financial-reports';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -69,7 +70,7 @@ router.get(
         data: dashboard,
       });
     } catch (error) {
-      console.error('Dashboard error:', error);
+      logger.error('Dashboard error', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to generate dashboard',
@@ -110,7 +111,7 @@ router.get(
         data: metrics,
       });
     } catch (error) {
-      console.error('Collection metrics error:', error);
+      logger.error('Collection metrics error', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to calculate collection metrics',
@@ -137,7 +138,7 @@ router.get(
         data: statistics,
       });
     } catch (error) {
-      console.error('Arrears statistics error:', error);
+      logger.error('Arrears statistics error', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to calculate arrears statistics',
@@ -178,7 +179,7 @@ router.get(
         data: analysis,
       });
     } catch (error) {
-      console.error('Revenue analysis error:', error);
+      logger.error('Revenue analysis error', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to analyze revenue',
@@ -227,7 +228,7 @@ router.get(
         },
       });
     } catch (error) {
-      console.error('Member payment patterns error:', error);
+      logger.error('Member payment patterns error', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to analyze member payment patterns',
@@ -317,7 +318,7 @@ router.get(
         });
       }
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('Export error', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to export report',

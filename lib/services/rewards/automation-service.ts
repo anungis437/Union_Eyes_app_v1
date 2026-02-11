@@ -8,6 +8,7 @@ import { automationRules, recognitionAwardTypes } from '@/db/schema/recognition-
 import { createAwardRequest, issueAward } from './award-service';
 import { eq, and } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export interface AutomationRule {
   id: string;
@@ -62,7 +63,7 @@ export async function processAnniversaryAwards(orgId: string) {
     });
 
     if (!anniversaryAwardType) {
-      console.warn('[Automation] No anniversary award type found');
+      logger.warn('[Automation] No anniversary award type found', { orgId });
       return { success: true, processed: 0 };
     }
 
@@ -94,13 +95,17 @@ export async function processAnniversaryAwards(orgId: string) {
 
         processed++;
       } catch (error) {
-        console.error(`[Automation] Failed to process anniversary for user ${anniversary.user_id}:`, error);
+        logger.error('[Automation] Failed to process anniversary', {
+          error,
+          orgId,
+          userId: anniversary.user_id,
+        });
       }
     }
 
     return { success: true, processed };
   } catch (error) {
-    console.error('[Automation] Error processing anniversary awards:', error);
+    logger.error('[Automation] Error processing anniversary awards', { error, orgId });
     return { success: false, error };
   }
 }
@@ -195,13 +200,23 @@ export async function processMilestoneAwards(
 
         processed++;
       } catch (error) {
-        console.error(`[Automation] Failed to process milestone award for rule ${rule.id}:`, error);
+        logger.error('[Automation] Failed to process milestone award', {
+          error,
+          orgId,
+          userId,
+          ruleId: rule.id,
+        });
       }
     }
 
     return { success: true, processed };
   } catch (error) {
-    console.error('[Automation] Error processing milestone awards:', error);
+    logger.error('[Automation] Error processing milestone awards', {
+      error,
+      orgId,
+      userId,
+      milestoneType,
+    });
     return { success: false, error };
   }
 }
@@ -220,7 +235,12 @@ export async function processMetricAwards(
     // Similar to milestone awards but for continuous metrics
     return await processMilestoneAwards(orgId, userId, metricName, metricValue);
   } catch (error) {
-    console.error('[Automation] Error processing metric awards:', error);
+    logger.error('[Automation] Error processing metric awards', {
+      error,
+      orgId,
+      userId,
+      metricName,
+    });
     return { success: false, error };
   }
 }
@@ -249,16 +269,24 @@ export async function processScheduledAwards(orgId: string) {
       try {
         // Implement scheduled logic based on rule.conditions.schedule
         // This is a placeholder for cron-based scheduling
-        console.log(`[Automation] Processing scheduled rule: ${rule.name}`);
+        logger.info('[Automation] Processing scheduled rule', {
+          orgId,
+          ruleId: rule.id,
+          ruleName: rule.name,
+        });
         processed++;
       } catch (error) {
-        console.error(`[Automation] Failed to process scheduled rule ${rule.id}:`, error);
+        logger.error('[Automation] Failed to process scheduled rule', {
+          error,
+          orgId,
+          ruleId: rule.id,
+        });
       }
     }
 
     return { success: true, processed };
   } catch (error) {
-    console.error('[Automation] Error processing scheduled awards:', error);
+    logger.error('[Automation] Error processing scheduled awards', { error, orgId });
     return { success: false, error };
   }
 }
@@ -306,10 +334,10 @@ export async function createAutomationRule(rule: {
       })
       .returning();
 
-    console.info('[Automation] Rule created successfully', { ruleId: newRule.id, name: rule.name });
+    logger.info('[Automation] Rule created successfully', { ruleId: newRule.id, name: rule.name });
     return { success: true, rule: newRule };
   } catch (error) {
-    console.error('[Automation] Failed to create automation rule:', error);
+    logger.error('[Automation] Failed to create automation rule', { error, orgId: rule.orgId });
     return { success: false, error };
   }
 }
@@ -339,10 +367,10 @@ export async function updateAutomationRule(ruleId: string, updates: Partial<{
       return { success: false, error: 'Rule not found' };
     }
 
-    console.info('[Automation] Rule updated successfully', { ruleId });
+    logger.info('[Automation] Rule updated successfully', { ruleId });
     return { success: true, rule: updatedRule };
   } catch (error) {
-    console.error('[Automation] Failed to update automation rule:', error);
+    logger.error('[Automation] Failed to update automation rule', { error, ruleId });
     return { success: false, error };
   }
 }
@@ -356,10 +384,10 @@ export async function deleteAutomationRule(ruleId: string) {
       .delete(automationRules)
       .where(eq(automationRules.id, ruleId as any));
 
-    console.info('[Automation] Rule deleted successfully', { ruleId });
+    logger.info('[Automation] Rule deleted successfully', { ruleId });
     return { success: true };
   } catch (error) {
-    console.error('[Automation] Failed to delete automation rule:', error);
+    logger.error('[Automation] Failed to delete automation rule', { error, ruleId });
     return { success: false, error };
   }
 }

@@ -76,8 +76,7 @@ export function PublicJobBoardPage({ organizationSlug }: JobBoardPageProps) {
       const data = await response.json();
       setJobs(data);
     } catch (error) {
-      console.error('Error fetching jobs:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };

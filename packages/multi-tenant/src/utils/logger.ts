@@ -1,5 +1,5 @@
 // Temporary logger utility to work around SecurityLogger import issues
-// This provides a simple console-based logger interface
+// Uses an injected global logger when available to avoid direct console usage.
 
 export interface ILogger {
   info: (message: string, meta?: any) => void;
@@ -9,21 +9,29 @@ export interface ILogger {
 }
 
 export class SimpleLogger implements ILogger {
-  constructor(private component: string) {}
-  
+  private logger: Partial<ILogger> | null;
+
+  constructor(private component: string) {
+    this.logger = (globalThis as any)?.__UNION_EYES_LOGGER__ || null;
+  }
+
+  private format(message: string): string {
+    return `[${this.component}] ${message}`;
+  }
+
   info(message: string, meta?: any) {
-    console.log(`[${this.component}] INFO: ${message}`, meta || '');
+    this.logger?.info?.(this.format(message), meta);
   }
-  
+
   error(message: string, meta?: any) {
-    console.error(`[${this.component}] ERROR: ${message}`, meta || '');
+    this.logger?.error?.(this.format(message), meta);
   }
-  
+
   warn(message: string, meta?: any) {
-    console.warn(`[${this.component}] WARN: ${message}`, meta || '');
+    this.logger?.warn?.(this.format(message), meta);
   }
-  
+
   debug(message: string, meta?: any) {
-    console.debug(`[${this.component}] DEBUG: ${message}`, meta || '');
+    this.logger?.debug?.(this.format(message), meta);
   }
 }

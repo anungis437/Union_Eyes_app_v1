@@ -207,8 +207,8 @@ const PaymentForm: React.FC<{
  *   stripePublishableKey={process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
  *   customerId={organization.stripe_customer_id}
  *   apiEndpoint="/api/billing/payment-methods"
- *   onPaymentMethodAdded={(id) => console.log('Added:', id)}
- *   onPaymentMethodRemoved={(id) => console.log('Removed:', id)}
+ *   onPaymentMethodAdded={(id) => undefined}
+ *   onPaymentMethodRemoved={(id) => undefined}
  * />
  * ```
  */
@@ -309,15 +309,15 @@ export const PaymentMethodManager: React.FC<PaymentMethodManagerProps> = ({
     // Return card brand emoji or icon class
     switch (brandLower) {
       case 'visa':
-        return '💳';
+        return 'ðŸ’³';
       case 'mastercard':
-        return '💳';
+        return 'ðŸ’³';
       case 'amex':
-        return '💳';
+        return 'ðŸ’³';
       case 'discover':
-        return '💳';
+        return 'ðŸ’³';
       default:
-        return '💳';
+        return 'ðŸ’³';
     }
   };
 
@@ -355,7 +355,7 @@ export const PaymentMethodManager: React.FC<PaymentMethodManagerProps> = ({
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-900 capitalize">
-                      {pm.card?.brand} •••• {pm.card?.last4}
+                      {pm.card?.brand} â€¢â€¢â€¢â€¢ {pm.card?.last4}
                     </span>
                     {pm.is_default && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">

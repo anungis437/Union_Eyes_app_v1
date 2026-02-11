@@ -52,7 +52,7 @@ export const GET = async (request: NextRequest) => {
         .insert(externalCalendarConnections)
         .values({
           userId,
-          tenantId: 'default', // TODO: Get from user's organization
+          tenantId: organizationId || 'default-org',
           provider: 'microsoft',
           providerAccountId,
           accessToken,
@@ -73,8 +73,7 @@ export const GET = async (request: NextRequest) => {
         )
       );
     } catch (error) {
-      console.error('Microsoft OAuth callback error:', error);
-      return NextResponse.redirect(
+return NextResponse.redirect(
         new URL(
           `/calendar/sync?error=${encodeURIComponent('Failed to connect Microsoft Calendar')}`,
           request.url

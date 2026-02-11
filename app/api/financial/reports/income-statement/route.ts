@@ -87,8 +87,7 @@ export const GET = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-      console.error('Income statement generation error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to generate income statement', details: error instanceof Error ? error.message : 'Unknown error' },
         { status: 500 }
       );

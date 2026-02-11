@@ -53,8 +53,7 @@ export default function UpgradePlanPopup({
           localStorage.removeItem('active_popup');
         }
       } catch (error) {
-        console.error("Error writing to localStorage:", error);
-      }
+}
     }
   });
   
@@ -64,8 +63,7 @@ export default function UpgradePlanPopup({
       try {
         localStorage.setItem('active_popup', 'upgrade_plan');
       } catch (error) {
-        console.error('Error writing to localStorage:', error);
-      }
+}
     }
   }, [isOpen]);
   
@@ -85,8 +83,7 @@ export default function UpgradePlanPopup({
           return;
         }
       } catch (error) {
-        console.error('Error accessing localStorage:', error);
-      }
+}
       
       // Check if user has already dismissed the popup this session
       try {
@@ -97,8 +94,7 @@ export default function UpgradePlanPopup({
           return;
         }
       } catch (error) {
-        console.error("Error reading from localStorage:", error);
-      }
+}
 
       // Don't show if already manually dismissed this session
       if (manuallyDismissed) {
@@ -124,8 +120,7 @@ export default function UpgradePlanPopup({
             localStorage.setItem('active_popup', 'upgrade_plan');
             setInternalIsOpen(true);
           } catch (error) {
-            console.error('Error accessing localStorage:', error);
-          }
+}
         }, 800);
         
         return () => clearTimeout(timer);
@@ -142,17 +137,13 @@ export default function UpgradePlanPopup({
       const planId = yearly ? yearlyPlanId : monthlyPlanId;
       
       if (!planId) {
-        console.error("Missing plan ID for checkout. Check environment variables WHOP_PLAN_ID_MONTHLY and WHOP_PLAN_ID_YEARLY.");
-        setError("Configuration issue detected. Please visit the pricing page to complete your purchase.");
+setError("Configuration issue detected. Please visit the pricing page to complete your purchase.");
         return;
       }
       
       // Use the dashboard as the redirect URL
       const cleanRedirectUrl = "/dashboard?payment=success";
-      
-      console.log(`Creating checkout with planId: ${planId}`);
-      
-      // Call the API endpoint to create a checkout session
+// Call the API endpoint to create a checkout session
       const response = await fetch('/api/whop/create-checkout', {
         method: 'POST',
         headers: {
@@ -166,36 +157,28 @@ export default function UpgradePlanPopup({
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error creating checkout:', errorData);
-        setError('Failed to create checkout. Please try again later.');
+setError('Failed to create checkout. Please try again later.');
         return;
       }
       
       const data = await response.json();
       
       if (!data.checkoutUrl) {
-        console.error('No checkout URL in response', data);
-        setError('Failed to create checkout. Please try again.');
+setError('Failed to create checkout. Please try again.');
         return;
       }
-      
-      console.log('Created Whop checkout with URL:', data.checkoutUrl);
-      console.log('Beginning redirect to Whop checkout page');
-      
-      // Store information in localStorage to help with state persistence across redirects
+// Store information in localStorage to help with state persistence across redirects
       try {
         localStorage.setItem('checkout_started', 'true');
         localStorage.setItem('checkout_timestamp', new Date().toISOString());
         localStorage.setItem('checkout_plan_type', yearly ? 'yearly' : 'monthly');
       } catch (error) {
-        console.error('Could not write to localStorage:', error);
-      }
+}
       
       // Redirect to the checkout URL
       window.location.href = data.checkoutUrl;
     } catch (error) {
-      console.error('Error initiating checkout:', error);
-      setError('An unexpected error occurred. Please try again later.');
+setError('An unexpected error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }

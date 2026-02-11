@@ -147,8 +147,7 @@ export function ClcRemittancesDashboard() {
       // Calculate summary
       calculateSummary(data.remittances);
     } catch (error) {
-      console.error('Error fetching remittances:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to fetch remittances',
         variant: 'destructive',
@@ -190,8 +189,7 @@ export function ClcRemittancesDashboard() {
       
       setTrendData(trends);
     } catch (error) {
-      console.error('Error fetching trend data:', error);
-    }
+}
   };
 
   // Initial load
@@ -263,8 +261,7 @@ export function ClcRemittancesDashboard() {
         description: `Downloaded ${format.toUpperCase()} file`,
       });
     } catch (error) {
-      console.error('Export error:', error);
-      toast({
+toast({
         title: 'Export failed',
         description: 'Failed to export remittances',
         variant: 'destructive',
@@ -292,8 +289,7 @@ export function ClcRemittancesDashboard() {
 
       fetchRemittances();
     } catch (error) {
-      console.error('Submission error:', error);
-      toast({
+toast({
         title: 'Submission failed',
         description: 'Failed to submit remittance',
         variant: 'destructive',

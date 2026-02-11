@@ -106,8 +106,7 @@ export function RealTimeTicker({
       );
       setLastUpdate(new Date());
     } catch (error) {
-      console.error("Failed to refresh metrics:", error);
-    } finally {
+} finally {
       setIsRefreshing(false);
     }
   };
@@ -422,8 +421,7 @@ export function useRealtimeMetrics(fetchMetrics: () => Promise<MetricData[]>) {
       setLoading(false);
       return data;
     } catch (error) {
-      console.error("Failed to fetch metrics:", error);
-      throw error;
+throw error;
     }
   };
 

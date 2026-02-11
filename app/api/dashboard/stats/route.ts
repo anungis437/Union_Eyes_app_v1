@@ -1,7 +1,7 @@
 /**
  * Dashboard Statistics API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - Database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -69,15 +69,9 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     const { searchParams } = new URL(request.url);
     const queryTenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId'));
     const tenantId = queryTenantId || context.organizationId;
-    
-    console.log('[API /api/dashboard/stats] Fetching stats for tenantId:', tenantId, { fromQuery: !!queryTenantId });
-    
-    // Use cached stats
+// Use cached stats
     const response = await getCachedDashboardStats(tenantId);
-    
-    console.log('[API /api/dashboard/stats] Returning response:', response);
-    
-    // Log audit event
+// Log audit event
     await logApiAuditEvent({
       userId,
       organizationId,
@@ -95,8 +89,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching dashboard statistics:", error);
-    // Return default empty stats instead of error
+// Return default empty stats instead of error
     return NextResponse.json({
       activeClaims: 0,
       pendingReviews: 0,

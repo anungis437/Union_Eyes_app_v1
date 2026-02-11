@@ -3,15 +3,15 @@
  * 
  * @deprecated This module has been consolidated into @/lib/api-auth-guard
  * 
- * ⚠️ DEPRECATION NOTICE ⚠️
+ * âš ï¸ DEPRECATION NOTICE âš ï¸
  * This file is being phased out. All enterprise RBAC features have been
  * consolidated into the canonical authentication module: @/lib/api-auth-guard
  * 
  * Migration Guide:
  * 
- * 1. withEnhancedRoleAuth() → Use withEnhancedRoleAuth() from @/lib/api-auth-guard
- * 2. withPermission() → Use withPermission() from @/lib/api-auth-guard
- * 3. withScopedRoleAuth() → Use withScopedRoleAuth() from @/lib/api-auth-guard
+ * 1. withEnhancedRoleAuth() â†’ Use withEnhancedRoleAuth() from @/lib/api-auth-guard
+ * 2. withPermission() â†’ Use withPermission() from @/lib/api-auth-guard
+ * 3. withScopedRoleAuth() â†’ Use withScopedRoleAuth() from @/lib/api-auth-guard
  * 
  * Example migration:
  * ```typescript
@@ -219,8 +219,7 @@ export function withEnhancedRoleAuth<T = any>(
       return await handler(request, enhancedContext);
       
     } catch (error) {
-      console.error('Enhanced RBAC middleware error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Authorization failed. Please try again.' },
         { status: 500 }
       );
@@ -333,8 +332,7 @@ export function withPermission<T = any>(
       return await handler(request, enhancedContext);
       
     } catch (error) {
-      console.error('Permission middleware error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Authorization failed.' },
         { status: 500 }
       );
@@ -442,8 +440,7 @@ export function withScopedRoleAuth<T = any>(
       return await handler(request, enhancedContext);
       
     } catch (error) {
-      console.error('Scoped role middleware error:', error);
-      return NextResponse.json({ error: 'Authorization failed.' }, { status: 500 });
+return NextResponse.json({ error: 'Authorization failed.' }, { status: 500 });
     }
   });
 }
@@ -532,8 +529,7 @@ async function getPermissionExceptionId(
     const result = await db.execute(query);
     return result[0]?.id || null;
   } catch (error) {
-    console.error('Error fetching permission exception ID:', error);
-    return null;
+return null;
   }
 }
 
@@ -573,8 +569,7 @@ async function checkMemberPermission(
       try {
         await incrementExceptionUsage(exceptionId);
       } catch (error) {
-        console.error('Failed to increment exception usage:', error);
-        // Don't fail the request if usage tracking fails
+// Don't fail the request if usage tracking fails
       }
       
       return {

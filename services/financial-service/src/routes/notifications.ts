@@ -13,6 +13,7 @@ import {
   processPendingNotifications,
   retryFailedNotifications,
 } from '../services/notification-service';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -80,7 +81,7 @@ router.post('/queue', async (req: Request, res: Response) => {
       message: 'Notification queued successfully',
     });
   } catch (error: any) {
-    console.error('Queue notification error:', error);
+    logger.error('Queue notification error', { error });
     res.status(400).json({
       success: false,
       error: error.message,
@@ -111,7 +112,7 @@ router.get('/preferences', async (req: Request, res: Response) => {
       preferences,
     });
   } catch (error: any) {
-    console.error('Get preferences error:', error);
+    logger.error('Get preferences error', { error });
     res.status(500).json({
       success: false,
       error: error.message,
@@ -144,7 +145,7 @@ router.put('/preferences', async (req: Request, res: Response) => {
       message: 'Preferences updated successfully',
     });
   } catch (error: any) {
-    console.error('Update preferences error:', error);
+    logger.error('Update preferences error', { error });
     res.status(400).json({
       success: false,
       error: error.message,
@@ -177,7 +178,7 @@ router.get('/history', async (req: Request, res: Response) => {
       count: history.length,
     });
   } catch (error: any) {
-    console.error('Get history error:', error);
+    logger.error('Get history error', { error });
     res.status(500).json({
       success: false,
       error: error.message,
@@ -201,7 +202,7 @@ router.post('/process', async (req: Request, res: Response) => {
       message: `Processed ${processed} notifications`,
     });
   } catch (error: any) {
-    console.error('Process notifications error:', error);
+    logger.error('Process notifications error', { error });
     res.status(500).json({
       success: false,
       error: error.message,
@@ -225,7 +226,7 @@ router.post('/retry-failed', async (req: Request, res: Response) => {
       message: `Retried ${retried} failed notifications`,
     });
   } catch (error: any) {
-    console.error('Retry failed notifications error:', error);
+    logger.error('Retry failed notifications error', { error });
     res.status(500).json({
       success: false,
       error: error.message,
@@ -272,7 +273,7 @@ router.post('/test', async (req: Request, res: Response) => {
       message: 'Test notification sent',
     });
   } catch (error: any) {
-    console.error('Test notification error:', error);
+    logger.error('Test notification error', { error });
     res.status(500).json({
       success: false,
       error: error.message,

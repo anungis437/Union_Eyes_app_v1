@@ -116,7 +116,7 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 **Failure Handling:**
 
-- Exit code 1 → CI pipeline fails
+- Exit code 1 â†’ CI pipeline fails
 
 - Generate `rls-report.json` artifact
 
@@ -327,9 +327,7 @@ import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
 async function testImmutability() {
-  console.log('Testing immutability on staging...');
-
-  try {
+try {
     // Attempt to modify immutable record
     await db.execute(sql`
       UPDATE grievance_transitions
@@ -337,16 +335,12 @@ async function testImmutability() {
       WHERE id = (SELECT id FROM grievance_transitions LIMIT 1)
 
     `);
-
-    console.error('❌ FAIL: Immutability NOT enforced');
-    process.exit(1);
+process.exit(1);
   } catch (error) {
     if (error.message.includes('immutable') || error.message.includes('cannot update')) {
-      console.log('✅ PASS: Immutability enforced correctly');
-      process.exit(0);
+process.exit(0);
     } else {
-      console.error('❌ FAIL: Unexpected error:', error.message);
-      process.exit(1);
+process.exit(1);
     }
   }
 }
@@ -416,11 +410,11 @@ pnpm vitest run __tests__/integration/e2e/ --reporter=verbose
 
 3. **E2E User Flows**
 
-   - Claim submission → approval → resolution
+   - Claim submission â†’ approval â†’ resolution
 
-   - Election creation → voting → results
+   - Election creation â†’ voting â†’ results
 
-   - Message thread creation → replies
+   - Message thread creation â†’ replies
 
 ---
 
@@ -457,22 +451,22 @@ pnpm vitest run __tests__/integration/e2e/ --reporter=verbose
 
    ```
 
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   🎯 RELEASE CONTRACT SUMMARY
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+   ðŸŽ¯ RELEASE CONTRACT SUMMARY
+   â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
    Commit: bcf0aee8
    Branch: main
    Date: 2026-02-09 14:30:00 UTC
 
-   ✅ Critical Security Tests: PASSED
-   ✅ RLS Coverage (Scoped): PASSED
-   ✅ Type Checking: PASSED
-   ✅ Linting: PASSED
+   âœ… Critical Security Tests: PASSED
+   âœ… RLS Coverage (Scoped): PASSED
+   âœ… Type Checking: PASSED
+   âœ… Linting: PASSED
 
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   🚀 RELEASE CONTRACT VERIFIED
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+   ðŸš€ RELEASE CONTRACT VERIFIED
+   â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
    ```
 

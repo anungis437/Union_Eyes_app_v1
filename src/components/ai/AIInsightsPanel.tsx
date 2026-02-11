@@ -93,7 +93,6 @@ export function AIInsightsPanel({
 
       setInsights(mockInsights);
     } catch (error) {
-      console.error('Failed to fetch insights:', error);
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +127,6 @@ export function AIInsightsPanel({
         }),
       });
     } catch (error) {
-      console.error('Failed to send feedback:', error);
     }
   };
 

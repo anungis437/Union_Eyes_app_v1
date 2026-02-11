@@ -10,6 +10,7 @@ import { db } from '@/db';
 import { cbaClause, collectiveAgreements } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import type { ClauseType } from '@/db/schema/cba-clauses-schema';
+import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -90,7 +91,7 @@ export async function extractClausesFromPDF(
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    console.error('Error extracting clauses:', error);
+    logger.error('Error extracting clauses', { error, cbaId });
     return {
       success: false,
       clauses: [],
@@ -130,7 +131,7 @@ async function extractTextFromPDF(pdfUrl: string): Promise<string> {
 
     return response.choices[0]?.message?.content || '';
   } catch (error) {
-    console.error('Error extracting text from PDF:', error);
+    logger.error('Error extracting text from PDF', { error, pdfUrl });
     throw new Error('Failed to extract text from PDF');
   }
 }
@@ -209,7 +210,7 @@ Return a JSON array of extracted clauses.`;
     const result = JSON.parse(response.choices[0]?.message?.content || '{"clauses": []}');
     return result.clauses || [];
   } catch (error) {
-    console.error('Error identifying clauses:', error);
+    logger.error('Error identifying clauses', { error });
     throw new Error('Failed to identify clauses in text');
   }
 }
@@ -312,7 +313,7 @@ Provide the best possible extraction for this clause.`,
     const result = JSON.parse(response.choices[0]?.message?.content || '{}');
     return result.clause || null;
   } catch (error) {
-    console.error('Error re-extracting clause:', error);
+    logger.error('Error re-extracting clause', { error, clauseId });
     return null;
   }
 }
@@ -340,7 +341,7 @@ export async function generateClauseSummary(clauseContent: string): Promise<stri
 
     return response.choices[0]?.message?.content || '';
   } catch (error) {
-    console.error('Error generating summary:', error);
+    logger.error('Error generating summary', { error });
     return '';
   }
 }
@@ -384,7 +385,7 @@ Clause: ${clause}`,
     const result = JSON.parse(response.choices[0]?.message?.content || '{"quality": "fair", "issues": [], "suggestions": []}');
     return result;
   } catch (error) {
-    console.error('Error analyzing clause quality:', error);
+    logger.error('Error analyzing clause quality', { error });
     return {
       quality: 'fair',
       issues: ['Unable to analyze'],

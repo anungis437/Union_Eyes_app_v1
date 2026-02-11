@@ -35,8 +35,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
       try {
         localStorage.setItem('active_popup', 'welcome_message');
       } catch (error) {
-        console.error('Error writing to localStorage:', error);
-      }
+}
     }
   }, [isOpen]);
   
@@ -52,8 +51,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
         return;
       }
     } catch (error) {
-      console.error('Error accessing localStorage:', error);
-    }
+}
     
     // Check if we've already shown this welcome message
     const welcomeKey = `welcome_shown_${profile.userId}`;
@@ -66,21 +64,12 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
     // Check if the URL has a payment=success parameter
     const url = new URL(window.location.href);
     const isPaymentSuccess = url.searchParams.get('payment') === 'success';
-    
-    console.log('Welcome popup check:', { 
-      hasShownWelcome,
-      isNewUser,
-      isPaymentSuccess,
-      createdAt: profile.createdAt 
-    });
-    
-    // Show the popup if:
+// Show the popup if:
     // 1. We haven't shown it before AND the user is new, OR
     // 2. Payment was successful (paid user should see confirmation regardless of timing)
     // Note: For payment success, the payment success popup has higher priority
     if ((!hasShownWelcome && isNewUser) && !isPaymentSuccess) {
-      console.log('Showing welcome popup');
-      const timer = setTimeout(() => {
+const timer = setTimeout(() => {
         // Check again right before showing that no other popup became active
         try {
           const activePopup = localStorage.getItem('active_popup');
@@ -97,8 +86,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
             confettiShown.current = true;
           }
         } catch (error) {
-          console.error('Error accessing localStorage:', error);
-        }
+}
       }, 800);
       
       return () => clearTimeout(timer);
@@ -116,17 +104,14 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
         localStorage.removeItem('active_popup');
       }
     } catch (error) {
-      console.error('Error accessing localStorage:', error);
-    }
+}
     
     // Remember that we've shown it by saving to localStorage
     try {
       const welcomeKey = `welcome_shown_${profile.userId}`;
       localStorage.setItem(welcomeKey, new Date().toISOString());
-      console.log('Saved welcome popup state to localStorage');
-    } catch (error) {
-      console.error("Error writing to localStorage:", error);
-    }
+} catch (error) {
+}
   };
   
   // Trigger confetti animation
@@ -138,8 +123,7 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
         origin: { y: 0.6 }
       });
     } catch (error) {
-      console.error("Error triggering confetti:", error);
-    }
+}
   };
   
   // Get the appropriate number of credits based on plan
@@ -203,9 +187,9 @@ export default function WelcomeMessagePopup({ profile }: WelcomeMessagePopupProp
           {/* Header with emoji decorations */}
           <div className="px-6 pt-5 pb-3">
             <div className="flex items-center justify-center mb-3">
-              <span className="text-2xl mr-2">🎉</span>
+              <span className="text-2xl mr-2">Ã°Å¸Å½â€°</span>
               <h3 className="text-xl font-bold text-gray-900">Welcome!</h3>
-              <span className="text-2xl ml-2">🎊</span>
+              <span className="text-2xl ml-2">Ã°Å¸Å½Å </span>
             </div>
             <p className="text-sm text-gray-600 mb-3 text-center">
               Thanks for joining! We&apos;re excited to have you here.

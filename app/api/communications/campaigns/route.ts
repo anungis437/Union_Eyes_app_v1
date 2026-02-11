@@ -83,8 +83,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
 
     return NextResponse.json({ campaigns });
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch campaigns' },
       { status: 500 }
     );
@@ -176,9 +175,7 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
         { status: 400 }
       );
     }
-
-    console.error('Error creating campaign:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create campaign' },
       { status: 500 }
     );

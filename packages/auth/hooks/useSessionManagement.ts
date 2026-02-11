@@ -61,12 +61,6 @@ export interface UseSessionManagementReturn {
   
   /** Refresh sessions manually */
   refresh: () => Promise<void>;
-
-    const supabase = useMemo(() => {
-      const { url, anonKey } = getSupabaseConfig();
-      if (!url || !anonKey) return null;
-      return createClient(url, anonKey);
-    }, []);
   
   /** Terminate a specific session */
   terminateSession: (sessionId: string) => Promise<boolean>;
@@ -129,6 +123,12 @@ export function useSessionManagement(
   const [currentSession, setCurrentSession] = useState<SessionInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  const supabase = useMemo(() => {
+    const { url, anonKey } = getSupabaseConfig();
+    if (!url || !anonKey) return null;
+    return createClient(url, anonKey);
+  }, []);
 
   const sessionManager = useMemo(() => {
     const config = getSupabaseConfig();

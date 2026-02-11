@@ -429,8 +429,7 @@ export class BillingService {
                     await this.handleInvoicePaymentFailed(event.data.object);
                     break;
                 default:
-                    console.log(`Unhandled webhook event type: ${event.type}`);
-            }
+}
             return { success: true, error: null };
         }
         catch (error) {

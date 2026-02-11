@@ -121,8 +121,7 @@ export const POST = async (
                 : arrearsCase.escalationHistory;
             }
           } catch (parseError) {
-            console.error('Error parsing escalation history:', parseError);
-            escalationHistory = [];
+escalationHistory = [];
           }
 
           // Create escalation record
@@ -211,8 +210,7 @@ export const POST = async (
             severity: 'high',
             details: { error: error instanceof Error ? error.message : 'Unknown error', caseId: params.caseId },
           });
-          console.error('Escalate case error:', error);
-          return NextResponse.json(
+return NextResponse.json(
             { error: 'Failed to escalate case' },
             { status: 500 }
           );

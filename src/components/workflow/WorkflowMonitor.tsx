@@ -105,7 +105,6 @@ export function WorkflowMonitor({
       setInstances(data);
       calculateStats(data);
     } catch (error) {
-      console.error('Error fetching workflow instances:', error);
     } finally {
       setLoading(false);
     }
@@ -165,7 +164,6 @@ export function WorkflowMonitor({
 
       fetchInstances();
     } catch (error) {
-      console.error('Error cancelling workflow:', error);
     }
   };
 

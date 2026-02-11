@@ -124,10 +124,10 @@ function getKeyVaultClient(): SecretClient {
       const credential = new DefaultAzureCredential();
       keyVaultClient = new SecretClient(KEY_VAULT_URL, credential);
       
-      console.log(`[Key Vault] Initialized client for ${KEY_VAULT_URL}`);
+      logger.info(`[Key Vault] Initialized client for ${KEY_VAULT_URL}`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[Key Vault] Failed to initialize client:', errorMessage);
+      logger.error('[Key Vault] Failed to initialize client', { error: errorMessage });
       throw new Error(`Failed to initialize Key Vault client: ${errorMessage}`);
     }
   }
@@ -148,14 +148,14 @@ function getKeyVaultClient(): SecretClient {
 export async function getEncryptionKey(): Promise<string> {
   // Return cached key if still valid
   if (isCachedKeyValid()) {
-    console.log('[Key Vault] Using cached encryption key');
+    logger.info('[Key Vault] Using cached encryption key');
     return cachedKey!.value;
   }
 
   try {
     const client = getKeyVaultClient();
     
-    console.log(`[Key Vault] Retrieving secret: ${SECRET_NAME}`);
+    logger.info(`[Key Vault] Retrieving secret: ${SECRET_NAME}`);
     const secret = await client.getSecret(SECRET_NAME);
 
     if (!secret.value) {
@@ -181,7 +181,7 @@ export async function getEncryptionKey(): Promise<string> {
       timestamp: new Date()
     });
 
-    console.log(`[Key Vault] Encryption key retrieved successfully (version: ${version})`);
+    logger.info(`[Key Vault] Encryption key retrieved successfully (version: ${version})`);
     return secret.value;
 
   } catch (error) {
@@ -196,7 +196,7 @@ export async function getEncryptionKey(): Promise<string> {
       timestamp: new Date()
     });
 
-    console.error('[Key Vault] Failed to retrieve encryption key:', errorMessage);
+    logger.error('[Key Vault] Failed to retrieve encryption key', { error: errorMessage });
     throw new Error(`Failed to retrieve encryption key from Key Vault: ${errorMessage}`);
   }
 }
@@ -255,10 +255,10 @@ export async function setEncryptionKeyInSession(
       throw new Error('Unsupported database client type');
     }
 
-    console.log('[Key Vault] Encryption key set in database session');
+    logger.info('[Key Vault] Encryption key set in database session');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[Key Vault] Failed to set encryption key in session:', errorMessage);
+    logger.error('[Key Vault] Failed to set encryption key in session', { error: errorMessage });
     throw new Error(`Failed to set encryption key in database session: ${errorMessage}`);
   }
 }
@@ -273,7 +273,7 @@ export async function setEncryptionKeyInSession(
  */
 export function invalidateKeyCache(): void {
   cachedKey = null;
-  console.log('[Key Vault] Encryption key cache invalidated');
+  logger.info('[Key Vault] Encryption key cache invalidated');
 }
 
 /**
@@ -283,7 +283,7 @@ export function invalidateKeyCache(): void {
  * After rotating in Azure, call this function to force applications to retrieve new key.
  */
 export async function rotateEncryptionKey(): Promise<void> {
-  console.log('[Key Vault] Rotating encryption key...');
+  logger.info('[Key Vault] Rotating encryption key...');
   
   // Invalidate cache
   invalidateKeyCache();
@@ -291,7 +291,7 @@ export async function rotateEncryptionKey(): Promise<void> {
   // Retrieve new key
   const newKey = await getEncryptionKey();
   
-  console.log(`[Key Vault] Encryption key rotated successfully (version: ${cachedKey?.version})`);
+  logger.info(`[Key Vault] Encryption key rotated successfully (version: ${cachedKey?.version})`);
   
   // Return new key for database migration if needed
   return;

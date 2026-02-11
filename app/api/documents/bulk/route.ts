@@ -142,8 +142,7 @@ try {
         severity: 'high',
         details: { operation: body.operation, error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error("Error performing bulk operation:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to perform bulk operation", details: error instanceof Error ? error.message : "Unknown error" },
         { status: 500 }
       );

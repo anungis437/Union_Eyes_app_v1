@@ -369,8 +369,7 @@ try {
     // Handle success
   }
 } catch (error) {
-  console.error('API Error:', error);
-  // Show user-friendly error message
+// Show user-friendly error message
 }
 ```
 

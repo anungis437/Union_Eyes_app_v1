@@ -50,8 +50,7 @@ async function postHandler(req: NextRequest, context) {
       message: 'PDF export job created. Poll /api/exports/[id] for status.',
     }, { status: 202 });
   } catch (error) {
-    console.error('PDF export error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create PDF export' },
       { status: 500 }
     );

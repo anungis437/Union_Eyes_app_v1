@@ -99,7 +99,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       ],
     });
   } catch (error) {
-    console.error("Data erasure request error:", error);
+    logger.error("Data erasure request error", { error });
     return NextResponse.json(
       { error: "Failed to process data erasure request" },
       { status: 500 }
@@ -164,7 +164,7 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
       executedBy: userId,
     });
   } catch (error) {
-    console.error("Data erasure execution error:", error);
+    logger.error("Data erasure execution error", { error });
     return NextResponse.json(
       { error: "Failed to execute data erasure" },
       { status: 500 }
@@ -207,7 +207,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       pending: erasureRequests.filter((r) => r.status === "pending").length,
     });
   } catch (error) {
-    console.error("Get erasure requests error:", error);
+    logger.error("Get erasure requests error", { error });
     return NextResponse.json(
       { error: "Failed to retrieve requests" },
       { status: 500 }

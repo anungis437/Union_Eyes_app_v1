@@ -28,6 +28,7 @@ import {
 } from '@/db/schema';
 import { eq, and, desc, asc, like, sql, isNull, not, gte, lte } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 export type DataSensitivity = 'standard' | 'sensitive' | 'sacred';
 
@@ -99,7 +100,7 @@ export class IndigenousDataService {
         ),
       });
 
-      console.log(`[OCAP®] Verifying Band Council ownership for member ${memberId}`);
+      logger.info('Verifying Band Council ownership', { memberId });
       
       const bandCouncil = await db.query.bandCouncils.findFirst({
         where: eq(bandCouncils.id, memberData.bandCouncilId),
@@ -112,7 +113,7 @@ export class IndigenousDataService {
         expiresAt: consent?.expiresAt || undefined,
       };
     } catch (error) {
-      console.error('[OCAP®] Error verifying Band Council ownership:', error);
+      logger.error('Error verifying Band Council ownership', { error, memberId });
       return {
         hasAgreement: false,
         reason: 'Database error during verification'
@@ -170,12 +171,13 @@ export class IndigenousDataService {
       approvedBy: requesterId,
     });
 
-    console.log('[OCAP®] Data access request created:');
-    console.log(`  Requester: ${requesterId}`);
-    console.log(`  Data Type: ${dataType}`);
-    console.log(`  Sensitivity: ${sensitivity}`);
-    console.log(`  Band Council Approval Required: ${requiresBandCouncilApproval}`);
-    console.log(`  Elder Approval Required: ${requiresElderApproval}`);
+    logger.info('[OCAP®] Data access request created', {
+      requesterId,
+      dataType,
+      sensitivity,
+      requiresBandCouncilApproval,
+      requiresElderApproval,
+    });
 
     return {
       id,
@@ -204,7 +206,7 @@ export class IndigenousDataService {
     grantedBy?: string;
     expiresAt?: Date;
   }> {
-    console.log(`[OCAP®] Checking access for user ${userId} to ${dataType} (${sensitivity})`);
+    logger.info('[OCAP®] Checking access for user', { userId, dataType, sensitivity });
 
     // Public data: Always accessible
     if (sensitivity === 'standard') {
@@ -256,7 +258,10 @@ export class IndigenousDataService {
 
     if (config.hasOnPremiseServer && config.endpoint) {
       // Store on on-premise server (on-reserve)
-      console.log(`[OCAP®] Routing to on-premise storage: ${config.endpoint}`);
+      logger.info('[OCAP®] Routing to on-premise storage', {
+        reserveId,
+        endpoint: config.endpoint,
+      });
       
       return {
         storageLocation: 'on_premise',
@@ -266,7 +271,7 @@ export class IndigenousDataService {
     }
 
     // Fallback: Cloud storage with Band Council-managed keys
-    console.log('[OCAP®] Routing to cloud storage (encrypted, Canada-only)');
+    logger.info('[OCAP®] Routing to cloud storage (encrypted, Canada-only)', { reserveId });
     
     return {
       storageLocation: 'cloud_encrypted',
@@ -301,7 +306,7 @@ export class IndigenousDataService {
         storageLocation: bandCouncil.dataResidencyRequired ? 'canada_only' : 'global'
       };
     } catch (error) {
-      console.error('[OCAP®] Error fetching storage config:', error);
+      logger.error('[OCAP®] Error fetching storage config', { error, reserveId });
       return {
         reserveId,
         hasOnPremiseServer: false,
@@ -393,11 +398,12 @@ export class IndigenousDataService {
   }> {
     const requestId = uuidv4();
 
-    console.log('[OCAP®] Elder approval requested:');
-    console.log(`  Data ID: ${dataId}`);
-    console.log(`  Requested By: ${requestedBy}`);
-    console.log(`  Purpose: ${purpose}`);
-    console.log(`  Status: pending (awaiting Elder review)`);
+    logger.info('[OCAP®] Elder approval requested', {
+      dataId,
+      requestedBy,
+      purpose,
+      status: 'pending',
+    });
 
     // In production, this would create a formal elder approval request
     // For now, log the request
@@ -518,7 +524,7 @@ export class IndigenousDataService {
         ]
       };
     } catch (error) {
-      console.error('[OCAP®] Error generating compliance report:', error);
+      logger.error('[OCAP®] Error generating compliance report', { error, organizationId });
       throw error;
     }
   }
@@ -539,10 +545,12 @@ export class IndigenousDataService {
   }> {
     const exportId = `EXPORT-${uuidv4()}`;
 
-    console.log('[OCAP®] Data export for Band Council:');
-    console.log(`  Band: ${bandName}`);
-    console.log(`  Categories: ${dataCategories.join(', ')}`);
-    console.log(`  Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`);
+    logger.info('[OCAP®] Data export for Band Council', {
+      bandName,
+      dataCategories,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
 
     // Query access logs for the date range
     const accessLogs = await db.query.indigenousDataAccessLog.findMany({
@@ -685,9 +693,11 @@ export async function setupOnPremiseStorage(
   message: string;
   config?: OnPremiseStorageConfig;
 }> {
-  console.log(`[OCAP®] Setting up on-premise storage for reserve ${reserveId}`);
-  console.log(`  Server Endpoint: ${serverEndpoint}`);
-  console.log(`  Contact: ${bandCouncilContactEmail}`);
+  logger.info('[OCAP®] Setting up on-premise storage', {
+    reserveId,
+    serverEndpoint,
+    bandCouncilContactEmail,
+  });
 
   // Test connectivity (placeholder)
   const config: OnPremiseStorageConfig = {

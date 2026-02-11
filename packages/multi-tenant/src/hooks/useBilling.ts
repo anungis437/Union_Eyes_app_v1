@@ -363,7 +363,6 @@ export function useBilling(options: UseBillingOptions): UseBillingReturn {
               filter: `organization_id=eq.${organizationId}`,
             },
             async (payload) => {
-              console.log('Subscription change:', payload);
               await loadSubscription();
             }
           )
@@ -376,13 +375,12 @@ export function useBilling(options: UseBillingOptions): UseBillingReturn {
               filter: `organization_id=eq.${organizationId}`,
             },
             async (payload) => {
-              console.log('Usage change:', payload);
               await loadUsage();
             }
           )
           .subscribe();
       } catch (err) {
-        console.error('Failed to setup realtime:', err);
+        setError(err as Error);
       }
     };
 

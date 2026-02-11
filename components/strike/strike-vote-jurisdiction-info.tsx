@@ -123,8 +123,7 @@ export function StrikeVoteJurisdictionInfo({
           }
         }
       } catch (err) {
-        console.error('Error fetching requirements:', err);
-        setError(
+setError(
           err instanceof Error ? err.message : 'Failed to load requirements'
         );
       } finally {

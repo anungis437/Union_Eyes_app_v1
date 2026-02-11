@@ -171,8 +171,7 @@ export const GET = withRoleAuth(20, async (request, context) => {
           dataType: 'MEMBER_DATA',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-        console.error("Error exporting members:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to export members", details: error instanceof Error ? error.message : "Unknown error" },
           { status: 500 }
         );

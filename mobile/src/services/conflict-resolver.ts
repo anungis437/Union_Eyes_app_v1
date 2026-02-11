@@ -85,10 +85,8 @@ class ConflictResolver {
       if (serialized) {
         const conflicts: ConflictData[] = JSON.parse(serialized);
         conflicts.forEach((conflict) => this.conflicts.set(conflict.id, conflict));
-        console.log(`[ConflictResolver] Loaded ${conflicts.length} persisted conflicts`);
       }
-    } catch (error) {
-      console.error('[ConflictResolver] Failed to load persisted conflicts:', error);
+    } catch {
     }
   }
 
@@ -99,8 +97,7 @@ class ConflictResolver {
     try {
       const conflicts = Array.from(this.conflicts.values());
       conflictStorage.set('conflicts', JSON.stringify(conflicts));
-    } catch (error) {
-      console.error('[ConflictResolver] Failed to persist conflicts:', error);
+    } catch {
     }
   }
 
@@ -118,16 +115,11 @@ class ConflictResolver {
     const hasConflict = this.hasDataConflict(localData, serverData);
 
     if (!hasConflict) {
-      console.log(`[ConflictResolver] No conflict detected for ${entity}:${entityId}`);
       return {
         resolved: true,
         data: serverData,
       };
     }
-
-    console.log(
-      `[ConflictResolver] Conflict detected for ${entity}:${entityId}, strategy: ${strategy}`
-    );
 
     // Create conflict record
     const conflict: ConflictData<T> = {
@@ -151,7 +143,6 @@ class ConflictResolver {
     // Attempt automatic resolution
     const handler = this.strategyHandlers.get(strategy);
     if (!handler) {
-      console.error(`[ConflictResolver] Unknown strategy: ${strategy}`);
       return {
         resolved: false,
         requiresManualResolution: true,
@@ -223,9 +214,6 @@ class ConflictResolver {
    * Server wins strategy - always use server data
    */
   private serverWinsStrategy<T>(conflict: ConflictData<T>): ConflictResolutionResult<T> {
-    console.log(
-      `[ConflictResolver] Resolving with SERVER_WINS for ${conflict.entity}:${conflict.entityId}`
-    );
     return {
       resolved: true,
       data: conflict.serverVersion,
@@ -236,9 +224,6 @@ class ConflictResolver {
    * Client wins strategy - always use local data
    */
   private clientWinsStrategy<T>(conflict: ConflictData<T>): ConflictResolutionResult<T> {
-    console.log(
-      `[ConflictResolver] Resolving with CLIENT_WINS for ${conflict.entity}:${conflict.entityId}`
-    );
     return {
       resolved: true,
       data: conflict.localVersion,
@@ -250,12 +235,6 @@ class ConflictResolver {
    */
   private lastWriteWinsStrategy<T>(conflict: ConflictData<T>): ConflictResolutionResult<T> {
     const useServer = conflict.serverTimestamp >= conflict.localTimestamp;
-    console.log(
-      `[ConflictResolver] Resolving with LAST_WRITE_WINS for ${conflict.entity}:${conflict.entityId}, winner: ${
-        useServer ? 'server' : 'client'
-      }`
-    );
-
     return {
       resolved: true,
       data: useServer ? conflict.serverVersion : conflict.localVersion,
@@ -266,9 +245,6 @@ class ConflictResolver {
    * Manual strategy - requires user intervention
    */
   private manualStrategy<T>(conflict: ConflictData<T>): ConflictResolutionResult<T> {
-    console.log(
-      `[ConflictResolver] Manual resolution required for ${conflict.entity}:${conflict.entityId}`
-    );
     return {
       resolved: false,
       requiresManualResolution: true,
@@ -280,8 +256,6 @@ class ConflictResolver {
    * Merge strategy - intelligently merge non-conflicting fields
    */
   private mergeStrategy<T>(conflict: ConflictData<T>): ConflictResolutionResult<T> {
-    console.log(`[ConflictResolver] Attempting merge for ${conflict.entity}:${conflict.entityId}`);
-
     const merged = { ...conflict.serverVersion } as any;
     const localObj = conflict.localVersion as any;
     const serverObj = conflict.serverVersion as any;
@@ -299,9 +273,6 @@ class ConflictResolver {
     });
 
     if (hasUnresolvableConflicts) {
-      console.log(
-        `[ConflictResolver] Merge has unresolvable conflicts, requiring manual resolution`
-      );
       return {
         resolved: false,
         requiresManualResolution: true,
@@ -327,7 +298,6 @@ class ConflictResolver {
   async resolveManually<T>(conflictId: string, resolution: T): Promise<boolean> {
     const conflict = this.conflicts.get(conflictId);
     if (!conflict) {
-      console.error(`[ConflictResolver] Conflict not found: ${conflictId}`);
       return false;
     }
 
@@ -336,8 +306,6 @@ class ConflictResolver {
     conflict.resolvedAt = Date.now();
 
     this.persistConflicts();
-    console.log(`[ConflictResolver] Manually resolved conflict ${conflictId}`);
-
     return true;
   }
 
@@ -377,7 +345,6 @@ class ConflictResolver {
     });
 
     this.persistConflicts();
-    console.log(`[ConflictResolver] Cleared ${cleared} resolved conflicts`);
   }
 
   /**
@@ -395,8 +362,7 @@ class ConflictResolver {
     this.listeners.forEach((listener) => {
       try {
         listener(conflict);
-      } catch (error) {
-        console.error('[ConflictResolver] Listener error:', error);
+      } catch {
       }
     });
   }

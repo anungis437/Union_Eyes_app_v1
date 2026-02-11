@@ -16,6 +16,7 @@ import { db } from "@/db/db";
 import { documents, documentFolders } from "@/db/schema";
 import { eq, and, or, desc, asc, sql, inArray, count, like } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -93,7 +94,7 @@ export async function getDocumentById(
 
     return document;
   } catch (error) {
-    console.error("Error fetching document:", error);
+    logger.error("Error fetching document", { error, id });
     throw new Error("Failed to fetch document");
   }
 }
@@ -182,7 +183,7 @@ export async function listDocuments(
       limit,
     };
   } catch (error) {
-    console.error("Error listing documents:", error);
+    logger.error("Error listing documents", { error, filters });
     throw new Error("Failed to list documents");
   }
 }
@@ -196,7 +197,7 @@ export async function createDocument(data: NewDocument): Promise<Document> {
 
     return document;
   } catch (error) {
-    console.error("Error creating document:", error);
+    logger.error("Error creating document", { error });
     throw new Error("Failed to create document");
   }
 }
@@ -220,7 +221,7 @@ export async function updateDocument(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating document:", error);
+    logger.error("Error updating document", { error, id });
     throw new Error("Failed to update document");
   }
 }
@@ -241,7 +242,7 @@ export async function deleteDocument(id: string): Promise<boolean> {
 
     return !!deleted;
   } catch (error) {
-    console.error("Error deleting document:", error);
+    logger.error("Error deleting document", { error, id });
     throw new Error("Failed to delete document");
   }
 }
@@ -255,7 +256,7 @@ export async function permanentlyDeleteDocument(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error permanently deleting document:", error);
+    logger.error("Error permanently deleting document", { error, id });
     throw new Error("Failed to permanently delete document");
   }
 }
@@ -286,7 +287,7 @@ export async function getFolderById(id: string): Promise<FolderWithChildren | nu
       documentCount: docCount[0]?.count || 0,
     };
   } catch (error) {
-    console.error("Error fetching folder:", error);
+    logger.error("Error fetching folder", { error, id });
     throw new Error("Failed to fetch folder");
   }
 }
@@ -333,7 +334,7 @@ export async function listFolders(
 
     return foldersWithCounts;
   } catch (error) {
-    console.error("Error listing folders:", error);
+    logger.error("Error listing folders", { error, tenantId });
     throw new Error("Failed to list folders");
   }
 }
@@ -347,7 +348,7 @@ export async function createFolder(data: NewDocumentFolder): Promise<DocumentFol
 
     return folder;
   } catch (error) {
-    console.error("Error creating folder:", error);
+    logger.error("Error creating folder", { error });
     throw new Error("Failed to create folder");
   }
 }
@@ -371,7 +372,7 @@ export async function updateFolder(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating folder:", error);
+    logger.error("Error updating folder", { error, id });
     throw new Error("Failed to update folder");
   }
 }
@@ -408,7 +409,7 @@ export async function deleteFolder(id: string, deleteContents = false): Promise<
 
     return !!deleted;
   } catch (error) {
-    console.error("Error deleting folder:", error);
+    logger.error("Error deleting folder", { error, id });
     throw new Error("Failed to delete folder");
   }
 }
@@ -447,7 +448,7 @@ export async function getFolderTree(tenantId: string): Promise<FolderWithChildre
 
     return rootFolders;
   } catch (error) {
-    console.error("Error getting folder tree:", error);
+    logger.error("Error getting folder tree", { error, tenantId });
     throw new Error("Failed to get folder tree");
   }
 }
@@ -479,7 +480,7 @@ export async function createDocumentVersion(
 
     return version;
   } catch (error) {
-    console.error("Error creating document version:", error);
+    logger.error("Error creating document version", { error, documentId });
     throw new Error("Failed to create document version");
   }
 }
@@ -492,7 +493,7 @@ export async function getDocumentVersions(documentId: string): Promise<DocumentV
     // In production, query document_versions table
     return [];
   } catch (error) {
-    console.error("Error fetching document versions:", error);
+    logger.error("Error fetching document versions", { error, documentId });
     throw new Error("Failed to fetch document versions");
   }
 }
@@ -523,7 +524,7 @@ export async function processDocumentOCR(documentId: string): Promise<OCRResult>
 
     return result;
   } catch (error) {
-    console.error("Error processing document OCR:", error);
+    logger.error("Error processing document OCR", { error, documentId });
     throw new Error("Failed to process document OCR");
   }
 }
@@ -555,7 +556,7 @@ export async function bulkProcessOCR(documentIds: string[]): Promise<BulkOperati
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    console.error("Error in bulk OCR processing:", error);
+    logger.error("Error in bulk OCR processing", { error, documentIds });
     throw new Error("Failed to complete bulk OCR processing");
   }
 }
@@ -627,7 +628,7 @@ export async function searchDocuments(
       total: totalResult[0]?.count || 0,
     };
   } catch (error) {
-    console.error("Error searching documents:", error);
+    logger.error("Error searching documents", { error, tenantId, searchQuery });
     throw new Error("Failed to search documents");
   }
 }
@@ -655,7 +656,7 @@ export async function bulkMoveDocuments(
       failed: 0,
     };
   } catch (error) {
-    console.error("Error in bulk move:", error);
+    logger.error("Error in bulk move", { error, documentIds });
     return {
       success: false,
       processed: 0,
@@ -704,7 +705,7 @@ export async function bulkUpdateTags(
       failed: 0,
     };
   } catch (error) {
-    console.error("Error in bulk tag update:", error);
+    logger.error("Error in bulk tag update", { error, documentIds, operation });
     return {
       success: false,
       processed: 0,
@@ -730,7 +731,7 @@ export async function bulkDeleteDocuments(documentIds: string[]): Promise<BulkOp
       failed: 0,
     };
   } catch (error) {
-    console.error("Error in bulk delete:", error);
+    logger.error("Error in bulk delete", { error, documentIds });
     return {
       success: false,
       processed: 0,
@@ -782,7 +783,7 @@ export async function getDocumentStatistics(tenantId: string): Promise<{
       confidential,
     };
   } catch (error) {
-    console.error("Error getting document statistics:", error);
+    logger.error("Error getting document statistics", { error, tenantId });
     throw new Error("Failed to get document statistics");
   }
 }

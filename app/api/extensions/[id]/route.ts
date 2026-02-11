@@ -65,8 +65,7 @@ export async function PATCH(
       );
     }
   } catch (error) {
-    console.error('Error processing extension:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to process extension' },
       { status: 500 }
     );

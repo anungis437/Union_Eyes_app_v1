@@ -140,8 +140,7 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error('Upload error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to upload file' },
         { status: 500 }
       );
@@ -193,8 +192,7 @@ export const GET = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error('Fetch attachments error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch attachments' },
         { status: 500 }
       );
@@ -265,8 +263,7 @@ export const DELETE = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error('Delete attachment error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to delete attachment' },
         { status: 500 }
       );

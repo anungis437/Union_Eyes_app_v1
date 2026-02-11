@@ -247,7 +247,6 @@ export function AIMonitoringDashboard() {
 
   const exportData = () => {
     // Implement CSV export functionality
-    console.log('Exporting dashboard data...');
   };
 
   // Calculate overall system health

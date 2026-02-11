@@ -70,17 +70,15 @@ export default function ReportBuilderPage() {
         router.push('/reports');
       }, 2000);
     } catch (error: any) {
-      console.error('Error saving report:', error);
       setSaveError(error.message || 'Failed to save report');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleExecute = async (config: ReportConfig) => {
+  const handleExecute = async (_config: ReportConfig) => {
     // Execution is handled by ReportPreview component
     // This callback is for additional actions if needed
-    console.log('Report executed:', config.name);
   };
 
   return (

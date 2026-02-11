@@ -6,6 +6,7 @@
  */
 
 import { Session } from '@supabase/supabase-js';
+import { logger } from '../src/utils/logger';
 
 // =========================================================================
 // CONSTANTS
@@ -56,7 +57,7 @@ export class SessionManager {
       // Set up refresh timer
       this.scheduleSessionRefresh(session);
     } catch (error) {
-      console.error('Error storing session:', error);
+      logger.error('Error storing session:', error);
     }
   }
 
@@ -84,7 +85,7 @@ export class SessionManager {
       
       return session;
     } catch (error) {
-      console.error('Error loading session:', error);
+      logger.error('Error loading session:', error);
       return null;
     }
   }
@@ -103,7 +104,7 @@ export class SessionManager {
         this.refreshTimer = null;
       }
     } catch (error) {
-      console.error('Error clearing session:', error);
+      logger.error('Error clearing session:', error);
     }
   }
 

@@ -78,8 +78,7 @@ export function QuickPollWidget({
       
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to load poll:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load poll',
         variant: 'destructive',
@@ -129,8 +128,7 @@ export function QuickPollWidget({
         description: 'Your vote has been recorded',
       });
     } catch (error: any) {
-      console.error('Failed to vote:', error);
-      toast({
+toast({
         title: 'Error',
         description: error.message || 'Failed to submit vote',
         variant: 'destructive',

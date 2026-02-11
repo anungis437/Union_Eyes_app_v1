@@ -37,8 +37,7 @@ export function CreditUsageDisplay() {
         const status = await getCreditStatus();
         setCreditStatus(status);
       } catch (error) {
-        console.error("Error loading credit status:", error);
-      } finally {
+} finally {
         setLoading(false);
       }
     };

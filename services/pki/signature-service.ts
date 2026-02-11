@@ -11,11 +11,12 @@
 // =====================================================================================
 
 import { db } from '@/db';
-import { digitalSignatures } from '@/db/schema';
+import { digitalSignatures } from '@/services/financial-service/src/db/schema';
 import { eq, and, sql, inArray, lte } from 'drizzle-orm';
 import crypto from 'crypto';
 import { getUserCertificate } from './certificate-manager';
 import { signatureWorkflows, signers } from '@/db/schema/signature-workflows-schema';
+import { logger } from '@/lib/logger';
 
 // =====================================================================================
 // TYPES
@@ -398,7 +399,7 @@ export async function createSignatureRequest(
       createdAt: new Date(),
     };
   } catch (error) {
-    console.error('Failed to create signature request:', error);
+    logger.error('Failed to create signature request', { error, documentId, organizationId });
     throw error;
   }
 }
@@ -413,24 +414,24 @@ export async function getUserSignatureRequests(
 ): Promise<SignatureRequest[]> {
   try {
     // Query workflows where user is a signer
-    let query = db
+    const conditions = [eq(signers.memberId, userId as any)];
+
+    if (organizationId) {
+      conditions.push(eq(signatureWorkflows.organizationId, organizationId as any));
+    }
+
+    if (status) {
+      conditions.push(eq(signatureWorkflows.status, status as any));
+    }
+
+    const results = await db
       .select({
         workflow: signatureWorkflows,
         signer: signers,
       })
       .from(signatureWorkflows)
       .innerJoin(signers, eq(signers.workflowId, signatureWorkflows.id))
-      .where(eq(signers.memberId, userId as any));
-
-    if (organizationId) {
-      query = query.where(eq(signatureWorkflows.organizationId, organizationId as any));
-    }
-
-    if (status) {
-      query = query.where(eq(signatureWorkflows.status, status as any));
-    }
-
-    const results = await query;
+      .where(and(...conditions));
 
     // Group by workflow and reconstruct SignatureRequest objects
     const workflowMap = new Map<string, SignatureRequest>();
@@ -458,7 +459,7 @@ export async function getUserSignatureRequests(
 
     return Array.from(workflowMap.values());
   } catch (error) {
-    console.error('Failed to get user signature requests:', error);
+    logger.error('Failed to get user signature requests', { error, userId, organizationId });
     throw error;
   }
 }
@@ -557,7 +558,7 @@ export async function completeSignatureRequestStep(
       completedAt: workflow.completedAt || undefined,
     };
   } catch (error) {
-    console.error('Failed to complete signature request step:', error);
+    logger.error('Failed to complete signature request step', { error, workflowId, userId });
     throw error;
   }
 }
@@ -596,9 +597,9 @@ export async function cancelSignatureRequest(
         )
       );
 
-    console.info('Signature request cancelled', { workflowId, cancelledBy, reason: cancellationReason });
+    logger.info('Signature request cancelled', { workflowId, cancelledBy, reason: cancellationReason });
   } catch (error) {
-    console.error('Failed to cancel signature request:', error);
+    logger.error('Failed to cancel signature request', { error, workflowId, cancelledBy });
     throw error;
   }
 }
@@ -621,7 +622,7 @@ export async function expireOverdueSignatureRequests(): Promise<number> {
       );
 
     if (overdueWorkflows.length === 0) {
-      console.info('No overdue signature workflows to expire');
+      logger.info('No overdue signature workflows to expire');
       return 0;
     }
 
@@ -650,10 +651,10 @@ export async function expireOverdueSignatureRequests(): Promise<number> {
         );
     }
 
-    console.info('Expired overdue signature workflows', { count: overdueWorkflows.length });
+    logger.info('Expired overdue signature workflows', { count: overdueWorkflows.length });
     return overdueWorkflows.length;
   } catch (error) {
-    console.error('Failed to expire overdue signature requests:', error);
+    logger.error('Failed to expire overdue signature requests', { error });
     throw error;
   }
 }

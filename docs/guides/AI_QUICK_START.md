@@ -1,6 +1,6 @@
 # Union Eyes AI - Quick Start Guide
 
-**Status:** ✅ Phase 1 Complete  
+**Status:** âœ… Phase 1 Complete  
 **Version:** 1.0  
 **Last Updated:** November 13, 2025
 
@@ -64,11 +64,11 @@ export async function POST(request: NextRequest) {
 ### Important: Never Use in Client Components
 
 ```typescript
-// ❌ NEVER do this
+// âŒ NEVER do this
 'use client';
 import { createOpenAIClient } from '@unioneyes/ai'; // Error: server-side only!
 
-// ✅ Always use via API routes
+// âœ… Always use via API routes
 'use client';
 const response = await fetch('/api/ai/search', {
   method: 'POST',
@@ -89,15 +89,15 @@ const response = await fetch('/api/ai/search', {
    - Date Range
 4. Click Search
 5. Review the AI response with sources
-6. Rate the response (👍 or 👎)
+6. Rate the response (ðŸ‘ or ðŸ‘Ž)
 
 ### Understanding Results
 
 **Confidence Levels:**
 
-- 🟢 **High** (>80%): Strong matches found
-- 🟡 **Medium** (60-80%): Relevant but not exact
-- 🔴 **Low** (<60%): Weak matches, use with caution
+- ðŸŸ¢ **High** (>80%): Strong matches found
+- ðŸŸ¡ **Medium** (60-80%): Relevant but not exact
+- ðŸ”´ **Low** (<60%): Weak matches, use with caution
 
 **Sources:**
 
@@ -107,14 +107,14 @@ const response = await fetch('/api/ai/search', {
 
 ### Best Practices
 
-✅ **DO:**
+âœ… **DO:**
 
 - Use AI for research and ideation
 - Verify all citations with primary sources
 - Provide feedback to improve results
 - Refine queries if results are poor
 
-❌ **DON'T:**
+âŒ **DON'T:**
 
 - Use AI outputs without human review
 - Make strategic decisions based solely on AI
@@ -260,8 +260,7 @@ export default function ResearchPage() {
       <h1>AI Research</h1>
       <AiSearchPanel 
         onSearchComplete={(answer) => {
-          console.log('Search complete:', answer);
-        }}
+}}
       />
     </div>
   );
@@ -400,9 +399,9 @@ Union Eyes AI features follow the same license as the main project.
 
 ### v1.0 (November 13, 2025)
 
-- ✅ Phase 1 complete
-- ✅ RAG search implemented
-- ✅ Case summaries implemented
-- ✅ Feedback system implemented
-- ✅ PII masking active
-- ✅ RLS policies enforced
+- âœ… Phase 1 complete
+- âœ… RAG search implemented
+- âœ… Case summaries implemented
+- âœ… Feedback system implemented
+- âœ… PII masking active
+- âœ… RLS policies enforced

@@ -211,8 +211,7 @@ export function DocumentBrowser({
       setAvailableTags(data.tags);
       setAvailableUsers(data.users);
     } catch (err) {
-      console.error('Failed to fetch filter options:', err);
-    }
+}
   }, []);
 
   useEffect(() => {
@@ -421,7 +420,7 @@ export function DocumentBrowser({
             </h4>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="uppercase">{document.file_type}</span>
-              <span>•</span>
+              <span>â€¢</span>
               <span>{formatFileSize(document.file_size)}</span>
             </div>
             <div className="text-xs text-muted-foreground">
@@ -482,13 +481,13 @@ export function DocumentBrowser({
           <h4 className="font-medium truncate">{document.title}</h4>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="uppercase">{document.file_type}</span>
-            <span>•</span>
+            <span>â€¢</span>
             <span>{formatFileSize(document.file_size)}</span>
-            <span>•</span>
+            <span>â€¢</span>
             <span>
               {document.uploaded_by.first_name} {document.uploaded_by.last_name}
             </span>
-            <span>•</span>
+            <span>â€¢</span>
             <span>{format(new Date(document.uploaded_at), 'MMM d, yyyy')}</span>
           </div>
           {document.tags && document.tags.length > 0 && (
@@ -549,7 +548,7 @@ export function DocumentBrowser({
               <CardTitle>Documents</CardTitle>
               <CardDescription>
                 {totalCount} document{totalCount !== 1 ? 's' : ''} total
-                {hasSelection && ` • ${selectedDocuments.size} selected`}
+                {hasSelection && ` â€¢ ${selectedDocuments.size} selected`}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -822,7 +821,7 @@ export function DocumentBrowser({
                 </div>
               </div>
               <DialogDescription>
-                {previewDocument.file_type.toUpperCase()} • {formatFileSize(previewDocument.file_size)} •
+                {previewDocument.file_type.toUpperCase()} â€¢ {formatFileSize(previewDocument.file_size)} â€¢
                 Uploaded by {previewDocument.uploaded_by.first_name}{' '}
                 {previewDocument.uploaded_by.last_name} on{' '}
                 {format(new Date(previewDocument.uploaded_at), 'MMM d, yyyy')}

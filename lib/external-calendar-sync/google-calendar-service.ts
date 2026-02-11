@@ -112,9 +112,7 @@ export async function refreshAccessToken(connectionId: string): Promise<string> 
 
     return credentials.access_token!;
   } catch (error) {
-    console.error('Error refreshing Google access token:', error);
-    
-    // Mark connection as failed
+// Mark connection as failed
     await db
       .update(externalCalendarConnections)
       .set({
@@ -178,8 +176,7 @@ export async function listGoogleCalendars(connectionId: string) {
 
     return response.data.items || [];
   } catch (error) {
-    console.error('Error listing Google calendars:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -280,8 +277,7 @@ export async function importGoogleEvents(
           importedCount++;
         }
       } catch (error) {
-        console.error(`Error importing Google event ${googleEvent.id}:`, error);
-      }
+}
     }
 
     // Update sync token
@@ -294,8 +290,7 @@ export async function importGoogleEvents(
       total: events.length,
     };
   } catch (error) {
-    console.error('Error importing Google events:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -354,8 +349,7 @@ export async function exportEventToGoogle(
       return response.data;
     }
   } catch (error) {
-    console.error('Error exporting event to Google:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -376,8 +370,7 @@ export async function deleteEventFromGoogle(
       eventId: googleEventId,
     });
   } catch (error) {
-    console.error('Error deleting Google event:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -483,8 +476,7 @@ async function handleDeletedGoogleEvent(calendarId: string, googleEventId: strin
         .where(eq(calendarEvents.id, event.id));
     }
   } catch (error) {
-    console.error('Error handling deleted Google event:', error);
-  }
+}
 }
 
 /**
@@ -522,8 +514,7 @@ async function updateSyncToken(
       })
       .where(eq(externalCalendarConnections.id, connectionId));
   } catch (error) {
-    console.error('Error updating sync token:', error);
-  }
+}
 }
 
 /**

@@ -66,32 +66,33 @@ export interface NotificationProvider {
 }
 
 // ============================================================================
-// NOTIFICATION DATABASE (Placeholder - should be in schema)
+// NOTIFICATION DATABASE
 // ============================================================================
 
-// TODO: Add notifications table to notifications-schema.ts
+// ✅ Notifications table schema exists in db/schema/notifications-schema.ts
+// Available tables:
+// - notifications: Scheduled notifications with deadlines/reminders
+// - notificationTracking: Detailed delivery tracking
+// - inAppNotifications: In-app notification system
+// - notificationHistory: Audit log for all notifications
+// - userNotificationPreferences: User-specific channel preferences
+//
+// Import from: import { notifications } from '@/db/schema/notifications-schema';
 /*
+Schema reference for notifications table:
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id').notNull(),
-  recipientId: uuid('recipient_id'),
-  type: notificationTypeEnum('type').notNull(),
-  status: notificationStatusEnum('status').notNull().default('pending'),
-  priority: notificationPriorityEnum('priority').notNull().default('normal'),
-  
-  subject: varchar('subject', { length: 255 }),
-  body: text('body').notNull(),
-  htmlBody: text('html_body'),
-  
-  templateId: varchar('template_id', { length: 100 }),
-  templateData: jsonb('template_data'),
-  
-  providerId: varchar('provider_id', { length: 100 }),
-  externalMessageId: varchar('external_message_id', { length: 255 }),
-  
-  actionUrl: varchar('action_url', { length: 500 }),
-  actionLabel: varchar('action_label', { length: 100 }),
-  
+  tenantId: text('tenant_id').notNull(),
+  userId: text('user_id').notNull(),
+  type: text('type').notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  priority: text('priority').default('medium'),
+  relatedEntityType: text('related_entity_type'),
+  relatedEntityId: text('related_entity_id'),
+  scheduledFor: timestamp('scheduled_for'),
+  status: notificationScheduleStatusEnum('status').notNull().default('scheduled'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
   sentAt: timestamp('sent_at'),
   deliveredAt: timestamp('delivered_at'),
   failureReason: text('failure_reason'),

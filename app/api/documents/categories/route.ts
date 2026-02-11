@@ -140,8 +140,7 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error fetching document categories:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to fetch categories", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );

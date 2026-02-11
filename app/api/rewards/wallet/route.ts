@@ -52,8 +52,7 @@ export const GET = async (request: NextRequest) => {
       );
 
     } catch (error) {
-      console.error('[Wallet API] Error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

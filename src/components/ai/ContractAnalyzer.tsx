@@ -76,7 +76,6 @@ export function ContractAnalyzer({
           setContractText(text);
         }
       } catch (error) {
-        console.error('PDF extraction failed:', error);
       }
     } else if (file.type === 'text/plain') {
       const text = await file.text();
@@ -111,7 +110,6 @@ export function ContractAnalyzer({
         onAnalysisComplete(result);
       }
     } catch (error) {
-      console.error('Contract analysis failed:', error);
       alert('Failed to analyze contract. Please try again.');
     } finally {
       setIsAnalyzing(false);

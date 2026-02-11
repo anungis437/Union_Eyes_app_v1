@@ -101,8 +101,7 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
       dataType: 'CLAIMS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-    console.error("Error updating claim status:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to update status" },
       { status: 500 }
     );
@@ -183,8 +182,7 @@ export const POST = withRoleAuth(30, async (request, context) => {
       dataType: 'CLAIMS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-    console.error("Error adding claim note:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to add note" },
       { status: 500 }
     );

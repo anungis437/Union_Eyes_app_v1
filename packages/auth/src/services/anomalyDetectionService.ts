@@ -15,6 +15,7 @@ import { getSupabaseClient } from '@unioneyes/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { SecurityAuditService } from './securityAuditService';
 import type { AuditLog, AuditRiskLevel } from './securityAuditService';
+import { logger } from '../utils/logger';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -238,7 +239,7 @@ export class AnomalyDetectionService {
 
       return { success: true, data: anomalies };
     } catch (error) {
-      console.error('Failed to detect unusual login patterns:', error);
+      logger.error('Failed to detect unusual login patterns:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -413,7 +414,7 @@ export class AnomalyDetectionService {
 
       return { success: true, data: anomalies };
     } catch (error) {
-      console.error('Failed to detect data access anomalies:', error);
+      logger.error('Failed to detect data access anomalies:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -498,7 +499,7 @@ export class AnomalyDetectionService {
 
       return { success: true, data: anomalies };
     } catch (error) {
-      console.error('Failed to detect permission anomalies:', error);
+      logger.error('Failed to detect permission anomalies:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -572,7 +573,7 @@ export class AnomalyDetectionService {
 
       return { success: true, data: anomalies };
     } catch (error) {
-      console.error('Failed to detect session anomalies:', error);
+      logger.error('Failed to detect session anomalies:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -603,7 +604,7 @@ export class AnomalyDetectionService {
       // Build baseline from historical data
       return await this.buildUserBaseline(userId, firmId);
     } catch (error) {
-      console.error('Failed to get user baseline:', error);
+      logger.error('Failed to get user baseline:', error);
       return null;
     }
   }
@@ -663,7 +664,7 @@ export class AnomalyDetectionService {
 
       return baseline;
     } catch (error) {
-      console.error('Failed to build user baseline:', error);
+      logger.error('Failed to build user baseline:', error);
       return null;
     }
   }
@@ -681,7 +682,7 @@ export class AnomalyDetectionService {
 
       return { success: true, data: baseline };
     } catch (error) {
-      console.error('Failed to update baseline:', error);
+      logger.error('Failed to update baseline:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -715,7 +716,7 @@ export class AnomalyDetectionService {
 
       return { success: true };
     } catch (error) {
-      console.error('Failed to generate alert:', error);
+      logger.error('Failed to generate alert:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -735,7 +736,7 @@ export class AnomalyDetectionService {
 
       return { success: true };
     } catch (error) {
-      console.error('Failed to configure alerts:', error);
+      logger.error('Failed to configure alerts:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'

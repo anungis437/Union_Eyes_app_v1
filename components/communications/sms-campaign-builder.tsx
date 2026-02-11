@@ -105,8 +105,7 @@ export function SmsCampaignBuilder({
       const { templates } = await response.json();
       setTemplates(templates);
     } catch (error) {
-      console.error('Failed to load templates:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load templates',
         variant: 'destructive',
@@ -126,8 +125,7 @@ export function SmsCampaignBuilder({
       const data = await response.json();
       setMembers((data?.data || []) as Member[]);
     } catch (error) {
-      console.error('Failed to load members:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load members',
         variant: 'destructive',
@@ -239,8 +237,7 @@ export function SmsCampaignBuilder({
       setCurrentStep(4);
       return campaign;
     } catch (error) {
-      console.error('Failed to create campaign:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to create campaign',
         variant: 'destructive',
@@ -281,8 +278,7 @@ export function SmsCampaignBuilder({
 
       onComplete?.(campaign);
     } catch (error) {
-      console.error('Failed to send campaign:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to send campaign',
         variant: 'destructive',

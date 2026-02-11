@@ -17,6 +17,62 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+/**
+ * Check if user's organization can access a precedent based on sharing level
+ */
+async function checkPrecedentAccess(
+  precedent: any,
+  userOrgId: string
+): Promise<boolean> {
+  // Owner always has access
+  if (precedent.sourceOrganizationId === userOrgId || precedent.organizationId === userOrgId) {
+    return true;
+  }
+
+  const sharingLevel = precedent.sharingLevel;
+
+  switch (sharingLevel) {
+    case "private":
+      // Check explicit grants
+      return precedent.sharedWithOrgIds?.includes(userOrgId) || false;
+    
+    case "federation":
+      // Federation hierarchy check (not yet implemented)
+      return false;
+    
+    case "congress":
+      // Check CLC membership: both user's org and source org must be CLC-affiliated
+      try {
+        const sourceOrgId = precedent.sourceOrganizationId || precedent.organizationId;
+        const [userOrg, sourceOrg] = await Promise.all([
+          db.selectDistinct().from(organizations).where(eq(organizations.id, userOrgId)).limit(1),
+          db.selectDistinct().from(organizations).where(eq(organizations.id, sourceOrgId)).limit(1)
+        ]);
+        
+        const userOrgData = userOrg[0];
+        const sourceOrgData = sourceOrg[0];
+        
+        // Both orgs must be CLC-affiliated with active status
+        return (
+          userOrgData?.clcAffiliated === true &&
+          userOrgData?.status === 'active' &&
+          sourceOrgData?.clcAffiliated === true &&
+          sourceOrgData?.status === 'active'
+        );
+      } catch (error) {
+        logger.error('Error checking CLC membership:', error);
+        return false;
+      }
+    
+    case "public":
+      // Everyone can access
+      return true;
+    
+    default:
+      return false;
+  }
+}
+
 export const GET = async (request: NextRequest, context: RouteContext) => {
   return withRoleAuth(10, async (request, context) => {
     const { organizationId } = context;
@@ -45,13 +101,22 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         return NextResponse.json({ error: 'Precedent not found' }, { status: 404 });
       }
 
-      // For now, allow access to all documents
-      // TODO: Implement proper access control based on sharing levels
+      // Implement access control based on sharing levels
+      const hasAccess = await checkPrecedentAccess(precedent, userOrgId);
+      
+      if (!hasAccess) {
+        return NextResponse.json({ 
+          error: 'Access denied to precedent documents' 
+        }, { status: 403 });
+      }
+
+      // Return appropriate documents based on access level
+      const isOwner = precedent.organizationId === userOrgId;
       const documents = {
         precedentId,
         decisionDocument: {
-          url: precedent.documentUrl || null,
-          available: !!precedent.documentUrl,
+          url: isOwner ? (precedent.documentUrl || null) : (precedent.redactedDocumentUrl || null),
+          available: isOwner ? !!precedent.documentUrl : !!precedent.redactedDocumentUrl,
         },
         redactedDocument: {
           url: precedent.redactedDocumentUrl || null,

@@ -181,8 +181,7 @@ export const GET = async (request: NextRequest) => {
         trend: claimsTrend,
       });
     } catch (error) {
-      console.error('Error fetching dashboard analytics:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

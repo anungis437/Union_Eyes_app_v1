@@ -326,8 +326,7 @@ export async function checkPasswordHistory(userId, newPassword, supabaseUrl, sup
         return true; // Password not in history
     }
     catch (error) {
-        console.error('Error checking password history:', error);
-        return true; // Allow password on error
+return true; // Allow password on error
     }
 }
 // ============================================================================

@@ -19,6 +19,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, desc, asc, sql, inArray, count, gte, lte, like } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -109,7 +110,7 @@ export async function getCourseById(
 
     return course;
   } catch (error) {
-    console.error("Error fetching course:", error);
+    logger.error("Error fetching course", { error, id });
     throw new Error("Failed to fetch course");
   }
 }
@@ -177,7 +178,7 @@ export async function listCourses(
       limit,
     };
   } catch (error) {
-    console.error("Error listing courses:", error);
+    logger.error("Error listing courses", { error, filters });
     throw new Error("Failed to list courses");
   }
 }
@@ -194,7 +195,7 @@ export async function createCourse(data: NewTrainingCourse): Promise<TrainingCou
 
     return course;
   } catch (error) {
-    console.error("Error creating course:", error);
+    logger.error("Error creating course", { error });
     throw new Error("Failed to create course");
   }
 }
@@ -218,7 +219,7 @@ export async function updateCourse(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating course:", error);
+    logger.error("Error updating course", { error, id });
     throw new Error("Failed to update course");
   }
 }
@@ -234,7 +235,7 @@ export async function deleteCourse(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting course:", error);
+    logger.error("Error deleting course", { error, id });
     throw new Error("Failed to delete course");
   }
 }
@@ -255,7 +256,7 @@ export async function createSession(data: NewCourseSession): Promise<CourseSessi
 
     return session;
   } catch (error) {
-    console.error("Error creating session:", error);
+    logger.error("Error creating session", { error });
     throw new Error("Failed to create session");
   }
 }
@@ -276,7 +277,7 @@ export async function updateSession(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating session:", error);
+    logger.error("Error updating session", { error, id });
     throw new Error("Failed to update session");
   }
 }
@@ -315,7 +316,7 @@ export async function getCourseSessions(
 
     return sessions;
   } catch (error) {
-    console.error("Error fetching course sessions:", error);
+    logger.error("Error fetching course sessions", { error, courseId });
     throw new Error("Failed to fetch course sessions");
   }
 }
@@ -342,7 +343,7 @@ export async function enrollMember(
       enrollmentId,
     };
   } catch (error) {
-    console.error("Error enrolling member:", error);
+    logger.error("Error enrolling member", { error, memberId, courseId });
     throw new Error("Failed to enroll member");
   }
 }
@@ -369,7 +370,7 @@ export async function getMemberCourses(
 
     return courses;
   } catch (error) {
-    console.error("Error fetching member courses:", error);
+    logger.error("Error fetching member courses", { error, memberId });
     throw new Error("Failed to fetch member courses");
   }
 }
@@ -395,7 +396,7 @@ export async function updateMemberProgress(
     // In production, update progress table
     return { success: true };
   } catch (error) {
-    console.error("Error updating member progress:", error);
+    logger.error("Error updating member progress", { error, memberId, courseId });
     throw new Error("Failed to update progress");
   }
 }
@@ -423,7 +424,7 @@ export async function getMemberProgress(
       estimatedCompletionDate: null,
     };
   } catch (error) {
-    console.error("Error fetching member progress:", error);
+    logger.error("Error fetching member progress", { error, memberId, courseId });
     throw new Error("Failed to fetch progress");
   }
 }
@@ -449,7 +450,7 @@ export async function createQuiz(
     const quizId = `quiz-${Date.now()}`;
     return { success: true, quizId };
   } catch (error) {
-    console.error("Error creating quiz:", error);
+    logger.error("Error creating quiz", { error, courseId });
     throw new Error("Failed to create quiz");
   }
 }
@@ -516,7 +517,7 @@ export async function submitQuiz(
           break;
 
         default:
-          console.warn(`Unknown question type: ${question.type}`);
+          logger.warn("Unknown question type", { questionType: question.type });
       }
 
       if (isCorrect) {
@@ -543,7 +544,7 @@ export async function submitQuiz(
 
     return result;
   } catch (error) {
-    console.error("Error submitting quiz:", error);
+    logger.error("Error submitting quiz", { error, quizId, memberId });
     throw new Error("Failed to submit quiz");
   }
 }
@@ -617,7 +618,7 @@ export async function getQuizResults(
     // In production, query quiz results table
     return [];
   } catch (error) {
-    console.error("Error fetching quiz results:", error);
+    logger.error("Error fetching quiz results", { error, quizId, memberId });
     throw new Error("Failed to fetch quiz results");
   }
 }
@@ -659,7 +660,7 @@ export async function generateCertificate(
     // In production, store in certificates table
     return certificate;
   } catch (error) {
-    console.error("Error generating certificate:", error);
+    logger.error("Error generating certificate", { error, courseId, memberId });
     throw new Error("Failed to generate certificate");
   }
 }
@@ -674,7 +675,7 @@ export async function getMemberCertificates(
     // In production, query certificates table
     return [];
   } catch (error) {
-    console.error("Error fetching member certificates:", error);
+    logger.error("Error fetching member certificates", { error, memberId });
     throw new Error("Failed to fetch certificates");
   }
 }
@@ -689,7 +690,7 @@ export async function verifyCertificate(
     // In production, query certificates table
     return null;
   } catch (error) {
-    console.error("Error verifying certificate:", error);
+    logger.error("Error verifying certificate", { error, certificateNumber });
     throw new Error("Failed to verify certificate");
   }
 }
@@ -713,7 +714,7 @@ export async function createLearningPath(
     // In production, store in learning_paths table
     return learningPath;
   } catch (error) {
-    console.error("Error creating learning path:", error);
+    logger.error("Error creating learning path", { error });
     throw new Error("Failed to create learning path");
   }
 }
@@ -728,7 +729,7 @@ export async function getLearningPaths(
     // In production, query learning_paths table
     return [];
   } catch (error) {
-    console.error("Error fetching learning paths:", error);
+    logger.error("Error fetching learning paths", { error, organizationId });
     throw new Error("Failed to fetch learning paths");
   }
 }
@@ -759,7 +760,7 @@ export async function getCourseStatistics(
       averageCompletionTime: 0,
     };
   } catch (error) {
-    console.error("Error fetching course statistics:", error);
+    logger.error("Error fetching course statistics", { error, courseId });
     throw new Error("Failed to fetch statistics");
   }
 }
@@ -789,7 +790,7 @@ export async function getOrganizationStatistics(
       mandatoryComplianceRate: 0,
     };
   } catch (error) {
-    console.error("Error fetching organization statistics:", error);
+    logger.error("Error fetching organization statistics", { error, organizationId });
     throw new Error("Failed to fetch statistics");
   }
 }

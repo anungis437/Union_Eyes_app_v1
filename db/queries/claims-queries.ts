@@ -5,6 +5,7 @@ import { claims, claimUpdates } from "../schema/claims-schema";
 import { organizations } from "../schema-organizations";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/rls-middleware";
+import { logger } from "@/lib/logger";
 
 // Type for inserting a new claim
 export type InsertClaim = typeof claims.$inferInsert;
@@ -49,10 +50,10 @@ export const createClaim = async (
         })
         .returning();
       
-      console.log(`Created claim: ${claimNumber}`);
+      logger.info("Created claim", { claimNumber });
       return newClaim;
     } catch (error) {
-      console.error("Error creating claim:", error);
+      logger.error("Error creating claim", { error });
       throw new Error("Failed to create claim");
     }
   };
@@ -81,7 +82,7 @@ export const getClaimsByMember = async (
       
       return memberClaims;
     } catch (error) {
-      console.error("Error fetching claims by member:", error);
+      logger.error("Error fetching claims by member", { error, memberId });
       throw new Error("Failed to fetch claims");
     }
   };
@@ -130,7 +131,7 @@ export const getClaimsByOrganization = async (
       const organizationClaims = await query;
       return organizationClaims;
     } catch (error) {
-      console.error("Error fetching claims by organization:", error);
+      logger.error("Error fetching claims by organization", { error, organizationSlug });
       throw new Error("Failed to fetch claims");
     }
   };
@@ -158,7 +159,7 @@ export const getClaimById = async (
       
       return claim;
     } catch (error) {
-      console.error("Error fetching claim:", error);
+      logger.error("Error fetching claim", { error, claimId });
       throw new Error("Failed to fetch claim");
     }
   };
@@ -202,7 +203,7 @@ export const updateClaimStatus = async (
       
       return updatedClaim;
     } catch (error) {
-      console.error("Error updating claim status:", error);
+      logger.error("Error updating claim status", { error, claimId, newStatus });
       throw new Error("Failed to update claim status");
     }
   };
@@ -245,7 +246,7 @@ export const assignClaim = async (
       
       return updatedClaim;
     } catch (error) {
-      console.error("Error assigning claim:", error);
+      logger.error("Error assigning claim", { error, claimId, assignedTo });
       throw new Error("Failed to assign claim");
     }
   };
@@ -292,7 +293,7 @@ export const getClaimsAssignedToUser = async (
       
       return assignedClaims;
     } catch (error) {
-      console.error("Error fetching assigned claims:", error);
+      logger.error("Error fetching assigned claims", { error, userId, organizationSlug });
       throw new Error("Failed to fetch assigned claims");
     }
   };
@@ -385,7 +386,7 @@ export const getClaimStatistics = async (
         highPriorityClaims: highPriorityClaims.count,
       };
     } catch (error) {
-      console.error("Error fetching claim statistics:", error);
+      logger.error("Error fetching claim statistics", { error, organizationSlugOrId });
       throw new Error("Failed to fetch statistics");
     }
   };
@@ -415,7 +416,7 @@ export const getRecentClaimUpdates = async (
       
       return updates;
     } catch (error) {
-      console.error("Error fetching claim updates:", error);
+      logger.error("Error fetching claim updates", { error, claimId });
       throw new Error("Failed to fetch updates");
     }
   };
@@ -459,7 +460,7 @@ export const addClaimUpdate = async (
       
       return newUpdate;
     } catch (error) {
-      console.error("Error adding claim update:", error);
+      logger.error("Error adding claim update", { error, claimId, updateType });
       throw new Error("Failed to add update");
     }
   };
@@ -492,7 +493,7 @@ export const deleteClaim = async (
       
       return deletedClaim;
     } catch (error) {
-      console.error("Error deleting claim:", error);
+      logger.error("Error deleting claim", { error, claimId });
       throw new Error("Failed to delete claim");
     }
   };

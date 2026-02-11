@@ -1,7 +1,7 @@
 /**
  * Claims API Routes
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * - Removed manual tenant lookup (getUserTenant) - RLS handles this
@@ -132,8 +132,7 @@ export const GET = withRoleAuth(30, async (request, context) => {
           dataType: 'CLAIMS',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-        console.error("Error fetching claims:", error);
-        // Return empty results instead of error
+// Return empty results instead of error
         const { searchParams } = new URL(request.url);
         const limit = parseInt(searchParams.get("limit") || "100");
         const offset = parseInt(searchParams.get("offset") || "0");
@@ -259,8 +258,7 @@ export const POST = withRoleAuth(30, async (request, context) => {
         dataType: 'CLAIMS',
         details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
       });
-      console.error("Error creating claim:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to create claim" },
         { status: 500 }
       );

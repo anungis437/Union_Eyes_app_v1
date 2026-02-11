@@ -21,6 +21,7 @@ import { logger } from "@/lib/logger";
 import { getUserRoleInOrganization, getOrganizationIdForUser } from "@/lib/organization-utils";
 import { db } from "@/db/db";
 import { profiles } from "@/db/schema";
+import { ExpiredCreditsChecker } from "@/components/billing/expired-credits-checker";
 
 /**
  * Check if a free user with an expired billing cycle needs their credits downgraded
@@ -37,7 +38,7 @@ async function checkExpiredSubscriptionCredits(profile: SelectProfile | null): P
     
     // If billing cycle ended and they still have pro-level credits
     if (now > billingCycleEnd && (profile.usageCredits || 0) > 5) {
-      console.log(`User ${profile.userId} has expired billing cycle, downgrading credits to free tier`);
+      logger.info(`User ${profile.userId} has expired billing cycle, downgrading credits to free tier`);
       
       // Set up the update data
       const updateData: any = {
@@ -115,10 +116,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     }
   }
 
-  // TEMPORARILY DISABLED: Run just-in-time credit check for expired subscriptions
-  // This was causing 504 timeouts on staging due to sequential database queries
-  // TODO: Re-enable this as a background job or client-side check
-  // profile = await checkExpiredSubscriptionCredits(profile);
+  // Credit check is triggered client-side to avoid blocking the layout render
   
   // Verify profile is still valid after check
   if (!profile) {
@@ -150,6 +148,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div className="flex h-screen bg-gray-50 relative overflow-hidden">
+      <ExpiredCreditsChecker />
       {/* Show welcome message popup - component handles visibility logic */}
       <WelcomeMessagePopup profile={profile} />
         

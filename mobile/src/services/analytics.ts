@@ -16,7 +16,6 @@ const amplitude = Amplitude.getInstance();
  */
 export const initializeAnalytics = async (): Promise<void> => {
   if (!config.enableAnalytics) {
-    console.log('[Analytics] Analytics disabled');
     return;
   }
 
@@ -24,17 +23,15 @@ export const initializeAnalytics = async (): Promise<void> => {
     // Initialize Amplitude
     if (config.amplitudeApiKey) {
       amplitude.init(config.amplitudeApiKey);
-      console.log('[Analytics] Amplitude initialized');
     }
 
     // Initialize Sentry (already initialized in app entry)
     if (config.enableCrashReporting && config.sentryDsn) {
-      console.log('[Analytics] Sentry initialized');
     }
-
-    console.log('[Analytics] Analytics services initialized');
   } catch (error) {
-    console.error('[Analytics] Error initializing analytics:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -57,9 +54,10 @@ export const setUser = (userId: string, properties?: Record<string, any>): void 
       ...properties,
     });
 
-    console.log('[Analytics] User set:', userId);
   } catch (error) {
-    console.error('[Analytics] Error setting user:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -77,9 +75,10 @@ export const clearUser = (): void => {
     // Clear Sentry user
     Sentry.setUser(null);
 
-    console.log('[Analytics] User cleared');
   } catch (error) {
-    console.error('[Analytics] Error clearing user:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -104,9 +103,10 @@ export const trackScreenView = (screenName: string, properties?: Record<string, 
       data: properties,
     });
 
-    console.log('[Analytics] Screen view:', screenName);
   } catch (error) {
-    console.error('[Analytics] Error tracking screen view:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -126,9 +126,10 @@ export const trackEvent = (eventName: string, properties?: Record<string, any>):
       data: properties,
     });
 
-    console.log('[Analytics] Event:', eventName, properties);
   } catch (error) {
-    console.error('[Analytics] Error tracking event:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -167,9 +168,10 @@ export const trackError = (error: Error, context?: Record<string, any>): void =>
       });
     }
 
-    console.error('[Analytics] Error tracked:', error);
   } catch (trackingError) {
-    console.error('[Analytics] Error tracking error:', trackingError);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(trackingError);
+    }
   }
 };
 
@@ -195,7 +197,9 @@ export const trackAPICall = (
       error,
     });
   } catch (trackingError) {
-    console.error('[Analytics] Error tracking API call:', trackingError);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(trackingError);
+    }
   }
 };
 
@@ -298,9 +302,10 @@ export const setUserProperty = (property: string, value: any): void => {
       [property]: value,
     });
 
-    console.log('[Analytics] User property set:', property, value);
   } catch (error) {
-    console.error('[Analytics] Error setting user property:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -315,9 +320,10 @@ export const incrementUserProperty = (property: string, amount: number = 1): voi
     identify.add(property, amount);
     amplitude.identify(identify);
 
-    console.log('[Analytics] User property incremented:', property, amount);
   } catch (error) {
-    console.error('[Analytics] Error incrementing user property:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -339,9 +345,10 @@ export const trackRevenue = (
       ...properties,
     });
 
-    console.log('[Analytics] Revenue tracked:', amount, productId);
   } catch (error) {
-    console.error('[Analytics] Error tracking revenue:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -377,7 +384,6 @@ export const endTiming = (
   properties?: Record<string, any>
 ): void => {
   if (!timers[timerName]) {
-    console.warn(`[Analytics] Timer not found: ${timerName}`);
     return;
   }
 
@@ -395,9 +401,10 @@ export const flushAnalytics = (): void => {
 
   try {
     amplitude.uploadEvents();
-    console.log('[Analytics] Analytics flushed');
   } catch (error) {
-    console.error('[Analytics] Error flushing analytics:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -407,9 +414,10 @@ export const flushAnalytics = (): void => {
 export const optOutOfAnalytics = (): void => {
   try {
     amplitude.setOptOut(true);
-    console.log('[Analytics] User opted out of analytics');
   } catch (error) {
-    console.error('[Analytics] Error opting out:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 
@@ -419,9 +427,10 @@ export const optOutOfAnalytics = (): void => {
 export const optInToAnalytics = (): void => {
   try {
     amplitude.setOptOut(false);
-    console.log('[Analytics] User opted in to analytics');
   } catch (error) {
-    console.error('[Analytics] Error opting in:', error);
+    if (config.enableCrashReporting) {
+      Sentry.captureException(error);
+    }
   }
 };
 

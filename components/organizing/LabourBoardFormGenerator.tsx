@@ -150,8 +150,7 @@ export function LabourBoardFormGenerator({ campaignId, organizationId }: LabourB
         autoPopulateForm(data.data);
       }
     } catch (error) {
-      console.error('Error fetching campaign:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -233,8 +232,7 @@ export function LabourBoardFormGenerator({ campaignId, organizationId }: LabourB
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error generating PDF:', error);
-    } finally {
+} finally {
       setIsGenerating(false);
     }
   };

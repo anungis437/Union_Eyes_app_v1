@@ -94,8 +94,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       message: `Infrastructure monitoring for ${region === 'all' ? 'all regions' : region}: ${results.length} resource types monitored`,
     });
   } catch (error) {
-    console.error('Infrastructure monitoring error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         error: `Failed to monitor infrastructure: ${error}`,

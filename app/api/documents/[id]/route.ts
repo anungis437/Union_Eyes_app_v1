@@ -120,8 +120,7 @@ export const GET = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error fetching document:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to fetch document", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
@@ -236,8 +235,7 @@ export const PATCH = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error updating document:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to update document", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
@@ -335,8 +333,7 @@ export const DELETE = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error deleting document:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to delete document", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );

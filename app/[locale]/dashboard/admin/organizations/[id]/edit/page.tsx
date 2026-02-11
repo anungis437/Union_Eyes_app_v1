@@ -129,8 +129,7 @@ export default function EditOrganizationPage() {
         // Filter out current organization and its descendants
         setAvailableOrganizations((data.data || []).filter((org: any) => org.id !== organizationId));
       } catch (error) {
-        console.error("Failed to load organizations:", error);
-      }
+}
     };
     loadOrganizations();
   }, [organizationId]);
@@ -203,8 +202,7 @@ export default function EditOrganizationPage() {
       
       router.push("/dashboard/admin/organizations");
     } catch (error) {
-      console.error("Error archiving organization:", error);
-      alert("Failed to archive organization");
+alert("Failed to archive organization");
     }
   };
 

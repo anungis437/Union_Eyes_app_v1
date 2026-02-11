@@ -62,11 +62,11 @@ export default function OCRResultsScreen() {
     Alert.alert('Export', 'Choose export format', [
       {
         text: 'Text File (.txt)',
-        onPress: () => console.log('Export as TXT'),
+        onPress: () => {},
       },
       {
         text: 'PDF',
-        onPress: () => console.log('Export as PDF'),
+        onPress: () => {},
       },
       {
         text: 'Cancel',

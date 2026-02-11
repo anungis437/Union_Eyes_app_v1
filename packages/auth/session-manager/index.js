@@ -44,8 +44,7 @@ export class SessionManager {
             this.scheduleSessionRefresh(session);
         }
         catch (error) {
-            console.error('Error storing session:', error);
-        }
+}
     }
     /**
      * Load session from localStorage
@@ -67,8 +66,7 @@ export class SessionManager {
             return session;
         }
         catch (error) {
-            console.error('Error loading session:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -85,8 +83,7 @@ export class SessionManager {
             }
         }
         catch (error) {
-            console.error('Error clearing session:', error);
-        }
+}
     }
     /**
      * Get current session

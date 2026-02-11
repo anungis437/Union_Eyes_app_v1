@@ -256,8 +256,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error uploading document:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to upload document", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );

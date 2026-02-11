@@ -159,8 +159,7 @@ export function CampaignScheduler({
       setTestDialogOpen(false);
       setTestEmails('');
     } catch (error) {
-      console.error('Error sending test:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to send test emails',
         variant: 'destructive',
@@ -213,8 +212,7 @@ export function CampaignScheduler({
 
       setConfirmDialogOpen(false);
     } catch (error) {
-      console.error('Error scheduling campaign:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to schedule campaign',
         variant: 'destructive',

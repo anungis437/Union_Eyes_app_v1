@@ -369,8 +369,7 @@ async function processAutomatedAlerts(params) {
             }
         }
         catch (error) {
-            console.error(`Error processing alerts for fund ${fund.id}:`, error);
-        }
+}
     }
     return {
         success: true,

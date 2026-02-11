@@ -101,8 +101,7 @@ export const POST = async (req: NextRequest) => {
         },
       });
     } catch (error: any) {
-      console.error('Error creating report:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create report', details: error.message },
         { status: 500 }
       );
@@ -145,8 +144,7 @@ export const GET = async (req: NextRequest) => {
         })),
       });
     } catch (error: any) {
-      console.error('Error fetching reports:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch reports', details: error.message },
         { status: 500 }
       );

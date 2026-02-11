@@ -57,8 +57,7 @@ export function WorkflowHistory({ claimId }: WorkflowHistoryProps) {
         const data = await response.json();
         setHistory(data.history || []);
       } catch (err) {
-        console.error("Error loading history:", err);
-        setError("Failed to load workflow history");
+setError("Failed to load workflow history");
       } finally {
         setLoading(false);
       }
@@ -142,7 +141,7 @@ export function WorkflowHistory({ claimId }: WorkflowHistoryProps) {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <User className="h-4 w-4" />
                     <span>{event.changedByName}</span>
-                    <span>•</span>
+                    <span>â€¢</span>
                     <span>
                       {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
                     </span>

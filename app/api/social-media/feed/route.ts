@@ -127,8 +127,7 @@ export const GET = async (request: NextRequest) => {
       const { data: posts, error, count } = await query;
 
       if (error) {
-        console.error('Error fetching feed:', error);
-        return NextResponse.json({ error: 'Failed to fetch feed' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch feed' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -139,8 +138,7 @@ export const GET = async (request: NextRequest) => {
         has_more: (count || 0) > offset + limit,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Internal server error',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -189,8 +187,7 @@ export const POST = async (request: NextRequest) => {
       const { data: accounts, error: accountsError } = await accountsQuery;
 
       if (accountsError) {
-        console.error('Error fetching accounts:', accountsError);
-        return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
       }
 
       if (!accounts || accounts.length === 0) {
@@ -221,8 +218,7 @@ export const POST = async (request: NextRequest) => {
             .update({ last_synced_at: new Date().toISOString() })
             .eq('id', account.id);
         } catch (error) {
-          console.error(`Error refreshing account ${account.id}:`, error);
-          results.push({
+results.push({
             account_id: account.id,
             platform: account.platform,
             status: 'error',
@@ -244,8 +240,7 @@ export const POST = async (request: NextRequest) => {
         results,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to refresh feed',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -331,8 +326,7 @@ export const PUT = async (request: NextRequest) => {
 
           engagementTimeline = analytics || [];
         } catch (error) {
-          console.error('Error fetching engagement timeline:', error);
-        }
+}
       }
 
       // Calculate engagement metrics
@@ -382,8 +376,7 @@ export const PUT = async (request: NextRequest) => {
         related_posts: relatedPosts || [],
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to fetch post details',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -448,8 +441,7 @@ export const DELETE = async (request: NextRequest) => {
             status: 'success',
           });
         } catch (error) {
-          console.error(`Error deleting post ${postId}:`, error);
-          results.push({
+results.push({
             post_id: postId,
             status: 'error',
             error: error instanceof Error ? error.message : 'Unknown error',
@@ -470,8 +462,7 @@ export const DELETE = async (request: NextRequest) => {
         results,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to delete posts',
           details: error instanceof Error ? error.message : 'Unknown error',

@@ -64,8 +64,7 @@ export default function StrikeFundDashboardPage() {
         const data = await response.json();
         setFunds(data.funds || []);
       } catch (error) {
-        console.error('Error fetching strike funds:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     };
@@ -333,7 +332,7 @@ export default function StrikeFundDashboardPage() {
                           </div>
                           <div className="text-sm text-muted-foreground">
                             Fund Code: {fund.fundCode}
-                            {fund.organizationName && ` • ${fund.organizationName}`}
+                            {fund.organizationName && ` â€¢ ${fund.organizationName}`}
                           </div>
                         </div>
                         

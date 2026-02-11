@@ -145,8 +145,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching churn predictions:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch churn predictions' },
       { status: 500 }
     );
@@ -316,23 +315,23 @@ export async function POST(request: NextRequest) {
     const interventions: string[] = [];
     
     if (riskLevel === 'high') {
-      interventions.push('🚨 Priority outreach call within 48 hours');
-      interventions.push('👥 Assign dedicated steward for personalized support');
+      interventions.push('ðŸš¨ Priority outreach call within 48 hours');
+      interventions.push('ðŸ‘¥ Assign dedicated steward for personalized support');
     }
     
     if (factors.some(f => f.includes('Inactive') || f.includes('activity'))) {
-      interventions.push('📧 Send re-engagement email with upcoming events');
-      interventions.push('🎉 Invite to member appreciation event');
+      interventions.push('ðŸ“§ Send re-engagement email with upcoming events');
+      interventions.push('ðŸŽ‰ Invite to member appreciation event');
     }
     
     if (factors.some(f => f.includes('satisfaction'))) {
-      interventions.push('📊 Schedule satisfaction survey follow-up');
-      interventions.push('🔍 Review past case outcomes for improvement opportunities');
+      interventions.push('ðŸ“Š Schedule satisfaction survey follow-up');
+      interventions.push('ðŸ” Review past case outcomes for improvement opportunities');
     }
     
     if (factors.some(f => f.includes('resolution'))) {
-      interventions.push('⚡ Expedite pending cases with priority handling');
-      interventions.push('📅 Provide case status updates and timeline clarity');
+      interventions.push('âš¡ Expedite pending cases with priority handling');
+      interventions.push('ðŸ“… Provide case status updates and timeline clarity');
     }
 
     // Save prediction
@@ -391,8 +390,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error generating churn prediction:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to generate churn prediction' },
       { status: 500 }
     );

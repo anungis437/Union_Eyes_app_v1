@@ -128,8 +128,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error) {
-    console.error('[External Data] GET error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
@@ -233,8 +232,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error) {
-    console.error('[External Data] POST error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );

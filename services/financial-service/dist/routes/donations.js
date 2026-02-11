@@ -158,8 +158,7 @@ router.post('/webhooks/stripe', express_1.default.raw({ type: 'application/json'
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET || '');
     }
     catch (err) {
-        console.error('Webhook signature verification failed:', err.message);
-        return res.status(400).json({
+return res.status(400).json({
             success: false,
             error: `Webhook Error: ${err.message}`,
         });
@@ -183,13 +182,11 @@ router.post('/webhooks/stripe', express_1.default.raw({ type: 'application/json'
                 break;
             }
             default:
-                console.log(`Unhandled event type ${event.type}`);
-        }
+}
         res.json({ received: true });
     }
     catch (error) {
-        console.error('Error processing webhook:', error);
-        res.status(500).json({
+res.status(500).json({
             success: false,
             error: 'Error processing webhook',
         });
@@ -334,7 +331,6 @@ async function handlePaymentSuccess(paymentIntent) {
       updated_at = NOW()
     WHERE id = ${metadata.fundId}
   `);
-    console.log(`Payment succeeded for donation to fund ${metadata.fundId}: $${amount}`);
 }
 async function handlePaymentFailure(paymentIntent) {
     await db_1.db.execute((0, drizzle_orm_1.sql) `
@@ -344,7 +340,6 @@ async function handlePaymentFailure(paymentIntent) {
       updated_at = NOW()
     WHERE payment_intent_id = ${paymentIntent.id}
   `);
-    console.log(`Payment failed for intent ${paymentIntent.id}`);
 }
 async function handlePaymentCancellation(paymentIntent) {
     await db_1.db.execute((0, drizzle_orm_1.sql) `
@@ -354,7 +349,6 @@ async function handlePaymentCancellation(paymentIntent) {
       updated_at = NOW()
     WHERE payment_intent_id = ${paymentIntent.id}
   `);
-    console.log(`Payment cancelled for intent ${paymentIntent.id}`);
 }
 exports.default = router;
 //# sourceMappingURL=donations.js.map

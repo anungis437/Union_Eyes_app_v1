@@ -5,7 +5,7 @@
  * 
  * Export a remittance in various formats (CSV, XML, EDI, StatCan)
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - Removed manual SET app.current_user_id command
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * 
@@ -114,9 +114,7 @@ export const GET = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error('Error exporting remittance:', error);
-        
-        if (error instanceof Error && error.message === 'No remittances found for export') {
+if (error instanceof Error && error.message === 'No remittances found for export') {
           return NextResponse.json(
             { error: 'Remittance not found' },
             { status: 404 }

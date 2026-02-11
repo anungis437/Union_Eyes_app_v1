@@ -110,8 +110,7 @@ export default function SurveyResponsePage() {
       setQuestions(questionsList);
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to load survey:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load survey',
         variant: 'destructive',
@@ -226,8 +225,7 @@ export default function SurveyResponsePage() {
 
       setIsComplete(true);
     } catch (error) {
-      console.error('Failed to submit response:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to submit response',
         variant: 'destructive',

@@ -14,6 +14,7 @@ import {
 } from "@/lib/services/cba-service";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { logger } from "@/lib/logger";
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
@@ -115,7 +116,7 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-      console.error("Error listing CBAs:", error);
+      logger.error("Error listing CBAs", error as Error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
@@ -204,7 +205,7 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json({ cba }, { status: 201 });
     } catch (error) {
-      console.error("Error creating CBA:", error);
+      logger.error("Error creating CBA", error as Error);
       
       // Handle unique constraint violations
       if ((error as any)?.code === "23505") {

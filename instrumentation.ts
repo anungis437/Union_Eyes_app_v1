@@ -13,31 +13,32 @@ export async function register() {
   // Validate environment variables on startup (Node.js runtime only)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     try {
+      const { logger } = await import('./lib/logger');
       // Import and run comprehensive environment validation
       const { validateEnvironment, printEnvironmentReport } = await import('./lib/config/env-validation');
       const envValidation = validateEnvironment();
       
       if (!envValidation.isValid) {
-        console.error('❌ Environment validation failed:');
+        logger.error('Environment validation failed', { errors: envValidation.errors });
         envValidation.errors.forEach(error => {
-          console.error(`  - ${error}`);
+          logger.error('Environment validation error', { error });
         });
         
         // In production, fail fast on missing critical environment variables
         if (process.env.NODE_ENV === 'production') {
           throw new Error('Critical environment variables are missing. Service cannot start.');
         } else {
-          console.warn('⚠️  Development mode: continuing despite validation errors');
+          logger.warn('Development mode: continuing despite validation errors');
         }
       } else {
-        console.log('✅ Environment validation passed');
+        logger.info('Environment validation passed');
       }
 
       // Print warnings if any
       if (envValidation.warnings.length > 0) {
-        console.warn('⚠️ Environment warnings:');
+        logger.warn('Environment warnings', { warnings: envValidation.warnings });
         envValidation.warnings.forEach(warning => {
-          console.warn(`  - ${warning}`);
+          logger.warn('Environment warning', { warning });
         });
       }
 
@@ -47,17 +48,17 @@ export async function register() {
         const dbValidation = await runDatabaseStartupChecks();
         
         if (!dbValidation.isHealthy) {
-          console.error('❌ Database startup checks failed:');
+          logger.error('Database startup checks failed', { errors: dbValidation.errors });
           dbValidation.errors.forEach(error => {
-            console.error(`  - ${error}`);
+            logger.error('Database startup check error', { error });
           });
           
           // In production, warn but don't crash (database might be temporarily unavailable)
           if (process.env.NODE_ENV === 'production') {
-            console.warn('⚠️  Service starting with database issues - some features may not work');
+            logger.warn('Service starting with database issues - some features may not work');
           }
         } else {
-          console.log('✅ Database startup checks passed');
+          logger.info('Database startup checks passed');
         }
       }
 
@@ -70,24 +71,22 @@ export async function register() {
             url: process.env.UPSTASH_REDIS_REST_URL,
             token: process.env.UPSTASH_REDIS_REST_TOKEN,
           });
-          const { logger } = await import('./lib/logger');
           
           // Test Redis connection with ping
           await redis.ping();
           logger.info('Redis connection verified - rate limiting enabled');
         } catch (error) {
-          const { logger } = await import('./lib/logger');
           logger.error('Redis connection failed - rate limiting will fail-closed', error as Error);
           if (process.env.NODE_ENV === 'production') {
             logger.error('CRITICAL: All rate-limited endpoints will reject requests until Redis is available');
           }
         }
       } else if (process.env.NODE_ENV === 'production') {
-        const { logger } = await import('./lib/logger');
         logger.error('Redis not configured - rate limiting will fail-closed in production');
       }
     } catch (error) {
-      console.error('❌ Startup validation error:', error);
+      const { logger } = await import('./lib/logger');
+      logger.error('Startup validation error', { error });
       
       // Re-throw in production to prevent starting with invalid config
       if (process.env.NODE_ENV === 'production') {

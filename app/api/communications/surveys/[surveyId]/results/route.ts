@@ -235,8 +235,7 @@ export const GET = withApiAuth(async (
       dateRange,
     });
   } catch (error) {
-    console.error('Error fetching survey results:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch survey results' },
       { status: 500 }
     );

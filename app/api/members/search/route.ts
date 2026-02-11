@@ -82,8 +82,7 @@ try {
         dataType: 'MEMBER_DATA',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error("Error searching members:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to search members", details: error instanceof Error ? error.message : "Unknown error" },
         { status: 500 }
       );
@@ -140,8 +139,7 @@ export const GET = withRoleAuth(20, async (request, context) => {
           dataType: 'MEMBER_DATA',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error("Error fetching member statistics:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to fetch statistics", details: error instanceof Error ? error.message : "Unknown error" },
           { status: 500 }
         );

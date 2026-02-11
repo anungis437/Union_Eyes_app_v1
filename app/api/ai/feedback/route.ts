@@ -55,8 +55,7 @@ export const POST = async (request: NextRequest) => {
         .single();
 
       if (insertError) {
-        console.error('Failed to insert feedback:', insertError);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to submit feedback', details: insertError.message },
           { status: 500 }
         );
@@ -69,9 +68,7 @@ export const POST = async (request: NextRequest) => {
         message: 'Thank you for your feedback!',
       });
     } catch (error) {
-      console.error('AI feedback error:', error);
-
-      // Validation error
+// Validation error
       if (error instanceof z.ZodError) {
         return NextResponse.json(
           {
@@ -122,8 +119,7 @@ export const GET = async (request: NextRequest) => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Failed to fetch feedback:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to fetch feedback', details: error.message },
           { status: 500 }
         );
@@ -134,9 +130,7 @@ export const GET = async (request: NextRequest) => {
         feedback: feedback || [],
       });
     } catch (error) {
-      console.error('AI feedback fetch error:', error);
-
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to fetch feedback',
           message: error instanceof Error ? error.message : 'Unknown error',

@@ -92,8 +92,7 @@ export const GET = withApiAuth(async (
       },
     });
   } catch (error) {
-    console.error('Error fetching responses:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch responses' },
       { status: 500 }
     );
@@ -292,8 +291,7 @@ export const POST = withApiAuth(async (
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error submitting response:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to submit response' },
       { status: 500 }
     );

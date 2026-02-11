@@ -34,8 +34,7 @@ export const isUpdateEnabled = (): boolean => {
 export const getCurrentUpdateId = (): string | null => {
   try {
     return Updates.updateId || null;
-  } catch (error) {
-    console.error('Error getting current update ID:', error);
+  } catch {
     return null;
   }
 };
@@ -56,18 +55,14 @@ export const checkForUpdates = async (): Promise<UpdateCheckResult> => {
   }
 
   try {
-    console.log('[OTA] Checking for updates...');
     const update = await Updates.checkForUpdateAsync();
 
     if (update.isAvailable) {
-      console.log('[OTA] Update available:', update.manifest);
       Sentry.addBreadcrumb({
         category: 'update',
         message: 'Update available',
         level: 'info',
       });
-    } else {
-      console.log('[OTA] No updates available');
     }
 
     return {
@@ -75,7 +70,6 @@ export const checkForUpdates = async (): Promise<UpdateCheckResult> => {
       update: update.isAvailable ? update : undefined,
     };
   } catch (error) {
-    console.error('[OTA] Error checking for updates:', error);
     Sentry.captureException(error);
     return { isAvailable: false };
   }
@@ -90,24 +84,19 @@ export const downloadAndInstallUpdate = async (): Promise<boolean> => {
   }
 
   try {
-    console.log('[OTA] Downloading update...');
-
     const result = await Updates.fetchUpdateAsync();
 
     if (result.isNew) {
-      console.log('[OTA] Update downloaded successfully');
       Sentry.addBreadcrumb({
         category: 'update',
         message: 'Update downloaded',
         level: 'info',
       });
       return true;
-    } else {
-      console.log('[OTA] Update downloaded but not new');
-      return false;
     }
+
+    return false;
   } catch (error) {
-    console.error('[OTA] Error downloading update:', error);
     Sentry.captureException(error);
     throw error;
   }
@@ -118,10 +107,8 @@ export const downloadAndInstallUpdate = async (): Promise<boolean> => {
  */
 export const reloadApp = async (): Promise<void> => {
   try {
-    console.log('[OTA] Reloading app to apply update...');
     await Updates.reloadAsync();
   } catch (error) {
-    console.error('[OTA] Error reloading app:', error);
     Sentry.captureException(error);
     throw error;
   }
@@ -146,9 +133,7 @@ export const checkAndPromptForUpdate = async (): Promise<void> => {
           {
             text: 'Later',
             style: 'cancel',
-            onPress: () => {
-              console.log('[OTA] User declined update');
-            },
+            onPress: () => {},
           },
           {
             text: 'Update',
@@ -178,7 +163,6 @@ export const checkAndPromptForUpdate = async (): Promise<void> => {
       );
     }
   } catch (error) {
-    console.error('[OTA] Error in checkAndPromptForUpdate:', error);
     Sentry.captureException(error);
   }
 };
@@ -195,19 +179,15 @@ export const checkAndDownloadSilently = async (): Promise<boolean> => {
     const { isAvailable } = await checkForUpdates();
 
     if (isAvailable) {
-      console.log('[OTA] Downloading update silently...');
       const success = await downloadAndInstallUpdate();
 
       if (success) {
-        // Show a subtle notification that update will be applied on next restart
-        console.log('[OTA] Update will be applied on next app restart');
         return true;
       }
     }
 
     return false;
   } catch (error) {
-    console.error('[OTA] Error in checkAndDownloadSilently:', error);
     Sentry.captureException(error);
     return false;
   }
@@ -251,7 +231,6 @@ export const checkForCriticalUpdate = async (): Promise<void> => {
       );
     }
   } catch (error) {
-    console.error('[OTA] Error checking for critical update:', error);
     Sentry.captureException(error);
   }
 };
@@ -264,7 +243,6 @@ export const checkForCriticalUpdate = async (): Promise<void> => {
 export const addUpdateEventListener = (callback: (event: any) => void): any => {
   // expo-updates API changed - addListener may not be available
   // return Updates.addListener?.(callback);
-  console.warn('Update event listeners not yet implemented for current expo-updates version');
   return { remove: () => {} };
 };
 
@@ -279,8 +257,7 @@ export const isRunningLatestUpdate = async (): Promise<boolean> => {
   try {
     const { isAvailable } = await checkForUpdates();
     return !isAvailable;
-  } catch (error) {
-    console.error('[OTA] Error checking if running latest:', error);
+  } catch {
     return true; // Assume latest if check fails
   }
 };
@@ -291,13 +268,8 @@ export const isRunningLatestUpdate = async (): Promise<boolean> => {
  */
 export const initializeUpdateService = async (): Promise<void> => {
   if (!isUpdateEnabled()) {
-    console.log('[OTA] Updates disabled in development mode');
     return;
   }
-
-  console.log('[OTA] Update service initialized');
-  console.log('[OTA] Channel:', getUpdateChannel());
-  console.log('[OTA] Current update ID:', getCurrentUpdateId());
 
   // Check for updates on app start (silent background download)
   setTimeout(() => {
@@ -335,7 +307,6 @@ export const useOTAUpdates = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error downloading update:', error);
       return false;
     } finally {
       setIsDownloading(false);

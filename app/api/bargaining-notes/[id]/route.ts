@@ -30,8 +30,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       return NextResponse.json({ note });
     } catch (error) {
-      console.error("Error fetching bargaining note:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -83,8 +82,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       return NextResponse.json({ note: updatedNote });
     } catch (error) {
-      console.error("Error updating bargaining note:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -108,8 +106,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         deleted: true 
       });
     } catch (error) {
-      console.error("Error deleting bargaining note:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

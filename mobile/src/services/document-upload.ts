@@ -36,10 +36,8 @@ class DocumentUploadService {
         tasks.forEach((task) => {
           this.uploadTasks.set(task.id, task);
         });
-        console.log(`Loaded ${tasks.length} pending uploads from queue`);
       }
-    } catch (error) {
-      console.error('Error loading upload queue:', error);
+    } catch {
     }
   }
 
@@ -50,8 +48,7 @@ class DocumentUploadService {
     try {
       const tasks = Array.from(this.uploadTasks.values());
       await storageService.storage.setItem(UPLOAD_QUEUE_KEY, tasks);
-    } catch (error) {
-      console.error('Error saving upload queue:', error);
+    } catch {
     }
   }
 
@@ -61,7 +58,6 @@ class DocumentUploadService {
   private setupNetworkListener(): void {
     networkStatus.addConnectionListener((isOnline: boolean) => {
       if (isOnline) {
-        console.log('Network connected, resuming pending uploads...');
         this.resumeAllPendingUploads();
       }
     });
@@ -103,7 +99,6 @@ class DocumentUploadService {
 
     // If offline, queue for later
     if (!isOnline) {
-      console.log('Offline - document queued for upload:', document.id);
       return { success: false, error: 'Offline - queued for upload' };
     }
 
@@ -188,7 +183,6 @@ class DocumentUploadService {
         serverId: response.data.id,
       };
     } catch (error: any) {
-      console.error('Upload failed:', error);
 
       // Handle retry
       if (task.retryCount < task.maxRetries) {
@@ -288,12 +282,9 @@ class DocumentUploadService {
       (task) => task.status === UploadStatus.PENDING || task.status === UploadStatus.PAUSED
     );
 
-    console.log(`Resuming ${pendingTasks.length} pending uploads`);
-
     for (const task of pendingTasks) {
       // Note: We need the document object to resume, which should be stored separately
       // For now, we'll just mark them as pending and they'll be retried when explicitly requested
-      console.log('Pending upload:', task.documentId);
     }
   }
 

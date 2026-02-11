@@ -53,29 +53,24 @@ export async function executeScheduledReport(
   const startTime = Date.now();
   
   try {
-    console.log(`[Executor] Starting execution for schedule ${schedule.id}`);
-
-    // 1. Create export job record
+// 1. Create export job record
     const exportJob = await createExportJob(schedule);
     
     // 2. Fetch report data
-    console.log(`[Executor] Fetching data for report ${schedule.reportId}`);
-    const reportData = await fetchReportData(schedule);
+const reportData = await fetchReportData(schedule);
     
     if (!reportData || reportData.rows.length === 0) {
       throw new Error('No data available for report');
     }
 
     // 3. Generate export file
-    console.log(`[Executor] Generating ${schedule.exportFormat} export`);
-    const fileBuffer = await generateExportFile(
+const fileBuffer = await generateExportFile(
       reportData,
       schedule.exportFormat
     );
 
     // 4. Upload file to storage
-    console.log(`[Executor] Uploading file to storage`);
-    const fileUrl = await uploadFile(
+const fileUrl = await uploadFile(
       fileBuffer,
       schedule.id,
       schedule.exportFormat,
@@ -94,15 +89,11 @@ export async function executeScheduledReport(
     });
 
     // 6. Deliver the report
-    console.log(`[Executor] Delivering via ${schedule.deliveryMethod}`);
-    await deliverReport(schedule, fileUrl, fileBuffer);
+await deliverReport(schedule, fileUrl, fileBuffer);
 
     // 7. Update schedule
     await updateScheduleAfterRun(schedule.id, true);
-
-    console.log(`[Executor] Successfully completed schedule ${schedule.id}`);
-
-    return {
+return {
       success: true,
       scheduleId: schedule.id,
       exportJobId: exportJob.id,
@@ -113,9 +104,7 @@ export async function executeScheduledReport(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[Executor] Failed to execute schedule ${schedule.id}:`, errorMessage);
-
-    // Update schedule with failure
+// Update schedule with failure
     await updateScheduleAfterRun(schedule.id, false, errorMessage);
 
     return {
@@ -469,8 +458,7 @@ async function generateExcel(data: ReportData): Promise<Buffer> {
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
   } catch (error) {
-    console.error('[Excel] Error generating Excel file:', error);
-    // Fallback to CSV if Excel generation fails
+// Fallback to CSV if Excel generation fails
     return generateCSV(data);
   }
 }
@@ -614,8 +602,7 @@ async function generatePDF(data: ReportData): Promise<Buffer> {
     const pdfOutput = doc.output('arraybuffer');
     return Buffer.from(pdfOutput);
   } catch (error) {
-    console.error('[PDF] Error generating PDF file:', error);
-    // Fallback to text representation
+// Fallback to text representation
     const lines = [
       '='.repeat(80),
       'UnionEyes Report',
@@ -700,18 +687,15 @@ async function deliverReport(
       break;
     case 'dashboard':
       // No action needed - file is already accessible via fileUrl
-      console.log(`[Executor] Report available at: ${fileUrl}`);
-      break;
+break;
     case 'storage':
       // Already uploaded in previous step
-      console.log(`[Executor] Report stored at: ${fileUrl}`);
-      break;
+break;
     case 'webhook':
       await deliverViaWebhook(schedule, fileUrl);
       break;
     default:
-      console.warn(`[Executor] Unknown delivery method: ${schedule.deliveryMethod}`);
-  }
+}
 }
 
 /**
@@ -787,16 +771,12 @@ export async function retryFailedExecution(
   const schedule = rows[0];
 
   if (schedule.failure_count >= maxRetries) {
-    console.error(`[Executor] Max retries exceeded for schedule ${scheduleId}`);
-    return {
+return {
       success: false,
       scheduleId,
       error: 'Max retries exceeded',
     };
   }
-
-  console.log(`[Executor] Retrying execution for schedule ${scheduleId} (attempt ${schedule.failure_count + 1})`);
-  
-  return await executeScheduledReport(schedule);
+return await executeScheduledReport(schedule);
 }
 

@@ -38,9 +38,7 @@ export const GET = withSecureAPI(async (request, user) => {
       severity: 'high',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-
-    console.error("Error fetching user role:", error);
-    throw error;
+throw error;
   }
 });
 

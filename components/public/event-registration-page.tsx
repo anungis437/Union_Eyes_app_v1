@@ -161,8 +161,7 @@ export function PublicEventRegistrationPage({ eventSlug }: EventRegistrationPage
       const data = await response.json();
       setEvent(data);
     } catch (error) {
-      console.error('Error fetching event:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -200,8 +199,7 @@ export function PublicEventRegistrationPage({ eventSlug }: EventRegistrationPage
         setTicket(ticketData);
         setStep('confirmation');
       } catch (error) {
-        console.error('Error registering:', error);
-      }
+}
     } else {
       // Paid event - proceed to payment
       const totalTickets = 1 + numberOfGuests;
@@ -222,8 +220,7 @@ export function PublicEventRegistrationPage({ eventSlug }: EventRegistrationPage
         setClientSecret(data.clientSecret);
         setStep('payment');
       } catch (error) {
-        console.error('Error creating payment intent:', error);
-      }
+}
     }
   };
 
@@ -540,7 +537,7 @@ END:VCALENDAR`;
                           </div>
                           {numberOfGuests > 0 && !event.isFree && (
                             <div className="text-sm text-muted-foreground">
-                              {numberOfGuests} × ${event.ticketPrice} = ${(event.ticketPrice || 0) * numberOfGuests}
+                              {numberOfGuests} Ã— ${event.ticketPrice} = ${(event.ticketPrice || 0) * numberOfGuests}
                             </div>
                           )}
                         </div>
@@ -648,7 +645,7 @@ END:VCALENDAR`;
                 <span className="text-2xl font-bold">${totalAmount.toFixed(2)}</span>
               </div>
               <div className="text-sm text-muted-foreground">
-                {totalTickets} ticket{totalTickets > 1 ? 's' : ''} × ${event.ticketPrice}
+                {totalTickets} ticket{totalTickets > 1 ? 's' : ''} Ã— ${event.ticketPrice}
               </div>
             </div>
 
@@ -674,7 +671,7 @@ END:VCALENDAR`;
               className="w-full mt-4"
               onClick={() => setStep('form')}
             >
-              ← Back
+              â† Back
             </Button>
           </Card>
         )}

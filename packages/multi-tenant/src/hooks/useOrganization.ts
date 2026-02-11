@@ -269,18 +269,13 @@ export function useOrganization(options: UseOrganizationOptions): UseOrganizatio
   
   // Set cookie when current organization changes
   useEffect(() => {
-    console.log('[useOrganization] Setting cookie - currentOrganization:', currentOrganization);
     if (currentOrganization) {
       try {
         const cookieValue = `active-organization=${currentOrganization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`;
-        console.log('[useOrganization] Setting cookie:', cookieValue);
         document.cookie = cookieValue; // 30 days
-        console.log('[useOrganization] Cookie set successfully');
       } catch (error) {
-        console.error('[useOrganization] Error setting cookie:', error);
+        setError(error as Error);
       }
-    } else {
-      console.log('[useOrganization] No current organization, skipping cookie');
     }
   }, [currentOrganization]);
 
@@ -320,7 +315,6 @@ export function useOrganization(options: UseOrganizationOptions): UseOrganizatio
               table: 'organizations',
             },
             async (payload) => {
-              console.log('Organization change:', payload);
               await refresh();
             }
           )
@@ -333,13 +327,12 @@ export function useOrganization(options: UseOrganizationOptions): UseOrganizatio
               filter: `user_id=eq.${user.id}`,
             },
             async (payload) => {
-              console.log('Membership change:', payload);
               await refresh();
             }
           )
           .subscribe();
       } catch (err) {
-        console.error('Failed to setup realtime:', err);
+        setError(err as Error);
       }
     };
 

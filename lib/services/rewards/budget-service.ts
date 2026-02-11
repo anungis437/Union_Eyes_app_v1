@@ -19,6 +19,7 @@ import {
 } from '@/db/schema';
 import { eq, and, sql, lte, gte, desc, asc, ne } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 export interface BudgetCheckResult {
   hasEnoughBudget: boolean;
@@ -319,10 +320,20 @@ export async function reserveBudget(
       expiresAt,
     });
 
-    console.log(`[Budget] Reserved ${amount} credits for ${referenceType}:${referenceId}`);
+    logger.info('[Budget] Reserved credits', {
+      amount,
+      referenceType,
+      referenceId,
+      programId,
+    });
     return { success: true, reservationId };
   } catch (error) {
-    console.error('[Budget] Error reserving budget:', error);
+    logger.error('[Budget] Error reserving budget', {
+      error,
+      programId,
+      referenceType,
+      referenceId,
+    });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
@@ -355,7 +366,7 @@ export async function confirmBudgetReservation(
 
     return { success: true };
   } catch (error) {
-    console.error('[Budget] Error confirming reservation:', error);
+    logger.error('[Budget] Error confirming reservation', { error, reservationId });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
@@ -388,7 +399,7 @@ export async function releaseReservedBudget(
 
     return { success: true };
   } catch (error) {
-    console.error('[Budget] Error releasing reservation:', error);
+    logger.error('[Budget] Error releasing reservation', { error, reservationId });
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
@@ -420,7 +431,11 @@ export async function releaseReservationsByReference(
 
     return { released: reservations.length };
   } catch (error) {
-    console.error('[Budget] Error releasing reservations:', error);
+    logger.error('[Budget] Error releasing reservations', {
+      error,
+      referenceType,
+      referenceId,
+    });
     return { 
       released: 0,
       error: error instanceof Error ? error.message : 'Unknown error' 

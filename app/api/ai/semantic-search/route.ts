@@ -131,8 +131,7 @@ export const POST = async (request: NextRequest) => {
           );
       }
     } catch (error) {
-      console.error('Semantic search error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Semantic search failed',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -164,8 +163,7 @@ export const GET = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-      console.error('Status check error:', error);
-      return NextResponse.json({ error: 'Status check failed' }, { status: 500 });
+return NextResponse.json({ error: 'Status check failed' }, { status: 500 });
     }
     })(request);
 };

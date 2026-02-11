@@ -143,8 +143,6 @@ export default clerkMiddleware((auth, req) => {
     // This helps avoid cookie-related issues without adding significant query string size
     url.searchParams.set('cb', Date.now().toString().slice(-4));
     
-    console.log(`Redirecting from problematic URL with large parameters to clean URL: ${url.toString()}`);
-    
     // Return a redirect response to the clean URL
     return NextResponse.redirect(url);
   }

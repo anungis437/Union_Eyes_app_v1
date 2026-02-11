@@ -46,8 +46,7 @@ async function getHandler(
       },
     });
   } catch (error) {
-    console.error('Get export job error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch export job' },
       { status: 500 }
     );

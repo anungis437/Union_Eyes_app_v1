@@ -83,8 +83,7 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-      console.error("Error comparing clauses:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

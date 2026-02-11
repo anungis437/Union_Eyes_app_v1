@@ -94,8 +94,7 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
 
     return NextResponse.json(cohortData);
   } catch (error) {
-    console.error('Cohort analysis error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch cohort analysis' },
       { status: 500 }
     );

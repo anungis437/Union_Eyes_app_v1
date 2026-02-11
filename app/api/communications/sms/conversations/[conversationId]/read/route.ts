@@ -30,8 +30,7 @@ export const POST = withRoleAuth<SmsConversationContext>('steward', async (reque
 
     return NextResponse.json({ conversation });
   } catch (error) {
-    console.error('Error marking SMS conversation read:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to mark conversation read' },
       { status: 500 }
     );

@@ -250,8 +250,7 @@ describeIf('Column-Level Encryption Tests', () => {
       const avgTime = (endTime - startTime) / 100;
       
       expect(avgTime).toBeLessThan(maxAvgMs);
-      console.log(`📊 Average encryption time: ${avgTime.toFixed(2)}ms`);
-    });
+});
 
     it('should decrypt data within 30ms average', async () => {
       const maxAvgMs = Number(process.env.ENCRYPTION_BENCHMARK_MS ?? 60);
@@ -269,8 +268,7 @@ describeIf('Column-Level Encryption Tests', () => {
       const avgTime = (endTime - startTime) / 100;
       
       expect(avgTime).toBeLessThan(maxAvgMs);
-      console.log(`📊 Average decryption time: ${avgTime.toFixed(2)}ms`);
-    });
+});
   });
 
   describe('GDPR Compliance', () => {
@@ -350,7 +348,7 @@ describeIf('Column-Level Encryption Tests', () => {
     });
 
     it('should handle unicode characters', async () => {
-      const unicode = '你好世界🌎émoji™';
+      const unicode = 'Ã¤Â½Â Ã¥Â¥Â½Ã¤Â¸â€“Ã§â€¢Å’Ã°Å¸Å’Å½ÃƒÂ©mojiÃ¢â€žÂ¢';
       
       const encResult = await sql`SELECT encrypt_pii(${unicode}) as encrypted`;
       const encrypted = encResult[0].encrypted;
@@ -391,18 +389,6 @@ describe('Encryption Test Suite Summary', () => {
     };
     
     const totalTests = Object.values(coverage).reduce((a, b) => a + b, 0);
-    
-    console.log('\n🔐 Encryption Test Suite Summary:');
-    console.log(`✅ Total Test Cases: ${totalTests}`);
-    console.log(`✅ Encryption Functions: ${coverage.encryptionFunctions} tests`);
-    console.log(`✅ PII Data Storage: ${coverage.piiDataStorage} tests`);
-    console.log(`✅ Key Management: ${coverage.keyManagement} tests`);
-    console.log(`✅ Access Logging: ${coverage.accessLogging} tests`);
-    console.log(`✅ Performance: ${coverage.performance} tests`);
-    console.log(`✅ GDPR Compliance: ${coverage.gdprCompliance} tests`);
-    console.log(`✅ Edge Cases: ${coverage.edgeCases} tests`);
-    console.log(`\n🎯 Coverage: Enterprise-Grade Encryption Testing`);
-    
-    expect(totalTests).toBeGreaterThanOrEqual(22);
+expect(totalTests).toBeGreaterThanOrEqual(22);
   });
 });

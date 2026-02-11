@@ -44,8 +44,7 @@ export const GET = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error('Error fetching workflows:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch workflows', details: (error as Error).message },
         { status: 500 }
       );

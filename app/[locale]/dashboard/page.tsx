@@ -25,11 +25,9 @@ import { DeadlineWidget } from "@/components/deadlines";
 import { useRouter } from "next/navigation";
 import { useOrganizationId } from "@/lib/hooks/use-organization";
 import { SeedDataButton } from "@/components/dev/seed-data-button";
+import { UserRole as RBACRole } from "@/lib/auth/roles";
 
 type UserRole = "member" | "steward" | "officer" | "admin";
-
-// TODO: Fetch actual role from database
-const getUserRole = (): UserRole => "admin"; // DEV: Shows all features
 
 interface DashboardStats {
   activeClaims: number;
@@ -183,9 +181,9 @@ export default function DashboardPage() {
   const { user } = useUser();
   const router = useRouter();
   const organizationId = useOrganizationId();
-  const userRole = getUserRole();
   const t = useTranslations();
   const [mounted, setMounted] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>("member");
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     activeClaims: 0,
     pendingReviews: 0,
@@ -196,6 +194,48 @@ export default function DashboardPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+  
+  // Fetch user role from database
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('/api/auth/user-role');
+        if (response.ok) {
+          const { role } = await response.json();
+          
+          // Map RBAC roles to simplified dashboard roles
+          let mappedRole: UserRole = "member";
+          switch (role) {
+            case RBACRole.ADMIN:
+            case RBACRole.CONGRESS_STAFF:
+            case RBACRole.FEDERATION_STAFF:
+              mappedRole = "admin";
+              break;
+            case RBACRole.UNION_REP:
+              mappedRole = "officer";
+              break;
+            case RBACRole.STAFF_REP:
+              mappedRole = "steward";
+              break;
+            case RBACRole.MEMBER:
+            default:
+              mappedRole = "member";
+              break;
+          }
+          
+          setUserRole(mappedRole);
+        }
+      } catch (error) {
+// Default to member on error
+        setUserRole("member");
+      }
+    };
+    
+    if (user?.id) {
+      fetchUserRole();
+    }
+  }, [user?.id]);
+  
   const [deadlineSummary, setDeadlineSummary] = useState<DeadlineSummary>({
     activeDeadlines: 0,
     overdueCount: 0,
@@ -227,15 +267,11 @@ export default function DashboardPage() {
         });
         if (response.ok) {
           const data = await response.json();
-          console.log('[Dashboard] Received stats:', data);
-          console.log('[Dashboard] activeMembers value:', data.activeMembers);
-          setDashboardStats(data);
+setDashboardStats(data);
         } else {
-          console.error('[Dashboard] Failed to fetch stats:', response.status);
-        }
+}
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
-      } finally {
+} finally {
         setIsLoading(false);
       }
     };
@@ -260,11 +296,9 @@ export default function DashboardPage() {
           setNotifications(data.notifications || []);
           setUnreadNotificationsCount(data.unreadCount || 0);
         } else {
-          console.error('[Dashboard] Failed to fetch notifications:', response.status);
-        }
+}
       } catch (error) {
-        console.error('Error fetching notifications:', error);
-      } finally {
+} finally {
         setIsLoadingNotifications(false);
       }
     };
@@ -288,11 +322,9 @@ export default function DashboardPage() {
           const data = await response.json();
           setActivities(data.activities || []);
         } else {
-          console.error('[Dashboard] Failed to fetch activities:', response.status);
-        }
+}
       } catch (error) {
-        console.error('Error fetching activities:', error);
-      } finally {
+} finally {
         setIsLoadingActivities(false);
       }
     };
@@ -330,8 +362,7 @@ export default function DashboardPage() {
           setCriticalDeadlines(upcomingData.deadlines || []);
         }
       } catch (error) {
-        console.error('Error fetching deadline data:', error);
-      } finally {
+} finally {
         setIsLoadingDeadlines(false);
       }
     };
@@ -348,12 +379,7 @@ export default function DashboardPage() {
       return { ...stat, value: isLoading ? "..." : dashboardStats.pendingReviews, change: t('dashboard.inYourQueue') };
     } else if (stat.title === t('members.activeMembers')) {
       const memberValue = isLoading ? "..." : (dashboardStats.activeMembers || 0);
-      console.log('[Dashboard] Mapping activeMembers stat:', { 
-        isLoading, 
-        activeMembers: dashboardStats.activeMembers, 
-        finalValue: memberValue 
-      });
-      return { ...stat, value: memberValue, change: t('members.totalMembers') };
+return { ...stat, value: memberValue, change: t('members.totalMembers') };
     } else if (stat.title === t('analytics.resolutionRate')) {
       const total = dashboardStats.activeClaims + dashboardStats.resolvedCases;
       const rate = total > 0 ? Math.round((dashboardStats.resolvedCases / total) * 100) : 0;
@@ -399,7 +425,7 @@ export default function DashboardPage() {
       {process.env.NODE_ENV === 'development' && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <h3 className="text-sm font-semibold text-yellow-800 mb-2">
-            🔧 Development Tools
+            Ã°Å¸â€Â§ Development Tools
           </h3>
           <SeedDataButton />
         </div>

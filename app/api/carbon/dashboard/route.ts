@@ -56,8 +56,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       message: `Carbon dashboard for ${organizationId}: On track to meet 2025 targets`,
     } as CarbonDashboardResponse);
   } catch (error) {
-    console.error('Carbon dashboard error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         error: `Failed to get carbon dashboard: ${error}`,

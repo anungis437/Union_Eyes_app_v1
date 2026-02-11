@@ -13,11 +13,11 @@
 ```
 
 Total queries: 691
-TENANT (critical table violations): 0 ✅
+TENANT (critical table violations): 0 âœ…
 ADMIN: 2
 WEBHOOK: 26
 SYSTEM: 554
-UNKNOWN: 0 ✅
+UNKNOWN: 0 âœ…
 
 Non-Critical Tenant Violations: 99
 
@@ -270,9 +270,7 @@ interface Violation {
 }
 
 async function fixHelperFunctions() {
-  console.log('🔧 Fixing helper functions...');
-
-  const files = await glob('actions/**/*.ts');
+const files = await glob('actions/**/*.ts');
 
   for (const file of files) {
     let content = readFileSync(file, 'utf-8');
@@ -295,27 +293,18 @@ async function fixHelperFunctions() {
 
     writeFileSync(file, content);
   }
-
-  console.log('✅ Helper functions fixed');
 }
 
 async function analyzeRemaining() {
-  console.log('📊 Analyzing remaining violations...');
-
-  // Re-run scanner
+// Re-run scanner
   const { execSync } = require('child_process');
   const result = execSync('pnpm tsx scripts/scan-rls-usage-v2.ts', { encoding: 'utf-8' });
 
   const violations = result.match(/Non-Critical Tenant Violations: (\d+)/);
   const count = violations ? parseInt(violations[1]) : 0;
-
-  console.log(`📊 Remaining violations: ${count}`);
-
-  if (count === 0) {
-    console.log('🎉 All non-critical violations resolved!');
-  } else {
-    console.log('ℹ️  Review remaining violations in scanner output');
-  }
+if (count === 0) {
+} else {
+}
 }
 
 async function main() {
@@ -408,7 +397,7 @@ Before marking non-critical violations as complete:
 
 1. **Critical Tables Protected:** All 10 critical tables (claims, grievances, members, votes, elections, notifications, messages) have 0 violations
 
-2. **Unknown Contexts Resolved:** 465→0 unknown contexts, meaning all code is properly classified
+2. **Unknown Contexts Resolved:** 465â†’0 unknown contexts, meaning all code is properly classified
 
 3. **Non-Critical Tables:** Remaining violations are in organizationMembers (auth metadata) and other non-tenant-isolated tables
 

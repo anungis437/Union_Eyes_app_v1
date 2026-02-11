@@ -66,8 +66,7 @@ export const GET = async (request: NextRequest) => {
         unreadCount: unreadCount[0]?.count || 0,
       });
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

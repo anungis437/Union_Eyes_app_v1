@@ -98,11 +98,9 @@ export default function ClaimDetailPage() {
             setWorkflowHistory(historyData.history || []);
           }
         } catch (histErr) {
-          console.error('Error fetching workflow history:', histErr);
-        }
+}
       } catch (err) {
-        console.error('Error fetching claim:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load claim');
+setError(err instanceof Error ? err.message : 'Failed to load claim');
       } finally {
         setLoading(false);
       }
@@ -148,8 +146,7 @@ export default function ClaimDetailPage() {
         setWorkflowHistory(historyData.history || []);
       }
     } catch (err) {
-      console.error('Error refreshing claim:', err);
-    }
+}
   };
 
   if (loading) {

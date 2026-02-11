@@ -56,8 +56,7 @@ export function getPermissionsForRoles(roles: UserRole[]): Permission[] {
  */
 export async function checkUserPermission(options: PermissionCheckOptions): Promise<boolean> {
   if (!options.organizationId) {
-    console.warn('checkUserPermission requires organizationId to resolve user role');
-    return false;
+return false;
   }
 
   try {
@@ -80,8 +79,7 @@ export async function checkUserPermission(options: PermissionCheckOptions): Prom
     const mappedRole = mapOrganizationRoleToUserRole(member.role);
     return roleHasPermission(mappedRole, options.permission);
   } catch (error) {
-    console.warn('checkUserPermission failed', error);
-    return false;
+return false;
   }
 }
 
@@ -98,8 +96,7 @@ export async function checkUserPermission(options: PermissionCheckOptions): Prom
  */
 export async function checkUserRole(options: RoleCheckOptions): Promise<boolean> {
   if (!options.organizationId) {
-    console.warn('checkUserRole requires organizationId to resolve user role');
-    return false;
+return false;
   }
 
   try {
@@ -123,8 +120,7 @@ export async function checkUserRole(options: RoleCheckOptions): Promise<boolean>
     const requiredRoles = Array.isArray(options.role) ? options.role : [options.role];
     return requiredRoles.includes(mappedRole);
   } catch (error) {
-    console.warn('checkUserRole failed', error);
-    return false;
+return false;
   }
 }
 

@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db, schema } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -78,7 +79,7 @@ router.get('/', async (req: Request, res: Response) => {
       total: rules.length,
     });
   } catch (error) {
-    console.error('Error fetching dues rules:', error);
+    logger.error('Error fetching dues rules', { error });
     res.status(500).json({ success: false, error: 'Failed to fetch dues rules' });
   }
 });
@@ -107,7 +108,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     res.json({ success: true, data: rule });
   } catch (error) {
-    console.error('Error fetching dues rule:', error);
+    logger.error('Error fetching dues rule', { error });
     res.status(500).json({ success: false, error: 'Failed to fetch dues rule' });
   }
 });
@@ -142,7 +143,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
     }
-    console.error('Error creating dues rule:', error);
+    logger.error('Error creating dues rule', { error });
     res.status(500).json({ success: false, error: 'Failed to create dues rule' });
   }
 });
@@ -190,7 +191,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
     }
-    console.error('Error updating dues rule:', error);
+    logger.error('Error updating dues rule', { error });
     res.status(500).json({ success: false, error: 'Failed to update dues rule' });
   }
 });
@@ -227,7 +228,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
     res.json({ success: true, message: 'Dues rule deleted successfully' });
   } catch (error) {
-    console.error('Error deleting dues rule:', error);
+    logger.error('Error deleting dues rule', { error });
     res.status(500).json({ success: false, error: 'Failed to delete dues rule' });
   }
 });
@@ -284,7 +285,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
 
     res.status(201).json({ success: true, data: duplicatedRule });
   } catch (error) {
-    console.error('Error duplicating dues rule:', error);
+    logger.error('Error duplicating dues rule', { error });
     res.status(500).json({ success: false, error: 'Failed to duplicate dues rule' });
   }
 });

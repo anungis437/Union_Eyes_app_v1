@@ -28,8 +28,7 @@ const minRlsTableCount = strictRlsVerification ? 100 : 1;
 
 const expectPolicies = (count: number, context: string) => {
   if (count === 0) {
-    console.warn(`  ⚠️  ${context}: no policies detected`);
-    expect(count).toBe(0);
+expect(count).toBe(0);
     return;
   }
 
@@ -42,7 +41,7 @@ afterAll(async () => {
   }
 });
 
-describeIf('🔐 RLS Policy Configuration Verification', () => {
+describeIf('Ã°Å¸â€Â RLS Policy Configuration Verification', () => {
   
   describe('Messages System (12 policies expected)', () => {
     it('should have RLS enabled on messages table', async () => {
@@ -65,8 +64,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       
       const count = Number(result[0].policy_count);
       expectPolicies(count, 'Messages table');
-      console.log(`  ✓ Messages table: ${count} policies`);
-    });
+});
 
     it('should have RLS enabled on message_threads table', async () => {
       const result = await sql`
@@ -88,8 +86,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const count = Number(result[0].policy_count);
-      console.log(`  ✓ Message threads table: ${count} policies`);
-    });
+});
 
     it('should have RLS enabled on message_read_receipts table', async () => {
       const result = await sql`
@@ -111,8 +108,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const count = Number(result[0].policy_count);
-      console.log(`  ✓ Message read receipts table: ${count} policies`);
-    });
+});
   });
 
   describe('Notifications System (6 policies expected)', () => {
@@ -142,8 +138,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       
       const count = Number(result[0].policy_count);
       expectPolicies(count, 'Notification tables');
-      console.log(`  ✓ Notification tables: ${count} policies`);
-    });
+});
 
     it('should have notification policies for all CRUD operations', async () => {
       const result = await sql`
@@ -154,8 +149,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const operations = result.map(r => r.cmd);
-      console.log(`  ✓ Notification operations: ${operations.join(', ')}`);
-    });
+});
   });
 
   describe('Documents System (8 policies expected)', () => {
@@ -179,8 +173,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const count = Number(result[0].policy_count);
-      console.log(`  ✓ Member documents table: ${count} policies`);
-    });
+});
   });
 
   describe('Reports System (10 policies expected)', () => {
@@ -204,8 +197,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const count = Number(result[0].policy_count);
-      console.log(`  ✓ Reports table: ${count} policies`);
-    });
+});
 
     it('should have RLS enabled on scheduled_reports table', async () => {
       const result = await sql`
@@ -241,8 +233,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const count = Number(result[0].policy_count);
-      console.log(`  ✓ Calendars table: ${count} policies`);
-    });
+});
 
     it('should have RLS enabled on calendar_events table', async () => {
       const result = await sql`
@@ -278,8 +269,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       
       const count = Number(result[0].policy_count);
       expectPolicies(count, 'Members table');
-      console.log(`  ✓ Members table: ${count} policies`);
-    });
+});
 
     it('should have RLS enabled on encryption_keys table', async () => {
       const result = await sql`
@@ -301,8 +291,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       
       const count = Number(result[0].policy_count);
       expectPolicies(count, 'Encryption keys table');
-      console.log(`  ✓ Encryption keys table: ${count} policies`);
-    });
+});
 
     it('should have RLS enabled on pii_access_log table', async () => {
       const result = await sql`
@@ -324,8 +313,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       
       const count = Number(result[0].policy_count);
       expectPolicies(count, 'PII access log table');
-      console.log(`  ✓ PII access log table: ${count} policies`);
-    });
+});
   });
 
   describe('Global RLS Coverage (238 policies across 130 tables)', () => {
@@ -339,12 +327,10 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       const total = Number(result[0].total_policies);
       if (total === 0) {
         expect(total).toBe(0);
-        console.warn('  ⚠️  No RLS policies detected');
-      } else {
+} else {
         expect(total).toBeGreaterThan(minPolicyCount);
       }
-      console.log(`\n  📊 Total RLS Policies: ${total} (target: 238)`);
-    });
+});
 
     it('should have RLS enabled on 100+ tables', async () => {
       const result = await sql`
@@ -357,12 +343,10 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       const count = Number(result[0].rls_enabled_count);
       if (count === 0) {
         expect(count).toBe(0);
-        console.warn('  ⚠️  No tables currently have RLS enabled');
-      } else {
+} else {
         expect(count).toBeGreaterThan(minRlsTableCount);
       }
-      console.log(`  📊 Tables with RLS enabled: ${count} (target: 130)`);
-    });
+});
 
     it('should have RLS enabled on most critical tables', async () => {
       // Get list of critical tables that should ideally have RLS
@@ -390,8 +374,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       
       // At least 5 out of 7 critical tables should have RLS
       expect(rlsEnabledCount).toBeGreaterThanOrEqual(5);
-      console.log(`  ✅ ${rlsEnabledCount}/${criticalTables.length} critical tables have RLS enabled`);
-    });
+});
 
     it('should have comprehensive policy coverage across operations', async () => {
       const result = await sql`
@@ -403,12 +386,9 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const operations = result.map(r => `${r.cmd}: ${r.count}`);
-      console.log(`  📊 Policy operations: ${operations.join(', ')}`);
-      
-      if (result.length === 0) {
+if (result.length === 0) {
         expect(result.length).toBe(0);
-        console.warn('  ⚠️  No policy operations detected');
-        return;
+return;
       }
 
       // All CRUD operations should have policies when policies exist
@@ -428,11 +408,9 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
       `;
       
       const count = Number(result[0].named_policies);
-      console.log(`  ✅ ${count} policies have proper names`);
-      if (count === 0) {
+if (count === 0) {
         expect(count).toBe(0);
-        console.warn('  ⚠️  No named policies detected');
-        return;
+return;
       }
 
       expect(count).toBeGreaterThan(minPolicyCount);
@@ -440,7 +418,7 @@ describeIf('🔐 RLS Policy Configuration Verification', () => {
   });
 });
 
-describeIf('📋 RLS Policy Verification Summary', () => {
+describeIf('Ã°Å¸â€œâ€¹ RLS Policy Verification Summary', () => {
   it('should generate comprehensive RLS coverage report', async () => {
     // Get total stats
     const policyCount = await sql`
@@ -469,38 +447,12 @@ describeIf('📋 RLS Policy Verification Summary', () => {
       ORDER BY policy_count DESC
       LIMIT 10
     `;
-    
-    console.log(`
-╔══════════════════════════════════════════════════════════════╗
-║           RLS POLICY VERIFICATION SUMMARY                    ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  Total RLS Policies:         ${String(policyCount[0].count).padStart(3)} (target: 238)      ║
-║  Tables with RLS Enabled:    ${String(tableCount[0].count).padStart(3)} (target: 130)      ║
-║                                                              ║
-║  Policy Operations:                                          ║`);
-    
-    operationBreakdown.forEach(op => {
-      console.log(`║    ${op.cmd.padEnd(8)} ${String(op.count).padStart(3)} policies                            ║`);
-    });
-    
-    console.log(`║                                                              ║
-║  Top 10 Tables by Policy Count:                             ║`);
-    
-    topTables.forEach(t => {
+operationBreakdown.forEach(op => {
+});
+topTables.forEach(t => {
       const name = String(t.tablename).substring(0, 30).padEnd(30);
-      console.log(`║    ${name} ${String(t.policy_count).padStart(3)} policies             ║`);
-    });
-    
-    console.log(`║                                                              ║
-║  ✅ RLS Policy Configuration: VERIFIED                       ║
-║  ✅ Comprehensive Coverage: ACHIEVED                         ║
-║  ✅ Enterprise Security: WORLD-CLASS                         ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-    `);
-    
-    const policies = Number(policyCount[0].count);
+});
+const policies = Number(policyCount[0].count);
     const tables = Number(tableCount[0].count);
 
     if (policies === 0) {

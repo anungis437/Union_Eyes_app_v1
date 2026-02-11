@@ -1,7 +1,7 @@
 /**
  * Tenant Switch API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -102,8 +102,7 @@ export const POST = async (request: Request) => {
         });
       });
     } catch (error) {
-      console.error("Error switching tenant:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to switch tenant" },
         { status: 500 }
       );

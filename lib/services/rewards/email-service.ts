@@ -5,6 +5,7 @@
 
 import { Resend } from 'resend';
 import { db } from '@/db';
+import { logger } from '@/lib/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -67,13 +68,21 @@ export async function sendAwardReceivedEmail(data: AwardNotificationData) {
     });
 
     if (error) {
-      console.error('[Email] Failed to send award notification:', error);
+      logger.error('[Email] Failed to send award notification', {
+        error,
+        recipientEmail: data.recipientEmail,
+        awardId: data.awardId,
+      });
       return { success: false, error };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('[Email] Error sending award notification:', error);
+    logger.error('[Email] Error sending award notification', {
+      error,
+      recipientEmail: data.recipientEmail,
+      awardId: data.awardId,
+    });
     return { success: false, error };
   }
 }
@@ -91,13 +100,21 @@ export async function sendApprovalRequestEmail(data: ApprovalNotificationData) {
     });
 
     if (error) {
-      console.error('[Email] Failed to send approval request:', error);
+      logger.error('[Email] Failed to send approval request', {
+        error,
+        adminEmail: data.adminEmail,
+        awardId: data.awardId,
+      });
       return { success: false, error };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('[Email] Error sending approval request:', error);
+    logger.error('[Email] Error sending approval request', {
+      error,
+      adminEmail: data.adminEmail,
+      awardId: data.awardId,
+    });
     return { success: false, error };
   }
 }
@@ -115,13 +132,19 @@ export async function sendCreditExpirationEmail(data: ExpirationNotificationData
     });
 
     if (error) {
-      console.error('[Email] Failed to send expiration warning:', error);
+      logger.error('[Email] Failed to send expiration warning', {
+        error,
+        recipientEmail: data.recipientEmail,
+      });
       return { success: false, error };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('[Email] Error sending expiration warning:', error);
+    logger.error('[Email] Error sending expiration warning', {
+      error,
+      recipientEmail: data.recipientEmail,
+    });
     return { success: false, error };
   }
 }
@@ -139,13 +162,21 @@ export async function sendRedemptionConfirmationEmail(data: RedemptionNotificati
     });
 
     if (error) {
-      console.error('[Email] Failed to send redemption confirmation:', error);
+      logger.error('[Email] Failed to send redemption confirmation', {
+        error,
+        recipientEmail: data.recipientEmail,
+        redemptionId: data.redemptionId,
+      });
       return { success: false, error };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('[Email] Error sending redemption confirmation:', error);
+    logger.error('[Email] Error sending redemption confirmation', {
+      error,
+      recipientEmail: data.recipientEmail,
+      redemptionId: data.redemptionId,
+    });
     return { success: false, error };
   }
 }

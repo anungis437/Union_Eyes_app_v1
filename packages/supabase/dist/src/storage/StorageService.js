@@ -64,12 +64,10 @@ export class StorageService {
             try {
                 const { error } = await this.supabase.storage.createBucket(bucket.name, bucket.options);
                 if (error && !error.message.includes('already exists')) {
-                    console.error(`Failed to create bucket ${bucket.name}:`, error);
-                }
+}
             }
             catch (error) {
-                console.error(`Error creating bucket ${bucket.name}:`, error);
-            }
+}
         }
     }
     // ============================================================================

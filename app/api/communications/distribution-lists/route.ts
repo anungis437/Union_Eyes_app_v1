@@ -8,16 +8,13 @@
  * Version: 1.0.0
  * Created: December 6, 2025
  */
-// TODO: Migrate to withApiAuth wrapper pattern for consistency
-// Original pattern used getCurrentUser() with manual auth checks
-
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterDistributionLists } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 
 const createListSchema = z.object({
   name: z.string().min(1, 'List name is required'),
@@ -36,45 +33,28 @@ const createListSchema = z.object({
   }).optional(),
 });
 
-export async function GET(request: NextRequest) {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { tenantId } = user;
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+    const { organizationId } = context;
 
     const lists = await db
       .select()
       .from(newsletterDistributionLists)
-      .where(eq(newsletterDistributionLists.organizationId, tenantId))
+      .where(eq(newsletterDistributionLists.organizationId, organizationId))
       .orderBy(desc(newsletterDistributionLists.createdAt));
 
     return NextResponse.json({ lists });
   } catch (error) {
-    console.error('Error fetching distribution lists:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch distribution lists' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { id: userId, tenantId } = user;
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+    const { organizationId, userId } = context;
 
     const body = await request.json();
     const validatedData = createListSchema.parse(body);
@@ -82,7 +62,7 @@ export async function POST(request: NextRequest) {
     const [list] = await db
       .insert(newsletterDistributionLists)
       .values({
-        organizationId: tenantId,
+        organizationId,
         createdBy: userId,
         ...validatedData,
       })
@@ -96,12 +76,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    console.error('Error creating distribution list:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create distribution list' },
       { status: 500 }
     );
   }
-}
+});
 

@@ -9,6 +9,7 @@ import {
 } from "@/db/schema/force-majeure-schema";
 import { eq, and, lte } from "drizzle-orm";
 import * as crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 /**
  * Break-Glass Emergency Service
@@ -277,14 +278,17 @@ export class BreakGlassService {
   private static async executeRecoveryProcedure(activationId: string) {
     // This would trigger actual recovery actions
     // For now, log the authorization
-    console.log(`Break-glass authorization complete for activation ${activationId}`);
-    console.log("RECOVERY PROCEDURE INITIATED:");
-    console.log("1. Access Swiss cold storage for encrypted backups");
-    console.log("2. Retrieve master encryption keys");
-    console.log("3. Restore database from latest backup");
-    console.log("4. Validate data integrity");
-    console.log("5. Restore application services");
-    console.log("6. Verify system functionality");
+    logger.info('Break-glass authorization complete', { activationId });
+    logger.info('Recovery procedure initiated', {
+      steps: [
+        'Access Swiss cold storage for encrypted backups',
+        'Retrieve master encryption keys',
+        'Restore database from latest backup',
+        'Validate data integrity',
+        'Restore application services',
+        'Verify system functionality',
+      ],
+    });
     
     // Update activation with recovery actions
     await db
@@ -459,7 +463,7 @@ export class BreakGlassService {
         .where(eq(keyHolderRegistry.status, "active"));
 
       if (activeKeyHolders.length === 0) {
-        console.warn(`No active key holders found for system ${systemId}`);
+        logger.warn('No active key holders found for system', { systemId });
         return;
       }
 
@@ -491,7 +495,10 @@ Action Required: Log in to UnionEyes immediately to authorize emergency access.
               subject: 'EMERGENCY: Break-Glass Activation',
               priority: 'critical',
             }).catch(err => {
-              console.error(`Failed to send SMS to ${holder.emergencyPhone}:`, err);
+              logger.error('Failed to send SMS to key holder', {
+                error: err,
+                phone: holder.emergencyPhone,
+              });
             })
           );
         }
@@ -506,7 +513,10 @@ Action Required: Log in to UnionEyes immediately to authorize emergency access.
               body: emergencyMessage,
               priority: 'critical',
             }).catch(err => {
-              console.error(`Failed to send email to ${holder.emergencyEmail}:`, err);
+              logger.error('Failed to send email to key holder', {
+                error: err,
+                email: holder.emergencyEmail,
+              });
             })
           );
         }
@@ -516,13 +526,14 @@ Action Required: Log in to UnionEyes immediately to authorize emergency access.
 
       await Promise.allSettled(notificationPromises);
 
-      console.info(`Break-glass notifications sent to ${activeKeyHolders.length} key holders`, {
+      logger.info('Break-glass notifications sent', {
+        keyHolderCount: activeKeyHolders.length,
         systemId,
         activationId,
         emergencyLevel,
       });
     } catch (error) {
-      console.error('Failed to notify key holders:', error);
+      logger.error('Failed to notify key holders', { error, systemId, activationId });
       // Continue even if notifications fail - activation should proceed
     }
   }

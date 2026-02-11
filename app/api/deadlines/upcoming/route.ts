@@ -20,8 +20,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const deadlines = await getCriticalDeadlines(tenantId);
     return NextResponse.json({ deadlines });
   } catch (error) {
-    console.error('Failed to fetch upcoming deadlines:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch deadlines' },
       { status: 500 }
     );

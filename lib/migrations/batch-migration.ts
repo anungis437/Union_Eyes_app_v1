@@ -135,8 +135,8 @@ export async function migrateTable(
   };
 
   try {
-    console.log(`\n🔄 Migrating table: ${config.tableName}`);
-    console.log(`   Mode: ${dryRun ? "DRY RUN" : "LIVE"}`);
+    logger.info(`Migrating table: ${config.tableName}`);
+    logger.info(`Mode: ${dryRun ? "DRY RUN" : "LIVE"}`);
 
     // Check if organization_id column exists, add if not
     await ensureColumnExists(
@@ -235,8 +235,8 @@ export async function migrateTable(
 
       // Report progress
       const progress = Math.min((offset / result.totalRows) * 100, 100);
-      console.log(
-        `   Progress: ${progress.toFixed(1)}% (${result.migratedRows}/${result.totalRows})`
+      logger.info(
+        `Progress: ${progress.toFixed(1)}% (${result.migratedRows}/${result.totalRows})`
       );
 
       if (progressCallback) {
@@ -279,9 +279,9 @@ export async function migrateAllTables(
   const results = new Map<string, MigrationResult>();
   const startTime = Date.now();
 
-  console.log("\n🚀 Starting batch migration of all tables");
-  console.log(`   Mode: ${dryRun ? "DRY RUN" : "LIVE"}`);
-  console.log(`   Total tables: ${TABLE_CONFIGS.length}\n`);
+  logger.info("Starting batch migration of all tables");
+  logger.info(`Mode: ${dryRun ? "DRY RUN" : "LIVE"}`);
+  logger.info(`Total tables: ${TABLE_CONFIGS.length}`);
 
   // Sort tables by dependencies (topological sort)
   const sortedConfigs = topologicalSort(TABLE_CONFIGS);
@@ -300,9 +300,7 @@ export async function migrateAllTables(
 
     // Stop if a critical table fails
     if (result.status === "failed" && config.dependencies.length === 0) {
-      console.error(
-        `\n❌ Critical table ${config.tableName} failed. Stopping migration.`
-      );
+      logger.error(`Critical table ${config.tableName} failed. Stopping migration.`);
       break;
     }
   }
@@ -317,14 +315,14 @@ export async function migrateAllTables(
     0
   );
 
-  console.log("\n" + "=".repeat(60));
-  console.log("📊 MIGRATION SUMMARY");
-  console.log("=".repeat(60));
-  console.log(`Total duration: ${(totalDuration / 1000).toFixed(2)}s`);
-  console.log(`Total rows migrated: ${totalMigrated}`);
-  console.log(`Total rows failed: ${totalFailed}`);
-  console.log(`Tables processed: ${results.size}/${TABLE_CONFIGS.length}`);
-  console.log("=".repeat(60) + "\n");
+  logger.info("=".repeat(60));
+  logger.info("MIGRATION SUMMARY");
+  logger.info("=".repeat(60));
+  logger.info(`Total duration: ${(totalDuration / 1000).toFixed(2)}s`);
+  logger.info(`Total rows migrated: ${totalMigrated}`);
+  logger.info(`Total rows failed: ${totalFailed}`);
+  logger.info(`Tables processed: ${results.size}/${TABLE_CONFIGS.length}`);
+  logger.info("=".repeat(60));
 
   return results;
 }
@@ -338,13 +336,13 @@ export async function migrateTenant(
 ): Promise<Map<string, MigrationResult>> {
   const results = new Map<string, MigrationResult>();
 
-  console.log(`\n🔄 Migrating tenant: ${tenantId}`);
-  console.log(`   Mode: ${dryRun ? "DRY RUN" : "LIVE"}\n`);
+  logger.info(`Migrating tenant: ${tenantId}`);
+  logger.info(`Mode: ${dryRun ? "DRY RUN" : "LIVE"}`);
 
   // Validate mapping exists
   const mapping = await validateMapping(tenantId);
   if (!mapping.exists) {
-    console.error(`❌ No mapping found for tenant: ${tenantId}`);
+    logger.warn(`No mapping found for tenant: ${tenantId}`);
     return results;
   }
 
@@ -374,7 +372,7 @@ export async function migrateTenant(
         continue;
       }
 
-      console.log(`   Migrating ${config.tableName}: ${count} rows`);
+      logger.info(`Migrating ${config.tableName}: ${count} rows`);
 
       if (!dryRun) {
         await db.execute(sql.raw(`
@@ -399,9 +397,9 @@ export async function migrateTenant(
         status: "completed",
       });
 
-      console.log(`   ✅ Completed ${config.tableName}`);
+      logger.info(`Completed ${config.tableName}`);
     } catch (error) {
-      console.error(`   ❌ Failed ${config.tableName}:`, error);
+      logger.error(`Failed ${config.tableName}`, { error });
       results.set(config.tableName, {
         tableName: config.tableName,
         totalRows: 0,
@@ -424,7 +422,7 @@ export async function migrateTenant(
     await updateMappingStatus(tenantId, "completed", totalRecords);
   }
 
-  console.log(`\n✅ Tenant migration completed: ${totalRecords} records migrated`);
+  logger.info(`Tenant migration completed: ${totalRecords} records migrated`);
   return results;
 }
 
@@ -449,7 +447,7 @@ async function ensureColumnExists(
     `));
 
     if (result.length === 0) {
-      console.log(`   Adding ${columnName} column to ${tableName}...`);
+      logger.info(`Adding ${columnName} column to ${tableName}...`);
       await db.execute(sql.raw(`
         ALTER TABLE ${tableName} 
         ADD COLUMN IF NOT EXISTS ${columnName} UUID
@@ -461,10 +459,10 @@ async function ensureColumnExists(
         ON ${tableName}(${columnName})
       `));
 
-      console.log(`   ✅ Column added successfully`);
+      logger.info("Column added successfully");
     }
   } catch (error) {
-    console.error(`Error ensuring column exists:`, error);
+    logger.error("Error ensuring column exists", { error });
     throw error;
   }
 }
@@ -550,7 +548,7 @@ export async function getMigrationProgress(): Promise<{
       overallTotal += total;
       overallMigrated += migrated;
     } catch (error) {
-      console.error(`Error getting progress for ${config.tableName}:`, error);
+      logger.error(`Error getting progress for ${config.tableName}`, { error });
     }
   }
 

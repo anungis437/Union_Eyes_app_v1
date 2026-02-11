@@ -66,8 +66,7 @@ export default function ReportsPage() {
       {showReportBuilder && (
         <CustomReportBuilder
           onSave={async (report) => {
-            console.log("Report saved:", report);
-            setShowReportBuilder(false);
+setShowReportBuilder(false);
           }}
         />
       )}

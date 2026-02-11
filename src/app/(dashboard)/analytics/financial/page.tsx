@@ -107,7 +107,6 @@ export default function FinancialAnalytics() {
       setCategories(categoriesData);
       setCostBreakdown(costsData);
     } catch (error) {
-      console.error('Error fetching financial data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -135,8 +134,7 @@ export default function FinancialAnalytics() {
     return ((current - previous) / previous) * 100;
   };
 
-  const handleExport = (format: 'excel' | 'pdf' | 'csv') => {
-    console.log(`Exporting financial analytics as ${format}`);
+  const handleExport = (_format: 'excel' | 'pdf' | 'csv') => {
     // Export implementation
   };
 

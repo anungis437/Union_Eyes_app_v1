@@ -1,7 +1,7 @@
 /**
  * Claims Detail API Routes
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * - Removed manual tenant lookup (getUserTenant) - RLS handles this
@@ -103,8 +103,7 @@ export const GET = async (
           dataType: 'CLAIMS',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-        console.error("Error fetching claim:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to fetch claim" },
           { status: 500 }
         );
@@ -234,8 +233,7 @@ export const PATCH = async (
             dataType: 'CLAIMS',
             details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
           });
-          console.error("Error updating claim:", error);
-          return NextResponse.json(
+return NextResponse.json(
             { error: "Failed to update claim" },
             { status: 500 }
           );
@@ -345,8 +343,7 @@ export const DELETE = async (
           dataType: 'CLAIMS',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-        console.error("Error deleting claim:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to delete claim" },
           { status: 500 }
         );

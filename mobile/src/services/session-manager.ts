@@ -48,7 +48,6 @@ class SessionManager {
       // Start tracking
       this.startTracking();
     } catch (error) {
-      console.error('Error initializing session manager:', error);
     }
   }
 
@@ -89,7 +88,6 @@ class SessionManager {
     try {
       await SecureStore.setItemAsync(LAST_ACTIVITY_KEY, this.lastActivity.toString());
     } catch (error) {
-      console.error('Error updating activity:', error);
     }
 
     this.resetActivityTimer();
@@ -155,7 +153,6 @@ class SessionManager {
       await authService.signOut();
       this.config.onSessionExpired();
     } catch (error) {
-      console.error('Error handling session expiration:', error);
     }
   }
 

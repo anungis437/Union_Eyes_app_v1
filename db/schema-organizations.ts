@@ -76,6 +76,7 @@ export const organizations = pgTable(
     slug: text('slug').notNull().unique(),
     displayName: text('display_name'),
     shortName: text('short_name'),
+    description: text('description'),
 
     // Hierarchy
     organizationType: organizationTypeEnum('organization_type').notNull(),

@@ -24,7 +24,7 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 async function canAccessPrecedent(
   userId: string,
   userOrgId: string,
-  userOrgHierarchyPath: string,
+  userOrgHierarchyPath: string[],
   precedent: any
 ): Promise<boolean> {
   // Owner always has access
@@ -40,12 +40,48 @@ async function canAccessPrecedent(
       return precedent.sharedWithOrgIds?.includes(userOrgId) || false;
     
     case "federation":
-      // TODO: Check federation hierarchy when implemented
-      return false;
+      // Check if organizations share a common parent in hierarchy
+      if (!userOrgHierarchyPath || userOrgHierarchyPath.length === 0) {
+        return false;
+      }
+      try {
+        const sourceOrg = await db.selectDistinct().from(organizations).where(eq(organizations.id, precedent.sourceOrganizationId)).limit(1);
+        const sourceOrgData = sourceOrg[0];
+        if (!sourceOrgData?.hierarchyPath || sourceOrgData.hierarchyPath.length === 0) {
+          return false;
+        }
+        // Check if organizations share any common parent in their hierarchy paths
+        const hasCommonParent = userOrgHierarchyPath.some(parentId => 
+          sourceOrgData.hierarchyPath.includes(parentId)
+        );
+        return hasCommonParent;
+      } catch (error) {
+        logger.error('Error checking federation hierarchy:', error);
+        return false;
+      }
     
     case "congress":
-      // TODO: Check CLC membership when implemented
-      return false;
+      // Check CLC membership: both user's org and source org must be CLC-affiliated
+      try {
+        const [userOrg, sourceOrg] = await Promise.all([
+          db.selectDistinct().from(organizations).where(eq(organizations.id, userOrgId)).limit(1),
+          db.selectDistinct().from(organizations).where(eq(organizations.id, precedent.sourceOrganizationId)).limit(1)
+        ]);
+        
+        const userOrgData = userOrg[0];
+        const sourceOrgData = sourceOrg[0];
+        
+        // Both orgs must be CLC-affiliated with active status
+        return (
+          userOrgData?.clcAffiliated === true &&
+          userOrgData?.status === 'active' &&
+          sourceOrgData?.clcAffiliated === true &&
+          sourceOrgData?.status === 'active'
+        );
+      } catch (error) {
+        logger.error('Error checking CLC membership:', error);
+        return false;
+      }
     
     case "public":
       // Everyone can access
@@ -68,7 +104,15 @@ export const GET = async (request: NextRequest) => {
       }
 
       const userOrgId = organizationId;
-      const userOrgHierarchyPath = ''; // TODO: Add once hierarchy is implemented
+      
+      // Fetch user's organization hierarchy path for federation sharing checks
+      let userOrgHierarchyPath: string[] = [];
+      try {
+        const userOrg = await db.selectDistinct().from(organizations).where(eq(organizations.id, userOrgId)).limit(1);
+        userOrgHierarchyPath = userOrg[0]?.hierarchyPath || [];
+      } catch (error) {
+        logger.error('Error fetching user organization hierarchy:', error);
+      }
 
       // Parse query params
       const { searchParams } = new URL(request.url);

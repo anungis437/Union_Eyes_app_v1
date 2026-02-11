@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { awardTemplates, awardHistory, budgetPool, budgetReservations } from '@/db/schema';
 import { eq, and, desc, like, sql, asc, ne } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 export interface AwardTemplateInput {
   name: string;
@@ -161,7 +162,7 @@ export async function listAwardTemplates(
 
     return { success: true, data: templates || [] };
   } catch (error) {
-    console.error('[Templates] Error listing templates:', error);
+    logger.error('[Templates] Error listing templates', { error, organizationId });
     return { success: false, error };
   }
 }
@@ -181,7 +182,7 @@ export async function getAwardTemplate(templateId: string) {
 
     return { success: true, data: template };
   } catch (error) {
-    console.error('[Templates] Error fetching template:', error);
+    logger.error('[Templates] Error fetching template', { error, templateId });
     return { success: false, error };
   }
 }
@@ -209,7 +210,7 @@ export async function createAwardTemplate(
 
     return { success: true, data: newTemplate };
   } catch (error) {
-    console.error('[Templates] Error creating template:', error);
+    logger.error('[Templates] Error creating template', { error, organizationId, createdBy });
     return { success: false, error };
   }
 }
@@ -236,7 +237,7 @@ export async function updateAwardTemplate(
 
     return { success: true, data: updatedTemplate };
   } catch (error) {
-    console.error('[Templates] Error updating template:', error);
+    logger.error('[Templates] Error updating template', { error, templateId });
     return { success: false, error };
   }
 }
@@ -262,7 +263,7 @@ export async function deleteAwardTemplate(templateId: string) {
     await db.delete(awardTemplates).where(eq(awardTemplates.id, templateId));
     return { success: true };
   } catch (error) {
-    console.error('[Templates] Error deleting template:', error);
+    logger.error('[Templates] Error deleting template', { error, templateId });
     return { success: false, error };
   }
 }
@@ -281,7 +282,7 @@ export async function incrementTemplateUseCount(templateId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('[Templates] Error incrementing use count:', error);
+    logger.error('[Templates] Error incrementing use count', { error, templateId });
     return { success: false, error };
   }
 }
@@ -302,7 +303,7 @@ export async function getPopularTemplates(organizationId: string, limit = 10) {
 
     return { success: true, data: templates || [] };
   } catch (error) {
-    console.error('[Templates] Error fetching popular templates:', error);
+    logger.error('[Templates] Error fetching popular templates', { error, organizationId, limit });
     return { success: false, error };
   }
 }
@@ -324,7 +325,7 @@ export async function searchAwardTemplates(organizationId: string, searchQuery: 
 
     return { success: true, data: templates || [] };
   } catch (error) {
-    console.error('[Templates] Error searching templates:', error);
+    logger.error('[Templates] Error searching templates', { error, organizationId, searchQuery });
     return { success: false, error };
   }
 }
@@ -348,7 +349,11 @@ export async function initializeDefaultTemplates(
 
     return { success: true, data: created };
   } catch (error) {
-    console.error('[Templates] Error initializing default templates:', error);
+    logger.error('[Templates] Error initializing default templates', {
+      error,
+      organizationId,
+      createdBy,
+    });
     return { success: false, error };
   }
 }
@@ -398,7 +403,12 @@ export async function recordTemplateUsage(
 
     return { success: true };
   } catch (error) {
-    console.error('[Templates] Error recording template usage:', error);
+    logger.error('[Templates] Error recording template usage', {
+      error,
+      templateId,
+      userId,
+      recipientId,
+    });
     return { success: false, error };
   }
 }
@@ -416,7 +426,7 @@ export async function getTemplateHistory(templateId: string, limit = 50) {
 
     return { success: true, data: history || [] };
   } catch (error) {
-    console.error('[Templates] Error fetching template history:', error);
+    logger.error('[Templates] Error fetching template history', { error, templateId, limit });
     return { success: false, error };
   }
 }
@@ -461,7 +471,11 @@ export async function cloneTemplate(
 
     return cloned;
   } catch (error) {
-    console.error('[Templates] Error cloning template:', error);
+    logger.error('[Templates] Error cloning template', {
+      error,
+      templateId,
+      newOrganizationId,
+    });
     return { success: false, error };
   }
 }
@@ -492,7 +506,7 @@ export async function getTemplateStats(organizationId: string) {
       }
     };
   } catch (error) {
-    console.error('[Templates] Error fetching template stats:', error);
+    logger.error('[Templates] Error fetching template stats', { error, organizationId });
     return { success: false, error };
   }
 }
@@ -515,7 +529,11 @@ export async function archiveOldTemplates(organizationId: string, olderThanDays 
 
     return { success: true, archivedCount: result.rowCount };
   } catch (error) {
-    console.error('[Templates] Error archiving old templates:', error);
+    logger.error('[Templates] Error archiving old templates', {
+      error,
+      organizationId,
+      olderThanDays,
+    });
     return { success: false, error };
   }
 }

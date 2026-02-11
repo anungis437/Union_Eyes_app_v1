@@ -186,8 +186,7 @@ export async function GET(
       timeline,
     });
   } catch (error) {
-    console.error('Error fetching analytics:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }
     );

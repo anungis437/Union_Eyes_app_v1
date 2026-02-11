@@ -109,8 +109,7 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(trendData);
   } catch (error) {
-    console.error('Claims trends error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch claims trends' },
       { status: 500 }
     );
@@ -129,7 +128,7 @@ function simpleLinearForecast(data: number[], periods: number): number[] {
   const xMean = (n - 1) / 2;
   const yMean = data.reduce((sum, val) => sum + val, 0) / n;
 
-  // Calculate slope (β1) and intercept (β0)
+  // Calculate slope (Î²1) and intercept (Î²0)
   let numerator = 0;
   let denominator = 0;
   

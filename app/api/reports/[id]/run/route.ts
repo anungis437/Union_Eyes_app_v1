@@ -78,8 +78,7 @@ async function postHandler(
       executedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Run report error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to run report' },
       { status: 500 }
     );

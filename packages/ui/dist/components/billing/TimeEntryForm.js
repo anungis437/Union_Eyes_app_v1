@@ -94,8 +94,7 @@ export function TimeEntryForm({ onSubmit, defaultValues, matters = [], taskCateg
             setBillableAmount(0);
         }
         catch (error) {
-            console.error('Error submitting time entry:', error);
-        }
+}
         finally {
             setIsLoading(false);
         }

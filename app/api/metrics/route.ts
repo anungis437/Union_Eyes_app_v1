@@ -48,8 +48,7 @@ function authenticateRequest(request: NextRequest): boolean {
 
   // Require auth in production
   if (!authToken) {
-    console.warn('[Metrics] METRICS_AUTH_TOKEN not configured in production');
-    return false;
+return false;
   }
 
   const authHeader = request.headers.get('authorization');
@@ -78,8 +77,7 @@ async function updateDatabaseMetrics(): Promise<void> {
       dbConnectionsMax.set(Number(stats.max_connections || 100));
     }
   } catch (error) {
-    console.error('[Metrics] Failed to update database metrics:', error);
-    // Don't fail the whole endpoint if DB metrics fail
+// Don't fail the whole endpoint if DB metrics fail
   }
 }
 
@@ -112,9 +110,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error) {
-    console.error('[Metrics] Error generating metrics:', error);
-    
-    return new NextResponse('Internal Server Error', { 
+return new NextResponse('Internal Server Error', { 
       status: 500,
     });
   }

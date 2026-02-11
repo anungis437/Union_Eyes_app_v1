@@ -50,16 +50,7 @@ export async function getTenantIdForUser(
       const selectedOrganizationId = cookieStore.get("selected_organization_id")?.value;
       const selectedTenantId = cookieStore.get("selected_tenant_id")?.value;
       const selectedScopeId = selectedOrganizationId ?? selectedTenantId;
-      
-      console.log('[getTenantIdForUser] Cookie check:', { 
-        userId: clerkUserId, 
-        selectedOrganizationId,
-        selectedTenantId,
-        selectedScopeId,
-        allCookies: cookieStore.getAll().map(c => c.name)
-      });
-      
-      if (selectedScopeId) {
+if (selectedScopeId) {
         // Verify user has access to the selected tenant/organization
         const userTenant = await dbOrTx
           .select({ organizationId: organizationUsers.organizationId })
@@ -71,18 +62,10 @@ export async function getTenantIdForUser(
             )
           )
           .limit(1);
-        
-        console.log('[getTenantIdForUser] Access check:', {
-          selectedScopeId,
-          hasAccess: userTenant.length > 0
-        });
-        
-        if (userTenant.length > 0) {
-          console.log('[getTenantIdForUser] ✅ Using selected scope:', selectedScopeId);
-          return selectedScopeId;
+if (userTenant.length > 0) {
+return selectedScopeId;
         } else {
-          console.log('[getTenantIdForUser] ⚠️ User has no access to selected tenant, falling back');
-        }
+}
       }
       
       // Fall back to user's first available tenant
@@ -93,15 +76,12 @@ export async function getTenantIdForUser(
         .limit(1);
       
       if (userTenants.length > 0) {
-        console.log('[getTenantIdForUser] ⚠️ Fallback to first tenant:', userTenants[0].organizationId);
-        return userTenants[0].organizationId;
+return userTenants[0].organizationId;
       }
       
       // Final fallback to default tenant
       const tenantId = DEFAULT_TENANT_ID;
-      console.log('[getTenantIdForUser] ⚠️ Fallback to DEFAULT_TENANT_ID:', tenantId);
-      
-      // Validate that tenant exists
+// Validate that tenant exists
       const tenant = await dbOrTx
         .select({ tenantId: tenants.tenantId })
         .from(tenants)
@@ -114,8 +94,7 @@ export async function getTenantIdForUser(
       
       return tenantId;
     } catch (error) {
-      console.error(`Error resolving tenant for user ${clerkUserId}:`, error);
-      throw error;
+throw error;
     }
   };
 
@@ -162,8 +141,7 @@ export async function validateTenantExists(
       
       return result.length > 0;
     } catch (error) {
-      console.error(`Error validating tenant ${tenantId}:`, error);
-      return false;
+return false;
     }
   };
 

@@ -44,8 +44,7 @@ export default function DashboardTopbar({ profile, onMenuClick }: DashboardTopba
           setIsAdmin(data.role === 'admin' || data.roles?.includes('admin'));
         }
       } catch (error) {
-        console.error('Failed to load user roles:', error);
-        setIsAdmin(false);
+setIsAdmin(false);
       }
     };
 
@@ -64,8 +63,7 @@ export default function DashboardTopbar({ profile, onMenuClick }: DashboardTopba
           setNotificationCount(data.count || 0);
         }
       } catch (error) {
-        console.error('Failed to load notification count:', error);
-        setNotificationCount(0);
+setNotificationCount(0);
       }
     };
 

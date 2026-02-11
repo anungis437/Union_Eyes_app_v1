@@ -94,8 +94,7 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
       const data = await response.json();
       setCourses(data.courses || []);
     } catch (error) {
-      console.error("Error fetching courses:", error);
-      toast.error("Failed to load courses");
+toast.error("Failed to load courses");
     }
   }, [organizationId]);
 
@@ -115,8 +114,7 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
       const data = await response.json();
       setSessions(data.sessions || []);
     } catch (error) {
-      console.error("Error fetching sessions:", error);
-      toast.error("Failed to load sessions");
+toast.error("Failed to load sessions");
     } finally {
       setLoading(false);
     }
@@ -161,8 +159,7 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
       resetForm();
       fetchSessions();
     } catch (error) {
-      console.error("Error creating session:", error);
-      toast.error("Failed to create session");
+toast.error("Failed to create session");
     }
   };
 
@@ -191,8 +188,7 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
       resetForm();
       fetchSessions();
     } catch (error) {
-      console.error("Error updating session:", error);
-      toast.error("Failed to update session");
+toast.error("Failed to update session");
     }
   };
 
@@ -216,8 +212,7 @@ export function SessionScheduler({ organizationId }: SessionSchedulerProps) {
       toast.success("Session cancelled successfully");
       fetchSessions();
     } catch (error) {
-      console.error("Error cancelling session:", error);
-      toast.error("Failed to cancel session");
+toast.error("Failed to cancel session");
     }
   };
 

@@ -109,8 +109,7 @@ export class AnomalyDetectionService {
             return { success: true, data: anomalies };
         }
         catch (error) {
-            console.error('Failed to detect unusual login patterns:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -252,8 +251,7 @@ export class AnomalyDetectionService {
             return { success: true, data: anomalies };
         }
         catch (error) {
-            console.error('Failed to detect data access anomalies:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -326,8 +324,7 @@ export class AnomalyDetectionService {
             return { success: true, data: anomalies };
         }
         catch (error) {
-            console.error('Failed to detect permission anomalies:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -391,8 +388,7 @@ export class AnomalyDetectionService {
             return { success: true, data: anomalies };
         }
         catch (error) {
-            console.error('Failed to detect session anomalies:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -419,8 +415,7 @@ export class AnomalyDetectionService {
             return await this.buildUserBaseline(userId, firmId);
         }
         catch (error) {
-            console.error('Failed to get user baseline:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -474,8 +469,7 @@ export class AnomalyDetectionService {
             return baseline;
         }
         catch (error) {
-            console.error('Failed to build user baseline:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -490,8 +484,7 @@ export class AnomalyDetectionService {
             return { success: true, data: baseline };
         }
         catch (error) {
-            console.error('Failed to update baseline:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -522,8 +515,7 @@ export class AnomalyDetectionService {
             return { success: true };
         }
         catch (error) {
-            console.error('Failed to generate alert:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -541,8 +533,7 @@ export class AnomalyDetectionService {
             return { success: true };
         }
         catch (error) {
-            console.error('Failed to configure alerts:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

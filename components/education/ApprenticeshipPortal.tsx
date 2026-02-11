@@ -136,8 +136,7 @@ export default function ApprenticeshipPortal({
 
       setEnrollments(memberEnrollments);
     } catch (error) {
-      console.error("Error fetching enrollments:", error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId, memberId, mentors]);
@@ -152,8 +151,7 @@ export default function ApprenticeshipPortal({
       const data = await response.json();
       setAllCourses(data.courses || data);
     } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
+}
   }, [organizationId]);
 
   useEffect(() => {
@@ -179,8 +177,7 @@ export default function ApprenticeshipPortal({
         }));
       }
     } catch (error) {
-      console.error("Error fetching mentor info:", error);
-    }
+}
   };
 
   const getStatusBadgeColor = (status: string) => {

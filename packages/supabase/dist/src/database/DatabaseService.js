@@ -502,8 +502,7 @@ export function useComplianceMonitoring(organizationId) {
             setSecurityOverview(securityData);
         }
         catch (error) {
-            console.error('Failed to refresh compliance data:', error);
-        }
+}
         finally {
             setIsLoading(false);
         }
@@ -532,8 +531,7 @@ export function useAuditLogs(organizationId) {
             setLogs(auditLogs);
         }
         catch (error) {
-            console.error('Failed to fetch audit logs:', error);
-        }
+}
         finally {
             setIsLoading(false);
         }

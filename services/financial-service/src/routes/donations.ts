@@ -8,6 +8,7 @@ import { z } from 'zod';
 import Stripe from 'stripe';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -142,7 +143,7 @@ router.post(
         process.env.STRIPE_WEBHOOK_SECRET || ''
       );
     } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
+      logger.error('Webhook signature verification failed', { error: err });
       return res.status(400).json({
         success: false,
         error: `Webhook Error: ${err.message}`,
@@ -171,12 +172,12 @@ router.post(
         }
 
         default:
-          console.log(`Unhandled event type ${event.type}`);
+          logger.info('Unhandled event type', { eventType: event.type });
       }
 
       res.json({ received: true });
     } catch (error: any) {
-      console.error('Error processing webhook:', error);
+      logger.error('Error processing webhook', { error });
       res.status(500).json({
         success: false,
         error: 'Error processing webhook',
@@ -339,7 +340,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     WHERE id = ${metadata.fundId}
   `);
 
-  console.log(`Payment succeeded for donation to fund ${metadata.fundId}: $${amount}`);
+  logger.info('Payment succeeded for donation', { fundId: metadata.fundId, amount });
 }
 
 async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
@@ -351,7 +352,7 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
     WHERE payment_intent_id = ${paymentIntent.id}
   `);
 
-  console.log(`Payment failed for intent ${paymentIntent.id}`);
+  logger.warn('Payment failed for intent', { paymentIntentId: paymentIntent.id });
 }
 
 async function handlePaymentCancellation(paymentIntent: Stripe.PaymentIntent) {
@@ -363,7 +364,7 @@ async function handlePaymentCancellation(paymentIntent: Stripe.PaymentIntent) {
     WHERE payment_intent_id = ${paymentIntent.id}
   `);
 
-  console.log(`Payment cancelled for intent ${paymentIntent.id}`);
+  logger.info('Payment cancelled for intent', { paymentIntentId: paymentIntent.id });
 }
 
 export default router;

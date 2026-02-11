@@ -20,6 +20,7 @@ import { arbitrationDecisions, arbitratorProfiles } from '@/db/schema';
 import { eq, and, or, sql, inArray } from 'drizzle-orm';
 import { semanticPrecedentSearch } from './vector-search-service';
 import type { OutcomeEnum, PrecedentValueEnum } from '@/db/schema/cba-intelligence-schema';
+import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -183,7 +184,7 @@ export async function matchClaimToPrecedents(
       })
       .slice(0, limit);
   } catch (error) {
-    console.error('Error matching claim to precedents:', error);
+    logger.error('Error matching claim to precedents', { error, issueType });
     return [];
   }
 }
@@ -209,7 +210,7 @@ async function extractClaimKeywords(claimText: string): Promise<string[]> {
     const result = JSON.parse(response.choices[0]?.message?.content || '{"keywords": []}');
     return result.keywords || [];
   } catch (error) {
-    console.error('Error extracting keywords:', error);
+    logger.error('Error extracting keywords', { error });
     return [];
   }
 }
@@ -320,7 +321,7 @@ Outcome: ${precedent.outcome}`,
       distinctions: result.distinctions || [],
     };
   } catch (error) {
-    console.error('Error analyzing applicability:', error);
+    logger.error('Error analyzing applicability', { error });
     return {
       applicableReasons: ['Analysis unavailable'],
       distinctions: [],
@@ -447,7 +448,7 @@ Provide analysis.`,
       suggestedArguments: result.suggestedArguments || [],
     };
   } catch (error) {
-    console.error('Error generating analysis:', error);
+    logger.error('Error generating analysis', { error });
     return {
       outcomeReasoning: 'Analysis generation failed',
       strengths: [],
@@ -513,7 +514,7 @@ Generate memorandum.`,
 
     return response.choices[0]?.message?.content || 'Memorandum generation failed';
   } catch (error) {
-    console.error('Error generating memorandum:', error);
+    logger.error('Error generating memorandum', { error });
     return 'Failed to generate legal memorandum';
   }
 }

@@ -193,8 +193,7 @@ export default function ClaimsPage() {
         const mappedCases = data.claims.map(mapDbClaimToCase);
         setCases(mappedCases);
       } catch (err) {
-        console.error('Error fetching claims:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load claims');
+setError(err instanceof Error ? err.message : 'Failed to load claims');
       } finally {
         setIsLoading(false);
       }

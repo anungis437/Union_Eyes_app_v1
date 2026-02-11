@@ -30,12 +30,6 @@ import { eq, and, sql } from 'drizzle-orm';
 // Tests use Azure PostgreSQL (production database) not Supabase
 const hasDatabaseEnv = Boolean(process.env.DATABASE_URL);
 const describeIfDatabase = hasDatabaseEnv ? describe : describe.skip;
-
-console.log('🔍 Test Configuration:');
-console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ Not set'}`);
-console.log(`  NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set (not used for data)' : '❌ Not set'}`);
-console.log(`  Using: Azure PostgreSQL via Drizzle ORM`);
-
 // Test users for isolation testing
 interface TestUser {
   id: string;
@@ -66,9 +60,7 @@ describeIfDatabase('RLS Policy Security Tests', () => {
 
 beforeAll(async () => {
   // Setup test users with different contexts
-  console.log('🔧 Setting up test users...');
-  
-  // Generate UUIDs for tenants and organizations
+// Generate UUIDs for tenants and organizations
   const tenant1Id = uuidv4();
   const tenant2Id = uuidv4();
   const org1Id = uuidv4();
@@ -109,8 +101,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  console.log('🧹 Cleaning up test data...');
-  // Cleanup test data
+// Cleanup test data
 });
 
 // ============================================================================
@@ -918,20 +909,7 @@ describe('Test Suite Summary', () => {
     };
     
     const totalTests = Object.values(coverage).reduce((a, b) => a + b, 0);
-    
-    console.log('\n📊 Security Test Suite Summary:');
-    console.log(`✅ Total Test Cases: ${totalTests}`);
-    console.log(`✅ Messages System: ${coverage.messagesSystem} tests`);
-    console.log(`✅ Notifications: ${coverage.notificationsSystem} tests`);
-    console.log(`✅ Documents: ${coverage.documentsSystem} tests`);
-    console.log(`✅ Reports: ${coverage.reportsSystem} tests`);
-    console.log(`✅ Calendars: ${coverage.calendarSystem} tests`);
-    console.log(`✅ Performance: ${coverage.performance} tests`);
-    console.log(`✅ Compliance: ${coverage.compliance} tests`);
-    console.log(`\n🎯 Coverage: World-Class Security Testing`);
-    console.log(`\n⚠️  Note: Tests converted from Supabase to Drizzle ORM + Azure PostgreSQL`);
-    
-    expect(totalTests).toBeGreaterThanOrEqual(26);
+expect(totalTests).toBeGreaterThanOrEqual(26);
   });
 });
 

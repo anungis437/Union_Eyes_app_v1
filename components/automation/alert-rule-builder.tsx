@@ -171,20 +171,20 @@ const TRIGGER_TYPES = [
 
 const CONDITION_OPERATORS = [
   { value: 'equals', label: 'Equals (=)', symbol: '=' },
-  { value: 'not_equals', label: 'Not Equals (≠)', symbol: '≠' },
+  { value: 'not_equals', label: 'Not Equals (â‰ )', symbol: 'â‰ ' },
   { value: 'greater_than', label: 'Greater Than (>)', symbol: '>' },
-  { value: 'greater_than_or_equal', label: 'Greater Than or Equal (≥)', symbol: '≥' },
+  { value: 'greater_than_or_equal', label: 'Greater Than or Equal (â‰¥)', symbol: 'â‰¥' },
   { value: 'less_than', label: 'Less Than (<)', symbol: '<' },
-  { value: 'less_than_or_equal', label: 'Less Than or Equal (≤)', symbol: '≤' },
-  { value: 'contains', label: 'Contains', symbol: '∋' },
-  { value: 'not_contains', label: 'Not Contains', symbol: '∌' },
-  { value: 'starts_with', label: 'Starts With', symbol: '⊢' },
-  { value: 'ends_with', label: 'Ends With', symbol: '⊣' },
-  { value: 'in', label: 'In List', symbol: '∈' },
-  { value: 'not_in', label: 'Not In List', symbol: '∉' },
-  { value: 'is_null', label: 'Is Null', symbol: '∅' },
-  { value: 'is_not_null', label: 'Is Not Null', symbol: '≠∅' },
-  { value: 'between', label: 'Between', symbol: '↔' },
+  { value: 'less_than_or_equal', label: 'Less Than or Equal (â‰¤)', symbol: 'â‰¤' },
+  { value: 'contains', label: 'Contains', symbol: 'âˆ‹' },
+  { value: 'not_contains', label: 'Not Contains', symbol: 'âˆŒ' },
+  { value: 'starts_with', label: 'Starts With', symbol: 'âŠ¢' },
+  { value: 'ends_with', label: 'Ends With', symbol: 'âŠ£' },
+  { value: 'in', label: 'In List', symbol: 'âˆˆ' },
+  { value: 'not_in', label: 'Not In List', symbol: 'âˆ‰' },
+  { value: 'is_null', label: 'Is Null', symbol: 'âˆ…' },
+  { value: 'is_not_null', label: 'Is Not Null', symbol: 'â‰ âˆ…' },
+  { value: 'between', label: 'Between', symbol: 'â†”' },
   { value: 'regex_match', label: 'Regex Match', symbol: '~' },
 ];
 
@@ -338,15 +338,12 @@ export default function AlertRuleBuilder() {
         orderIndex: i,
       })),
     };
-
-    console.log('Saving alert rule:', alertRule);
-    // API call would go here
+// API call would go here
   };
 
   // Test alert rule
   const testAlertRule = () => {
-    console.log('Testing alert rule with current configuration');
-    // API call to test rule would go here
+// API call to test rule would go here
   };
 
   return (

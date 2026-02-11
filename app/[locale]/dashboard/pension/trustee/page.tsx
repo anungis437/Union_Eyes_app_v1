@@ -41,8 +41,7 @@ export default function TrusteePortalPage() {
         }
       }
     } catch (err) {
-      console.error('Error checking trustee status:', err);
-      setError('Unable to verify trustee status. Please try again later.');
+setError('Unable to verify trustee status. Please try again later.');
     } finally {
       setLoading(false);
     }

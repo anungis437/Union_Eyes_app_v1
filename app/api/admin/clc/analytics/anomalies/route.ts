@@ -81,8 +81,7 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error('Analytics anomalies error:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to fetch anomaly data' },
           { status: 500 }
         );

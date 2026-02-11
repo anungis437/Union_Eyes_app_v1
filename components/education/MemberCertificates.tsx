@@ -61,8 +61,7 @@ export function MemberCertificates({ memberId, organizationId }: MemberCertifica
       setCertifications(data.certifications);
       setStats(data.stats);
     } catch (error) {
-      console.error("Error fetching certifications:", error);
-      toast.error("Failed to load certifications");
+toast.error("Failed to load certifications");
     } finally {
       setLoading(false);
     }
@@ -84,8 +83,7 @@ export function MemberCertificates({ memberId, organizationId }: MemberCertifica
       window.open(cert.certificateUrl, "_blank");
       toast.success("Certificate opened in new tab");
     } catch (error) {
-      console.error("Error downloading certificate:", error);
-      toast.error("Failed to download certificate");
+toast.error("Failed to download certificate");
     }
   };
 
@@ -294,7 +292,7 @@ export function MemberCertificates({ memberId, organizationId }: MemberCertifica
                 {cert.clcRegistryStatus === "approved" && (
                   <Badge variant="outline" className="border-green-500 text-green-700">
                     CLC Approved
-                    {cert.clcCertificationNumber && ` • ${cert.clcCertificationNumber}`}
+                    {cert.clcCertificationNumber && ` â€¢ ${cert.clcCertificationNumber}`}
                   </Badge>
                 )}
 

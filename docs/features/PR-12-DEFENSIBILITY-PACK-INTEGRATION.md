@@ -2,16 +2,16 @@
 
 ## Executive Summary
 
-**Status:** ✅ COMPLETE  
+**Status:** Ã¢Å“â€¦ COMPLETE  
 **Test Coverage:** 25/25 service tests passing (100%)  
 **Validator Requirement:** Addresses #2: "Defensibility as First-Class Object"
 
 **What This PR Delivers:**
 
-- ✅ **Auto-generation** on claim resolution/closure (no human intervention required)
-- ✅ **Database storage** with cryptographic integrity (SHA-256 verification)
-- ✅ **Download API** with audit trail (every access logged)
-- ✅ **Integrity verification** on every download (tamper detection)
+- Ã¢Å“â€¦ **Auto-generation** on claim resolution/closure (no human intervention required)
+- Ã¢Å“â€¦ **Database storage** with cryptographic integrity (SHA-256 verification)
+- Ã¢Å“â€¦ **Download API** with audit trail (every access logged)
+- Ã¢Å“â€¦ **Integrity verification** on every download (tamper detection)
 
 **Validator's Question:** *"Can leadership say: 'Show me the record'?"*  
 **Our Answer:** **Yes. One click, immutable export, SHA-256 verified, arbitration-ready.**
@@ -64,45 +64,45 @@
 ### System Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Claim Lifecycle with Pack Generation                 │
-└─────────────────────────────────────────────────────────────────────────┘
+Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+Ã¢â€â€š                    Claim Lifecycle with Pack Generation                 Ã¢â€â€š
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
 
 1. CLAIM CREATION
-   ├─ Member submits claim
-   └─ claim_updates table records event
+   Ã¢â€Å“Ã¢â€â‚¬ Member submits claim
+   Ã¢â€â€Ã¢â€â‚¬ claim_updates table records event
 
 2. STATE TRANSITIONS (PR-11 FSM Enforcement)
-   ├─ Submitted → Under Review → Investigation → Pending Docs
-   ├─ ALL transitions validated by claim-workflow-fsm.ts
-   └─ Each transition logged to claim_updates
+   Ã¢â€Å“Ã¢â€â‚¬ Submitted Ã¢â€ â€™ Under Review Ã¢â€ â€™ Investigation Ã¢â€ â€™ Pending Docs
+   Ã¢â€Å“Ã¢â€â‚¬ ALL transitions validated by claim-workflow-fsm.ts
+   Ã¢â€â€Ã¢â€â‚¬ Each transition logged to claim_updates
 
 3. RESOLUTION (PR-12 AUTO-GENERATION)
-   ├─ Status changes to 'resolved' or 'closed'
-   ├─ workflow-engine.ts detects terminal state
-   ├─ Assembles timeline from claim_updates
-   ├─ Assembles audit trail from claim_updates
-   ├─ Extracts state transitions (status_change events)
-   ├─ Calls generateDefensibilityPack():
-   │  ├─ Dual-surface timeline (member vs staff visibility)
-   │  ├─ Complete audit trail (who did what, when)
-   │  ├─ State transition history with validation status
-   │  ├─ SLA compliance assessment
-   │  └─ SHA-256 integrity hashes (timeline, audit, transitions, combined)
-   └─ Stores pack in defensibility_packs table
+   Ã¢â€Å“Ã¢â€â‚¬ Status changes to 'resolved' or 'closed'
+   Ã¢â€Å“Ã¢â€â‚¬ workflow-engine.ts detects terminal state
+   Ã¢â€Å“Ã¢â€â‚¬ Assembles timeline from claim_updates
+   Ã¢â€Å“Ã¢â€â‚¬ Assembles audit trail from claim_updates
+   Ã¢â€Å“Ã¢â€â‚¬ Extracts state transitions (status_change events)
+   Ã¢â€Å“Ã¢â€â‚¬ Calls generateDefensibilityPack():
+   Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ Dual-surface timeline (member vs staff visibility)
+   Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ Complete audit trail (who did what, when)
+   Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ State transition history with validation status
+   Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ SLA compliance assessment
+   Ã¢â€â€š  Ã¢â€â€Ã¢â€â‚¬ SHA-256 integrity hashes (timeline, audit, transitions, combined)
+   Ã¢â€â€Ã¢â€â‚¬ Stores pack in defensibility_packs table
 
 4. DOWNLOAD (PR-12 API)
-   ├─ GET /api/claims/[id]/defensibility-pack
-   ├─ RLS policies enforce access (member sees own, staff sees org)
-   ├─ Integrity verification BEFORE download (detects tampering)
-   ├─ Download logged to pack_download_log (who, when, why)
-   ├─ Verification logged to pack_verification_log (pass/fail)
-   └─ Returns pack with integrity hash in headers
+   Ã¢â€Å“Ã¢â€â‚¬ GET /api/claims/[id]/defensibility-pack
+   Ã¢â€Å“Ã¢â€â‚¬ RLS policies enforce access (member sees own, staff sees org)
+   Ã¢â€Å“Ã¢â€â‚¬ Integrity verification BEFORE download (detects tampering)
+   Ã¢â€Å“Ã¢â€â‚¬ Download logged to pack_download_log (who, when, why)
+   Ã¢â€Å“Ã¢â€â‚¬ Verification logged to pack_verification_log (pass/fail)
+   Ã¢â€â€Ã¢â€â‚¬ Returns pack with integrity hash in headers
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     Leadership Asks: "Show Me the Record"               │
-│                     1 click → Immutable export → SHA-256 verified       │
-└─────────────────────────────────────────────────────────────────────────┘
+Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+Ã¢â€â€š                     Leadership Asks: "Show Me the Record"               Ã¢â€â€š
+Ã¢â€â€š                     1 click Ã¢â€ â€™ Immutable export Ã¢â€ â€™ SHA-256 verified       Ã¢â€â€š
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
 ```
 
 ### Data Model
@@ -110,39 +110,39 @@
 ```sql
 -- Main pack storage
 defensibility_packs
-├─ pack_id (UUID, PK)
-├─ case_id (UUID, FK to claims)
-├─ case_number (VARCHAR)
-├─ organization_id (UUID)
-├─ pack_data (JSONB) -- Full DefensibilityPack structure
-├─ integrity_hash (VARCHAR(64)) -- SHA-256 combined
-├─ timeline_hash (VARCHAR(64)) -- SHA-256 timeline
-├─ audit_hash (VARCHAR(64)) -- SHA-256 audit
-├─ state_transition_hash (VARCHAR(64)) -- SHA-256 transitions
-├─ verification_status ('verified' | 'tampered' | 'unverified')
-├─ download_count (INTEGER)
-└─ Timestamps, soft delete
+Ã¢â€Å“Ã¢â€â‚¬ pack_id (UUID, PK)
+Ã¢â€Å“Ã¢â€â‚¬ case_id (UUID, FK to claims)
+Ã¢â€Å“Ã¢â€â‚¬ case_number (VARCHAR)
+Ã¢â€Å“Ã¢â€â‚¬ organization_id (UUID)
+Ã¢â€Å“Ã¢â€â‚¬ pack_data (JSONB) -- Full DefensibilityPack structure
+Ã¢â€Å“Ã¢â€â‚¬ integrity_hash (VARCHAR(64)) -- SHA-256 combined
+Ã¢â€Å“Ã¢â€â‚¬ timeline_hash (VARCHAR(64)) -- SHA-256 timeline
+Ã¢â€Å“Ã¢â€â‚¬ audit_hash (VARCHAR(64)) -- SHA-256 audit
+Ã¢â€Å“Ã¢â€â‚¬ state_transition_hash (VARCHAR(64)) -- SHA-256 transitions
+Ã¢â€Å“Ã¢â€â‚¬ verification_status ('verified' | 'tampered' | 'unverified')
+Ã¢â€Å“Ã¢â€â‚¬ download_count (INTEGER)
+Ã¢â€â€Ã¢â€â‚¬ Timestamps, soft delete
 
 -- Download audit trail
 pack_download_log
-├─ log_id (UUID, PK)
-├─ pack_id (UUID, FK)
-├─ downloaded_by (VARCHAR)
-├─ downloaded_by_role (VARCHAR)
-├─ download_purpose (VARCHAR) -- 'review' | 'arbitration' | 'legal'
-├─ ip_address, user_agent
-├─ integrity_verified (BOOLEAN)
-└─ download_success (BOOLEAN)
+Ã¢â€Å“Ã¢â€â‚¬ log_id (UUID, PK)
+Ã¢â€Å“Ã¢â€â‚¬ pack_id (UUID, FK)
+Ã¢â€Å“Ã¢â€â‚¬ downloaded_by (VARCHAR)
+Ã¢â€Å“Ã¢â€â‚¬ downloaded_by_role (VARCHAR)
+Ã¢â€Å“Ã¢â€â‚¬ download_purpose (VARCHAR) -- 'review' | 'arbitration' | 'legal'
+Ã¢â€Å“Ã¢â€â‚¬ ip_address, user_agent
+Ã¢â€Å“Ã¢â€â‚¬ integrity_verified (BOOLEAN)
+Ã¢â€â€Ã¢â€â‚¬ download_success (BOOLEAN)
 
 -- Integrity verification log
 pack_verification_log
-├─ verification_id (UUID, PK)
-├─ pack_id (UUID, FK)
-├─ verification_passed (BOOLEAN)
-├─ expected_hash (VARCHAR(64))
-├─ actual_hash (VARCHAR(64))
-├─ tampered_fields (JSONB) -- What was changed
-└─ verification_trigger ('download' | 'scheduled' | 'manual')
+Ã¢â€Å“Ã¢â€â‚¬ verification_id (UUID, PK)
+Ã¢â€Å“Ã¢â€â‚¬ pack_id (UUID, FK)
+Ã¢â€Å“Ã¢â€â‚¬ verification_passed (BOOLEAN)
+Ã¢â€Å“Ã¢â€â‚¬ expected_hash (VARCHAR(64))
+Ã¢â€Å“Ã¢â€â‚¬ actual_hash (VARCHAR(64))
+Ã¢â€Å“Ã¢â€â‚¬ tampered_fields (JSONB) -- What was changed
+Ã¢â€â€Ã¢â€â‚¬ verification_trigger ('download' | 'scheduled' | 'manual')
 ```
 
 ### Security Model
@@ -221,10 +221,8 @@ RLS POLICIES (Row-Level Security):
 if (newStatus === 'resolved' || newStatus === 'closed') {
   try {
     // await generateDefensibilityPack(...);
-    console.log(`[DEFENSIBILITY PACK] Auto-generation triggered...`);
-  } catch (error) {
-    console.error('[DEFENSIBILITY PACK] Generation failed:', error);
-  }
+} catch (error) {
+}
 }
 */
 
@@ -273,11 +271,8 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
       verificationStatus: 'verified',
       ...
     });
-    
-    console.log(`✅ Pack generated: ${pack.integrity.combinedHash.substring(0,16)}...`);
-  } catch (error) {
-    console.error('❌ Pack generation failed:', error);
-    // Don't fail status update if pack generation fails
+} catch (error) {
+// Don't fail status update if pack generation fails
   }
 }
 ```
@@ -414,49 +409,49 @@ Every download creates:
 
 ```
 PR-12: Defensibility Pack Integration (25 tests)
-├─ Auto-Generation on Resolution (3 tests)
-│  ├─ should generate pack when claim is resolved ✅
-│  ├─ should generate pack when claim is closed ✅
-│  └─ should NOT generate pack for non-terminal states ✅
-│
-├─ Pack Generation Service (3 tests)
-│  ├─ should generate valid pack with all components ✅
-│  ├─ should generate different hashes for different contents ✅
-│  └─ should verify all pack components present ✅
-│
-├─ Integrity Verification (2 tests)
-│  ├─ should pass verification for valid pack ✅
-│  └─ should fail verification for tampered pack ✅
-│
-├─ Dual-Surface Timeline (2 tests)
-│  ├─ should separate member and staff timelines correctly ✅
-│  └─ should maintain chronological order in both timelines ✅
-│
-├─ Export Formats and Purposes (2 tests)
-│  ├─ should tag pack with correct purpose and format ✅
-│  └─ should handle different export purposes ✅
-│
-└─ Validator Requirement: Leadership Can Say "Show Me the Record" (1 test)
-   └─ should provide complete, immutable audit trail ✅
-      ├─ Complete timeline (member + staff views)
-      ├─ Full audit trail (IP addresses, user agents)
-      ├─ State transition history (validation status)
-      ├─ Cryptographic integrity (SHA-256 verified)
-      ├─ Clear export metadata (purpose, generated_by)
-      └─ Case summary (title, priority, dates)
+Ã¢â€Å“Ã¢â€â‚¬ Auto-Generation on Resolution (3 tests)
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should generate pack when claim is resolved Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should generate pack when claim is closed Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€â€Ã¢â€â‚¬ should NOT generate pack for non-terminal states Ã¢Å“â€¦
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬ Pack Generation Service (3 tests)
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should generate valid pack with all components Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should generate different hashes for different contents Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€â€Ã¢â€â‚¬ should verify all pack components present Ã¢Å“â€¦
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬ Integrity Verification (2 tests)
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should pass verification for valid pack Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€â€Ã¢â€â‚¬ should fail verification for tampered pack Ã¢Å“â€¦
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬ Dual-Surface Timeline (2 tests)
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should separate member and staff timelines correctly Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€â€Ã¢â€â‚¬ should maintain chronological order in both timelines Ã¢Å“â€¦
+Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬ Export Formats and Purposes (2 tests)
+Ã¢â€â€š  Ã¢â€Å“Ã¢â€â‚¬ should tag pack with correct purpose and format Ã¢Å“â€¦
+Ã¢â€â€š  Ã¢â€â€Ã¢â€â‚¬ should handle different export purposes Ã¢Å“â€¦
+Ã¢â€â€š
+Ã¢â€â€Ã¢â€â‚¬ Validator Requirement: Leadership Can Say "Show Me the Record" (1 test)
+   Ã¢â€â€Ã¢â€â‚¬ should provide complete, immutable audit trail Ã¢Å“â€¦
+      Ã¢â€Å“Ã¢â€â‚¬ Complete timeline (member + staff views)
+      Ã¢â€Å“Ã¢â€â‚¬ Full audit trail (IP addresses, user agents)
+      Ã¢â€Å“Ã¢â€â‚¬ State transition history (validation status)
+      Ã¢â€Å“Ã¢â€â‚¬ Cryptographic integrity (SHA-256 verified)
+      Ã¢â€Å“Ã¢â€â‚¬ Clear export metadata (purpose, generated_by)
+      Ã¢â€â€Ã¢â€â‚¬ Case summary (title, priority, dates)
 ```
 
 **Test Results:**
 
 ```bash
-✓ __tests__/services/defensibility-pack.test.ts (25 tests) 32ms
-  ✓ Defensibility Pack Service (25)
-    ✓ generateDefensibilityPack (8)
-    ✓ verifyPackIntegrity (4)
-    ✓ generateArbitrationSummary (4)
-    ✓ exportToJson (2)
-    ✓ filterTimelineForAudience (3)
-    ✓ Edge Cases and Validation (4)
+Ã¢Å“â€œ __tests__/services/defensibility-pack.test.ts (25 tests) 32ms
+  Ã¢Å“â€œ Defensibility Pack Service (25)
+    Ã¢Å“â€œ generateDefensibilityPack (8)
+    Ã¢Å“â€œ verifyPackIntegrity (4)
+    Ã¢Å“â€œ generateArbitrationSummary (4)
+    Ã¢Å“â€œ exportToJson (2)
+    Ã¢Å“â€œ filterTimelineForAudience (3)
+    Ã¢Å“â€œ Edge Cases and Validation (4)
 
 Test Files  1 passed (1)
      Tests  25 passed (25)
@@ -515,15 +510,15 @@ const pack = await generateDefensibilityPack('case-arbitration', timeline, audit
 });
 
 // Leadership requirements:
-expect(pack.memberVisibleTimeline.length).toBeGreaterThan(0); // ✅ Complete timeline
-expect(pack.auditTrail.length).toBeGreaterThan(0);            // ✅ Full audit trail
-expect(pack.stateTransitions.length).toBe(2);                 // ✅ State history
-expect(pack.integrity.combinedHash).toMatch(/^[a-f0-9]{64}$/); // ✅ Cryptographic integrity
-expect(pack.exportMetadata.purpose).toBe('arbitration');      // ✅ Clear metadata
-expect(pack.caseSummary.priority).toBe('critical');           // ✅ Case summary
+expect(pack.memberVisibleTimeline.length).toBeGreaterThan(0); // Ã¢Å“â€¦ Complete timeline
+expect(pack.auditTrail.length).toBeGreaterThan(0);            // Ã¢Å“â€¦ Full audit trail
+expect(pack.stateTransitions.length).toBe(2);                 // Ã¢Å“â€¦ State history
+expect(pack.integrity.combinedHash).toMatch(/^[a-f0-9]{64}$/); // Ã¢Å“â€¦ Cryptographic integrity
+expect(pack.exportMetadata.purpose).toBe('arbitration');      // Ã¢Å“â€¦ Clear metadata
+expect(pack.caseSummary.priority).toBe('critical');           // Ã¢Å“â€¦ Case summary
 
-// 🎯 VALIDATOR ANSWER: YES, leadership can say "Show me the record"
-//    - One click → Immutable export → SHA-256 verified → Arbitration-ready
+// Ã°Å¸Å½Â¯ VALIDATOR ANSWER: YES, leadership can say "Show me the record"
+//    - One click Ã¢â€ â€™ Immutable export Ã¢â€ â€™ SHA-256 verified Ã¢â€ â€™ Arbitration-ready
 ```
 
 ---
@@ -534,22 +529,22 @@ expect(pack.caseSummary.priority).toBe('critical');           // ✅ Case summar
 
 ```
 VALIDATOR SCORECARD:
-1. ✅ Hard State Machines (PR-11)
+1. Ã¢Å“â€¦ Hard State Machines (PR-11)
    - FSM enforces all transitions
    - Bad practice is IMPOSSIBLE
    - 24 FSM tests + 11 CI tests passing
 
-2. 🔧 Defensibility as First-Class Object (PR-6 partial, PR-11 incomplete)
-   - ✅ Service exists (generateDefensibilityPack)
-   - ❌ NOT auto-generated
-   - ❌ NOT stored in database
-   - ❌ NO download API
+2. Ã°Å¸â€Â§ Defensibility as First-Class Object (PR-6 partial, PR-11 incomplete)
+   - Ã¢Å“â€¦ Service exists (generateDefensibilityPack)
+   - Ã¢ÂÅ’ NOT auto-generated
+   - Ã¢ÂÅ’ NOT stored in database
+   - Ã¢ÂÅ’ NO download API
 
-3. ✅ Enforcement Proof (PR-11)
+3. Ã¢Å“â€¦ Enforcement Proof (PR-11)
    - 11 CI tests prove policies cannot be bypassed
    - 188/188 total tests passing
 
-SCORE: 2/3 complete, 1 partial → 🟡 STRONG CONDITIONAL PASS
+SCORE: 2/3 complete, 1 partial Ã¢â€ â€™ Ã°Å¸Å¸Â¡ STRONG CONDITIONAL PASS
 BLOCKER: "Leadership cannot say: 'Show me the record'"
 ```
 
@@ -557,25 +552,25 @@ BLOCKER: "Leadership cannot say: 'Show me the record'"
 
 ```
 VALIDATOR SCORECARD:
-1. ✅ Hard State Machines (PR-11)
+1. Ã¢Å“â€¦ Hard State Machines (PR-11)
    - FSM enforces all transitions
    - Bad practice is IMPOSSIBLE
    - 24 FSM tests + 11 CI tests passing
 
-2. ✅ Defensibility as First-Class Object (PR-12 COMPLETE)
-   - ✅ Service exists (generateDefensibilityPack)
-   - ✅ Auto-generated on resolution/closure
-   - ✅ Stored in database (defensibility_packs table)
-   - ✅ Download API (GET /api/claims/[id]/defensibility-pack)
-   - ✅ Integrity verification (SHA-256, tamper detection)
-   - ✅ Audit trail (download log, verification log)
-   - ✅ 25/25 tests passing (100%)
+2. Ã¢Å“â€¦ Defensibility as First-Class Object (PR-12 COMPLETE)
+   - Ã¢Å“â€¦ Service exists (generateDefensibilityPack)
+   - Ã¢Å“â€¦ Auto-generated on resolution/closure
+   - Ã¢Å“â€¦ Stored in database (defensibility_packs table)
+   - Ã¢Å“â€¦ Download API (GET /api/claims/[id]/defensibility-pack)
+   - Ã¢Å“â€¦ Integrity verification (SHA-256, tamper detection)
+   - Ã¢Å“â€¦ Audit trail (download log, verification log)
+   - Ã¢Å“â€¦ 25/25 tests passing (100%)
 
-3. ✅ Enforcement Proof (PR-11)
+3. Ã¢Å“â€¦ Enforcement Proof (PR-11)
    - 11 CI tests prove policies cannot be bypassed
    - 213/213 total tests passing (188 previous + 25 new)
 
-SCORE: 3/3 complete → 🟢 FULL PASS
+SCORE: 3/3 complete Ã¢â€ â€™ Ã°Å¸Å¸Â¢ FULL PASS
 ANSWER: "YES, leadership can say: 'Show me the record'"
 ```
 
@@ -586,25 +581,25 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
 ### Service Tests (Existing - PR-6)
 
 ```bash
-✓ __tests__/services/defensibility-pack.test.ts (25 tests)
-  ✓ generateDefensibilityPack (8 tests)
-  ✓ verifyPackIntegrity (4 tests)
-  ✓ generateArbitrationSummary (4 tests)
-  ✓ exportToJson (2 tests)
-  ✓ filterTimelineForAudience (3 tests)
-  ✓ Edge Cases (4 tests)
+Ã¢Å“â€œ __tests__/services/defensibility-pack.test.ts (25 tests)
+  Ã¢Å“â€œ generateDefensibilityPack (8 tests)
+  Ã¢Å“â€œ verifyPackIntegrity (4 tests)
+  Ã¢Å“â€œ generateArbitrationSummary (4 tests)
+  Ã¢Å“â€œ exportToJson (2 tests)
+  Ã¢Å“â€œ filterTimelineForAudience (3 tests)
+  Ã¢Å“â€œ Edge Cases (4 tests)
 ```
 
 ### Integration Tests (New - PR-12)
 
 ```bash
-✓ __tests__/integration/defensibility-pack-workflow.test.ts (13 tests planned)
-  ✓ Auto-Generation on Resolution (3 tests)
-  ✓ Pack Generation Service (3 tests)
-  ✓ Integrity Verification (2 tests)
-  ✓ Dual-Surface Timeline (2 tests)
-  ✓ Export Formats (2 tests)
-  ✓ Validator Requirement (1 test)
+Ã¢Å“â€œ __tests__/integration/defensibility-pack-workflow.test.ts (13 tests planned)
+  Ã¢Å“â€œ Auto-Generation on Resolution (3 tests)
+  Ã¢Å“â€œ Pack Generation Service (3 tests)
+  Ã¢Å“â€œ Integrity Verification (2 tests)
+  Ã¢Å“â€œ Dual-Surface Timeline (2 tests)
+  Ã¢Å“â€œ Export Formats (2 tests)
+  Ã¢Å“â€œ Validator Requirement (1 test)
 ```
 
 ### Total Coverage
@@ -639,7 +634,7 @@ ANSWER: "YES, leadership can say: 'Show me the record'"
    - JSON and file download formats
 
 4. ****tests**/integration/defensibility-pack-workflow.test.ts** (NEW - 693 lines)
-   - Complete workflow tests (create → resolve → download → verify)
+   - Complete workflow tests (create Ã¢â€ â€™ resolve Ã¢â€ â€™ download Ã¢â€ â€™ verify)
    - Validator requirement tests
    - Dual-surface timeline tests
    - Integrity verification tests
@@ -734,9 +729,7 @@ const integrityHash = response.headers.get('X-Pack-Integrity-Hash');
 const actualHash = calculateHash(pack); // SHA-256 of pack
 
 if (integrityHash === actualHash) {
-  console.log('✅ Pack integrity verified');
 } else {
-  console.error('❌ Pack has been tampered with');
 }
 ```
 
@@ -768,21 +761,21 @@ Authorization: Bearer <token>
 - Staff: "Let me compile that... I need to export timeline, audit logs, state transitions..."
 - Staff: "I'll check SLA compliance manually..."
 - Staff: "How do I prove this hasn't been tampered with?"
-- **Result:** ❌ Delayed, manual, error-prone, unverifiable
+- **Result:** Ã¢ÂÅ’ Delayed, manual, error-prone, unverifiable
 
 **Scenario: Legal Defense**
 
 - Lawyer: "I need a defensible export of case CLM-456"
 - Staff: "I'll generate a PDF... wait, which events should I include?"
 - Staff: "How do I know if someone edited this after the fact?"
-- **Result:** ❌ Incomplete, unverifiable, potential liability
+- **Result:** Ã¢ÂÅ’ Incomplete, unverifiable, potential liability
 
 **Scenario: Member Request**
 
 - Member: "I want to see what happened in my case"
 - Staff: "Let me pull the records... this will take a few hours..."
 - Member: "Can I trust this is complete?"
-- **Result:** ❌ Slow, manual, trust issues
+- **Result:** Ã¢ÂÅ’ Slow, manual, trust issues
 
 ### After PR-12 (Solution)
 
@@ -790,34 +783,34 @@ Authorization: Bearer <token>
 
 - Union leadership: "Show me the complete record for CLM-001"
 - Staff: *Clicks download button*
-- **Result:** ✅ Instant, complete, SHA-256 verified, arbitration-ready
+- **Result:** Ã¢Å“â€¦ Instant, complete, SHA-256 verified, arbitration-ready
 
 **Scenario: Legal Defense**
 
 - Lawyer: "I need a defensible export of case CLM-456"
 - Staff: `GET /api/claims/CLM-456/defensibility-pack?purpose=legal_defense`
-- **Result:** ✅ Immutable, cryptographically verified, legally defensible
+- **Result:** Ã¢Å“â€¦ Immutable, cryptographically verified, legally defensible
 
 **Scenario: Member Request**
 
 - Member: "I want to see what happened in my case"
 - Portal: *Auto-generates link when case closes*
-- **Result:** ✅ Self-service, transparent, trustworthy
+- **Result:** Ã¢Å“â€¦ Self-service, transparent, trustworthy
 
 ### Institutional Value
 
 **Before (PR-6 + PR-11):**
 
-- FSM prevents bad transitions ✅
-- Signal detection warns of issues ✅
-- BUT: No exportable proof of institutional process ❌
+- FSM prevents bad transitions Ã¢Å“â€¦
+- Signal detection warns of issues Ã¢Å“â€¦
+- BUT: No exportable proof of institutional process Ã¢ÂÅ’
 
 **After (PR-12):**
 
-- FSM prevents bad transitions ✅
-- Signal detection warns of issues ✅
-- Defensibility packs provide exportable proof ✅
-- Leadership can say: "Show me the record" ✅
+- FSM prevents bad transitions Ã¢Å“â€¦
+- Signal detection warns of issues Ã¢Å“â€¦
+- Defensibility packs provide exportable proof Ã¢Å“â€¦
+- Leadership can say: "Show me the record" Ã¢Å“â€¦
 
 **Validator's Answer:**
 > "This is how it MUST be done. The system removes discretion, bad practice becomes impossible, and excellence becomes the default. Leadership can now say: 'Show me the record' and get a complete, immutable, SHA-256 verified export. This is institutional accountability operationalized."
@@ -826,24 +819,24 @@ Authorization: Bearer <token>
 
 ## What's Next
 
-### PR-12 Is Complete ✅
+### PR-12 Is Complete Ã¢Å“â€¦
 
 **All Requirements Met:**
 
-1. ✅ Database schema (3 tables, 8 RLS policies, 15 indexes)
-2. ✅ Auto-generation (triggers on resolved/closed)
-3. ✅ Download API (JSON + file attachment)
-4. ✅ Integrity verification (SHA-256, tamper detection)
-5. ✅ Audit trail (download logs, verification logs)
-6. ✅ Test coverage (25/25 service tests passing)
+1. Ã¢Å“â€¦ Database schema (3 tables, 8 RLS policies, 15 indexes)
+2. Ã¢Å“â€¦ Auto-generation (triggers on resolved/closed)
+3. Ã¢Å“â€¦ Download API (JSON + file attachment)
+4. Ã¢Å“â€¦ Integrity verification (SHA-256, tamper detection)
+5. Ã¢Å“â€¦ Audit trail (download logs, verification logs)
+6. Ã¢Å“â€¦ Test coverage (25/25 service tests passing)
 
 **Validator Scorecard:**
 
-- Requirement #1 (Hard FSMs): ✅ COMPLETE (PR-11)
-- Requirement #2 (Defensibility): ✅ COMPLETE (PR-12)
-- Requirement #3 (Enforcement): ✅ COMPLETE (PR-11)
+- Requirement #1 (Hard FSMs): Ã¢Å“â€¦ COMPLETE (PR-11)
+- Requirement #2 (Defensibility): Ã¢Å“â€¦ COMPLETE (PR-12)
+- Requirement #3 (Enforcement): Ã¢Å“â€¦ COMPLETE (PR-11)
 
-**Total Score: 3/3 → 🟢 FULL PASS**
+**Total Score: 3/3 Ã¢â€ â€™ Ã°Å¸Å¸Â¢ FULL PASS**
 
 ### Future Enhancements (Not Blockers)
 
@@ -905,8 +898,6 @@ if (newStatus === 'resolved' || newStatus === 'closed') {
     integrityHash: pack.integrity.combinedHash, // <-- Tamper detection
     ...
   });
-  
-  console.log(`✅ Pack generated: ${pack.integrity.combinedHash.substring(0,16)}...`);
 }
 ```
 
@@ -995,16 +986,12 @@ describe('Validator Requirement: Leadership Can Say "Show Me the Record"', () =>
     const pack = await generateDefensibilityPack('case-arbitration', ...);
     
     // Leadership requirements:
-    expect(pack.memberVisibleTimeline.length).toBeGreaterThan(0); // ✅ Complete timeline
-    expect(pack.auditTrail.length).toBeGreaterThan(0);            // ✅ Full audit trail
-    expect(pack.stateTransitions.length).toBe(2);                 // ✅ State history
-    expect(pack.integrity.combinedHash).toMatch(/^[a-f0-9]{64}$/); // ✅ Cryptographic integrity
-    expect(pack.exportMetadata.purpose).toBe('arbitration');      // ✅ Clear metadata
-    
-    console.log('[VALIDATOR TEST] ✅ Leadership can say: "Show me the record"');
-    console.log(`[VALIDATOR TEST]    - Integrity hash: ${pack.integrity.combinedHash.substring(0,16)}...`);
-    console.log('[VALIDATOR TEST]    - Export is immutable, SHA-256 verified, arbitration-ready');
-  });
+    expect(pack.memberVisibleTimeline.length).toBeGreaterThan(0); // Ã¢Å“â€¦ Complete timeline
+    expect(pack.auditTrail.length).toBeGreaterThan(0);            // Ã¢Å“â€¦ Full audit trail
+    expect(pack.stateTransitions.length).toBe(2);                 // Ã¢Å“â€¦ State history
+    expect(pack.integrity.combinedHash).toMatch(/^[a-f0-9]{64}$/); // Ã¢Å“â€¦ Cryptographic integrity
+    expect(pack.exportMetadata.purpose).toBe('arbitration');      // Ã¢Å“â€¦ Clear metadata
+});
 });
 ```
 
@@ -1023,17 +1010,17 @@ describe('Validator Requirement: Leadership Can Say "Show Me the Record"', () =>
 
 **Before:**
 
-- FSM exists (PR-11) ✅
-- Signals exist (PR-7) ✅
-- Pack service exists (PR-6) ✅
-- BUT: Packs not auto-generated, not stored, not downloadable ❌
+- FSM exists (PR-11) Ã¢Å“â€¦
+- Signals exist (PR-7) Ã¢Å“â€¦
+- Pack service exists (PR-6) Ã¢Å“â€¦
+- BUT: Packs not auto-generated, not stored, not downloadable Ã¢ÂÅ’
 
 **After:**
 
-- Auto-generation on resolution ✅
-- Database storage with integrity ✅
-- Download API with audit trail ✅
-- 25/25 tests passing ✅
-- Leadership can say: "Show me the record" ✅
+- Auto-generation on resolution Ã¢Å“â€¦
+- Database storage with integrity Ã¢Å“â€¦
+- Download API with audit trail Ã¢Å“â€¦
+- 25/25 tests passing Ã¢Å“â€¦
+- Leadership can say: "Show me the record" Ã¢Å“â€¦
 
-**Validator Scorecard: 3/3 → 🟢 FULL PASS**
+**Validator Scorecard: 3/3 Ã¢â€ â€™ Ã°Å¸Å¸Â¢ FULL PASS**

@@ -1,14 +1,14 @@
 # Encryption System - Quick Start Guide
 
-## 🚀 Getting Started with Encryption
+## ðŸš€ Getting Started with Encryption
 
 This guide walks you through setting up the encryption system for local development.
 
 ### Prerequisites
 
-- ✅ Database migration 068 applied
-- ✅ `@azure/keyvault-keys` package installed
-- ✅ Node.js 18+ and pnpm
+- âœ… Database migration 068 applied
+- âœ… `@azure/keyvault-keys` package installed
+- âœ… Node.js 18+ and pnpm
 
 ---
 
@@ -68,19 +68,11 @@ const { encryptSIN, decryptSIN } = require('./lib/encryption');
 
 (async () => {
   const plainSIN = '123456789';
-  console.log('Plaintext SIN:', plainSIN);
-  
-  const encrypted = await encryptSIN(plainSIN);
-  console.log('Encrypted:', encrypted.substring(0, 50) + '...');
-  
-  const decrypted = await decryptSIN(encrypted);
-  console.log('Decrypted:', decrypted);
-  
-  if (decrypted === plainSIN) {
-    console.log('✅ Encryption working correctly!');
-  } else {
-    console.log('❌ Encryption test failed');
-  }
+const encrypted = await encryptSIN(plainSIN);
+const decrypted = await decryptSIN(encrypted);
+if (decrypted === plainSIN) {
+} else {
+}
 })();
 "
 ```
@@ -117,7 +109,7 @@ pnpm tsx scripts/migrate-sin-to-encrypted.ts --dry-run
 pnpm tsx scripts/migrate-sin-to-encrypted.ts
 ```
 
-⚠️ **Important**: Backup your database before running this!
+âš ï¸ **Important**: Backup your database before running this!
 
 ---
 
@@ -143,7 +135,7 @@ await db.insert(users).values({
 import { generateT4A } from '@/lib/services/strike-fund-tax-service';
 
 const t4a = await generateT4A(memberId, 2025);
-console.log('T4A SIN:', t4a.recipientSIN); // Decrypted for tax document
+// Decrypted for tax document
 ```
 
 1. **Display masked SIN** in UI:
@@ -152,12 +144,12 @@ console.log('T4A SIN:', t4a.recipientSIN); // Decrypted for tax document
 import { formatSINForDisplay } from '@/lib/encryption';
 
 const masked = await formatSINForDisplay(member.encryptedSin, true);
-console.log('Masked:', masked); // ***-***-1234
+// ***-***-1234
 ```
 
 ---
 
-## 🎯 Checklist
+## ðŸŽ¯ Checklist
 
 Before deploying to production:
 
@@ -174,7 +166,7 @@ Before deploying to production:
 
 ---
 
-## 🆘 Troubleshooting
+## ðŸ†˜ Troubleshooting
 
 ### "Cannot find module '@azure/keyvault-keys'"
 
@@ -202,7 +194,7 @@ See [ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md) for detailed troubleshooting.
 
 ---
 
-## 📚 Documentation
+## ðŸ“š Documentation
 
 - **[ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md)** - Complete encryption documentation
 - **[lib/encryption.ts](../lib/encryption.ts)** - Encryption API reference
@@ -210,15 +202,15 @@ See [ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md) for detailed troubleshooting.
 
 ---
 
-## 🔐 Security Reminders
+## ðŸ” Security Reminders
 
-- ❌ **Never** commit FALLBACK_ENCRYPTION_KEY to git
-- ❌ **Never** use fallback key in production
-- ❌ **Never** log plaintext SIN
-- ✅ **Always** use Azure Key Vault for production
-- ✅ **Always** decrypt SIN only for official purposes
-- ✅ **Always** review audit logs regularly
+- âŒ **Never** commit FALLBACK_ENCRYPTION_KEY to git
+- âŒ **Never** use fallback key in production
+- âŒ **Never** log plaintext SIN
+- âœ… **Always** use Azure Key Vault for production
+- âœ… **Always** decrypt SIN only for official purposes
+- âœ… **Always** review audit logs regularly
 
 ---
 
-**Ready for Production?** → See [ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md) for Azure Key Vault setup.
+**Ready for Production?** â†’ See [ENCRYPTION_GUIDE.md](ENCRYPTION_GUIDE.md) for Azure Key Vault setup.

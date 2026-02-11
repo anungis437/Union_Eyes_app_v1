@@ -12,6 +12,7 @@
 
 import { getSupabaseClient } from '@unioneyes/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { logger } from '../utils/logger';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -189,7 +190,7 @@ export class AuditRetentionService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to create retention policy:', error);
+      logger.error('Failed to create retention policy:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -224,7 +225,7 @@ export class AuditRetentionService {
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to update retention policy:', error);
+      logger.error('Failed to update retention policy:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -246,7 +247,7 @@ export class AuditRetentionService {
 
       return { success: true };
     } catch (error) {
-      console.error('Failed to delete retention policy:', error);
+      logger.error('Failed to delete retention policy:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -274,7 +275,7 @@ export class AuditRetentionService {
 
       return { success: true, data: data || [] };
     } catch (error) {
-      console.error('Failed to get retention policies:', error);
+      logger.error('Failed to get retention policies:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -302,7 +303,7 @@ export class AuditRetentionService {
 
       return { success: true, data: policies };
     } catch (error) {
-      console.error('Failed to initialize default policies:', error);
+      logger.error('Failed to initialize default policies:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -341,7 +342,7 @@ export class AuditRetentionService {
 
       return { success: true, data: result };
     } catch (error) {
-      console.error('Failed to archive old logs:', error);
+      logger.error('Failed to archive old logs:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -375,7 +376,7 @@ export class AuditRetentionService {
 
       return { success: true, data: result };
     } catch (error) {
-      console.error('Failed to compress archives:', error);
+      logger.error('Failed to compress archives:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -415,7 +416,7 @@ export class AuditRetentionService {
         data: { restored_count: data?.length || 0 }
       };
     } catch (error) {
-      console.error('Failed to restore from archive:', error);
+      logger.error('Failed to restore from archive:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -455,7 +456,7 @@ export class AuditRetentionService {
 
       return { success: true, data: stats };
     } catch (error) {
-      console.error('Failed to get archive stats:', error);
+      logger.error('Failed to get archive stats:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -509,7 +510,7 @@ export class AuditRetentionService {
 
       return { success: true, data: result };
     } catch (error) {
-      console.error('Failed to purge expired logs:', error);
+      logger.error('Failed to purge expired logs:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -539,7 +540,7 @@ export class AuditRetentionService {
 
       return data?.length || 0;
     } catch (error) {
-      console.error('Failed to purge audit logs:', error);
+      logger.error('Failed to purge audit logs:', error);
       return 0;
     }
   }
@@ -565,7 +566,7 @@ export class AuditRetentionService {
 
       return data?.length || 0;
     } catch (error) {
-      console.error('Failed to purge login attempts:', error);
+      logger.error('Failed to purge login attempts:', error);
       return 0;
     }
   }
@@ -592,7 +593,7 @@ export class AuditRetentionService {
 
       return data?.length || 0;
     } catch (error) {
-      console.error('Failed to purge session history:', error);
+      logger.error('Failed to purge session history:', error);
       return 0;
     }
   }
@@ -650,7 +651,7 @@ export class AuditRetentionService {
         session_history: sessionCount || 0
       };
     } catch (error) {
-      console.error('Failed to count expired logs:', error);
+      logger.error('Failed to count expired logs:', error);
       return { audit_logs: 0, login_attempts: 0, session_history: 0 };
     }
   }
@@ -707,7 +708,7 @@ export class AuditRetentionService {
 
       return { success: true, data: usage };
     } catch (error) {
-      console.error('Failed to calculate storage usage:', error);
+      logger.error('Failed to calculate storage usage:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -732,7 +733,7 @@ export class AuditRetentionService {
 
       return count || 0;
     } catch (error) {
-      console.error(`Failed to count ${table}:`, error);
+      logger.error(`Failed to count ${table}:`, error);
       return 0;
     }
   }
@@ -755,7 +756,7 @@ export class AuditRetentionService {
 
       return count || 0;
     } catch (error) {
-      console.error(`Failed to count archived ${table}:`, error);
+      logger.error(`Failed to count archived ${table}:`, error);
       return 0;
     }
   }
@@ -776,7 +777,7 @@ export class AuditRetentionService {
         data: { optimized: true }
       };
     } catch (error) {
-      console.error('Failed to optimize storage:', error);
+      logger.error('Failed to optimize storage:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -823,7 +824,7 @@ export class AuditRetentionService {
         }
       };
     } catch (error) {
-      console.error('Failed to run maintenance tasks:', error);
+      logger.error('Failed to run maintenance tasks:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'

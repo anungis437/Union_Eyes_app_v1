@@ -140,8 +140,7 @@ export function NewsletterAnalytics({ campaignId }: NewsletterAnalyticsProps) {
       setDevices(data.devices || []);
       setTimeline(data.timeline || []);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load analytics data',
         variant: 'destructive',
@@ -180,8 +179,7 @@ export function NewsletterAnalytics({ campaignId }: NewsletterAnalyticsProps) {
         description: 'Analytics report downloaded',
       });
     } catch (error) {
-      console.error('Error exporting analytics:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to export analytics',
         variant: 'destructive',

@@ -51,8 +51,7 @@ export const GET = withRoleAuth<SmsConversationsContext>('member', async (reques
 
     return NextResponse.json({ conversations });
   } catch (error) {
-    console.error('Error fetching SMS conversations:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch conversations' },
       { status: 500 }
     );

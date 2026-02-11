@@ -39,7 +39,6 @@ class AuthService {
       // For now, this is a placeholder structure
       throw new Error('signIn should be called from component using useSignIn hook');
     } catch (error: any) {
-      console.error('Sign in error:', error);
       return {
         success: false,
         error: {
@@ -86,7 +85,6 @@ class AuthService {
         tokens: session.tokens,
       };
     } catch (error: any) {
-      console.error('Biometric sign in error:', error);
       return {
         success: false,
         error: {
@@ -105,7 +103,6 @@ class AuthService {
       // This will be implemented with Clerk's useSignUp hook in components
       throw new Error('signUp should be called from component using useSignUp hook');
     } catch (error: any) {
-      console.error('Sign up error:', error);
       return {
         success: false,
         error: {
@@ -135,7 +132,6 @@ class AuthService {
       // Disable biometric if needed
       // Note: We keep biometric credentials to allow quick re-login
     } catch (error) {
-      console.error('Sign out error:', error);
       throw error;
     }
   }
@@ -154,7 +150,6 @@ class AuthService {
       // Schedule token refresh
       this.scheduleTokenRefresh(tokens);
     } catch (error) {
-      console.error('Error storing tokens:', error);
       throw error;
     }
   }
@@ -165,8 +160,7 @@ class AuthService {
   async getAccessToken(): Promise<string | null> {
     try {
       return await SecureStore.getItemAsync(TOKEN_KEY);
-    } catch (error) {
-      console.error('Error getting access token:', error);
+    } catch {
       return null;
     }
   }
@@ -177,8 +171,7 @@ class AuthService {
   async getRefreshToken(): Promise<string | null> {
     try {
       return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-    } catch (error) {
-      console.error('Error getting refresh token:', error);
+    } catch {
       return null;
     }
   }
@@ -191,8 +184,7 @@ class AuthService {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
       await SecureStore.deleteItemAsync(SESSION_KEY);
-    } catch (error) {
-      console.error('Error clearing tokens:', error);
+    } catch {
     }
   }
 
@@ -209,10 +201,8 @@ class AuthService {
 
       // Implement token refresh logic with your backend or Clerk
       // For now, this is a placeholder
-      console.log('Token refresh not implemented yet');
       return null;
     } catch (error) {
-      console.error('Error refreshing token:', error);
       return null;
     }
   }
@@ -253,8 +243,7 @@ class AuthService {
       // Implement session validation logic
       // For now, just check if token exists
       return true;
-    } catch (error) {
-      console.error('Error validating session:', error);
+    } catch {
       return false;
     }
   }
@@ -266,7 +255,6 @@ class AuthService {
     try {
       await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session));
     } catch (error) {
-      console.error('Error storing session:', error);
       throw error;
     }
   }
@@ -283,8 +271,7 @@ class AuthService {
       }
 
       return JSON.parse(sessionStr);
-    } catch (error) {
-      console.error('Error getting stored session:', error);
+    } catch {
       return null;
     }
   }

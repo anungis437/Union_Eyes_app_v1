@@ -81,8 +81,7 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('AI service query failed:', errorData);
-      throw new Error('AI service query failed');
+throw new Error('AI service query failed');
     }
 
     const result = await response.json();
@@ -108,9 +107,7 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     });
     
   } catch (error) {
-    console.error('Natural language query error:', error);
-
-    if (error instanceof z.ZodError) {
+if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request', details: error.errors },
         { status: 400 }

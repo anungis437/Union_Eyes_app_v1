@@ -1,7 +1,7 @@
 /**
  * Individual Organization API Routes
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * 
@@ -96,8 +96,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         });
       });
     } catch (error) {
-      console.error("Error fetching organization:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to fetch organization" },
         { status: 500 }
       );
@@ -214,8 +213,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
       });
     });
     } catch (error) {
-      console.error("Error updating organization:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to update organization" },
         { status: 500 }
       );
@@ -298,8 +296,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         });
       });
     } catch (error) {
-      console.error("Error archiving organization:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to archive organization" },
         { status: 500 }
       );

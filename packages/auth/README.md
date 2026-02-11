@@ -4,12 +4,12 @@ Centralized authentication, authorization, and audit logging for all 17 CourtLen
 
 ## Features
 
-- ✨ **Single Sign-On (SSO)** - One login for all applications
-- 🔐 **Role-Based Access Control (RBAC)** - Fine-grained permissions
-- 🔄 **Cross-App Session Management** - Seamless navigation between apps
-- 📝 **Security Audit Logging** - Complete authentication event tracking
-- ⚡ **Automatic Token Refresh** - No interruptions for users
-- 🛡️ **Security First** - Built on Supabase Auth
+- âœ¨ **Single Sign-On (SSO)** - One login for all applications
+- ðŸ” **Role-Based Access Control (RBAC)** - Fine-grained permissions
+- ðŸ”„ **Cross-App Session Management** - Seamless navigation between apps
+- ðŸ“ **Security Audit Logging** - Complete authentication event tracking
+- âš¡ **Automatic Token Refresh** - No interruptions for users
+- ðŸ›¡ï¸ **Security First** - Built on Supabase Auth
 
 ## Installation
 
@@ -45,8 +45,7 @@ function LoginPage() {
   const handleLogin = async () => {
     const { error } = await signIn(email, password);
     if (error) {
-      console.error('Login failed:', error);
-    }
+}
   };
 
   if (loading) return <div>Loading...</div>;
@@ -81,15 +80,15 @@ function MatterActions() {
 
 ```
 packages/auth/
-├── unified-auth/           # Core authentication
-│   ├── AuthProvider.tsx    # React context provider
-│   ├── audit-logger.ts     # Security audit logging
-│   └── index.ts            # Exports
-├── session-manager/        # Session persistence
-│   └── index.ts            # JWT & localStorage management
-├── rbac/                   # Access control
-│   └── index.ts            # Roles & permissions
-└── index.ts                # Main entry point
+â”œâ”€â”€ unified-auth/           # Core authentication
+â”‚   â”œâ”€â”€ AuthProvider.tsx    # React context provider
+â”‚   â”œâ”€â”€ audit-logger.ts     # Security audit logging
+â”‚   â””â”€â”€ index.ts            # Exports
+â”œâ”€â”€ session-manager/        # Session persistence
+â”‚   â””â”€â”€ index.ts            # JWT & localStorage management
+â”œâ”€â”€ rbac/                   # Access control
+â”‚   â””â”€â”€ index.ts            # Roles & permissions
+â””â”€â”€ index.ts                # Main entry point
 ```
 
 ## API Reference

@@ -96,8 +96,7 @@ export const GET = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-      console.error('Balance sheet generation error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to generate balance sheet', details: error instanceof Error ? error.message : 'Unknown error' },
         { status: 500 }
       );

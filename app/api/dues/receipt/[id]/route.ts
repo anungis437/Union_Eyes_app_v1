@@ -267,8 +267,7 @@ export const GET = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error', transactionId },
         });
-        console.error('Error generating receipt:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to generate receipt' },
           { status: 500 }
         );

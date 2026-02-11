@@ -63,16 +63,25 @@ export async function POST(
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    // TODO: Implement email sending logic using configured email service
-    // For now, simulate sending
-    console.log('Sending test emails to:', emails);
-    console.log('Campaign:', campaign.name);
-    console.log('Subject:', campaign.subject);
+    // Send test emails using Resend
+    const { sendEmail } = await import('@/lib/email-service');
+    
+    const emailResults = await Promise.allSettled(
+      emails.map(email =>
+        sendEmail({
+          to: [{ email, name: 'Test Recipient' }],
+          subject: `[TEST] ${campaign.subject}`,
+          html: campaign.content || '<p>Test email content</p>',
+          replyTo: process.env.EMAIL_REPLY_TO,
+        })
+      )
+    );
 
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Audit log
+    const successCount = emailResults.filter(
+      (result) => result.status === 'fulfilled' && result.value.success
+    ).length;
+    const failureCount = emails.length - successCount;
+// Audit log
     await logApiAuditEvent({
       userId,
       organizationId,
@@ -80,13 +89,19 @@ export async function POST(
       dataType: 'CAMPAIGNS',
       recordId: params.id,
       success: true,
-      metadata: { emailCount: emails.length },
+      metadata: { 
+        emailCount: emails.length,
+        successCount,
+        failureCount,
+      },
     });
 
     return NextResponse.json({ 
       success: true,
       sentTo: emails,
-      message: `Test emails sent to ${emails.length} recipient(s)`,
+      successCount,
+      failureCount,
+      message: `Test emails sent: ${successCount} success, ${failureCount} failed`,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -95,9 +110,7 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    console.error('Error sending test emails:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to send test emails' },
       { status: 500 }
     );

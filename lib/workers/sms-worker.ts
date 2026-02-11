@@ -56,9 +56,7 @@ const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER || '';
 
 // Log Twilio configuration status
 if (twilioClient) {
-  console.log('✓ Twilio SMS worker initialized successfully');
 } else {
-  console.warn(`⚠ Twilio SMS worker disabled: ${twilioConfig.error}`);
 }
 
 /**
@@ -72,8 +70,7 @@ async function checkUserPreferences(phone: string): Promise<boolean> {
 
     return preferences?.smsEnabled ?? false; // Default to disabled
   } catch (error) {
-    console.error('Error checking user preferences:', error);
-    return false;
+return false;
   }
 }
 
@@ -101,8 +98,7 @@ async function logSms(
       metadata: { twilioSid },
     });
   } catch (err) {
-    console.error('Error logging SMS:', err);
-  }
+}
 }
 
 /**
@@ -128,13 +124,9 @@ function formatPhoneNumber(phone: string): string {
  */
 async function processSmsJob(job: any) {
   const { to, message, priority } = job.data;
-
-  console.log(`Processing SMS job ${job.id} to ${to}`);
-
-  // Check if Twilio is configured
+// Check if Twilio is configured
   if (!twilioClient || !TWILIO_PHONE_NUMBER) {
-    console.warn('Twilio not configured, skipping SMS');
-    await logSms(null, to, message, 'failed', 'Twilio not configured');
+await logSms(null, to, message, 'failed', 'Twilio not configured');
     return { success: false, error: 'Twilio not configured' };
   }
 
@@ -147,8 +139,7 @@ async function processSmsJob(job: any) {
   if (priority !== 1) {
     const wantsSms = await checkUserPreferences(formattedPhone);
     if (!wantsSms) {
-      console.log(`Skipping SMS to ${formattedPhone} (disabled by user)`);
-      await logSms(null, formattedPhone, message, 'sent', 'Skipped by user preference');
+await logSms(null, formattedPhone, message, 'sent', 'Skipped by user preference');
       return { success: true, skipped: true };
     }
   }
@@ -169,9 +160,7 @@ async function processSmsJob(job: any) {
 
     // Log without exposing full phone number
     const maskedPhone = formattedPhone.replace(/(\+\d{1,3})(\d+)(\d{4})/, '$1****$3');
-    console.log(`SMS sent to ${maskedPhone} (SID: ${result.sid})`);  
-
-    await job.updateProgress(100);
+await job.updateProgress(100);
 
     return {
       success: true,
@@ -179,9 +168,7 @@ async function processSmsJob(job: any) {
       status: result.status,
     };
   } catch (error) {
-    console.error(`Error sending SMS to ${formattedPhone}:`, error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     await logSms(null, formattedPhone, message, 'failed', errorMessage);
 
     throw error;
@@ -206,23 +193,18 @@ export const smsWorker = new Worker(
 
 // Event handlers
 smsWorker.on('completed', (job: any) => {
-  console.log(`SMS job ${job.id} completed`);
 });
 
 smsWorker.on('failed', (job: any, err: any) => {
-  console.error(`SMS job ${job?.id} failed:`, err.message);
 });
 
 smsWorker.on('error', (err: any) => {
-  console.error('SMS worker error:', err);
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('Shutting down SMS worker...');
-  await smsWorker.close();
+await smsWorker.close();
   await connection.quit();
-  console.log('SMS worker stopped');
 }
 
 process.on('SIGTERM', shutdown);

@@ -8,6 +8,7 @@
 
 import { getSupabaseClient } from '@unioneyes/supabase';
 import type { UserRole, Permission } from '../rbac';
+import { logger } from '../src/utils/logger';
 
 // =========================================================================
 // TYPES
@@ -51,10 +52,10 @@ export const updateUserJWTClaims = async (
 
     if (error) throw error;
 
-    console.log('✅ JWT claims updated for user:', userId, claims);
+    logger.info('JWT claims updated for user', { userId, claims });
     return { error: null };
   } catch (error) {
-    console.error('❌ Error updating JWT claims:', error);
+    logger.error('Error updating JWT claims:', error);
     return { error: error as Error };
   }
 };
@@ -98,7 +99,7 @@ export const populateJWTClaimsFromProfile = async (
 
     return { claims, error: null };
   } catch (error) {
-    console.error('❌ Error populating JWT claims:', error);
+    logger.error('Error populating JWT claims:', error);
     return { claims: null, error: error as Error };
   }
 };
@@ -189,10 +190,10 @@ export const createUserProfileWithClaims = async (
     
     if (claimsError) throw claimsError;
 
-    console.log('✅ User profile created with JWT claims:', userId);
+    logger.info('User profile created with JWT claims', { userId });
     return { error: null };
   } catch (error) {
-    console.error('❌ Error creating user profile with claims:', error);
+    logger.error('Error creating user profile with claims:', error);
     return { error: error as Error };
   }
 };
@@ -225,10 +226,10 @@ export const refreshJWTClaims = async (): Promise<{ error: Error | null }> => {
     
     if (refreshError) throw refreshError;
 
-    console.log('✅ JWT claims refreshed');
+    logger.info('JWT claims refreshed');
     return { error: null };
   } catch (error) {
-    console.error('❌ Error refreshing JWT claims:', error);
+    logger.error('Error refreshing JWT claims:', error);
     return { error: error as Error };
   }
 };

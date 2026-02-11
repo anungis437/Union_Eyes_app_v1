@@ -39,6 +39,9 @@ export interface CECourse {
 export class CertificationManagementService {
   private static readonly ALERT_DAYS_90 = 90;
   private static readonly ALERT_DAYS_30 = 30;
+  private static toDateString(value?: Date): string | undefined {
+    return value ? value.toISOString().split('T')[0] : undefined;
+  }
 
   /**
    * Issue new certification to staff member
@@ -73,9 +76,9 @@ export class CertificationManagementService {
         role: issuance.role,
         certificationTypeId: issuance.certificationTypeId,
         certificationNumber: issuance.certificationNumber,
-        issuedDate: issuance.issuedDate,
-        expiryDate: issuance.expiryDate,
-        nextRenewalDue,
+        issuedDate: this.toDateString(issuance.issuedDate) as string,
+        expiryDate: this.toDateString(issuance.expiryDate),
+        nextRenewalDue: this.toDateString(nextRenewalDue),
         status: "active",
         certificateDocument: issuance.certificateDocument,
         compliant: true,
@@ -218,7 +221,7 @@ export class CertificationManagementService {
       .values({
         certificationId,
         renewalYear,
-        renewalDueDate,
+        renewalDueDate: this.toDateString(renewalDueDate) as string,
         renewalStatus: "pending",
         ceRequirementsMet: ceCompliance.compliant,
         feePaid: false,

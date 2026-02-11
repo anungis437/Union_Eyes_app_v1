@@ -16,6 +16,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, gte, lte, desc, asc, like, sql, inArray, count } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -64,7 +65,7 @@ export async function getMemberById(id: string): Promise<Member | null> {
 
     return member || null;
   } catch (error) {
-    console.error("Error fetching member by ID:", error);
+    logger.error("Error fetching member by ID", { error, id });
     throw new Error("Failed to fetch member");
   }
 }
@@ -86,7 +87,7 @@ export async function getMemberByUserId(
 
     return member || null;
   } catch (error) {
-    console.error("Error fetching member by user ID:", error);
+    logger.error("Error fetching member by user ID", { error, userId, organizationId });
     throw new Error("Failed to fetch member by user ID");
   }
 }
@@ -108,7 +109,11 @@ export async function getMemberByMembershipNumber(
 
     return member || null;
   } catch (error) {
-    console.error("Error fetching member by membership number:", error);
+    logger.error("Error fetching member by membership number", {
+      error,
+      membershipNumber,
+      organizationId,
+    });
     throw new Error("Failed to fetch member by membership number");
   }
 }
@@ -214,7 +219,7 @@ export async function listMembers(
       limit,
     };
   } catch (error) {
-    console.error("Error listing members:", error);
+    logger.error("Error listing members", { error, filters, pagination });
     throw new Error("Failed to list members");
   }
 }
@@ -231,7 +236,7 @@ export async function createMember(data: NewMember): Promise<Member> {
 
     return member;
   } catch (error) {
-    console.error("Error creating member:", error);
+    logger.error("Error creating member", { error, data });
     throw new Error("Failed to create member");
   }
 }
@@ -255,7 +260,7 @@ export async function updateMember(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating member:", error);
+    logger.error("Error updating member", { error, id });
     throw new Error("Failed to update member");
   }
 }
@@ -276,7 +281,7 @@ export async function deleteMember(id: string): Promise<boolean> {
 
     return !!deleted;
   } catch (error) {
-    console.error("Error deleting member:", error);
+    logger.error("Error deleting member", { error, id });
     throw new Error("Failed to delete member");
   }
 }
@@ -292,7 +297,7 @@ export async function permanentlyDeleteMember(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error permanently deleting member:", error);
+    logger.error("Error permanently deleting member", { error, id });
     throw new Error("Failed to permanently delete member");
   }
 }
@@ -330,7 +335,7 @@ export async function bulkImportMembers(
       errors: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
-    console.error("Error in bulk import:", error);
+    logger.error("Error in bulk import", { error });
     throw new Error("Failed to complete bulk import");
   }
 }
@@ -357,7 +362,11 @@ export async function bulkUpdateMemberStatus(
       failed: 0,
     };
   } catch (error) {
-    console.error("Error in bulk status update:", error);
+    logger.error("Error in bulk status update", {
+      error,
+      memberIdsCount: memberIds.length,
+      status,
+    });
     return {
       success: false,
       processed: 0,
@@ -389,7 +398,11 @@ export async function bulkUpdateMemberRole(
       failed: 0,
     };
   } catch (error) {
-    console.error("Error in bulk role update:", error);
+    logger.error("Error in bulk role update", {
+      error,
+      memberIdsCount: memberIds.length,
+      role,
+    });
     return {
       success: false,
       processed: 0,
@@ -463,7 +476,11 @@ export async function searchMembers(
       total: totalResult[0]?.count || 0,
     };
   } catch (error) {
-    console.error("Error searching members:", error);
+    logger.error("Error searching members", {
+      error,
+      organizationId,
+      searchQuery,
+    });
     throw new Error("Failed to search members");
   }
 }
@@ -512,7 +529,7 @@ export async function getMemberStatistics(organizationId: string): Promise<{
       byDepartment,
     };
   } catch (error) {
-    console.error("Error getting member statistics:", error);
+    logger.error("Error getting member statistics", { error, organizationId });
     throw new Error("Failed to get member statistics");
   }
 }
@@ -559,7 +576,12 @@ export async function mergeMembers(
 
     return updated!;
   } catch (error) {
-    console.error("Error merging members:", error);
+    logger.error("Error merging members", {
+      error,
+      primaryMemberId,
+      duplicateMemberId,
+      keepData,
+    });
     throw new Error("Failed to merge members");
   }
 }
@@ -582,7 +604,7 @@ export async function calculateSeniority(memberId: string): Promise<string> {
 
     return `${diffYears} years, ${diffMonths} months`;
   } catch (error) {
-    console.error("Error calculating seniority:", error);
+    logger.error("Error calculating seniority", { error, memberId });
     return "N/A";
   }
 }
@@ -608,7 +630,11 @@ export async function getMembersByDepartment(
 
     return members;
   } catch (error) {
-    console.error("Error fetching members by department:", error);
+    logger.error("Error fetching members by department", {
+      error,
+      organizationId,
+      department,
+    });
     throw new Error("Failed to fetch members by department");
   }
 }
@@ -634,7 +660,7 @@ export async function getMembersByRole(
 
     return members;
   } catch (error) {
-    console.error("Error fetching members by role:", error);
+    logger.error("Error fetching members by role", { error, organizationId, role });
     throw new Error("Failed to fetch members by role");
   }
 }

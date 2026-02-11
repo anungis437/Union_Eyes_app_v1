@@ -133,8 +133,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       severity: 'high',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error('T106/T4A generation error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         requiresT106: false,
@@ -211,8 +210,7 @@ export const GET = withEnhancedRoleAuth(60, async (request) => {
       severity: 'high',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error('T106 status error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         requiresT106: false,

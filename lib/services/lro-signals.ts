@@ -125,7 +125,7 @@ export const SIGNAL_CONFIG = {
  * ```typescript
  * const signals = detectSignals(caseData, new Date());
  * signals.forEach(s => {
- *   console.log(`${s.severity}: ${s.title}`);
+ *   logger.info('Signal detected', { severity: s.severity, title: s.title });
  * });
  * ```
  */

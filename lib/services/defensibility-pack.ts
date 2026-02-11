@@ -149,8 +149,8 @@ function calculateHash(data: unknown): string {
  * });
  * 
  * // Verify integrity
- * console.log('Timeline integrity:', pack.integrity.timelineHash);
- * console.log('Combined hash:', pack.integrity.combinedHash);
+ * logger.info('Timeline integrity', { hash: pack.integrity.timelineHash });
+ * logger.info('Combined hash', { hash: pack.integrity.combinedHash });
  * ```
  */
 export async function generateDefensibilityPack(
@@ -276,7 +276,7 @@ export async function generateDefensibilityPack(
  * ```typescript
  * const verification = verifyPackIntegrity(pack);
  * if (!verification.valid) {
- *   console.error('Integrity check failed:', verification.failures);
+ *   logger.error('Integrity check failed', { failures: verification.failures });
  * }
  * ```
  */
@@ -328,7 +328,7 @@ export function verifyPackIntegrity(pack: DefensibilityPack): {
  * @example
  * ```typescript
  * const summary = generateArbitrationSummary(pack);
- * console.log(summary); // Ready for arbitration submission
+ * logger.info('Arbitration summary generated', { summary });
  * ```
  */
 export function generateArbitrationSummary(pack: DefensibilityPack): string {

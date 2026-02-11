@@ -109,8 +109,7 @@ export function MemberSearchModal({
         setResults(searchResults);
         setSelectedIndex(0);
       } catch (error) {
-        console.error("Search failed:", error);
-      } finally {
+} finally {
         setIsSearching(false);
       }
     }, 300);
@@ -282,12 +281,12 @@ export function MemberSearchModal({
         {/* Footer with keyboard shortcuts */}
         <div className="border-t px-4 py-3 bg-gray-50 text-xs text-gray-500 flex items-center gap-4">
           <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs">↑</kbd>
-            <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs">↓</kbd>
+            <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs">â†‘</kbd>
+            <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs">â†“</kbd>
             <span className="ml-1">Navigate</span>
           </div>
           <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs">↵</kbd>
+            <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs">â†µ</kbd>
             <span className="ml-1">Select</span>
           </div>
           <div className="flex items-center gap-1">
@@ -356,7 +355,7 @@ function MemberResultItem({
               <div className="flex items-center gap-1.5">
                 <Building className="h-3 w-3" />
                 <span className="truncate">
-                  {member.employer} {member.jobTitle && `• ${member.jobTitle}`}
+                  {member.employer} {member.jobTitle && `â€¢ ${member.jobTitle}`}
                 </span>
               </div>
             )}

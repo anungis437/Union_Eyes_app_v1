@@ -65,8 +65,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(metrics);
   } catch (error) {
-    console.error('Error fetching compliance metrics:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch compliance metrics' },
       { status: 500 }
     );

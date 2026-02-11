@@ -11,6 +11,7 @@ import { getSupabaseClient } from '@unioneyes/supabase';
 import { SessionManager } from '../session-manager';
 import { AuditLogger } from './audit-logger';
 import type { UserRole, Permission } from '../rbac';
+import { logger } from '../src/utils/logger';
 
 // Initialize supabase client
 const supabase = getSupabaseClient();
@@ -90,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
         permissions: (profile as any).permissions as Permission[],
       };
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      logger.error('Error fetching user profile:', error);
       return {};
     }
   };
@@ -99,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
    * Handle authentication state changes
    */
   const handleAuthStateChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
-    console.log(`Auth event: ${event} in ${appName}`);
+    logger.info('Auth event', { event, appName });
 
     if (session?.user) {
       // For initial session or token refresh, ensure JWT has latest claims
@@ -108,7 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
           const { populateJWTClaimsFromProfile } = await import('./jwt-claims');
           await populateJWTClaimsFromProfile(session.user.id);
         } catch (error) {
-          console.warn('Could not populate JWT claims:', error);
+          logger.warn('Could not populate JWT claims:', error);
         }
       }
 
@@ -212,7 +213,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
 
       return { error: null };
     } catch (error) {
-      console.error('Sign in error:', error);
+      logger.error('Sign in error:', error);
       return { error: error as Error };
     } finally {
       setLoading(false);
@@ -260,7 +261,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
 
       return { error: null };
     } catch (error) {
-      console.error('Sign up error:', error);
+      logger.error('Sign up error:', error);
       return { error: error as Error };
     } finally {
       setLoading(false);
@@ -287,7 +288,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
 
       return { error: null };
     } catch (error) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error:', error);
       return { error: error as Error };
     } finally {
       setLoading(false);
@@ -312,7 +313,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
 
       return { error: null };
     } catch (error) {
-      console.error('Password reset error:', error);
+      logger.error('Password reset error:', error);
       return { error: error as Error };
     }
   };
@@ -335,7 +336,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
 
       return { error: null };
     } catch (error) {
-      console.error('Password update error:', error);
+      logger.error('Password update error:', error);
       return { error: error as Error };
     }
   };
@@ -350,7 +351,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, appName = 
         sessionManager.storeSession(refreshedSession);
       }
     } catch (error) {
-      console.error('Session refresh error:', error);
+      logger.error('Session refresh error:', error);
     }
   };
 

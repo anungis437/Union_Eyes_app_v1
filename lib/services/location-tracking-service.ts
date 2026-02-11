@@ -17,6 +17,7 @@
 import { db } from '@/db';
 import { eq, lte, and } from 'drizzle-orm';
 import { memberLocationConsent, locationTracking } from '@/db/schema';
+import { logger } from '@/lib/logger';
 
 export type LocationPurpose = 
   | 'strike_line_tracking'
@@ -381,7 +382,7 @@ export const locationTrackingService = new LocationTrackingService();
  */
 export async function scheduledLocationPurge() {
   const result = await locationTrackingService.purgeExpiredLocations();
-  console.log(`[CRON] Location purge: ${result.message}`);
+  logger.info('[CRON] Location purge', { message: result.message, deletedCount: result.deletedCount });
   return result;
 }
 

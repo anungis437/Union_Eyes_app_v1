@@ -73,8 +73,7 @@ export class DuesCalculationEngine {
       .limit(1);
 
     if (!assignment || !assignment.rule) {
-      console.warn(`No active dues rule found for member ${memberId}`);
-      return null;
+return null;
     }
 
     const { assignment: assignmentData, rule } = assignment;
@@ -134,8 +133,7 @@ export class DuesCalculationEngine {
         break;
 
       default:
-        console.warn(`Unknown calculation type: ${rule.calculationType}`);
-        return null;
+return null;
     }
 
     return {
@@ -215,7 +213,7 @@ export class DuesCalculationEngine {
           amount: tierAmount,
           breakdown: {
             baseAmount,
-            tier: `$${minAmount}-$${maxAmount === Infinity ? '∞' : maxAmount}`,
+            tier: `$${minAmount}-$${maxAmount === Infinity ? 'âˆž' : maxAmount}`,
             rate: tier.rate,
             flatAmount: tier.flatAmount,
           },
@@ -244,8 +242,7 @@ export class DuesCalculationEngine {
       const result = this.evaluateSafeFormula(substituted);
       return Number.isFinite(result) ? result : 0;
     } catch (error) {
-      console.warn('Failed to evaluate dues formula', error);
-      return 0;
+return 0;
     }
   }
 
@@ -384,8 +381,7 @@ export class DuesCalculationEngine {
         hoursWorked: hoursWorked || undefined,
       };
     } catch (error) {
-      console.warn('Failed to resolve member payroll data', error);
-      return undefined;
+return undefined;
     }
   }
 
@@ -446,8 +442,7 @@ export class DuesCalculationEngine {
           .limit(1);
 
         if (existing) {
-          console.log(`Transaction already exists for member ${member.id}, period ${periodStart.toISOString()}`);
-          continue;
+continue;
         }
 
         // Calculate dues
@@ -460,8 +455,7 @@ export class DuesCalculationEngine {
         });
 
         if (!calculation) {
-          console.warn(`Could not calculate dues for member ${member.id}`);
-          continue;
+continue;
         }
 
         transactionsToCreate.push({
@@ -488,16 +482,14 @@ export class DuesCalculationEngine {
       // Bulk insert transactions
       if (transactionsToCreate.length > 0) {
         await db.insert(duesTransactions).values(transactionsToCreate);
-        console.log(`Created ${transactionsToCreate.length} dues transactions for period ${periodStart.toISOString()}`);
-      }
+}
 
       return {
         success: true,
         transactionsCreated: transactionsToCreate.length,
       };
     } catch (error) {
-      console.error('Error generating billing cycle:', error);
-      throw error;
+throw error;
     }
   }
 
@@ -535,16 +527,12 @@ export class DuesCalculationEngine {
           })
           .where(eq(duesTransactions.id, transaction.id));
       }
-
-      console.log(`Applied late fees to ${overdueTransactions.length} transactions`);
-
-      return {
+return {
         success: true,
         transactionsUpdated: overdueTransactions.length,
       };
     } catch (error) {
-      console.error('Error calculating late fees:', error);
-      throw error;
+throw error;
     }
   }
 }

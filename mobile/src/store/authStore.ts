@@ -114,7 +114,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error('Failed to initialize auth:', error);
       set({ isLoading: false });
     }
   },

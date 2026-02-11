@@ -1,7 +1,7 @@
 /**
  * Frictionless Payment Handlers
  * 
- * MIGRATION STATUS: ✅ Migrated to use withSystemContext()
+ * MIGRATION STATUS: ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Migrated to use withSystemContext()
  * - System-wide webhook operations use withSystemContext() for unrestricted access
  * - Webhooks process payments across all tenants
  * 
@@ -30,29 +30,12 @@ import { v4 as uuidv4 } from "uuid";
  */
 export function isFrictionlessPayment(data: any): boolean {
   // Debug log the structure to make sure we know what we're working with
-  console.log("Checking for frictionless payment with data structure:", 
-    JSON.stringify({
-      hasMetadata: !!data.metadata,
-      hasMembershipMetadata: !!data.membership_metadata,
-      metadataKeys: data.metadata ? Object.keys(data.metadata) : [],
-      membershipMetadataKeys: data.membership_metadata ? Object.keys(data.membership_metadata) : []
-    }, null, 2)
-  );
-
-  // For payment.succeeded events, we need to check membership_metadata
+// For payment.succeeded events, we need to check membership_metadata
   if (data.membership_metadata) {
     const hasEmail = !!data.membership_metadata.email;
     const isExplicitlyUnauthenticated = !!data.membership_metadata.isUnauthenticated;
-    
-    console.log("Checking membership_metadata:", {
-      hasEmail,
-      isExplicitlyUnauthenticated,
-      metadata: data.membership_metadata
-    });
-    
-    if (hasEmail || isExplicitlyUnauthenticated) {
-      console.log("DETECTED FRICTIONLESS PAYMENT from membership_metadata");
-      return true;
+if (hasEmail || isExplicitlyUnauthenticated) {
+return true;
     }
   }
   
@@ -61,23 +44,13 @@ export function isFrictionlessPayment(data: any): boolean {
     const hasEmail = !!data.metadata.email;
     const hasClerkUserId = !!data.metadata.clerkUserId;
     const isExplicitlyUnauthenticated = !!data.metadata.isUnauthenticated;
-    
-    console.log("Checking metadata:", {
-      hasEmail,
-      hasClerkUserId,
-      isExplicitlyUnauthenticated,
-      metadata: data.metadata
-    });
-    
-    if ((hasEmail && !hasClerkUserId) || isExplicitlyUnauthenticated) {
-      console.log("DETECTED FRICTIONLESS PAYMENT from regular metadata");
-      return true;
+if ((hasEmail && !hasClerkUserId) || isExplicitlyUnauthenticated) {
+return true;
     }
   }
   
   // Not a frictionless payment
-  console.log("NOT a frictionless payment");
-  return false;
+return false;
 }
 
 /**
@@ -90,9 +63,7 @@ export function isFrictionlessPayment(data: any): boolean {
  */
 export async function handleFrictionlessPayment(data: any, eventId: string): Promise<boolean> {
   try {
-    console.log(`[Event ${eventId}] Processing frictionless payment`);
-    
-    // Extract email and token, checking both metadata and membership_metadata
+// Extract email and token, checking both metadata and membership_metadata
     // Prioritize membership_metadata as it seems to be where Whop puts this info in the payment.succeeded event
     let email = null;
     let token = null;
@@ -100,56 +71,40 @@ export async function handleFrictionlessPayment(data: any, eventId: string): Pro
     if (data.membership_metadata) {
       email = data.membership_metadata.email || null;
       token = data.membership_metadata.token || null;
-      console.log(`[Event ${eventId}] Found in membership_metadata - email: ${email}, token: ${token ? 'present' : 'not present'}`);
-    }
+}
     
     // Fall back to regular metadata if no email in membership_metadata
     if (!email && data.metadata) {
       email = data.metadata.email || null;
       token = data.metadata.token || null;
-      console.log(`[Event ${eventId}] Found in metadata - email: ${email}, token: ${token ? 'present' : 'not present'}`);
-    }
+}
     
     // Try user_email as last resort
     if (!email && data.user_email) {
       email = data.user_email;
-      console.log(`[Event ${eventId}] Using user_email as fallback: ${email}`);
-    }
+}
     
     if (!email) {
-      console.error(`[Event ${eventId}] CRITICAL ERROR: No email found in frictionless payment`);
-      console.error(`[Event ${eventId}] Metadata:`, JSON.stringify(data.metadata || {}, null, 2));
-      console.error(`[Event ${eventId}] Membership Metadata:`, JSON.stringify(data.membership_metadata || {}, null, 2));
-      return false;
+return false;
     }
-    
-    console.log(`[Event ${eventId}] Processing frictionless payment for email: ${email}`);
-    
-    // Check if a regular profile already exists with this email (user already has an account)
+// Check if a regular profile already exists with this email (user already has an account)
     const existingProfile = await getProfileByEmail(email);
     
     if (existingProfile && existingProfile.userId && !existingProfile.userId.startsWith('temp_')) {
-      console.log(`[Event ${eventId}] Found existing profile with email ${email} and userId ${existingProfile.userId}`);
-      console.log(`[Event ${eventId}] Will update existing profile with payment details`);
-      
-      // If profile exists with a userId, update it like a normal authenticated payment
+// If profile exists with a userId, update it like a normal authenticated payment
       // This handles the case where someone uses the frictionless flow with an email that already has an account
       const updateData = prepareProfileUpdateData(data);
       await updateProfile(existingProfile.userId, updateData);
-      console.log(`[Event ${eventId}] Updated existing profile for ${email} with userId ${existingProfile.userId}`);
-    } else {
+} else {
       // No existing regular profile - create a pending profile in the pending_profiles table
-      console.log(`[Event ${eventId}] Creating new pending profile in pending_profiles table for email: ${email}`);
-      await createOrUpdatePendingProfile(data, email, token, eventId);
+await createOrUpdatePendingProfile(data, email, token, eventId);
     }
     
     // Revalidate paths
     revalidateAfterPayment();
-    console.log(`[Event ${eventId}] END: Unauthenticated payment processing complete`);
-    return true;
+return true;
   } catch (error) {
-    console.error(`[Event ${eventId}] Error handling frictionless payment:`, error);
-    return false;
+return false;
   }
 }
 
@@ -166,9 +121,7 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
   const logPrefix = eventId ? `[Event ${eventId}]` : '[Profile Creation]';
   
   try {
-    console.log(`${logPrefix} USING NEW PENDING PROFILES SYSTEM - creating in pending_profiles table`);
-    
-    // Calculate billing cycle details
+// Calculate billing cycle details
     let billingCycleStart = new Date();
     let billingCycleEnd = null;
     
@@ -232,16 +185,7 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
       claimedByUserId: null,
       claimedAt: null,
     };
-    
-    console.log(`${logPrefix} Creating/updating pending profile with data:`, JSON.stringify({
-      id: pendingProfileData.id,
-      email: pendingProfileData.email,
-      planDuration: pendingProfileData.planDuration,
-      membership: pendingProfileData.membership,
-      hasToken: !!pendingProfileData.token
-    }, null, 2));
-    
-    // If there's an existing pending profile, update it, otherwise create a new one
+// If there's an existing pending profile, update it, otherwise create a new one
     if (existingPendingProfile) {
       // Update existing pending profile using system context
       await withSystemContext(async (tx) => {
@@ -250,18 +194,13 @@ export async function createOrUpdatePendingProfile(data: any, email: string, tok
           .where(eq(pendingProfilesTable.email, email))
           .returning();
       });
-      console.log(`${logPrefix} Updated existing pending profile for email: ${email}`);
-    } else {
+} else {
       // Create a new pending profile
       await createPendingProfile(pendingProfileData);
-      console.log(`${logPrefix} Created new pending profile for email: ${email} with ID: ${pendingProfileData.id}`);
-    }
-    
-    console.log(`${logPrefix} Successfully processed unauthenticated payment for email: ${email}`);
-    return true;
+}
+return true;
   } catch (error) {
-    console.error(`${logPrefix} Failed to create/update pending profile:`, error);
-    return false;
+return false;
   }
 }
 

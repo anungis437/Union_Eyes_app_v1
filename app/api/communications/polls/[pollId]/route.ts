@@ -75,8 +75,7 @@ export const GET = withApiAuth(async (
       userVote,
     });
   } catch (error) {
-    console.error('Error fetching poll:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch poll' },
       { status: 500 }
     );
@@ -172,8 +171,7 @@ export const PUT = withApiAuth(async (
       message: 'Poll updated successfully',
     });
   } catch (error) {
-    console.error('Error updating poll:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update poll' },
       { status: 500 }
     );
@@ -233,8 +231,7 @@ export const DELETE = withApiAuth(async (
       message: 'Poll deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting poll:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to delete poll' },
       { status: 500 }
     );

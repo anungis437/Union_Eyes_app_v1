@@ -49,6 +49,7 @@ const templateRenderers: Record<string, (data: any) => Promise<string>> = {
   'report-ready': (data) => render(ReportReadyEmail(data)),
   'deadline-alert': (data) => render(DeadlineAlertEmail(data)),
   'notification': (data) => render(NotificationEmail(data)),
+  'raw-html': async (data) => data.html || '',
   
   // Report templates (all use ReportReadyEmail)
   'claims-report': (data) => render(ReportReadyEmail({ 
@@ -147,12 +148,16 @@ async function processEmailJob(job: any) {
 
       // Render template
       let html: string;
+      let text: string | undefined;
       try {
         const renderer = templateRenderers[template];
         if (!renderer) {
           throw new Error(`Unknown template: ${template}`);
         }
         html = await renderer(data);
+        if (template === 'raw-html' && typeof data.text === 'string') {
+          text = data.text;
+        }
       } catch (error) {
         logger.error('Error rendering template', error instanceof Error ? error : new Error(String(error)), { template });
         throw error;
@@ -162,10 +167,29 @@ async function processEmailJob(job: any) {
 
       // Send email
       try {
+        const attachments = Array.isArray(data.attachments)
+          ? data.attachments
+              .filter((attachment: any) => attachment?.filename && attachment?.content)
+              .map((attachment: any) => {
+                if (attachment.encoding === 'base64' && typeof attachment.content === 'string') {
+                  return {
+                    filename: attachment.filename,
+                    content: Buffer.from(attachment.content, 'base64'),
+                  };
+                }
+                return {
+                  filename: attachment.filename,
+                  content: attachment.content,
+                };
+              })
+          : undefined;
+
         await sendEmail({
           to: [{ email, name: data.userName || email }],
           subject,
           html,
+          text,
+          attachments,
         });
 
         await logNotification(data.userId || null, email, subject, template, 'sent');

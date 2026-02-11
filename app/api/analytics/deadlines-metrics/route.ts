@@ -40,8 +40,7 @@ async function handler(req: NextRequest, context) {
       },
     });
   } catch (error) {
-    console.error('Deadline analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch deadline analytics' },
       { status: 500 }
     );

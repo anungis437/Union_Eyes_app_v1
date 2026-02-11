@@ -23,7 +23,7 @@ openssl rand -base64 32
 **Node.js** (Any platform):
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+node -e "logger.info(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 Copy the output - you'll need it in the next step.
@@ -53,7 +53,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 1. Go to <https://resend.com/signup>
 2. Verify your email
 3. Add your domain (or use test domain)
-4. Go to API Keys → Create
+4. Go to API Keys â†’ Create
 5. Copy the key to `RESEND_API_KEY`
 
 ---
@@ -61,7 +61,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ## Step 3: Setup GitHub Secrets (2 minutes)
 
 1. Go to your GitHub repository
-2. Click **Settings** → **Secrets and variables** → **Actions**
+2. Click **Settings** â†’ **Secrets and variables** â†’ **Actions**
 3. Click **New repository secret**
 4. Add two secrets:
 
@@ -142,7 +142,7 @@ git push
 
 **Trigger manual test**:
 
-1. Go to GitHub → **Actions** tab
+1. Go to GitHub â†’ **Actions** tab
 2. Click "Scheduled Reports Cron" workflow
 3. Click "Run workflow" button (top right)
 4. Select your branch
@@ -248,7 +248,7 @@ WHERE is_active = true;
 
 ---
 
-**Congratulations!** 🎉
+**Congratulations!** ðŸŽ‰
 
 Your scheduled reports system is now running automatically. Reports will be generated and emailed on schedule without any manual intervention.
 
@@ -262,4 +262,4 @@ Your scheduled reports system is now running automatically. Reports will be gene
 
 **Setup Time**: ~15 minutes  
 **Last Updated**: December 5, 2025  
-**Status**: Production Ready ✅
+**Status**: Production Ready âœ…

@@ -82,8 +82,7 @@ export function OrganizationHierarchyAdmin({
         buildHierarchyTree(data.data);
       }
     } catch (error) {
-      console.error('Error fetching organizations:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId]);
@@ -140,8 +139,7 @@ export function OrganizationHierarchyAdmin({
         fetchOrganizations();
       }
     } catch (error) {
-      console.error('Error creating organization:', error);
-    }
+}
   };
 
   const handleUpdateOrganization = async () => {
@@ -166,8 +164,7 @@ export function OrganizationHierarchyAdmin({
         fetchOrganizations();
       }
     } catch (error) {
-      console.error('Error updating organization:', error);
-    }
+}
   };
 
   const getOrgTypeColor = (type: string) => {

@@ -136,9 +136,7 @@ try {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error updating super admin roles:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to update super admin roles' },
         { status: 500 }
       );

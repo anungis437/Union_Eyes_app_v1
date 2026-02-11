@@ -14,6 +14,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import * as PaymentService from '../services/payment-processing';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -98,7 +99,7 @@ router.post('/dues/intent', async (req: Request, res: Response) => {
       paymentIntent,
     });
   } catch (error) {
-    console.error('Error creating dues payment intent:', error);
+    logger.error('Error creating dues payment intent', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create payment intent',
@@ -126,7 +127,7 @@ router.post('/dues/confirm', async (req: Request, res: Response) => {
       message: 'Payment confirmed successfully',
     });
   } catch (error) {
-    console.error('Error confirming dues payment:', error);
+    logger.error('Error confirming dues payment', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to confirm payment',
@@ -165,7 +166,7 @@ router.post('/stipends/payout', async (req: Request, res: Response) => {
       payout,
     });
   } catch (error) {
-    console.error('Error creating stipend payout:', error);
+    logger.error('Error creating stipend payout', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create payout',
@@ -193,7 +194,7 @@ router.post('/stipends/payout/batch', async (req: Request, res: Response) => {
       results,
     });
   } catch (error) {
-    console.error('Error processing batch payouts:', error);
+    logger.error('Error processing batch payouts', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to process batch payouts',
@@ -231,7 +232,7 @@ router.post('/donations/intent', async (req: Request, res: Response) => {
       paymentIntent,
     });
   } catch (error) {
-    console.error('Error creating donation payment intent:', error);
+    logger.error('Error creating donation payment intent', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create donation',
@@ -259,7 +260,7 @@ router.post('/donations/confirm', async (req: Request, res: Response) => {
       message: 'Thank you for your donation!',
     });
   } catch (error) {
-    console.error('Error confirming donation:', error);
+    logger.error('Error confirming donation', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to confirm donation',
@@ -288,7 +289,7 @@ router.post('/webhook/stripe', async (req: Request, res: Response) => {
 
     res.json({ received: true });
   } catch (error) {
-    console.error('Error processing Stripe webhook:', error);
+    logger.error('Error processing Stripe webhook', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Webhook processing failed',
@@ -321,7 +322,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       summary,
     });
   } catch (error) {
-    console.error('Error getting payment summary:', error);
+    logger.error('Error getting payment summary', { error });
     res.status(400).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to get payment summary',

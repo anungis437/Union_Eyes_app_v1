@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
 import { useTranslations } from 'next-intl';
@@ -46,82 +46,40 @@ interface Vote {
   currentParticipation?: number;
 }
 
-// Mock data - TODO: Replace with actual data from database
-const mockVotes: Vote[] = [
-  {
-    id: "VOTE-001",
-    title: "Ratify 2025 Collective Bargaining Agreement",
-    description: "Vote to approve the new collective bargaining agreement negotiated with management, including wage increases, improved benefits, and updated workplace policies.",
-    type: "yes-no",
-    status: "active",
-    startDate: "2025-11-10",
-    endDate: "2025-11-20",
-    options: [
-      { id: "yes", label: "Yes - Ratify Agreement", votes: 142, percentage: 78 },
-      { id: "no", label: "No - Reject Agreement", votes: 40, percentage: 22 }
-    ],
-    totalVotes: 182,
-    hasVoted: false,
-    quorum: 200,
-    currentParticipation: 91
-  },
-  {
-    id: "VOTE-002",
-    title: "Union Officer Elections",
-    description: "Select your union representatives for the next term. These officers will represent your interests and lead negotiations.",
-    type: "multiple-choice",
-    status: "active",
-    startDate: "2025-11-12",
-    endDate: "2025-11-18",
-    options: [
-      { id: "candidate1", label: "Sarah Johnson", votes: 85, percentage: 45 },
-      { id: "candidate2", label: "Mike Chen", votes: 67, percentage: 35 },
-      { id: "candidate3", label: "Emily Rodriguez", votes: 38, percentage: 20 }
-    ],
-    totalVotes: 190,
-    hasVoted: true,
-    userVote: "candidate1",
-    quorum: 150,
-    currentParticipation: 126
-  },
-  {
-    id: "VOTE-003",
-    title: "Safety Protocol Updates",
-    description: "Approve proposed changes to workplace safety protocols.",
-    type: "yes-no",
-    status: "upcoming",
-    startDate: "2025-11-25",
-    endDate: "2025-12-05",
-    options: [
-      { id: "yes", label: "Yes - Approve Changes" },
-      { id: "no", label: "No - Keep Current Protocols" }
-    ]
-  },
-  {
-    id: "VOTE-004",
-    title: "2024 Contract Ratification",
-    description: "Ratify the 2024 contract with wage increases and benefit improvements.",
-    type: "yes-no",
-    status: "closed",
-    startDate: "2024-10-01",
-    endDate: "2024-10-15",
-    options: [
-      { id: "yes", label: "Yes - Ratify", votes: 245, percentage: 89 },
-      { id: "no", label: "No - Reject", votes: 30, percentage: 11 }
-    ],
-    totalVotes: 275,
-    hasVoted: true,
-    userVote: "yes"
-  }
-];
-
 export default function VotingPage() {
   const { user } = useUser();
-  const [votes] = useState<Vote[]>(mockVotes);
+  const [votes, setVotes] = useState<Vote[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<"active" | "upcoming" | "past">("active");
   const [expandedVote, setExpandedVote] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+
+  // Fetch voting sessions from API
+  useEffect(() => {
+    const fetchVotingSessions = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/voting/sessions');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch voting sessions: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setVotes(data.sessions || []);
+      } catch (err) {
+setError(err instanceof Error ? err.message : 'Failed to load voting sessions');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVotingSessions();
+  }, []);
 
   const activeVotes = votes.filter(v => v.status === "active");
   const upcomingVotes = votes.filter(v => v.status === "upcoming");
@@ -130,11 +88,41 @@ export default function VotingPage() {
   const handleVote = async (voteId: string, optionId: string) => {
     setIsSubmitting(voteId);
     
-    // TODO: Submit vote to backend
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsSubmitting(null);
-    setSelectedOption(prev => ({ ...prev, [voteId]: optionId }));
+    try {
+      const response = await fetch(`/api/voting/sessions/${voteId}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ optionId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit vote');
+      }
+
+      // Update local state to reflect vote
+      setVotes(prevVotes => 
+        prevVotes.map(v => 
+          v.id === voteId 
+            ? { ...v, hasVoted: true, userVote: optionId }
+            : v
+        )
+      );
+      setSelectedOption(prev => ({ ...prev, [voteId]: optionId }));
+
+      // Refresh votes to get updated counts
+      const refreshResponse = await fetch('/api/voting/sessions');
+      if (refreshResponse.ok) {
+        const data = await refreshResponse.json();
+        setVotes(data.sessions || []);
+      }
+    } catch (err) {
+alert(err instanceof Error ? err.message : 'Failed to submit vote');
+    } finally {
+      setIsSubmitting(null);
+    }
   };
 
   const getStatusBadge = (status: VoteStatus) => {
@@ -546,10 +534,10 @@ export default function VotingPage() {
                     elect representatives, and ratify agreements. All votes are confidential and secure.
                   </p>
                   <ul className="space-y-1 text-sm text-gray-700">
-                    <li>• Votes are anonymous and confidential</li>
-                    <li>• You can only vote once per ballot</li>
-                    <li>• Results are shown after voting closes or you cast your vote</li>
-                    <li>• Email reminders sent before voting deadline</li>
+                    <li>â€¢ Votes are anonymous and confidential</li>
+                    <li>â€¢ You can only vote once per ballot</li>
+                    <li>â€¢ Results are shown after voting closes or you cast your vote</li>
+                    <li>â€¢ Email reminders sent before voting deadline</li>
                   </ul>
                 </div>
               </div>

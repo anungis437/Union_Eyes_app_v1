@@ -41,8 +41,7 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context, 
       data: memberClaims,
     });
   } catch (error) {
-    console.error('Error fetching member claims:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch member claims' },
       { status: 500 }
     );

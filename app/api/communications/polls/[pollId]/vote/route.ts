@@ -197,8 +197,7 @@ export const POST = withApiAuth(async (
       message: 'Vote submitted successfully',
     });
   } catch (error) {
-    console.error('Error submitting vote:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to submit vote' },
       { status: 500 }
     );

@@ -41,8 +41,7 @@ export function useRealtimeNotifications({ organizationId, userId, enabled = tru
                 setIsConnected(true);
             }
             catch (error) {
-                console.error('Failed to setup notifications:', error);
-                setIsConnected(false);
+setIsConnected(false);
             }
         };
         setupNotifications();

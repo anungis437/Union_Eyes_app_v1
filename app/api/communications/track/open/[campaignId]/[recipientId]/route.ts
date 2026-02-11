@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { newsletterEngagement, newsletterRecipients } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { resolveIpGeolocation } from '@/lib/geo/ip-geolocation';
 
 // 1x1 transparent GIF pixel
 const TRACKING_PIXEL = Buffer.from(
@@ -30,6 +31,8 @@ export async function GET(
                request.headers.get('x-real-ip') || 
                'unknown';
 
+    const location = await resolveIpGeolocation(ip);
+
     // Record engagement event
     await db
       .insert(newsletterEngagement)
@@ -39,7 +42,7 @@ export async function GET(
         eventType: 'open',
         occurredAt: new Date(),
         eventData: {
-          location: {}, // TODO: Add IP geolocation
+          location,
           device: parseUserAgent(userAgent),
         },
         ipAddress: ip,
@@ -56,8 +59,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error tracking open:', error);
-    // Still return pixel even on error
+// Still return pixel even on error
     return new NextResponse(TRACKING_PIXEL, {
       headers: {
         'Content-Type': 'image/gif',

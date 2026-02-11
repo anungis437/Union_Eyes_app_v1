@@ -61,19 +61,83 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    // Get basic claims count for the period
-    const result = await db.execute(sql`
-      SELECT COUNT(*) as total_claims
-      FROM claims
-      WHERE tenant_id = ${tenantId}
-        AND created_at >= ${startDate}
-        AND created_at <= ${endDate}
-    `);
+    // Get comprehensive analytics with breakdowns
+    const [totalResult, statusBreakdown, typeBreakdown, priorityBreakdown, resolutionMetrics] = await Promise.all([
+      // Total claims
+      db.execute(sql`
+        SELECT COUNT(*) as total_claims
+        FROM claims
+        WHERE organization_id = ${tenantId}
+          AND created_at >= ${startDate}
+          AND created_at <= ${endDate}
+      `),
+      
+      // Status breakdown
+      db.execute(sql`
+        SELECT status, COUNT(*) as count
+        FROM claims
+        WHERE organization_id = ${tenantId}
+          AND created_at >= ${startDate}
+          AND created_at <= ${endDate}
+        GROUP BY status
+      `),
+      
+      // Claim type breakdown
+      db.execute(sql`
+        SELECT claim_type, COUNT(*) as count
+        FROM claims
+        WHERE organization_id = ${tenantId}
+          AND created_at >= ${startDate}
+          AND created_at <= ${endDate}
+        GROUP BY claim_type
+        ORDER BY count DESC
+      `),
+      
+      // Priority breakdown
+      db.execute(sql`
+        SELECT priority, COUNT(*) as count
+        FROM claims
+        WHERE organization_id = ${tenantId}
+          AND created_at >= ${startDate}
+          AND created_at <= ${endDate}
+        GROUP BY priority
+      `),
+      
+      // Resolution metrics
+      db.execute(sql`
+        SELECT 
+          COUNT(*) FILTER (WHERE status = 'resolved') as resolved_count,
+          COUNT(*) FILTER (WHERE status = 'rejected') as rejected_count,
+          AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 86400) FILTER (WHERE resolved_at IS NOT NULL) as avg_resolution_days
+        FROM claims
+        WHERE organization_id = ${tenantId}
+          AND created_at >= ${startDate}
+          AND created_at <= ${endDate}
+      `)
+    ]);
 
     const analytics = {
-      totalClaims: Number((result as any)[0]?.total_claims || 0),
-      period: { startDate, endDate }
+      totalClaims: Number((totalResult as any)[0]?.total_claims || 0),
+      period: { startDate, endDate },
+      byStatus: (statusBreakdown as any[]).reduce((acc: any, row: any) => {
+        acc[row.status] = Number(row.count);
+        return acc;
+      }, {}),
+      byType: (typeBreakdown as any[]).map((row: any) => ({
+        type: row.claim_type,
+        count: Number(row.count)
+      })),
+      byPriority: (priorityBreakdown as any[]).reduce((acc: any, row: any) => {
+        acc[row.priority] = Number(row.count);
+        return acc;
+      }, {}),
+      resolution: {
+        resolved: Number((resolutionMetrics as any)[0]?.resolved_count || 0),
+        rejected: Number((resolutionMetrics as any)[0]?.rejected_count || 0),
+        avgResolutionDays: Math.round(Number((resolutionMetrics as any)[0]?.avg_resolution_days || 0))
+      }
     };
+    
     // Log audit event
     await logApiAuditEvent({
       userId,
@@ -94,8 +158,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       filters: Object.keys(filters).length > 0 ? filters : null,
     });
   } catch (error) {
-    console.error('Claims analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch claims analytics' },
       { status: 500 }
     );
@@ -108,8 +171,44 @@ async function getClaimsByDateRange(
   dateRange: { startDate: Date; endDate: Date },
   filters: any
 ) {
-  // Placeholder implementation - returns empty array
-  // TODO: Implement database query with filters
-  return [];
+  const { startDate, endDate } = dateRange;
+  
+  let query = sql`
+    SELECT 
+      claim_id,
+      claim_number,
+      claim_type,
+      status,
+      priority,
+      assigned_to,
+      incident_date,
+      created_at,
+      resolved_at,
+      claim_amount,
+      settlement_amount
+    FROM claims
+    WHERE organization_id = ${tenantId}
+      AND created_at >= ${startDate}
+      AND created_at <= ${endDate}
+  `;
+
+  // Apply filters
+  if (filters.status && filters.status.length > 0) {
+    query = sql`${query} AND status = ANY(${filters.status})`;
+  }
+  if (filters.claimType && filters.claimType.length > 0) {
+    query = sql`${query} AND claim_type = ANY(${filters.claimType})`;
+  }
+  if (filters.priority && filters.priority.length > 0) {
+    query = sql`${query} AND priority = ANY(${filters.priority})`;
+  }
+  if (filters.assignedTo) {
+    query = sql`${query} AND assigned_to = ${filters.assignedTo}`;
+  }
+
+  query = sql`${query} ORDER BY created_at DESC`;
+
+  const result = await db.execute(query);
+  return result as any[];
 }
 

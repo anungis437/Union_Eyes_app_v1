@@ -71,9 +71,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
         message: "Your data export is ready for download",
       });
     } catch (exportError) {
-      console.error("Export generation failed:", exportError);
-      
-      // Mark as in progress, will be processed by background job
+// Mark as in progress, will be processed by background job
       await GdprRequestManager.updateRequestStatus(request.id, "in_progress", {
         processedBy: "system",
       });
@@ -87,8 +85,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       });
     }
   } catch (error) {
-    console.error("Data export request error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to process data export request" },
       { status: 500 }
     );

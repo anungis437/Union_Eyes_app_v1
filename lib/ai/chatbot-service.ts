@@ -657,8 +657,7 @@ export class ChatbotService {
     } catch (error) {
       // SECURITY FIX: Fail closed - content safety system errors should reject content
       // Log the error for monitoring but treat as unsafe content
-      console.error("CRITICAL: Content safety check system error:", error);
-      return { flagged: true, reason: 'Safety system unavailable' }; // Fail closed
+return { flagged: true, reason: 'Safety system unavailable' }; // Fail closed
     }
   }
 }

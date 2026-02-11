@@ -137,8 +137,7 @@ export function AdvancedSearch({ onSearch, onClear, initialFilters }: AdvancedSe
       setAvailableUsers(data.users || []);
       setAvailableFolders(data.folders || []);
     } catch (err) {
-      console.error('Failed to fetch filter options:', err);
-    }
+}
   };
 
   const fetchSavedSearches = async () => {
@@ -149,8 +148,7 @@ export function AdvancedSearch({ onSearch, onClear, initialFilters }: AdvancedSe
       const data = await response.json();
       setSavedSearches(data.searches || []);
     } catch (err) {
-      console.error('Failed to fetch saved searches:', err);
-    }
+}
   };
 
   /**
@@ -278,7 +276,7 @@ export function AdvancedSearch({ onSearch, onClear, initialFilters }: AdvancedSe
             <CardTitle>Advanced Search</CardTitle>
             <CardDescription>
               Refine your search with multiple filters
-              {activeFilterCount > 0 && ` • ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active`}
+              {activeFilterCount > 0 && ` â€¢ ${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} active`}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">

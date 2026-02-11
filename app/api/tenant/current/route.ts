@@ -1,7 +1,7 @@
 /**
  * Current Tenant API
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  */
@@ -75,8 +75,7 @@ export const GET = async () => {
         });
       });
     } catch (error) {
-      console.error("Error fetching tenant info:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to fetch tenant information" },
         { status: 500 }
       );

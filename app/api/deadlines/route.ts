@@ -56,8 +56,7 @@ export const GET = withApiAuth(async (request: NextRequest, context: any) => {
     
     return NextResponse.json({ deadlines });
   } catch (error) {
-    console.error('Failed to fetch deadlines:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch deadlines' },
       { status: 500 }
     );

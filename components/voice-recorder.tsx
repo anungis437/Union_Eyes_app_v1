@@ -94,8 +94,7 @@ export function VoiceRecorder({
       });
 
     } catch (error) {
-      console.error("Error starting recording:", error);
-      toast({
+toast({
         title: "Recording failed",
         description: "Could not access microphone. Please check permissions.",
         variant: "destructive",
@@ -208,8 +207,7 @@ export function VoiceRecorder({
       });
 
     } catch (error) {
-      console.error("Transcription error:", error);
-      toast({
+toast({
         title: t('transcriptionFailed'),
         description: error instanceof Error ? error.message : t('unknownError'),
         variant: "destructive",

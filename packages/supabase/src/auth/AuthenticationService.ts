@@ -18,7 +18,7 @@
  */
 
 import { createClient, SupabaseClient, AuthError, Session, User } from '@supabase/supabase-js';
-// import { authenticator } from 'otplib'; // Temporarily commented out until dependency is available
+import { authenticator } from 'otplib';
 import * as React from 'react';
 
 const { useState, useCallback, useEffect, useContext, createContext } = React;
@@ -355,7 +355,6 @@ export class AuthenticationService {
       return user as AuthUser;
 
     } catch (error) {
-      console.error('SSO callback error:', error);
       return null;
     }
   }
@@ -411,13 +410,11 @@ export class AuthenticationService {
 
       // Generate QR code URL for authenticator apps
       const user = await this.getCurrentUser();
-      // TODO: Re-enable when otplib dependency is available
-      const qrCodeUrl = `otpauth://totp/CourtLens:${user?.email || ''}?secret=${secret}&issuer=CourtLens`;
-      // const qrCodeUrl = authenticator.keyuri(
-      //   user?.email || '',
-      //   'CourtLens',
-      //   secret
-      // );
+      const qrCodeUrl = authenticator.keyuri(
+        user?.email || '',
+        'CourtLens',
+        secret
+      );
 
       // Generate backup codes
       const backupCodes = Array.from({ length: 10 }, () => 
@@ -480,7 +477,6 @@ export class AuthenticationService {
       return isValid || false;
 
     } catch (error) {
-      console.error('MFA verification error:', error);
       return false;
     }
   }
@@ -518,7 +514,6 @@ export class AuthenticationService {
       return true;
 
     } catch (error) {
-      console.error('MFA disable error:', error);
       return false;
     }
   }
@@ -551,7 +546,6 @@ export class AuthenticationService {
       return hasPermission || false;
 
     } catch (error) {
-      console.error('Permission check error:', error);
       return false;
     }
   }
@@ -577,7 +571,6 @@ export class AuthenticationService {
       return (roles?.map((ur: any) => ur.role).filter(Boolean) as Role[]) || [];
 
     } catch (error) {
-      console.error('Get user roles error:', error);
       return [];
     }
   }
@@ -615,7 +608,6 @@ export class AuthenticationService {
       return true;
 
     } catch (error) {
-      console.error('Role assignment error:', error);
       return false;
     }
   }
@@ -644,7 +636,6 @@ export class AuthenticationService {
       return true;
 
     } catch (error) {
-      console.error('Role removal error:', error);
       return false;
     }
   }
@@ -676,7 +667,6 @@ export class AuthenticationService {
       return providers || [];
 
     } catch (error) {
-      console.error('Get SSO providers error:', error);
       return [];
     }
   }
@@ -699,7 +689,6 @@ export class AuthenticationService {
       return provider;
 
     } catch (error) {
-      console.error('Get SSO provider error:', error);
       return null;
     }
   }
@@ -737,7 +726,6 @@ export class AuthenticationService {
       return provider;
 
     } catch (error) {
-      console.error('Create SSO provider error:', error);
       return null;
     }
   }
@@ -785,7 +773,6 @@ export class AuthenticationService {
       return session;
 
     } catch (error) {
-      console.error('Create enhanced session error:', error);
       return null;
     }
   }
@@ -821,7 +808,6 @@ export class AuthenticationService {
       };
 
     } catch (error) {
-      console.error('Session validation error:', error);
       return { isValid: false };
     }
   }
@@ -846,7 +832,6 @@ export class AuthenticationService {
       return sessions || [];
 
     } catch (error) {
-      console.error('Get active sessions error:', error);
       return [];
     }
   }
@@ -868,7 +853,6 @@ export class AuthenticationService {
       return true;
 
     } catch (error) {
-      console.error('Revoke session error:', error);
       return false;
     }
   }
@@ -901,7 +885,6 @@ export class AuthenticationService {
       };
 
     } catch (error) {
-      console.error('Security check error:', error);
       return {
         is_blocked: false,
         failed_attempts: 0,
@@ -936,7 +919,6 @@ export class AuthenticationService {
         });
 
     } catch (error) {
-      console.error('Log security event error:', error);
     }
   }
 
@@ -976,7 +958,6 @@ export class AuthenticationService {
       return events || [];
 
     } catch (error) {
-      console.error('Get security events error:', error);
       return [];
     }
   }
@@ -1028,7 +1009,6 @@ export class AuthenticationService {
       return org as OrganizationAuthSettings;
 
     } catch (error) {
-      console.error('Get organization auth settings error:', error);
       return null;
     }
   }
@@ -1090,7 +1070,6 @@ export class AuthenticationService {
         });
 
     } catch (error) {
-      console.error('Log failed login attempt error:', error);
     }
   }
 
@@ -1129,7 +1108,6 @@ export class AuthenticationService {
       return true;
 
     } catch (error) {
-      console.error('Backup code verification error:', error);
       return false;
     }
   }
@@ -1219,7 +1197,6 @@ export function AuthProvider({
         const { data: { session } } = await authService.supabase.auth.getSession();
         setSession(session);
       } catch (error) {
-        console.error('Auth initialization error:', error);
       } finally {
         setLoading(false);
       }
@@ -1350,7 +1327,6 @@ export function useSSO() {
       const ssoProviders = await authService.getSSOProviders();
       setProviders(ssoProviders);
     } catch (error) {
-      console.error('Load SSO providers error:', error);
     } finally {
       setLoading(false);
     }

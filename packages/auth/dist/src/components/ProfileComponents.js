@@ -49,8 +49,7 @@ export const AvatarUploader = ({ currentAvatarUrl, size = 'md', editable = true,
                 setPreviewUrl(null);
             }
             catch (error) {
-                console.error('Error uploading avatar:', error);
-                alert('Failed to upload avatar');
+alert('Failed to upload avatar');
             }
             finally {
                 setUploading(false);
@@ -67,8 +66,7 @@ export const AvatarUploader = ({ currentAvatarUrl, size = 'md', editable = true,
                 setPreviewUrl(null);
             }
             catch (error) {
-                console.error('Error deleting avatar:', error);
-                alert('Failed to delete avatar');
+alert('Failed to delete avatar');
             }
             finally {
                 setUploading(false);
@@ -115,8 +113,7 @@ export const ProfileEditor = ({ onSave, onCancel, className = '' }) => {
             onSave?.();
         }
         catch (error) {
-            console.error('Error saving profile:', error);
-            alert('Failed to save profile');
+alert('Failed to save profile');
         }
         finally {
             setSaving(false);

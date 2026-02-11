@@ -5,6 +5,7 @@
 import { db } from '@/db';
 import { crossBorderTransactions, t106Filings, type NewCrossBorderTransaction } from '@/db/schema/transfer-pricing-schema';
 import { eq, and, gte, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * Currency Enforcement Service
@@ -97,12 +98,15 @@ export class CurrencyEnforcementService {
       return rate;
     } catch (error) {
       // Fallback to cached rate or manual entry
-      console.error('Failed to fetch Bank of Canada rate:', error);
+        logger.error('Failed to fetch Bank of Canada rate', { error });
       
       // Get most recent cached rate
       const cachedRate = await this.getCachedBOCRate(date);
       if (cachedRate) {
-        console.warn(`Using cached BOC rate from ${cachedRate.date}: ${cachedRate.rate}`);
+          logger.warn('Using cached BOC rate', {
+            date: cachedRate.date,
+            rate: cachedRate.rate,
+          });
         return cachedRate.rate;
       }
       

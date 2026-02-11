@@ -273,8 +273,7 @@ serve(async (req) => {
         }
     }
     catch (error) {
-        console.error('Background task error:', error);
-        return new Response(JSON.stringify({
+return new Response(JSON.stringify({
             error: error.message,
             success: false
         }), {
@@ -367,8 +366,7 @@ async function executeTask(request) {
         return taskResult;
     }
     catch (error) {
-        console.error(`Task ${taskId} failed:`, error);
-        const taskResult = {
+const taskResult = {
             taskId,
             status: 'failed',
             error: error.message,
@@ -455,8 +453,7 @@ async function sendEmailDigest(payload, context) {
                 sentCount++;
             }
             catch (error) {
-                console.error(`Failed to send digest to user ${user.user_id}:`, error);
-            }
+}
         }
     }
     return { sentEmails: sentCount, digestType };
@@ -639,8 +636,7 @@ async function executePendingScheduledTasks() {
                     .eq('task_id', task.task_id);
             }
             catch (error) {
-                console.error(`Failed to execute scheduled task ${task.task_id}:`, error);
-            }
+}
         }
     }
     return results;
@@ -648,7 +644,6 @@ async function executePendingScheduledTasks() {
 // Stub implementations for helper functions
 async function sendUserDigestEmail(user, digestType) {
     // Implementation for sending digest emails
-    console.log(`Sending ${digestType} digest to user ${user.user_id}`);
 }
 async function createBillingReport(period, organizationId) {
     // Implementation for creating billing reports

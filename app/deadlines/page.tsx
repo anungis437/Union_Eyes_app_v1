@@ -55,7 +55,6 @@ export default function DeadlinesPage() {
       setDeadlines(data.deadlines || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load deadlines');
-      console.error('Error fetching deadlines:', err);
     } finally {
       setLoading(false);
     }
@@ -74,7 +73,6 @@ export default function DeadlinesPage() {
       // Refresh deadlines
       await fetchDeadlines();
     } catch (err) {
-      console.error('Error completing deadline:', err);
       alert('Failed to complete deadline. Please try again.');
     }
   };
@@ -114,8 +112,7 @@ export default function DeadlinesPage() {
   };
 
   const handleDateClick = (date: Date) => {
-    console.log('Date clicked:', date);
-  };
+};
 
   const handleDeadlineClick = (deadline: Deadline) => {
     if (deadline.claimNumber) {

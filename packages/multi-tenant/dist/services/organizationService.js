@@ -475,8 +475,7 @@ export class OrganizationService {
             });
         }
         catch (error) {
-            console.error('Failed to log audit event:', error);
-        }
+}
     }
 }
 /**

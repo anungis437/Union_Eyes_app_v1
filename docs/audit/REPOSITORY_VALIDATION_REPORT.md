@@ -1,4 +1,4 @@
-# 🔍 REPOSITORY VALIDATION REPORT
+# ðŸ” REPOSITORY VALIDATION REPORT
 
 ## UnionEyes Platform - Gap Analysis vs Actual State
 
@@ -11,7 +11,7 @@
 
 ## EXECUTIVE SUMMARY
 
-**Status:** ✅ **Release Candidate (RC-1) Ready**
+**Status:** âœ… **Release Candidate (RC-1) Ready**
 
 **Evidence:** commit `51165d78`, default CI suite green (skips are policy-gated), critical controls verified (FSM + immutability migration present + allowlist hardening + RLS wrapper).
 
@@ -21,11 +21,11 @@
 
 ---
 
-## ✅ VERIFIED IMPLEMENTATIONS (Objectively True)
+## âœ… VERIFIED IMPLEMENTATIONS (Objectively True)
 
 ### 1. Middleware + API Allowlist Centralization
 
-**Status:** ✅ **VERIFIED**
+**Status:** âœ… **VERIFIED**
 
 **Evidence:**
 
@@ -52,7 +52,7 @@ lib/api-auth-guard.ts (exports PUBLIC_API_ROUTES, isPublicRoute)
 
 ### 2. FSM Transition Enforcement in Claims API
 
-**Status:** ✅ **VERIFIED**
+**Status:** âœ… **VERIFIED**
 
 **Evidence:**
 
@@ -79,7 +79,7 @@ import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
 
 ### 3. Database Immutability Triggers (Migration 0064)
 
-**Status:** ✅ **FILE EXISTS**
+**Status:** âœ… **FILE EXISTS**
 
 **Evidence:**
 
@@ -97,7 +97,7 @@ import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
 
 ### 4. RLS Context Wrapper Implementation
 
-**Status:** ✅ **VERIFIED**
+**Status:** âœ… **VERIFIED**
 
 **Evidence:**
 
@@ -111,7 +111,7 @@ import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
 
 ---
 
-## ❌ CRITICAL GAPS (Documentation Overstates Actual State)
+## âŒ CRITICAL GAPS (Documentation Overstates Actual State)
 
 ### 1. Governance API Routes
 
@@ -119,7 +119,7 @@ import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
 
 > "Created API endpoints for governance elections and workflows"
 
-**Actual State:** ✅ **PRESENT**
+**Actual State:** âœ… **PRESENT**
 
 **Evidence:**
 
@@ -150,16 +150,16 @@ app/api/governance/
 > - 0063_voting_system.sql
 > - 0064_add_immutability_triggers.sql"
 
-**Actual State:** ❌ **NAMES MISMATCH**
+**Actual State:** âŒ **NAMES MISMATCH**
 
 **Evidence:**
 
 ```text
 
 Actual migration files:
-✅ db/migrations/0062_add_immutable_transition_history.sql
-✅ db/migrations/0063_add_audit_log_archive_support.sql
-✅ db/migrations/0064_add_immutability_triggers.sql
+âœ… db/migrations/0062_add_immutable_transition_history.sql
+âœ… db/migrations/0063_add_audit_log_archive_support.sql
+âœ… db/migrations/0064_add_immutability_triggers.sql
 
 ```
 
@@ -167,9 +167,9 @@ Actual migration files:
 
 | Documented Name                        | Actual Name                                    | Match   |
 | -------------------------------------- | ---------------------------------------------- | ------- |
-| 0062_grievance_approvals_immutable.sql | 0062_add_immutable_transition_history.sql      | ❌ NO   |
-| 0063_voting_system.sql                 | 0063_add_audit_log_archive_support.sql         | ❌ NO   |
-| 0064_add_immutability_triggers.sql     | 0064_add_immutability_triggers.sql             | ✅ YES  |
+| 0062_grievance_approvals_immutable.sql | 0062_add_immutable_transition_history.sql      | âŒ NO   |
+| 0063_voting_system.sql                 | 0063_add_audit_log_archive_support.sql         | âŒ NO   |
+| 0064_add_immutability_triggers.sql     | 0064_add_immutability_triggers.sql             | âœ… YES  |
 
 **Migration Content Analysis:**
 
@@ -197,15 +197,15 @@ Actual migration files:
 
 > "Created voting tables: elections, election_candidates, election_votes with RLS policies and immutability constraints"
 
-**Actual State:** ⚠️ **SCHEMA EXISTS, MIGRATIONS UNCLEAR**
+**Actual State:** âš ï¸ **SCHEMA EXISTS, MIGRATIONS UNCLEAR**
 
 **Evidence:**
 
-- ✅ [db/schema/voting-schema.ts](db/schema/voting-schema.ts) exists and defines tables
+- âœ… [db/schema/voting-schema.ts](db/schema/voting-schema.ts) exists and defines tables
 
-- ❌ No migration named "0063_voting_system.sql" exists
+- âŒ No migration named "0063_voting_system.sql" exists
 
-- ❓ Unclear if voting tables are actually applied to database
+- â“ Unclear if voting tables are actually applied to database
 
 **Location of Voting SQL:**
 
@@ -227,7 +227,7 @@ Actual migration files:
 
 ---
 
-## ✅ TEST SUITE STATUS (Full Suite)
+## âœ… TEST SUITE STATUS (Full Suite)
 
 **Latest Results:**
 
@@ -247,7 +247,7 @@ Actual migration files:
 
 ---
 
-## 🚨 HIGH-SEVERITY CONCERN: RLS Scanner Results
+## ðŸš¨ HIGH-SEVERITY CONCERN: RLS Scanner Results
 
 ### Reported Results
 
@@ -257,7 +257,7 @@ Actual migration files:
 
 **RLS Coverage:** Verified for critical tenant tables in audited routes (`claims`/`grievances`/`members`). **Global repo coverage is not yet a meaningful metric until the scanner taxonomy is implemented.**
 
-**Analysis:** ❌ **NOT DEFENSIBLE WITHOUT FORMAL TAXONOMY**
+**Analysis:** âŒ **NOT DEFENSIBLE WITHOUT FORMAL TAXONOMY**
 
 A defensible RLS coverage metric requires:
 
@@ -301,7 +301,7 @@ Tenant isolation is highest-stakes SaaS risk. "613 HIGH" reads as systemic risk 
 
 ---
 
-## �️ INVESTOR-GRADE VERIFICATION TOOLING (IMPLEMENTED)
+## ï¿½ï¸ INVESTOR-GRADE VERIFICATION TOOLING (IMPLEMENTED)
 
 ### New Tooling for RC-1 Certification
 
@@ -466,34 +466,34 @@ shasum -a 256 db/migrations/0064_add_immutability_triggers.sql
 
 | Tool | Status | File | CI Integration |
 |------|--------|------|----------------|
-| RLS Scanner v2 | ✅ Implemented | `scripts/scan-rls-usage-v2.ts` | In release contract |
-| Release Contract Workflow | ✅ Implemented | `.github/workflows/release-contract.yml` | Runs on PR/push to main |
-| Migration Manifest | ✅ Implemented | `scripts/generate-migration-manifest.ts` | Generated in CI |
-| Migration MANIFEST.md | ✅ Generated | `db/migrations/MANIFEST.md` | Committed to repo |
+| RLS Scanner v2 | âœ… Implemented | `scripts/scan-rls-usage-v2.ts` | In release contract |
+| Release Contract Workflow | âœ… Implemented | `.github/workflows/release-contract.yml` | Runs on PR/push to main |
+| Migration Manifest | âœ… Implemented | `scripts/generate-migration-manifest.ts` | Generated in CI |
+| Migration MANIFEST.md | âœ… Generated | `db/migrations/MANIFEST.md` | Committed to repo |
 
 ### Next Steps for Production-Ready
 
-1. ✅ **Address RLS violations:** Fixed 10 critical table violations
+1. âœ… **Address RLS violations:** Fixed 10 critical table violations
 
-2. ✅ **Classify unknown contexts:** Classified all 465 queries as SYSTEM operations
+2. âœ… **Classify unknown contexts:** Classified all 465 queries as SYSTEM operations
 
-3. ✅ **Populate allowlist:** 16 entries with documented justifications
+3. âœ… **Populate allowlist:** 16 entries with documented justifications
 
-4. ⏳ **Verify in staging:** Run release contract against staging database (pending)
+4. â³ **Verify in staging:** Run release contract against staging database (pending)
 
-5. ⏳ **Document runbooks:** Production deployment, monitoring, rollback procedures (pending)
+5. â³ **Document runbooks:** Production deployment, monitoring, rollback procedures (pending)
 
-6. ⏳ **Address non-critical violations:** Fix remaining 99 tenant violations in analytics/rewards modules (optional)
+6. â³ **Address non-critical violations:** Fix remaining 99 tenant violations in analytics/rewards modules (optional)
 
 **Result:** RC-1 now has **verifiable, zero-critical-violation** RLS coverage. Ready for release contract enforcement in CI.
 
 ---
 
-## �📋 RECOMMENDED CHANGES TO DOCUMENTATION
+## ï¿½ðŸ“‹ RECOMMENDED CHANGES TO DOCUMENTATION
 
 ### 1. Replace "Production Ready" with Defensible Certification
 
-**Current:** "✅ PRODUCTION READY" / "A+ (99/100)" / "CERTIFIED"
+**Current:** "âœ… PRODUCTION READY" / "A+ (99/100)" / "CERTIFIED"
 
 **Recommended:**
 
@@ -503,15 +503,15 @@ Status: RELEASE CANDIDATE (RC) READY
 
 Certification Level: RC-1
 
-- ✅ Critical security controls enforced
+- âœ… Critical security controls enforced
 
-- ✅ Migrations applied in staging
+- âœ… Migrations applied in staging
 
-- ✅ Required test suite passing (58/58)
+- âœ… Required test suite passing (58/58)
 
-- ⚠️ Full suite cleanup in progress (135 failing tests quarantined)
+- âš ï¸ Full suite cleanup in progress (135 failing tests quarantined)
 
-- 🔄 Production deployment pending: monitoring, runbooks, rollback verification
+- ðŸ”„ Production deployment pending: monitoring, runbooks, rollback verification
 
 ```
 
@@ -617,11 +617,11 @@ deployment_gates:
 
 ---
 
-## 🎯 FASTEST PATH TO INVESTOR-DEFENSIBLE "v2.0.0-rc-ready"
+## ðŸŽ¯ FASTEST PATH TO INVESTOR-DEFENSIBLE "v2.0.0-rc-ready"
 
 ### Required Actions (Priority Order)
 
-#### 1. Tag the Exact Commit ✅ COMPLETE
+#### 1. Tag the Exact Commit âœ… COMPLETE
 
 **Action:** Create annotated git tag
 
@@ -646,7 +646,7 @@ Date: February 9, 2026
 
 ---
 
-#### 2. Make Migrations Single Source of Truth ✅ COMPLETE
+#### 2. Make Migrations Single Source of Truth âœ… COMPLETE
 
 **Current State:**
 
@@ -658,11 +658,11 @@ Date: February 9, 2026
 
 **Implemented:**
 
-1. ✅ Migration manifest created: `db/migrations/MANIFEST.md`
+1. âœ… Migration manifest created: `db/migrations/MANIFEST.md`
 
-2. ✅ SHA-256 hashes for cryptographic verification
+2. âœ… SHA-256 hashes for cryptographic verification
 
-3. ✅ Automated generator: `scripts/generate-migration-manifest.ts`
+3. âœ… Automated generator: `scripts/generate-migration-manifest.ts`
 
 **Manifest Format:**
 
@@ -680,7 +680,7 @@ Date: February 9, 2026
 
 ---
 
-#### 3. Turn RLS Scanner into Scoped Verifier ✅ COMPLETE
+#### 3. Turn RLS Scanner into Scoped Verifier âœ… COMPLETE
 
 **File:** `scripts/scan-rls-usage-v2.ts`
 
@@ -688,7 +688,7 @@ Date: February 9, 2026
 
 ```typescript
 
-// ✅ Context classification
+// âœ… Context classification
 enum QueryContext {
   TENANT = 'TENANT',     // Must use RLS
   ADMIN = 'ADMIN',       // Authorized cross-tenant
@@ -696,12 +696,12 @@ enum QueryContext {
   WEBHOOK = 'WEBHOOK'    // Signature-verified
 }
 
-// ✅ Critical tables defined
+// âœ… Critical tables defined
 const CRITICAL_TENANT_TABLES = [
   'claims', 'grievances', 'members', 'votes', 'elections', ...
 ];
 
-// ✅ CI integration command
+// âœ… CI integration command
 pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 ```
@@ -712,7 +712,7 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 - TENANT Violations: 99
 
-- **Critical Table Violations: 0** ✅ (was 10)
+- **Critical Table Violations: 0** âœ… (was 10)
 
 - ADMIN Queries: 2
 
@@ -720,13 +720,13 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 - SYSTEM Queries: 554
 
-- UNKNOWN Context: 0 ✅ (was 465)
+- UNKNOWN Context: 0 âœ… (was 465)
 
 **Status:** All critical table violations resolved. Remaining 99 tenant violations are for non-critical tables (organizationMembers, analyticsMetrics, mlPredictions) and can be addressed incrementally.
 
 ---
 
-#### 4. CI Release Contract ✅ COMPLETE
+#### 4. CI Release Contract âœ… COMPLETE
 
 **File:** `.github/workflows/release-contract.yml`
 
@@ -734,7 +734,7 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 ```yaml
 
-# ✅ Critical security tests
+# âœ… Critical security tests
 
 - FSM transition validation
 
@@ -746,16 +746,16 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 - Indigenous data service
 
-# ✅ RLS scanner (scoped)
+# âœ… RLS scanner (scoped)
 pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
-# ✅ Code quality gates
+# âœ… Code quality gates
 
 - TypeScript type checking
 
 - ESLint validation
 
-# ✅ Artifact uploads
+# âœ… Artifact uploads
 
 - migration-manifest.json
 
@@ -769,7 +769,7 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 ---
 
-#### 5. Quarantine Failing Tests or Fix Them ⏳ IN PROGRESS
+#### 5. Quarantine Failing Tests or Fix Them â³ IN PROGRESS
 
 **Current Failing Test Categories:**
 
@@ -828,7 +828,7 @@ pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
 
 ---
 
-#### 6. Prove Immutability in Automated Pipeline ⏳ PLANNED
+#### 6. Prove Immutability in Automated Pipeline â³ PLANNED
 
 **Action:** Add to CI Release Contract
 
@@ -854,12 +854,10 @@ async function verifyImmutability() {
   // Try to update immutable record
   try {
     await db.execute(sql`UPDATE grievance_transitions SET status = 'modified' WHERE id = (SELECT id FROM grievance_transitions LIMIT 1)`);
-    console.error('❌ FAIL: Immutability not enforced');
-    process.exit(1);
+process.exit(1);
   } catch (error) {
     if (error.message.includes('immutable')) {
-      console.log('✅ PASS: Immutability enforced');
-      process.exit(0);
+process.exit(0);
     }
     throw error;
   }
@@ -894,19 +892,19 @@ async function verifyImmutability() {
 
 ---
 
-## 📊 SUMMARY: CURRENT VS REQUIRED STATE
+## ðŸ“Š SUMMARY: CURRENT VS REQUIRED STATE
 
 ### Current State Assessment
 
 | Category | Status | Grade | Notes |
 |----------|--------|-------|-------|
-| Core Security Controls | ✅ Implemented | A | FSM, immutability, RLS, middleware all present |
-| Documentation Accuracy | ✅ Aligned | A- | Governance routes verified, migration names corrected |
-| Test Coverage | ✅ Defined | B+ | Default suite green, skip policy explicit |
-| Verification Tooling | ✅ Implemented | A | RLS scanner v2, release contract, manifest generator |
-| Migration Traceability | ✅ Verifiable | A | SHA-256 manifest, cryptographic integrity |
-| RLS Scanner Credibility | ✅ **Production-Grade** | **A** | **Taxonomy complete, 0 critical violations, 0 unknown contexts** |
-| Production Readiness | ✅ **RC-1 Complete** | **A-** | **All critical requirements met, staging verification pending** |
+| Core Security Controls | âœ… Implemented | A | FSM, immutability, RLS, middleware all present |
+| Documentation Accuracy | âœ… Aligned | A- | Governance routes verified, migration names corrected |
+| Test Coverage | âœ… Defined | B+ | Default suite green, skip policy explicit |
+| Verification Tooling | âœ… Implemented | A | RLS scanner v2, release contract, manifest generator |
+| Migration Traceability | âœ… Verifiable | A | SHA-256 manifest, cryptographic integrity |
+| RLS Scanner Credibility | âœ… **Production-Grade** | **A** | **Taxonomy complete, 0 critical violations, 0 unknown contexts** |
+| Production Readiness | âœ… **RC-1 Complete** | **A-** | **All critical requirements met, staging verification pending** |
 
 ### Required for RC-Ready Status
 
@@ -956,7 +954,7 @@ async function verifyImmutability() {
 
 ---
 
-## 🎯 RECOMMENDATION
+## ðŸŽ¯ RECOMMENDATION
 
 **Current Status:** Downgrade from "Production Ready" to **"Release Candidate 1 (RC-1)"**
 

@@ -55,8 +55,7 @@ export default function MemberProfilePage() {
           });
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     }
@@ -77,8 +76,7 @@ export default function MemberProfilePage() {
         setEditing(false);
       }
     } catch (error) {
-      console.error('Error saving profile:', error);
-    } finally {
+} finally {
       setSaving(false);
     }
   };

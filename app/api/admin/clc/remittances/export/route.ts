@@ -10,7 +10,7 @@
  * - remittanceIds: comma-separated list of remittance IDs (for csv/xml)
  * - fiscalYear: year for StatCan export
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - Removed manual SET app.current_user_id command
  * - All database operations wrapped in withRLSContext() for automatic context setting
  */
@@ -153,8 +153,7 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error('Error exporting remittances:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to export remittances' },
           { status: 500 }
         );

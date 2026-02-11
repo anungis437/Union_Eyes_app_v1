@@ -75,8 +75,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         },
       });
     } catch (error) {
-      console.error('Get calendar error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to get calendar' },
         { status: 500 }
       );
@@ -164,8 +163,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         calendar: updatedCalendar,
       });
     } catch (error) {
-      console.error('Update calendar error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to update calendar' },
         { status: 500 }
       );
@@ -205,8 +203,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         message: 'Calendar deleted successfully',
       });
     } catch (error) {
-      console.error('Delete calendar error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to delete calendar' },
         { status: 500 }
       );

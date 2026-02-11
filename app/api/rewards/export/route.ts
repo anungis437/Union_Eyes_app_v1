@@ -124,8 +124,7 @@ export const GET = async (request: NextRequest) => {
       },
     });
   } catch (error: any) {
-    console.error('[CSV Export API] Error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error.message || 'Failed to export data' },
       { status: 500 }
     );

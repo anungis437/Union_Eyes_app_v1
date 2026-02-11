@@ -126,8 +126,7 @@ export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDash
       setResults(data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to load results:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load survey results',
         variant: 'destructive',
@@ -161,8 +160,7 @@ export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDash
         description: 'Survey responses exported successfully',
       });
     } catch (error) {
-      console.error('Export failed:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to export responses',
         variant: 'destructive',
@@ -193,8 +191,7 @@ export function SurveyResultsDashboard({ surveyId, tenantId }: SurveyResultsDash
         description: 'Survey responses exported successfully',
       });
     } catch (error) {
-      console.error('Export failed:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to export responses',
         variant: 'destructive',

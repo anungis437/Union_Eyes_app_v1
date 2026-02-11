@@ -71,14 +71,12 @@ export async function sendRegistrationConfirmation({
     });
 
     if (error) {
-      console.error("Failed to send registration confirmation:", error);
-      return { success: false, error: error.message };
+return { success: false, error: error.message };
     }
 
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error("Error sending registration confirmation:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -138,14 +136,12 @@ export async function sendSessionReminder({
     });
 
     if (error) {
-      console.error("Failed to send session reminder:", error);
-      return { success: false, error: error.message };
+return { success: false, error: error.message };
     }
 
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error("Error sending session reminder:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -202,14 +198,12 @@ export async function sendCompletionCertificate({
     });
 
     if (error) {
-      console.error("Failed to send completion certificate:", error);
-      return { success: false, error: error.message };
+return { success: false, error: error.message };
     }
 
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error("Error sending completion certificate:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -262,14 +256,12 @@ export async function sendCertificationExpiryWarning({
     });
 
     if (error) {
-      console.error("Failed to send expiry warning:", error);
-      return { success: false, error: error.message };
+return { success: false, error: error.message };
     }
 
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error("Error sending expiry warning:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -335,14 +327,12 @@ export async function sendProgramMilestone({
     });
 
     if (error) {
-      console.error("Failed to send milestone email:", error);
-      return { success: false, error: error.message };
+return { success: false, error: error.message };
     }
 
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error("Error sending milestone email:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };

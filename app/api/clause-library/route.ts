@@ -13,7 +13,8 @@ import {
   NewSharedClause,
   SharingLevel
 } from "@/db/schema";
-import { eq, and, or, ilike, inArray, sql } from "drizzle-orm";
+import { organizationSharingSettings } from "@/db/schema/sharing-permissions-schema";
+import { eq, and, or, ilike, inArray, sql, count } from "drizzle-orm";
 import { getOrCreateUserUuid } from "@/lib/utils/user-uuid-helpers";
 import { logger } from '@/lib/logger';
 import { z } from "zod";
@@ -328,17 +329,87 @@ export const POST = async (request: NextRequest) => {
         tags,
       } = validationResult.data;
 
-      // For now, allow clause sharing (sharingSettings validation would go here)
-      // TODO: Add tenant-level sharing settings once tenant schema is fully implemented
+      // Fetch organization-level sharing settings to validate request
+      let orgSharingSettings;
+      try {
+        const settings = await db.select().from(organizationSharingSettings)
+          .where(eq(organizationSharingSettings.organizationId, organizationId))
+          .limit(1);
+        orgSharingSettings = settings[0];
+      } catch (error) {
+        logger.error('Error fetching organization sharing settings:', error);
+        // Continue with defaults if settings don't exist
+        orgSharingSettings = null;
+      }
+
+      // Use provided sharing level or org default or fall back to private
+      const requestedSharingLevel = sharingLevel ?? orgSharingSettings?.defaultSharingLevel ?? "private";
+
+      // Validate sharing level is allowed by organization settings
+      if (orgSharingSettings?.allowedSharingLevels && orgSharingSettings.allowedSharingLevels.length > 0) {
+        if (!orgSharingSettings.allowedSharingLevels.includes(requestedSharingLevel)) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId,
+            endpoint: '/api/clause-library',
+            method: 'POST',
+            eventType: 'sharing_level_not_allowed',
+            severity: 'medium',
+            dataType: 'CLAUSE_LIBRARY',
+            details: { 
+              organizationId,
+              requestedLevel: requestedSharingLevel,
+              allowedLevels: orgSharingSettings.allowedSharingLevels 
+            },
+          });
+          return NextResponse.json(
+            { 
+              error: `Sharing level '${requestedSharingLevel}' is not allowed by organization settings`,
+              allowedLevels: orgSharingSettings.allowedSharingLevels
+            },
+            { status: 403 }
+          );
+        }
+      }
+
+      // Check if max shared clauses limit has been reached
+      if (orgSharingSettings?.maxSharedClauses) {
+        const [clauseCount] = await db.select({ count: count() })
+          .from(sharedClauseLibrary)
+          .where(eq(sharedClauseLibrary.sourceOrganizationId, organizationId));
+        
+        if (clauseCount.count >= orgSharingSettings.maxSharedClauses) {
+          logApiAuditEvent({
+            timestamp: new Date().toISOString(),
+            userId,
+            endpoint: '/api/clause-library',
+            method: 'POST',
+            eventType: 'max_clauses_exceeded',
+            severity: 'medium',
+            dataType: 'CLAUSE_LIBRARY',
+            details: { 
+              organizationId,
+              currentCount: clauseCount.count,
+              maxAllowed: orgSharingSettings.maxSharedClauses 
+            },
+          });
+          return NextResponse.json(
+            { 
+              error: `Maximum shared clauses limit (${orgSharingSettings.maxSharedClauses}) reached`,
+              currentCount: clauseCount.count
+            },
+            { status: 403 }
+          );
+        }
+      }
       
-      // Apply auto-anonymization - default to true for privacy
-      const shouldAnonymize = isAnonymized ?? true;
+      // Apply anonymization - use org setting if not explicitly provided
+      const shouldAnonymize = isAnonymized ?? orgSharingSettings?.requireAnonymization ?? true;
       const anonymizedEmployerName = shouldAnonymize && originalEmployerName
         ? anonymizeEmployerName(originalEmployerName)
         : null;
 
-      // Use provided sharing level or default to private
-      const finalSharingLevel = sharingLevel ?? "private";
+      const finalSharingLevel = requestedSharingLevel;
 
       // Get or create UUID for this Clerk user
       const userUuid = await getOrCreateUserUuid(userId);

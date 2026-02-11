@@ -21,6 +21,7 @@ import {
 } from './email-service';
 import { eq, and, lte, gte, desc, asc, sql, inArray } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 // Batch configuration
 const BATCH_SIZE = 100;
@@ -93,7 +94,7 @@ export async function notifyAwardIssued(awardId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('[Notifications] Error sending award issued notification:', error);
+    logger.error('[Notifications] Error sending award issued notification', { error, awardId });
     return { success: false, error };
   }
 }
@@ -159,7 +160,7 @@ export async function notifyAwardPendingApproval(awardId: string) {
 
     return { success: true, notifiedAdmins: successCount };
   } catch (error) {
-    console.error('[Notifications] Error sending approval notifications:', error);
+    logger.error('[Notifications] Error sending approval notifications', { error, awardId });
     return { success: false, error };
   }
 }
@@ -266,11 +267,16 @@ async function sendExpirationNotificationToUser(
       })),
     });
 
-    console.log(`[Notifications] Sent expiration warning to ${user.email}: ${totalExpiring} credits expiring in ${daysRemaining} days`);
+    logger.info('[Notifications] Sent expiration warning', {
+      userId,
+      email: user.email,
+      totalExpiring,
+      daysRemaining,
+    });
     
     return { success: true, userId, emailSent: true };
   } catch (error) {
-    console.error(`[Notifications] Error sending expiration to ${userId}:`, error);
+    logger.error('[Notifications] Error sending expiration', { error, userId });
     return { 
       success: false, 
       userId, 
@@ -290,12 +296,17 @@ export async function notifyExpiringCredits(daysBeforeExpiration = 7) {
     const expirationDate = new Date();
     expirationDate.setDate(expirationDate.getDate() + daysBeforeExpiration);
 
-    console.log(`[Notifications] Checking for credits expiring in ${daysBeforeExpiration} days (before ${expirationDate.toISOString()})`);
+    logger.info('[Notifications] Checking for credits expiring', {
+      daysBeforeExpiration,
+      expiresBefore: expirationDate.toISOString(),
+    });
 
     // Get all users with expiring credits (paginated)
     const usersWithExpiringCredits = await getExpiringCreditsUsers(daysBeforeExpiration, 10000);
     
-    console.log(`[Notifications] Found ${usersWithExpiringCredits.length} users with expiring credits`);
+    logger.info('[Notifications] Found users with expiring credits', {
+      count: usersWithExpiringCredits.length,
+    });
 
     const results: NotificationResult[] = [];
     
@@ -319,14 +330,21 @@ export async function notifyExpiringCredits(daysBeforeExpiration = 7) {
 
       // Log progress
       const progress = Math.min(i + BATCH_SIZE, usersWithExpiringCredits.length);
-      console.log(`[Notifications] Processed ${progress}/${usersWithExpiringCredits.length} users`);
+      logger.info('[Notifications] Processed expiring credit batch', {
+        processed: progress,
+        total: usersWithExpiringCredits.length,
+      });
     }
 
     const successCount = results.filter((r) => r.emailSent).length;
     const failedCount = results.filter((r) => !r.emailSent).length;
     const duration = Date.now() - now;
 
-    console.log(`[Notifications] Completed expiration notifications: ${successCount} sent, ${failedCount} failed in ${duration}ms`);
+    logger.info('[Notifications] Completed expiration notifications', {
+      sent: successCount,
+      failed: failedCount,
+      durationMs: duration,
+    });
 
     return {
       success: true,
@@ -336,7 +354,7 @@ export async function notifyExpiringCredits(daysBeforeExpiration = 7) {
       duration: `${duration}ms`,
     };
   } catch (error) {
-    console.error('[Notifications] Error sending expiration notifications:', error);
+    logger.error('[Notifications] Error sending expiration notifications', { error });
     return { success: false, error };
   }
 }
@@ -379,7 +397,10 @@ export async function notifyRedemptionConfirmed(redemptionId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('[Notifications] Error sending redemption confirmation:', error);
+    logger.error('[Notifications] Error sending redemption confirmation', {
+      error,
+      redemptionId,
+    });
     return { success: false, error };
   }
 }
@@ -417,7 +438,10 @@ export async function sendBatchExpirationWarnings() {
 
     const duration = Date.now() - now;
 
-    console.log(`[Notifications] Batch expiration warnings completed in ${duration}ms`, results);
+    logger.info('[Notifications] Batch expiration warnings completed', {
+      durationMs: duration,
+      results,
+    });
 
     return {
       success: true,
@@ -425,7 +449,7 @@ export async function sendBatchExpirationWarnings() {
       duration: `${duration}ms`,
     };
   } catch (error) {
-    console.error('[Notifications] Error in batch expiration warnings:', error);
+    logger.error('[Notifications] Error in batch expiration warnings', { error });
     return { success: false, error };
   }
 }
@@ -475,7 +499,7 @@ export async function getNotificationStats(organizationId?: string) {
 
     return { success: true, data: stats };
   } catch (error) {
-    console.error('[Notifications] Error getting stats:', error);
+    logger.error('[Notifications] Error getting stats', { error, organizationId });
     return { success: false, error };
   }
 }
@@ -503,15 +527,17 @@ export async function scheduleExpirationNotifications(
     const futureNotifications = notificationDates.filter((d) => d > now);
 
     if (futureNotifications.length === 0) {
-      console.log(`[Notifications] No future notifications needed for user ${userId}`);
+      logger.info('[Notifications] No future notifications needed for user', { userId });
       return { scheduled: 0 };
     }
 
     // In production, this would create scheduled job entries
     // For now, just log
-    console.log(`[Notifications] Scheduled ${futureNotifications.length} expiration reminders for user ${userId}`, 
-      futureNotifications.map((d) => d.toISOString())
-    );
+    logger.info('[Notifications] Scheduled expiration reminders', {
+      userId,
+      count: futureNotifications.length,
+      dates: futureNotifications.map((d) => d.toISOString()),
+    });
 
     return { 
       success: true, 
@@ -519,7 +545,7 @@ export async function scheduleExpirationNotifications(
       notificationDates: futureNotifications 
     };
   } catch (error) {
-    console.error('[Notifications] Error scheduling notifications:', error);
+    logger.error('[Notifications] Error scheduling notifications', { error, userId });
     return { success: false, error };
   }
 }

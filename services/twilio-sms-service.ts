@@ -36,6 +36,7 @@ import {
   type SmsCampaign,
 } from '@/db/schema/sms-communications-schema';
 import { organizations } from '@/db/schema-organizations';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // CONFIGURATION
@@ -47,7 +48,7 @@ const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER!;
 const TWILIO_WEBHOOK_SECRET = process.env.TWILIO_WEBHOOK_SECRET;
 
 if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-  console.warn('⚠️  Twilio credentials not configured. SMS features will not work.');
+  logger.warn('Twilio credentials not configured. SMS features will not work.');
 }
 
 const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
@@ -151,7 +152,7 @@ async function resolveOrganizationIdFromPhoneNumber(phoneNumber: string): Promis
 
     return org?.id || process.env.DEFAULT_ORGANIZATION_ID || null;
   } catch (error) {
-    console.error('❌ Failed to resolve organization from phone number:', error);
+    logger.error('Failed to resolve organization from phone number', { error, phoneNumber });
     return process.env.DEFAULT_ORGANIZATION_ID || null;
   }
 }
@@ -329,7 +330,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
     // Increment rate limit
     await incrementRateLimit(organizationId);
 
-    console.log(`✅ SMS sent successfully: ${twilioMessage.sid} to ${phoneNumber}`);
+    logger.info('SMS sent successfully', { sid: twilioMessage.sid, phoneNumber, organizationId });
 
     return {
       success: true,
@@ -339,7 +340,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SmsServiceResult
       cost,
     };
   } catch (error: any) {
-    console.error('❌ Failed to send SMS:', error);
+    logger.error('Failed to send SMS', { error, phoneNumber, organizationId });
 
     // Log error to database
     if (options.phoneNumber) {
@@ -425,9 +426,7 @@ export async function sendBulkSms(options: SendBulkSmsOptions): Promise<{
     }
   }
 
-  console.log(
-    `✅ Bulk SMS campaign complete: ${results.sent} sent, ${results.failed} failed`
-  );
+  logger.info('Bulk SMS campaign complete', { sent: results.sent, failed: results.failed });
 
   return results;
 }
@@ -452,7 +451,7 @@ export async function handleTwilioWebhook(data: TwilioWebhookData): Promise<void
       .limit(1);
 
     if (!message) {
-      console.warn(`⚠️  Message not found for Twilio SID: ${MessageSid}`);
+      logger.warn('Message not found for Twilio SID', { MessageSid });
       return;
     }
 
@@ -482,14 +481,14 @@ export async function handleTwilioWebhook(data: TwilioWebhookData): Promise<void
 
     await db.update(smsMessages).set(updateData).where(eq(smsMessages.id, message.id));
 
-    console.log(`✅ Updated message ${MessageSid} status to: ${newStatus}`);
+    logger.info('Updated message status', { MessageSid, status: newStatus });
 
     // Update campaign statistics if this is a campaign message
     if (message.campaignId) {
       await updateCampaignStatistics(message.campaignId);
     }
   } catch (error) {
-    console.error('❌ Failed to handle Twilio webhook:', error);
+    logger.error('Failed to handle Twilio webhook', { error, MessageSid });
   }
 }
 
@@ -534,7 +533,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
     // Determine organization from phone number (lookup in database)
     const organizationId = await resolveOrganizationIdFromPhoneNumber(To);
     if (!organizationId) {
-      console.warn(`⚠️  Unable to resolve organization for inbound SMS to ${To}`);
+      logger.warn('Unable to resolve organization for inbound SMS', { to: To });
       return;
     }
 
@@ -548,7 +547,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
     ) {
       // Handle opt-out
       // await handleOptOut(tenantId, From);
-      console.log(`✅ Opt-out received from ${From}`);
+      logger.info('Opt-out received', { from: From });
       return;
     }
 
@@ -564,7 +563,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
 
     await db.insert(smsConversations).values(conversation);
 
-    console.log(`✅ Inbound SMS received from ${From}: "${Body}"`);
+    logger.info('Inbound SMS received', { from: From, body: Body });
 
     if (TWILIO_PHONE_NUMBER) {
       await twilioClient.messages.create({
@@ -574,7 +573,7 @@ export async function handleInboundSms(data: TwilioWebhookData): Promise<void> {
       });
     }
   } catch (error) {
-    console.error('❌ Failed to handle inbound SMS:', error);
+    logger.error('Failed to handle inbound SMS', { error, from: From });
   }
 }
 
@@ -590,7 +589,7 @@ export async function handleOptOut(
     // Check if already opted out
     const existing = await isPhoneOptedOut(organizationId, phoneNumber);
     if (existing) {
-      console.log(`ℹ️  ${phoneNumber} already opted out`);
+      logger.info('Phone number already opted out', { phoneNumber, organizationId });
       return;
     }
 
@@ -603,7 +602,7 @@ export async function handleOptOut(
       optedOutAt: new Date(),
     });
 
-    console.log(`✅ Phone number ${phoneNumber} opted out via ${via}`);
+    logger.info('Phone number opted out', { phoneNumber, via, organizationId });
 
     // Send confirmation SMS (required by TCPA)
     await twilioClient.messages.create({
@@ -612,7 +611,7 @@ export async function handleOptOut(
       body: 'You have been unsubscribed from SMS messages. Reply START to opt back in.',
     });
   } catch (error) {
-    console.error('❌ Failed to handle opt-out:', error);
+    logger.error('Failed to handle opt-out', { error, phoneNumber, organizationId });
   }
 }
 

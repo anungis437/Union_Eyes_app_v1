@@ -75,8 +75,7 @@ export function PublicJobApplicationPage({ jobSlug }: JobApplicationPageProps) {
       const data = await response.json();
       setJob(data);
     } catch (error) {
-      console.error('Error fetching job:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -146,8 +145,7 @@ export function PublicJobApplicationPage({ jobSlug }: JobApplicationPageProps) {
 
       setStep('confirmation');
     } catch (error) {
-      console.error('Error submitting application:', error);
-      alert('Failed to submit application. Please try again.');
+alert('Failed to submit application. Please try again.');
     } finally {
       setSubmitting(false);
     }

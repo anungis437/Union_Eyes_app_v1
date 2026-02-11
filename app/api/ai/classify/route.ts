@@ -143,8 +143,7 @@ export const POST = async (request: NextRequest) => {
           );
       }
     } catch (error) {
-      console.error('AI classification error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Classification failed',
           details: error instanceof Error ? error.message : 'Unknown error',

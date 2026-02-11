@@ -18,14 +18,12 @@ import { PATHS_TO_REVALIDATE, SUCCESS_PATHS } from "./constants";
 export function revalidateCommonPaths(additionalPaths: string[] = []): void {
   // Revalidate standard paths
   PATHS_TO_REVALIDATE.forEach(path => {
-    console.log(`Revalidating path: ${path}`);
-    revalidatePath(path);
+revalidatePath(path);
   });
   
   // Revalidate any additional paths
   additionalPaths.forEach(path => {
-    console.log(`Revalidating additional path: ${path}`);
-    revalidatePath(path);
+revalidatePath(path);
   });
 }
 

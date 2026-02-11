@@ -62,8 +62,7 @@ async function getHandler(req: NextRequest, context: OrganizationContext, params
 
     return NextResponse.json(schedule);
   } catch (error) {
-    console.error('Error fetching scheduled report:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch scheduled report' },
       { status: 500 }
     );
@@ -126,8 +125,7 @@ async function patchHandler(req: NextRequest, context: OrganizationContext, para
 
     return NextResponse.json(schedule);
   } catch (error) {
-    console.error('Error updating scheduled report:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update scheduled report' },
       { status: 500 }
     );
@@ -153,8 +151,7 @@ async function deleteHandler(req: NextRequest, context: OrganizationContext, par
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting scheduled report:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to delete scheduled report' },
       { status: 500 }
     );

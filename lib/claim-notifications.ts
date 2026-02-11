@@ -82,8 +82,7 @@ export async function sendClaimStatusNotification(
           assignedStewardName = `${steward.firstName || ''} ${steward.lastName || ''}`.trim() || 'Steward';
         }
       } catch (error) {
-        console.error('Failed to fetch assigned steward:', error);
-      }
+}
     }
 
     // Build notification data (deadline support not implemented in schema yet)
@@ -104,8 +103,7 @@ export async function sendClaimStatusNotification(
     // Send notification
     return await sendClaimNotificationEmail(notificationData);
   } catch (error) {
-    console.error('Error sending claim notification:', error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -177,13 +175,11 @@ async function sendClaimNotificationEmail(
     });
 
     if (result.success) {
-      console.log(`Notification sent for claim ${data.claimId}: ${data.newStatus}`);
-    }
+}
 
     return result;
   } catch (error) {
-    console.error('Error sending notification email:', error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -282,8 +278,7 @@ export async function sendOverdueClaimNotification(
           assignedStewardName = `${steward.firstName || ''} ${steward.lastName || ''}`.trim() || 'Steward';
         }
       } catch (error) {
-        console.error('Failed to fetch assigned steward:', error);
-      }
+}
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -318,8 +313,7 @@ export async function sendOverdueClaimNotification(
 
     return result;
   } catch (error) {
-    console.error('Error sending overdue claim notification:', error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -365,8 +359,7 @@ export async function sendOverdueClaimNotification(
           stewardName = `${steward.firstName || ''} ${steward.lastName || ''}`.trim() || 'Steward';
         }
       } catch (error) {
-        console.error('Failed to fetch assigned steward:', error);
-      }
+}
     }
 
     // Send to member and steward
@@ -413,12 +406,11 @@ export async function sendOverdueClaimNotification(
 
     return await sendEmail({
       to: recipients,
-      subject: `⚠️ Claim Overdue: ${claim.claimType} Claim`,
+      subject: `âš ï¸ Claim Overdue: ${claim.claimType} Claim`,
       html,
     });
   } catch (error) {
-    console.error('Error sending overdue notification:', error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };

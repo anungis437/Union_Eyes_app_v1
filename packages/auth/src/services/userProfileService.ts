@@ -4,6 +4,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -215,7 +216,7 @@ export class UserProfileService {
 
       return { data: this.mapToUserProfile(data), error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error getting profile:', error);
+      logger.error('[UserProfileService] Error getting profile:', error);
       return { data: null, error: error };
     }
   }
@@ -232,7 +233,7 @@ export class UserProfileService {
 
       return await this.getProfile(user.id);
     } catch (error: any) {
-      console.error('[UserProfileService] Error getting current profile:', error);
+      logger.error('[UserProfileService] Error getting current profile:', error);
       return { data: null, error: error };
     }
   }
@@ -259,7 +260,7 @@ export class UserProfileService {
 
       return { data: this.mapToUserProfile(data), error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating profile:', error);
+      logger.error('[UserProfileService] Error updating profile:', error);
       return { data: null, error: error };
     }
   }
@@ -294,7 +295,7 @@ export class UserProfileService {
         error: null
       };
     } catch (error: any) {
-      console.error('[UserProfileService] Error searching profiles:', error);
+      logger.error('[UserProfileService] Error searching profiles:', error);
       return { data: [], error: error };
     }
   }
@@ -352,7 +353,7 @@ export class UserProfileService {
         error: null
       };
     } catch (error: any) {
-      console.error('[UserProfileService] Error uploading avatar:', error);
+      logger.error('[UserProfileService] Error uploading avatar:', error);
       return { data: null, error: error };
     }
   }
@@ -392,7 +393,7 @@ export class UserProfileService {
 
       return { error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error deleting avatar:', error);
+      logger.error('[UserProfileService] Error deleting avatar:', error);
       return { error: error };
     }
   }
@@ -433,7 +434,7 @@ export class UserProfileService {
 
       return { data: updatedPreferences, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating notification preferences:', error);
+      logger.error('[UserProfileService] Error updating notification preferences:', error);
       return { data: null, error: error };
     }
   }
@@ -467,7 +468,7 @@ export class UserProfileService {
 
       return { data: updatedPreferences, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating UI preferences:', error);
+      logger.error('[UserProfileService] Error updating UI preferences:', error);
       return { data: null, error: error };
     }
   }
@@ -501,7 +502,7 @@ export class UserProfileService {
 
       return { data: updatedSettings, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating privacy settings:', error);
+      logger.error('[UserProfileService] Error updating privacy settings:', error);
       return { data: null, error: error };
     }
   }
@@ -535,7 +536,7 @@ export class UserProfileService {
 
       return { data: updatedSettings, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating security settings:', error);
+      logger.error('[UserProfileService] Error updating security settings:', error);
       return { data: null, error: error };
     }
   }
@@ -576,7 +577,7 @@ export class UserProfileService {
 
       return { data: updatedProgress, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating onboarding progress:', error);
+      logger.error('[UserProfileService] Error updating onboarding progress:', error);
       return { data: null, error: error };
     }
   }
@@ -610,7 +611,7 @@ export class UserProfileService {
 
       return { error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error completing onboarding step:', error);
+      logger.error('[UserProfileService] Error completing onboarding step:', error);
       return { error: error };
     }
   }
@@ -634,7 +635,7 @@ export class UserProfileService {
 
       return { error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error recording login activity:', error);
+      logger.error('[UserProfileService] Error recording login activity:', error);
       return { error: error };
     }
   }
@@ -653,7 +654,7 @@ export class UserProfileService {
 
       return { error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error updating last activity:', error);
+      logger.error('[UserProfileService] Error updating last activity:', error);
       return { error: error };
     }
   }
@@ -675,7 +676,7 @@ export class UserProfileService {
 
       return { data: data as number, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error calculating completeness:', error);
+      logger.error('[UserProfileService] Error calculating completeness:', error);
       return { data: null, error: error };
     }
   }
@@ -693,7 +694,7 @@ export class UserProfileService {
 
       return { data: data as string, error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error getting full name:', error);
+      logger.error('[UserProfileService] Error getting full name:', error);
       return { data: null, error: error };
     }
   }
@@ -714,7 +715,7 @@ export class UserProfileService {
 
       return { error: null };
     } catch (error: any) {
-      console.error('[UserProfileService] Error soft deleting profile:', error);
+      logger.error('[UserProfileService] Error soft deleting profile:', error);
       return { error: error };
     }
   }

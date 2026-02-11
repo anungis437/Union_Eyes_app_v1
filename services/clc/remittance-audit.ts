@@ -5,7 +5,7 @@
  * including compliance checks, approval history tracking, rejection workflows, and notifications.
  * 
  * Features:
- * - Multi-level approval workflow (local → regional → national → CLC)
+ * - Multi-level approval workflow (local â†’ regional â†’ national â†’ CLC)
  * - Configurable approval levels per organization
  * - Compliance check gates before approval
  * - Approval history with full audit trail
@@ -499,8 +499,7 @@ export async function getApprovalWorkflowState(
     };
 
   } catch (error) {
-    console.error('Error getting approval workflow state:', error);
-    return null;
+return null;
   }
 }
 
@@ -666,8 +665,7 @@ async function logApprovalAction(
       createdAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Failed to log approval action:', error);
-  }
+}
 }
 
 // ============================================================================

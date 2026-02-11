@@ -5,6 +5,7 @@ import { TenantService, TenantServiceConfig } from '../services/tenant.service';
 import { TenantIsolationService, TenantIsolationConfig } from '../services/tenant-isolation.service';
 import { TenantMiddleware, TenantMiddlewareConfig, TenantResolutionStrategy } from '../middleware/tenant-context.middleware';
 import { TenantIsolationType } from '../types';
+import { SimpleLogger } from './logger';
 
 export interface MultiTenantFrameworkConfig {
   // Database configuration
@@ -60,6 +61,8 @@ export interface MultiTenantFramework {
 }
 
 export function createMultiTenantFramework(config: MultiTenantFrameworkConfig): MultiTenantFramework {
+  const logger = new SimpleLogger('MultiTenantFramework');
+
   // Create tenant service configuration
   const tenantServiceConfig: TenantServiceConfig = {
     supabase: {
@@ -141,7 +144,7 @@ export function createMultiTenantFramework(config: MultiTenantFrameworkConfig): 
       await isolationService.initialize();
       
       // Additional initialization can be added here
-      console.log('Multi-tenant framework initialized successfully');
+      logger.info('Multi-tenant framework initialized successfully');
     },
     
     async cleanup(): Promise<void> {
@@ -151,7 +154,7 @@ export function createMultiTenantFramework(config: MultiTenantFrameworkConfig): 
       // Clear middleware cache
       middleware.clearCache();
       
-      console.log('Multi-tenant framework cleaned up successfully');
+      logger.info('Multi-tenant framework cleaned up successfully');
     }
   };
 }

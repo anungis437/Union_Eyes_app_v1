@@ -11,6 +11,7 @@
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export interface ProvincialPrivacyRules {
   province: string;
@@ -137,7 +138,7 @@ export async function assessBreachNotification(
         province = rows[0].province;
       }
     } catch (error) {
-      console.error('Error fetching member province:', error);
+      logger.error('Error fetching member province', { error, memberId });
     }
   }
   const rules = getPrivacyRules(province);
@@ -192,7 +193,10 @@ export async function generateBreachNotification(
 
   // For QC, must also notify CAI if 500+ people affected (Law 25)
   if (breach.province === 'QC' && breach.affectedCount >= 500) {
-    console.log(`[PRIVACY] Quebec breach (${breach.affectedCount} affected) - CAI notification required`);
+    logger.warn('[PRIVACY] Quebec breach - CAI notification required', {
+      affectedCount: breach.affectedCount,
+      province: breach.province,
+    });
     // In production:
     // await notifyCAI({
     //   notificationId: breach.notificationId,
@@ -202,7 +206,10 @@ export async function generateBreachNotification(
     //   measuresTaken: breach.remediation,
     //   contactInfo: breach.contactInfo
     // });
-    console.log(`[PRIVACY] CAI notification queued for ${breach.affectedCount} affected individuals`);
+    logger.info('[PRIVACY] CAI notification queued', {
+      affectedCount: breach.affectedCount,
+      province: breach.province,
+    });
   }
 
   return {

@@ -18,6 +18,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, gte, lte, desc, asc, like, sql, inArray } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -81,7 +82,7 @@ export async function getCBAById(
 
     return cba as CBAWithClauses;
   } catch (error) {
-    console.error("Error fetching CBA by ID:", error);
+    logger.error("Error fetching CBA by ID", { error, id });
     throw new Error("Failed to fetch CBA");
   }
 }
@@ -97,7 +98,7 @@ export async function getCBAByNumber(cbaNumber: string): Promise<CBA | null> {
 
     return cba || null;
   } catch (error) {
-    console.error("Error fetching CBA by number:", error);
+    logger.error("Error fetching CBA by number", { error, cbaNumber });
     throw new Error("Failed to fetch CBA by number");
   }
 }
@@ -209,7 +210,7 @@ export async function listCBAs(
       limit
     };
   } catch (error) {
-    console.error("Error listing CBAs:", error);
+    logger.error("Error listing CBAs", { error, filters });
     throw new Error("Failed to list CBAs");
   }
 }
@@ -230,7 +231,7 @@ export async function createCBA(data: NewCBA): Promise<CBA> {
 
     return newCBA;
   } catch (error) {
-    console.error("Error creating CBA:", error);
+    logger.error("Error creating CBA", { error });
     throw new Error("Failed to create CBA");
   }
 }
@@ -254,7 +255,7 @@ export async function updateCBA(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating CBA:", error);
+    logger.error("Error updating CBA", { error, id });
     throw new Error("Failed to update CBA");
   }
 }
@@ -275,7 +276,7 @@ export async function deleteCBA(id: string): Promise<boolean> {
 
     return !!deleted;
   } catch (error) {
-    console.error("Error deleting CBA:", error);
+    logger.error("Error deleting CBA", { error, id });
     throw new Error("Failed to delete CBA");
   }
 }
@@ -291,7 +292,7 @@ export async function hardDeleteCBA(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error hard deleting CBA:", error);
+    logger.error("Error hard deleting CBA", { error, id });
     throw new Error("Failed to hard delete CBA");
   }
 }
@@ -319,7 +320,7 @@ export async function updateCBAStatus(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating CBA status:", error);
+    logger.error("Error updating CBA status", { error, id, status });
     throw new Error("Failed to update CBA status");
   }
 }
@@ -353,7 +354,7 @@ export async function getCBAsExpiringSoon(
 
     return cbas;
   } catch (error) {
-    console.error("Error fetching expiring CBAs:", error);
+    logger.error("Error fetching expiring CBAs", { error, organizationId, daysAhead });
     throw new Error("Failed to fetch expiring CBAs");
   }
 }
@@ -387,7 +388,7 @@ export async function getCBAStatistics(organizationId: string) {
       total: total[0]?.count || 0,
     };
   } catch (error) {
-    console.error("Error fetching CBA statistics:", error);
+    logger.error("Error fetching CBA statistics", { error, organizationId });
     throw new Error("Failed to fetch CBA statistics");
   }
 }
@@ -424,7 +425,7 @@ export async function searchCBAs(
 
     return results;
   } catch (error) {
-    console.error("Error searching CBAs:", error);
+    logger.error("Error searching CBAs", { error, query, organizationId });
     throw new Error("Failed to search CBAs");
   }
 }

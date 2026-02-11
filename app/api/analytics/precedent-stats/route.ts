@@ -24,7 +24,7 @@ export const GET = async (request: NextRequest) => {
       const outcome = searchParams.get("outcome");
       const precedentLevel = searchParams.get("precedentLevel");
       
-      console.log('[precedent-stats] Request params:', { fromDate, toDate, sector, jurisdiction, grievanceType, outcome, precedentLevel });
+      logger.info('[precedent-stats] Request params', { fromDate, toDate, sector, jurisdiction, grievanceType, outcome, precedentLevel });
       const sharingLevel = searchParams.get("sharingLevel");
       const limit = parseInt(searchParams.get("limit") || "10");
 
@@ -80,18 +80,18 @@ export const GET = async (request: NextRequest) => {
         .orderBy(desc(arbitrationPrecedents.citationCount))
         .limit(limit);
       
-      console.log('[precedent-stats] mostCitedRaw count:', mostCitedRaw.length);
-      console.log('[precedent-stats] mostCitedRaw sample:', mostCitedRaw[0]);
+      logger.info('[precedent-stats] mostCitedRaw count', { count: mostCitedRaw.length });
+      logger.debug('[precedent-stats] mostCitedRaw sample', { sample: mostCitedRaw[0] });
 
       // Get unique organization IDs for mostCited
       const citedOrgIds = [...new Set(mostCitedRaw.map(p => p.sourceOrganizationId).filter(Boolean))];
-      console.log('[precedent-stats] citedOrgIds:', citedOrgIds.length, citedOrgIds.slice(0, 3));
+      logger.info('[precedent-stats] citedOrgIds', { count: citedOrgIds.length, sample: citedOrgIds.slice(0, 3) });
 
       // Fetch organizations for mostCited using raw SQL to avoid Drizzle issues
       let citedOrgs: Array<{id: string, name: string, organizationType: string | null}> = [];
       if (citedOrgIds.length > 0) {
         const idList = citedOrgIds.map(id => `'${id}'`).join(',');
-        console.log('[precedent-stats] Executing SQL with idList:', idList);
+        logger.debug('[precedent-stats] Executing SQL with idList', { idList });
         const result = await db.execute(sql.raw(`
         SELECT id, name, organization_type as "organizationType"
         FROM organizations
@@ -99,7 +99,7 @@ export const GET = async (request: NextRequest) => {
       `));
         citedOrgs = result.rows as Array<{id: string, name: string, organizationType: string | null}>;
       }
-      console.log('[precedent-stats] citedOrgs fetched:', citedOrgs.length);
+      logger.info('[precedent-stats] citedOrgs fetched', { count: citedOrgs.length });
 
       const citedOrgMap = new Map(citedOrgs.map(o => [o.id, o]));
 
@@ -116,8 +116,8 @@ export const GET = async (request: NextRequest) => {
         };
       });
       
-      console.log('[precedent-stats] mostCited final count:', mostCited.length);
-      console.log('[precedent-stats] mostCited sample with org:', mostCited[0]);
+      logger.info('[precedent-stats] mostCited final count', { count: mostCited.length });
+      logger.debug('[precedent-stats] mostCited sample with org', { sample: mostCited[0] });
 
       // Most viewed precedents - using separate queries to avoid leftJoin issues
       const mostViewedRaw = await db
@@ -144,13 +144,13 @@ export const GET = async (request: NextRequest) => {
 
       // Get unique organization IDs
       const orgIds = [...new Set(mostViewedRaw.map(p => p.sourceOrganizationId).filter(Boolean))];
-      console.log('[precedent-stats] orgIds for mostViewed:', orgIds.length, orgIds.slice(0, 3));
+      logger.info('[precedent-stats] orgIds for mostViewed', { count: orgIds.length, sample: orgIds.slice(0, 3) });
 
       // Fetch organizations using raw SQL to avoid Drizzle issues
       let orgs: Array<{id: string, name: string, organizationType: string | null}> = [];
       if (orgIds.length > 0) {
         const idList = orgIds.map(id => `'${id}'`).join(',');
-        console.log('[precedent-stats] Executing SQL for mostViewed with idList:', idList);
+        logger.debug('[precedent-stats] Executing SQL for mostViewed with idList', { idList });
         const result = await db.execute(sql.raw(`
         SELECT id, name, organization_type as "organizationType"
         FROM organizations
@@ -158,8 +158,8 @@ export const GET = async (request: NextRequest) => {
       `));
         orgs = result.rows as Array<{id: string, name: string, organizationType: string | null}>;
       }
-      console.log('[precedent-stats] orgs fetched for mostViewed:', orgs.length);
-      console.log('[precedent-stats] orgs sample:', orgs[0]);
+      logger.info('[precedent-stats] orgs fetched for mostViewed', { count: orgs.length });
+      logger.debug('[precedent-stats] orgs sample', { sample: orgs[0] });
 
       const orgMap = new Map(orgs.map(o => [o.id, o]));
 
@@ -173,8 +173,8 @@ export const GET = async (request: NextRequest) => {
         };
       });
       
-      console.log('[precedent-stats] mostViewed final count:', mostViewed.length);
-      console.log('[precedent-stats] mostViewed sample with org:', mostViewed[0]);
+      logger.info('[precedent-stats] mostViewed final count', { count: mostViewed.length });
+      logger.debug('[precedent-stats] mostViewed sample with org', { sample: mostViewed[0] });
 
       // Outcome distribution
       const outcomeDistribution = await db
@@ -356,10 +356,13 @@ export const GET = async (request: NextRequest) => {
         recentActivity,
       });
       
-      console.log('[precedent-stats] SUCCESS - Sending response with mostCited:', mostCited.length, 'mostViewed:', mostViewed.length);
+      logger.info('[precedent-stats] SUCCESS - Sending response with mostCited and mostViewed', {
+        mostCited: mostCited.length,
+        mostViewed: mostViewed.length,
+      });
     } catch (error) {
-      console.error('[precedent-stats] ERROR:', error);
-      console.error('[precedent-stats] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      logger.error('[precedent-stats] ERROR', { error });
+      logger.debug('[precedent-stats] Error stack', { stack: error instanceof Error ? error.stack : 'No stack trace' });
       logger.error('Error fetching precedent stats', error as Error, {
         correlationId: request.headers.get('x-correlation-id')
       });

@@ -93,7 +93,6 @@ export async function executeQuery(queryFn) {
         const client = getSupabaseClient();
         const result = await queryFn(client);
         if (result.error) {
-            console.error('Database query error:', result.error);
             return {
                 data: null,
                 error: result.error.message || 'Database operation failed',
@@ -105,7 +104,6 @@ export async function executeQuery(queryFn) {
         };
     }
     catch (error) {
-        console.error('Query execution error:', error);
         return {
             data: null,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -135,7 +133,6 @@ export async function getCurrentUserOrganizationId() {
         return null;
     }
     catch (error) {
-        console.error('Error getting user organization ID:', error);
         return null;
     }
 }
@@ -157,7 +154,6 @@ export async function checkUserRole(role) {
         return userRecord?.role === role && userRecord?.is_active === true;
     }
     catch (error) {
-        console.error('Error checking user role:', error);
         return false;
     }
 }
@@ -265,7 +261,6 @@ export async function logAuditAction(tableName, recordId, action, oldValues, new
     const client = getSupabaseClient();
     const organizationId = await getCurrentUserOrganizationId();
     if (!organizationId) {
-        console.warn('Cannot log audit action: organization ID not found');
         return;
     }
     const { data: { user } } = await client.auth.getUser();
@@ -288,7 +283,6 @@ export async function logAuditAction(tableName, recordId, action, oldValues, new
         await client.from('audit_log').insert(auditData);
     }
     catch (error) {
-        console.error('Failed to log audit action:', error);
         // Don't throw - audit logging shouldn't break the main operation
     }
 }

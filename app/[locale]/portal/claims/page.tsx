@@ -44,8 +44,7 @@ export default function MemberClaimsPage() {
           setClaims(data.recentClaims || []);
         }
       } catch (error) {
-        console.error('Error fetching claims:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     }

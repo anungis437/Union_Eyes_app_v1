@@ -80,9 +80,7 @@ export const GET = withSecureAPI(async (request, user) => {
       severity: 'high',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-
-    console.error('Error fetching member profile:', error);
-    throw error;
+throw error;
   }
 });
 
@@ -188,9 +186,7 @@ try {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Error updating member profile:', error);
-      throw error;
+throw error;
     }
 });
 

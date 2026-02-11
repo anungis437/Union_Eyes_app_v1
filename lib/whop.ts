@@ -8,8 +8,7 @@ export const whopApp = () => {
   const apiKey = process.env.WHOP_API_KEY;
   
   if (!apiKey) {
-    console.error("WHOP_API_KEY environment variable is not set");
-  }
+}
   
   return WhopAPI.app({ apiKey });
 };
@@ -20,8 +19,7 @@ export const whopCompany = () => {
   const apiKey = process.env.WHOP_API_KEY;
   
   if (!apiKey) {
-    console.error("WHOP_API_KEY environment variable is not set");
-  }
+}
   
   return WhopAPI.company({ apiKey });
 };

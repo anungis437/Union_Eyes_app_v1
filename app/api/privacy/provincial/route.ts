@@ -52,8 +52,7 @@ export const GET = withRoleAuth(50, async (request) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Provincial privacy API error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
@@ -148,8 +147,7 @@ export const POST = withRoleAuth(90, async (request) => {
       config: config[0],
     });
   } catch (error) {
-    console.error('Provincial privacy config error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update configuration' },
       { status: 500 }
     );
@@ -170,10 +168,10 @@ function getProvincialRules(province: string): {
   switch (province.toUpperCase()) {
     case 'QC': // Quebec - Law 25 (CQLP)
       return {
-        breachNotification: '72 hours to CAI (Commission d\'accès à l\'information)',
+        breachNotification: '72 hours to CAI (Commission d\'accÃ¨s Ã  l\'information)',
         consentType: 'Explicit opt-in required',
         dataResidency: 'Quebec data residency preferred',
-        authority: 'CAI - Commission d\'accès à l\'information du Québec',
+        authority: 'CAI - Commission d\'accÃ¨s Ã  l\'information du QuÃ©bec',
         key_requirements: [
           'French language consent forms mandatory',
           'Privacy impact assessments for new processing',

@@ -98,8 +98,7 @@ export const POST = async (request: NextRequest) => {
         kpi: result.kpi
       });
     } catch (error) {
-      console.error('Error in KPI API:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -140,8 +139,7 @@ export const GET = async (request: NextRequest) => {
         kpis
       });
     } catch (error) {
-      console.error('Error fetching KPIs:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

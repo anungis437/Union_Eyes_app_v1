@@ -240,7 +240,7 @@ export default function DocumentViewerScreen() {
             <Text style={styles.actionLabel}>Share</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Download')}>
+          <TouchableOpacity style={styles.actionButton}>
             <Ionicons name="download-outline" size={24} color="#3b82f6" />
             <Text style={styles.actionLabel}>Download</Text>
           </TouchableOpacity>

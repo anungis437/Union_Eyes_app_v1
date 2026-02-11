@@ -7,6 +7,7 @@ import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { getAutoPaySettings } from '@/lib/utils/autopay-utils';
 
 // Validation schema for query parameters
 const balanceQuerySchema = z.object({
@@ -191,6 +192,9 @@ try {
         },
       });
 
+      // Get autopay settings
+      const autopaySettings = await getAutoPaySettings(userId);
+
       return NextResponse.json({
         currentBalance,
         nextDueDate: nextPayment?.dueDate || null,
@@ -201,8 +205,9 @@ try {
         isInArrears,
         arrearsAmount: overdueAmount,
         membershipStatus: isInArrears ? 'arrears' : 'good_standing',
-        autoPayEnabled: false, // TODO: Implement autopay settings table
-        paymentMethodLast4: null, // TODO: Get from Stripe customer
+        autoPayEnabled: autopaySettings?.enabled || false,
+        paymentMethodLast4: autopaySettings?.paymentMethodLast4 || null,
+        paymentMethodBrand: autopaySettings?.paymentMethodBrand || null,
       });
 
     } catch (error) {
@@ -228,6 +233,7 @@ try {
         membershipStatus: 'pending',
         autoPayEnabled: false,
         paymentMethodLast4: null,
+        paymentMethodBrand: null,
         _error: 'Failed to fetch dues balance - financial system may not be initialized',
       });
     }

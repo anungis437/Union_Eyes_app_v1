@@ -29,8 +29,7 @@ export class UserProfileService {
             return { data: this.mapToUserProfile(data), error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error getting profile:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -46,8 +45,7 @@ export class UserProfileService {
             return await this.getProfile(user.id);
         }
         catch (error) {
-            console.error('[UserProfileService] Error getting current profile:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -69,8 +67,7 @@ export class UserProfileService {
             return { data: this.mapToUserProfile(data), error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating profile:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -96,8 +93,7 @@ export class UserProfileService {
             };
         }
         catch (error) {
-            console.error('[UserProfileService] Error searching profiles:', error);
-            return { data: [], error: error };
+return { data: [], error: error };
         }
     }
     // ===========================================================================
@@ -146,8 +142,7 @@ export class UserProfileService {
             };
         }
         catch (error) {
-            console.error('[UserProfileService] Error uploading avatar:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -182,8 +177,7 @@ export class UserProfileService {
             return { error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error deleting avatar:', error);
-            return { error: error };
+return { error: error };
         }
     }
     // ===========================================================================
@@ -218,8 +212,7 @@ export class UserProfileService {
             return { data: updatedPreferences, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating notification preferences:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -248,8 +241,7 @@ export class UserProfileService {
             return { data: updatedPreferences, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating UI preferences:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -278,8 +270,7 @@ export class UserProfileService {
             return { data: updatedSettings, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating privacy settings:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -308,8 +299,7 @@ export class UserProfileService {
             return { data: updatedSettings, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating security settings:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     // ===========================================================================
@@ -343,8 +333,7 @@ export class UserProfileService {
             return { data: updatedProgress, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating onboarding progress:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -369,8 +358,7 @@ export class UserProfileService {
             return { error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error completing onboarding step:', error);
-            return { error: error };
+return { error: error };
         }
     }
     // ===========================================================================
@@ -388,8 +376,7 @@ export class UserProfileService {
             return { error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error recording login activity:', error);
-            return { error: error };
+return { error: error };
         }
     }
     /**
@@ -406,8 +393,7 @@ export class UserProfileService {
             return { error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error updating last activity:', error);
-            return { error: error };
+return { error: error };
         }
     }
     // ===========================================================================
@@ -426,8 +412,7 @@ export class UserProfileService {
             return { data: data, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error calculating completeness:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -443,8 +428,7 @@ export class UserProfileService {
             return { data: data, error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error getting full name:', error);
-            return { data: null, error: error };
+return { data: null, error: error };
         }
     }
     /**
@@ -463,8 +447,7 @@ export class UserProfileService {
             return { error: null };
         }
         catch (error) {
-            console.error('[UserProfileService] Error soft deleting profile:', error);
-            return { error: error };
+return { error: error };
         }
     }
     // ===========================================================================

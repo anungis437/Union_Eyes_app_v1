@@ -80,7 +80,7 @@ class EncryptionService {
           if (!testKey) {
             throw new Error(
               'TEST_ENCRYPTION_KEY environment variable required in test environment. ' +
-              'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"'
+              'Generate one with: node -e "process.stdout.write(require(\'crypto\').randomBytes(32).toString(\'base64\'))"'
             );
           }
           this.encryptionKey = Buffer.from(testKey, 'base64');

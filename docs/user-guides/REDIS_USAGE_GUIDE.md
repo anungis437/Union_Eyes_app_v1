@@ -285,16 +285,6 @@ export async function getAnalyticsData(tenantId: string) {
 ```typescript
 // Get performance report for specific endpoint
 const report = await performanceMonitor.getEndpointReport('/api/analytics/queries');
-
-console.log({
-  endpoint: report.endpoint,
-  totalCalls: report.totalCalls,
-  avgDuration: report.avgDuration,          // Average query time
-  minDuration: report.minDuration,          // Fastest query
-  maxDuration: report.maxDuration,          // Slowest query
-  cacheHitRate: report.cacheHitRate,        // 0-1 (0.8 = 80% cached)
-  slowQueries: report.slowQueries,          // Count >1000ms
-});
 ```
 
 #### Get All Endpoint Reports
@@ -304,7 +294,6 @@ console.log({
 const allReports = await performanceMonitor.getAllReports();
 
 allReports.forEach(report => {
-  console.log(`${report.endpoint}: ${report.avgDuration}ms avg`);
 });
 ```
 
@@ -315,12 +304,6 @@ allReports.forEach(report => {
 const slowQueries = await performanceMonitor.getSlowQueries(10);
 
 slowQueries.forEach(query => {
-  console.log({
-    endpoint: query.endpoint,
-    duration: query.duration,
-    timestamp: query.timestamp,
-    tenantId: query.tenantId,
-  });
 });
 ```
 
@@ -329,8 +312,6 @@ slowQueries.forEach(query => {
 ```typescript
 // Get all queries for a specific tenant
 const tenantMetrics = await performanceMonitor.getTenantMetrics('org_123');
-
-console.log(`Tenant made ${tenantMetrics.length} queries`);
 ```
 
 #### Get Daily Summary
@@ -338,19 +319,6 @@ console.log(`Tenant made ${tenantMetrics.length} queries`);
 ```typescript
 // Get summary for today
 const summary = await performanceMonitor.getSummary();
-
-console.log({
-  totalQueries: summary.totalQueries,
-  avgDuration: summary.avgDuration,
-  medianDuration: summary.medianDuration,
-  p95Duration: summary.p95Duration,         // 95th percentile
-  p99Duration: summary.p99Duration,         // 99th percentile
-  cacheHitRate: summary.cacheHitRate,
-  slowQueryRate: summary.slowQueryRate,
-  uniqueEndpoints: summary.uniqueEndpoints,
-  uniqueTenants: summary.uniqueTenants,
-});
-
 // Get summary for specific date
 const pastSummary = await performanceMonitor.getSummary('2026-02-01');
 ```
@@ -360,14 +328,6 @@ const pastSummary = await performanceMonitor.getSummary('2026-02-01');
 ```typescript
 // Export everything for monitoring dashboard
 const exported = await performanceMonitor.exportMetrics();
-
-console.log({
-  summary: exported.summary,              // Daily summary
-  endpointReports: exported.endpointReports,  // All endpoint reports
-  slowQueries: exported.slowQueries,      // Top 20 slow queries
-  enabled: exported.enabled,              // Redis configured?
-  retentionDays: exported.retentionDays,  // Retention period
-});
 ```
 
 ### Redis Key Patterns
@@ -537,7 +497,7 @@ if (!redis) {
 **Analytics:**
 
 - ~200 bytes per recorded metric
-- 10K queries/day × 200 bytes × 30 days = ~60 MB
+- 10K queries/day Ãƒâ€” 200 bytes Ãƒâ€” 30 days = ~60 MB
 - Upstash free tier: 256 MB storage (plenty)
 
 ---
@@ -575,14 +535,6 @@ ZRANGE ratelimit:ai-query:user_123 0 -1           # User's rate limit entries
 ```typescript
 // Check current rate limit status
 const result = await checkRateLimit(userId, RATE_LIMITS.AI_QUERY);
-
-console.log({
-  allowed: result.allowed,
-  current: result.current,        // Current request count
-  limit: result.limit,            // Max allowed
-  remaining: result.remaining,    // Requests left
-  resetIn: result.resetIn,        // Seconds until reset
-});
 ```
 
 ### Debug Analytics
@@ -592,9 +544,7 @@ console.log({
 const summary = await performanceMonitor.getSummary();
 
 if (!summary) {
-  console.log('No metrics recorded today - check Redis configuration');
 } else {
-  console.log(`Recorded ${summary.totalQueries} queries today`);
 }
 ```
 
@@ -641,7 +591,7 @@ Upstash free tier is sufficient for:
 
 ## Production Checklist
 
-### ✅ Required Configuration
+### Ã¢Å“â€¦ Required Configuration
 
 - [ ] `UPSTASH_REDIS_REST_URL` set in production environment
 - [ ] `UPSTASH_REDIS_REST_TOKEN` set in production environment
@@ -649,7 +599,7 @@ Upstash free tier is sufficient for:
 - [ ] Rate limiting tested on critical endpoints
 - [ ] Analytics recording validated
 
-### ✅ Recommended Configuration
+### Ã¢Å“â€¦ Recommended Configuration
 
 - [ ] `ANALYTICS_RETENTION_DAYS` configured (default: 30)
 - [ ] Upstash region matches deployment region
@@ -657,7 +607,7 @@ Upstash free tier is sufficient for:
 - [ ] Monitoring dashboard set up
 - [ ] Backup plan documented
 
-### ✅ Optional Enhancements
+### Ã¢Å“â€¦ Optional Enhancements
 
 - [ ] Multi-region Redis replication (Upstash Global)
 - [ ] Custom rate limits per tenant tier

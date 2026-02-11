@@ -99,8 +99,7 @@ export default function MemberPortalDashboard() {
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       ));
     } catch (error) {
-      console.error('Error fetching member data:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [recentClaims]);

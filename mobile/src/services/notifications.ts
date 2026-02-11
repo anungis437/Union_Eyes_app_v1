@@ -15,7 +15,6 @@ Notifications.setNotificationHandler({
 class NotificationService {
   async initialize() {
     if (!Device.isDevice) {
-      console.log('Push notifications only work on physical devices');
       return;
     }
 
@@ -32,7 +31,6 @@ class NotificationService {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('Failed to get push token for push notification!');
       return;
     }
 

@@ -15,6 +15,7 @@ export * from "./calendar-schema";
 export * from "./deadlines-schema";
 export * from "./reports-schema";
 export * from "./dues-transactions-schema";
+export * from "./autopay-settings-schema";
 
 // Phase 5A: CLC Organizations
 export * from "../schema-organizations";
@@ -26,6 +27,9 @@ export * from "./sharing-permissions-schema";
 
 // CLC Per-Capita Remittances
 export * from "./clc-per-capita-schema";
+
+// CLC Sync and Audit (Organization Sync, Webhooks, Chart of Accounts)
+export * from "./clc-sync-audit-schema";
 
 // Phase 1.5: Messages System
 export * from "./messages-schema";
@@ -117,6 +121,9 @@ export * from "./automation-rules-schema";
 
 // Grievance & Arbitration
 export * from "./grievance-schema";
+
+// Organizing Tools (Campaigns, NLRB/CLRB Filings, Card Signing)
+export * from "./organizing-tools-schema";
 
 // PR-12: Defensibility Packs (System-of-Record Exports for Arbitration)
 export * from "./defensibility-packs-schema";

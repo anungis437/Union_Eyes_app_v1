@@ -36,8 +36,7 @@ async function checkAdminRole(userId: string, orgId: string): Promise<boolean> {
 
     return member?.role === 'admin';
   } catch (error) {
-    console.error('Failed to check admin role:', error);
-    return false;
+return false;
   }
 }
 
@@ -232,7 +231,7 @@ export default async function AdminRewardsPage() {
                     </CardTitle>
                     <CardDescription>
                       {t('quickActions.shopify.description', {
-                        defaultValue: 'Configure Shop Moi Ça integration',
+                        defaultValue: 'Configure Shop Moi Ã‡a integration',
                       })}
                     </CardDescription>
                   </div>

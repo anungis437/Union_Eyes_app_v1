@@ -12,7 +12,6 @@ export const storage = {
       const jsonValue = JSON.stringify(value);
       await AsyncStorage.setItem(key, jsonValue);
     } catch (error) {
-      console.error('Error saving to AsyncStorage:', error);
       throw error;
     }
   },
@@ -22,7 +21,6 @@ export const storage = {
       const jsonValue = await AsyncStorage.getItem(key);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
-      console.error('Error reading from AsyncStorage:', error);
       return null;
     }
   },
@@ -31,7 +29,6 @@ export const storage = {
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error('Error removing from AsyncStorage:', error);
       throw error;
     }
   },
@@ -40,7 +37,6 @@ export const storage = {
     try {
       await AsyncStorage.clear();
     } catch (error) {
-      console.error('Error clearing AsyncStorage:', error);
       throw error;
     }
   },
@@ -50,7 +46,6 @@ export const storage = {
       const keys = await AsyncStorage.getAllKeys();
       return [...keys];
     } catch (error) {
-      console.error('Error getting all keys:', error);
       return [];
     }
   },
@@ -62,7 +57,6 @@ export const secureStorage = {
     try {
       await SecureStore.setItemAsync(key, value);
     } catch (error) {
-      console.error('Error saving to SecureStore:', error);
       throw error;
     }
   },
@@ -71,7 +65,6 @@ export const secureStorage = {
     try {
       return await SecureStore.getItemAsync(key);
     } catch (error) {
-      console.error('Error reading from SecureStore:', error);
       return null;
     }
   },
@@ -80,7 +73,6 @@ export const secureStorage = {
     try {
       await SecureStore.deleteItemAsync(key);
     } catch (error) {
-      console.error('Error removing from SecureStore:', error);
       throw error;
     }
   },

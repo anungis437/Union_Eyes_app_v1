@@ -73,8 +73,7 @@ export function useUserRole() {
           setRole(UserRole.MEMBER);
         }
       } catch (error) {
-        console.error("Error fetching user role:", error);
-        setRole(UserRole.MEMBER); // Default to member on error
+setRole(UserRole.MEMBER); // Default to member on error
       } finally {
         setLoading(false);
       }

@@ -37,9 +37,7 @@ class OCRService {
       }
 
       this.isInitialized = true;
-      console.log('OCR Service initialized');
-    } catch (error) {
-      console.error('Error initializing OCR service:', error);
+    } catch {
     }
   }
 
@@ -94,17 +92,10 @@ class OCRService {
       result.processingTime = processingTime;
 
       // Log performance
-      if (processingTime > PERFORMANCE_THRESHOLDS.slowProcessing) {
-        console.warn(`Slow OCR processing: ${processingTime}ms with ${provider}`);
-      }
-
       return result;
     } catch (error) {
-      console.error(`OCR processing failed with ${provider}:`, error);
-
       // Try fallback provider
       if (provider !== OCR_CONFIG.fallbackProvider) {
-        console.log(`Trying fallback provider: ${OCR_CONFIG.fallbackProvider}`);
         return this.processWithFallback(imageUri, options);
       }
 
@@ -164,7 +155,6 @@ class OCRService {
         confidence: avgConfidence,
       };
     } catch (error) {
-      console.error('ML Kit OCR failed:', error);
       throw error;
     }
   }
@@ -221,7 +211,6 @@ class OCRService {
         confidence: data.confidence / 100,
       };
     } catch (error) {
-      console.error('Tesseract OCR failed:', error);
       throw error;
     }
   }
@@ -276,7 +265,6 @@ class OCRService {
         confidence: data.confidence,
       };
     } catch (error) {
-      console.error('Server OCR failed:', error);
       throw error;
     }
   }
@@ -304,7 +292,6 @@ class OCRService {
       const batchResults = await Promise.all(
         batch.map((uri) =>
           this.processImage(uri, options).catch((err) => {
-            console.error('Batch OCR failed for image:', uri, err);
             return null;
           })
         )
@@ -431,8 +418,7 @@ class OCRService {
         this.tesseractWorker = null;
       }
       this.isInitialized = false;
-    } catch (error) {
-      console.error('Error cleaning up OCR service:', error);
+    } catch {
     }
   }
 }

@@ -22,8 +22,7 @@ export const NotificationPreferencesPanel = ({ className = '' }) => {
             });
         }
         catch (error) {
-            console.error('Error updating notification preferences:', error);
-        }
+}
         finally {
             setSaving(false);
         }
@@ -36,8 +35,7 @@ export const NotificationPreferencesPanel = ({ className = '' }) => {
             });
         }
         catch (error) {
-            console.error('Error updating notification preferences:', error);
-        }
+}
         finally {
             setSaving(false);
         }
@@ -64,8 +62,7 @@ export const UIPreferencesPanel = ({ className = '' }) => {
             await updateUIPreferences({ [key]: value });
         }
         catch (error) {
-            console.error('Error updating UI preferences:', error);
-        }
+}
         finally {
             setSaving(false);
         }
@@ -100,8 +97,7 @@ export const PrivacySettingsPanel = ({ className = '' }) => {
             await updatePrivacySettings({ [key]: value });
         }
         catch (error) {
-            console.error('Error updating privacy settings:', error);
-        }
+}
         finally {
             setSaving(false);
         }
@@ -129,8 +125,7 @@ export const SecuritySettingsPanel = ({ className = '' }) => {
             }
         }
         catch (error) {
-            console.error('Error updating 2FA:', error);
-        }
+}
         finally {
             setSaving(false);
         }
@@ -141,8 +136,7 @@ export const SecuritySettingsPanel = ({ className = '' }) => {
             await updateSecuritySettings({ sessionTimeout: timeout });
         }
         catch (error) {
-            console.error('Error updating session timeout:', error);
-        }
+}
         finally {
             setSaving(false);
         }

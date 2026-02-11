@@ -142,8 +142,7 @@ export class AuthenticationService {
             return user;
         }
         catch (error) {
-            console.error('SSO callback error:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -242,8 +241,7 @@ export class AuthenticationService {
             return isValid || false;
         }
         catch (error) {
-            console.error('MFA verification error:', error);
-            return false;
+return false;
         }
     }
     /**
@@ -275,8 +273,7 @@ export class AuthenticationService {
             return true;
         }
         catch (error) {
-            console.error('MFA disable error:', error);
-            return false;
+return false;
         }
     }
     // ============================================================================
@@ -299,8 +296,7 @@ export class AuthenticationService {
             return hasPermission || false;
         }
         catch (error) {
-            console.error('Permission check error:', error);
-            return false;
+return false;
         }
     }
     /**
@@ -322,8 +318,7 @@ export class AuthenticationService {
             return roles?.map((ur) => ur.role).filter(Boolean) || [];
         }
         catch (error) {
-            console.error('Get user roles error:', error);
-            return [];
+return [];
         }
     }
     /**
@@ -351,8 +346,7 @@ export class AuthenticationService {
             return true;
         }
         catch (error) {
-            console.error('Role assignment error:', error);
-            return false;
+return false;
         }
     }
     /**
@@ -376,8 +370,7 @@ export class AuthenticationService {
             return true;
         }
         catch (error) {
-            console.error('Role removal error:', error);
-            return false;
+return false;
         }
     }
     // ============================================================================
@@ -403,8 +396,7 @@ export class AuthenticationService {
             return providers || [];
         }
         catch (error) {
-            console.error('Get SSO providers error:', error);
-            return [];
+return [];
         }
     }
     /**
@@ -423,8 +415,7 @@ export class AuthenticationService {
             return provider;
         }
         catch (error) {
-            console.error('Get SSO provider error:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -452,8 +443,7 @@ export class AuthenticationService {
             return provider;
         }
         catch (error) {
-            console.error('Create SSO provider error:', error);
-            return null;
+return null;
         }
     }
     // ============================================================================
@@ -489,8 +479,7 @@ export class AuthenticationService {
             return session;
         }
         catch (error) {
-            console.error('Create enhanced session error:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -517,8 +506,7 @@ export class AuthenticationService {
             };
         }
         catch (error) {
-            console.error('Session validation error:', error);
-            return { isValid: false };
+return { isValid: false };
         }
     }
     /**
@@ -539,8 +527,7 @@ export class AuthenticationService {
             return sessions || [];
         }
         catch (error) {
-            console.error('Get active sessions error:', error);
-            return [];
+return [];
         }
     }
     /**
@@ -558,8 +545,7 @@ export class AuthenticationService {
             return true;
         }
         catch (error) {
-            console.error('Revoke session error:', error);
-            return false;
+return false;
         }
     }
     // ============================================================================
@@ -586,8 +572,7 @@ export class AuthenticationService {
             };
         }
         catch (error) {
-            console.error('Security check error:', error);
-            return {
+return {
                 is_blocked: false,
                 failed_attempts: 0,
                 mfa_required: false
@@ -615,8 +600,7 @@ export class AuthenticationService {
             });
         }
         catch (error) {
-            console.error('Log security event error:', error);
-        }
+}
     }
     /**
      * Get security events for user
@@ -644,8 +628,7 @@ export class AuthenticationService {
             return events || [];
         }
         catch (error) {
-            console.error('Get security events error:', error);
-            return [];
+return [];
         }
     }
     // ============================================================================
@@ -691,8 +674,7 @@ export class AuthenticationService {
             return org;
         }
         catch (error) {
-            console.error('Get organization auth settings error:', error);
-            return null;
+return null;
         }
     }
     /**
@@ -740,8 +722,7 @@ export class AuthenticationService {
             });
         }
         catch (error) {
-            console.error('Log failed login attempt error:', error);
-        }
+}
     }
     /**
      * Verify backup code
@@ -773,8 +754,7 @@ export class AuthenticationService {
             return true;
         }
         catch (error) {
-            console.error('Backup code verification error:', error);
-            return false;
+return false;
         }
     }
     /**
@@ -832,8 +812,7 @@ export function AuthProvider({ children, organizationId }) {
                 setSession(session);
             }
             catch (error) {
-                console.error('Auth initialization error:', error);
-            }
+}
             finally {
                 setLoading(false);
             }
@@ -941,8 +920,7 @@ export function useSSO() {
             setProviders(ssoProviders);
         }
         catch (error) {
-            console.error('Load SSO providers error:', error);
-        }
+}
         finally {
             setLoading(false);
         }

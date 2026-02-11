@@ -28,7 +28,7 @@ const roleOptions = [
     {
         value: 'owner',
         label: 'Owner',
-        description: 'Full control over organization (⚠️ Cannot be removed)',
+        description: 'Full control over organization (âš ï¸ Cannot be removed)',
     },
 ];
 const availablePermissions = [
@@ -54,7 +54,7 @@ const availablePermissions = [
  *   memberId={selectedMemberId!}
  *   isOpen={!!selectedMemberId}
  *   onClose={() => setSelectedMemberId(null)}
- *   onUpdate={(member) => console.log('Updated:', member)}
+ *   onUpdate={(member) => undefined}
  * />
  * ```
  */

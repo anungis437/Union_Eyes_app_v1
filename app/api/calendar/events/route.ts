@@ -128,9 +128,7 @@ export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
       headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
-    console.error("Error fetching events:", error);
-    
-    await logApiAuditEvent({
+await logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
       organizationId,
@@ -235,9 +233,7 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
       headers: createRateLimitHeaders(rateLimitResult),
     });
   } catch (error) {
-    console.error("Error creating event:", error);
-    
-    await logApiAuditEvent({
+await logApiAuditEvent({
       timestamp: new Date().toISOString(),
       userId,
       organizationId,

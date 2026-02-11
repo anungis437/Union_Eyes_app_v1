@@ -61,27 +61,22 @@ export default function WhopPricingCard({
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error creating checkout', errorData);
-        setError('Failed to create checkout. Please try again.');
+setError('Failed to create checkout. Please try again.');
         return;
       }
       
       const data = await response.json();
       
       if (!data.checkoutUrl) {
-        console.error('No checkout URL in response', data);
-        setError('Failed to create checkout. Please try again.');
+setError('Failed to create checkout. Please try again.');
         return;
       }
       
       // Log the checkout URL for debugging
-      console.log('Created Whop checkout with metadata:', data.checkoutUrl);
-      
-      // Redirect to the checkout URL
+// Redirect to the checkout URL
       window.location.href = data.checkoutUrl;
     } catch (err) {
-      console.error('Error during checkout process:', err);
-      setError('An unexpected error occurred. Please try again.');
+setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

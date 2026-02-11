@@ -16,8 +16,7 @@ export default async function DebugPage() {
     try {
       assignedClaims = await getClaimsAssignedToUser(userId);
     } catch (error) {
-      console.error("Error fetching claims:", error);
-    }
+}
   }
 
   return (
@@ -112,7 +111,7 @@ WHERE claim_number = 'CLM-2025-004';`}
 
           <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded border border-blue-200 dark:border-blue-800">
             <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              💡 After updating the database, refresh this page to see your assigned claims
+              ðŸ’¡ After updating the database, refresh this page to see your assigned claims
             </p>
           </div>
         </CardContent>

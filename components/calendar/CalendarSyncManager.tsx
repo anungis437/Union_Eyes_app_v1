@@ -75,8 +75,7 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
       const data = await response.json();
       setConnections(data.connections || []);
     } catch (error) {
-      console.error('Error fetching connections:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -86,8 +85,7 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
       // Redirect to OAuth flow
       window.location.href = `/api/calendar-sync/${provider}/auth`;
     } catch (error) {
-      console.error(`Error connecting ${provider}:`, error);
-      alert(`Failed to connect ${provider}`);
+alert(`Failed to connect ${provider}`);
     }
   };
 
@@ -103,8 +101,7 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
       
       setConnections(prev => prev.filter(c => c.id !== connectionId));
     } catch (error) {
-      console.error('Error disconnecting:', error);
-      alert('Failed to disconnect calendar');
+alert('Failed to disconnect calendar');
     }
   };
 
@@ -134,8 +131,7 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
       // Refresh connections to get updated sync status
       await fetchConnections();
     } catch (error) {
-      console.error('Error syncing:', error);
-      alert('Failed to sync calendar');
+alert('Failed to sync calendar');
     } finally {
       setSyncing(null);
     }
@@ -153,8 +149,7 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
         prev.map(c => (c.id === connectionId ? { ...c, syncEnabled: enabled } : c))
       );
     } catch (error) {
-      console.error('Error toggling sync:', error);
-      alert('Failed to update sync settings');
+alert('Failed to update sync settings');
     }
   };
 
@@ -173,8 +168,7 @@ export function CalendarSyncManager({ open, onOpenChange }: CalendarSyncManagerP
         prev.map(c => (c.id === connectionId ? { ...c, syncDirection: direction } : c))
       );
     } catch (error) {
-      console.error('Error changing sync direction:', error);
-      alert('Failed to update sync direction');
+alert('Failed to update sync direction');
     }
   };
 

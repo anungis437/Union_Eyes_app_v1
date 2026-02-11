@@ -46,8 +46,7 @@ export const POST = async (request: NextRequest) => {
         message: 'Test notification sent successfully',
       });
     } catch (error) {
-      console.error('Error in test email endpoint:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

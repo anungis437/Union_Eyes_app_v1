@@ -31,8 +31,7 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to fetch invitations';
             setError(message);
-            console.error('Error fetching invitations:', err);
-        }
+}
         finally {
             setIsLoading(false);
         }
@@ -58,8 +57,7 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create invitation';
             setError(message);
-            console.error('Error creating invitation:', err);
-            return null;
+return null;
         }
     };
     // Cancel invitation
@@ -78,8 +76,7 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to cancel invitation';
             setError(message);
-            console.error('Error cancelling invitation:', err);
-            return false;
+return false;
         }
     };
     // Resend invitation
@@ -96,8 +93,7 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to resend invitation';
             setError(message);
-            console.error('Error resending invitation:', err);
-            return false;
+return false;
         }
     };
     // Delete invitation
@@ -114,8 +110,7 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to delete invitation';
             setError(message);
-            console.error('Error deleting invitation:', err);
-            return false;
+return false;
         }
     };
     // Accept invitation
@@ -127,8 +122,7 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to accept invitation';
             setError(message);
-            console.error('Error accepting invitation:', err);
-            return { success: false, error: message };
+return { success: false, error: message };
         }
     };
     // Refresh invitations

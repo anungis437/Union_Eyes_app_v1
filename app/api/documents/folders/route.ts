@@ -95,8 +95,7 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error("Error listing folders:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to list folders", details: error instanceof Error ? error.message : "Unknown error" },
           { status: 500 }
         );
@@ -167,8 +166,7 @@ try {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error("Error creating folder:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Failed to create folder", details: error instanceof Error ? error.message : "Unknown error" },
         { status: 500 }
       );

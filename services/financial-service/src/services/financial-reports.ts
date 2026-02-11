@@ -1,5 +1,6 @@
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export interface DateRange {
   startDate: Date;
@@ -63,7 +64,7 @@ export async function getCollectionMetrics(
 ): Promise<CollectionMetrics> {
   try {
     const { startDate, endDate } = dateRange;
-    console.log('[getCollectionMetrics] Starting with params:', { tenantId, startDate, endDate });
+    logger.info('[getCollectionMetrics] Starting', { tenantId, startDate, endDate });
 
     // Total dues charged in period
     const chargedResult = await db.execute<{ total: string; count: string }>(sql`
@@ -139,8 +140,11 @@ export async function getCollectionMetrics(
       averagePaymentTime: Math.round(averagePaymentTime * 10) / 10,
     };
   } catch (error) {
-    console.error('[getCollectionMetrics] Error:', error);
-    console.error('[getCollectionMetrics] Stack:', error instanceof Error ? error.stack : 'No stack');
+    logger.error('[getCollectionMetrics] Error', {
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      tenantId,
+    });
     throw error;
   }
 }
@@ -152,7 +156,7 @@ export async function getArrearsStatistics(
   tenantId: string
 ): Promise<ArrearsStatistics> {
   try {
-    console.log('[getArrearsStatistics] Starting with params:', { tenantId });
+    logger.info('[getArrearsStatistics] Starting', { tenantId });
 
     // Total cases and amount
     const totalResult = await db.execute<{ count: string; total: string }>(sql`
@@ -242,8 +246,11 @@ export async function getArrearsStatistics(
       oldestCase,
     };
   } catch (error) {
-    console.error('[getArrearsStatistics] Error:', error);
-    console.error('[getArrearsStatistics] Stack:', error instanceof Error ? error.stack : 'No stack');
+    logger.error('[getArrearsStatistics] Error', {
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      tenantId,
+    });
     throw error;
   }
 }
@@ -257,7 +264,7 @@ export async function getRevenueAnalysis(
 ): Promise<RevenueAnalysis> {
   try {
     const { startDate, endDate } = dateRange;
-    console.log('[getRevenueAnalysis] Starting with params:', { tenantId, startDate, endDate });
+    logger.info('[getRevenueAnalysis] Starting', { tenantId, startDate, endDate });
 
     // Total revenue from payments
     const revenueResult = await db.execute<{ total: string }>(sql`
@@ -330,8 +337,11 @@ export async function getRevenueAnalysis(
       growthRate: Math.round(growthRate * 100) / 100,
     };
   } catch (error) {
-    console.error('[getRevenueAnalysis] Error:', error);
-    console.error('[getRevenueAnalysis] Stack:', error instanceof Error ? error.stack : 'No stack');
+    logger.error('[getRevenueAnalysis] Error', {
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      tenantId,
+    });
     throw error;
   }
 }
@@ -346,7 +356,7 @@ export async function getMemberPaymentPatterns(
 ): Promise<MemberPaymentPattern[]> {
   try {
     const { startDate, endDate } = dateRange;
-    console.log('[getMemberPaymentPatterns] Starting with params:', { tenantId, startDate, endDate, limit });
+    logger.info('[getMemberPaymentPatterns] Starting', { tenantId, startDate, endDate, limit });
 
     const patternsResult = await db.execute<{
       member_id: string;
@@ -401,8 +411,11 @@ export async function getMemberPaymentPatterns(
       };
     });
   } catch (error) {
-    console.error('[getMemberPaymentPatterns] Error:', error);
-    console.error('[getMemberPaymentPatterns] Stack:', error instanceof Error ? error.stack : 'No stack');
+    logger.error('[getMemberPaymentPatterns] Error', {
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      tenantId,
+    });
     throw error;
   }
 }
@@ -415,7 +428,7 @@ export async function getFinancialDashboard(
   dateRange: DateRange
 ) {
   try {
-    console.log('[getFinancialDashboard] Starting with params:', { tenantId, dateRange });
+    logger.info('[getFinancialDashboard] Starting', { tenantId, dateRange });
 
     const [
       collectionMetrics,
@@ -437,8 +450,11 @@ export async function getFinancialDashboard(
       generatedAt: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('[getFinancialDashboard] Error:', error);
-    console.error('[getFinancialDashboard] Stack:', error instanceof Error ? error.stack : 'No stack');
+    logger.error('[getFinancialDashboard] Error', {
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      tenantId,
+    });
     throw error;
   }
 }

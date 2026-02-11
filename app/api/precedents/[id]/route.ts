@@ -45,8 +45,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       return NextResponse.json(response);
     } catch (error) {
-      console.error("Error fetching precedent:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -69,9 +68,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       return NextResponse.json({ precedent: updatedPrecedent });
     } catch (error) {
-      console.error("Error updating precedent:", error);
-      
-      // Handle unique constraint violations
+// Handle unique constraint violations
       if ((error as any)?.code === "23505") {
         return NextResponse.json(
           { error: "Case number already exists" },
@@ -103,8 +100,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         deleted: true 
       });
     } catch (error) {
-      console.error("Error deleting precedent:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

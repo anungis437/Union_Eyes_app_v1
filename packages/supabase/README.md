@@ -148,7 +148,7 @@ import { subscribeToUserChanges } from '@court-lens/supabase';
 
 // Subscribe to organization-filtered changes
 const unsubscribe = await subscribeToUserChanges('invoices', (payload) => {
-  console.log('Invoice updated:', payload.new);
+  handleInvoiceUpdate(payload.new);
 });
 
 // Clean up subscription
@@ -204,7 +204,7 @@ try {
     // Display to user: "A record with this information already exists"
   }
 } catch (error) {
-  console.error('Database error:', error);
+  handleDatabaseError(error);
 }
 ```
 

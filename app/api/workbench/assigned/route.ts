@@ -10,8 +10,9 @@ import { getClaimsAssignedToUser } from "@/db/queries/claims-queries";
 import { getUserByEmail } from "@/db/queries/users-queries";
 import { withOrganizationAuth } from "@/lib/organization-middleware";
 import { logger } from '@/lib/logger';
+import { getMemberDetailsById } from '@/lib/utils/member-data-utils';
 
-export const GET = withApiAuth(async (request: NextRequest, context) => {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
     const { organizationId: organizationId, userId: clerkUserId } = context;
     
@@ -47,9 +48,31 @@ export const GET = withApiAuth(async (request: NextRequest, context) => {
     // Fetch claims assigned to this user for the current organization
     const assignedClaims = await getClaimsAssignedToUser(dbUser.userId, organizationId);
 
+    // Enrich claims with member details
+    const enrichedClaims = await Promise.all(
+      (assignedClaims || []).map(async (claim) => {
+        if (claim.isAnonymous) {
+          return {
+            ...claim,
+            memberName: 'Anonymous Member',
+            memberEmail: '',
+            memberPhone: '',
+          };
+        }
+
+        const memberDetails = await getMemberDetailsById(claim.memberId);
+        return {
+          ...claim,
+          memberName: memberDetails?.name || 'Unknown Member',
+          memberEmail: memberDetails?.email || '',
+          memberPhone: memberDetails?.phone || '',
+        };
+      })
+    );
+
     return NextResponse.json({
-      claims: assignedClaims || [],
-      total: assignedClaims?.length || 0,
+      claims: enrichedClaims,
+      total: enrichedClaims.length,
       userId: clerkUserId,
       dbUserId: dbUser.userId,
     });

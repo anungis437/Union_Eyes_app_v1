@@ -50,8 +50,7 @@ export default function DuesPaymentPortal({ userId }: DuesPaymentPortalProps) {
       const data = await response.json();
       setBalance(data);
     } catch (error) {
-      console.error('Error loading dues balance:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load your dues information',
         variant: 'destructive',

@@ -121,8 +121,7 @@ export function InternationalAddressInput({
         setCountryFormat(data.format);
       }
     } catch (error) {
-      console.error("Failed to load country format:", error);
-    }
+}
   };
   
   const updateField = (field: keyof AddressFormData, value: string) => {

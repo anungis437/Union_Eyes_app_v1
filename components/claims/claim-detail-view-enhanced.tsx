@@ -136,8 +136,7 @@ export function ClaimDetailViewEnhanced({
       await onAddComment(newComment);
       setNewComment("");
     } catch (error) {
-      console.error("Failed to add comment:", error);
-    } finally {
+} finally {
       setIsSubmitting(false);
     }
   };
@@ -327,7 +326,7 @@ export function ClaimDetailViewEnhanced({
                         <div className="flex-1 pb-4">
                           <p className="text-sm font-medium">{activity.message}</p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {activity.user} •{" "}
+                            {activity.user} â€¢{" "}
                             {format(activity.timestamp, "PPp")}
                           </p>
                         </div>

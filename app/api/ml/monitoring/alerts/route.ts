@@ -177,8 +177,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching alerts:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch alerts' },
       { status: 500 }
     );
@@ -239,8 +238,7 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error acknowledging alert:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to acknowledge alert' },
       { status: 500 }
     );

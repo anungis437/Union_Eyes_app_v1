@@ -111,8 +111,7 @@ export function PrivacyConsentManager({
       await onWithdrawAll?.();
       setShowWithdrawDialog(false);
     } catch (error) {
-      console.error("Failed to withdraw consents:", error);
-    }
+}
   };
 
   const categoryConfig = {

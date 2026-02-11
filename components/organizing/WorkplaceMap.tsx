@@ -104,8 +104,7 @@ export function WorkplaceMap({ campaignId }: WorkplaceMapProps) {
       setMapData(data.data.aggregations || []);
       setSummary(data.data.summary || null);
     } catch (error) {
-      console.error('Error fetching workplace map:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -119,8 +118,7 @@ export function WorkplaceMap({ campaignId }: WorkplaceMapProps) {
       const data = await response.json();
       setCommitteeMembers(data.data.members || []);
     } catch (error) {
-      console.error('Error fetching committee members:', error);
-    }
+}
   };
 
   const calculateSupportPercentage = (group: WorkplaceMapData): number => {
@@ -378,7 +376,7 @@ export function WorkplaceMap({ campaignId }: WorkplaceMapProps) {
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {member.job_title} • {member.department} • {member.shift}
+                        {member.job_title} â€¢ {member.department} â€¢ {member.shift}
                       </div>
                     </div>
                   </div>

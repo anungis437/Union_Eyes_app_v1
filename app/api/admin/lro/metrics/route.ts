@@ -147,9 +147,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error('[LRO Metrics API] Error:', error);
-    
-    return NextResponse.json(
+return NextResponse.json(
       { 
         error: 'Failed to fetch metrics',
         message: error instanceof Error ? error.message : 'Unknown error',

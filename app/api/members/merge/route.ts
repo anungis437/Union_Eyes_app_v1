@@ -251,8 +251,7 @@ try {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error("Error merging members:", error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: "Failed to merge members",
           details: error instanceof Error ? error.message : "Unknown error",
@@ -342,8 +341,7 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error("Error finding duplicate candidates:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to find duplicates" },
           { status: 500 }
         );

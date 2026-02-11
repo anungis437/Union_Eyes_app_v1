@@ -17,6 +17,7 @@ import { getClausesByCBAId } from "@/lib/services/clause-service";
 import { getBargainingNotesByCBA } from "@/lib/services/bargaining-notes-service";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { logger } from "@/lib/logger";
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(10, async (request, context) => {
@@ -56,7 +57,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       return NextResponse.json(response);
     } catch (error) {
-      console.error("Error fetching CBA:", error);
+      logger.error("Error fetching CBA", error as Error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
@@ -96,7 +97,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       return NextResponse.json({ cba: updatedCba });
     } catch (error) {
-      console.error("Error updating CBA:", error);
+      logger.error("Error updating CBA", error as Error);
       
       // Handle unique constraint violations
       if ((error as any)?.code === "23505") {
@@ -148,7 +149,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         });
       }
     } catch (error) {
-      console.error("Error deleting CBA:", error);
+      logger.error("Error deleting CBA", error as Error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }

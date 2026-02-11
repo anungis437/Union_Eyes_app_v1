@@ -49,8 +49,7 @@ export const POST = async (request: NextRequest) => {
         }
       });
     } catch (error) {
-      console.error('Error in trends API:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -95,8 +94,7 @@ export const GET = async (request: NextRequest) => {
         trends
       });
     } catch (error) {
-      console.error('Error fetching trends:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

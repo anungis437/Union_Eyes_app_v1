@@ -7,6 +7,7 @@
  */
 
 const appInsights = require('applicationinsights');
+const { logger } = require('../../../lib/logger');
 
 class ApplicationInsightsService {
     constructor() {
@@ -24,7 +25,7 @@ class ApplicationInsightsService {
             const connectionString = process.env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING;
             
             if (!connectionString) {
-                console.warn('⚠️ Application Insights connection string not found. Telemetry disabled.');
+                logger.warn('Application Insights connection string not found. Telemetry disabled.');
                 return;
             }
 
@@ -71,9 +72,10 @@ class ApplicationInsightsService {
             appInsights.start();
             
             this.isInitialized = true;
-            console.log('✅ Application Insights initialized successfully');
-            console.log(`   Role: ${appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole]}`);
-            console.log(`   Sampling: ${appInsights.defaultClient.config.samplingPercentage}%`);
+            logger.info('Application Insights initialized successfully', {
+                role: appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole],
+                samplingPercentage: appInsights.defaultClient.config.samplingPercentage,
+            });
             
             // Track initialization
             this.trackEvent('ServiceStarted', {
@@ -83,7 +85,7 @@ class ApplicationInsightsService {
             });
 
         } catch (error) {
-            console.error('❌ Failed to initialize Application Insights:', error);
+            logger.error('Failed to initialize Application Insights', { error });
         }
     }
 
@@ -98,7 +100,7 @@ class ApplicationInsightsService {
                 measurements: measurements
             });
         } catch (error) {
-            console.error('Failed to track event:', error);
+            logger.error('Failed to track event', { error, name });
         }
     }
 
@@ -124,7 +126,7 @@ class ApplicationInsightsService {
                 properties: properties
             });
         } catch (error) {
-            console.error('Failed to track metric:', error);
+            logger.error('Failed to track metric', { error, name });
         }
     }
 
@@ -145,7 +147,7 @@ class ApplicationInsightsService {
                 properties: properties
             });
         } catch (error) {
-            console.error('Failed to track performance:', error);
+            logger.error('Failed to track performance', { error, name });
         }
     }
 
@@ -159,7 +161,7 @@ class ApplicationInsightsService {
                 properties: { ...this.customDimensions, ...properties }
             });
         } catch (trackingError) {
-            console.error('Failed to track exception:', trackingError);
+            logger.error('Failed to track exception', { error: trackingError });
         }
     }
 
@@ -179,7 +181,7 @@ class ApplicationInsightsService {
                 properties: { ...this.customDimensions, ...properties }
             });
         } catch (error) {
-            console.error('Failed to track dependency:', error);
+            logger.error('Failed to track dependency', { error, name });
         }
     }
 
@@ -195,7 +197,7 @@ class ApplicationInsightsService {
                 properties: { ...this.customDimensions, ...properties }
             });
         } catch (error) {
-            console.error('Failed to track page view:', error);
+            logger.error('Failed to track page view', { error, name });
         }
     }
 
@@ -210,7 +212,7 @@ class ApplicationInsightsService {
                 properties: { ...this.customDimensions, ...properties }
             });
         } catch (error) {
-            console.error('Failed to track trace:', error);
+            logger.error('Failed to track trace', { error, message });
         }
     }
 
@@ -351,7 +353,7 @@ class ApplicationInsightsService {
         return new Promise((resolve) => {
             appInsights.defaultClient.flush({
                 callback: () => {
-                    console.log('📊 Application Insights telemetry flushed');
+                    logger.info('Application Insights telemetry flushed');
                     resolve();
                 }
             });

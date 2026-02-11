@@ -97,7 +97,6 @@ export function WorkloadForecastDashboard() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Forecast error:', errorData);
         setForecast(null);
         return;
       }
@@ -105,7 +104,6 @@ export function WorkloadForecastDashboard() {
       const data = await response.json();
       setForecast(data);
     } catch (error) {
-      console.error('Error loading workload forecast:', error);
       setForecast(null);
     } finally {
       setLoading(false);

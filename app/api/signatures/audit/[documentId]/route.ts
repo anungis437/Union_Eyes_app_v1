@@ -42,8 +42,7 @@ export const GET = withApiAuth(async (
       });
     }
   } catch (error) {
-    console.error("Get audit trail error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to retrieve audit trail" },
       { status: 500 }
     );

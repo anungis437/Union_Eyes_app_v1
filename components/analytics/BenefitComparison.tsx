@@ -153,8 +153,7 @@ export function BenefitComparison({
       setSectors(uniqueSectors);
       setJurisdictions(uniqueJurisdictions);
     } catch (err) {
-      console.error('Error fetching benefit data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load benefit comparisons');
+setError(err instanceof Error ? err.message : 'Failed to load benefit comparisons');
     } finally {
       setLoading(false);
     }
@@ -402,7 +401,7 @@ export function BenefitComparison({
                             {firstBenefit.employerName} - {firstBenefit.unionName}
                           </CardTitle>
                           <CardDescription>
-                            {firstBenefit.sector} • {firstBenefit.jurisdiction}
+                            {firstBenefit.sector} â€¢ {firstBenefit.jurisdiction}
                           </CardDescription>
                         </div>
                         <div className="text-right">
@@ -481,7 +480,7 @@ export function BenefitComparison({
                             {cbaBenefits
                               .filter(b => b.notes)
                               .map((b, i) => (
-                                <li key={i}>• {b.benefitType}: {b.notes}</li>
+                                <li key={i}>â€¢ {b.benefitType}: {b.notes}</li>
                               ))}
                           </ul>
                         </div>

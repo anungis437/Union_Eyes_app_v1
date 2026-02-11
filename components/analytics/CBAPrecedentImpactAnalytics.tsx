@@ -82,8 +82,7 @@ export function CBAPrecedentImpactAnalytics() {
       const topData = await topRes.json();
       setTopPrecedents(topData.precedents || []);
     } catch (error) {
-      console.error('Error fetching precedent impact data:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -281,7 +280,7 @@ export function CBAPrecedentImpactAnalytics() {
                     <p className="font-medium truncate">{precedent.title}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>{precedent.jurisdiction}</span>
-                      <span>•</span>
+                      <span>â€¢</span>
                       <span>Used {precedent.timesUsed} times</span>
                     </div>
                   </div>

@@ -1,12 +1,12 @@
 /**
  * Workflow Engine for Claims Management
  * 
- * MIGRATION STATUS: ✅ Refactored to support RLS
+ * MIGRATION STATUS: Ã¢Å“â€¦ Refactored to support RLS
  * - Functions accept optional transaction parameter for RLS context
  * - When no transaction provided, automatically wraps in withRLSContext()
  * - Maintains backward compatibility with existing callers
  * 
- * ENFORCEMENT LAYER (PR-11): ✅ Integrated with FSM
+ * ENFORCEMENT LAYER (PR-11): Ã¢Å“â€¦ Integrated with FSM
  * - All state transitions validated via claim-workflow-fsm.ts
  * - Bad practice is now IMPOSSIBLE (role checks, time checks, signal checks)
  * - SLA compliance tracked automatically
@@ -18,6 +18,7 @@ import { db } from "../db/db";
 import { withRLSContext } from "./db/with-rls-context";
 import { claims, claimUpdates } from "../db/schema/claims-schema";
 import { organizationMembers } from "../db/schema/organization-members-schema";
+import { users } from "../db/schema/user-management-schema";
 import { eq, and } from "drizzle-orm";
 import { sendClaimStatusNotification } from "./claim-notifications";
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -48,7 +49,7 @@ export const STATUS_TRANSITIONS = {
   closed: [], // Terminal state - no transitions allowed
 } as const;
 
-export type ClaimStatus = keyof typeof STATUS_TRANSITIONS;
+export type { ClaimStatus, ClaimPriority };
 
 // Define SLA deadlines (in days) for each status
 export const STATUS_DEADLINES = {
@@ -70,8 +71,6 @@ export const PRIORITY_MULTIPLIERS = {
   low: 1.5, // 50% more time
 } as const;
 
-export type ClaimPriority = keyof typeof PRIORITY_MULTIPLIERS;
-
 /**
  * Helper function to get member name from organizationMembers table
  */
@@ -81,15 +80,25 @@ async function getMemberName(
 ): Promise<string> {
   try {
     const result = await tx
-      .select({ name: organizationMembers.name })
+      .select({
+        displayName: users.displayName,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      })
       .from(organizationMembers)
+      .leftJoin(users, eq(organizationMembers.userId, users.userId))
       .where(eq(organizationMembers.userId, memberId))
       .limit(1);
     
-    return result[0]?.name || 'Member';
-  } catch (error) {
-    console.error('Error fetching member name:', error);
+    const displayName = result[0]?.displayName;
+    const firstName = result[0]?.firstName;
+    const lastName = result[0]?.lastName;
+
+    if (displayName) return displayName;
+    if (firstName || lastName) return `${firstName || ''} ${lastName || ''}`.trim();
     return 'Member';
+  } catch (error) {
+return 'Member';
   }
 }
 
@@ -180,7 +189,7 @@ export async function updateClaimStatus(
 ): Promise<{ success: boolean; error?: string; claim?: any }> {
   // If no transaction provided, wrap in withRLSContext
   if (!tx) {
-    return withRLSContext(async (transaction) => {
+    return withRLSContext(async (transaction: NodePgDatabase<any>) => {
       return updateClaimStatus(claimNumber, newStatus, userId, notes, transaction);
     });
   }
@@ -206,18 +215,19 @@ export async function updateClaimStatus(
       status: currentStatus,
       priority,
       createdAt: claim.createdAt,
-      updatedAt: claim.updatedAt,
+      updatedAt: claim.updatedAt ?? claim.createdAt,
       assignedTo: claim.assignedTo || undefined,
       organizationId: claim.organizationId,
     }]);
 
     const hasUnresolvedCriticalSignals = signals.some(
-      signal => signal.severity === 'critical' && signal.requiresAction
+      signal => signal.severity === 'critical' && signal.actionable
     );
 
-    const hasRequiredDocumentation = 
-      (claim.description && claim.description.length > 20) || 
-      (notes && notes.length > 20);
+    const hasRequiredDocumentation = Boolean(
+      (claim.description && claim.description.length > 20) ||
+      (notes && notes.length > 20)
+    );
 
     // Get user role for FSM validation
     const userRoleResult = await tx
@@ -242,7 +252,7 @@ export async function updateClaimStatus(
       userId,
       userRole: userRole as any,
       priority,
-      statusChangedAt: claim.updatedAt || claim.createdAt,
+      statusChangedAt: claim.updatedAt ?? claim.createdAt ?? new Date(),
       hasUnresolvedCriticalSignals,
       hasRequiredDocumentation,
       notes,
@@ -315,9 +325,7 @@ export async function updateClaimStatus(
     // When claim is resolved or closed, automatically generate immutable export
     if (newStatus === 'resolved' || newStatus === 'closed') {
       try {
-        console.log(`[DEFENSIBILITY PACK] Auto-generation triggered for claim ${claim.claimNumber} (${newStatus})`);
-        
-        // Fetch complete timeline (all claim updates)
+// Fetch complete timeline (all claim updates)
         const updates = await tx
           .select()
           .from(claimUpdates)
@@ -325,22 +333,35 @@ export async function updateClaimStatus(
           .orderBy(claimUpdates.createdAt);
         
         // Convert updates to timeline events
-        const timeline: TimelineEvent[] = updates.map((update) => ({
+        const timeline: TimelineEvent[] = updates.map((update) => {
+          const allowedTypes: TimelineEvent['type'][] = [
+            'submitted',
+            'acknowledged',
+            'first_response',
+            'investigation_complete',
+          ];
+
+          const type = allowedTypes.includes(update.updateType as TimelineEvent['type'])
+            ? (update.updateType as TimelineEvent['type'])
+            : 'other';
+
+          return {
           id: update.updateId,
           caseId: claim.claimId,
-          timestamp: update.createdAt,
-          type: update.updateType,
+          timestamp: update.createdAt ?? new Date(),
+          type,
           description: update.message,
           actorId: update.createdBy,
           actorRole: update.isInternal ? 'staff' : 'member',
           visibilityScope: update.isInternal ? ('staff' as const) : ('member' as const),
           metadata: update.metadata as Record<string, unknown> | undefined,
-        }));
+          };
+        });
         
         // Build audit trail from updates
         const auditTrail: AuditEntry[] = updates.map((update) => ({
           id: update.updateId,
-          timestamp: update.createdAt,
+          timestamp: update.createdAt ?? new Date(),
           userId: update.createdBy,
           action: update.updateType,
           resourceType: 'claim',
@@ -363,7 +384,7 @@ export async function updateClaimStatus(
           .map((u) => {
             const meta = u.metadata as StatusChangeMetadata;
             return {
-              timestamp: u.createdAt,
+              timestamp: u.createdAt ?? new Date(),
               fromState: meta.previousStatus || 'unknown',
               toState: meta.newStatus || 'unknown',
               actorRole: u.isInternal ? 'staff' : 'member',
@@ -385,13 +406,13 @@ export async function updateClaimStatus(
             includeSensitiveData: false,
             generatedBy: 'system',
             caseSummary: {
-              title: claim.title || `Claim ${claim.claimNumber}`,
+              title: claim.description?.slice(0, 80) || `Claim ${claim.claimNumber}`,
               memberId: claim.memberId,
               memberName: await getMemberName(claim.memberId, tx),
               currentState: newStatus,
               createdAt: claim.createdAt,
-              lastUpdated: updatedClaim.updatedAt || new Date(),
-              grievanceType: claim.issueType || 'general',
+              lastUpdated: updatedClaim.updatedAt ?? new Date(),
+              grievanceType: claim.claimType || 'general',
               priority: claim.priority || 'medium',
             },
           }
@@ -409,7 +430,7 @@ export async function updateClaimStatus(
           exportPurpose: pack.exportMetadata.purpose,
           requestedBy: pack.exportMetadata.requestedBy,
           // PR #14: Type-safe JSONB storage (pack structure validated by schema)
-          packData: pack as Record<string, unknown>,
+          packData: pack as unknown as Record<string, unknown>,
           integrityHash: pack.integrity.combinedHash,
           timelineHash: pack.integrity.timelineHash,
           auditHash: pack.integrity.auditHash,
@@ -417,25 +438,19 @@ export async function updateClaimStatus(
           verificationStatus: 'verified',
           fileSizeBytes: JSON.stringify(pack).length,
         });
-        
-        console.log(`[DEFENSIBILITY PACK] Successfully generated for claim ${claim.claimNumber}`);
-        console.log(`[DEFENSIBILITY PACK] Integrity hash: ${pack.integrity.combinedHash.substring(0, 16)}...`);
-      } catch (error) {
-        console.error('[DEFENSIBILITY PACK] Generation failed:', error);
-        // Don't fail the status update if pack generation fails
+} catch (error) {
+// Don't fail the status update if pack generation fails
       }
     }
 
     // Send email notification (async, don't block on email sending)
     sendClaimStatusNotification(claim.claimId, currentStatus, newStatus, notes).catch((error) => {
-      console.error('Failed to send email notification:', error);
-      // Don't fail the status update if email fails
+// Don't fail the status update if email fails
     });
 
     return { success: true, claim: updatedClaim };
   } catch (error) {
-    console.error("Error updating claim status:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -488,8 +503,7 @@ export async function assignClaim(
 
     return { success: true };
   } catch (error) {
-    console.error("Error assigning claim:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
@@ -522,8 +536,7 @@ export async function getOverdueClaims(): Promise<any[]> {
 
     return overdueClaims;
   } catch (error) {
-    console.error("Error getting overdue claims:", error);
-    return [];
+return [];
   }
 }
 
@@ -553,8 +566,7 @@ export async function getClaimsApproachingDeadline(): Promise<any[]> {
 
     return approachingDeadline;
   } catch (error) {
-    console.error("Error getting claims approaching deadline:", error);
-    return [];
+return [];
   }
 }
 
@@ -576,7 +588,7 @@ export async function addClaimNote(
 ): Promise<{ success: boolean; error?: string }> {
   // If no transaction provided, wrap in withRLSContext
   if (!tx) {
-    return withRLSContext(async (transaction) => {
+    return withRLSContext(async (transaction: NodePgDatabase<any>) => {
       return addClaimNote(claimNumber, message, userId, isInternal, transaction);
     });
   }
@@ -613,8 +625,7 @@ export async function addClaimNote(
 
     return { success: true };
   } catch (error) {
-    console.error("Error adding claim note:", error);
-    return {
+return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };

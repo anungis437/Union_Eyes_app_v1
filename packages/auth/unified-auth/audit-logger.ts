@@ -6,6 +6,7 @@
 
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { AuthChangeEvent } from '@supabase/supabase-js';
+import { logger } from '../src/utils/logger';
 
 // Initialize supabase client
 const supabase = getSupabaseClient();
@@ -88,7 +89,7 @@ export class AuditLogger {
         await this.flush();
       }
     } catch (error) {
-      console.error('Error logging auth event:', error);
+      logger.error('Error logging auth event:', error);
     }
   }
 
@@ -119,12 +120,12 @@ export class AuditLogger {
         .insert(entries);
 
       if (error) {
-        console.error('Error flushing audit logs:', error);
+        logger.error('Error flushing audit logs:', error);
         // Re-add to queue on error
         this.queue.unshift(...events);
       }
     } catch (error) {
-      console.error('Error flushing audit logs:', error);
+      logger.error('Error flushing audit logs:', error);
       // Re-add to queue on error
       this.queue.unshift(...events);
     }
@@ -220,7 +221,7 @@ export class AuditLogger {
 
       return data || [];
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
+      logger.error('Error fetching audit logs:', error);
       return [];
     }
   }
@@ -252,7 +253,7 @@ export class AuditLogger {
         lastActivity: logs.length > 0 ? new Date(logs[0].timestamp) : null,
       };
     } catch (error) {
-      console.error('Error getting user audit summary:', error);
+      logger.error('Error getting user audit summary:', error);
       return {
         totalEvents: 0,
         signInCount: 0,

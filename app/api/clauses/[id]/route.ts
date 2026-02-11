@@ -45,8 +45,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       return NextResponse.json({ clause });
     } catch (error) {
-      console.error("Error fetching clause:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -71,8 +70,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       return NextResponse.json({ clause: updatedClause });
     } catch (error) {
-      console.error("Error updating clause:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -98,8 +96,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         deleted: true 
       });
     } catch (error) {
-      console.error("Error deleting clause:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

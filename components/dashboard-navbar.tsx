@@ -47,8 +47,7 @@ export default function DashboardNavbar({ profile, onMenuClick }: DashboardNavba
           setIsSteward(data.role === 'steward' || data.roles?.includes('steward'));
         }
       } catch (error) {
-        console.error('Failed to load user roles:', error);
-        // Default to showing basic features
+// Default to showing basic features
         setIsAdmin(false);
       }
     };

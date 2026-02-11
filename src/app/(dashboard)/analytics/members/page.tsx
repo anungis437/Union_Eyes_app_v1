@@ -142,7 +142,6 @@ export default function MemberEngagementDashboard() {
       setChurnRisk(churnData);
       setEngagementTrends(trendsData);
     } catch (error) {
-      console.error('Failed to fetch member analytics:', error);
     } finally {
       setLoading(false);
     }
@@ -158,7 +157,6 @@ export default function MemberEngagementDashboard() {
       await fetch('/api/analytics/refresh', { method: 'POST' });
       await fetchMemberAnalytics();
     } catch (error) {
-      console.error('Failed to refresh analytics:', error);
     } finally {
       setRefreshing(false);
     }
@@ -182,7 +180,6 @@ export default function MemberEngagementDashboard() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Failed to export analytics:', error);
     }
   };
 

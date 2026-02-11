@@ -112,9 +112,7 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     return NextResponse.json({ prediction });
     
   } catch (error) {
-    console.error('Timeline prediction error:', error);
-
-    if (error instanceof z.ZodError) {
+if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request', details: error.errors },
         { status: 400 }

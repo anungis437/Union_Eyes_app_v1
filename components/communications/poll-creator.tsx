@@ -148,8 +148,7 @@ export function PollCreator({ tenantId, pollId, onSave, onCancel }: PollCreatorP
 
       if (onSave) onSave();
     } catch (error) {
-      console.error('Failed to save poll:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to save poll',
         variant: 'destructive',

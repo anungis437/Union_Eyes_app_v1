@@ -30,8 +30,7 @@ export default function CancellationPopup({ profile }: CancellationPopupProps) {
         return;
       }
     } catch (error) {
-      console.error('Error accessing localStorage:', error);
-    }
+}
     
     // Check if we've already shown this cancellation
     const cancelationKey = `cancellation_shown_${profile.userId}`;
@@ -51,8 +50,7 @@ export default function CancellationPopup({ profile }: CancellationPopupProps) {
           localStorage.setItem('active_popup', 'cancellation');
           setIsOpen(true);
         } catch (error) {
-          console.error('Error accessing localStorage:', error);
-        }
+}
       }, 800);
       
       return () => clearTimeout(timer);
@@ -70,16 +68,14 @@ export default function CancellationPopup({ profile }: CancellationPopupProps) {
         localStorage.removeItem('active_popup');
       }
     } catch (error) {
-      console.error('Error accessing localStorage:', error);
-    }
+}
     
     // Remember that we've shown it
     try {
       const cancelationKey = `cancellation_shown_${profile.userId}`;
       localStorage.setItem(cancelationKey, new Date().toISOString());
     } catch (error) {
-      console.error("Error writing to localStorage:", error);
-    }
+}
   };
 
   // Format dates for display

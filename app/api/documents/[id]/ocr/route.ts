@@ -41,8 +41,7 @@ export const POST = async (
           severity: 'high',
           details: { documentId: params.id, error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error("Error processing document OCR:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to process document OCR", details: error instanceof Error ? error.message : "Unknown error" },
           { status: 500 }
         );

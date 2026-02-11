@@ -87,8 +87,7 @@ export function SearchBarAdvanced({
           setRecentSearches(JSON.parse(stored));
         }
       } catch (error) {
-        console.error("Failed to load recent searches:", error);
-      }
+}
     }
   }, [showRecentSearches]);
 
@@ -127,8 +126,7 @@ export function SearchBarAdvanced({
     try {
       localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
     } catch (error) {
-      console.error("Failed to save recent searches:", error);
-    }
+}
   };
 
   const handleSearch = (value?: string) => {

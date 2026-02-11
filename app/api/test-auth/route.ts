@@ -12,15 +12,7 @@ export const GET = async () => {
         sessionId: null,
         organizationId: context.organizationId,
       };
-
-      console.log('[API /api/test-auth] Full auth result:', {
-        userId: authResult.userId,
-        sessionId: authResult.sessionId,
-        orgId: authResult.organizationId,
-        hasSession: !!authResult.sessionId,
-      });
-
-      return NextResponse.json({
+return NextResponse.json({
         success: true,
         userId: authResult.userId,
         sessionId: authResult.sessionId,
@@ -28,8 +20,7 @@ export const GET = async () => {
         message: authResult.userId ? 'Authenticated' : 'Not authenticated',
       });
     } catch (error) {
-      console.error('[API /api/test-auth] Error:', error);
-      return NextResponse.json({
+return NextResponse.json({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       }, { status: 500 });

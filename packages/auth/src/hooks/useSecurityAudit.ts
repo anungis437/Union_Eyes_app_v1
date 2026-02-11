@@ -15,6 +15,7 @@ import { securityAuditService } from '../services/securityAuditService';
 import { anomalyDetectionService } from '../services/anomalyDetectionService';
 import { complianceReportingService } from '../services/complianceReportingService';
 import { auditRetentionService } from '../services/auditRetentionService';
+import { logger } from '../utils/logger';
 import type {
   AuditLog,
   AuditLogFilters,
@@ -184,7 +185,7 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
     try {
       await securityAuditService.logAuthEvent(params);
     } catch (err) {
-      console.error('Failed to log auth event:', err);
+      logger.error('Failed to log auth event:', err);
     }
   }, []);
 
@@ -192,7 +193,7 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
     try {
       await securityAuditService.logDataAccess(params);
     } catch (err) {
-      console.error('Failed to log data access:', err);
+      logger.error('Failed to log data access:', err);
     }
   }, []);
 
@@ -200,7 +201,7 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
     try {
       await securityAuditService.logSecurityEvent(params);
     } catch (err) {
-      console.error('Failed to log security event:', err);
+      logger.error('Failed to log security event:', err);
     }
   }, []);
 
@@ -208,7 +209,7 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
     try {
       await securityAuditService.logPermissionCheck(params);
     } catch (err) {
-      console.error('Failed to log permission check:', err);
+      logger.error('Failed to log permission check:', err);
     }
   }, []);
 
@@ -226,7 +227,7 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
       if (result.success && result.data) {
         // Timeline entries are different from audit logs
         // Store in anomalies or create separate state if needed
-        console.log('Security timeline:', result.data);
+        setAnomalies(result.data as AnomalyDetection[]);
       } else {
         setError(result.error || 'Failed to fetch timeline');
       }
@@ -248,7 +249,7 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
       if (result.success && result.data) {
         // UserActivitySummary doesn't have logs property
         // Store summary data or fetch logs separately
-        console.log('User activity summary:', result.data);
+        setBaseline(result.data as UserBaseline);
       } else {
         setError(result.error || 'Failed to fetch user activity');
       }

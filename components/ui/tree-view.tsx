@@ -109,8 +109,7 @@ export function TreeView({
         const children = await onLoadChildren(node);
         updateNode(node.id, { ...updatedNode, children, isLoading: false });
       } catch (error) {
-        console.error("Failed to load children:", error);
-        updateNode(node.id, { ...updatedNode, isLoading: false });
+updateNode(node.id, { ...updatedNode, isLoading: false });
       }
     }
   };

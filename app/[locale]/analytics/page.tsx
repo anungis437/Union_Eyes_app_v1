@@ -85,8 +85,7 @@ export default function AnalyticsPage() {
       {showDesigner && (
         <DashboardDesigner
           onSave={async (dashboard) => {
-            console.log("Dashboard saved:", dashboard);
-            setShowDesigner(false);
+setShowDesigner(false);
           }}
         />
       )}
@@ -95,8 +94,7 @@ export default function AnalyticsPage() {
       {showWidgetLibrary && (
         <AnalyticsWidgetLibrary
           onAddWidget={(widget) => {
-            console.log("Widget added:", widget);
-            setShowWidgetLibrary(false);
+setShowWidgetLibrary(false);
           }}
         />
       )}

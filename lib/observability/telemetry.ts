@@ -47,8 +47,7 @@ export function initializeTelemetry(): NodeSDK | null {
                           process.env.NODE_ENV === 'production';
   
   if (!telemetryEnabled) {
-    console.log('[Telemetry] Disabled - set OTEL_ENABLED=true to enable');
-    return null;
+return null;
   }
 
   const serviceName = process.env.OTEL_SERVICE_NAME || 'union-eyes-app';
@@ -101,22 +100,17 @@ export function initializeTelemetry(): NodeSDK | null {
 
   try {
     sdk.start();
-    console.log('[Telemetry] OpenTelemetry initialized successfully');
-    console.log(`[Telemetry] Service: ${serviceName} (${environment})`);
-    console.log(`[Telemetry] Exporting to: ${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}`);
-    
-    // Graceful shutdown on process termination
+// Graceful shutdown on process termination
     process.on('SIGTERM', () => {
       sdk.shutdown()
-        .then(() => console.log('[Telemetry] SDK shut down successfully'))
-        .catch((error) => console.error('[Telemetry] Error shutting down SDK', error))
+        .then(() => undefined)
+        .catch((error) => undefined)
         .finally(() => process.exit(0));
     });
 
     return sdk;
   } catch (error) {
-    console.error('[Telemetry] Failed to initialize OpenTelemetry:', error);
-    return null;
+return null;
   }
 }
 

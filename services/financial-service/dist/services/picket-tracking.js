@@ -155,8 +155,7 @@ async function checkIn(request, picketLocation) {
         };
     }
     catch (error) {
-        console.error('Check-in error:', error);
-        return {
+return {
             success: false,
             error: error.message || 'Failed to check in',
         };
@@ -204,8 +203,7 @@ async function checkOut(request) {
         };
     }
     catch (error) {
-        console.error('Check-out error:', error);
-        return {
+return {
             success: false,
             error: error.message || 'Failed to check out',
         };

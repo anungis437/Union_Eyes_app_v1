@@ -31,6 +31,7 @@
  */
 
 import { db } from '@/db/db';
+import { logger } from '@/lib/logger';
 
 /**
  * Metric event types
@@ -152,7 +153,7 @@ if (typeof window === 'undefined') {
   setInterval(() => {
     if (metricBuffer.length > 0) {
       flushMetrics().catch(err => {
-        console.error('[LROMetrics] Flush error:', err);
+        logger.error('[LROMetrics] Flush error', { error: err });
       });
     }
   }, FLUSH_INTERVAL_MS);
@@ -201,7 +202,7 @@ async function flushMetrics(): Promise<void> {
   // await db.insert(metricsTable).values(events);
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('[LROMetrics] Flushed events to database:', events.length);
+    logger.info('[LROMetrics] Flushed events to database', { count: events.length });
   }
 }
 
@@ -322,7 +323,12 @@ export async function getAggregatedMetrics(
       endDate,
     };
   } catch (error) {
-    console.error('[LROMetrics] Error querying metrics:', error);
+    logger.error('[LROMetrics] Error querying metrics', {
+      error,
+      startDate,
+      endDate,
+      organizationId,
+    });
     // Return empty metrics on error
     return {
       totalCases: 0,

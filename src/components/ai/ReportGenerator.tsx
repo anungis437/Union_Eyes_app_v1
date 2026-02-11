@@ -140,7 +140,6 @@ export function ReportGenerator({
       // Poll for job status
       pollJobStatus(serverJobId);
     } catch (error) {
-      console.error('Report generation failed:', error);
       const failedReport = { ...newReport, status: 'failed' as const };
       setCurrentReport(failedReport);
       updateReportInHistory(failedReport);
@@ -189,7 +188,6 @@ export function ReportGenerator({
           }
         }
       } catch (error) {
-        console.error('Failed to poll job status:', error);
         clearInterval(pollInterval);
       }
     }, 2000); // Poll every 2 seconds

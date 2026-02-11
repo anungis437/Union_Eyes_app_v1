@@ -1,16 +1,16 @@
-# 🔐 Encryption System Guide - Union Eyes
+# ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â Encryption System Guide - Union Eyes
 
 ## Overview
 
 This guide covers the encryption system for protecting Personally Identifiable Information (PII) in Union Eyes, with a focus on **Social Insurance Numbers (SIN)**, **Social Security Numbers (SSN)**, and **bank account details**.
 
-**Status**: ✅ Fully Implemented  
+**Status**: ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Fully Implemented  
 **Last Updated**: 2026-02-06  
 **Compliance**: PIPEDA, GDPR, SOC 2, CRA Requirements
 
 ---
 
-## 📋 Table of Contents
+## ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â¹ Table of Contents
 
 1. [Architecture](#architecture)
 2. [Azure Key Vault Integration](#azure-key-vault-integration)
@@ -101,9 +101,9 @@ az ad sp create-for-rbac \
 
 **Save the output:**
 
-- `appId` → `AZURE_CLIENT_ID`
-- `password` → `AZURE_CLIENT_SECRET`
-- `tenant` → `AZURE_TENANT_ID`
+- `appId` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ `AZURE_CLIENT_ID`
+- `password` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ `AZURE_CLIENT_SECRET`
+- `tenant` ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ `AZURE_TENANT_ID`
 
 #### 3. Grant Permissions
 
@@ -261,12 +261,8 @@ export async function migrateAllSINs() {
       await db.update(users)
         .set({ encryptedSin: encrypted, sin: null })
         .where(eq(users.userId, member.userId));
-      
-      console.log(`Migrated SIN for member ${member.userId}`);
-    }
+}
   }
-
-  console.log('Migration complete');
 }
 ```
 
@@ -339,8 +335,6 @@ import { generateT4A } from '@/lib/services/strike-fund-tax-service';
 
 // Generate T4A for strike pay
 const t4a = await generateT4A(memberId, 2025);
-
-console.log(t4a);
 // {
 //   slipType: 'T4A',
 //   taxYear: 2025,
@@ -352,7 +346,7 @@ console.log(t4a);
 
 ### RL-1 Slip (Quebec)
 
-**Revenu Québec Requirements:**
+**Revenu QuÃƒÆ’Ã‚Â©bec Requirements:**
 
 - Case O: Autres revenus (Other Income)
 - **NAS (NAS = SIN) required** for all RL-1 slips
@@ -363,12 +357,10 @@ import { generateRL1 } from '@/lib/services/strike-fund-tax-service';
 
 // Generate RL-1 for Quebec members
 const rl1 = await generateRL1(memberId, 2025);
-
-console.log(rl1);
 // {
 //   slipType: 'RL-1',
 //   taxYear: 2025,
-//   recipientNAS: '123456789', // DECRYPTED for Revenu Québec
+//   recipientNAS: '123456789', // DECRYPTED for Revenu QuÃƒÆ’Ã‚Â©bec
 //   caseO_autresRevenus: 30000,
 //   // ...
 // }
@@ -393,7 +385,7 @@ ENCRYPTION_KEY_NAME=pii-encryption-key
 
 ```bash
 # .env.local
-# Generate: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+# Generate: node -e "logger.info(require('crypto').randomBytes(32).toString('base64'))"
 FALLBACK_ENCRYPTION_KEY=your-base64-key-here
 ```
 
@@ -403,7 +395,6 @@ FALLBACK_ENCRYPTION_KEY=your-base64-key-here
 import { generateEncryptionKey } from '@/lib/encryption';
 
 const key = generateEncryptionKey();
-console.log(key);
 // Copy to .env.local: FALLBACK_ENCRYPTION_KEY=...
 ```
 
@@ -464,11 +455,7 @@ export async function rotateEncryptionKey(
     await db.update(users)
       .set({ encryptedSin: reEncrypted })
       .where(eq(users.userId, member.userId));
-    
-    console.log(`Rotated key for member ${member.userId}`);
-  }
-
-  console.log('Key rotation complete');
+}
 }
 ```
 
@@ -528,13 +515,13 @@ pnpm test __tests__/lib/encryption.test.ts
 
 **Coverage:**
 
-- ✅ SIN encryption/decryption
-- ✅ Format validation
-- ✅ Masked display
-- ✅ Error handling
-- ✅ Performance (< 50ms per operation)
-- ✅ AES-256-GCM verification
-- ✅ Key version tracking
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ SIN encryption/decryption
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Format validation
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Masked display
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Error handling
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Performance (< 50ms per operation)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ AES-256-GCM verification
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Key version tracking
 
 ### Integration Tests
 
@@ -565,10 +552,7 @@ const { encryptSIN, decryptSIN } = require('./lib/encryption');
 
 (async () => {
   const encrypted = await encryptSIN('123456789');
-  console.log('Encrypted:', encrypted);
-  
-  const decrypted = await decryptSIN(encrypted);
-  console.log('Decrypted:', decrypted);
+const decrypted = await decryptSIN(encrypted);
 })();
 "
 ```
@@ -592,7 +576,7 @@ pnpm install -w @azure/keyvault-keys
 **Generate Valid Key:**
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+node -e "logger.info(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 Add to `.env.local`:
@@ -616,21 +600,12 @@ import { encryptionService } from '@/lib/encryption';
 
 // Check if data is encrypted
 const isEnc = encryptionService.isEncrypted(member.encryptedSin);
-console.log('Is encrypted:', isEnc);
-
 // Try manual decryption
 try {
   const data = JSON.parse(
     Buffer.from(member.encryptedSin, 'base64').toString('utf8')
   );
-  console.log('Encrypted data structure:', {
-    hasCiphertext: !!data.ciphertext,
-    hasIV: !!data.iv,
-    hasAuthTag: !!data.authTag,
-    keyVersion: data.keyVersion,
-  });
 } catch (error) {
-  console.error('Invalid encrypted data format', error);
 }
 ```
 
@@ -651,12 +626,6 @@ az keyvault key show \
 **Verify Environment:**
 
 ```typescript
-console.log({
-  keyVaultUrl: process.env.AZURE_KEY_VAULT_URL,
-  clientId: process.env.AZURE_CLIENT_ID,
-  tenantId: process.env.AZURE_TENANT_ID,
-  hasSecret: !!process.env.AZURE_CLIENT_SECRET,
-});
 ```
 
 #### 5. "SIN not decrypted for T4A generation"
@@ -685,7 +654,7 @@ WHERE user_id = 'member-id-here';
 
 ## Security Best Practices
 
-### Do's ✅
+### Do's ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦
 
 1. **Always encrypt SIN before storage**
 
@@ -725,15 +694,15 @@ WHERE user_id = 'member-id-here';
    }
    ```
 
-### Don'ts ❌
+### Don'ts ÃƒÂ¢Ã‚ÂÃ…â€™
 
 1. **Never log plaintext SIN**
 
    ```typescript
-   // ❌ NEVER DO THIS
+   // ÃƒÂ¢Ã‚ÂÃ…â€™ NEVER DO THIS
    logger.info('Processing SIN', { sin: plaintextSIN });
    
-   // ✅ DO THIS INSTEAD
+   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ DO THIS INSTEAD
    logger.info('Processing SIN', {
      sinHash: encryptionService.hash(plaintextSIN),
    });
@@ -742,10 +711,10 @@ WHERE user_id = 'member-id-here';
 2. **Never expose plaintext SIN in API**
 
    ```typescript
-   // ❌ NEVER DO THIS
+   // ÃƒÂ¢Ã‚ÂÃ…â€™ NEVER DO THIS
    return { sin: decryptedSIN };
    
-   // ✅ DO THIS INSTEAD
+   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ DO THIS INSTEAD
    const masked = await formatSINForDisplay(encryptedSIN, true);
    return { sin: masked };
    ```
@@ -753,23 +722,23 @@ WHERE user_id = 'member-id-here';
 3. **Never store plaintext SIN**
 
    ```typescript
-   // ❌ NEVER DO THIS
+   // ÃƒÂ¢Ã‚ÂÃ…â€™ NEVER DO THIS
    await db.insert(users).values({ sin: plaintextSIN });
    
-   // ✅ DO THIS INSTEAD
+   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ DO THIS INSTEAD
    const encrypted = await encryptSIN(plaintextSIN);
    await db.insert(users).values({ encryptedSin: encrypted });
    ```
 
 4. **Never use weak encryption**
-   - ❌ Base64 encoding (not encryption!)
-   - ❌ MD5 hashing (reversible)
-   - ✅ AES-256-GCM with Azure Key Vault
+   - ÃƒÂ¢Ã‚ÂÃ…â€™ Base64 encoding (not encryption!)
+   - ÃƒÂ¢Ã‚ÂÃ…â€™ MD5 hashing (reversible)
+   - ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ AES-256-GCM with Azure Key Vault
 
 5. **Never skip audit logging**
 
    ```typescript
-   // ✅ ALWAYS LOG DECRYPTION
+   // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ ALWAYS LOG DECRYPTION
    logger.info('SIN decrypted', {
      action: 'decrypt_sin',
      purpose: 't4a_generation',
@@ -783,32 +752,32 @@ WHERE user_id = 'member-id-here';
 
 ### PIPEDA (Personal Information Protection and Electronic Documents Act)
 
-- ✅ **Encryption at rest** (AES-256-GCM)
-- ✅ **Access controls** (Azure Key Vault RBAC)
-- ✅ **Audit trail** (decryption logging)
-- ✅ **Data minimization** (masked display)
-- ✅ **Consent tracking** (registration flow)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Encryption at rest** (AES-256-GCM)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Access controls** (Azure Key Vault RBAC)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Audit trail** (decryption logging)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Data minimization** (masked display)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Consent tracking** (registration flow)
 
 ### GDPR (General Data Protection Regulation)
 
-- ✅ **Article 32**: Security of processing (encryption)
-- ✅ **Article 25**: Data protection by design
-- ✅ **Article 30**: Records of processing (audit logs)
-- ✅ **Right to erasure** (delete encrypted data)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Article 32**: Security of processing (encryption)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Article 25**: Data protection by design
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Article 30**: Records of processing (audit logs)
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Right to erasure** (delete encrypted data)
 
 ### SOC 2 Type II
 
-- ✅ **CC6.1**: Logical access controls
-- ✅ **CC6.6**: Encryption of sensitive data
-- ✅ **CC6.7**: Transmission security
-- ✅ **CC7.2**: Monitoring of security events
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **CC6.1**: Logical access controls
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **CC6.6**: Encryption of sensitive data
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **CC6.7**: Transmission security
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **CC7.2**: Monitoring of security events
 
 ### CRA (Canada Revenue Agency)
 
-- ✅ **T4A reporting** with SIN
-- ✅ **RL-1 reporting** with NAS
-- ✅ **Secure storage** of taxpayer information
-- ✅ **February 28 deadline** compliance
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **T4A reporting** with SIN
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **RL-1 reporting** with NAS
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **Secure storage** of taxpayer information
+- ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ **February 28 deadline** compliance
 
 ---
 

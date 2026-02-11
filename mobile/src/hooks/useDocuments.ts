@@ -209,7 +209,6 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
           uploadedAt: new Date(),
         });
       } catch (error: any) {
-        console.error('Upload failed:', error);
         updateDocument(document.id, { status: DocumentStatus.FAILED });
         throw error;
       }
@@ -227,8 +226,7 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
 
   const resumeUpload = useCallback(async (id: string) => {
     const tasks = documentUploadService.getPendingUploads();
-    const task = tasks.find((t) => t.documentId === id);
-    console.log('Resume upload:', id);
+    tasks.find((t) => t.documentId === id);
   }, []);
 
   const cancelUpload = useCallback((id: string) => {
@@ -240,7 +238,7 @@ export function useDocumentUpload(): UseDocumentUploadReturn {
   }, []);
 
   const retryUpload = useCallback(async (id: string) => {
-    console.log('Retry upload:', id);
+    void id;
   }, []);
 
   return {
@@ -428,7 +426,6 @@ export function useDocumentCapture() {
               status: DocumentStatus.OCR_COMPLETED,
             });
           } catch (ocrError) {
-            console.error('OCR failed:', ocrError);
             await updateDocument(document.id, {
               status: DocumentStatus.OCR_FAILED,
             });
@@ -436,8 +433,7 @@ export function useDocumentCapture() {
         }
 
         return document;
-      } catch (error) {
-        console.error('Document capture failed:', error);
+      } catch {
         Alert.alert('Error', 'Failed to capture document');
         return null;
       } finally {
@@ -500,7 +496,6 @@ export function useDocumentCapture() {
               status: DocumentStatus.OCR_COMPLETED,
             });
           } catch (ocrError) {
-            console.error('OCR failed:', ocrError);
             await updateDocument(document.id, {
               status: DocumentStatus.OCR_FAILED,
             });
@@ -508,8 +503,7 @@ export function useDocumentCapture() {
         }
 
         return document;
-      } catch (error) {
-        console.error('Gallery pick failed:', error);
+      } catch {
         Alert.alert('Error', 'Failed to pick images');
         return null;
       } finally {

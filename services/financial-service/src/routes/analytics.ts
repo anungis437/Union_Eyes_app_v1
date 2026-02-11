@@ -20,6 +20,7 @@ import {
   stipendDisbursements,
 } from '../db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 const router = Router();
 
@@ -64,7 +65,7 @@ router.get('/forecast/:fundId', async (req: Request, res: Response) => {
       forecast,
     });
   } catch (error) {
-    console.error('Error generating forecast:', error);
+    logger.error('Error generating forecast', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate forecast',
@@ -99,7 +100,7 @@ router.get('/historical/:fundId', async (req: Request, res: Response) => {
       count: historicalData.length,
     });
   } catch (error) {
-    console.error('Error fetching historical data:', error);
+    logger.error('Error fetching historical data', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch historical data',
@@ -123,7 +124,7 @@ router.get('/seasonal/:fundId', async (req: Request, res: Response) => {
       patterns,
     });
   } catch (error) {
-    console.error('Error detecting seasonal patterns:', error);
+    logger.error('Error detecting seasonal patterns', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to detect patterns',
@@ -147,7 +148,7 @@ router.post('/alerts/process', async (req: Request, res: Response) => {
       message: `Processed alerts for tenant. ${alertsSent} alerts sent.`,
     });
   } catch (error) {
-    console.error('Error processing alerts:', error);
+    logger.error('Error processing alerts', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to process alerts',
@@ -178,7 +179,7 @@ router.post('/reports/weekly', async (req: Request, res: Response) => {
       message: 'Weekly forecast report generated and queued for delivery',
     });
   } catch (error) {
-    console.error('Error generating weekly report:', error);
+    logger.error('Error generating weekly report', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate report',
@@ -305,7 +306,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       summary,
     });
   } catch (error) {
-    console.error('Error fetching financial summary:', error);
+    logger.error('Error fetching financial summary', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch summary',
@@ -382,7 +383,7 @@ router.get('/trends', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching trends:', error);
+    logger.error('Error fetching trends', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch trends',
@@ -430,7 +431,7 @@ router.get('/top-donors', async (req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    console.error('Error fetching top donors:', error);
+    logger.error('Error fetching top donors', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch top donors',
@@ -527,7 +528,7 @@ router.get('/fund-health', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching fund health:', error);
+    logger.error('Error fetching fund health', { error });
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch fund health',

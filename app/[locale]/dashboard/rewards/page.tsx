@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { db } from '@/db';
 import { getBalance, listLedger } from '@/lib/services/rewards/wallet-service';
+import { getTotalEarned, getTotalRedeemed } from '@/lib/utils/rewards-stats-utils';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,10 @@ export default async function RewardsWalletPage() {
     limit: 20,
     offset: 0,
   });
+  
+  // Calculate totals from ledger
+  const totalEarned = await getTotalEarned(userId, orgId);
+  const totalRedeemed = await getTotalRedeemed(userId, orgId);
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -68,8 +73,7 @@ export default async function RewardsWalletPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {/* TODO: Calculate from ledger where type = 'earned' */}
-              -
+              {totalEarned.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               {t('wallet.stats.allTime', { defaultValue: 'All time' })}
@@ -86,8 +90,7 @@ export default async function RewardsWalletPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {/* TODO: Calculate from ledger where type = 'redeemed' */}
-              -
+              {totalRedeemed.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               {t('wallet.stats.allTime', { defaultValue: 'All time' })}

@@ -11,6 +11,7 @@ import {
   type WebhookReceipt,
 } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * Verify Shopify webhook HMAC signature
@@ -39,7 +40,7 @@ export function verifyShopifySignature(
       Buffer.from(hmacHeader)
     );
   } catch (error) {
-    console.error('[WebhookService] Signature verification failed:', error);
+    logger.error('[WebhookService] Signature verification failed', { error });
     return false;
   }
 }
@@ -107,7 +108,10 @@ export async function processWebhookIdempotent<T>(
   const alreadyProcessed = await isWebhookProcessed(provider, webhookId);
   
   if (alreadyProcessed) {
-    console.log(`[WebhookService] Webhook ${webhookId} already processed, skipping`);
+    logger.info('[WebhookService] Webhook already processed, skipping', {
+      provider,
+      webhookId,
+    });
     return 'already_processed';
   }
 
@@ -125,7 +129,12 @@ export async function processWebhookIdempotent<T>(
 
     return result;
   } catch (error) {
-    console.error(`[WebhookService] Error processing webhook ${webhookId}:`, error);
+    logger.error('[WebhookService] Error processing webhook', {
+      error,
+      provider,
+      webhookId,
+      eventType,
+    });
     // Do not record as processed if handler fails
     throw error;
   }
@@ -155,7 +164,7 @@ export function extractRedemptionIdFromDiscount(
   // Validate UUID format (basic check)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(redemptionId)) {
-    console.warn(`[WebhookService] Invalid redemption ID format: ${redemptionId}`);
+    logger.warn('[WebhookService] Invalid redemption ID format', { redemptionId });
     return null;
   }
 
@@ -193,7 +202,7 @@ export function parseShopifyHeaders(
   const webhookId = getHeader('x-shopify-webhook-id');
 
   if (!hmac || !topic || !shopDomain || !webhookId) {
-    console.error('[WebhookService] Missing required Shopify headers');
+    logger.error('[WebhookService] Missing required Shopify headers');
     return null;
   }
 

@@ -110,8 +110,7 @@ export function OrganizationTree({
         return updateTree(prev, path, children);
       });
     } catch (err) {
-      console.error("Error loading children:", err);
-      setTreeData(prev => {
+setTreeData(prev => {
         if (!prev) return null;
         return updateTree(prev, path, []);
       });

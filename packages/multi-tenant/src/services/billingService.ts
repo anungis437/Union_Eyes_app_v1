@@ -10,6 +10,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { SimpleLogger } from '../utils/logger';
 
 // =====================================================
 // TYPE DEFINITIONS
@@ -192,6 +193,7 @@ export const PLAN_CONFIGS: Record<string, PlanLimits> = {
 
 export class BillingService {
   private stripe: Stripe;
+  private logger = new SimpleLogger('BillingService');
 
   constructor(
     private supabase: SupabaseClient,
@@ -615,7 +617,7 @@ export class BillingService {
           break;
 
         default:
-          console.log(`Unhandled webhook event type: ${event.type}`);
+          this.logger.info('Unhandled webhook event type', { eventType: event.type });
       }
 
       return { success: true, error: null };

@@ -124,8 +124,7 @@ export function TemplateGallery({
       const data = await response.json();
       setTemplates(data.templates || []);
     } catch (error) {
-      console.error('Error fetching templates:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load templates',
         variant: 'destructive',
@@ -168,8 +167,7 @@ export function TemplateGallery({
 
       fetchTemplates();
     } catch (error) {
-      console.error('Error duplicating template:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to duplicate template',
         variant: 'destructive',
@@ -198,8 +196,7 @@ export function TemplateGallery({
       setTemplates((prev) => prev.filter((t) => t.id !== templateId));
       setDeleteConfirm(null);
     } catch (error) {
-      console.error('Error deleting template:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to delete template',
         variant: 'destructive',

@@ -61,8 +61,7 @@ export function ScheduledReportForm({
       const data = await response.json();
       setReports(data.reports || []);
     } catch (error) {
-      console.error('Error fetching reports:', error);
-      toast.error('Failed to load reports');
+toast.error('Failed to load reports');
     }
   };
 
@@ -125,8 +124,7 @@ export function ScheduledReportForm({
       toast.success(schedule ? 'Schedule updated' : 'Schedule created');
       onSubmit();
     } catch (error) {
-      console.error('Error saving schedule:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to save schedule');
+toast.error(error instanceof Error ? error.message : 'Failed to save schedule');
     } finally {
       setLoading(false);
     }

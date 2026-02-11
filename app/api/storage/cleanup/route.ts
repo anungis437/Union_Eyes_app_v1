@@ -220,8 +220,7 @@ export const POST = withRoleAuth(90, async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error during storage cleanup:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to perform cleanup", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );

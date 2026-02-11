@@ -50,8 +50,7 @@ export async function POST(req: NextRequest) {
       signer,
     });
   } catch (error) {
-    console.error("Record signature error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to record signature" },
       { status: 500 }
     );

@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
             return await handleRefundCreated(payload);
           
           default:
-            console.warn('[Webhook] Unhandled topic', { topic, webhookId });
+            logger.warn('[Webhook] Unhandled topic', { topic, webhookId });
             return { status: 'ignored', reason: 'unsupported_topic' };
         }
       }
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[Webhook] Processing error', error);
+    logger.error('[Webhook] Processing error', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -149,19 +149,19 @@ async function handleOrderPaid(payload: any) {
   const orderNumber = payload.order_number;
   const discountCodes = payload.discount_codes || [];
 
-  console.log('[Webhook] orders/paid', { orderId, orderNumber, discountCodes });
+  logger.info('[Webhook] orders/paid', { orderId, orderNumber, discountCodes });
 
   // Extract redemption ID from discount code
   const redemptionId = extractRedemptionIdFromDiscount(discountCodes);
   
   if (!redemptionId) {
-    console.warn('[Webhook] No Union Eyes discount code found', { orderId });
+    logger.warn('[Webhook] No Union Eyes discount code found', { orderId });
     return { status: 'ignored', reason: 'no_redemption_discount' };
   }
 
   const redemption = await getRedemptionByIdInternal(redemptionId);
   if (!redemption) {
-    console.warn('[Webhook] Redemption not found for discount code', { redemptionId });
+    logger.warn('[Webhook] Redemption not found for discount code', { redemptionId });
     return { status: 'ignored', reason: 'redemption_not_found' };
   }
 
@@ -208,13 +208,13 @@ async function handleOrderFulfilled(payload: any) {
   const orderNumber = payload.order_number;
   const fulfillments = payload.fulfillments || [];
 
-  console.log('[Webhook] orders/fulfilled', { orderId, orderNumber, fulfillments: fulfillments.length });
+  logger.info('[Webhook] orders/fulfilled', { orderId, orderNumber, fulfillments: fulfillments.length });
 
   // Find redemption by order ID
   const redemption = await getRedemptionByOrderId(orderId);
   
   if (!redemption) {
-    console.warn('[Webhook] Redemption not found for order', { orderId });
+    logger.warn('[Webhook] Redemption not found for order', { orderId });
     return { status: 'ignored', reason: 'redemption_not_found' };
   }
 
@@ -254,13 +254,13 @@ async function handleRefundCreated(payload: any) {
   const orderId = String(payload.order_id);
   const refundLineItems = payload.refund_line_items || [];
 
-  console.log('[Webhook] refunds/create', { refundId, orderId, lineItems: refundLineItems.length });
+  logger.info('[Webhook] refunds/create', { refundId, orderId, lineItems: refundLineItems.length });
 
   // Find redemption by order ID
   const redemption = await getRedemptionByOrderId(orderId);
   
   if (!redemption) {
-    console.warn('[Webhook] Redemption not found for refund', { orderId, refundId });
+    logger.warn('[Webhook] Redemption not found for refund', { orderId, refundId });
     return { status: 'ignored', reason: 'redemption_not_found' };
   }
 

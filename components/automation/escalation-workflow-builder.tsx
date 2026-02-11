@@ -357,8 +357,7 @@ export default function EscalationWorkflowBuilder() {
 
   // Save workflow
   const saveWorkflow = () => {
-    console.log('Saving escalation workflow:', workflow);
-    // API call would go here
+// API call would go here
   };
 
   // Calculate total delay for a level

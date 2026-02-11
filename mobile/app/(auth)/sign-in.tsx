@@ -113,7 +113,6 @@ export default function SignInScreen() {
 
       router.replace('/(tabs)');
     } catch (err: any) {
-      console.error('Sign in error:', err);
       Alert.alert(
         'Sign In Failed',
         err.errors?.[0]?.message || 'Invalid email or password. Please try again.'

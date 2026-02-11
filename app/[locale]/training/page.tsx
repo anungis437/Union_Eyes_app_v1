@@ -42,8 +42,7 @@ export default function TrainingPage() {
             courses={[]}
             categories={[]}
             onEnroll={async (courseId) => {
-              console.log("Enroll in course:", courseId);
-            }}
+}}
           />
         </TabsContent>
 

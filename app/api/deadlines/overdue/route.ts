@@ -53,8 +53,7 @@ export async function GET(request: NextRequest) {
       count: deadlines.length,
     });
   } catch (error) {
-    console.error('Error fetching overdue deadlines:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch overdue deadlines' },
       { status: 500 }
     );

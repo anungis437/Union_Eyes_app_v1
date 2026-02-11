@@ -73,8 +73,7 @@ export class StripeWebhookHandler {
             };
         }
         catch (error) {
-            console.error('Webhook handler error:', error);
-            if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
+if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
                 return {
                     success: false,
                     message: 'Invalid signature',
@@ -101,8 +100,7 @@ export class StripeWebhookHandler {
      * Process webhook event based on type
      */
     async processEvent(event) {
-        console.log(`Processing webhook event: ${event.type}`);
-        switch (event.type) {
+switch (event.type) {
             case 'customer.subscription.created':
                 await this.handleSubscriptionCreated(event.data.object);
                 break;
@@ -122,15 +120,13 @@ export class StripeWebhookHandler {
                 await this.handleTrialWillEnd(event.data.object);
                 break;
             default:
-                console.log(`Unhandled event type: ${event.type}`);
-        }
+}
     }
     /**
      * Handle subscription created event
      */
     async handleSubscriptionCreated(subscription) {
-        console.log('Subscription created:', subscription.id);
-        // The subscription is already created by billingService.createSubscription()
+// The subscription is already created by billingService.createSubscription()
         // This webhook confirms the subscription was successfully created in Stripe
         // We can use this to trigger notifications or additional processing
         try {
@@ -150,16 +146,14 @@ export class StripeWebhookHandler {
             // TODO: Log subscription creation in audit log
         }
         catch (error) {
-            console.error('Error handling subscription created:', error);
-            throw error;
+throw error;
         }
     }
     /**
      * Handle subscription updated event
      */
     async handleSubscriptionUpdated(subscription) {
-        console.log('Subscription updated:', subscription.id);
-        try {
+try {
             await this.billingService.handleWebhook({
                 type: 'customer.subscription.updated',
                 data: { object: subscription },
@@ -175,16 +169,14 @@ export class StripeWebhookHandler {
             // TODO: Log subscription update in audit log
         }
         catch (error) {
-            console.error('Error handling subscription updated:', error);
-            throw error;
+throw error;
         }
     }
     /**
      * Handle subscription deleted event
      */
     async handleSubscriptionDeleted(subscription) {
-        console.log('Subscription deleted:', subscription.id);
-        try {
+try {
             await this.billingService.handleWebhook({
                 type: 'customer.subscription.deleted',
                 data: { object: subscription },
@@ -201,16 +193,14 @@ export class StripeWebhookHandler {
             // TODO: Log subscription deletion in audit log
         }
         catch (error) {
-            console.error('Error handling subscription deleted:', error);
-            throw error;
+throw error;
         }
     }
     /**
      * Handle invoice payment succeeded event
      */
     async handleInvoicePaymentSucceeded(invoice) {
-        console.log('Invoice payment succeeded:', invoice.id);
-        try {
+try {
             await this.billingService.handleWebhook({
                 type: 'invoice.payment_succeeded',
                 data: { object: invoice },
@@ -226,16 +216,14 @@ export class StripeWebhookHandler {
             // TODO: Log successful payment in audit log
         }
         catch (error) {
-            console.error('Error handling invoice payment succeeded:', error);
-            throw error;
+throw error;
         }
     }
     /**
      * Handle invoice payment failed event
      */
     async handleInvoicePaymentFailed(invoice) {
-        console.log('Invoice payment failed:', invoice.id);
-        try {
+try {
             await this.billingService.handleWebhook({
                 type: 'invoice.payment_failed',
                 data: { object: invoice },
@@ -252,16 +240,14 @@ export class StripeWebhookHandler {
             // TODO: Log payment failure in audit log
         }
         catch (error) {
-            console.error('Error handling invoice payment failed:', error);
-            throw error;
+throw error;
         }
     }
     /**
      * Handle trial will end event (3 days before trial ends)
      */
     async handleTrialWillEnd(subscription) {
-        console.log('Trial will end soon:', subscription.id);
-        try {
+try {
             // Calculate days remaining
             const trialEnd = new Date(subscription.trial_end * 1000);
             const now = new Date();
@@ -269,11 +255,9 @@ export class StripeWebhookHandler {
             // TODO: Send trial ending reminder email with days remaining
             // TODO: Prompt user to add payment method if not already added
             // TODO: Log trial reminder in audit log
-            console.log(`Trial ends in ${daysRemaining} days for subscription ${subscription.id}`);
-        }
+}
         catch (error) {
-            console.error('Error handling trial will end:', error);
-            throw error;
+throw error;
         }
     }
 }

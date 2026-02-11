@@ -20,6 +20,17 @@ import {
   notificationLog 
 } from '../db/schema';
 import { eq, and, desc, inArray } from 'drizzle-orm';
+import { Resend } from 'resend';
+import twilio from 'twilio';
+import { FCMService } from '@/services/fcm-service';
+import { FinancialEmailService } from '@/lib/services/financial-email-service';
+import { logger } from '@/lib/logger';
+
+// Initialize email and SMS clients
+const resend = new Resend(process.env.RESEND_API_KEY);
+const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 // ============================================================================
 // TYPES
@@ -133,7 +144,7 @@ export async function processPendingNotifications(batchSize: number = 50): Promi
       await sendNotification(notification.id);
       processed++;
     } catch (error) {
-      console.error(`Failed to send notification ${notification.id}:`, error);
+      logger.error('Failed to send notification', { error, notificationId: notification.id });
       // Continue processing other notifications
     }
   }
@@ -281,25 +292,51 @@ async function sendEmail(
   body: string,
   data: Record<string, any>
 ): Promise<void> {
-  // TODO: Integrate with email service (SendGrid, AWS SES, etc.)
-  console.log(`[EMAIL] To: ${userId}, Subject: ${subject}`);
-  console.log(`[EMAIL] Body: ${body}`);
-  
-  // Simulated email send
-  // In production, would call:
-  // await emailService.send({ to: userEmail, subject, html: body });
+  try {
+    // Get user email from userId (would need to query user table)
+    // For now, using data.email if provided
+    const userEmail = data.email || `user-${userId}@example.com`;
+    
+    // Use Resend for email delivery
+    await resend.emails.send({
+      from: 'Union Eyes <notifications@unioneyes.com>',
+      to: userEmail,
+      subject,
+      html: body,
+    });
+    
+    logger.info('[EMAIL] Successfully sent', { userEmail, subject });
+  } catch (error) {
+    logger.error('[EMAIL] Failed to send', { error, userEmail: data.email });
+    throw error;
+  }
 }
 
 /**
  * Send SMS notification
  */
-async function sendSMS(userId: string, message: string): Promise<void> {
-  // TODO: Integrate with SMS service (Twilio, AWS SNS, etc.)
-  console.log(`[SMS] To: ${userId}, Message: ${message}`);
-  
-  // Simulated SMS send
-  // In production, would call:
-  // await smsService.send({ to: userPhone, message });
+async function sendSMS(userId: string, message: string, data: Record<string, any> = {}): Promise<void> {
+  try {
+    if (!twilioClient) {
+      logger.warn('[SMS] Twilio not configured, skipping SMS send');
+      return;
+    }
+    
+    // Get user phone from data (would need to query user table)
+    const userPhone = data.phone || `+1234567890`; // Fallback for development
+    
+    // Use Twilio for SMS delivery
+    await twilioClient.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: userPhone,
+    });
+    
+    logger.info('[SMS] Successfully sent', { userPhone });
+  } catch (error) {
+    logger.error('[SMS] Failed to send', { error, userId });
+    throw error;
+  }
 }
 
 /**
@@ -311,12 +348,25 @@ async function sendPushNotification(
   body: string,
   data: Record<string, any>
 ): Promise<void> {
-  // TODO: Integrate with push service (Firebase, OneSignal, etc.)
-  console.log(`[PUSH] To: ${userId}, Title: ${title}, Body: ${body}`);
-  
-  // Simulated push send
-  // In production, would call:
-  // await pushService.send({ userId, title, body, data });
+  try {
+    // Use FCM service for push notifications
+    const results = await FCMService.sendToUser({
+      userId,
+      title,
+      body,
+      data,
+    });
+    
+    const successCount = results.filter(r => r.success).length;
+    logger.info('[PUSH] Sent notifications', {
+      userId,
+      successCount,
+      total: results.length,
+    });
+  } catch (error) {
+    logger.error('[PUSH] Failed to send', { error, userId });
+    throw error;
+  }
 }
 
 /**
@@ -330,7 +380,7 @@ async function createInAppNotification(
   data: Record<string, any>
 ): Promise<void> {
   // Store in database for in-app display
-  console.log(`[IN-APP] User: ${userId}, Type: ${type}, Message: ${message}`);
+  logger.info('[IN-APP] Notification created', { userId, type, message });
   
   // In production, would insert into in_app_notifications table
 }
@@ -670,7 +720,7 @@ export async function retryFailedNotifications(maxAttempts: number = 3): Promise
       await sendNotification(notification.id);
       retried++;
     } catch (error) {
-      console.error(`Retry failed for notification ${notification.id}:`, error);
+       param($m) $level = $m.Groups[1].Value; if ($level -eq 'log' -or $level -eq 'info') { 'logger.info(' } elseif ($level -eq 'warn') { 'logger.warn(' } elseif ($level -eq 'error') { 'logger.error(' } else { 'logger.debug(' } `Retry failed for notification ${notification.id}:`, error);
     }
   }
 

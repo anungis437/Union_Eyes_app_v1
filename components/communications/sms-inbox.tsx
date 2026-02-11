@@ -76,8 +76,7 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
       const { conversations } = await response.json();
       setConversations(conversations || []);
     } catch (error) {
-      console.error('Failed to load conversations:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load conversations',
         variant: 'destructive',
@@ -104,8 +103,7 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
         )
       );
     } catch (error) {
-      console.error('Failed to mark as read:', error);
-    }
+}
   };
 
   // Send reply
@@ -139,8 +137,7 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
       setReplyMessage('');
       loadConversations();
     } catch (error) {
-      console.error('Failed to send reply:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to send reply',
         variant: 'destructive',
@@ -170,8 +167,7 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
         description: 'Conversation archived',
       });
     } catch (error) {
-      console.error('Failed to archive:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to archive conversation',
         variant: 'destructive',
@@ -385,7 +381,7 @@ export function SmsInbox({ tenantId }: SmsInboxProps) {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Press Enter to send • {replyMessage.length} / 160 characters
+                    Press Enter to send â€¢ {replyMessage.length} / 160 characters
                   </p>
                 </div>
               )}

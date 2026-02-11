@@ -88,8 +88,7 @@ export class AuditRetentionService {
             return { success: true, data };
         }
         catch (error) {
-            console.error('Failed to create retention policy:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -122,8 +121,7 @@ export class AuditRetentionService {
             return { success: true, data };
         }
         catch (error) {
-            console.error('Failed to update retention policy:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -143,8 +141,7 @@ export class AuditRetentionService {
             return { success: true };
         }
         catch (error) {
-            console.error('Failed to delete retention policy:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -168,8 +165,7 @@ export class AuditRetentionService {
             return { success: true, data: data || [] };
         }
         catch (error) {
-            console.error('Failed to get retention policies:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -193,8 +189,7 @@ export class AuditRetentionService {
             return { success: true, data: policies };
         }
         catch (error) {
-            console.error('Failed to initialize default policies:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -225,8 +220,7 @@ export class AuditRetentionService {
             return { success: true, data: result };
         }
         catch (error) {
-            console.error('Failed to archive old logs:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -253,8 +247,7 @@ export class AuditRetentionService {
             return { success: true, data: result };
         }
         catch (error) {
-            console.error('Failed to compress archives:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -285,8 +278,7 @@ export class AuditRetentionService {
             };
         }
         catch (error) {
-            console.error('Failed to restore from archive:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -320,8 +312,7 @@ export class AuditRetentionService {
             return { success: true, data: stats };
         }
         catch (error) {
-            console.error('Failed to get archive stats:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -364,8 +355,7 @@ export class AuditRetentionService {
             return { success: true, data: result };
         }
         catch (error) {
-            console.error('Failed to purge expired logs:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -390,8 +380,7 @@ export class AuditRetentionService {
             return data?.length || 0;
         }
         catch (error) {
-            console.error('Failed to purge audit logs:', error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -412,8 +401,7 @@ export class AuditRetentionService {
             return data?.length || 0;
         }
         catch (error) {
-            console.error('Failed to purge login attempts:', error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -435,8 +423,7 @@ export class AuditRetentionService {
             return data?.length || 0;
         }
         catch (error) {
-            console.error('Failed to purge session history:', error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -481,8 +468,7 @@ export class AuditRetentionService {
             };
         }
         catch (error) {
-            console.error('Failed to count expired logs:', error);
-            return { audit_logs: 0, login_attempts: 0, session_history: 0 };
+return { audit_logs: 0, login_attempts: 0, session_history: 0 };
         }
     }
     // ==========================================================================
@@ -528,8 +514,7 @@ export class AuditRetentionService {
             return { success: true, data: usage };
         }
         catch (error) {
-            console.error('Failed to calculate storage usage:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -550,8 +535,7 @@ export class AuditRetentionService {
             return count || 0;
         }
         catch (error) {
-            console.error(`Failed to count ${table}:`, error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -570,8 +554,7 @@ export class AuditRetentionService {
             return count || 0;
         }
         catch (error) {
-            console.error(`Failed to count archived ${table}:`, error);
-            return 0;
+return 0;
         }
     }
     /**
@@ -589,8 +572,7 @@ export class AuditRetentionService {
             };
         }
         catch (error) {
-            console.error('Failed to optimize storage:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -627,8 +609,7 @@ export class AuditRetentionService {
             };
         }
         catch (error) {
-            console.error('Failed to run maintenance tasks:', error);
-            return {
+return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

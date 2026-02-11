@@ -532,8 +532,7 @@ export class SocialMediaService {
         });
       }
     } catch (error) {
-      console.error('Analytics fetch error:', error);
-      throw error;
+throw error;
     }
 
     return analytics;
@@ -608,8 +607,7 @@ export class SocialMediaService {
           is_limited: remaining < limit * 0.1,
         });
       } catch (error) {
-        console.error(`Rate limit check error for ${account.platform}:`, error);
-      }
+}
     }
 
     return statuses;

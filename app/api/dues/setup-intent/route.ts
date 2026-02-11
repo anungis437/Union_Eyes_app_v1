@@ -102,8 +102,7 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error('Error creating SetupIntent:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create setup intent' },
         { status: 500 }
       );

@@ -53,8 +53,7 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       heatmapData,
     });
   } catch (error) {
-    console.error('Heatmap analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch heatmap data' },
       { status: 500 }
     );

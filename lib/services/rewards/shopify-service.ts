@@ -19,6 +19,7 @@
 import { db } from '@/db';
 import { shopifyConfig } from '@/db/schema/recognition-rewards-schema';
 import { eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 // Shopify configuration
 const SHOPIFY_SHOP_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN || 'shop-moi-ca.myshopify.com';
@@ -125,7 +126,7 @@ export async function fetchCuratedCollections(
 
     return collections;
   } catch (error) {
-    console.error('[Shopify] Error fetching collections:', error);
+    logger.error('[Shopify] Error fetching collections', { error, orgId });
     throw new Error('Failed to fetch product catalog');
   }
 }
@@ -206,14 +207,14 @@ async function fetchCollectionByHandle(
   });
 
   if (!response.ok) {
-    console.error('[Shopify] Storefront API error:', response.statusText);
+    logger.error('[Shopify] Storefront API error', { statusText: response.statusText });
     return null;
   }
 
   const result = await response.json();
 
   if (!result.data?.collectionByHandle) {
-    console.warn(`[Shopify] Collection not found: ${handle}`);
+    logger.warn('[Shopify] Collection not found', { handle });
     return null;
   }
 
@@ -276,7 +277,7 @@ export async function createDiscountCode(
       currency,
     };
   } catch (error) {
-    console.error('[Shopify] Error creating discount code:', error);
+    logger.error('[Shopify] Error creating discount code', { error, redemptionId });
     throw new Error('Failed to create discount code');
   }
 }
@@ -320,7 +321,7 @@ async function createPriceRule(
 
   if (!response.ok) {
     const error = await response.text();
-    console.error('[Shopify] Price rule creation error:', error);
+    logger.error('[Shopify] Price rule creation error', { error });
     throw new Error('Failed to create price rule');
   }
 
@@ -357,7 +358,7 @@ async function createDiscountCodeForPriceRule(
 
   if (!response.ok) {
     const error = await response.text();
-    console.error('[Shopify] Discount code creation error:', error);
+    logger.error('[Shopify] Discount code creation error', { error, priceRuleId });
     throw new Error('Failed to create discount code');
   }
 
@@ -404,7 +405,7 @@ export async function createCheckoutSession(
       discountCode,
     };
   } catch (error) {
-    console.error('[Shopify] Error creating checkout session:', error);
+    logger.error('[Shopify] Error creating checkout session', { error, discountCode });
     throw new Error('Failed to create checkout session');
   }
 }
@@ -425,14 +426,14 @@ export async function testShopifyConnection(): Promise<any | null> {
     });
 
     if (!response.ok) {
-      console.error('[Shopify] Connection test failed:', response.statusText);
+      logger.error('[Shopify] Connection test failed', { statusText: response.statusText });
       return null;
     }
 
     const result = await response.json();
     return result.shop;
   } catch (error) {
-    console.error('[Shopify] Connection error:', error);
+    logger.error('[Shopify] Connection error', { error });
     return null;
   }
 }
@@ -533,7 +534,7 @@ export async function getProductByHandle(
       })),
     };
   } catch (error) {
-    console.error('[Shopify] Error fetching product:', error);
+    logger.error('[Shopify] Error fetching product', { error, handle });
     return null;
   }
 }

@@ -29,6 +29,7 @@ import {
 import { eq, and, or, inArray, isNull, sql, desc, asc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/rls-middleware";
+import { logger } from "@/lib/logger";
 
 // =====================================================
 // TYPE EXPORTS
@@ -53,7 +54,7 @@ export type SelectOrganizationRelationship = OrganizationRelationship;
  * @example
  * ```typescript
  * const org = await getOrganizationById("10000000-0000-0000-0000-000000000001");
- * console.log(org?.name); // "Canadian Labour Congress"
+ * logger.info("Organization loaded", { name: org?.name });
  * ```
  */
 export async function getOrganizationById(
@@ -70,7 +71,7 @@ export async function getOrganizationById(
 
       return result[0] ?? null;
     } catch (error) {
-      console.error("Error fetching organization by ID:", error);
+      logger.error("Error fetching organization by ID", { error, id });
       throw new Error(`Failed to fetch organization with ID ${id}`);
     }
   };
@@ -94,7 +95,7 @@ export async function getOrganizationById(
  * @example
  * ```typescript
  * const cupe = await getOrganizationBySlug("cupe-national");
- * console.log(cupe?.member_count); // 700000
+ * logger.info("Organization members", { memberCount: cupe?.member_count });
  * ```
  */
 export async function getOrganizationBySlug(
@@ -111,7 +112,7 @@ export async function getOrganizationBySlug(
 
       return result[0] ?? null;
     } catch (error) {
-      console.error("Error fetching organization by slug:", error);
+      logger.error("Error fetching organization by slug", { error, slug });
       throw new Error(`Failed to fetch organization with slug "${slug}"`);
     }
   };
@@ -162,7 +163,7 @@ export async function getOrganizationWithParent(
 
       return org;
     } catch (error) {
-      console.error("Error fetching organization with parent:", error);
+      logger.error("Error fetching organization with parent", { error, id });
       throw new Error(`Failed to fetch organization with parent for ID ${id}`);
     }
   };
@@ -227,7 +228,7 @@ export async function getOrganizations(
       
       return result;
     } catch (error) {
-      console.error("Error fetching organizations:", error);
+      logger.error("Error fetching organizations", { error, parentId, includeInactive });
       throw new Error(`Failed to fetch organizations${parentId ? ` for parent ${parentId}` : ""}`);
     }
   };
@@ -274,7 +275,7 @@ export async function getOrganizationChildren(
 
       return result;
     } catch (error) {
-      console.error("Error fetching organization children:", error);
+      logger.error("Error fetching organization children", { error, parentId, includeInactive });
       throw new Error(`Failed to fetch children for organization ${parentId}`);
     }
   };
@@ -332,7 +333,7 @@ export async function getOrganizationDescendants(
       
       return result;
     } catch (error) {
-      console.error("Error fetching organization descendants:", error);
+      logger.error("Error fetching organization descendants", { error, ancestorId, includeInactive });
       throw new Error(`Failed to fetch descendants for organization ${ancestorId}`);
     }
   };
@@ -365,7 +366,7 @@ export async function getOrganizationAncestors(
 ): Promise<SelectOrganization[]> {
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     try {
-      console.log('[getOrganizationAncestors] Looking up organization:', childIdOrSlug);
+      logger.info("Organization ancestors lookup", { childIdOrSlug });
       
       // Check if input is a slug or UUID by attempting to find by slug first
       let child;
@@ -379,7 +380,7 @@ export async function getOrganizationAncestors(
       
       if (childBySlug) {
         child = childBySlug;
-        console.log('[getOrganizationAncestors] Found by slug:', { id: child.id, slug: child.slug, hierarchyPath: child.hierarchyPath });
+        logger.info("Organization found by slug", { id: child.id, slug: child.slug, hierarchyPath: child.hierarchyPath });
       } else {
         // Fall back to finding by UUID
         const [childById] = await dbOrTx
@@ -389,21 +390,21 @@ export async function getOrganizationAncestors(
           .limit(1);
         child = childById;
         if (child) {
-          console.log('[getOrganizationAncestors] Found by ID:', { id: child.id, slug: child.slug, hierarchyPath: child.hierarchyPath });
+          logger.info("Organization found by ID", { id: child.id, slug: child.slug, hierarchyPath: child.hierarchyPath });
         }
       }
 
       if (!child) {
-        console.log('[getOrganizationAncestors] Organization not found');
+        logger.warn("Organization not found while fetching ancestors", { childIdOrSlug });
         return [];
       }
 
       if (!child.hierarchyPath || child.hierarchyPath.length === 0) {
-        console.log('[getOrganizationAncestors] No hierarchy path, returning empty array');
+        logger.warn("Organization has no hierarchy path", { childIdOrSlug, id: child.id });
         return [];
       }
 
-      console.log('[getOrganizationAncestors] Fetching ancestors for path:', child.hierarchyPath);
+      logger.info("Fetching organization ancestors", { path: child.hierarchyPath });
 
       // Query all ancestors using slugs from hierarchy_path (hierarchyPath contains slugs, not UUIDs)
       const ancestors = await dbOrTx
@@ -412,10 +413,10 @@ export async function getOrganizationAncestors(
         .where(inArray(organizations.slug, child.hierarchyPath))
         .orderBy(asc(organizations.hierarchyLevel));
 
-      console.log('[getOrganizationAncestors] Found ancestors:', ancestors.length);
+      logger.info("Found organization ancestors", { count: ancestors.length });
       return ancestors;
     } catch (error) {
-      console.error("[getOrganizationAncestors] Error:", error);
+      logger.error("Error fetching organization ancestors", { error, childIdOrSlug });
       throw new Error(`Failed to fetch ancestors for organization ${childIdOrSlug}`);
     }
   };
@@ -495,7 +496,7 @@ export async function getOrganizationTree(
       
       return result;
     } catch (error) {
-      console.error("Error fetching organization tree:", error);
+      logger.error("Error fetching organization tree", { error, rootId, maxDepth });
       throw new Error("Failed to fetch organization tree");
     }
   };
@@ -542,7 +543,7 @@ export async function getUserVisibleOrganizations(
 
       return Array.from(result) as SelectOrganization[];
     } catch (error) {
-      console.error("Error fetching user visible organizations:", error);
+      logger.error("Error fetching user visible organizations", { error, userId });
       throw new Error(`Failed to fetch organizations for user ${userId}`);
     }
   };
@@ -591,7 +592,7 @@ export async function getUserPrimaryOrganization(
 
       return result?.organization || null;
     } catch (error) {
-      console.error("Error fetching user primary organization:", error);
+      logger.error("Error fetching user primary organization", { error, userId });
       throw new Error(`Failed to fetch primary organization for user ${userId}`);
     }
   };
@@ -643,7 +644,7 @@ export async function searchOrganizations(
       
       return result;
     } catch (error) {
-      console.error("Error searching organizations:", error);
+      logger.error("Error searching organizations", { error, searchTerm, limit });
       throw new Error(`Failed to search organizations with term "${searchTerm}"`);
     }
   };
@@ -687,7 +688,7 @@ export async function getOrganizationsByType(
       
       return result;
     } catch (error) {
-      console.error("Error fetching organizations by type:", error);
+      logger.error("Error fetching organizations by type", { error, type, parentId });
       throw new Error(`Failed to fetch organizations of type "${type}"`);
     }
   };
@@ -729,7 +730,7 @@ export async function getCLCAffiliatedOrganizations(
       
       return result;
     } catch (error) {
-      console.error("Error fetching CLC-affiliated organizations:", error);
+      logger.error("Error fetching CLC-affiliated organizations", { error, includeRoot });
       throw new Error("Failed to fetch CLC-affiliated organizations");
     }
   };
@@ -810,10 +811,10 @@ export async function createOrganization(
         })
         .returning();
 
-      console.log(`Created organization: ${newOrg.name} (${newOrg.id})`);
+      logger.info("Created organization", { id: newOrg.id, name: newOrg.name });
       return newOrg;
     } catch (error) {
-      console.error("Error creating organization:", error);
+      logger.error("Error creating organization", { error });
       throw new Error(`Failed to create organization: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -912,10 +913,10 @@ export async function updateOrganization(
         throw new Error(`Organization with ID ${id} not found`);
       }
 
-      console.log(`Updated organization: ${updated.name} (${id})`);
+      logger.info("Updated organization", { id, name: updated.name });
       return updated;
     } catch (error) {
-      console.error("Error updating organization:", error);
+      logger.error("Error updating organization", { error, id });
       throw new Error(`Failed to update organization: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -970,10 +971,10 @@ export async function deleteOrganization(
         throw new Error(`Organization with ID ${id} not found`);
       }
 
-      console.log(`Archived organization: ${archived.name} (${id})`);
+      logger.info("Archived organization", { id, name: archived.name });
       return archived;
     } catch (error) {
-      console.error("Error deleting organization:", error);
+      logger.error("Error deleting organization", { error, id });
       throw new Error(`Failed to delete organization: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
@@ -1010,13 +1011,14 @@ export async function createOrganizationRelationship(
         .values(data)
         .returning();
 
-      console.log(
-        `Created relationship: ${relationship.parentOrgId} -> ${relationship.childOrgId} ` +
-        `(${relationship.relationshipType})`
-      );
+      logger.info("Created organization relationship", {
+        parentOrgId: relationship.parentOrgId,
+        childOrgId: relationship.childOrgId,
+        relationshipType: relationship.relationshipType,
+      });
       return relationship;
     } catch (error) {
-      console.error("Error creating organization relationship:", error);
+      logger.error("Error creating organization relationship", { error, data });
       throw new Error("Failed to create organization relationship");
     }
   };
@@ -1063,7 +1065,7 @@ export async function getOrganizationRelationships(
       
       return result as SelectOrganizationRelationship[];
     } catch (error) {
-      console.error("Error fetching organization relationships:", error);
+      logger.error("Error fetching organization relationships", { error, orgId, asParent });
       throw new Error(`Failed to fetch relationships for organization ${orgId}`);
     }
   };
@@ -1127,7 +1129,7 @@ export async function getOrganizationMemberStats(
         descendantOrgs: descendants.length,
       };
     } catch (error) {
-      console.error("Error fetching organization member stats:", error);
+      logger.error("Error fetching organization member stats", { error, id, includeDescendants });
       throw new Error(`Failed to fetch member stats for organization ${id}`);
     }
   };

@@ -231,9 +231,7 @@ export async function generateRemittanceXML(
 export async function generateStatCanExport(
   fiscalYear: number
 ): Promise<string> {
-  console.log(`Generating StatCan LAB-05302 export for fiscal year ${fiscalYear}`);
-
-  // Get all CLC-affiliated organizations with per-capita activity
+// Get all CLC-affiliated organizations with per-capita activity
   const organizations = await db.execute(sql`
     SELECT 
       o.id,

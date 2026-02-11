@@ -6,7 +6,7 @@
  * - GET /api/admin/clc/remittances - List remittances with filters
  * - POST /api/admin/clc/remittances/calculate - Trigger manual calculation
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - Removed manual SET app.current_user_id commands
  * - Removed redundant checkAdminRole() function (role check via withEnhancedRoleAuth)
  * - All database operations wrapped in withRLSContext() for automatic context setting
@@ -218,8 +218,7 @@ export const GET = async (request: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      console.error('Error fetching remittances:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch remittances' },
         { status: 500 }
       );
@@ -310,8 +309,7 @@ export const POST = withRoleAuth(90, async (request, context) => {
       severity: 'high',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error('Error calculating remittances:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to calculate remittances' },
       { status: 500 }
     );

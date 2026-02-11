@@ -24,7 +24,7 @@ export const GET = async (request: NextRequest) => {
       const sharingLevel = searchParams.get("sharingLevel");
       const limit = parseInt(searchParams.get("limit") || "10");
       
-      console.log('[org-activity] Request params:', { fromDate, toDate, organizationType, resourceType, sharingLevel, limit });
+      logger.info('[org-activity] Request params', { fromDate, toDate, organizationType, resourceType, sharingLevel, limit });
 
       // Build WHERE conditions for access logs
       const accessLogConditions = [
@@ -97,8 +97,8 @@ export const GET = async (request: NextRequest) => {
         .from(sharedClauseLibrary)
         .where(and(...clausesConditions));
       
-      console.log('[org-activity] clausesData count:', clausesData.length);
-      console.log('[org-activity] clausesData sample:', clausesData[0]);
+      logger.info('[org-activity] clausesData count', { count: clausesData.length });
+      logger.debug('[org-activity] clausesData sample', { sample: clausesData[0] });
 
       // Query precedents separately
       const precedentsConditions = [gte(arbitrationPrecedents.createdAt, fromDateObj)];
@@ -116,8 +116,8 @@ export const GET = async (request: NextRequest) => {
         .from(arbitrationPrecedents)
         .where(and(...precedentsConditions));
       
-      console.log('[org-activity] precedentsData count:', precedentsData.length);
-      console.log('[org-activity] precedentsData sample:', precedentsData[0]);
+      logger.info('[org-activity] precedentsData count', { count: precedentsData.length });
+      logger.debug('[org-activity] precedentsData sample', { sample: precedentsData[0] });
 
       // Aggregate by organization ID
       const orgStats = new Map<string, {
@@ -165,12 +165,12 @@ export const GET = async (request: NextRequest) => {
 
       // Get organization details using raw SQL to avoid Drizzle issues
       const contributorOrgIds = Array.from(orgStats.keys());
-      console.log('[org-activity] contributorOrgIds:', contributorOrgIds.length, contributorOrgIds.slice(0, 3));
+      logger.info('[org-activity] contributorOrgIds', { count: contributorOrgIds.length, sample: contributorOrgIds.slice(0, 3) });
       
       let contributorOrgs: Array<{id: string, name: string, organizationType: string | null}> = [];
       if (contributorOrgIds.length > 0) {
         const idList = contributorOrgIds.map(id => `'${id}'`).join(',');
-        console.log('[org-activity] Executing SQL with idList:', idList);
+        logger.debug('[org-activity] Executing SQL with idList', { idList });
         const result = await db.execute(sql.raw(`
         SELECT id, name, organization_type as "organizationType"
         FROM organizations
@@ -178,8 +178,8 @@ export const GET = async (request: NextRequest) => {
       `));
         contributorOrgs = (result.rows || []) as Array<{id: string, name: string, organizationType: string | null}>;
       }
-      console.log('[org-activity] contributorOrgs fetched:', contributorOrgs.length);
-      console.log('[org-activity] contributorOrgs sample:', contributorOrgs[0]);
+      logger.info('[org-activity] contributorOrgs fetched', { count: contributorOrgs.length });
+      logger.debug('[org-activity] contributorOrgs sample', { sample: contributorOrgs[0] });
 
       const orgMap = new Map(contributorOrgs.map(o => [o.id, o]));
 
@@ -205,8 +205,8 @@ export const GET = async (request: NextRequest) => {
         .slice(0, limit);
 
       const topContributors = topContributorsData;
-      console.log('[org-activity] topContributors final count:', topContributors.length);
-      console.log('[org-activity] topContributors sample:', topContributors[0]);
+      logger.info('[org-activity] topContributors final count', { count: topContributors.length });
+      logger.debug('[org-activity] topContributors sample', { sample: topContributors[0] });
 
       // Access type breakdown
       const accessTypeBreakdown = await db
@@ -428,10 +428,10 @@ export const GET = async (request: NextRequest) => {
         dailyActivity,
       });
       
-      console.log('[org-activity] SUCCESS - Sending response with contributors:', topContributors.length);
+      logger.info('[org-activity] SUCCESS - Sending response with contributors', { count: topContributors.length });
     } catch (error) {
-      console.error('[org-activity] ERROR:', error);
-      console.error('[org-activity] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      logger.error('[org-activity] ERROR', { error });
+      logger.debug('[org-activity] Error stack', { stack: error instanceof Error ? error.stack : 'No stack trace' });
       logger.error('Error fetching org activity stats', error as Error, {
         correlationId: request.headers.get('x-correlation-id')
       });

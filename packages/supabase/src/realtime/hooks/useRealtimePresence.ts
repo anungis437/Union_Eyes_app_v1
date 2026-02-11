@@ -51,8 +51,7 @@ export function useRealtimePresence({
       try {
         await service.trackPresence(organizationId, user);
         setIsConnected(true);
-      } catch (error) {
-        console.error('Failed to setup presence tracking:', error);
+      } catch {
         setIsConnected(false);
       }
     };

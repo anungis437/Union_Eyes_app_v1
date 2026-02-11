@@ -158,20 +158,21 @@ export async function calculateMetrics(params: {
     }
     
     // Store metric with RLS context
-    const [metric] = await withRLSContext({ organizationId: orgId }, async (db) =>
-      db.insert(analyticsMetrics).values({
-      organizationId: orgId,
-      metricType: params.metricType,
-      metricName: params.metricName,
-      metricValue: metricValue.toString(),
-      metricUnit,
-      periodType: params.periodType,
-      periodStart: params.periodStart,
-      periodEnd: params.periodEnd,
-      metadata,
-      comparisonValue: comparisonValue?.toString(),
-      trend
-    }).returning();
+    const [metric] = await withRLSContext({ organizationId: orgId }, async (db) => {
+      return db.insert(analyticsMetrics).values({
+        organizationId: orgId,
+        metricType: params.metricType,
+        metricName: params.metricName,
+        metricValue: metricValue.toString(),
+        metricUnit,
+        periodType: params.periodType,
+        periodStart: params.periodStart,
+        periodEnd: params.periodEnd,
+        metadata,
+        comparisonValue: comparisonValue?.toString(),
+        trend
+      }).returning();
+    });
     
     revalidatePath('/dashboard/analytics');
     

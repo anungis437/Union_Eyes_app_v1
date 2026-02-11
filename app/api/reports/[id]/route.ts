@@ -69,8 +69,7 @@ async function getHandler(
 
     return NextResponse.json({ report: reportResult[0] });
   } catch (error) {
-    console.error('Get report error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch report' },
       { status: 500 }
     );
@@ -135,8 +134,7 @@ async function putHandler(
 
     return NextResponse.json({ report: updatedResult[0] });
   } catch (error) {
-    console.error('Update report error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update report' },
       { status: 500 }
     );
@@ -202,8 +200,7 @@ async function deleteHandler(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Delete report error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to delete report' },
       { status: 500 }
     );

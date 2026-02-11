@@ -15,6 +15,7 @@ import {
 } from "@/db/schema";
 import { eq, and, or, like, desc, asc, sql, inArray, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -58,7 +59,7 @@ export async function getBargainingNoteById(
 
     return note || null;
   } catch (error) {
-    console.error("Error fetching bargaining note by ID:", error);
+    logger.error("Error fetching bargaining note by ID", { error, id });
     throw new Error("Failed to fetch bargaining note");
   }
 }
@@ -157,7 +158,7 @@ export async function listBargainingNotes(
       limit
     };
   } catch (error) {
-    console.error("Error listing bargaining notes:", error);
+    logger.error("Error listing bargaining notes", { error, filters });
     throw new Error("Failed to list bargaining notes");
   }
 }
@@ -184,7 +185,7 @@ export async function getBargainingNotesByCBA(
 
     return notes;
   } catch (error) {
-    console.error("Error fetching bargaining notes by CBA:", error);
+    logger.error("Error fetching bargaining notes by CBA", { error, cbaId });
     throw new Error("Failed to fetch bargaining notes by CBA");
   }
 }
@@ -205,7 +206,7 @@ export async function createBargainingNote(data: NewBargainingNote): Promise<Bar
 
     return newNote;
   } catch (error) {
-    console.error("Error creating bargaining note:", error);
+    logger.error("Error creating bargaining note", { error });
     throw new Error("Failed to create bargaining note");
   }
 }
@@ -230,7 +231,7 @@ export async function bulkCreateBargainingNotes(
 
     return newNotes;
   } catch (error) {
-    console.error("Error bulk creating bargaining notes:", error);
+    logger.error("Error bulk creating bargaining notes", { error, count: notes.length });
     throw new Error("Failed to bulk create bargaining notes");
   }
 }
@@ -254,7 +255,7 @@ export async function updateBargainingNote(
 
     return updated || null;
   } catch (error) {
-    console.error("Error updating bargaining note:", error);
+    logger.error("Error updating bargaining note", { error, id });
     throw new Error("Failed to update bargaining note");
   }
 }
@@ -270,7 +271,7 @@ export async function deleteBargainingNote(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error deleting bargaining note:", error);
+    logger.error("Error deleting bargaining note", { error, id });
     throw new Error("Failed to delete bargaining note");
   }
 }
@@ -316,7 +317,7 @@ export async function searchBargainingNotes(
 
     return results;
   } catch (error) {
-    console.error("Error searching bargaining notes:", error);
+    logger.error("Error searching bargaining notes", { error, filters });
     throw new Error("Failed to search bargaining notes");
   }
 }
@@ -354,7 +355,7 @@ export async function getBargainingTimeline(
       id: t.id!,
     }));
   } catch (error) {
-    console.error("Error fetching bargaining timeline:", error);
+    logger.error("Error fetching bargaining timeline", { error, cbaId });
     throw new Error("Failed to fetch bargaining timeline");
   }
 }
@@ -385,7 +386,7 @@ export async function getNotesByTags(
 
     return notes;
   } catch (error) {
-    console.error("Error fetching notes by tags:", error);
+    logger.error("Error fetching notes by tags", { error, organizationId });
     throw new Error("Failed to fetch notes by tags");
   }
 }
@@ -410,7 +411,7 @@ export async function getNotesRelatedToClauses(
 
     return notes;
   } catch (error) {
-    console.error("Error fetching notes related to clauses:", error);
+    logger.error("Error fetching notes related to clauses", { error });
     throw new Error("Failed to fetch notes related to clauses");
   }
 }
@@ -435,7 +436,7 @@ export async function getNotesRelatedToPrecedents(
 
     return notes;
   } catch (error) {
-    console.error("Error fetching notes related to precedents:", error);
+    logger.error("Error fetching notes related to precedents", { error });
     throw new Error("Failed to fetch notes related to precedents");
   }
 }
@@ -456,7 +457,7 @@ export async function getSessionTypes(organizationId: string): Promise<string[]>
 
     return types.map(t => t.sessionType!).filter(Boolean);
   } catch (error) {
-    console.error("Error fetching session types:", error);
+    logger.error("Error fetching session types", { error, organizationId });
     throw new Error("Failed to fetch session types");
   }
 }
@@ -498,7 +499,7 @@ export async function getBargainingNotesStatistics(organizationId: string) {
       recentActivity: recentNotes,
     };
   } catch (error) {
-    console.error("Error fetching bargaining notes statistics:", error);
+    logger.error("Error fetching bargaining notes statistics", { error, organizationId });
     throw new Error("Failed to fetch bargaining notes statistics");
   }
 }
@@ -530,7 +531,7 @@ export async function addAttachmentToNote(
 
     return updated;
   } catch (error) {
-    console.error("Error adding attachment to note:", error);
+    logger.error("Error adding attachment to note", { error, noteId });
     throw new Error("Failed to add attachment to note");
   }
 }
@@ -553,7 +554,7 @@ export async function getAllTags(organizationId: string): Promise<string[]> {
 
     return uniqueTags.sort();
   } catch (error) {
-    console.error("Error fetching all tags:", error);
+    logger.error("Error fetching all tags", { error, organizationId });
     throw new Error("Failed to fetch all tags");
   }
 }

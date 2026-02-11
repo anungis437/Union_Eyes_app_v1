@@ -49,8 +49,7 @@ export default function ClaimDetailPage({ params }: { params: { id: string } }) 
           setClaim(data);
         }
       } catch (error) {
-        console.error('Error fetching claim:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     }

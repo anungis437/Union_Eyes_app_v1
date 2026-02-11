@@ -70,8 +70,7 @@ export default function ScheduledReportsPage() {
       const data = await response.json();
       setSchedules(data.schedules || []);
     } catch (error) {
-      console.error('Error fetching schedules:', error);
-      toast.error('Failed to load scheduled reports');
+toast.error('Failed to load scheduled reports');
     } finally {
       setLoading(false);
     }
@@ -96,8 +95,7 @@ export default function ScheduledReportsPage() {
       toast.success(schedule.isActive ? 'Schedule paused' : 'Schedule resumed');
       fetchSchedules();
     } catch (error) {
-      console.error('Error toggling schedule:', error);
-      toast.error('Failed to update schedule');
+toast.error('Failed to update schedule');
     }
   };
 
@@ -114,8 +112,7 @@ export default function ScheduledReportsPage() {
       toast.success('Schedule deleted');
       fetchSchedules();
     } catch (error) {
-      console.error('Error deleting schedule:', error);
-      toast.error('Failed to delete schedule');
+toast.error('Failed to delete schedule');
     }
   };
 

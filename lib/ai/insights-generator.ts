@@ -72,8 +72,7 @@ export async function generateInsights(
       return b.confidence - a.confidence;
     });
   } catch (error) {
-    console.error('Error generating insights:', error);
-    return [];
+return [];
   }
 }
 
@@ -544,8 +543,7 @@ export async function saveInsights(
       });
     }
   } catch (error) {
-    console.error('Error saving insights:', error);
-    throw error;
+throw error;
   }
 }
 

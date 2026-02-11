@@ -30,8 +30,7 @@ export const GET = withApiAuth(async (
 
     return NextResponse.json(document);
   } catch (error) {
-    console.error("Get document error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to retrieve document" },
       { status: 500 }
     );
@@ -81,8 +80,7 @@ export const PATCH = withApiAuth(async (
       { status: 400 }
     );
   } catch (error) {
-    console.error("Update document error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to update document" },
       { status: 500 }
     );

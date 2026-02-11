@@ -86,10 +86,8 @@ class OfflineQueue {
       if (serialized) {
         const operations: QueuedOperation[] = JSON.parse(serialized);
         operations.forEach((op) => this.queue.set(op.id, op));
-        console.log(`[OfflineQueue] Loaded ${operations.length} operations from storage`);
       }
-    } catch (error) {
-      console.error('[OfflineQueue] Failed to load persisted queue:', error);
+    } catch {
     }
   }
 
@@ -102,8 +100,7 @@ class OfflineQueue {
     try {
       const operations = Array.from(this.queue.values());
       queueStorage.set('queue', JSON.stringify(operations));
-    } catch (error) {
-      console.error('[OfflineQueue] Failed to persist queue:', error);
+    } catch {
     }
   }
 
@@ -113,7 +110,6 @@ class OfflineQueue {
   private setupNetworkListener(): void {
     NetInfo.addEventListener((state) => {
       if (state.isConnected && state.isInternetReachable) {
-        console.log('[OfflineQueue] Network restored, processing queue...');
         this.processQueue();
       }
     });
@@ -138,10 +134,6 @@ class OfflineQueue {
     this.queue.set(id, queuedOp);
     this.persistQueue();
     this.notifyListeners(queuedOp, 'added');
-
-    console.log(
-      `[OfflineQueue] Enqueued operation ${id} [${operation.priority}] ${operation.entity}:${operation.type}`
-    );
 
     // Auto-process if online
     const netState = await NetInfo.fetch();
@@ -224,7 +216,6 @@ class OfflineQueue {
    */
   async processQueue(): Promise<void> {
     if (this.isProcessing) {
-      console.log('[OfflineQueue] Already processing queue');
       return this.processingPromise!;
     }
 
@@ -242,12 +233,10 @@ class OfflineQueue {
   private async _processQueue(): Promise<void> {
     const netState = await NetInfo.fetch();
     if (!netState.isConnected || !netState.isInternetReachable) {
-      console.log('[OfflineQueue] No network connection, skipping queue processing');
       return;
     }
 
     const operations = this.getSortedOperations();
-    console.log(`[OfflineQueue] Processing ${operations.length} operations`);
 
     for (const operation of operations) {
       if (this.processingIds.has(operation.id)) {
@@ -255,7 +244,6 @@ class OfflineQueue {
       }
 
       if (operation.retryCount >= operation.maxRetries) {
-        console.warn(`[OfflineQueue] Operation ${operation.id} exceeded max retries, skipping`);
         continue;
       }
 
@@ -291,24 +279,15 @@ class OfflineQueue {
 
     try {
       const response = await this.executeOperation(operation);
-
-      console.log(`[OfflineQueue] Completed operation ${operation.id}`);
       this.notifyListeners(operation, 'completed');
       this.dequeue(operation.id);
     } catch (error: any) {
       operation.retryCount++;
       operation.lastError = error.message || 'Unknown error';
 
-      console.error(
-        `[OfflineQueue] Failed operation ${operation.id} (attempt ${operation.retryCount}/${operation.maxRetries}):`,
-        error.message
-      );
-
       if (operation.retryCount < operation.maxRetries) {
         // Schedule retry with exponential backoff
         const backoffMs = this.calculateBackoff(operation.retryCount);
-        console.log(`[OfflineQueue] Retrying operation ${operation.id} in ${backoffMs}ms`);
-
         this.notifyListeners(operation, 'retrying');
         this.persistQueue();
 
@@ -317,7 +296,6 @@ class OfflineQueue {
           this.processOperation(operation);
         }, backoffMs);
       } else {
-        console.error(`[OfflineQueue] Operation ${operation.id} failed permanently`);
         this.notifyListeners(operation, 'failed');
         this.persistQueue();
       }
@@ -372,7 +350,6 @@ class OfflineQueue {
     this.persistQueue();
 
     operations.forEach((op) => this.notifyListeners(op, 'cleared'));
-    console.log('[OfflineQueue] Queue cleared');
   }
 
   /**
@@ -387,7 +364,6 @@ class OfflineQueue {
       this.notifyListeners(op, 'cleared');
     });
 
-    console.log(`[OfflineQueue] Cleared ${failedOps.length} failed operations`);
   }
 
   /**
@@ -405,8 +381,7 @@ class OfflineQueue {
     this.listeners.forEach((listener) => {
       try {
         listener(operation, eventType);
-      } catch (error) {
-        console.error('[OfflineQueue] Listener error:', error);
+      } catch {
       }
     });
   }
@@ -432,7 +407,6 @@ class OfflineQueue {
     });
 
     this.persistQueue();
-    console.log(`[OfflineQueue] Reset ${failedOps.length} failed operations for retry`);
     this.processQueue();
   }
 }

@@ -67,7 +67,6 @@ export function useRealtimeNotifications({
 
         setIsConnected(true);
       } catch (error) {
-        console.error('Failed to setup notifications:', error);
         setIsConnected(false);
       }
     };

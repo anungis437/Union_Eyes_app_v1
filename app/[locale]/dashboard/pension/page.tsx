@@ -82,8 +82,7 @@ export default function PensionDashboard() {
       // This is handled by a separate effect when plan changes
 
     } catch (err) {
-      console.error('Error fetching pension data:', err);
-      setError('Unable to load pension information. Please try again later.');
+setError('Unable to load pension information. Please try again later.');
     } finally {
       setLoading(false);
     }

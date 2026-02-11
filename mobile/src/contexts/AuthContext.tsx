@@ -68,7 +68,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setOrganization(null);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
       } finally {
         setIsLoading(false);
       }
@@ -95,7 +94,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setOrganization(null);
       router.replace('/(auth)/sign-in');
     } catch (error) {
-      console.error('Error signing out:', error);
       throw error;
     }
   };

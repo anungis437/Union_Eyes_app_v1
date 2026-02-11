@@ -121,8 +121,7 @@ export async function scheduleEventReminders(
 
     return scheduledCount;
   } catch (error) {
-    console.error('Error scheduling event reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -159,11 +158,8 @@ async function scheduleReminderJob(
 
     // Add to job queue (from Area 9)
     await addNotificationJob(notification);
-
-    console.log(`Scheduled ${channel} reminder for event ${event.id} at ${scheduledFor}`);
-  } catch (error) {
-    console.error('Error scheduling reminder job:', error);
-    throw error;
+} catch (error) {
+throw error;
   }
 }
 
@@ -214,20 +210,15 @@ export async function cancelEventReminders(eventId: string): Promise<number> {
         // Remove matching jobs
         for (const job of eventJobs) {
           await job.remove();
-          console.log(`Cancelled BullMQ job ${job.id} for event ${eventId}`);
-        }
-        
-        console.log(`Cancelled ${eventJobs.length} BullMQ job(s) for event ${eventId}`);
-      }
+}
+}
     } catch (error) {
-      console.error('Error cancelling BullMQ jobs:', error);
-      // Don't throw - we already updated the database status
+// Don't throw - we already updated the database status
     }
 
     return pendingReminders.length;
   } catch (error) {
-    console.error('Error cancelling event reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -264,8 +255,7 @@ export async function rescheduleEventReminders(
     // Schedule new reminders
     return await scheduleEventReminders(eventId);
   } catch (error) {
-    console.error('Error rescheduling event reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -305,8 +295,7 @@ export async function scheduleRecurringEventReminders(
 
     return totalScheduled;
   } catch (error) {
-    console.error('Error scheduling recurring event reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -330,8 +319,7 @@ export async function markReminderSent(
       })
       .where(eq(eventReminders.id, reminderId));
   } catch (error) {
-    console.error('Error marking reminder as sent:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -361,8 +349,7 @@ export async function getPendingReminders(options?: {
 
     return reminders;
   } catch (error) {
-    console.error('Error getting pending reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -437,8 +424,7 @@ export async function retryFailedReminders(options?: {
 
     return retriedCount;
   } catch (error) {
-    console.error('Error retrying failed reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -487,8 +473,7 @@ export async function cleanupOldReminders(olderThanDays: number = 90): Promise<n
 
     return oldEventIds.length;
   } catch (error) {
-    console.error('Error cleaning up old reminders:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -520,8 +505,7 @@ export async function getReminderStats(): Promise<{
 
     return stats;
   } catch (error) {
-    console.error('Error getting reminder stats:', error);
-    throw error;
+throw error;
   }
 }
 

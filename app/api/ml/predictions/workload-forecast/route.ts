@@ -183,8 +183,7 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     return NextResponse.json(response);
 
   } catch (error) {
-    console.error('Error fetching workload forecast:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch workload forecast' },
       { status: 500 }
     );
@@ -348,8 +347,7 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
     });
 
   } catch (error) {
-    console.error('Error generating workload forecast:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to generate workload forecast' },
       { status: 500 }
     );
@@ -429,31 +427,31 @@ function generateResourceRecommendations(
   // Peak volume recommendations
   if (peakDates.length > 0) {
     recommendations.push(
-      `⚠️ ${peakDates.length} high-volume days detected (${peakDates[0]} onwards) - consider increasing staffing by 20-30%`
+      `âš ï¸ ${peakDates.length} high-volume days detected (${peakDates[0]} onwards) - consider increasing staffing by 20-30%`
     );
     recommendations.push(
-      `📅 Peak dates: ${peakDates.slice(0, 5).join(', ')}${peakDates.length > 5 ? ' and more' : ''}`
+      `ðŸ“… Peak dates: ${peakDates.slice(0, 5).join(', ')}${peakDates.length > 5 ? ' and more' : ''}`
     );
   } else {
-    recommendations.push('✅ No significant volume spikes predicted - maintain current staffing levels');
+    recommendations.push('âœ… No significant volume spikes predicted - maintain current staffing levels');
   }
 
   // Trend recommendations
   if (trend === 'increasing') {
     const increase = Math.round((predictions[predictions.length - 1].predictedVolume - predictions[0].predictedVolume) / predictions[0].predictedVolume * 100);
     recommendations.push(
-      `📈 Volume trending upward (~${increase}% increase) - plan for gradual staffing increases`
+      `ðŸ“ˆ Volume trending upward (~${increase}% increase) - plan for gradual staffing increases`
     );
     recommendations.push(
-      '💡 Consider cross-training additional stewards to handle increased caseload'
+      'ðŸ’¡ Consider cross-training additional stewards to handle increased caseload'
     );
   } else if (trend === 'decreasing') {
     recommendations.push(
-      '📉 Volume trending downward - opportunity for training, process improvements, or backlog reduction'
+      'ðŸ“‰ Volume trending downward - opportunity for training, process improvements, or backlog reduction'
     );
   } else {
     recommendations.push(
-      '➡️ Stable volume expected - ideal time for steward development and strategic planning'
+      'âž¡ï¸ Stable volume expected - ideal time for steward development and strategic planning'
     );
   }
 
@@ -463,7 +461,7 @@ function generateResourceRecommendations(
 
   if (capacityRatio > 1.5) {
     recommendations.push(
-      `⚡ Peak volume is ${Math.round(capacityRatio * 100)}% of average - ensure flexible staffing arrangements`
+      `âš¡ Peak volume is ${Math.round(capacityRatio * 100)}% of average - ensure flexible staffing arrangements`
     );
   }
 
@@ -475,7 +473,7 @@ function generateResourceRecommendations(
 
   if (weekendPredictions.some(p => p.predictedVolume > avgVolume * 0.8)) {
     recommendations.push(
-      '📆 Weekend activity expected - consider weekend duty roster or on-call stewards'
+      'ðŸ“† Weekend activity expected - consider weekend duty roster or on-call stewards'
     );
   }
 

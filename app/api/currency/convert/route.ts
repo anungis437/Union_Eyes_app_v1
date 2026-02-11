@@ -76,8 +76,7 @@ export const GET = withEnhancedRoleAuth(10, async (request) => {
       source: 'BoC VALET API',
     } as CurrencyConversionResponse);
   } catch (error) {
-    console.error('Currency conversion error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         sourceCurrency: 'USD',

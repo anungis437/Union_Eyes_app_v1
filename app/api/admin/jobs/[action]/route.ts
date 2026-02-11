@@ -47,8 +47,7 @@ export const POST = async (request: NextRequest, { params }: { params: { action:
           );
       }
     } catch (error) {
-      console.error('Error performing queue action:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

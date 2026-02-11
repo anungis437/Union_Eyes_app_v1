@@ -125,8 +125,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         count: filteredEvents.length,
       });
     } catch (error) {
-      console.error('List events error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to list events' },
         { status: 500 }
       );
@@ -268,19 +267,59 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         const { scheduleEventReminders } = await import('@/lib/calendar-reminder-scheduler');
         await scheduleEventReminders(newEvent.id);
       } catch (reminderError) {
-        console.error('Failed to schedule reminders:', reminderError);
-        // Don't fail event creation if reminders fail
+// Don't fail event creation if reminders fail
       }
 
-      // TODO: Send invitations to attendees via email
+      // Send invitations to attendees via email
+      if (attendees && attendees.length > 0) {
+        try {
+          const { sendEmail } = await import('@/lib/email-service');
+          
+          const eventDate = new Date(newEvent.startTime);
+          const eventEndDate = new Date(newEvent.endTime);
+          
+          await Promise.allSettled(
+            attendees.map(async (attendee) => {
+              const emailContent = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                  <h2 style="color: #2563eb;">You're Invited to an Event</h2>
+                  
+                  <p>You have been invited to the following event:</p>
+                  
+                  <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #1f2937;">${newEvent.title}</h3>
+                    ${newEvent.description ? `<p style="margin: 10px 0;">${newEvent.description}</p>` : ''}
+                    <p style="margin: 5px 0;"><strong>Date:</strong> ${eventDate.toLocaleDateString()}</p>
+                    <p style="margin: 5px 0;"><strong>Time:</strong> ${eventDate.toLocaleTimeString()} - ${eventEndDate.toLocaleTimeString()}</p>
+                    ${newEvent.location ? `<p style="margin: 5px 0;"><strong>Location:</strong> ${newEvent.location}</p>` : ''}
+                  </div>
+                  
+                  <p>Please mark your calendar and plan to attend.</p>
+                  
+                  <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+                    This is an automated event invitation.
+                  </p>
+                </div>
+              `;
+
+              await sendEmail({
+                to: [{ email: attendee.email, name: attendee.name || attendee.email }],
+                subject: `Event Invitation: ${newEvent.title}`,
+                html: emailContent,
+              });
+            })
+          );
+        } catch (emailError) {
+// Don't fail event creation if email fails
+        }
+      }
 
       return NextResponse.json({
         message: 'Event created successfully',
         event: newEvent,
       }, { status: 201 });
     } catch (error) {
-      console.error('Create event error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create event' },
         { status: 500 }
       );

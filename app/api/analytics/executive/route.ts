@@ -71,8 +71,7 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
       },
     });
   } catch (error) {
-    console.error('Executive analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch executive analytics' },
       { status: 500 }
     );

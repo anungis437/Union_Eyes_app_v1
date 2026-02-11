@@ -5,7 +5,7 @@
  * Provides bidirectional mapping, validation, and migration utilities.
  * 
  * Features:
- * - Bidirectional ID mapping (tenant ↔ organization)
+ * - Bidirectional ID mapping (tenant â†” organization)
  * - Caching for performance
  * - Validation and existence checks
  * - Batch mapping operations
@@ -119,8 +119,7 @@ export async function getOrganizationIdFromTenant(
 
     return null;
   } catch (error) {
-    console.error("Error mapping tenant to organization:", error);
-    return null;
+return null;
   }
 }
 
@@ -165,8 +164,7 @@ export async function getTenantIdFromOrganization(
 
     return null;
   } catch (error) {
-    console.error("Error mapping organization to tenant:", error);
-    return null;
+return null;
   }
 }
 
@@ -230,8 +228,7 @@ export async function batchGetOrganizationIds(
 
     return mappings;
   } catch (error) {
-    console.error("Error batch mapping tenants to organizations:", error);
-    return mappings;
+return mappings;
   }
 }
 
@@ -276,8 +273,7 @@ export async function validateMapping(tenantId: string): Promise<{
       errorLog: row.error_log as string | null,
     };
   } catch (error) {
-    console.error("Error validating mapping:", error);
-    return {
+return {
       exists: false,
       status: null,
       organizationId: null,
@@ -322,8 +318,7 @@ export async function createMapping(
     cache.clear(); // Invalidate cache
     return true;
   } catch (error) {
-    console.error("Error creating mapping:", error);
-    return false;
+return false;
   }
 }
 
@@ -363,8 +358,7 @@ export async function updateMappingStatus(
     cache.clear(); // Invalidate cache
     return true;
   } catch (error) {
-    console.error("Error updating mapping status:", error);
-    return false;
+return false;
   }
 }
 
@@ -393,8 +387,7 @@ export async function getAllMappings(
       updatedAt: row.updated_at,
     }));
   } catch (error) {
-    console.error("Error getting all mappings:", error);
-    return [];
+return [];
   }
 }
 
@@ -434,8 +427,7 @@ export async function getMigrationStats(): Promise<{
       totalRecords: Number(row.total_records || 0),
     };
   } catch (error) {
-    console.error("Error getting migration stats:", error);
-    return {
+return {
       total: 0,
       pending: 0,
       inProgress: 0,
@@ -465,10 +457,8 @@ export async function refreshCache(): Promise<void> {
     }
 
     cache.setRefreshTime();
-    console.log(`Cache refreshed with ${cache.size()} mappings`);
-  } catch (error) {
-    console.error("Error refreshing cache:", error);
-  }
+} catch (error) {
+}
 }
 
 /**

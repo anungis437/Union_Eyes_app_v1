@@ -50,7 +50,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     if (affectingMinimum) {
       reportingChannels.push('Privacy Commissioner');
       if (province === 'QC') {
-        reportingChannels.push('CAI - Commission d\'accès à l\'information');
+        reportingChannels.push('CAI - Commission d\'accÃ¨s Ã  l\'information');
       }
     }
     reportingChannels.push('Affected Members (via secure notification)');
@@ -71,8 +71,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       message: `PIPEDA assessment complete. Notification ${affectingMinimum ? 'required' : 'not required'}.`,
     } as PIPEDABreachAssessment);
   } catch (error) {
-    console.error('PIPEDA assessment error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         requiresBreachReport: false,
         notificationRequired: false,
@@ -123,8 +122,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       message: `Breach notification requirements: Follow ${province} protocols`,
     } as PIPEDABreachAssessment);
   } catch (error) {
-    console.error('PIPEDA status error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         requiresBreachReport: false,
         notificationRequired: false,

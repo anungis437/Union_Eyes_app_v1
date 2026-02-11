@@ -63,13 +63,10 @@ class NetworkStatusManager {
       this.currentStatus = this.parseNetInfoState(initialState);
       this.isInitialized = true;
 
-      console.log('[NetworkStatus] Initialized:', this.currentStatus);
-
       // Start monitoring
       this.startMonitoring();
       this.startQualityChecks();
-    } catch (error) {
-      console.error('[NetworkStatus] Initialization failed:', error);
+    } catch {
     }
   }
 
@@ -84,12 +81,6 @@ class NetworkStatusManager {
 
       this.currentStatus = newStatus;
       this.updateConnectionHistory(isNowConnected);
-
-      console.log('[NetworkStatus] Status changed:', {
-        type: newStatus.type,
-        quality: newStatus.quality,
-        isConnected: newStatus.isConnected,
-      });
 
       // Notify all listeners
       this.notifyChangeListeners(newStatus);
@@ -226,8 +217,7 @@ class NetworkStatusManager {
 
         this.notifyChangeListeners(this.currentStatus);
       }
-    } catch (error) {
-      console.warn('[NetworkStatus] Quality check failed:', error);
+    } catch {
       if (this.currentStatus) {
         this.currentStatus.quality = NetworkQuality.POOR;
       }
@@ -384,8 +374,7 @@ class NetworkStatusManager {
     this.changeListeners.forEach((listener) => {
       try {
         listener(status);
-      } catch (error) {
-        console.error('[NetworkStatus] Listener error:', error);
+      } catch {
       }
     });
   }
@@ -397,8 +386,7 @@ class NetworkStatusManager {
     this.connectionListeners.forEach((listener) => {
       try {
         listener(isConnected);
-      } catch (error) {
-        console.error('[NetworkStatus] Listener error:', error);
+      } catch {
       }
     });
   }
@@ -420,8 +408,6 @@ class NetworkStatusManager {
     this.changeListeners.clear();
     this.connectionListeners.clear();
     this.isInitialized = false;
-
-    console.log('[NetworkStatus] Destroyed');
   }
 }
 

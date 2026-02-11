@@ -138,8 +138,6 @@ const validateConfig = (config: Config): void => {
 
     if (isProduction()) {
       throw new Error(message);
-    } else {
-      console.warn(message);
     }
   }
 };
@@ -178,9 +176,7 @@ export const getServiceUrl = (
  */
 export const printConfig = (): void => {
   if (isDevelopment()) {
-    console.log('=== Environment Configuration ===');
-    console.log(JSON.stringify(config, null, 2));
-    console.log('================================');
+    return;
   }
 };
 

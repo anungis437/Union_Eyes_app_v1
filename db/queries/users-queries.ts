@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/rls-middleware";
+import { logger } from "@/lib/logger";
 
 /**
  * Get database user ID by email
@@ -23,7 +24,7 @@ export const getUserByEmail = async (
       
       return user || null;
     } catch (error) {
-      console.error("Error fetching user by email:", error);
+      logger.error("Error fetching user by email", { error, email });
       return null;
     }
   };
@@ -52,7 +53,7 @@ export const getUserById = async (
       
       return user || null;
     } catch (error) {
-      console.error("Error fetching user by ID:", error);
+      logger.error("Error fetching user by ID", { error, userId });
       return null;
     }
   };

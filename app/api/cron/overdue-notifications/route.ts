@@ -50,8 +50,7 @@ export async function GET(request: NextRequest) {
       claims: claimIds.map((claimId) => ({ claimId })),
     });
   } catch (error) {
-    console.error('Error in overdue notification cron:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         error: 'Internal server error',
         message: error instanceof Error ? error.message : 'Unknown error',

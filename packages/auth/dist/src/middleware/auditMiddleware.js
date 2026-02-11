@@ -150,8 +150,7 @@ async function logRequest(context) {
         });
     }
     catch (error) {
-        console.error('Failed to log request:', error);
-    }
+}
 }
 /**
  * Log API response
@@ -174,8 +173,7 @@ async function logResponse(context, res) {
         });
     }
     catch (error) {
-        console.error('Failed to log response:', error);
-    }
+}
 }
 /**
  * Log error
@@ -196,8 +194,7 @@ async function logError(context, error) {
         });
     }
     catch (err) {
-        console.error('Failed to log error:', err);
-    }
+}
 }
 /**
  * Detect request anomalies
@@ -212,11 +209,9 @@ async function detectRequestAnomalies(context) {
         // - Unusual endpoints accessed
         // - Suspicious patterns (e.g., scanning)
         // For now, just log that we're checking
-        console.log(`Checking anomalies for user ${context.userId}`);
-    }
+}
     catch (error) {
-        console.error('Failed to detect anomalies:', error);
-    }
+}
 }
 // ============================================================================
 // EXPORTS

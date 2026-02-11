@@ -107,7 +107,7 @@ const ENV_VARS: EnvVar[] = [
     name: 'FALLBACK_ENCRYPTION_KEY',
     required: false,
     description: 'Fallback AES-256 encryption key (base64) for dev/test WITHOUT Azure Key Vault',
-    example: 'Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
+    example: 'Generate with: node -e "process.stdout.write(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
     validate: (val) => {
       try {
         const buffer = Buffer.from(val, 'base64');
@@ -204,7 +204,7 @@ export function validateEnv(throwOnError = true): ValidationResult {
     if (envVar.required && !value) {
       missing.push(envVar.name);
       errors.push(
-        `❌ Missing required environment variable: ${envVar.name}\n` +
+        `Ã¢ÂÅ’ Missing required environment variable: ${envVar.name}\n` +
         `   Description: ${envVar.description}\n` +
         (envVar.example ? `   Example: ${envVar.example}\n` : '')
       );
@@ -215,7 +215,7 @@ export function validateEnv(throwOnError = true): ValidationResult {
     if (!value) {
       if (!envVar.required) {
         warnings.push(
-          `⚠️  Optional environment variable not set: ${envVar.name}\n` +
+          `Ã¢Å¡Â Ã¯Â¸Â  Optional environment variable not set: ${envVar.name}\n` +
           `   Description: ${envVar.description}\n` +
           `   Some features may be unavailable.`
         );
@@ -226,7 +226,7 @@ export function validateEnv(throwOnError = true): ValidationResult {
     // Run custom validation if provided
     if (envVar.validate && !envVar.validate(value)) {
       errors.push(
-        `❌ Invalid value for ${envVar.name}\n` +
+        `Ã¢ÂÅ’ Invalid value for ${envVar.name}\n` +
         `   Description: ${envVar.description}\n` +
         (envVar.example ? `   Expected format: ${envVar.example}\n` : '') +
         `   Received: ${value.substring(0, 20)}...`
@@ -243,15 +243,10 @@ export function validateEnv(throwOnError = true): ValidationResult {
 
   // Log results
   if (result.valid) {
-    console.log('✅ Environment validation passed');
-    if (warnings.length > 0) {
-      console.warn('\n⚠️  Warnings:\n' + warnings.join('\n\n'));
-    }
+if (warnings.length > 0) {
+}
   } else {
-    console.error('\n❌ Environment validation failed!\n');
-    console.error(errors.join('\n\n'));
-    
-    if (throwOnError) {
+if (throwOnError) {
       throw new Error(
         `Environment validation failed. Missing required variables: ${missing.join(', ')}\n` +
         'Please check your .env.local file and ensure all required variables are set.\n' +

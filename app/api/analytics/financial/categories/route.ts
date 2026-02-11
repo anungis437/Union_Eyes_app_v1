@@ -45,8 +45,7 @@ async function handler(req: NextRequest, context) {
     return NextResponse.json(result);
 
   } catch (error) {
-    console.error('Error fetching category financials:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch category financials' },
       { status: 500 }
     );

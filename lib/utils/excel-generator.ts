@@ -442,10 +442,7 @@ export async function addChart(
   // 1. Excel API: worksheet.addImage() with chart image from Chart.js
   // 2. External tool: Generate XLSX with Python openpyxl
   // 3. Office Scripts: Use Office.js API for chart insertion
-  
-  console.log(`[ExcelGenerator] Chart prepared: ${chartOptions.title} at ${chartOptions.dataRange}`);
-  
-  // Return metadata for external processing
+// Return metadata for external processing
   return chartMetadata;
 }
 

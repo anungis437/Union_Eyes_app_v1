@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -25,6 +25,9 @@ import {
   FileText,
   Plus,
   Inbox,
+  Clock,
+  Play,
+  Pause,
 } from 'lucide-react';
 import { SmsTemplateEditor } from '@/components/communications/sms-template-editor';
 import { SmsCampaignBuilder } from '@/components/communications/sms-campaign-builder';
@@ -36,19 +39,59 @@ interface SmsPageProps {
   };
 }
 
+interface Campaign {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  recipientCount: number;
+  sentCount: number;
+  deliveredCount: number;
+  failedCount: number;
+  totalCost: string;
+  successRate: number;
+  failureRate: number;
+  costPerMessage: string;
+  scheduledFor: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+}
+
 export default function SmsPage({ params }: SmsPageProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'template' | 'campaign' | 'inbox'>(
     'dashboard'
   );
-  const tenantId = 'CURRENT_TENANT_ID'; // TODO: Get from auth context
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(true);
 
-  // Mock stats - TODO: Load from API
+  // Load campaigns
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const response = await fetch('/api/communications/sms/campaigns');
+        if (!response.ok) throw new Error('Failed to fetch campaigns');
+        const data = await response.json();
+        setCampaigns(data.campaigns);
+      } catch (error) {
+} finally {
+        setIsLoadingCampaigns(false);
+      }
+    };
+
+    if (activeView === 'dashboard') {
+      fetchCampaigns();
+    }
+  }, [activeView]);
+
+  // Calculate stats from campaigns data
   const stats = {
-    messagesSent: 1247,
-    messagesDelivered: 1189,
-    messagesFailed: 12,
-    totalCost: 11.23,
-    campaignsActive: 3,
+    messagesSent: campaigns.reduce((sum, c) => sum + c.sentCount, 0),
+    messagesDelivered: campaigns.reduce((sum, c) => sum + c.deliveredCount, 0),
+    messagesFailed: campaigns.reduce((sum, c) => sum + c.failedCount, 0),
+    totalCost: campaigns.reduce((sum, c) => sum + parseFloat(c.totalCost || '0'), 0),
+    campaignsActive: campaigns.filter((c) => c.status === 'active' || c.status === 'sending').length,
     templatesCount: 15,
     unreadMessages: 5,
   };
@@ -135,12 +178,95 @@ export default function SmsPage({ params }: SmsPageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Recent Campaigns</CardTitle>
-          <CardDescription>Latest SMS campaigns</CardDescription>
+          <CardDescription>Latest SMS campaigns with status and metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">
-            TODO: Implement campaign list with status, recipients, and cost
-          </div>
+          {isLoadingCampaigns ? (
+            <div className="text-sm text-muted-foreground">Loading campaigns...</div>
+          ) : campaigns.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <p className="mt-2 text-sm text-muted-foreground">No campaigns yet</p>
+              <Button className="mt-4" onClick={() => setActiveView('campaign')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Campaign
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {campaigns.slice(0, 5).map((campaign) => (
+                <div
+                  key={campaign.id}
+                  className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">{campaign.name}</h4>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          campaign.status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : campaign.status === 'sending' || campaign.status === 'active'
+                            ? 'bg-blue-100 text-blue-700'
+                            : campaign.status === 'scheduled'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : campaign.status === 'cancelled'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {campaign.status === 'sending' && <Play className="mr-1 h-3 w-3" />}
+                        {campaign.status === 'scheduled' && <Clock className="mr-1 h-3 w-3" />}
+                        {campaign.status === 'completed' && <CheckCircle className="mr-1 h-3 w-3" />}
+                        {campaign.status === 'cancelled' && <XCircle className="mr-1 h-3 w-3" />}
+                        {campaign.status}
+                      </span>
+                    </div>
+                    {campaign.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{campaign.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {campaign.recipientCount} recipients
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Send className="h-3 w-3" />
+                        {campaign.sentCount} sent
+                      </span>
+                      {campaign.sentCount > 0 && (
+                        <>
+                          <span className="flex items-center gap-1 text-green-600">
+                            <CheckCircle className="h-3 w-3" />
+                            {campaign.successRate}% delivered
+                          </span>
+                          {campaign.failedCount > 0 && (
+                            <span className="flex items-center gap-1 text-red-600">
+                              <XCircle className="h-3 w-3" />
+                              {campaign.failedCount} failed
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right ml-4">
+                    <div className="font-semibold">${parseFloat(campaign.totalCost).toFixed(2)}</div>
+                    {campaign.sentCount > 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        ${campaign.costPerMessage}/msg
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {campaigns.length > 5 && (
+                <Button variant="outline" className="w-full mt-4">
+                  View All Campaigns ({campaigns.length})
+                </Button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -151,8 +277,18 @@ export default function SmsPage({ params }: SmsPageProps) {
           <CardDescription>{stats.templatesCount} templates available</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">
-            TODO: Implement template grid with categories and usage stats
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Button
+              variant="outline"
+              className="h-24 flex flex-col items-center justify-center gap-2"
+              onClick={() => setActiveView('template')}
+            >
+              <Plus className="h-6 w-6" />
+              <span>Create New Template</span>
+            </Button>
+            <div className="col-span-2 text-sm text-muted-foreground flex items-center justify-center">
+              Create SMS templates for common messages and campaigns
+            </div>
           </div>
         </CardContent>
       </Card>

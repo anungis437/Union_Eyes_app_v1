@@ -35,7 +35,7 @@ export interface MemberRoleManagerProps {
  *   memberId={selectedMemberId!}
  *   isOpen={!!selectedMemberId}
  *   onClose={() => setSelectedMemberId(null)}
- *   onUpdate={(member) => console.log('Updated:', member)}
+ *   onUpdate={(member) => undefined}
  * />
  * ```
  */

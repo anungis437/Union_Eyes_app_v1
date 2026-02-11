@@ -398,8 +398,7 @@ describe('ProvincialPrivacyService', () => {
 
       (db.insert as any).mockReturnValue(mockInsertDb);
 
-      // Mock the triggerUrgentBreachNotification (it's a console.warn)
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      // Mock the triggerUrgentBreachNotification side effects
 
       const breach: BreachNotification = {
         breachType: 'unauthorized_access',
@@ -422,7 +421,6 @@ describe('ProvincialPrivacyService', () => {
       expect(valuesCall.regulatorNotificationRequired).toBe(true);
       expect(valuesCall.severity).toBe('critical');
 
-      consoleWarnSpy.mockRestore();
     });
 
     it('should report a low severity breach not requiring regulator notification', async () => {

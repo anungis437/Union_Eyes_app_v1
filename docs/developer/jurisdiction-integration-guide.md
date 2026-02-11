@@ -28,30 +28,30 @@ This guide is for **developers** who need to integrate the jurisdiction framewor
 ### Layered Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Presentation Layer (React Components)              │
-│  - JurisdictionBadge, JurisdictionSelector         │
-│  - ClaimJurisdictionInfo, StrikeVoteJurisdiction... │
-└─────────────────┬───────────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────────┐
-│  Business Logic Layer (Helper Functions)            │
-│  - getTenantJurisdiction(), getJurisdictionDeadline()│
-│  - calculateBusinessDaysDeadline()                  │
-└─────────────────┬───────────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────────┐
-│  API Layer (REST Endpoints)                         │
-│  - GET /api/jurisdiction/list                       │
-│  - GET /api/jurisdiction/rules                      │
-│  - POST /api/jurisdiction/calculate-deadline        │
-└─────────────────┬───────────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────────┐
-│  Data Layer (PostgreSQL via Drizzle ORM)            │
-│  - jurisdiction_rules, jurisdiction_deadlines       │
-│  - jurisdiction_holidays, jurisdiction_requirement..│
-└─────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Presentation Layer (React Components)              â”‚
+â”‚  - JurisdictionBadge, JurisdictionSelector         â”‚
+â”‚  - ClaimJurisdictionInfo, StrikeVoteJurisdiction... â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                  â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Business Logic Layer (Helper Functions)            â”‚
+â”‚  - getTenantJurisdiction(), getJurisdictionDeadline()â”‚
+â”‚  - calculateBusinessDaysDeadline()                  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                  â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  API Layer (REST Endpoints)                         â”‚
+â”‚  - GET /api/jurisdiction/list                       â”‚
+â”‚  - GET /api/jurisdiction/rules                      â”‚
+â”‚  - POST /api/jurisdiction/calculate-deadline        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                  â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Data Layer (PostgreSQL via Drizzle ORM)            â”‚
+â”‚  - jurisdiction_rules, jurisdiction_deadlines       â”‚
+â”‚  - jurisdiction_holidays, jurisdiction_requirement..â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Key Files
@@ -137,11 +137,11 @@ export default async function ULPDetailPage({
 
 **Result:** The page now displays:
 
-- Jurisdiction badge (e.g., "🇨🇦 Federal EN/FR")
-- Filing deadline calculation (e.g., "25 business days → February 19, 2025")
+- Jurisdiction badge (e.g., "ðŸ‡¨ðŸ‡¦ Federal EN/FR")
+- Filing deadline calculation (e.g., "25 business days â†’ February 19, 2025")
 - Urgency indicator (red/orange/yellow/green)
 - Interactive deadline calculator button
-- Legal references (e.g., "Canada Labour Code §240")
+- Legal references (e.g., "Canada Labour Code Â§240")
 
 ---
 
@@ -193,8 +193,7 @@ export function LockoutJurisdictionInfo({
           setNoticeHours(data.rules[0].noticeHours || 48);
         }
       } catch (error) {
-        console.error('Failed to load jurisdiction:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     }
@@ -303,8 +302,6 @@ export default async function LockoutPage({ params }: { params: { lockoutId: str
 // Fetch all 14 jurisdictions
 const response = await fetch('/api/jurisdiction/list');
 const data = await response.json();
-
-console.log(data.jurisdictions);
 // [
 //   { code: 'CA-FED', name: 'Federal', bilingual: true },
 //   { code: 'CA-AB', name: 'Alberta', bilingual: false },
@@ -339,12 +336,10 @@ const response = await fetch(
   '/api/jurisdiction/rules?jurisdiction=CA-FED&category=grievance_filing'
 );
 const data = await response.json();
-
-console.log(data.rules[0]);
 // {
 //   deadlineDays: 25,
 //   dayType: 'business',
-//   legalReference: 'Canada Labour Code §240',
+//   legalReference: 'Canada Labour Code Â§240',
 //   description: 'Grievance must be filed within 25 business days...'
 // }
 ```
@@ -390,14 +385,12 @@ const response = await fetch('/api/jurisdiction/calculate-deadline', {
 });
 
 const data = await response.json();
-
-console.log(data);
 // {
 //   deadline: '2025-02-19',
 //   businessDays: 25,
 //   holidaysExcluded: [],
 //   weekendsExcluded: 10,
-//   legalReference: 'Canada Labour Code §240'
+//   legalReference: 'Canada Labour Code Â§240'
 // }
 ```
 
@@ -448,7 +441,7 @@ const response = await fetch('/api/jurisdiction/business-days', {
 });
 
 const data = await response.json();
-console.log(data.resultDate); // "2025-02-19"
+// "2025-02-19"
 ```
 
 **Usage - Count Days:**
@@ -467,14 +460,14 @@ const response = await fetch('/api/jurisdiction/business-days', {
 });
 
 const data = await response.json();
-console.log(data.businessDays); // 25
+// 25
 ```
 
 **Operations:**
 
-- `add`: Add business days to start date → returns `resultDate`
-- `subtract`: Subtract business days from start date → returns `resultDate`
-- `count`: Count business days between start and end → returns `businessDays`
+- `add`: Add business days to start date â†’ returns `resultDate`
+- `subtract`: Subtract business days from start date â†’ returns `resultDate`
+- `count`: Count business days between start and end â†’ returns `businessDays`
 
 ---
 
@@ -488,8 +481,6 @@ console.log(data.businessDays); // 25
 // Get Federal holidays for 2025
 const response = await fetch('/api/jurisdiction/holidays?jurisdiction=CA-FED&year=2025');
 const data = await response.json();
-
-console.log(data.holidays);
 // [
 //   { date: '2025-01-01', name: "New Year's Day", isProvincial: false },
 //   { date: '2025-07-01', name: 'Canada Day', isProvincial: false },
@@ -515,11 +506,8 @@ async function myFunction(tenantId: string) {
   const jurisdiction = await getTenantJurisdiction(tenantId);
   
   if (!jurisdiction) {
-    console.error('Tenant has no jurisdiction configured');
-    return;
+return;
   }
-  
-  console.log(`Tenant is in ${jurisdiction} jurisdiction`);
 }
 ```
 
@@ -571,7 +559,7 @@ function MyComponent({ jurisdiction }: { jurisdiction: CAJurisdiction }) {
       <h3>Document Requirements</h3>
       {isBilingual && (
         <p className="text-amber-600">
-          🌐 This jurisdiction requires bilingual (EN/FR) documentation
+          ðŸŒ This jurisdiction requires bilingual (EN/FR) documentation
         </p>
       )}
     </div>
@@ -590,10 +578,8 @@ import { getJurisdictionName } from '@/lib/jurisdiction-helpers';
 
 function displayJurisdiction(code: CAJurisdiction) {
   const name = getJurisdictionName(code);
-  
-  console.log(`${code} → ${name}`);
-  // "CA-FED" → "Federal"
-  // "CA-ON" → "Ontario"
+// "CA-FED" â†’ "Federal"
+  // "CA-ON" â†’ "Ontario"
 }
 ```
 
@@ -710,7 +696,7 @@ vi.mock('@/lib/jurisdiction-helpers', () => ({
 // Mock fetch API
 global.fetch = vi.fn().mockResolvedValue({
   json: async () => ({
-    rules: [{ noticeHours: 72, legalReference: 'CLC §87.2' }],
+    rules: [{ noticeHours: 72, legalReference: 'CLC Â§87.2' }],
   }),
 });
 
@@ -795,7 +781,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 
 ## Best Practices
 
-### ✅ DO
+### âœ… DO
 
 1. **Always handle null jurisdictions gracefully**
 
@@ -825,28 +811,28 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 4. **Use TypeScript types for jurisdiction codes**
 
    ```typescript
-   // ✅ Type-safe
+   // âœ… Type-safe
    const jurisdiction: CAJurisdiction = 'CA-FED';
    
-   // ❌ Avoid magic strings
+   // âŒ Avoid magic strings
    const jurisdiction = 'federal'; // Wrong format
    ```
 
 ---
 
-### ❌ DON'T
+### âŒ DON'T
 
 1. **Don't hardcode jurisdiction logic**
 
    ```typescript
-   // ❌ Bad
+   // âŒ Bad
    if (jurisdiction === 'CA-FED') {
      return 25;
    } else if (jurisdiction === 'CA-ON') {
      return 30;
    }
    
-   // ✅ Good
+   // âœ… Good
    const rules = await fetch(`/api/jurisdiction/rules?jurisdiction=${jurisdiction}&category=grievance_filing`);
    return rules.deadlineDays;
    ```
@@ -854,11 +840,11 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 2. **Don't calculate deadlines manually**
 
    ```typescript
-   // ❌ Bad
+   // âŒ Bad
    const deadline = new Date(startDate);
    deadline.setDate(deadline.getDate() + 25);
    
-   // ✅ Good
+   // âœ… Good
    const response = await fetch('/api/jurisdiction/calculate-deadline', {
      method: 'POST',
      body: JSON.stringify({ jurisdiction, startDate, businessDays: 25 }),
@@ -868,17 +854,16 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 3. **Don't forget error handling**
 
    ```typescript
-   // ❌ Bad
+   // âŒ Bad
    const data = await fetch('/api/jurisdiction/rules').then(r => r.json());
    
-   // ✅ Good
+   // âœ… Good
    try {
      const response = await fetch('/api/jurisdiction/rules');
      if (!response.ok) throw new Error('Failed to fetch rules');
      const data = await response.json();
    } catch (error) {
-     console.error('Error:', error);
-     // Show user-friendly error message
+// Show user-friendly error message
    }
    ```
 
@@ -897,8 +882,7 @@ async function getCertificationForm(jurisdiction: CAJurisdiction) {
 const tenant = await db.query.tenants.findFirst({
   where: eq(tenants.id, tenantId),
 });
-
-console.log(tenant.jurisdiction); // Should be a valid CAJurisdiction code
+// Should be a valid CAJurisdiction code
 
 // If null, set jurisdiction:
 await db.update(tenants)
@@ -932,9 +916,6 @@ const response = await fetch('/api/jurisdiction/calculate-deadline', {
 });
 
 const data = await response.json();
-console.log('Holidays excluded:', data.holidaysExcluded);
-console.log('Weekends excluded:', data.weekendsExcluded);
-console.log('Calculated deadline:', data.deadline);
 ```
 
 ---
@@ -948,10 +929,9 @@ console.log('Calculated deadline:', data.deadline);
 ```typescript
 // Verify requiresBilingualSupport returns true
 import { requiresBilingualSupport } from '@/lib/jurisdiction-helpers';
-
-console.log(requiresBilingualSupport('CA-FED')); // Should be true
-console.log(requiresBilingualSupport('CA-QC'));  // Should be true
-console.log(requiresBilingualSupport('CA-NB'));  // Should be true
+// Should be true
+// Should be true
+// Should be true
 
 // If false, check jurisdiction code format (must be 'CA-FED', not 'federal')
 ```

@@ -22,8 +22,7 @@ export const GET = async (request: NextRequest) => {
       // Redirect to Google authorization page
       return NextResponse.redirect(authUrl);
     } catch (error) {
-      console.error('Google auth initiation error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to initiate Google Calendar authorization' },
         { status: 500 }
       );

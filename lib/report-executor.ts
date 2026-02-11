@@ -209,9 +209,7 @@ export class ReportExecutor {
       };
     } catch (error: any) {
       const executionTimeMs = Date.now() - startTime;
-      console.error('Report execution error:', error);
-
-      return {
+return {
         success: false,
         executionTimeMs,
         error: error.message || 'Report execution failed',

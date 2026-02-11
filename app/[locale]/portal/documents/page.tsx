@@ -42,8 +42,7 @@ export default function MemberDocumentsPage() {
           setDocuments(data.documents || []);
         }
       } catch (error) {
-        console.error('Error fetching documents:', error);
-      } finally {
+} finally {
         setLoading(false);
       }
     }
@@ -72,8 +71,7 @@ export default function MemberDocumentsPage() {
         setDocuments([...documents, ...data.documents]);
       }
     } catch (error) {
-      console.error('Error uploading documents:', error);
-    } finally {
+} finally {
       setUploading(false);
     }
   };
@@ -89,8 +87,7 @@ export default function MemberDocumentsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading document:', error);
-    }
+}
   };
 
   const formatFileSize = (bytes: number) => {
@@ -100,11 +97,11 @@ export default function MemberDocumentsPage() {
   };
 
   const getFileIcon = (type: string) => {
-    if (type.includes('pdf')) return '📄';
-    if (type.includes('image')) return '🖼️';
-    if (type.includes('word') || type.includes('document')) return '📝';
-    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
-    return '📎';
+    if (type.includes('pdf')) return 'ðŸ“„';
+    if (type.includes('image')) return 'ðŸ–¼ï¸';
+    if (type.includes('word') || type.includes('document')) return 'ðŸ“';
+    if (type.includes('excel') || type.includes('spreadsheet')) return 'ðŸ“Š';
+    return 'ðŸ“Ž';
   };
 
   const filteredDocuments = documents.filter(doc =>
@@ -206,7 +203,7 @@ export default function MemberDocumentsPage() {
                         <div>
                           <p className="font-medium">{doc.name}</p>
                           <p className="text-sm text-gray-600">
-                            {formatFileSize(doc.size)} •{' '}
+                            {formatFileSize(doc.size)} â€¢{' '}
                             {new Date(doc.uploadDate).toLocaleDateString()}
                           </p>
                         </div>

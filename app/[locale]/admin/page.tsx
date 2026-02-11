@@ -252,9 +252,9 @@ export default function AdminPage() {
             totalCount={0}
             page={1}
             pageSize={50}
-            onFiltersChange={(filters) => console.log('Filters changed:', filters)}
-            onPageChange={(page) => console.log('Page changed:', page)}
-            onExport={() => console.log('Export requested')}
+            onFiltersChange={(filters) => undefined}
+            onPageChange={(page) => undefined}
+            onExport={() => undefined}
           />
         </TabsContent>
       </Tabs>

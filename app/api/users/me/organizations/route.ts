@@ -11,6 +11,7 @@ import { db } from '@/db/db';
 import { organizations, organizationMembers } from '@/db/schema-organizations';
 import { eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,16 +20,16 @@ export const GET = async (req: NextRequest) => {
     const { userId, organizationId } = context;
 
   try {
-      console.log('[API /api/users/me/organizations] Auth userId:', userId);
+      logger.debug('[API /api/users/me/organizations] Auth userId', { userId });
 
       // Get user's memberships
-      console.log('[API /api/users/me/organizations] Fetching memberships for userId:', userId);
+      logger.debug('[API /api/users/me/organizations] Fetching memberships', { userId });
       const memberships = await db
         .select()
         .from(organizationMembers)
         .where(eq(organizationMembers.userId, userId));
 
-      console.log('[API /api/users/me/organizations] Found memberships:', memberships.length);
+      logger.debug('[API /api/users/me/organizations] Found memberships', { count: memberships.length });
 
       if (memberships.length === 0) {
         return NextResponse.json({
@@ -45,10 +46,10 @@ export const GET = async (req: NextRequest) => {
           .filter(id => id !== null && id !== undefined)
       ));
       
-      console.log('[API /api/users/me/organizations] Organization IDs:', orgIds);
+      logger.debug('[API /api/users/me/organizations] Organization IDs', { orgIds });
 
       if (orgIds.length === 0) {
-        console.log('[API /api/users/me/organizations] No valid organization IDs found');
+        logger.warn('[API /api/users/me/organizations] No valid organization IDs found');
         return NextResponse.json({
           organizations: [],
           memberships,
@@ -74,27 +75,24 @@ export const GET = async (req: NextRequest) => {
               .limit(1);
             
             if (!org) {
-              console.log('[API /api/users/me/organizations] Organization not found for ID:', orgId);
-              console.log('[API /api/users/me/organizations] This membership references a non-existent organization');
+              logger.warn('[API /api/users/me/organizations] Organization not found for membership', { orgId });
             }
             return org;
           } catch (err) {
-            console.error('[API /api/users/me/organizations] Error fetching org:', orgId, err);
+            logger.error('[API /api/users/me/organizations] Error fetching org', err as Error, { orgId });
             return undefined;
           }
         })
       );
 
-      console.log('[API /api/users/me/organizations] Found organizations:', allOrganizations.filter(o => o).length);
-      console.log('[API /api/users/me/organizations] Missing organizations:', allOrganizations.filter(o => !o).length);
+      logger.debug('[API /api/users/me/organizations] Found organizations', { count: allOrganizations.filter(o => o).length });
+      logger.debug('[API /api/users/me/organizations] Missing organizations', { count: allOrganizations.filter(o => !o).length });
 
       // Filter out any null results
       const validOrganizations = allOrganizations.filter(org => org !== undefined && org !== null);
 
       if (validOrganizations.length === 0 && memberships.length > 0) {
-        console.error('[API /api/users/me/organizations] CRITICAL: User has memberships but no valid organizations found!');
-        console.error('[API /api/users/me/organizations] Membership organization IDs:', orgIds);
-        console.error('[API /api/users/me/organizations] This indicates orphaned memberships or database inconsistency');
+        logger.error('[API /api/users/me/organizations] Memberships found with no valid organizations', undefined, { orgIds });
       }
 
       return NextResponse.json({
@@ -102,7 +100,7 @@ export const GET = async (req: NextRequest) => {
         memberships,
       });
     } catch (error) {
-      console.error('Error fetching user organizations:', error);
+      logger.error('Error fetching user organizations', error as Error);
       return NextResponse.json(
         { error: 'Failed to fetch organizations' },
         { status: 500 }

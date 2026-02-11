@@ -90,8 +90,7 @@ export const GET = async (request: NextRequest) => {
         recommendations: analysis.recommendations || []
       });
     } catch (error) {
-      console.error('Error fetching comparative analysis:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch comparative analysis' },
         { status: 500 }
       );
@@ -154,7 +153,7 @@ export const POST = async (request: NextRequest) => {
           strengths: comparisonData.strengths,
           recommendations: [],
           visualizationData: null,
-          createdBy: organizationId // TODO: Get actual user ID
+          createdBy: userId,
         })
         .returning();
 
@@ -163,8 +162,7 @@ export const POST = async (request: NextRequest) => {
         analysis: result
       });
     } catch (error) {
-      console.error('Error creating comparative analysis:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to create comparative analysis' },
         { status: 500 }
       );

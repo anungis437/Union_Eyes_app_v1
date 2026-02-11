@@ -150,8 +150,7 @@ export const GET = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error('Error fetching member profile:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { success: false, error: 'Internal server error' },
           { status: 500 }
         );
@@ -312,8 +311,7 @@ export const PATCH = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error('Error updating member profile:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { success: false, error: 'Internal server error' },
           { status: 500 }
         );

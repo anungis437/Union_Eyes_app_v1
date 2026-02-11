@@ -119,8 +119,7 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
       }
     });
   } catch (error) {
-    console.error('Financial analytics error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch financial analytics' },
       { status: 500 }
     );

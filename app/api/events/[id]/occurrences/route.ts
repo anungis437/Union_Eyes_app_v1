@@ -146,8 +146,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
-      console.error('Error fetching recurring instances:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -215,8 +214,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         endDate,
       });
     } catch (error) {
-      console.error('Error generating instances:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to generate instances',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -294,8 +292,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         exceptionDate: exceptionDate.toISOString(),
       });
     } catch (error) {
-      console.error('Error deleting occurrence:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to delete occurrence',
           details: error instanceof Error ? error.message : 'Unknown error',

@@ -31,6 +31,7 @@ export interface SendEmailOptions {
   html: string;
   text?: string;
   replyTo?: string;
+  attachments?: Array<{ filename: string; content: Buffer }>;
 }
 
 /**
@@ -42,6 +43,7 @@ export async function sendEmail({
   html,
   text,
   replyTo = REPLY_TO_EMAIL,
+  attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string; messageId?: string }> {
   try {
     // Check if email service is configured
@@ -62,6 +64,7 @@ export async function sendEmail({
       html,
       text: text || stripHtml(html), // Fallback to plain text version
       replyTo,
+      attachments,
     });
 
     if (error) {

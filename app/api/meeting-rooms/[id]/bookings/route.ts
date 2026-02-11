@@ -178,8 +178,7 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         requiresApproval: room.requiresApproval,
       }, { status: 201 });
     } catch (error) {
-      console.error('Book meeting room error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to book meeting room' },
         { status: 500 }
       );
@@ -223,8 +222,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         count: bookings.length,
       });
     } catch (error) {
-      console.error('Get room bookings error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to get room bookings' },
         { status: 500 }
       );

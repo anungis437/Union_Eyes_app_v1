@@ -67,10 +67,10 @@ export function AIChatbot() {
   
   // Sample suggestions
   const suggestions = [
-    { category: "Grievance", title: "How do I file a grievance?", icon: "📋" },
-    { category: "Rights", title: "What are my workplace rights?", icon: "⚖️" },
-    { category: "Contract", title: "Explain my collective agreement", icon: "📄" },
-    { category: "Safety", title: "Report a safety concern", icon: "⚠️" },
+    { category: "Grievance", title: "How do I file a grievance?", icon: "ðŸ“‹" },
+    { category: "Rights", title: "What are my workplace rights?", icon: "âš–ï¸" },
+    { category: "Contract", title: "Explain my collective agreement", icon: "ðŸ“„" },
+    { category: "Safety", title: "Report a safety concern", icon: "âš ï¸" },
   ];
   
   // Load sessions
@@ -98,8 +98,7 @@ export function AIChatbot() {
         }
       }
     } catch (error) {
-      console.error("Failed to load sessions:", error);
-    }
+}
   };
   
   const loadSession = async (sessionId: string) => {
@@ -114,8 +113,7 @@ export function AIChatbot() {
         setShowSuggestions(data.messages.length === 0);
       }
     } catch (error) {
-      console.error("Failed to load messages:", error);
-    }
+}
   };
   
   const createNewSession = async () => {
@@ -249,8 +247,7 @@ export function AIChatbot() {
         description: "Your feedback helps improve our assistant.",
       });
     } catch (error) {
-      console.error("Feedback error:", error);
-    }
+}
   };
   
   const archiveSession = async (sessionId: string) => {

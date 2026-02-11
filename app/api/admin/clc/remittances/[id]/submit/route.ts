@@ -5,7 +5,7 @@
  * Endpoint:
  * - POST /api/admin/clc/remittances/[id]/submit - Submit remittance
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - Removed manual SET app.current_user_id command
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - Transaction ensures atomic status update
@@ -151,8 +151,7 @@ export const POST = async (
             severity: 'high',
             details: { error: error instanceof Error ? error.message : 'Unknown error', remittanceId: params.id },
           });
-          console.error('Error submitting remittance:', error);
-          return NextResponse.json(
+return NextResponse.json(
             { error: 'Failed to submit remittance' },
             { status: 500 }
           );

@@ -43,8 +43,7 @@ export async function POST(
       message: 'Deadline marked as completed',
     });
   } catch (error) {
-    console.error('Error completing deadline:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to complete deadline' },
       { status: 500 }
     );

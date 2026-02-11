@@ -120,8 +120,7 @@ export default function OrganizationDetailPage() {
       
       router.push("/dashboard/admin/organizations");
     } catch (error) {
-      console.error("Error archiving organization:", error);
-      alert("Failed to archive organization");
+alert("Failed to archive organization");
     }
   };
 
@@ -279,7 +278,12 @@ export default function OrganizationDetailPage() {
               <CardTitle>Organization Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* TODO: Add description field to schema if needed */}
+              {organization.description && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Description</h3>
+                  <p className="text-sm text-muted-foreground">{organization.description}</p>
+                </div>
+              )}
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -289,7 +293,7 @@ export default function OrganizationDetailPage() {
                 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Slug</h3>
-                  <p className="text-sm">{organization.slug || "—"}</p>
+                  <p className="text-sm">{organization.slug || "â€”"}</p>
                 </div>
                 
                 <div>
@@ -297,7 +301,7 @@ export default function OrganizationDetailPage() {
                   <p className="text-sm">
                     {organization.created_at 
                       ? new Date(organization.created_at).toLocaleDateString()
-                      : "—"}
+                      : "â€”"}
                   </p>
                 </div>
                 
@@ -306,20 +310,87 @@ export default function OrganizationDetailPage() {
                   <p className="text-sm">
                     {organization.updated_at 
                       ? new Date(organization.updated_at).toLocaleDateString()
-                      : "—"}
+                      : "â€”"}
                   </p>
                 </div>
               </div>
 
-              {/* TODO: Type settings properly and uncomment when needed
-              {organization.settings && (
+              {organization.settings && Object.keys(organization.settings).length > 0 && (
                 <>
                   <Separator />
                   <div className="grid grid-cols-2 gap-4">
-                    TODO: settings fields
+                    {organization.settings.headquarters && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Headquarters</h3>
+                        <p className="text-sm">{organization.settings.headquarters}</p>
+                      </div>
+                    )}
+
+                    {organization.settings.industry && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Industry</h3>
+                        <p className="text-sm">{organization.settings.industry}</p>
+                      </div>
+                    )}
+
+                    {typeof organization.settings.founded === "number" && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Founded</h3>
+                        <p className="text-sm">{organization.settings.founded}</p>
+                      </div>
+                    )}
+
+                    {typeof organization.settings.locals_count === "number" && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Locals Count</h3>
+                        <p className="text-sm">{organization.settings.locals_count}</p>
+                      </div>
+                    )}
+
+                    {organization.settings.primary_language && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Primary Language</h3>
+                        <p className="text-sm">{organization.settings.primary_language.toUpperCase()}</p>
+                      </div>
+                    )}
+
+                    {organization.settings.secondary_language && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Secondary Language</h3>
+                        <p className="text-sm">{organization.settings.secondary_language.toUpperCase()}</p>
+                      </div>
+                    )}
+
+                    {typeof organization.settings.bilingual === "boolean" && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Bilingual</h3>
+                        <p className="text-sm">{organization.settings.bilingual ? "Yes" : "No"}</p>
+                      </div>
+                    )}
+
+                    {organization.settings.international_affiliate && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">International Affiliate</h3>
+                        <p className="text-sm">{organization.settings.international_affiliate}</p>
+                      </div>
+                    )}
+
+                    {Array.isArray(organization.settings.major_employers) && organization.settings.major_employers.length > 0 && (
+                      <div className="col-span-2">
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Major Employers</h3>
+                        <p className="text-sm">{organization.settings.major_employers.join(", ")}</p>
+                      </div>
+                    )}
+
+                    {Array.isArray(organization.settings.formed_by_merger) && organization.settings.formed_by_merger.length > 0 && (
+                      <div className="col-span-2">
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Formed By Merger</h3>
+                        <p className="text-sm">{organization.settings.formed_by_merger.join(", ")}</p>
+                      </div>
+                    )}
                   </div>
                 </>
-              )} */}
+              )}
               
               {/* Display core organization fields */}
               {(organization.jurisdiction || organization.charter_number) && (

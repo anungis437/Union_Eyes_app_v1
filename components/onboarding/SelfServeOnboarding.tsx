@@ -101,8 +101,7 @@ export function SelfServeOnboarding() {
         router.push('/dashboard');
       }
     } catch (error) {
-      console.error('Onboarding failed', error);
-    }
+}
   };
 
   const isStepValid = () => {
@@ -294,7 +293,7 @@ _name, email
         />
         {formData.memberFile && (
           <p className="mt-2 text-sm text-green-600">
-            ✓ {formData.memberFile.name}
+            âœ“ {formData.memberFile.name}
           </p>
         )}
       </div>
@@ -322,7 +321,7 @@ function DocumentsStep({ formData, setFormData }: any) {
         />
         {formData.cbaFile && (
           <p className="mt-2 text-sm text-green-600">
-            ✓ {formData.cbaFile.name}
+            âœ“ {formData.cbaFile.name}
           </p>
         )}
       </div>

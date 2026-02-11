@@ -95,8 +95,7 @@ export function PoliticalCampaignDashboard({ organizationId }: PoliticalCampaign
       const data = await response.json();
       setCampaigns(data.data || []);
     } catch (error) {
-      console.error('Error fetching campaigns:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId, selectedType]);
@@ -165,7 +164,7 @@ export function PoliticalCampaignDashboard({ organizationId }: PoliticalCampaign
                   <div className="space-y-1">
                     <CardTitle className="text-lg">{campaign.campaign_name}</CardTitle>
                     <CardDescription>
-                      {campaign.electoral_district && `${campaign.electoral_district} • `}
+                      {campaign.electoral_district && `${campaign.electoral_district} â€¢ `}
                       {campaign.endorsed_candidate_name || 'Issue campaign'}
                     </CardDescription>
                   </div>

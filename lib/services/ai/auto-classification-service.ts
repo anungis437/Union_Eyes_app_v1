@@ -14,6 +14,7 @@
 import { OpenAI } from 'openai';
 import type { ClauseType } from '@/db/schema/cba-clauses-schema';
 import type { PrecedentValueEnum, OutcomeEnum, DecisionTypeEnum } from '@/db/schema/cba-intelligence-schema';
+import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -128,7 +129,7 @@ ${clauseContent}`
       reasoning: result.reasoning || 'Classification based on content analysis',
     };
   } catch (error) {
-    console.error('Error classifying clause:', error);
+    logger.error('Error classifying clause', { error });
     return {
       clauseType: 'other',
       confidence: 0.1,
@@ -179,7 +180,7 @@ Return JSON with:
       confidence: result.confidence || 0.5,
     };
   } catch (error) {
-    console.error('Error generating tags:', error);
+    logger.error('Error generating tags', { error });
     return {
       tags: [],
       confidence: 0.1,
@@ -222,7 +223,7 @@ Return JSON with:
       confidence: result.confidence || 0.5,
     };
   } catch (error) {
-    console.error('Error detecting cross-references:', error);
+    logger.error('Error detecting cross-references', { error });
     return {
       references: [],
       confidence: 0.1,
@@ -302,7 +303,7 @@ Decision: ${decision}`,
       reasoning: result.reasoning || 'Classification based on case analysis',
     };
   } catch (error) {
-    console.error('Error classifying precedent:', error);
+    logger.error('Error classifying precedent', { error });
     return {
       precedentValue: 'medium' as PrecedentValueEnum,
       outcome: 'split' as OutcomeEnum,

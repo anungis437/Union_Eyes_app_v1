@@ -44,8 +44,7 @@ export default function PaymentMethodManager({
       const data = await response.json();
       setPaymentMethods(data);
     } catch (error) {
-      console.error('Error loading payment methods:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to load payment methods',
         variant: 'destructive',
@@ -81,8 +80,7 @@ export default function PaymentMethodManager({
       
       loadPaymentMethods();
     } catch (error) {
-      console.error('Error deleting payment method:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to delete payment method',
         variant: 'destructive',
@@ -106,8 +104,7 @@ export default function PaymentMethodManager({
       loadPaymentMethods();
       onUpdate();
     } catch (error) {
-      console.error('Error setting default:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to update default payment method',
         variant: 'destructive',
@@ -133,8 +130,7 @@ export default function PaymentMethodManager({
       
       onUpdate();
     } catch (error) {
-      console.error('Error toggling autopay:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to update AutoPay setting',
         variant: 'destructive',

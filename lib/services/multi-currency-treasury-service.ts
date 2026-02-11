@@ -13,6 +13,7 @@ import { Decimal } from 'decimal.js';
 import { db } from '@/db';
 import { currencyExchangeRates } from '@/db/schema/erp-integration-schema';
 import { eq, and, desc, lte } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export interface ExchangeRate {
   baseCurrency: string;
@@ -152,10 +153,14 @@ export class MultiCurrencyTreasuryService {
           source: 'Bank of Canada',
         });
 
-        console.log(`Updated BOC exchange rates: USD/CAD = ${rate.toFixed(4)}`);
+        logger.info('Updated BOC exchange rates', {
+          rate: rate.toFixed(4),
+          pair: 'USD/CAD',
+          tenantId,
+        });
       }
     } catch (error) {
-      console.error('Failed to fetch BOC rates:', error);
+      logger.error('Failed to fetch BOC rates', { error, tenantId });
       throw error;
     }
   }
@@ -291,7 +296,12 @@ export class MultiCurrencyTreasuryService {
         transactions,
       };
     } catch (error) {
-      console.error('[MultiCurrencyTreasury] Error calculating FX gain/loss:', error);
+      logger.error('[MultiCurrencyTreasury] Error calculating FX gain/loss', {
+        error,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        baseCurrency: params.baseCurrency,
+      });
       return {
         totalGain: new Decimal(0),
         totalLoss: new Decimal(0),
@@ -325,7 +335,7 @@ export class MultiCurrencyTreasuryService {
     };
 
     // In production, this would be saved to database
-    console.log('Forward contract created:', transaction);
+    logger.info('Forward contract created', { transaction });
 
     return transaction;
   }
@@ -356,7 +366,7 @@ export class MultiCurrencyTreasuryService {
     };
 
     // In production, this would be saved to database and create GL entries
-    console.log('Spot transaction executed:', transaction);
+    logger.info('Spot transaction executed', { transaction });
 
     return transaction;
   }
@@ -388,7 +398,10 @@ export class MultiCurrencyTreasuryService {
    */
   static async scheduleRateUpdates(tenantId: string, intervalHours: number = 24): Promise<void> {
     // In production, this would set up a cron job or scheduled task
-    console.log(`Scheduled automatic rate updates every ${intervalHours} hours for tenant ${tenantId}`);
+    logger.info('Scheduled automatic rate updates', {
+      tenantId,
+      intervalHours,
+    });
     
     // Initial fetch
     await this.fetchBOCRates(tenantId);

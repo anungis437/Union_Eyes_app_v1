@@ -60,8 +60,7 @@ export const GET = async (req: NextRequest) => {
         })),
       });
     } catch (error: any) {
-      console.error('Error fetching templates:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch templates', details: error.message },
         { status: 500 }
       );

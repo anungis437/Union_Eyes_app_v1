@@ -244,8 +244,7 @@ export const GET = withRoleAuth(30, async (request, context) => {
       dataType: 'DEFENSIBILITY_PACKS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-    console.error('[DEFENSIBILITY PACK] Download error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to download defensibility pack', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );

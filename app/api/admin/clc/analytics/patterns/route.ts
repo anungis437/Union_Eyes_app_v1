@@ -72,8 +72,7 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-        console.error('Analytics patterns error:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to fetch payment pattern data' },
           { status: 500 }
         );

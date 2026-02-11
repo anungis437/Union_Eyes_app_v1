@@ -102,8 +102,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching surveys:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch surveys' },
       { status: 500 }
     );
@@ -235,8 +234,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating survey:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create survey' },
       { status: 500 }
     );

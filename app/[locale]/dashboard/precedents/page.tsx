@@ -11,6 +11,23 @@ import { Plus, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PrecedentSearch } from "@/components/precedents/PrecedentSearch";
 import { PrecedentViewer } from "@/components/precedents/PrecedentViewer";
 import { PrecedentCompareView } from "@/components/precedents/PrecedentCompareView";
@@ -66,6 +83,21 @@ export default function PrecedentsPage() {
   const [isLoadingPrecedents, setIsLoadingPrecedents] = useState(false);
   const [selectedPrecedent, setSelectedPrecedent] = useState<any>(null);
   const [comparisonData, setComparisonData] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isSavingShare, setIsSavingShare] = useState(false);
+  const [editForm, setEditForm] = useState({
+    caseNumber: "",
+    caseTitle: "",
+    decisionDate: "",
+    issueSummary: "",
+    decisionSummary: "",
+  });
+  const [shareForm, setShareForm] = useState({
+    sharingLevel: "private",
+    sharedWithOrgIds: "",
+  });
   const pageSize = 20;
 
   // Use ref to track if we're currently fetching to prevent race conditions
@@ -168,22 +200,14 @@ export default function PrecedentsPage() {
           const data = await response.json();
           setPrecedentsData(data);
         } else if (response.status === 401) {
-          console.error(
-            "Authentication failed. Please refresh the page and log in again."
-          );
-          setPrecedentsData({
+setPrecedentsData({
             precedents: [],
             total: 0,
             page: currentPage,
             limit: pageSize,
           });
         } else {
-          console.error(
-            "Failed to fetch precedents:",
-            response.status,
-            response.statusText
-          );
-          setPrecedentsData({
+setPrecedentsData({
             precedents: [],
             total: 0,
             page: currentPage,
@@ -193,8 +217,7 @@ export default function PrecedentsPage() {
       } catch (error: any) {
         // Ignore abort errors
         if (error.name !== "AbortError") {
-          console.error("Failed to fetch precedents:", error);
-          setPrecedentsData({
+setPrecedentsData({
             precedents: [],
             total: 0,
             page: currentPage,
@@ -233,8 +256,7 @@ export default function PrecedentsPage() {
           setSelectedPrecedent(data);
         }
       } catch (error) {
-        console.error("Failed to fetch precedent:", error);
-      }
+}
     };
 
     fetchPrecedent();
@@ -285,8 +307,7 @@ export default function PrecedentsPage() {
         setComparisonData(data);
       }
     } catch (error) {
-      console.error("Failed to fetch comparison:", error);
-    }
+}
   };
 
   const handleStartComparison = () => {
@@ -327,6 +348,134 @@ export default function PrecedentsPage() {
     window.open(url, "_blank");
   };
 
+  const openEditDialog = () => {
+    if (!selectedPrecedent) return;
+    setEditForm({
+      caseNumber: selectedPrecedent.caseNumber || "",
+      caseTitle: selectedPrecedent.caseTitle || "",
+      decisionDate: selectedPrecedent.decisionDate
+        ? selectedPrecedent.decisionDate.slice(0, 10)
+        : "",
+      issueSummary: selectedPrecedent.issueSummary || "",
+      decisionSummary: selectedPrecedent.decisionSummary || "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const openShareDialog = () => {
+    if (!selectedPrecedent) return;
+    setShareForm({
+      sharingLevel: selectedPrecedent.sharingLevel || "private",
+      sharedWithOrgIds: Array.isArray(selectedPrecedent.sharedWithOrgIds)
+        ? selectedPrecedent.sharedWithOrgIds.join(", ")
+        : "",
+    });
+    setIsShareDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedPrecedent) return;
+    try {
+      setIsSavingEdit(true);
+      const response = await fetch(`/api/arbitration/precedents/${selectedPrecedent.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseNumber: editForm.caseNumber || null,
+            caseTitle: editForm.caseTitle || null,
+            decisionDate: editForm.decisionDate || null,
+            issueSummary: editForm.issueSummary || null,
+            decisionSummary: editForm.decisionSummary || null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update precedent");
+      }
+
+      const updated = await response.json();
+      setSelectedPrecedent(updated);
+      toast({
+        title: "Precedent updated",
+        description: "Your changes have been saved.",
+      });
+      setIsEditDialogOpen(false);
+    } catch (error) {
+toast({
+        title: "Update failed",
+        description: "Could not update precedent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleSaveShare = async () => {
+    if (!selectedPrecedent) return;
+    try {
+      setIsSavingShare(true);
+      const sharedWithOrgIds = shareForm.sharedWithOrgIds
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      const response = await fetch(`/api/arbitration/precedents/${selectedPrecedent.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sharingLevel: shareForm.sharingLevel,
+            sharedWithOrgIds: sharedWithOrgIds.length > 0 ? sharedWithOrgIds : null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update sharing settings");
+      }
+
+      const updated = await response.json();
+      setSelectedPrecedent(updated);
+      toast({
+        title: "Sharing updated",
+        description: "Precedent sharing settings have been updated.",
+      });
+      setIsShareDialogOpen(false);
+    } catch (error) {
+toast({
+        title: "Update failed",
+        description: "Could not update sharing settings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingShare(false);
+    }
+  };
+
+  const handleExportComparison = () => {
+    if (!comparisonData) return;
+    const report = {
+      generatedAt: new Date().toISOString(),
+      notes: comparisonNotes,
+      analysis: comparisonData.analysis,
+      precedents: comparisonData.precedents,
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `precedent-comparison-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDeletePrecedent = async () => {
     if (!selectedPrecedent) return;
 
@@ -355,8 +504,7 @@ export default function PrecedentsPage() {
         });
       }
     } catch (error) {
-      console.error("Failed to delete precedent:", error);
-      toast({
+toast({
         title: "Error",
         description: "An error occurred while deleting the precedent.",
         variant: "destructive",
@@ -545,7 +693,7 @@ export default function PrecedentsPage() {
               precedent={selectedPrecedent}
               isOwner={selectedPrecedent.isOwner}
               onEdit={() => {
-                /* TODO: Open edit dialog */
+                openEditDialog();
               }}
               onDelete={handleDeletePrecedent}
               onCompare={() => {
@@ -553,7 +701,7 @@ export default function PrecedentsPage() {
                 handleStartComparison();
               }}
               onShare={() => {
-                /* TODO: Open sharing dialog */
+                openShareDialog();
               }}
               onDownloadDocument={handleDownloadDocument}
             />
@@ -568,7 +716,7 @@ export default function PrecedentsPage() {
               analysis={comparisonData.analysis}
               onRemovePrecedent={handleRemoveFromComparison}
               onExport={() => {
-                /* TODO: Export comparison report */
+                handleExportComparison();
               }}
               comparisonNotes={comparisonNotes}
               onNotesChange={setComparisonNotes}
@@ -576,6 +724,116 @@ export default function PrecedentsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Precedent</DialogTitle>
+            <DialogDescription>
+              Update key fields for this precedent. Changes are saved immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Case Number</label>
+              <Input
+                value={editForm.caseNumber}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, caseNumber: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Case Title</label>
+              <Input
+                value={editForm.caseTitle}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, caseTitle: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Decision Date</label>
+              <Input
+                type="date"
+                value={editForm.decisionDate}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, decisionDate: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Issue Summary</label>
+              <Textarea
+                value={editForm.issueSummary}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, issueSummary: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Decision Summary</label>
+              <Textarea
+                value={editForm.decisionSummary}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, decisionSummary: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={isSavingEdit}>
+              {isSavingEdit ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Share Precedent</DialogTitle>
+            <DialogDescription>
+              Control how this precedent is shared across organizations.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Sharing Level</label>
+              <Select
+                value={shareForm.sharingLevel}
+                onValueChange={(value) =>
+                  setShareForm((prev) => ({ ...prev, sharingLevel: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sharing level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="private">Private</SelectItem>
+                  <SelectItem value="federation">Federation</SelectItem>
+                  <SelectItem value="congress">Congress</SelectItem>
+                  <SelectItem value="public">Public</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium">Shared With Organization IDs</label>
+              <Input
+                placeholder="comma-separated org IDs"
+                value={shareForm.sharedWithOrgIds}
+                onChange={(e) =>
+                  setShareForm((prev) => ({ ...prev, sharedWithOrgIds: e.target.value }))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Required for private sharing. Leave empty for broader levels.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveShare} disabled={isSavingShare}>
+              {isSavingShare ? "Saving..." : "Save Sharing"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -28,6 +28,7 @@
 import { db } from '@/db/db';
 import { featureFlags, type FeatureFlag } from '@/db/schema/feature-flags-schema';
 import { eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 /**
  * Context for feature flag evaluation
@@ -193,7 +194,7 @@ export async function evaluateFeature(
         };
     }
   } catch (error) {
-    console.error('[FeatureFlags] Evaluation error:', error);
+    logger.error('Feature flag evaluation error', { error, featureName });
     // Fail safe: disable feature on error
     return {
       enabled: false,

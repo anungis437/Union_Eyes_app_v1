@@ -66,8 +66,7 @@ export const GET = withApiAuth(async (
       questions,
     });
   } catch (error) {
-    console.error('Error fetching survey:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch survey' },
       { status: 500 }
     );
@@ -195,8 +194,7 @@ export const PUT = withApiAuth(async (
       message: 'Survey updated successfully',
     });
   } catch (error) {
-    console.error('Error updating survey:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to update survey' },
       { status: 500 }
     );
@@ -275,8 +273,7 @@ export const DELETE = withApiAuth(async (
       message: 'Survey deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting survey:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to delete survey' },
       { status: 500 }
     );

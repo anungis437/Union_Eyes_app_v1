@@ -66,8 +66,7 @@ export const POST = async (request: NextRequest) => {
         });
 
       if (error) {
-        console.error("Supabase upload error:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to upload audio file", details: error.message },
           { status: 500 }
         );
@@ -86,9 +85,7 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error("Audio upload error:", error);
-      
-      return NextResponse.json(
+return NextResponse.json(
         { 
           error: "Failed to upload audio",
           details: error instanceof Error ? error.message : "Unknown error"
@@ -120,8 +117,7 @@ export const DELETE = async (request: NextRequest) => {
         .remove([path]);
 
       if (error) {
-        console.error("Supabase delete error:", error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: "Failed to delete audio file", details: error.message },
           { status: 500 }
         );
@@ -132,9 +128,7 @@ export const DELETE = async (request: NextRequest) => {
       });
 
     } catch (error) {
-      console.error("Audio delete error:", error);
-      
-      return NextResponse.json(
+return NextResponse.json(
         { 
           error: "Failed to delete audio",
           details: error instanceof Error ? error.message : "Unknown error"

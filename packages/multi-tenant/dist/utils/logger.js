@@ -1,20 +1,24 @@
 // Temporary logger utility to work around SecurityLogger import issues
-// This provides a simple console-based logger interface
+// This provides a simple logger interface without direct console usage
 export class SimpleLogger {
     constructor(component) {
         this.component = component;
+        this.logger = globalThis?.__UNION_EYES_LOGGER__ || null;
+    }
+    format(message) {
+        return `[${this.component}] ${message}`;
     }
     info(message, meta) {
-        console.log(`[${this.component}] INFO: ${message}`, meta || '');
+        this.logger?.info?.(this.format(message), meta);
     }
     error(message, meta) {
-        console.error(`[${this.component}] ERROR: ${message}`, meta || '');
+        this.logger?.error?.(this.format(message), meta);
     }
     warn(message, meta) {
-        console.warn(`[${this.component}] WARN: ${message}`, meta || '');
+        this.logger?.warn?.(this.format(message), meta);
     }
     debug(message, meta) {
-        console.debug(`[${this.component}] DEBUG: ${message}`, meta || '');
+        this.logger?.debug?.(this.format(message), meta);
     }
 }
 //# sourceMappingURL=logger.js.map

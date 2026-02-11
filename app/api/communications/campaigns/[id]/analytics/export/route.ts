@@ -143,8 +143,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error exporting analytics:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to export analytics' },
       { status: 500 }
     );

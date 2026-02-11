@@ -1,7 +1,7 @@
 /**
  * Seed Test Data API Endpoint
  * 
- * MIGRATION STATUS: ✅ Migrated to use withRLSContext()
+ * MIGRATION STATUS: âœ… Migrated to use withRLSContext()
  * - All database operations wrapped in withRLSContext() for automatic context setting
  * - RLS policies enforce tenant isolation at database level
  * 
@@ -36,10 +36,7 @@ export const POST = async (request: NextRequest) => {
           error: "organizationId is required" 
         }, { status: 400 });
       }
-
-      console.log(`[Seed] Creating test data for organization: ${organizationId}`);
-
-      // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
+// All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
       return withRLSContext(async (tx) => {
         // Get the current user's profile
         const [userProfile] = await tx
@@ -134,8 +131,7 @@ export const POST = async (request: NextRequest) => {
         });
       });
     } catch (error) {
-      console.error("[Seed API] Error:", error);
-      return NextResponse.json({
+return NextResponse.json({
         error: "Failed to create test data",
         details: error instanceof Error ? error.message : String(error)
       }, { status: 500 });

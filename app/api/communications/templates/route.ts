@@ -8,16 +8,13 @@
  * Version: 1.0.0
  * Created: December 6, 2025
  */
-// TODO: Migrate to withApiAuth wrapper pattern for consistency
-// Original pattern used getCurrentUser() with manual auth checks
-
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { newsletterTemplates } from '@/db/schema';
 import { eq, and, or, like, desc } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withOrganizationAuth } from '@/lib/organization-middleware';
 
 const createTemplateSchema = z.object({
   name: z.string().min(1, 'Template name is required'),
@@ -38,17 +35,9 @@ const createTemplateSchema = z.object({
   isSystem: z.boolean().optional(),
 });
 
-export async function GET(request: NextRequest) {
+export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { tenantId } = user;
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+    const { organizationId, userId } = context;
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -57,7 +46,7 @@ export async function GET(request: NextRequest) {
     let query = db
       .select()
       .from(newsletterTemplates)
-      .where(eq(newsletterTemplates.organizationId, tenantId))
+      .where(eq(newsletterTemplates.organizationId, organizationId))
       .$dynamic();
 
     if (category && category !== 'all') {
@@ -77,25 +66,16 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ templates });
   } catch (error) {
-    console.error('Error fetching templates:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch templates' },
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { id: userId, tenantId } = user;
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
-    }
+    const { organizationId, userId } = context;
 
     const body = await request.json();
     const validatedData = createTemplateSchema.parse(body);
@@ -103,7 +83,7 @@ export async function POST(request: NextRequest) {
     const [template] = await db
       .insert(newsletterTemplates)
       .values({
-        organizationId: tenantId,
+        organizationId,
         createdBy: userId,
         ...validatedData,
       })
@@ -117,12 +97,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    console.error('Error creating template:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }
     );
   }
-}
+});
 

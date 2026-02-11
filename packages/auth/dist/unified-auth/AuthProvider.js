@@ -47,16 +47,14 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             };
         }
         catch (error) {
-            console.error('Error fetching user profile:', error);
-            return {};
+return {};
         }
     };
     /**
      * Handle authentication state changes
      */
     const handleAuthStateChange = useCallback(async (event, session) => {
-        console.log(`Auth event: ${event} in ${appName}`);
-        if (session?.user) {
+if (session?.user) {
             // For initial session or token refresh, ensure JWT has latest claims
             if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
                 try {
@@ -64,8 +62,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
                     await populateJWTClaimsFromProfile(session.user.id);
                 }
                 catch (error) {
-                    console.warn('Could not populate JWT claims:', error);
-                }
+}
             }
             // Fetch additional user profile data
             const profile = await fetchUserProfile(session.user.id);
@@ -153,8 +150,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             return { error: null };
         }
         catch (error) {
-            console.error('Sign in error:', error);
-            return { error: error };
+return { error: error };
         }
         finally {
             setLoading(false);
@@ -193,8 +189,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             return { error: null };
         }
         catch (error) {
-            console.error('Sign up error:', error);
-            return { error: error };
+return { error: error };
         }
         finally {
             setLoading(false);
@@ -218,8 +213,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             return { error: null };
         }
         catch (error) {
-            console.error('Sign out error:', error);
-            return { error: error };
+return { error: error };
         }
         finally {
             setLoading(false);
@@ -242,8 +236,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             return { error: null };
         }
         catch (error) {
-            console.error('Password reset error:', error);
-            return { error: error };
+return { error: error };
         }
     };
     const updatePassword = async (newPassword) => {
@@ -263,8 +256,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             return { error: null };
         }
         catch (error) {
-            console.error('Password update error:', error);
-            return { error: error };
+return { error: error };
         }
     };
     const refreshSession = async () => {
@@ -278,8 +270,7 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             }
         }
         catch (error) {
-            console.error('Session refresh error:', error);
-        }
+}
     };
     // =========================================================================
     // PERMISSION CHECKS

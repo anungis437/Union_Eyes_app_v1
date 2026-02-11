@@ -119,8 +119,7 @@ export default function OrganizingDashboardPage() {
 
       setCampaigns(mockCampaigns);
     } catch (err) {
-      console.error('Error loading campaigns:', err);
-      setError('Unable to load organizing campaigns. Please try again later.');
+setError('Unable to load organizing campaigns. Please try again later.');
     } finally {
       setLoading(false);
     }

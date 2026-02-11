@@ -43,8 +43,7 @@ export function StatusUpdate({ claimId, currentStatus, onStatusUpdated }: Status
           setAllowedTransitions(data.allowedTransitions || []);
         }
       } catch (err) {
-        console.error('Error fetching workflow info:', err);
-        // Fallback: allow all transitions
+// Fallback: allow all transitions
         setAllowedTransitions(statusOptions.map(s => s.value));
       }
     };
@@ -93,8 +92,7 @@ export function StatusUpdate({ claimId, currentStatus, onStatusUpdated }: Status
         onStatusUpdated();
       }, 1000);
     } catch (err) {
-      console.error('Error updating status:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update status');
+setError(err instanceof Error ? err.message : 'Failed to update status');
     } finally {
       setLoading(false);
     }

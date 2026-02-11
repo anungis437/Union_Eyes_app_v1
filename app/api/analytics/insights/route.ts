@@ -77,8 +77,7 @@ export const GET = async (request: NextRequest) => {
         insights
       });
     } catch (error) {
-      console.error('Error fetching insights:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -168,8 +167,7 @@ export const PATCH = async (request: NextRequest) => {
         insight: updated
       });
     } catch (error) {
-      console.error('Error updating insight:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );
@@ -267,8 +265,7 @@ export const POST = async (request: NextRequest) => {
         insight
       });
     } catch (error) {
-      console.error('Error creating insight:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

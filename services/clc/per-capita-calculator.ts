@@ -183,8 +183,7 @@ export async function calculatePerCapita(
 
   // Must have parent organization for remittance
   if (!org.parentId) {
-    console.log(`Organization ${org.name} has no parent - skipping per-capita calculation`);
-    return null;
+return null;
   }
 
   // Get per-capita rate from organization settings
@@ -192,8 +191,7 @@ export async function calculatePerCapita(
   const perCapitaRate = parseFloat(orgSettings.perCapitaRate || '1.0');
   
   if (perCapitaRate <= 0) {
-    console.log(`Organization ${org.name} has invalid per-capita rate - skipping`);
-    return null;
+return null;
   }
 
   // Count members
@@ -233,9 +231,7 @@ export async function calculateAllPerCapita(
   remittanceMonth: number,
   remittanceYear: number
 ): Promise<PerCapitaCalculation[]> {
-  console.log(`Starting per-capita calculation for ${remittanceMonth}/${remittanceYear}`);
-
-  // Get all active organizations with parent (potential remitters)
+// Get all active organizations with parent (potential remitters)
   const orgsWithParent = await db
     .select()
     .from(organizations)
@@ -251,10 +247,7 @@ export async function calculateAllPerCapita(
     const settings = (org.settings as any) || {};
     return settings.perCapitaRate && parseFloat(settings.perCapitaRate) > 0;
   });
-
-  console.log(`Found ${orgsWithRate.length} organizations with per-capita rates`);
-
-  const calculations: PerCapitaCalculation[] = [];
+const calculations: PerCapitaCalculation[] = [];
 
   for (const org of orgsWithRate) {
     try {
@@ -263,12 +256,9 @@ export async function calculateAllPerCapita(
         calculations.push(calculation);
       }
     } catch (error) {
-      console.error(`Error calculating per-capita for ${org.name}:`, error);
-    }
+}
   }
-
-  console.log(`Calculated ${calculations.length} per-capita remittances`);
-  return calculations;
+return calculations;
 }
 
 /**
@@ -333,13 +323,10 @@ export async function savePerCapitaRemittances(
 
       saved++;
     } catch (error) {
-      console.error(`Error saving remittance for org ${calc.fromOrganizationId}:`, error);
-      errors++;
+errors++;
     }
   }
-
-  console.log(`Saved ${saved} remittances, ${errors} errors`);
-  return { saved, errors };
+return { saved, errors };
 }
 
 // =====================================================================================
@@ -471,11 +458,7 @@ export async function processMonthlyPerCapita(): Promise<{
   errors: number;
   overdueMarked: number;
 }> {
-  console.log('='.repeat(80));
-  console.log('Starting Monthly Per-Capita Processing');
-  console.log('='.repeat(80));
-
-  const now = new Date();
+const now = new Date();
   const remittanceMonth = now.getMonth() + 1; // Current month
   const remittanceYear = now.getFullYear();
 
@@ -488,24 +471,14 @@ export async function processMonthlyPerCapita(): Promise<{
 
     // Step 3: Mark overdue remittances
     const overdueMarked = await markOverdueRemittances();
-
-    console.log('='.repeat(80));
-    console.log('Monthly Per-Capita Processing Complete');
-    console.log(`- Calculated: ${calculations.length} remittances`);
-    console.log(`- Saved: ${saved} remittances`);
-    console.log(`- Errors: ${errors}`);
-    console.log(`- Overdue Marked: ${overdueMarked}`);
-    console.log('='.repeat(80));
-
-    return {
+return {
       calculated: calculations.length,
       saved,
       errors,
       overdueMarked,
     };
   } catch (error) {
-    console.error('Error in monthly per-capita processing:', error);
-    throw error;
+throw error;
   }
 }
 

@@ -91,9 +91,7 @@ try {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-
-      console.error('Failed to toggle feature flag', error);
-      throw error;
+throw error;
     }
 });
 

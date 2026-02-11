@@ -51,8 +51,7 @@ async function ensureReportsDir() {
   try {
     await fs.mkdir(REPORTS_DIR, { recursive: true });
   } catch (error) {
-    console.error('Error creating reports directory:', error);
-  }
+}
 }
 
 /**
@@ -67,9 +66,7 @@ async function generateClaimsReport(
     format: 'pdf' | 'excel';
   }
 ) {
-  console.log('Generating claims report', parameters);
-
-  // Build query with combined where conditions
+// Build query with combined where conditions
   const conditions: any[] = [eq(claims.organizationId, tenantId)];
   
   if (parameters.startDate && parameters.endDate) {
@@ -122,9 +119,7 @@ async function generateMembersReport(
     format: 'pdf' | 'excel';
   }
 ) {
-  console.log('Generating members report', parameters);
-
-  // Build query with combined where conditions
+// Build query with combined where conditions
   const conditions: any[] = [eq(members.organizationId, tenantId)];
   
   if (parameters.status) {
@@ -173,9 +168,7 @@ async function generateGrievancesReport(
     format: 'pdf' | 'excel';
   }
 ) {
-  console.log('Generating grievances report', parameters);
-
-  // Build query with combined where conditions
+// Build query with combined where conditions
   const conditions: any[] = [eq(claims.organizationId, tenantId)];
   
   if (parameters.startDate && parameters.endDate) {
@@ -242,9 +235,7 @@ async function generateUsageReport(
     format: 'pdf' | 'excel';
   }
 ) {
-  console.log('Generating usage report', parameters);
-
-  // Gather usage statistics
+// Gather usage statistics
   const claimsData = await db
     .select()
     .from(claims)
@@ -329,10 +320,7 @@ async function generateUsageReport(
  */
 async function processReportJob(job: any) {
   const { reportType, tenantId, userId, parameters } = job.data;
-
-  console.log(`Processing report job ${job.id}: ${reportType}`);
-
-  await ensureReportsDir();
+await ensureReportsDir();
 
   await job.updateProgress(10);
 
@@ -371,10 +359,7 @@ async function processReportJob(job: any) {
     // Save report file
     const filepath = path.join(REPORTS_DIR, filename);
     await fs.writeFile(filepath, buffer);
-
-    console.log(`Report saved: ${filepath}`);
-
-    await job.updateProgress(90);
+await job.updateProgress(90);
 
     // Notify user that report is ready
     try {
@@ -396,14 +381,10 @@ async function processReportJob(job: any) {
           actionLabel: 'Download Report',
           userId: 'system',
         }).catch((err) => {
-          console.error('Failed to send report ready notification', { error: err, userId });
-        });
-
-        console.log(`Report ready notification sent to ${user.email}`);
-      }
+});
+}
     } catch (notificationError) {
-      console.error('Error sending report notification:', notificationError);
-      // Don't fail the job if notification fails
+// Don't fail the job if notification fails
     }
 
     await job.updateProgress(100);
@@ -415,8 +396,7 @@ async function processReportJob(job: any) {
       size: buffer.length,
     };
   } catch (error) {
-    console.error('Error generating report:', error);
-    throw error;
+throw error;
   }
 }
 
@@ -434,23 +414,18 @@ export const reportWorker = new Worker(
 
 // Event handlers
 reportWorker.on('completed', (job: any) => {
-  console.log(`Report job ${job.id} completed`);
 });
 
 reportWorker.on('failed', (job: any, err: any) => {
-  console.error(`Report job ${job?.id} failed:`, err.message);
 });
 
 reportWorker.on('error', (err: any) => {
-  console.error('Report worker error:', err);
 });
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('Shutting down report worker...');
-  await reportWorker.close();
+await reportWorker.close();
   await connection.quit();
-  console.log('Report worker stopped');
 }
 
 process.on('SIGTERM', shutdown);

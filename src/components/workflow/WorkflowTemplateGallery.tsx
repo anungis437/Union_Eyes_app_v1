@@ -115,7 +115,6 @@ export function WorkflowTemplateGallery({
       setTemplates(data);
       setFilteredTemplates(data);
     } catch (error) {
-      console.error('Error fetching templates:', error);
     } finally {
       setLoading(false);
     }
@@ -164,7 +163,6 @@ export function WorkflowTemplateGallery({
       setShowCustomizeDialog(false);
       setSelectedTemplate(null);
     } catch (error) {
-      console.error('Error creating workflow from template:', error);
     }
   };
 

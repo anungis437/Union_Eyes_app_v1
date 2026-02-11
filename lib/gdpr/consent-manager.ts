@@ -269,7 +269,7 @@ export class GdprRequestManager {
         },
       });
     } catch (error) {
-      console.error('Failed to send GDPR request notification:', error);
+      logger.error("Failed to send GDPR request notification", { error });
       // Don't fail the request creation if notification fails
     }
     return request;
@@ -476,7 +476,7 @@ export class DataExportService {
       });
 
       // Log GDPR request execution
-      console.log(`[GDPR] Communication data retrieved for user ${userId}`);
+      logger.info(`[GDPR] Communication data retrieved for user ${userId}`);
 
       return [
         {
@@ -516,7 +516,7 @@ export class DataExportService {
         }
       ];
     } catch (error) {
-      console.error("[GDPR] Error retrieving communication data:", error);
+      logger.error("[GDPR] Error retrieving communication data", { error });
       throw new Error("Failed to retrieve communication data");
     }
   }
@@ -542,7 +542,7 @@ export class DataExportService {
       }
 
       // Log GDPR request execution
-      console.log(`[GDPR] Claims data retrieved for user ${userId}`);
+      logger.info(`[GDPR] Claims data retrieved for user ${userId}`);
 
       return [
         {
@@ -577,7 +577,7 @@ export class DataExportService {
         }
       ];
     } catch (error) {
-      console.error("[GDPR] Error retrieving claims data:", error);
+      logger.error("[GDPR] Error retrieving claims data", { error });
       throw new Error("Failed to retrieve claims data");
     }
   }
@@ -596,7 +596,7 @@ export class DataExportService {
       });
 
       // Log GDPR request execution
-      console.log(`[GDPR] Voting data retrieved for user ${userId} (anonymized)`);
+      logger.info(`[GDPR] Voting data retrieved for user ${userId} (anonymized)`);
 
       return [
         {
@@ -631,7 +631,7 @@ export class DataExportService {
         }
       ];
     } catch (error) {
-      console.error("[GDPR] Error retrieving voting data:", error);
+      logger.error("[GDPR] Error retrieving voting data", { error });
       throw new Error("Failed to retrieve voting data");
     }
   }

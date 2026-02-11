@@ -28,10 +28,7 @@ export const GET = async (request: NextRequest) => {
           { status: 400 }
         );
       }
-
-      console.log('[API /api/activities] Fetching activities for tenantId:', tenantId);
-
-      // Get recent member additions (simplified approach for now)
+// Get recent member additions (simplified approach for now)
       const recentMembers = await db
         .select({
           id: organizationMembers.id,
@@ -72,16 +69,12 @@ export const GET = async (request: NextRequest) => {
         icon: 'user',
         color: 'purple',
       }));
-
-      console.log('[API /api/activities] Returning', activities.length, 'activities');
-
-      return NextResponse.json({
+return NextResponse.json({
         activities: activities,
         count: activities.length,
       });
     } catch (error) {
-      console.error('Error fetching activities:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
       );

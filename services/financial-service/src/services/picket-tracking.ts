@@ -247,8 +247,7 @@ export async function checkIn(
       distance,
     };
   } catch (error: any) {
-    console.error('Check-in error:', error);
-    return {
+return {
       success: false,
       error: error.message || 'Failed to check in',
     };
@@ -310,8 +309,7 @@ export async function checkOut(
       hoursWorked,
     };
   } catch (error: any) {
-    console.error('Check-out error:', error);
-    return {
+return {
       success: false,
       error: error.message || 'Failed to check out',
     };

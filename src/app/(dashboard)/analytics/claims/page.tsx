@@ -140,7 +140,6 @@ export default function ClaimsAnalyticsDashboard() {
       setStewardPerformance(stewardsData);
       setCategoryBreakdown(categoriesData);
     } catch (error) {
-      console.error('Failed to fetch claims analytics:', error);
     } finally {
       setLoading(false);
     }
@@ -156,7 +155,6 @@ export default function ClaimsAnalyticsDashboard() {
       await fetch('/api/analytics/refresh', { method: 'POST' });
       await fetchClaimsAnalytics();
     } catch (error) {
-      console.error('Failed to refresh analytics:', error);
     } finally {
       setRefreshing(false);
     }
@@ -180,7 +178,6 @@ export default function ClaimsAnalyticsDashboard() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Failed to export analytics:', error);
     }
   };
 

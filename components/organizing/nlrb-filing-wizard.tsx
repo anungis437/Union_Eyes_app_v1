@@ -104,10 +104,43 @@ export default function NLRBFilingWizard({ campaignId, onComplete }: { campaignI
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Submitting filing:", filingData);
-    // TODO: API call to submit filing
-    if (onComplete) onComplete();
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('/api/organizing/nlrb-filings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId,
+          filingType: filingData.filingType,
+          jurisdiction: filingData.jurisdiction,
+          filedDate: new Date().toISOString(),
+          bargainingUnitDescription: filingData.bargaingunUnitDescription,
+          unitSizeClaimed: parseInt(filingData.unitSizeClaimed),
+          jobClassifications: filingData.jobClassifications,
+          excludedPositions: filingData.excludedPositions,
+          showingOfInterestPercentage: filingData.showingOfInterestPercentage,
+          cardsSubmittedCount: filingData.cardsSubmittedCount ? parseInt(filingData.cardsSubmittedCount) : undefined,
+          cardSubmissionBatchIds: filingData.cardSubmissionBatchIds,
+          electionType: filingData.electionType || undefined,
+          proposedElectionDate: filingData.proposedElectionDate,
+          employerName: filingData.employerName,
+          employerAddress: filingData.employerAddress,
+          employerRepresentation: filingData.employerRepresentation,
+          employerContested: filingData.employerContested,
+          employerObjections: filingData.employerObjections,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit filing');
+      }
+
+      const result = await response.json();
+if (onComplete) onComplete();
+    } catch (error) {
+alert(`Failed to submit filing: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const addJobClassification = () => {
@@ -296,10 +329,10 @@ export default function NLRBFilingWizard({ campaignId, onComplete }: { campaignI
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-xs space-y-1">
-                  <p>• NLRB RC: Requires 30% showing of interest</p>
-                  <p>• NLRB RM: Employer must provide proof of doubt</p>
-                  <p>• CLRB: Typically requires 40-55% depending on province</p>
-                  <p>• All filings require accurate bargaining unit description</p>
+                  <p>â€¢ NLRB RC: Requires 30% showing of interest</p>
+                  <p>â€¢ NLRB RM: Employer must provide proof of doubt</p>
+                  <p>â€¢ CLRB: Typically requires 40-55% depending on province</p>
+                  <p>â€¢ All filings require accurate bargaining unit description</p>
                 </CardContent>
               </Card>
             </div>
@@ -354,7 +387,7 @@ export default function NLRBFilingWizard({ campaignId, onComplete }: { campaignI
                         onClick={() => removeJobClassification(index)}
                         className="ml-2 hover:text-destructive"
                       >
-                        ×
+                        Ã—
                       </button>
                     </Badge>
                   ))}
@@ -382,7 +415,7 @@ export default function NLRBFilingWizard({ campaignId, onComplete }: { campaignI
                         onClick={() => removeExcludedPosition(index)}
                         className="ml-2 hover:text-destructive"
                       >
-                        ×
+                        Ã—
                       </button>
                     </Badge>
                   ))}
@@ -601,7 +634,7 @@ export default function NLRBFilingWizard({ campaignId, onComplete }: { campaignI
                           onClick={() => removeObjection(index)}
                           className="ml-2 hover:opacity-70"
                         >
-                          ×
+                          Ã—
                         </button>
                       </Badge>
                     ))}

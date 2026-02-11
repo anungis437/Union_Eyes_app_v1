@@ -153,7 +153,7 @@ export default function ClaimDetailScreen() {
         message: `Claim ${claim?.claimNumber}: ${claim?.title}\nStatus: ${claim?.status}`,
       });
     } catch (error) {
-      console.error('Error sharing:', error);
+      Alert.alert('Error', 'Failed to share claim');
     }
   };
 

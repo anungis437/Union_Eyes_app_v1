@@ -119,8 +119,7 @@ async function postHandler(
     });
 
   } catch (error: any) {
-    console.error('Report execution error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error.message || 'Failed to execute report' },
       { status: 500 }
     );

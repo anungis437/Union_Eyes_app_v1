@@ -27,7 +27,7 @@ export const getProfileByEmail = async (email: string) => {
     const profiles = await db.select().from(profilesTable).where(eq(profilesTable.email, email));
     return profiles[0] || null;
   } catch (error) {
-    console.error("Error getting profile by email:", error);
+    logger.error("Error getting profile by email", { error });
     return null;
   }
 }
@@ -137,7 +137,7 @@ export async function handlePaymentSuccess(data: any) {
   const token = data.metadata?.token;
   
   if (!email && !token) {
-    console.error(`[Event ${eventId}] Payment has no clerkUserId, email or token. Cannot process.`);
+    logger.error(`[Event ${eventId}] Payment has no clerkUserId, email or token. Cannot process.`);
     return;
   }
   

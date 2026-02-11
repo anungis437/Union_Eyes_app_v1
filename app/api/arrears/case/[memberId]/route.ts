@@ -109,8 +109,7 @@ export const GET = async (
               : result.case.paymentSchedule;
           }
         } catch (parseError) {
-          console.error('Error parsing JSON fields:', parseError);
-        }
+}
 
         // Calculate payment plan progress if active
         let paymentPlanProgress = null;
@@ -160,8 +159,7 @@ export const GET = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error', memberId: params.memberId },
         });
-        console.error('Get arrears case error:', error);
-        return NextResponse.json(
+return NextResponse.json(
           { error: 'Failed to get arrears case' },
           { status: 500 }
         );

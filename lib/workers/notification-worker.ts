@@ -23,9 +23,10 @@ import { NotificationJobData } from '../job-queue';
 import { addEmailJob } from '../job-queue';
 import { addSmsJob } from '../job-queue';
 import { db } from '@/db/db';
-import { notificationHistory, userNotificationPreferences, inAppNotifications } from '@/db/schema';
+import { notificationHistory, userNotificationPreferences, inAppNotifications, pushDevices } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { FCMService } from '@/services/fcm-service';
 
 // Validate Redis configuration (deferred until actual use)
 let connection: IORedis | null = null;
@@ -222,9 +223,55 @@ async function processNotification(job: any) {
           throw new Error('User phone not found');
 
         case 'push':
-          // TODO: Implement push notifications
-          logger.info('Push notification queued', { userId, title });
-          return { channel, success: true };
+          // Send push notification via FCM
+          try {
+            // Get user's registered devices
+            const devices = await db
+              .select()
+              .from(pushDevices)
+              .where(
+                and(
+                  eq(pushDevices.userId, userId),
+                  eq(pushDevices.isActive, true)
+                )
+              );
+
+            if (devices.length === 0) {
+              logger.warn('No active push devices found for user', { userId });
+              return { channel, success: false, error: 'No active devices' };
+            }
+
+            // Send push notification to all user's devices
+            const pushResults = await FCMService.sendToUser({
+              userId,
+              title,
+              body: message,
+              data: {
+                ...data,
+                notificationId: job.id || '',
+              },
+              priority: data?.priority || 'normal',
+              clickAction: data?.actionUrl || undefined,
+            });
+
+            const successCount = pushResults.filter(r => r.success).length;
+            logger.info('Push notifications sent', { 
+              userId, 
+              title, 
+              devicesCount: devices.length,
+              successCount 
+            });
+
+            return { 
+              channel, 
+              success: successCount > 0,
+              sentTo: successCount,
+              totalDevices: devices.length
+            };
+          } catch (error) {
+            logger.error('Push notification failed', error instanceof Error ? error : new Error(String(error)), { userId, title });
+            throw error;
+          }
 
         case 'in-app':
           await sendInAppNotification(userId, title, message, data, data?.tenantId);

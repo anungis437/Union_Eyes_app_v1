@@ -109,8 +109,7 @@ export function ClaimAssignmentModal({
       await onAssign(selected);
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to assign claim:", error);
-    } finally {
+} finally {
       setIsAssigning(false);
     }
   };

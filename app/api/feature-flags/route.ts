@@ -33,9 +33,7 @@ export async function GET(request: Request) {
       organizationId: orgId || null,
     });
   } catch (error) {
-    console.error('[FeatureFlags API] Error:', error);
-    
-    return NextResponse.json(
+return NextResponse.json(
       { 
         error: 'Failed to evaluate feature flags',
         flags: {}, // Fail safe: all features disabled

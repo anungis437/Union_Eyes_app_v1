@@ -150,8 +150,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-    console.error('Error fetching model metrics:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch model metrics' },
       { status: 500 }
     );

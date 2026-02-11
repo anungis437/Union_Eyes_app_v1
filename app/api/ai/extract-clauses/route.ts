@@ -89,8 +89,7 @@ export const POST = async (request: NextRequest) => {
         errors: result.errors,
       });
     } catch (error) {
-      console.error('AI extraction error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to extract clauses', details: error instanceof Error ? error.message : 'Unknown error' },
         { status: 500 }
       );

@@ -63,8 +63,7 @@ export async function fetchWithCSRF(
     const csrfToken = getCSRFToken();
 
     if (!csrfToken) {
-      console.warn('[CSRF] Token not found in cookies - request may fail');
-    }
+}
 
     const headers = new Headers(options?.headers);
     
@@ -107,8 +106,7 @@ export function setupAxiosCSRF(axiosInstance: any): void {
         const csrfToken = getCSRFToken();
 
         if (!csrfToken) {
-          console.warn('[CSRF] Token not found in cookies - request may fail');
-        } else {
+} else {
           config.headers[CSRF_HEADER_NAME] = csrfToken;
         }
       }

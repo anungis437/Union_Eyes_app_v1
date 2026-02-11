@@ -47,8 +47,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-    console.error('Error searching members:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to search members' },
       { status: 500 }
     );

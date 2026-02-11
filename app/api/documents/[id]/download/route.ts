@@ -137,8 +137,7 @@ export const GET = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error downloading document:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to download document", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );

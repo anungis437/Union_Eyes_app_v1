@@ -61,8 +61,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       if (settings) {
         set(settings);
       }
-    } catch (error) {
-      console.error('Failed to load settings:', error);
+    } catch {
     }
   },
 
@@ -76,8 +75,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         biometricEnabled,
         offlineMode,
       });
-    } catch (error) {
-      console.error('Failed to save settings:', error);
+    } catch {
     }
   },
 }));

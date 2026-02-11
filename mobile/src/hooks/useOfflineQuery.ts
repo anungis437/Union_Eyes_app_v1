@@ -69,7 +69,6 @@ export function useOfflineQuery<TData = unknown, TError = Error>(
       try {
         const syncEngine = getSyncEngine();
         syncEngine.sync(entity, 'pull').catch((error) => {
-          console.error(`[useOfflineQuery] Failed to sync ${entity}:`, error);
         });
       } catch (error) {
         // SyncEngine not initialized, skip
@@ -84,8 +83,6 @@ export function useOfflineQuery<TData = unknown, TError = Error>(
       const online = networkStatus.isOnline();
 
       if (!online) {
-        console.log(`[useOfflineQuery] Offline, loading from local DB: ${entity}`);
-
         // Try to get from local database
         const localData = await localDB.findAll(entity);
 
@@ -120,7 +117,6 @@ export function useOfflineQuery<TData = unknown, TError = Error>(
               queryClient.setQueryData(queryKey, freshData);
             })
             .catch((error) => {
-              console.error('[useOfflineQuery] Background fetch failed:', error);
             });
 
           return cachedData;
@@ -142,8 +138,6 @@ export function useOfflineQuery<TData = unknown, TError = Error>(
 
         return data;
       } catch (error: any) {
-        console.error(`[useOfflineQuery] Fetch failed, falling back to local DB:`, error);
-
         // Fallback to local DB
         const localData = await localDB.findAll(entity);
         if (localData && localData.length > 0) {
@@ -240,8 +234,6 @@ export function useOfflineMutation<TData = unknown, TVariables = unknown, TError
       }
 
       if (!online) {
-        console.log(`[useOfflineMutation] Offline, queuing operation for ${entity}`);
-
         // Queue operation for when back online
         const operationData = variables as any;
         const operationType = operationData.id ? OperationType.UPDATE : OperationType.CREATE;
@@ -294,8 +286,7 @@ export function useOfflineMutation<TData = unknown, TVariables = unknown, TError
       // Invalidate queries to refetch
       queryClient.invalidateQueries({ queryKey: [entity] });
     },
-    onError: (error) => {
-      console.error(`[useOfflineMutation] Mutation failed for ${entity}:`, error);
+    onError: () => {
     },
     ...mutationOptions,
   });
@@ -442,7 +433,6 @@ export function useCachedData<T>(entity: string, id?: string) {
           setData(items);
         }
       } catch (error) {
-        console.error(`[useCachedData] Failed to load ${entity}:`, error);
       } finally {
         setIsLoading(false);
       }

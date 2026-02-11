@@ -230,8 +230,7 @@ export function useBilling(options) {
                     table: 'billing_subscriptions',
                     filter: `organization_id=eq.${organizationId}`,
                 }, async (payload) => {
-                    console.log('Subscription change:', payload);
-                    await loadSubscription();
+await loadSubscription();
                 })
                     .on('postgres_changes', {
                     event: '*',
@@ -239,14 +238,12 @@ export function useBilling(options) {
                     table: 'billing_usage',
                     filter: `organization_id=eq.${organizationId}`,
                 }, async (payload) => {
-                    console.log('Usage change:', payload);
-                    await loadUsage();
+await loadUsage();
                 })
                     .subscribe();
             }
             catch (err) {
-                console.error('Failed to setup realtime:', err);
-            }
+}
         };
         setupRealtime();
         return () => {

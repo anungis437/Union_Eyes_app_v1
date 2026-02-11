@@ -129,8 +129,7 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
 
       setVolunteerLeaders(leaders);
     } catch (error) {
-      console.error('Error fetching activities:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [campaignId]);
@@ -173,8 +172,7 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
       setShowForm(false);
       fetchActivities();
     } catch (error) {
-      console.error('Error logging activity:', error);
-      alert('Failed to log activity');
+alert('Failed to log activity');
     }
   };
 
@@ -388,7 +386,7 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
                       <div>
                         <div className="font-medium text-sm">{activity.volunteer_name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {activity.contacts_made} contact{activity.contacts_made !== 1 ? 's' : ''} • {format(new Date(activity.activity_date), 'MMM d, h:mm a')}
+                          {activity.contacts_made} contact{activity.contacts_made !== 1 ? 's' : ''} â€¢ {format(new Date(activity.activity_date), 'MMM d, h:mm a')}
                         </div>
                       </div>
                     </div>
@@ -430,7 +428,7 @@ export function CanvassingInterface({ campaignId, organizationId }: CanvassingIn
                     <div>
                       <div className="font-medium">{volunteer.volunteer_name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {volunteer.total_activities} activities • Avg {volunteer.avg_contacts_per_activity} contacts
+                        {volunteer.total_activities} activities â€¢ Avg {volunteer.avg_contacts_per_activity} contacts
                       </div>
                     </div>
                   </div>

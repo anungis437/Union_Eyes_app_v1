@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { InsertProfile, profilesTable, SelectProfile } from "../schema/profiles-schema";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/rls-middleware";
+import { logger } from "@/lib/logger";
 
 export const createProfile = async (
   data: InsertProfile,
@@ -31,7 +32,7 @@ export const createProfile = async (
         membership: data.membership || "free"
       };
       
-      console.log(`Creating profile with data:`, {
+      logger.info("Creating profile", {
         userId: profileData.userId,
         email: profileData.email,
         membership: profileData.membership,
@@ -43,7 +44,7 @@ export const createProfile = async (
       const [newProfile] = await dbOrTx.insert(profilesTable).values(profileData).returning();
       return newProfile;
     } catch (error) {
-      console.error("Error creating profile:", error);
+      logger.error("Error creating profile", { error });
       throw new Error("Failed to create profile");
     }
   };
@@ -61,7 +62,7 @@ export const getProfileByUserId = async (
 ) => {
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     try {
-      console.log(`Looking up profile by user ID: ${userId}`);
+      logger.info("Looking up profile by user ID", { userId });
       
       // Increase timeout from 5 to 10 seconds for more reliability in serverless environments
       const profiles = await Promise.race([
@@ -76,7 +77,7 @@ export const getProfileByUserId = async (
       }
       return null;
     } catch (error) {
-      console.error("Error getting profile by user ID:", error);
+      logger.error("Error getting profile by user ID", { error, userId });
       return null;
     }
   };
@@ -112,7 +113,7 @@ export const updateProfile = async (
       const [updatedProfile] = await dbOrTx.update(profilesTable).set(data).where(eq(profilesTable.userId, userId)).returning();
       return updatedProfile;
     } catch (error) {
-      console.error("Error updating profile:", error);
+      logger.error("Error updating profile", { error, userId });
       throw new Error("Failed to update profile");
     }
   };
@@ -134,7 +135,7 @@ export const updateProfileByStripeCustomerId = async (
       const [updatedProfile] = await dbOrTx.update(profilesTable).set(data).where(eq(profilesTable.stripeCustomerId, stripeCustomerId)).returning();
       return updatedProfile;
     } catch (error) {
-      console.error("Error updating profile by stripe customer ID:", error);
+      logger.error("Error updating profile by stripe customer ID", { error, stripeCustomerId });
       throw new Error("Failed to update profile");
     }
   };
@@ -154,7 +155,7 @@ export const deleteProfile = async (
     try {
       await dbOrTx.delete(profilesTable).where(eq(profilesTable.userId, userId));
     } catch (error) {
-      console.error("Error deleting profile:", error);
+      logger.error("Error deleting profile", { error, userId });
       throw new Error("Failed to delete profile");
     }
   };
@@ -178,7 +179,7 @@ export const updateProfileByWhopUserId = async (
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     try {
       // Log the database operation for audit purposes
-      console.log(`Updating profile by Whop user ID: ${whopUserId}, with data:`, data);
+      logger.info("Updating profile by Whop user ID", { whopUserId, data });
       
       if (!whopUserId) {
         throw new Error("Whop user ID is required");
@@ -194,7 +195,7 @@ export const updateProfileByWhopUserId = async (
         try {
           existingProfile = await getProfileByWhopUserId(whopUserId, dbOrTx);
           if (!existingProfile) {
-            console.warn(`Attempt ${retries + 1}: No profile found with Whop user ID: ${whopUserId}`);
+            logger.warn("No profile found with Whop user ID", { attempt: retries + 1, whopUserId });
             retries++;
             if (retries < maxRetries) {
               // Wait before retrying (exponential backoff)
@@ -202,7 +203,7 @@ export const updateProfileByWhopUserId = async (
             }
           }
         } catch (error) {
-          console.error(`Attempt ${retries + 1}: Error fetching profile:`, error);
+          logger.error("Error fetching profile", { attempt: retries + 1, error, whopUserId });
           retries++;
           if (retries < maxRetries) {
             // Wait before retrying
@@ -214,13 +215,13 @@ export const updateProfileByWhopUserId = async (
       }
       
       if (!existingProfile) {
-        console.warn(`No profile found with Whop user ID: ${whopUserId} after ${maxRetries} attempts. Skipping update.`);
+        logger.warn("No profile found with Whop user ID after retries; skipping update", { whopUserId, maxRetries });
         return null;
       }
       
       // Then update the profile - critical part: use the Clerk user ID for the actual update
       const clerkUserId = existingProfile.userId;
-      console.log(`Found profile with Clerk user ID: ${clerkUserId}, will use this for database update`);
+      logger.info("Found profile for Clerk user ID; updating", { clerkUserId, whopUserId });
       
       const [updatedProfile] = await dbOrTx.update(profilesTable)
         .set({
@@ -231,15 +232,15 @@ export const updateProfileByWhopUserId = async (
         .returning();
       
       if (!updatedProfile) {
-        console.warn(`Update operation completed but no profile was returned for Clerk user ID: ${clerkUserId}`);
+        logger.warn("Update completed but no profile returned", { clerkUserId, whopUserId });
         return null;
       } else {
-        console.log(`Successfully updated profile for Clerk user ID: ${clerkUserId} via Whop user ID: ${whopUserId}`, updatedProfile);
+        logger.info("Successfully updated profile via Whop user ID", { clerkUserId, whopUserId });
       }
       
       return updatedProfile;
     } catch (error) {
-      console.error("Error updating profile by Whop user ID:", error);
+      logger.error("Error updating profile by Whop user ID", { error, whopUserId });
       throw new Error(`Failed to update profile by Whop user ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
@@ -261,7 +262,7 @@ export const getProfileByWhopUserId = async (
         throw new Error("Whop user ID is required");
       }
       
-      console.log(`Looking up profile by Whop user ID: ${whopUserId}`);
+      logger.info("Looking up profile by Whop user ID", { whopUserId });
       
       // Add retry logic with timeout
       let retries = 0;
@@ -280,20 +281,20 @@ export const getProfileByWhopUserId = async (
           const profile = profiles && profiles.length > 0 ? profiles[0] : null;
           
           if (!profile) {
-            console.warn(`No profile found with Whop user ID: ${whopUserId}`);
+            logger.warn("No profile found with Whop user ID", { whopUserId });
           } else {
-            console.log(`Found profile for Whop user ID: ${whopUserId}`, profile);
+            logger.info("Found profile for Whop user ID", { whopUserId });
           }
           
           return profile;
         } catch (error) {
-          console.error(`Attempt ${retries + 1}: Error getting profile by Whop user ID:`, error);
+          logger.error("Error getting profile by Whop user ID", { attempt: retries + 1, error, whopUserId });
           retries++;
           
           if (retries < maxRetries) {
             // Wait before retrying (exponential backoff)
             const backoffMs = 1000 * Math.pow(2, retries);
-            console.log(`Retrying in ${backoffMs}ms...`);
+            logger.info("Retrying profile lookup", { backoffMs, whopUserId });
             await new Promise(resolve => setTimeout(resolve, backoffMs));
           } else {
             throw error; // Rethrow after max retries
@@ -304,7 +305,7 @@ export const getProfileByWhopUserId = async (
       // This should never be reached due to the while loop logic
       return null;
     } catch (error) {
-      console.error("Error getting profile by Whop user ID:", error);
+      logger.error("Error getting profile by Whop user ID", { error, whopUserId });
       throw new Error(`Failed to get profile by Whop user ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
@@ -323,13 +324,13 @@ export const getProfileByUserEmail = async (
 ) => {
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     if (!email) {
-      console.error("Email is required for profile lookup");
+      logger.error("Email is required for profile lookup");
       return null;
     }
 
     try {
       // Log the operation
-      console.log(`Looking up profile by user email: ${email}`);
+      logger.info("Looking up profile by user email", { email });
       
       // Add a timeout to prevent hanging connections
       const profiles = await Promise.race([
@@ -341,14 +342,14 @@ export const getProfileByUserEmail = async (
       
       if (profiles && profiles.length > 0) {
         const profile = profiles[0];
-        console.log(`Found profile for email ${email}: userId=${profile.userId}`);
+        logger.info("Found profile for email", { email, userId: profile.userId });
         return profile;
       } else {
-        console.log(`No profile found with email: ${email}`);
+        logger.info("No profile found with email", { email });
         return null;
       }
     } catch (error) {
-      console.error("Error looking up profile by email:", error);
+      logger.error("Error looking up profile by email", { error, email });
       return null;
     }
   };
@@ -371,7 +372,7 @@ export const getProfileByEmail = async (
       const profiles = await dbOrTx.select().from(profilesTable).where(eq(profilesTable.email, email));
       return profiles[0] || null;
     } catch (error) {
-      console.error("Error getting profile by email:", error);
+      logger.error("Error getting profile by email", { error, email });
       return null;
     }
   };
@@ -390,11 +391,11 @@ export const getUserPlanInfo = async (
 ) => {
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     try {
-      console.log(`Getting plan information for user: ${userId}`);
+      logger.info("Getting plan information for user", { userId });
       const profile = await getProfileByUserId(userId, dbOrTx);
       
       if (!profile) {
-        console.warn(`No profile found for user: ${userId}`);
+        logger.warn("No profile found for user", { userId });
         return null;
       }
       
@@ -409,7 +410,7 @@ export const getUserPlanInfo = async (
         nextCreditRenewal: profile.nextCreditRenewal || null
       };
     } catch (error) {
-      console.error("Error getting user plan information:", error);
+      logger.error("Error getting user plan information", { error, userId });
       return null;
     }
   };
@@ -428,17 +429,17 @@ export const deleteProfileById = async (
 ) => {
   const executeQuery = async (dbOrTx: NodePgDatabase<any>) => {
     try {
-      console.log(`Deleting profile with ID: ${profileId}`);
+      logger.info("Deleting profile by ID", { profileId });
       
       if (!profileId) {
         throw new Error("Profile ID is required");
       }
       
       await dbOrTx.delete(profilesTable).where(eq(profilesTable.userId, profileId));
-      console.log(`Successfully deleted profile with ID: ${profileId}`);
+      logger.info("Successfully deleted profile by ID", { profileId });
       return true;
     } catch (error) {
-      console.error(`Error deleting profile with ID ${profileId}:`, error);
+      logger.error("Error deleting profile by ID", { error, profileId });
       return false;
     }
   };

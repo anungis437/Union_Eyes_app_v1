@@ -90,8 +90,7 @@ export async function POST(request: NextRequest) {
     // For high-priority feedback (concerns, opt-outs), trigger notification
     if (category === 'concern' || category === 'opt-out') {
       // In production, send notification to AI Governance Committee
-      console.log(`High-priority AI feedback received: ${feedbackId}`);
-    }
+}
 
     return NextResponse.json({
       success: true,
@@ -100,8 +99,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error submitting feedback:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to submit feedback' },
       { status: 500 }
     );
@@ -173,8 +171,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ feedback });
 
   } catch (error) {
-    console.error('Error fetching feedback:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to fetch feedback' },
       { status: 500 }
     );

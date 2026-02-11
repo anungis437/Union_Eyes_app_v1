@@ -83,8 +83,7 @@ export function OrganizationMembers({ organizationId, className }: OrganizationM
       const data = await response.json();
       setMembers(data.data || []);
     } catch (err) {
-      console.error("Error loading members:", err);
-    } finally {
+} finally {
       setLoading(false);
     }
   }, [organizationId]);
@@ -143,8 +142,7 @@ export function OrganizationMembers({ organizationId, className }: OrganizationM
       setShowTransferDialog(false);
       setTransferTargetOrg("");
     } catch (err) {
-      console.error("Error transferring members:", err);
-      alert("Failed to transfer members");
+alert("Failed to transfer members");
     } finally {
       setTransferring(false);
     }
@@ -193,7 +191,7 @@ export function OrganizationMembers({ organizationId, className }: OrganizationM
             </CardTitle>
             <CardDescription>
               {members.length} total members
-              {selectedMembers.size > 0 && ` • ${selectedMembers.size} selected`}
+              {selectedMembers.size > 0 && ` â€¢ ${selectedMembers.size} selected`}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">

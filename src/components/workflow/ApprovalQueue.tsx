@@ -90,7 +90,6 @@ export function ApprovalQueue({
       setApprovals(data);
       calculateStats(data);
     } catch (error) {
-      console.error('Error fetching approvals:', error);
     } finally {
       setLoading(false);
     }
@@ -159,7 +158,6 @@ export function ApprovalQueue({
       setShowDialog(false);
       setSelectedApproval(null);
     } catch (error) {
-      console.error('Error submitting approval response:', error);
     } finally {
       setSubmitting(false);
     }

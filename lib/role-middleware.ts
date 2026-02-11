@@ -116,8 +116,7 @@ export function withRoleAuth<T = any>(
       // Call the handler with role context
       return await handler(request, roleContext, params);
     } catch (error) {
-      console.error("Role middleware error:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { success: false, error: "Internal server error" },
         { status: 500 }
       );
@@ -196,8 +195,7 @@ export function withAnyRole<T = any>(
       // Call the handler with role context
       return await handler(request, roleContext, params);
     } catch (error) {
-      console.error("Role middleware error:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { success: false, error: "Internal server error" },
         { status: 500 }
       );

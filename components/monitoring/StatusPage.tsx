@@ -26,8 +26,7 @@ export function StatusPage() {
       setStatus(data);
       setLastUpdate(new Date());
     } catch (error) {
-      console.error('Failed to fetch status', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };

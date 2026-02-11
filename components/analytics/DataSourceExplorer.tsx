@@ -120,9 +120,9 @@ const getFieldTypeIcon = (type: string): string => {
     case 'date':
     case 'datetime':
     case 'timestamp':
-      return '📅';
+      return 'ðŸ“…';
     case 'boolean':
-      return '✓/✗';
+      return 'âœ“/âœ—';
     default:
       return '?';
   }
@@ -171,15 +171,24 @@ export function DataSourceExplorer({
   };
 
   // Handle field preview
-  const handleFieldPreview = async (field: DataSourceField) => {
+  const handleFieldPreview = async (sourceId: string, field: DataSourceField) => {
     setPreviewField(field);
-    // TODO: Fetch sample data from API
-    // For now, show mock data
-    setSampleData([
-      { value: 'Sample 1' },
-      { value: 'Sample 2' },
-      { value: 'Sample 3' },
-    ]);
+    setSampleData([]);
+
+    try {
+      const response = await fetch(
+        `/api/reports/datasources/sample?sourceId=${encodeURIComponent(sourceId)}&fieldId=${encodeURIComponent(field.fieldId)}`
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        setSampleData(Array.isArray(result.samples) ? result.samples : []);
+      } else {
+        setSampleData([]);
+      }
+    } catch (error) {
+setSampleData([]);
+    }
   };
 
   // Handle field drag start
@@ -309,7 +318,7 @@ export function DataSourceExplorer({
                                       variant="outline"
                                       className="text-xs bg-green-50 text-green-700 border-green-200"
                                     >
-                                      Σ
+                                      Î£
                                     </Badge>
                                   </TooltipTrigger>
                                   <TooltipContent>
@@ -346,7 +355,7 @@ export function DataSourceExplorer({
                                   variant="ghost"
                                   size="sm"
                                   className="h-7 w-7 p-0"
-                                  onClick={() => handleFieldPreview(field)}
+                                  onClick={() => handleFieldPreview(source.id, field)}
                                 >
                                   <Eye className="w-3 h-3" />
                                 </Button>

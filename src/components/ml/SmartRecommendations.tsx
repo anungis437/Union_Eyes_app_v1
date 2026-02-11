@@ -81,7 +81,6 @@ export function SmartRecommendations({
       setRecommendations(data.recommendations || []);
     } catch (err) {
       setError('Failed to load recommendations');
-      console.error('Recommendations error:', err);
     } finally {
       setIsLoading(false);
     }

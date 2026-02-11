@@ -103,8 +103,7 @@ export function SimpleTimeEntryForm({ onSubmit, matters = [], defaultRate = 450,
             setTimeError('');
         }
         catch (error) {
-            console.error('Failed to submit time entry:', error);
-        }
+}
         finally {
             setIsLoading(false);
         }

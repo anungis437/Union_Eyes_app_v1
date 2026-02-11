@@ -51,8 +51,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       }
 
     } catch (error) {
-      console.error('Error fetching workflow:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to fetch workflow', details: (error as Error).message },
         { status: 500 }
       );
@@ -76,8 +75,7 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
       });
 
     } catch (error) {
-      console.error('Error advancing workflow:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to advance workflow', details: (error as Error).message },
         { status: 500 }
       );
@@ -109,8 +107,7 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       });
 
     } catch (error) {
-      console.error('Error cancelling workflow:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to cancel workflow', details: (error as Error).message },
         { status: 500 }
       );

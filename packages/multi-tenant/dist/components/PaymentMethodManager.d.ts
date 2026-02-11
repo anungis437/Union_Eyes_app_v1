@@ -30,8 +30,8 @@ export interface PaymentMethodManagerProps {
  *   stripePublishableKey={process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
  *   customerId={organization.stripe_customer_id}
  *   apiEndpoint="/api/billing/payment-methods"
- *   onPaymentMethodAdded={(id) => console.log('Added:', id)}
- *   onPaymentMethodRemoved={(id) => console.log('Removed:', id)}
+ *   onPaymentMethodAdded={(id) => undefined}
+ *   onPaymentMethodRemoved={(id) => undefined}
  * />
  * ```
  */

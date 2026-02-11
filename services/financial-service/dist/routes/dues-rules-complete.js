@@ -74,8 +74,7 @@ router.get('/', async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error fetching dues rules:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch dues rules' });
+res.status(500).json({ success: false, error: 'Failed to fetch dues rules' });
     }
 });
 /**
@@ -97,8 +96,7 @@ router.get('/:id', async (req, res) => {
         res.json({ success: true, data: rule });
     }
     catch (error) {
-        console.error('Error fetching dues rule:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch dues rule' });
+res.status(500).json({ success: false, error: 'Failed to fetch dues rule' });
     }
 });
 /**
@@ -128,8 +126,7 @@ router.post('/', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-        console.error('Error creating dues rule:', error);
-        res.status(500).json({ success: false, error: 'Failed to create dues rule' });
+res.status(500).json({ success: false, error: 'Failed to create dues rule' });
     }
 });
 /**
@@ -168,8 +165,7 @@ router.put('/:id', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-        console.error('Error updating dues rule:', error);
-        res.status(500).json({ success: false, error: 'Failed to update dues rule' });
+res.status(500).json({ success: false, error: 'Failed to update dues rule' });
     }
 });
 /**
@@ -198,8 +194,7 @@ router.delete('/:id', async (req, res) => {
         res.json({ success: true, message: 'Dues rule deleted successfully' });
     }
     catch (error) {
-        console.error('Error deleting dues rule:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete dues rule' });
+res.status(500).json({ success: false, error: 'Failed to delete dues rule' });
     }
 });
 /**
@@ -245,8 +240,7 @@ router.post('/:id/duplicate', async (req, res) => {
         res.status(201).json({ success: true, data: duplicatedRule });
     }
     catch (error) {
-        console.error('Error duplicating dues rule:', error);
-        res.status(500).json({ success: false, error: 'Failed to duplicate dues rule' });
+res.status(500).json({ success: false, error: 'Failed to duplicate dues rule' });
     }
 });
 exports.default = router;

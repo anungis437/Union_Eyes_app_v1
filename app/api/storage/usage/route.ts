@@ -190,8 +190,7 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-    console.error("Error fetching storage usage:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Failed to fetch storage usage", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );

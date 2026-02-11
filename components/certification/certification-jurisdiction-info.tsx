@@ -242,8 +242,7 @@ export function CertificationJurisdictionInfo({
           }
         }
       } catch (err) {
-        console.error('Error fetching requirements:', err);
-        setError(
+setError(
           err instanceof Error ? err.message : 'Failed to load requirements'
         );
       } finally {
@@ -418,9 +417,9 @@ export function CertificationJurisdictionInfo({
                   : 'bg-gray-50 border border-gray-200'
               }`}>
                 <p className="text-sm font-medium">
-                  {recommendedMethod === 'card-check' && '✓ Card-Check Certification'}
-                  {recommendedMethod === 'mandatory-vote' && '→ Mandatory Representation Vote'}
-                  {recommendedMethod === 'insufficient' && '✗ Insufficient Support - Continue Organizing'}
+                  {recommendedMethod === 'card-check' && 'âœ“ Card-Check Certification'}
+                  {recommendedMethod === 'mandatory-vote' && 'â†’ Mandatory Representation Vote'}
+                  {recommendedMethod === 'insufficient' && 'âœ— Insufficient Support - Continue Organizing'}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">
                   {recommendedMethod === 'card-check' &&
@@ -481,7 +480,7 @@ export function CertificationJurisdictionInfo({
             <div className="pt-2 border-t border-blue-300">
               <strong>Thresholds:</strong>
               <p className="text-gray-600">
-                AB/MB/NL: 65% • BC/NS/ON: 55% • NB: 60% • SK: 45% (lowest) • QC/PE: 50%
+                AB/MB/NL: 65% â€¢ BC/NS/ON: 55% â€¢ NB: 60% â€¢ SK: 45% (lowest) â€¢ QC/PE: 50%
               </p>
             </div>
             <p className="text-gray-600 italic pt-2 border-t border-blue-300">

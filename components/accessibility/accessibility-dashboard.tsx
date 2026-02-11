@@ -125,8 +125,7 @@ export function AccessibilityDashboard() {
         setAudits(data.audits);
       }
     } catch (error) {
-      console.error("Failed to load audits:", error);
-    }
+}
   };
   
   const loadIssues = async () => {
@@ -137,8 +136,7 @@ export function AccessibilityDashboard() {
         setIssues(data.issues);
       }
     } catch (error) {
-      console.error("Failed to load issues:", error);
-    }
+}
   };
   
   const loadComplianceReport = async () => {
@@ -149,8 +147,7 @@ export function AccessibilityDashboard() {
         setComplianceReport(data.report);
       }
     } catch (error) {
-      console.error("Failed to load compliance report:", error);
-    }
+}
   };
   
   const runAudit = async () => {
@@ -270,7 +267,7 @@ export function AccessibilityDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              {latestAudit ? latestAudit.accessibilityScore : "—"}/100
+              {latestAudit ? latestAudit.accessibilityScore : "â€”"}/100
             </div>
             {latestAudit && (
               <Progress

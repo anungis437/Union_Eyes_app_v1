@@ -50,8 +50,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("DocuSign webhook error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: "Webhook processing failed" },
       { status: 500 }
     );
@@ -80,8 +79,7 @@ async function processDocuSignEvent(payload: any) {
   });
 
   if (!document) {
-    console.error("Document not found for envelope:", envelopeId);
-    return;
+return;
   }
 
   switch (event) {
@@ -160,7 +158,6 @@ async function processDocuSignEvent(payload: any) {
       break;
 
     default:
-      console.log("Unhandled DocuSign event:", event);
-  }
+}
 }
 

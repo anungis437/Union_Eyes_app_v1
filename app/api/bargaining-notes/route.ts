@@ -113,8 +113,7 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-      console.error("Error listing bargaining notes:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );
@@ -198,8 +197,7 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json({ note }, { status: 201 });
     } catch (error) {
-      console.error("Error creating bargaining note:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

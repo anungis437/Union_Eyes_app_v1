@@ -208,8 +208,7 @@ export const GET = withApiAuth(async (
       );
     }
   } catch (error) {
-    console.error('Error exporting survey responses:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to export survey responses' },
       { status: 500 }
     );

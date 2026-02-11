@@ -46,8 +46,7 @@ export default function NewClaimPage() {
         router.push('../claims');
       }
     } catch (error) {
-      console.error('Error submitting claim:', error);
-    } finally {
+} finally {
       setSubmitting(false);
     }
   };

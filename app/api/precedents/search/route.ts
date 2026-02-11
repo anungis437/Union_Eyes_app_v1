@@ -29,8 +29,7 @@ export const POST = async (request: NextRequest) => {
         count: results.length
       });
     } catch (error) {
-      console.error("Error searching precedents:", error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }
       );

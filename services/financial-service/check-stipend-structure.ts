@@ -26,13 +26,9 @@ async function checkStipendTable() {
     `;
     
     if (!tableCheck[0].exists) {
-      console.log('❌ stipend_disbursements table does NOT exist');
-      return;
+return;
     }
-    
-    console.log('✅ stipend_disbursements table exists');
-    
-    // Get all columns with their data types
+// Get all columns with their data types
     const columns = await sql`
       SELECT column_name, data_type, is_nullable, column_default
       FROM information_schema.columns
@@ -40,25 +36,18 @@ async function checkStipendTable() {
       AND table_name = 'stipend_disbursements'
       ORDER BY ordinal_position;
     `;
-    
-    console.log('\nColumn details:');
-    columns.forEach(col => {
-      console.log(`  ${col.column_name}: ${col.data_type} ${col.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'}`);
-    });
+columns.forEach(col => {
+});
     
     // Check specifically for amount-related columns
     const amountColumns = columns.filter(col => 
       col.column_name.includes('amount')
     );
-    
-    console.log('\n📊 Amount-related columns:');
-    amountColumns.forEach(col => {
-      console.log(`  ✓ ${col.column_name}: ${col.data_type}`);
-    });
+amountColumns.forEach(col => {
+});
     
   } catch (error) {
-    console.error('Error:', error);
-  } finally {
+} finally {
     await sql.end();
   }
 }

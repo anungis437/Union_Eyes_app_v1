@@ -95,8 +95,7 @@ serve(async (req) => {
         });
     }
     catch (error) {
-        console.error('Error processing audit event:', error);
-        return new Response(JSON.stringify({
+return new Response(JSON.stringify({
             error: 'Internal server error',
             message: error.message
         }), {
@@ -127,8 +126,7 @@ async function enrichWithGeolocation(ipAddress) {
         };
     }
     catch (error) {
-        console.error('Geolocation enrichment failed:', error);
-        return {};
+return {};
     }
 }
 /**
@@ -216,8 +214,7 @@ async function detectAnomalies(supabase, event, auditLog) {
         }
     }
     catch (error) {
-        console.error('Anomaly detection failed:', error);
-    }
+}
 }
 /**
  * Create anomaly alert
@@ -237,10 +234,8 @@ async function createAnomalyAlert(supabase, alert) {
             recommended_action: 'Investigate immediately',
             acknowledged: false
         });
-        console.log(`Anomaly alert created: ${alert.type}`);
-    }
+}
     catch (error) {
-        console.error('Failed to create anomaly alert:', error);
-    }
+}
 }
 //# sourceMappingURL=index.js.map

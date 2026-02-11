@@ -197,8 +197,7 @@ export function SmsTemplateEditor({
 
       onSave?.(template);
     } catch (error) {
-      console.error('Failed to save template:', error);
-      toast({
+toast({
         title: 'Error',
         description: 'Failed to save template. Please try again.',
         variant: 'destructive',

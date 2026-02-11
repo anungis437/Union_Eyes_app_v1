@@ -191,14 +191,12 @@ export function useOrganizationMembers(options) {
                     table: 'organization_members',
                     filter: `organization_id=eq.${organizationId}`,
                 }, async (payload) => {
-                    console.log('Member change:', payload);
-                    await refresh();
+await refresh();
                 })
                     .subscribe();
             }
             catch (err) {
-                console.error('Failed to setup realtime:', err);
-            }
+}
         };
         setupRealtime();
         return () => {

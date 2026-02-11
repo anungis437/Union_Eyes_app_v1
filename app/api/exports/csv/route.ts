@@ -46,8 +46,7 @@ async function postHandler(req: NextRequest, context) {
       message: 'CSV export job created. Poll /api/exports/[id] for status.',
     }, { status: 202 });
   } catch (error) {
-    console.error('CSV export error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: 'Failed to create CSV export' },
       { status: 500 }
     );

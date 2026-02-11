@@ -54,8 +54,7 @@ class BiometricService {
         isEnrolled,
         supportedTypes,
       };
-    } catch (error) {
-      console.error('Error checking biometric capability:', error);
+    } catch {
       return {
         isAvailable: false,
         type: 'none',
@@ -123,7 +122,6 @@ class BiometricService {
         };
       }
     } catch (error: any) {
-      console.error('Biometric authentication error:', error);
       return {
         success: false,
         error: error.message || 'Authentication failed',
@@ -171,7 +169,6 @@ class BiometricService {
 
       return { success: true };
     } catch (error: any) {
-      console.error('Error enrolling biometric:', error);
       return {
         success: false,
         error: error.message || 'Failed to enroll biometric',
@@ -197,8 +194,7 @@ class BiometricService {
       }
 
       return JSON.parse(credentialsStr);
-    } catch (error) {
-      console.error('Error getting biometric credentials:', error);
+    } catch {
       return null;
     }
   }
@@ -210,7 +206,7 @@ class BiometricService {
     try {
       const enabled = await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY);
       return enabled === 'true';
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -223,7 +219,6 @@ class BiometricService {
       await SecureStore.deleteItemAsync(BIOMETRIC_CREDENTIALS_KEY);
       await SecureStore.deleteItemAsync(BIOMETRIC_ENABLED_KEY);
     } catch (error) {
-      console.error('Error disabling biometric:', error);
       throw error;
     }
   }
@@ -271,7 +266,6 @@ class BiometricService {
         credentials,
       };
     } catch (error: any) {
-      console.error('Error signing in with biometric:', error);
       return {
         success: false,
         error: error.message || 'Failed to sign in with biometric',

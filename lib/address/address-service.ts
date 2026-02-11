@@ -350,8 +350,7 @@ export class AddressService {
           countryCode: data.countryCode,
         });
       } catch (error) {
-        console.error("Address validation failed:", error);
-      }
+}
     }
     
     // Geocode if requested
@@ -367,8 +366,7 @@ export class AddressService {
           countryCode: data.countryCode,
         });
       } catch (error) {
-        console.error("Geocoding failed:", error);
-      }
+}
     }
     
     // Format address

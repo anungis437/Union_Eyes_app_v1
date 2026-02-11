@@ -13,7 +13,6 @@ const sql = postgres(process.env.DATABASE_URL!, {ssl: 'require'});
     AND column_name LIKE '%amount%' 
     ORDER BY column_name
   `;
-  console.log('Amount columns in dues_transactions:');
-  cols.forEach(c => console.log(`  - ${c.column_name}`));
+  void cols;
   await sql.end();
 })();

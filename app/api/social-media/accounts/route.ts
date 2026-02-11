@@ -71,8 +71,7 @@ export const GET = async (request: NextRequest) => {
         .order('connected_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching accounts:', error);
-        return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
       }
 
       // Audit log
@@ -87,8 +86,7 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json({ accounts: accounts || [] });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
     })(request);
 };
@@ -198,8 +196,7 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json({ auth_url: authUrl });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to initiate OAuth flow',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -264,8 +261,7 @@ export const DELETE = async (request: NextRequest) => {
           // Meta and LinkedIn don't require explicit revocation
         }
       } catch (revokeError) {
-        console.error('Token revocation error:', revokeError);
-        // Continue with deletion even if revocation fails
+// Continue with deletion even if revocation fails
       }
 
       // Delete account from database
@@ -275,8 +271,7 @@ export const DELETE = async (request: NextRequest) => {
         .eq('id', accountId);
 
       if (deleteError) {
-        console.error('Error deleting account:', deleteError);
-        return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
+return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
       }
 
       // Audit log
@@ -295,8 +290,7 @@ export const DELETE = async (request: NextRequest) => {
         account_id: accountId,
       });
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to disconnect account',
           details: error instanceof Error ? error.message : 'Unknown error',
@@ -422,8 +416,7 @@ export const PUT = async (request: NextRequest) => {
         throw error;
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return NextResponse.json(
+return NextResponse.json(
         {
           error: 'Failed to refresh token',
           details: error instanceof Error ? error.message : 'Unknown error',

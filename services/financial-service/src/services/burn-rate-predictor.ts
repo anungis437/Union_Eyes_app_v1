@@ -19,6 +19,7 @@ import {
 } from '../db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { queueNotification } from './notification-service';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -567,7 +568,7 @@ export async function processAutomatedAlerts(params: { tenantId: string }): Prom
         }
       }
     } catch (error) {
-      console.error(`Error processing alerts for fund ${fund.id}:`, error);
+      logger.error('Error processing alerts for fund', { error, fundId: fund.id, tenantId });
     }
   }
 

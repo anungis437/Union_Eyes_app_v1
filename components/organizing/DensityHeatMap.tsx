@@ -85,8 +85,7 @@ export function DensityHeatMap({ organizationId, campaignId }: DensityHeatMapPro
         }
       }
     } catch (error) {
-      console.error('Error fetching campaigns:', error);
-    } finally {
+} finally {
       setLoading(false);
     }
   };
@@ -110,8 +109,7 @@ export function DensityHeatMap({ organizationId, campaignId }: DensityHeatMapPro
         setDepartmentDensity(densityData);
       }
     } catch (error) {
-      console.error('Error fetching department density:', error);
-    }
+}
   };
 
   const getDensityLevel = (percentage: number): { label: string; color: string; icon: any } => {
@@ -178,7 +176,7 @@ export function DensityHeatMap({ organizationId, campaignId }: DensityHeatMapPro
             <div>
               <CardTitle>{selectedCampaign.campaign_name}</CardTitle>
               <CardDescription>
-                {selectedCampaign.target_employer_name} • {selectedCampaign.labor_board_jurisdiction}
+                {selectedCampaign.target_employer_name} â€¢ {selectedCampaign.labor_board_jurisdiction}
               </CardDescription>
             </div>
             <Badge className={`${overallDensity.color} text-white`}>

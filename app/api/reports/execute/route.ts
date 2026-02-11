@@ -90,8 +90,7 @@ export const POST = async (req: NextRequest) => {
         query: query, // Return for transparency (remove in production)
       });
     } catch (error: any) {
-      console.error('Error executing report:', error);
-      return NextResponse.json(
+return NextResponse.json(
         { error: 'Failed to execute report', details: error.message },
         { status: 500 }
       );

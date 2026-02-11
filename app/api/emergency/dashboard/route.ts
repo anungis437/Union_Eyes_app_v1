@@ -55,8 +55,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       message: `Emergency dashboard for ${province} - All systems operational`,
     });
   } catch (error) {
-    console.error('Dashboard error:', error);
-    return NextResponse.json(
+return NextResponse.json(
       {
         success: false,
         error: `Failed to get dashboard: ${error}`,

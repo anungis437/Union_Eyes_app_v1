@@ -28,33 +28,23 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-
-    console.log('[Cron] Starting scheduled reports execution');
-
-    // Get all schedules that are due
+// Get all schedules that are due
     const dueSchedules = await getDueSchedules();
 
     if (dueSchedules.length === 0) {
-      console.log('[Cron] No schedules due for execution');
-      return NextResponse.json({
+return NextResponse.json({
         message: 'No schedules due',
         executed: 0,
       });
     }
-
-    console.log(`[Cron] Found ${dueSchedules.length} schedules to execute`);
-
-    // Execute each schedule
+// Execute each schedule
     const results = [];
     for (const schedule of dueSchedules) {
-      console.log(`[Cron] Executing schedule ${schedule.id}`);
-      
-      try {
+try {
         const result = await executeScheduledReport(schedule);
         results.push(result);
       } catch (error) {
-        console.error(`[Cron] Failed to execute schedule ${schedule.id}:`, error);
-        results.push({
+results.push({
           success: false,
           scheduleId: schedule.id,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -65,10 +55,7 @@ export async function POST(req: NextRequest) {
     // Count successes and failures
     const successCount = results.filter(r => r.success).length;
     const failureCount = results.filter(r => !r.success).length;
-
-    console.log(`[Cron] Execution complete: ${successCount} succeeded, ${failureCount} failed`);
-
-    return NextResponse.json({
+return NextResponse.json({
       message: 'Execution complete',
       total: dueSchedules.length,
       succeeded: successCount,
@@ -76,8 +63,7 @@ export async function POST(req: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('[Cron] Error executing scheduled reports:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { 
         error: 'Failed to execute scheduled reports',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -112,8 +98,7 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[Cron] Health check failed:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { 
         status: 'unhealthy',
         error: error instanceof Error ? error.message : 'Unknown error',

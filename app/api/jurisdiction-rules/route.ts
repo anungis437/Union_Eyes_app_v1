@@ -28,8 +28,7 @@ export const GET = async (request: NextRequest) => {
       data: rules,
     });
   } catch (error) {
-    console.error('Error fetching jurisdiction rules:', error);
-    return NextResponse.json(
+return NextResponse.json(
       { success: false, error: 'Failed to fetch jurisdiction rules' },
       { status: 500 }
     );

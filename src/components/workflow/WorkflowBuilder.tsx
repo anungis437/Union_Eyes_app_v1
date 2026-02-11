@@ -269,7 +269,6 @@ export function WorkflowBuilder({
         onSave(saved);
       }
     } catch (error) {
-      console.error('Error saving workflow:', error);
     }
   };
 
@@ -308,7 +307,6 @@ export function WorkflowBuilder({
         const imported = JSON.parse(event.target?.result as string);
         setWorkflow(imported);
       } catch (error) {
-        console.error('Error importing workflow:', error);
       }
     };
     reader.readAsText(file);

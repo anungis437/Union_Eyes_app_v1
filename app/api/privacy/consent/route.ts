@@ -42,8 +42,7 @@ export async function POST(request: NextRequest) {
       message: "Consent recorded successfully" 
     });
   } catch (error: any) {
-    console.error("Consent recording error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error.message || "Failed to record consent" },
       { status: 500 }
     );
@@ -77,8 +76,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ hasConsent });
   } catch (error: any) {
-    console.error("Consent check error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error.message || "Failed to check consent" },
       { status: 500 }
     );
@@ -118,8 +116,7 @@ export async function DELETE(request: NextRequest) {
       message: "Consent revoked successfully" 
     });
   } catch (error: any) {
-    console.error("Consent revocation error:", error);
-    return NextResponse.json(
+return NextResponse.json(
       { error: error.message || "Failed to revoke consent" },
       { status: 500 }
     );

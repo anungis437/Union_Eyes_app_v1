@@ -142,8 +142,6 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error processing audit event:', error);
-    
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
@@ -180,7 +178,6 @@ async function enrichWithGeolocation(ipAddress?: string): Promise<GeolocationDat
       longitude: -122.4194
     };
   } catch (error) {
-    console.error('Geolocation enrichment failed:', error);
     return {};
   }
 }
@@ -284,7 +281,6 @@ async function detectAnomalies(
       }
     }
   } catch (error) {
-    console.error('Anomaly detection failed:', error);
   }
 }
 
@@ -322,8 +318,6 @@ async function createAnomalyAlert(
       ]
     );
 
-    console.log(`Anomaly alert created: ${alert.type}`);
   } catch (error) {
-    console.error('Failed to create anomaly alert:', error);
   }
 }

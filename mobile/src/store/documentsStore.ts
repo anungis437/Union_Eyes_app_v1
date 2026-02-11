@@ -190,8 +190,7 @@ export const useDocumentsStore = create<DocumentsStore>((set, get) => ({
         const preferences = JSON.parse(preferencesData);
         set({ preferences });
       }
-    } catch (error) {
-      console.error('Error loading documents from storage:', error);
+    } catch {
     }
   },
 
@@ -200,8 +199,7 @@ export const useDocumentsStore = create<DocumentsStore>((set, get) => ({
       const { documents, preferences } = get();
       await storageService.storage.setItem(DOCUMENTS_STORAGE_KEY, documents);
       await storageService.storage.setItem(PREFERENCES_STORAGE_KEY, preferences);
-    } catch (error) {
-      console.error('Error saving documents to storage:', error);
+    } catch {
     }
   },
 }));
