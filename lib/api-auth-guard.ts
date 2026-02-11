@@ -68,15 +68,41 @@ export { auth, clerkCurrentUser as currentUser };
 // =============================================================================
 
 /**
- * Complete Union Role Hierarchy
+ * Complete Union Role Hierarchy with CLC Integration
  * Defines permission levels for all user roles in descending order of authority
+ * Includes cross-organizational hierarchy for Canadian Labour Congress (CLC)
  * Matches role_definitions table from migration 008_enhanced_rbac_schema.sql
  * 
  * @see database/migrations-archive-raw-sql/008_enhanced_rbac_schema.sql
+ * 
+ * Hierarchy Structure:
+ * - System Administration (200): IT operations across all orgs
+ * - CLC National (180-190): Canadian Labour Congress executives and staff
+ * - Federation (160-170): Provincial federation executives and staff
+ * - National Union (150): National-level union officers
+ * - Local Union Executives (85-100): Presidents, VPs, Treasurers, Admins
+ * - Senior Representatives (60-70): Chief Stewards, Officers
+ * - Front-line Representatives (40-50): Stewards, Bargaining Committee
+ * - Specialized Representatives (30): Health & Safety
+ * - Base Membership (10): Regular members
  */
 export const ROLE_HIERARCHY = {
-  // System & Leadership (90-100)
-  admin: 100,                   // Organization Administrator - Full system access
+  // System Administration (200+)
+  system_admin: 200,            // CLC IT / System operators - Full technical access
+  
+  // CLC National (Congress) Level (180-190)
+  clc_executive: 190,           // CLC President, Secretary-Treasurer - National leadership
+  clc_staff: 180,               // CLC national staff - Cross-affiliate operations
+  
+  // Federation Level (160-170)
+  fed_executive: 170,           // Federation President, VP - Provincial leadership
+  fed_staff: 160,               // Provincial federation staff - Regional coordination
+  
+  // Union National Level (150)
+  national_officer: 150,        // National union officers - Multi-local oversight
+  
+  // Local Union Executives (85-100)
+  admin: 100,                   // Organization Administrator - Full local system access
   president: 90,                // Union President - Chief executive officer
   vice_president: 85,           // Vice President - Second in command
   secretary_treasurer: 85,      // Secretary-Treasurer - Financial officer
@@ -89,7 +115,7 @@ export const ROLE_HIERARCHY = {
   steward: 50,                  // Union Steward - Department representative
   bargaining_committee: 40,     // Bargaining Committee Member - Contract negotiations
   
-  // Specialized Representatives (20-30)
+  // Specialized Representatives (30)
   health_safety_rep: 30,        // Health & Safety Representative - Workplace safety
   
   // Base Membership (10)
@@ -101,6 +127,7 @@ export type UserRole = keyof typeof ROLE_HIERARCHY;
 /**
  * Legacy role mappings for backward compatibility
  * Maps old role names to current role codes
+ * Includes mappings for previous CLC implementation
  */
 export const LEGACY_ROLE_MAP: Record<string, UserRole> = {
   'super_admin': 'admin',
@@ -109,6 +136,12 @@ export const LEGACY_ROLE_MAP: Record<string, UserRole> = {
   'union_steward': 'steward',
   'local_president': 'president',
   'dept_steward': 'steward',
+  
+  // CLC Legacy Mappings (from previous implementation)
+  'congress_staff': 'clc_staff',          // CLC staff in old schema
+  'federation_staff': 'fed_staff',        // Federation staff in old schema
+  'congress_executive': 'clc_executive',  // CLC executives (if used)
+  'system_administrator': 'system_admin', // System admin variants
 } as const;
 
 /**

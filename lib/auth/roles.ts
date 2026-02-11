@@ -1,19 +1,53 @@
 /**
  * Role-Based Access Control (RBAC) System
- * Union Claims Management System
+ * Union Claims Management System with CLC Integration
  * 
  * Defines user roles, permissions, and access control logic
+ * Includes cross-organizational hierarchy for Canadian Labour Congress (CLC)
  */
 
-// User roles in the system
+// User roles in the system - aligned with ROLE_HIERARCHY
 export enum UserRole {
+  // System Administration
+  SYSTEM_ADMIN = "system_admin",
+  
+  // CLC National (Congress) Level
+  CLC_EXECUTIVE = "clc_executive",      // CLC President, Secretary-Treasurer
+  CLC_STAFF = "clc_staff",              // CLC national staff
+  
+  // Federation Level
+  FED_EXECUTIVE = "fed_executive",      // Federation President, VP
+  FED_STAFF = "fed_staff",              // Provincial federation staff
+  
+  // Union National Level
+  NATIONAL_OFFICER = "national_officer",
+  
+  // Local Union Executives
   ADMIN = "admin",
-  CONGRESS_STAFF = "congress_staff",      // CLC/national congress staff
-  FEDERATION_STAFF = "federation_staff",  // Provincial federation staff
-  UNION_REP = "union_rep",
-  STAFF_REP = "staff_rep",
+  PRESIDENT = "president",
+  VICE_PRESIDENT = "vice_president",
+  SECRETARY_TREASURER = "secretary_treasurer",
+  
+  // Senior Representatives
+  CHIEF_STEWARD = "chief_steward",
+  OFFICER = "officer",
+  
+  // Front-line Representatives
+  STEWARD = "steward",
+  BARGAINING_COMMITTEE = "bargaining_committee",
+  
+  // Specialized Representatives
+  HEALTH_SAFETY_REP = "health_safety_rep",
+  
+  // Base Membership
   MEMBER = "member",
-  GUEST = "guest"
+  
+  // Legacy (for backward compatibility)
+  GUEST = "guest",
+  CONGRESS_STAFF = "congress_staff",      // Deprecated: Use CLC_STAFF
+  FEDERATION_STAFF = "federation_staff",  // Deprecated: Use FED_STAFF
+  UNION_REP = "union_rep",                // Deprecated: Use STEWARD
+  STAFF_REP = "staff_rep",                // Deprecated: Use STEWARD
 }
 
 // Permissions that can be assigned to roles
@@ -84,6 +118,25 @@ export enum Permission {
   MANAGE_CLAUSE_LIBRARY = "manage_clause_library",
   VIEW_FEDERATION_ANALYTICS = "view_federation_analytics",
   VIEW_CONGRESS_ANALYTICS = "view_congress_analytics",
+  MANAGE_AFFILIATES = "manage_affiliates",
+  VIEW_ALL_ORGANIZATIONS = "view_all_organizations",
+  MANAGE_ORGANIZATIONS = "manage_organizations",
+  VIEW_COMPLIANCE_REPORTS = "view_compliance_reports",
+  MANAGE_SECTOR_ANALYTICS = "manage_sector_analytics",
+  
+  // CLC-specific permissions
+  CLC_EXECUTIVE_DASHBOARD = "clc_executive_dashboard",
+  MANAGE_CLC_REMITTANCES = "manage_clc_remittances",
+  VIEW_CLC_REMITTANCES = "view_clc_remittances",
+  MANAGE_AFFILIATE_SYNC = "manage_affiliate_sync",
+  CLC_COMPLIANCE_REPORTS = "clc_compliance_reports",
+  
+  // Federation-specific permissions
+  FEDERATION_DASHBOARD = "federation_dashboard",
+  VIEW_PROVINCIAL_AFFILIATES = "view_provincial_affiliates",
+  MANAGE_PROVINCIAL_AFFILIATES = "manage_provincial_affiliates",
+  VIEW_PROVINCIAL_REMITTANCES = "view_provincial_remittances",
+  PROVINCIAL_COMPLIANCE = "provincial_compliance",
   MANAGE_AFFILIATES = "manage_affiliates",
   VIEW_ALL_ORGANIZATIONS = "view_all_organizations",
   MANAGE_ORGANIZATIONS = "manage_organizations",
