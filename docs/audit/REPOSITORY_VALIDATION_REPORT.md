@@ -290,21 +290,22 @@ This report validates the repository contents against documentation claims, trea
    - Distinguish required vs. optional (nightly/integration suites)
    - Current status: ✅ All required tests passing
 
-8. **Add Migration Application Evidence:**
-   - Include DB query results showing triggers exist
-   - Document which environments have migrations applied
-   - Provide rollback procedures for each migration
+8. ✅ **Migration Application Evidence** - **COMPLETED (Feb 11, 2026)**
+   - ✅ Verification script created: `scripts/verify-migrations.sql`
+   - ✅ Rollback procedures documented: `db/migrations/rollback/0062-0065_rollback.sql`
+   - ✅ Operations guide created: `docs/operations/MIGRATION_VERIFICATION_GUIDE.md`
+   - ⚠️ **ACTION REQUIRED:** Database administrator must run verification script on each environment
 
 ---
 
 ## Migration Status Summary Table
 
-| Migration | Filename | Purpose | File Exists | Well-Formed | Applied (Verifiable) |
-|-----------|----------|---------|-------------|-------------|----------------------|
-| **0062** | `0062_add_immutable_transition_history.sql` | Grievance approvals + immutable history | ✅ Yes | ✅ Yes | ⚠️ Requires DB check |
-| **0063** | `0063_add_audit_log_archive_support.sql` | Audit log archiving columns | ✅ Yes | ✅ Yes | ⚠️ Requires DB check |
-| **0064** | `0064_add_immutability_triggers.sql` | Database immutability enforcement | ✅ Yes | ✅ Yes | ⚠️ Requires DB check |
-| **0065** | `0065_add_governance_tables.sql` | Governance module (golden share, reserved matters) | ✅ Yes | ✅ Yes | ⚠️ Requires DB check |
+| Migration | Filename | Purpose | File Exists | Well-Formed | Applied (Verifiable) | Rollback Available |
+|-----------|----------|---------|-------------|-------------|----------------------|--------------------|
+| **0062** | `0062_add_immutable_transition_history.sql` | Grievance approvals + immutable history | ✅ Yes | ✅ Yes | ⚠️ Requires DB check | ✅ Yes |
+| **0063** | `0063_add_audit_log_archive_support.sql` | Audit log archiving columns | ✅ Yes | ✅ Yes | ⚠️ Requires DB check | ✅ Yes |
+| **0064** | `0064_add_immutability_triggers.sql` | Database immutability enforcement | ✅ Yes | ✅ Yes | ⚠️ Requires DB check | ✅ Yes |
+| **0065** | `0065_add_governance_tables.sql` | Governance module (golden share, reserved matters) | ✅ Yes | ✅ Yes | ⚠️ Requires DB check | ✅ Yes |
 
 **Additional Migrations Found:**
 - `0066_drop_obsolete_search_vector_trigger.sql`
@@ -399,6 +400,16 @@ db/migrations/0062_add_immutable_transition_history.sql
 db/migrations/0063_add_audit_log_archive_support.sql
 db/migrations/0064_add_immutability_triggers.sql
 db/migrations/0065_add_governance_tables.sql
+
+# Migration Rollback Scripts (Created Feb 11, 2026)
+db/migrations/rollback/0062_rollback.sql
+db/migrations/rollback/0063_rollback.sql
+db/migrations/rollback/0064_rollback.sql
+db/migrations/rollback/0065_rollback.sql
+
+# Migration Verification Tools (Created Feb 11, 2026)
+scripts/verify-migrations.sql                 # Automated verification script
+docs/operations/MIGRATION_VERIFICATION_GUIDE.md  # Operations guide
 
 # Critical Implementation Files (Verified Present)
 lib/workflow-engine.ts                    # FSM validation
