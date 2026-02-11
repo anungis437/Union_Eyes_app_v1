@@ -211,15 +211,19 @@ This report validates the repository contents against documentation claims, trea
 
 ### E. Commit/Tag Verifiability
 
-**Issue:** Documentation references commit hashes (e.g., `51165d78`, `62e02812`)
+**Previous Issue:** Documentation referenced commit hashes (unverifiable in ZIP snapshots)
 
-**Limitation:** ZIP snapshots do not include `.git`, so commit truthfulness cannot be verified from archive alone
+**Resolution:** ✅ **COMPLETED (Feb 11, 2026)**
+- Annotated tag created: `v2.0.0-rc1`
+- Release notes created: `docs/releases/v2.0.0-rc1.md`
+- Tag includes: Date (Feb 11, 2026), migration list, feature summary
+- Documentation now references: Tag (`v2.0.0-rc1`) + date instead of commit hashes
 
-**Best Practice Recommendation:**
-- Use annotated tags: `v2.0.0-rc1`
-- Reference **tag + date** in docs, not just commit hashes
-- Include release notes referencing the tag
-- Ensures verifiability without `.git` directory
+**Verification:**
+```bash
+git show v2.0.0-rc1  # View tag details
+git verify-tag v2.0.0-rc1  # Verify tag signature (if GPG signed)
+```
 
 ---
 
@@ -270,18 +274,16 @@ This report validates the repository contents against documentation claims, trea
 
 ### Priority 2: Version Control Best Practices
 
-5. **Create Annotated Tags:**
-   ```bash
-   git tag -a v2.0.0-rc1 -m "Release Candidate 1: Security Hardening Cycle"
-   git push origin v2.0.0-rc1
-   ```
+5. ✅ **Create Annotated Tags** - **COMPLETED (Feb 11, 2026)**
+   - Tag created: `v2.0.0-rc1`
+   - Pushed to remote: ✅ Published
+   - Tag message includes: Security hardening cycle summary, migration list, test status
 
-6. **Release Notes:** Create `docs/releases/v2.0.0-rc1.md` with:
-   - Tag reference
-   - Date
-   - Migration list (0062-0065)
-   - Feature summary
-   - Known limitations (voting status)
+6. ✅ **Release Notes** - **COMPLETED (Feb 11, 2026)**
+   - Created: `docs/releases/v2.0.0-rc1.md`
+   - Includes: Tag reference (v2.0.0-rc1), date (Feb 11, 2026), migrations 0062-0065
+   - Features: Complete migration documentation, upgrade path, rollback procedures
+   - Status: Compliance impact assessment, deployment checklist, known limitations
 
 ### Priority 3: Testing & Validation
 
@@ -383,12 +385,19 @@ This validation was performed by:
 **Validation Performed By:** External Repository Audit  
 **Date:** February 11, 2026  
 **Repository State:** anungis437/Union_Eyes_app_v1 (main branch)  
+**Release Tag:** `v2.0.0-rc1`  
 **Validation Scope:** Code implementation vs. documentation claims  
 **Overall Assessment:** ✅ **RC-1 VALIDATION COMPLETE — INVESTOR-READY**
 
-**Certification:** Security hardening cycle (migrations 0062-0065) verified complete. Documentation alignment corrections applied. System demonstrates engineering maturity with honest disclosure of implementation boundaries.
+**Certification:** Security hardening cycle (migrations 0062-0065) verified complete. Documentation alignment corrections applied. Annotated release tag created with formal release notes. System demonstrates engineering maturity with honest disclosure of implementation boundaries.
 
-**Recommended Action:** Review investor talking points; prepare database evidence; create annotated release tag.
+**Completed Actions:**
+- ✅ Migration verification infrastructure created
+- ✅ Rollback procedures documented
+- ✅ Release notes published (`docs/releases/v2.0.0-rc1.md`)
+- ✅ Annotated tag created and pushed (`v2.0.0-rc1`)
+
+**Remaining Action:** Database administrator must run verification script on each environment
 
 ---
 
@@ -410,6 +419,10 @@ db/migrations/rollback/0065_rollback.sql
 # Migration Verification Tools (Created Feb 11, 2026)
 scripts/verify-migrations.sql                 # Automated verification script
 docs/operations/MIGRATION_VERIFICATION_GUIDE.md  # Operations guide
+
+# Release Documentation (Created Feb 11, 2026)
+docs/releases/v2.0.0-rc1.md                   # Formal release notes
+# Tag: v2.0.0-rc1 (annotated tag with comprehensive description)
 
 # Critical Implementation Files (Verified Present)
 lib/workflow-engine.ts                    # FSM validation
