@@ -46,6 +46,30 @@ export enum Permission {
   EDIT_CBA = "edit_cba",
   CREATE_CBA = "create_cba",
   DELETE_CBA = "delete_cba",
+  SIGN_CBA = "sign_cba",                           // President/authorized signatory
+  RATIFY_CBA = "ratify_cba",                       // Membership ratification
+  CONTRACT_ADMINISTRATION = "contract_administration", // Bargaining chair
+  
+  // Financial permissions
+  VIEW_FINANCIAL = "view_financial",
+  EDIT_FINANCIAL = "edit_financial",
+  APPROVE_FINANCIAL = "approve_financial",
+  MANAGE_FINANCES = "manage_finances",              // Secretary-Treasurer
+  AUDIT_FINANCES = "audit_finances",
+  
+  // Governance permissions
+  APPOINT_COMMITTEES = "appoint_committees",        // Executive officers
+  MANAGE_ELECTIONS = "manage_elections",
+  DELEGATE_AUTHORITY = "delegate_authority",
+  APPROVE_APPOINTMENTS = "approve_appointments",
+  
+  // Claims assignment
+  ASSIGN_CLAIMS = "assign_claims",                  // Chief steward, stewards
+  
+  // Health & Safety permissions
+  VIEW_HEALTH_SAFETY_CLAIMS = "view_health_safety_claims",
+  CREATE_HEALTH_SAFETY_CLAIM = "create_health_safety_claim",
+  MANAGE_HEALTH_SAFETY = "manage_health_safety",
   
   // Analytics permissions
   VIEW_ANALYTICS = "view_analytics",

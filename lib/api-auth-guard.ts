@@ -68,25 +68,47 @@ export { auth, clerkCurrentUser as currentUser };
 // =============================================================================
 
 /**
- * Aligned Union Role Hierarchy
- * Defines permission levels for user roles in descending order of authority
- * Matches the member_role enum in PostgreSQL
+ * Complete Union Role Hierarchy
+ * Defines permission levels for all user roles in descending order of authority
+ * Matches role_definitions table from migration 008_enhanced_rbac_schema.sql
+ * 
+ * @see database/migrations-archive-raw-sql/008_enhanced_rbac_schema.sql
  */
 export const ROLE_HIERARCHY = {
-  admin: 100,    // Organizational admin
-  officer: 80,   // Officer/management level
-  steward: 60,   // Shop steward
-  member: 40,    // Regular member
+  // System & Leadership (90-100)
+  admin: 100,                   // Organization Administrator - Full system access
+  president: 90,                // Union President - Chief executive officer
+  vice_president: 85,           // Vice President - Second in command
+  secretary_treasurer: 85,      // Secretary-Treasurer - Financial officer
+  
+  // Senior Representatives (60-70)
+  chief_steward: 70,            // Chief Steward - Supervises all stewards
+  officer: 60,                  // Union Officer - Board member
+  
+  // Front-line Representatives (40-50)
+  steward: 50,                  // Union Steward - Department representative
+  bargaining_committee: 40,     // Bargaining Committee Member - Contract negotiations
+  
+  // Specialized Representatives (20-30)
+  health_safety_rep: 30,        // Health & Safety Representative - Workplace safety
+  
+  // Base Membership (10)
+  member: 10,                   // Union Member - Regular member with self-service
 } as const;
 
 export type UserRole = keyof typeof ROLE_HIERARCHY;
 
 /**
  * Legacy role mappings for backward compatibility
+ * Maps old role names to current role codes
  */
 export const LEGACY_ROLE_MAP: Record<string, UserRole> = {
   'super_admin': 'admin',
   'guest': 'member',
+  'union_officer': 'officer',
+  'union_steward': 'steward',
+  'local_president': 'president',
+  'dept_steward': 'steward',
 } as const;
 
 /**
