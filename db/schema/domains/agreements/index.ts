@@ -9,6 +9,7 @@
  * - cba-clauses-schema.ts
  * - cba-intelligence-schema.ts
  * - shared-clause-library-schema.ts
+ * - bargaining-negotiations-schema.ts (Active negotiations)
  * 
  * Priority: 3
  * 
@@ -22,6 +23,7 @@ export * from './cba';
 export * from './clauses';
 export * from './intelligence';
 export * from './shared-library';
+export * from './negotiations'; // Active bargaining negotiations
 
 // Explicit re-export to resolve ambiguity
 // ClauseType exists in both clauses.ts and shared-library.ts

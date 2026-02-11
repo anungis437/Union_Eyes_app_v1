@@ -18,6 +18,7 @@ export * from './claims';           // Priority 2: Claims, grievances, deadlines
 export * from './agreements';       // Priority 3: Collective bargaining agreements
 export * from './finance';          // Priority 4: Financial transactions and accounting
 export * from './governance';       // Priority 5: Governance, voting, structure
+export * from './federation';       // Priority 5b: Provincial/Regional federation management
 
 // Communication & Content Domains
 export * from './communications';   // Priority 6: Member engagement and notifications
@@ -27,6 +28,7 @@ export * from './scheduling';       // Priority 8: Calendar, events, training
 // Compliance & Data Domains
 export * from './compliance';       // Priority 9: Regulatory compliance and privacy
 export * from './data';             // Priority 10: External data integration
+export * from './health-safety';   // Priority 10b: Workplace health & safety management
 
 // Advanced Feature Domains
 export * from './ml';               // Priority 11: Machine learning and AI

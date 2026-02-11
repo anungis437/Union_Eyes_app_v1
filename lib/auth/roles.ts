@@ -152,9 +152,252 @@ export enum Permission {
 
 // Role definitions with their permissions
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  [UserRole.SYSTEM_ADMIN]: [
+    // System administrators have complete access to all features
+    Permission.VIEW_ALL_CLAIMS,
+    Permission.VIEW_OWN_CLAIMS,
+    Permission.CREATE_CLAIM,
+    Permission.EDIT_ALL_CLAIMS,
+    Permission.EDIT_OWN_CLAIMS,
+    Permission.DELETE_CLAIM,
+    Permission.APPROVE_CLAIM,
+    Permission.VIEW_ALL_MEMBERS,
+    Permission.VIEW_OWN_PROFILE,
+    Permission.EDIT_MEMBER,
+    Permission.DELETE_MEMBER,
+    Permission.INVITE_MEMBER,
+    Permission.VIEW_VOTING,
+    Permission.CREATE_VOTE,
+    Permission.CAST_VOTE,
+    Permission.MANAGE_VOTING,
+    Permission.VIEW_VOTE_RESULTS,
+    Permission.VIEW_CBA,
+    Permission.EDIT_CBA,
+    Permission.CREATE_CBA,
+    Permission.DELETE_CBA,
+    Permission.VIEW_ANALYTICS,
+    Permission.VIEW_ADVANCED_ANALYTICS,
+    Permission.MANAGE_USERS,
+    Permission.MANAGE_ROLES,
+    Permission.SYSTEM_SETTINGS,
+    Permission.VIEW_ADMIN_PANEL,
+    // CLC & Federation permissions
+    Permission.CLC_EXECUTIVE_DASHBOARD,
+    Permission.MANAGE_CLC_REMITTANCES,
+    Permission.VIEW_CLC_REMITTANCES,
+    Permission.MANAGE_AFFILIATE_SYNC,
+    Permission.CLC_COMPLIANCE_REPORTS,
+    Permission.FEDERATION_DASHBOARD,
+    Permission.VIEW_PROVINCIAL_AFFILIATES,
+    Permission.MANAGE_PROVINCIAL_AFFILIATES,
+    Permission.VIEW_PROVINCIAL_REMITTANCES,
+    Permission.PROVINCIAL_COMPLIANCE,
+    Permission.VIEW_CROSS_UNION_ANALYTICS,
+    Permission.MANAGE_CROSS_UNION_ANALYTICS,
+    Permission.VIEW_CONGRESS_ANALYTICS,
+    Permission.VIEW_FEDERATION_ANALYTICS,
+    Permission.VIEW_ALL_ORGANIZATIONS,
+    Permission.MANAGE_ORGANIZATIONS,
+    Permission.VIEW_COMPLIANCE_REPORTS,
+    Permission.MANAGE_SECTOR_ANALYTICS,
+    Permission.VIEW_PRECEDENT_DATABASE,
+    Permission.MANAGE_PRECEDENT_DATABASE,
+    Permission.VIEW_CLAUSE_LIBRARY,
+    Permission.MANAGE_CLAUSE_LIBRARY,
+    Permission.MANAGE_AFFILIATES,
+  ],
+  
+  [UserRole.CLC_EXECUTIVE]: [
+    // CLC President, Secretary-Treasurer - executive oversight of entire CLC
+    Permission.VIEW_ALL_CLAIMS,
+    Permission.VIEW_OWN_CLAIMS,
+    Permission.VIEW_ALL_MEMBERS,
+    Permission.VIEW_OWN_PROFILE,
+    
+    // CLC Executive Dashboard & Remittances
+    Permission.CLC_EXECUTIVE_DASHBOARD,
+    Permission.MANAGE_CLC_REMITTANCES,
+    Permission.VIEW_CLC_REMITTANCES,
+    Permission.MANAGE_AFFILIATE_SYNC,
+    Permission.CLC_COMPLIANCE_REPORTS,
+    
+    // Cross-organizational features (full access)
+    Permission.VIEW_CROSS_UNION_ANALYTICS,
+    Permission.MANAGE_CROSS_UNION_ANALYTICS,
+    Permission.VIEW_CONGRESS_ANALYTICS,
+    Permission.VIEW_FEDERATION_ANALYTICS,
+    Permission.VIEW_ALL_ORGANIZATIONS,
+    Permission.MANAGE_ORGANIZATIONS,
+    Permission.VIEW_COMPLIANCE_REPORTS,
+    Permission.MANAGE_SECTOR_ANALYTICS,
+    
+    // Shared knowledge resources (full management)
+    Permission.VIEW_PRECEDENT_DATABASE,
+    Permission.MANAGE_PRECEDENT_DATABASE,
+    Permission.VIEW_CLAUSE_LIBRARY,
+    Permission.MANAGE_CLAUSE_LIBRARY,
+    
+    // Collective agreements & voting (view only)
+    Permission.VIEW_CBA,
+    Permission.VIEW_VOTING,
+    Permission.VIEW_VOTE_RESULTS,
+    
+    // Analytics (advanced access)
+    Permission.VIEW_ANALYTICS,
+    Permission.VIEW_ADVANCED_ANALYTICS,
+    
+    // Affiliate management
+    Permission.MANAGE_AFFILIATES,
+  ],
+  
+  [UserRole.CLC_STAFF]: [
+    // CLC national staff - operational support for CLC
+    Permission.VIEW_ALL_CLAIMS,
+    Permission.VIEW_OWN_CLAIMS,
+    Permission.VIEW_ALL_MEMBERS,
+    Permission.VIEW_OWN_PROFILE,
+    
+    // CLC Staff operations
+    Permission.VIEW_CLC_REMITTANCES,
+    Permission.MANAGE_AFFILIATE_SYNC,
+    Permission.CLC_COMPLIANCE_REPORTS,
+    
+    // Cross-organizational features (full access)
+    Permission.VIEW_CROSS_UNION_ANALYTICS,
+    Permission.MANAGE_CROSS_UNION_ANALYTICS,
+    Permission.VIEW_CONGRESS_ANALYTICS,
+    Permission.VIEW_FEDERATION_ANALYTICS,
+    Permission.VIEW_ALL_ORGANIZATIONS,
+    Permission.VIEW_COMPLIANCE_REPORTS,
+    Permission.MANAGE_SECTOR_ANALYTICS,
+    
+    // Shared knowledge resources (full management)
+    Permission.VIEW_PRECEDENT_DATABASE,
+    Permission.MANAGE_PRECEDENT_DATABASE,
+    Permission.VIEW_CLAUSE_LIBRARY,
+    Permission.MANAGE_CLAUSE_LIBRARY,
+    
+    // Collective agreements & voting (view only)
+    Permission.VIEW_CBA,
+    Permission.VIEW_VOTING,
+    Permission.VIEW_VOTE_RESULTS,
+    
+    // Analytics (advanced access)
+    Permission.VIEW_ANALYTICS,
+    Permission.VIEW_ADVANCED_ANALYTICS,
+    
+    // Affiliate management (view and support)
+    Permission.VIEW_ALL_ORGANIZATIONS,
+    Permission.MANAGE_AFFILIATES,
+  ],
+  
+  [UserRole.FED_EXECUTIVE]: [
+    // Federation President, VP - executive oversight of provincial federation
+    Permission.VIEW_ALL_CLAIMS,
+    Permission.VIEW_OWN_CLAIMS,
+    Permission.VIEW_ALL_MEMBERS,
+    Permission.VIEW_OWN_PROFILE,
+    
+    // Federation Executive Dashboard
+    Permission.FEDERATION_DASHBOARD,
+    Permission.VIEW_PROVINCIAL_AFFILIATES,
+    Permission.MANAGE_PROVINCIAL_AFFILIATES,
+    Permission.VIEW_PROVINCIAL_REMITTANCES,
+    Permission.PROVINCIAL_COMPLIANCE,
+    
+    // Cross-organizational features (scoped to federation)
+    Permission.VIEW_CROSS_UNION_ANALYTICS,
+    Permission.VIEW_FEDERATION_ANALYTICS,
+    Permission.VIEW_ALL_ORGANIZATIONS,
+    Permission.VIEW_COMPLIANCE_REPORTS,
+    
+    // Shared knowledge resources (view and contribute)
+    Permission.VIEW_PRECEDENT_DATABASE,
+    Permission.MANAGE_PRECEDENT_DATABASE,
+    Permission.VIEW_CLAUSE_LIBRARY,
+    Permission.MANAGE_CLAUSE_LIBRARY,
+    
+    // Collective agreements & voting (view only)
+    Permission.VIEW_CBA,
+    Permission.VIEW_VOTING,
+    Permission.VIEW_VOTE_RESULTS,
+    
+    // Analytics (advanced access within federation)
+    Permission.VIEW_ANALYTICS,
+    Permission.VIEW_ADVANCED_ANALYTICS,
+    
+    // Affiliate management (within federation)
+    Permission.MANAGE_AFFILIATES,
+  ],
+  
+  [UserRole.FED_STAFF]: [
+    // Provincial federation staff - operational support
+    Permission.VIEW_ALL_CLAIMS,
+    Permission.VIEW_OWN_CLAIMS,
+    Permission.VIEW_ALL_MEMBERS,
+    Permission.VIEW_OWN_PROFILE,
+    
+    // Federation operations
+    Permission.FEDERATION_DASHBOARD,
+    Permission.VIEW_PROVINCIAL_AFFILIATES,
+    Permission.VIEW_PROVINCIAL_REMITTANCES,
+    Permission.PROVINCIAL_COMPLIANCE,
+    
+    // Cross-organizational features (scoped to federation)
+    Permission.VIEW_CROSS_UNION_ANALYTICS,
+    Permission.VIEW_FEDERATION_ANALYTICS,
+    Permission.VIEW_ALL_ORGANIZATIONS,
+    Permission.VIEW_COMPLIANCE_REPORTS,
+    
+    // Shared knowledge resources (view and contribute)
+    Permission.VIEW_PRECEDENT_DATABASE,
+    Permission.MANAGE_PRECEDENT_DATABASE,
+    Permission.VIEW_CLAUSE_LIBRARY,
+    Permission.MANAGE_CLAUSE_LIBRARY,
+    
+    // Collective agreements & voting (view only)
+    Permission.VIEW_CBA,
+    Permission.VIEW_VOTING,
+    Permission.VIEW_VOTE_RESULTS,
+    
+    // Analytics (advanced access within federation)
+    Permission.VIEW_ANALYTICS,
+    Permission.VIEW_ADVANCED_ANALYTICS,
+    
+    // Affiliate management (within federation)
+    Permission.MANAGE_AFFILIATES,
+  ],
+  
+  [UserRole.NATIONAL_OFFICER]: [
+    // National union officers - leadership at union level
+    Permission.VIEW_ALL_CLAIMS,
+    Permission.VIEW_OWN_CLAIMS,
+    Permission.CREATE_CLAIM,
+    Permission.EDIT_ALL_CLAIMS,
+    Permission.EDIT_OWN_CLAIMS,
+    Permission.APPROVE_CLAIM,
+    Permission.VIEW_ALL_MEMBERS,
+    Permission.VIEW_OWN_PROFILE,
+    Permission.EDIT_MEMBER,
+    Permission.INVITE_MEMBER,
+    Permission.VIEW_VOTING,
+    Permission.CREATE_VOTE,
+    Permission.CAST_VOTE,
+    Permission.MANAGE_VOTING,
+    Permission.VIEW_VOTE_RESULTS,
+    Permission.VIEW_CBA,
+    Permission.EDIT_CBA,
+    Permission.CREATE_CBA,
+    Permission.VIEW_ANALYTICS,
+    Permission.VIEW_ADVANCED_ANALYTICS,
+    Permission.VIEW_PRECEDENT_DATABASE,
+    Permission.MANAGE_PRECEDENT_DATABASE,
+    Permission.VIEW_CLAUSE_LIBRARY,
+    Permission.MANAGE_CLAUSE_LIBRARY,
+  ],
+  
   [UserRole.CONGRESS_STAFF]: [
-    // Congress staff have highest cross-organizational visibility (read-only to respect local autonomy)
-    // Claims & Members (view across all affiliated unions)
+    // Legacy role - maps to CLC_STAFF (deprecated)
     Permission.VIEW_ALL_CLAIMS,
     Permission.VIEW_OWN_CLAIMS,
     Permission.VIEW_ALL_MEMBERS,
@@ -477,16 +720,47 @@ export function getAccessibleNavItems(role: UserRole, adminMode: boolean = false
 
 /**
  * Get role hierarchy level (higher number = more permissions)
+ * 
+ * Role Hierarchy:
+ * 200: SYSTEM_ADMIN (CLC IT / System operators)
+ * 190: CLC_EXECUTIVE (CLC President, Secretary-Treasurer)
+ * 180: CLC_STAFF (CLC national staff)
+ * 170: FED_EXECUTIVE (Federation President, VP)
+ * 160: FED_STAFF (Provincial federation staff)
+ * 150: NATIONAL_OFFICER (National union officers)
+ * 140-100: Local union executives (ADMIN, PRESIDENT, VP, SECRETARY_TREASURER)
+ * 90-60: Senior representatives (CHIEF_STEWARD, OFFICER)
+ * 50-40: Front-line representatives (STEWARD, BARGAINING_COMMITTEE)
+ * 30: Specialized representatives (HEALTH_SAFETY_REP)
+ * 20-10: Base membership (MEMBER)
+ * 0: GUEST
+ * 
+ * Legacy roles map to their equivalent new roles
  */
 export function getRoleLevel(role: UserRole): number {
   const levels: Record<UserRole, number> = {
+    [UserRole.SYSTEM_ADMIN]: 200,
+    [UserRole.CLC_EXECUTIVE]: 190,
+    [UserRole.CLC_STAFF]: 180,
+    [UserRole.FED_EXECUTIVE]: 170,
+    [UserRole.FED_STAFF]: 160,
+    [UserRole.NATIONAL_OFFICER]: 150,
+    [UserRole.ADMIN]: 140,
+    [UserRole.PRESIDENT]: 130,
+    [UserRole.VICE_PRESIDENT]: 120,
+    [UserRole.SECRETARY_TREASURER]: 110,
+    [UserRole.CHIEF_STEWARD]: 90,
+    [UserRole.OFFICER]: 80,
+    [UserRole.STEWARD]: 50,
+    [UserRole.BARGAINING_COMMITTEE]: 40,
+    [UserRole.HEALTH_SAFETY_REP]: 30,
+    [UserRole.MEMBER]: 20,
+    // Legacy roles
+    [UserRole.CONGRESS_STAFF]: 180,      // Maps to CLC_STAFF
+    [UserRole.FEDERATION_STAFF]: 160,    // Maps to FED_STAFF
+    [UserRole.UNION_REP]: 50,            // Maps to STEWARD
+    [UserRole.STAFF_REP]: 50,            // Maps to STEWARD
     [UserRole.GUEST]: 0,
-    [UserRole.MEMBER]: 1,
-    [UserRole.STAFF_REP]: 2,
-    [UserRole.UNION_REP]: 3,
-    [UserRole.FEDERATION_STAFF]: 4,  // Provincial/regional scope
-    [UserRole.CONGRESS_STAFF]: 5,     // National scope
-    [UserRole.ADMIN]: 6,              // System-wide
   };
   return levels[role] ?? 0;
 }

@@ -27,7 +27,10 @@ import {
   Flag,
   DollarSign,
   GraduationCap,
-  MessageSquare
+  MessageSquare,
+  AlertTriangle,
+  Handshake,
+  Receipt
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -42,7 +45,7 @@ interface SidebarProps {
   userEmail?: string;
   whopMonthlyPlanId: string;
   whopYearlyPlanId: string;
-  userRole?: "member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff"; // Role-based navigation
+  userRole?: "member" | "steward" | "officer" | "admin" | "congress_staff" | "federation_staff" | "clc_staff" | "clc_executive" | "fed_staff" | "fed_executive"; // Role-based navigation
 }
 
 export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYearlyPlanId, userRole = "member" }: SidebarProps) {
@@ -67,6 +70,7 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
         { href: `/${locale}/dashboard`, icon: <Home size={16} />, label: t('navigation.dashboard'), roles: ["member", "steward", "officer", "admin"] },
         { href: `/${locale}/dashboard/claims`, icon: <FileText size={16} />, label: t('claims.myCases'), roles: ["member", "steward", "officer", "admin"] },
         { href: `/${locale}/dashboard/claims/new`, icon: <Mic size={16} />, label: t('claims.submitNew'), roles: ["member", "steward", "officer", "admin"] },
+        { href: `/${locale}/dashboard/health-safety`, icon: <Shield size={16} />, label: 'Health & Safety', roles: ["member", "steward", "officer", "admin"] },
         { href: `/${locale}/dashboard/pension`, icon: <Briefcase size={16} />, label: 'My Pension & Benefits', roles: ["member", "steward", "officer", "admin"] },
         { href: `/${locale}/dashboard/dues`, icon: <DollarSign size={16} />, label: 'Dues & Payments', roles: ["member", "steward", "officer", "admin"] },
       ]
@@ -98,6 +102,8 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
       items: [
         { href: `/${locale}/dashboard/communications`, icon: <MessageSquare size={16} />, label: 'Communications', roles: ["officer", "admin"] },
         { href: `/${locale}/dashboard/grievances`, icon: <Scale size={16} />, label: t('grievance.title'), roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/bargaining`, icon: <Handshake size={16} />, label: 'Bargaining & Negotiations', roles: ["officer", "admin"] },
+        { href: `/${locale}/dashboard/financial`, icon: <Receipt size={16} />, label: 'Financial Management', roles: ["officer", "admin"] },
         { href: `/${locale}/dashboard/targets`, icon: <Target size={16} />, label: 'Performance Targets', roles: ["officer", "admin"] },
         { href: `/${locale}/dashboard/organizing`, icon: <Flag size={16} />, label: 'Organizing Campaigns', roles: ["officer", "admin"] },
         { href: `/${locale}/dashboard/strike-fund`, icon: <DollarSign size={16} />, label: 'Strike Fund', roles: ["officer", "admin"] },
@@ -106,14 +112,33 @@ export default function Sidebar({ profile, userEmail, whopMonthlyPlanId, whopYea
         { href: `/${locale}/dashboard/pension/trustee`, icon: <Shield size={16} />, label: 'Trustee Portal', roles: ["officer", "admin"] },
       ]
     },
-    {
-      title: 'Cross-Organizational Operations',
-      roles: ["congress_staff", "federation_staff", "admin"],
+    {clc_staff", "clc_executive", "fed_staff", "fed_executive", "admin"],
       items: [
-        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["congress_staff", "federation_staff", "admin"] },
-        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedent Database', roles: ["congress_staff", "federation_staff", "admin"] },
-        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: 'Shared Clause Library', roles: ["congress_staff", "federation_staff", "admin"] },
-        { href: `/${locale}/dashboard/admin/organizations`, icon: <Building2 size={16} />, label: 'Affiliate Management', roles: ["congress_staff", "federation_staff", "admin"] },
+        { href: `/${locale}/dashboard/cross-union-analytics`, icon: <GitCompare size={16} />, label: 'Cross-Union Analytics', roles: ["congress_staff", "federation_staff", "clc_staff", "clc_executive", "fed_staff", "fed_executive", "admin"] },
+        { href: `/${locale}/dashboard/precedents`, icon: <Scale size={16} />, label: 'Precedent Database', roles: ["congress_staff", "federation_staff", "clc_staff", "clc_executive", "fed_staff", "fed_executive", "admin"] },
+        { href: `/${locale}/dashboard/clause-library`, icon: <Library size={16} />, label: 'Shared Clause Library', roles: ["congress_staff", "federation_staff", "clc_staff", "clc_executive", "fed_staff", "fed_executive", "admin"] },
+        { href: `/${locale}/dashboard/admin/organizations`, icon: <Building2 size={16} />, label: 'Affiliate Management', roles: ["congress_staff", "federation_staff", "clc_staff", "clc_executive", "fed_staff", "fed_executive", "admin"] },
+        { href: `/${locale}/dashboard/compliance`, icon: <FileBarChart size={16} />, label: 'Compliance Reports', roles: ["congress_staff", "federation_staff", "clc_staff", "clc_executive", "admin"] },
+        { href: `/${locale}/dashboard/sector-analytics`, icon: <BarChart3 size={16} />, label: 'Sector Analytics', roles: ["congress_staff", "clc_staff", "clc_executive", "admin"] },
+      ]
+    },
+    {
+      title: 'CLC National Operations',
+      roles: ["clc_staff", "clc_executive", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/clc`, icon: <Building2 size={16} />, label: 'CLC Executive Dashboard', roles: ["clc_executive", "admin"] },
+        { href: `/${locale}/dashboard/clc/staff`, icon: <Users size={16} />, label: 'CLC Staff Operations', roles: ["clc_staff", "clc_executive", "admin"] },
+        { href: `/${locale}/dashboard/clc/affiliates`, icon: <Network size={16} />, label: 'Affiliates Management', roles: ["clc_staff", "clc_executive", "admin"] },
+        { href: `/${locale}/dashboard/clc/compliance`, icon: <FileBarChart size={16} />, label: 'CLC Compliance Tracking', roles: ["clc_staff", "clc_executive", "admin"] },, "clc_staff", "clc_executive", "fed_staff", "fed_executive"
+      ]
+    },
+    {
+      title: 'Provincial Federation',
+      roles: ["fed_staff", "fed_executive", "admin"],
+      items: [
+        { href: `/${locale}/dashboard/federation`, icon: <Network size={16} />, label: 'Federation Dashboard', roles: ["fed_executive", "admin"] },
+        { href: `/${locale}/dashboard/federation/affiliates`, icon: <Building2 size={16} />, label: 'Affiliate Unions', roles: ["fed_staff", "fed_executive", "admin"] },
+        { href: `/${locale}/dashboard/federation/remittances`, icon: <DollarSign size={16} />, label: 'Remittance Tracking', roles: ["fed_staff", "fed_executives_staff", "federation_staff", "admin"] },
         { href: `/${locale}/dashboard/compliance`, icon: <FileBarChart size={16} />, label: 'Compliance Reports', roles: ["congress_staff", "federation_staff", "admin"] },
         { href: `/${locale}/dashboard/sector-analytics`, icon: <BarChart3 size={16} />, label: 'Sector Analytics', roles: ["congress_staff", "admin"] },
       ]

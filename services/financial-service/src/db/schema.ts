@@ -6183,3 +6183,344 @@ export const kpiConfigurations = pgTable("kpi_configurations", {
 
 // Export alias for backward compatibility
 export { memberDuesAssignments as duesAssignments };
+
+// =============================================================================
+// OPERATIONAL FINANCE SCHEMA - Budget, Expense, Vendor Management
+// =============================================================================
+
+export const budgetStatus = pgEnum("budget_status", ['draft', 'approved', 'active', 'closed', 'revised'])
+export const budgetPeriodType = pgEnum("budget_period_type", ['annual', 'quarterly', 'monthly', 'project'])
+export const expenseStatus = pgEnum("expense_status", ['draft', 'submitted', 'approved', 'rejected', 'paid', 'cancelled'])
+export const approvalStatus = pgEnum("approval_status", ['pending', 'approved', 'rejected', 'escalated'])
+export const vendorStatus = pgEnum("vendor_status", ['active', 'inactive', 'suspended', 'archived'])
+export const paymentTerms = pgEnum("payment_terms", ['net_15', 'net_30', 'net_45', 'net_60', 'net_90', 'due_on_receipt', 'cod'])
+
+/**
+ * Budgets - Organizational budget planning and management
+ */
+export const budgets = pgTable("budgets", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	organizationId: uuid("organization_id").notNull(),
+	budgetName: varchar("budget_name", { length: 255 }).notNull(),
+	fiscalYear: integer("fiscal_year").notNull(),
+	periodType: budgetPeriodType("period_type").default('annual').notNull(),
+	startDate: date("start_date").notNull(),
+	endDate: date("end_date").notNull(),
+	totalBudget: numeric("total_budget", { precision: 15, scale: 2 }).notNull(),
+	totalAllocated: numeric("total_allocated", { precision: 15, scale: 2 }).default('0.00'),
+	totalSpent: numeric("total_spent", { precision: 15, scale: 2 }).default('0.00'),
+	totalCommitted: numeric("total_committed", { precision: 15, scale: 2 }).default('0.00'),
+	status: budgetStatus("status").default('draft').notNull(),
+	approvedBy: uuid("approved_by"),
+	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
+	notes: text("notes"),
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	createdBy: uuid("created_by").notNull(),
+},
+(table) => {
+	return {
+		idxBudgetsOrg: index("idx_budgets_org").using("btree", table.organizationId.asc().nullsLast()),
+		idxBudgetsFiscalYear: index("idx_budgets_fiscal_year").using("btree", table.fiscalYear.asc().nullsLast()),
+		idxBudgetsStatus: index("idx_budgets_status").using("btree", table.status.asc().nullsLast()),
+		idxBudgetsPeriod: index("idx_budgets_period").using("btree", table.startDate.asc().nullsLast(), table.endDate.asc().nullsLast()),
+		budgetsOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "budgets_organization_id_fkey"
+		}).onDelete("cascade"),
+		uniqueBudgetNameYear: unique("unique_budget_name_year").on(table.organizationId, table.budgetName, table.fiscalYear),
+	}
+});
+
+/**
+ * Budget Line Items - Detailed budget allocation by account/department
+ */
+export const budgetLineItems = pgTable("budget_line_items", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	budgetId: uuid("budget_id").notNull(),
+	accountCode: varchar("account_code", { length: 50 }).notNull(),
+	accountName: varchar("account_name", { length: 255 }).notNull(),
+	departmentId: uuid("department_id"),
+	categoryId: uuid("category_id"),
+	allocatedAmount: numeric("allocated_amount", { precision: 15, scale: 2 }).notNull(),
+	spentAmount: numeric("spent_amount", { precision: 15, scale: 2 }).default('0.00'),
+	committedAmount: numeric("committed_amount", { precision: 15, scale: 2 }).default('0.00'),
+	remainingAmount: numeric("remaining_amount", { precision: 15, scale: 2 }).notNull(),
+	notes: text("notes"),
+	isActive: boolean("is_active").default(true),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		idxBudgetLines: index("idx_budget_lines").using("btree", table.budgetId.asc().nullsLast()),
+		idxBudgetLinesAccount: index("idx_budget_lines_account").using("btree", table.accountCode.asc().nullsLast()),
+		idxBudgetLinesDept: index("idx_budget_lines_dept").using("btree", table.departmentId.asc().nullsLast()),
+		budgetLineItemsBudgetIdFkey: foreignKey({
+			columns: [table.budgetId],
+			foreignColumns: [budgets.id],
+			name: "budget_line_items_budget_id_fkey"
+		}).onDelete("cascade"),
+	}
+});
+
+/**
+ * Expense Requests - Employee expense submission and tracking
+ */
+export const expenseRequests = pgTable("expense_requests", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	organizationId: uuid("organization_id").notNull(),
+	requestNumber: varchar("request_number", { length: 50 }).notNull(),
+	requesterId: uuid("requester_id").notNull(),
+	budgetId: uuid("budget_id"),
+	budgetLineItemId: uuid("budget_line_item_id"),
+	expenseDate: date("expense_date").notNull(),
+	accountCode: varchar("account_code", { length: 50 }).notNull(),
+	vendorId: uuid("vendor_id"),
+	vendorName: varchar("vendor_name", { length: 255 }),
+	description: text("description").notNull(),
+	amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+	currency: varchar("currency", { length: 3 }).default('CAD'),
+	taxAmount: numeric("tax_amount", { precision: 12, scale: 2 }).default('0.00'),
+	totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
+	category: varchar("category", { length: 100 }),
+	paymentMethod: varchar("payment_method", { length: 50 }), // personal_card, corporate_card, cash, check
+	reimbursementRequired: boolean("reimbursement_required").default(true),
+	receiptUrl: text("receipt_url"),
+	attachments: jsonb("attachments").default([]),
+	status: expenseStatus("status").default('draft').notNull(),
+	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }),
+	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
+	paidAt: timestamp("paid_at", { withTimezone: true, mode: 'string' }),
+	paymentReference: varchar("payment_reference", { length: 255 }),
+	notes: text("notes"),
+	rejectionReason: text("rejection_reason"),
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		idxExpensesOrg: index("idx_expenses_org").using("btree", table.organizationId.asc().nullsLast()),
+		idxExpensesRequester: index("idx_expenses_requester").using("btree", table.requesterId.asc().nullsLast()),
+		idxExpensesStatus: index("idx_expenses_status").using("btree", table.status.asc().nullsLast()),
+		idxExpensesDate: index("idx_expenses_date").using("btree", table.expenseDate.asc().nullsLast()),
+		idxExpensesBudget: index("idx_expenses_budget").using("btree", table.budgetId.asc().nullsLast()),
+		idxExpensesVendor: index("idx_expenses_vendor").using("btree", table.vendorId.asc().nullsLast()),
+		idxExpensesAccount: index("idx_expenses_account").using("btree", table.accountCode.asc().nullsLast()),
+		expenseRequestsOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "expense_requests_organization_id_fkey"
+		}).onDelete("cascade"),
+		expenseRequestsBudgetIdFkey: foreignKey({
+			columns: [table.budgetId],
+			foreignColumns: [budgets.id],
+			name: "expense_requests_budget_id_fkey"
+		}),
+		expenseRequestsBudgetLineItemIdFkey: foreignKey({
+			columns: [table.budgetLineItemId],
+			foreignColumns: [budgetLineItems.id],
+			name: "expense_requests_budget_line_item_id_fkey"
+		}),
+		uniqueExpenseRequestNumber: unique("unique_expense_request_number").on(table.organizationId, table.requestNumber),
+	}
+});
+
+/**
+ * Expense Approvals - Approval workflow and chain
+ */
+export const expenseApprovals = pgTable("expense_approvals", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	expenseRequestId: uuid("expense_request_id").notNull(),
+	approverId: uuid("approver_id").notNull(),
+	approverLevel: integer("approver_level").notNull(), // 1 = supervisor, 2 = manager, 3 = executive
+	status: approvalStatus("status").default('pending').notNull(),
+	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
+	comments: text("comments"),
+	delegatedTo: uuid("delegated_to"),
+	isRequired: boolean("is_required").default(true),
+	sortOrder: integer("sort_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		idxApprovalsExpense: index("idx_approvals_expense").using("btree", table.expenseRequestId.asc().nullsLast()),
+		idxApprovalsApprover: index("idx_approvals_approver").using("btree", table.approverId.asc().nullsLast()),
+		idxApprovalsStatus: index("idx_approvals_status").using("btree", table.status.asc().nullsLast()),
+		expenseApprovalsExpenseRequestIdFkey: foreignKey({
+			columns: [table.expenseRequestId],
+			foreignColumns: [expenseRequests.id],
+			name: "expense_approvals_expense_request_id_fkey"
+		}).onDelete("cascade"),
+	}
+});
+
+/**
+ * Vendor Invoices - Operational invoices from vendors
+ */
+export const vendorInvoices = pgTable("vendor_invoices", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	organizationId: uuid("organization_id").notNull(),
+	vendorId: uuid("vendor_id").notNull(),
+	invoiceNumber: varchar("invoice_number", { length: 100 }).notNull(),
+	invoiceDate: date("invoice_date").notNull(),
+	dueDate: date("due_date").notNull(),
+	budgetId: uuid("budget_id"),
+	budgetLineItemId: uuid("budget_line_item_id"),
+	accountCode: varchar("account_code", { length: 50 }).notNull(),
+	description: text("description"),
+	subtotal: numeric("subtotal", { precision: 15, scale: 2 }).notNull(),
+	taxAmount: numeric("tax_amount", { precision: 15, scale: 2 }).default('0.00'),
+	totalAmount: numeric("total_amount", { precision: 15, scale: 2 }).notNull(),
+	currency: varchar("currency", { length: 3 }).default('CAD'),
+	status: varchar("status", { length: 50 }).default('pending').notNull(), // pending, approved, paid, overdue, cancelled
+	approvedBy: uuid("approved_by"),
+	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
+	paidAt: timestamp("paid_at", { withTimezone: true, mode: 'string' }),
+	paymentReference: varchar("payment_reference", { length: 255 }),
+	invoiceUrl: text("invoice_url"),
+	attachments: jsonb("attachments").default([]),
+	notes: text("notes"),
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	createdBy: uuid("created_by").notNull(),
+},
+(table) => {
+	return {
+		idxVendorInvoicesOrg: index("idx_vendor_invoices_org").using("btree", table.organizationId.asc().nullsLast()),
+		idxVendorInvoicesVendor: index("idx_vendor_invoices_vendor").using("btree", table.vendorId.asc().nullsLast()),
+		idxVendorInvoicesStatus: index("idx_vendor_invoices_status").using("btree", table.status.asc().nullsLast()),
+		idxVendorInvoicesDueDate: index("idx_vendor_invoices_due_date").using("btree", table.dueDate.asc().nullsLast()),
+		idxVendorInvoicesBudget: index("idx_vendor_invoices_budget").using("btree", table.budgetId.asc().nullsLast()),
+		idxVendorInvoicesAccount: index("idx_vendor_invoices_account").using("btree", table.accountCode.asc().nullsLast()),
+		vendorInvoicesOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "vendor_invoices_organization_id_fkey"
+		}).onDelete("cascade"),
+		vendorInvoicesBudgetIdFkey: foreignKey({
+			columns: [table.budgetId],
+			foreignColumns: [budgets.id],
+			name: "vendor_invoices_budget_id_fkey"
+		}),
+		vendorInvoicesBudgetLineItemIdFkey: foreignKey({
+			columns: [table.budgetLineItemId],
+			foreignColumns: [budgetLineItems.id],
+			name: "vendor_invoices_budget_line_item_id_fkey"
+		}),
+		uniqueVendorInvoiceNumber: unique("unique_vendor_invoice_number").on(table.organizationId, table.vendorId, table.invoiceNumber),
+	}
+});
+
+/**
+ * Accounts Payable - AP tracking and aging
+ */
+export const accountsPayable = pgTable("accounts_payable", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	organizationId: uuid("organization_id").notNull(),
+	vendorId: uuid("vendor_id").notNull(),
+	invoiceId: uuid("invoice_id"),
+	expenseRequestId: uuid("expense_request_id"),
+	referenceType: varchar("reference_type", { length: 50 }).notNull(), // vendor_invoice, expense_request, manual_entry
+	referenceNumber: varchar("reference_number", { length: 100 }).notNull(),
+	transactionDate: date("transaction_date").notNull(),
+	dueDate: date("due_date").notNull(),
+	amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+	paidAmount: numeric("paid_amount", { precision: 15, scale: 2 }).default('0.00'),
+	balanceAmount: numeric("balance_amount", { precision: 15, scale: 2 }).notNull(),
+	currency: varchar("currency", { length: 3 }).default('CAD'),
+	status: varchar("status", { length: 50 }).default('open').notNull(), // open, partially_paid, paid, overdue, disputed, written_off
+	daysOverdue: integer("days_overdue").default(0),
+	agingBucket: varchar("aging_bucket", { length: 50 }), // current, 1-30, 31-60, 61-90, 90+
+	lastPaymentDate: timestamp("last_payment_date", { withTimezone: true, mode: 'string' }),
+	notes: text("notes"),
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		idxApOrg: index("idx_ap_org").using("btree", table.organizationId.asc().nullsLast()),
+		idxApVendor: index("idx_ap_vendor").using("btree", table.vendorId.asc().nullsLast()),
+		idxApStatus: index("idx_ap_status").using("btree", table.status.asc().nullsLast()),
+		idxApDueDate: index("idx_ap_due_date").using("btree", table.dueDate.asc().nullsLast()),
+		idxApAging: index("idx_ap_aging").using("btree", table.agingBucket.asc().nullsLast()),
+		idxApOverdue: index("idx_ap_overdue").using("btree", table.daysOverdue.asc().nullsLast()).where(sql`(days_overdue > 0)`),
+		accountsPayableOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "accounts_payable_organization_id_fkey"
+		}).onDelete("cascade"),
+		accountsPayableInvoiceIdFkey: foreignKey({
+			columns: [table.invoiceId],
+			foreignColumns: [vendorInvoices.id],
+			name: "accounts_payable_invoice_id_fkey"
+		}),
+		accountsPayableExpenseRequestIdFkey: foreignKey({
+			columns: [table.expenseRequestId],
+			foreignColumns: [expenseRequests.id],
+			name: "accounts_payable_expense_request_id_fkey"
+		}),
+	}
+});
+
+/**
+ * Vendors - Vendor/supplier directory
+ */
+export const vendors = pgTable("vendors", {
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	organizationId: uuid("organization_id").notNull(),
+	vendorNumber: varchar("vendor_number", { length: 50 }).notNull(),
+	vendorName: varchar("vendor_name", { length: 255 }).notNull(),
+	legalName: varchar("legal_name", { length: 255 }),
+	vendorType: varchar("vendor_type", { length: 100 }), // supplier, contractor, professional_services, utilities, etc.
+	taxId: varchar("tax_id", { length: 50 }), // Business number / EIN
+	website: varchar("website", { length: 255 }),
+	email: varchar("email", { length: 255 }),
+	phone: varchar("phone", { length: 50 }),
+	fax: varchar("fax", { length: 50 }),
+	address: jsonb("address"),
+	billingAddress: jsonb("billing_address"),
+	primaryContactName: varchar("primary_contact_name", { length: 255 }),
+	primaryContactEmail: varchar("primary_contact_email", { length: 255 }),
+	primaryContactPhone: varchar("primary_contact_phone", { length: 50 }),
+	paymentTerms: paymentTerms("payment_terms").default('net_30'),
+	defaultAccountCode: varchar("default_account_code", { length: 50 }),
+	currency: varchar("currency", { length: 3 }).default('CAD'),
+	creditLimit: numeric("credit_limit", { precision: 15, scale: 2 }),
+	currentBalance: numeric("current_balance", { precision: 15, scale: 2 }).default('0.00'),
+	ytdSpending: numeric("ytd_spending", { precision: 15, scale: 2 }).default('0.00'),
+	status: vendorStatus("status").default('active').notNull(),
+	notes: text("notes"),
+	tags: text("tags").array().default([]),
+	bankAccountInfo: jsonb("bank_account_info"), // Encrypted banking details for direct deposit
+	taxInfo: jsonb("tax_info"), // W-9, 1099 info, GST/HST numbers
+	insuranceInfo: jsonb("insurance_info"), // Liability insurance certificates
+	contractInfo: jsonb("contract_info"), // Master service agreements
+	metadata: jsonb("metadata").default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	createdBy: uuid("created_by").notNull(),
+	lastReviewDate: date("last_review_date"),
+	nextReviewDate: date("next_review_date"),
+},
+(table) => {
+	return {
+		idxVendorsOrg: index("idx_vendors_org").using("btree", table.organizationId.asc().nullsLast()),
+		idxVendorsStatus: index("idx_vendors_status").using("btree", table.status.asc().nullsLast()),
+		idxVendorsType: index("idx_vendors_type").using("btree", table.vendorType.asc().nullsLast()),
+		idxVendorsName: index("idx_vendors_name").using("btree", table.vendorName.asc().nullsLast()),
+		vendorsOrganizationIdFkey: foreignKey({
+			columns: [table.organizationId],
+			foreignColumns: [organizations.id],
+			name: "vendors_organization_id_fkey"
+		}).onDelete("cascade"),
+		uniqueVendorNumber: unique("unique_vendor_number").on(table.organizationId, table.vendorNumber),
+		uniqueVendorName: unique("unique_vendor_name").on(table.organizationId, table.vendorName),
+	}
+});
