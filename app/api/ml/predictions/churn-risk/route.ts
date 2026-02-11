@@ -1,7 +1,6 @@
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRoleAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
-import { logApiAuditEvent } from '@/lib/middleware/api-security';
-import { z } from 'zod';
+import { logger } from '@/lib/logger';
 /**
  * UC-07: Churn Risk Prediction API
  * 
@@ -15,9 +14,10 @@ import { z } from 'zod';
  * - recommendedInterventions: Array of suggested actions
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { predictChurnRisk } from '@/lib/ml/models/churn-prediction-model';
 
 
 interface ChurnPrediction {
@@ -33,8 +33,10 @@ interface ChurnPrediction {
   predictedAt: Date;
 }
 
-export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
-  const { userId, organizationId } = context;
+export const GET = withRoleAuth('officer', async (request, _context) => {
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const organizationId = user?.organizationId;
 
   // Rate limit ML predictions
   const rateLimitResult = await checkRateLimit(
@@ -59,10 +61,20 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     const organizationScopeId = organizationId || userId;
     const tenantId = (searchParams.get('organizationId') ?? searchParams.get('tenantId')) || organizationScopeId;
 
-    // Get recent predictions
-    let riskFilter = '';
-    if (riskLevel) {
-      riskFilter = `AND features_used->>'riskLevel' = '${riskLevel}'`;
+    // SECURITY FIX: Validate riskLevel against allowlist to prevent SQL injection
+    const ALLOWED_RISK_LEVELS = ['low', 'medium', 'high'];
+    const validatedRiskLevel = riskLevel && ALLOWED_RISK_LEVELS.includes(riskLevel) ? riskLevel : null;
+
+    // Build base query
+    const baseConditions = [
+      sql`p.tenant_id = ${tenantId}`,
+      sql`p.model_type = 'churn_risk'`,
+      sql`p.predicted_at > NOW() - INTERVAL '7 days'`
+    ];
+
+    // Add risk level filter if provided
+    if (validatedRiskLevel) {
+      baseConditions.push(sql`features_used->>'riskLevel' = ${validatedRiskLevel}`);
     }
 
     const result = await db.execute(sql`
@@ -83,23 +95,20 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
         p.predicted_at
       FROM ml_predictions p
       JOIN profiles prof ON prof.user_id = p.user_id
-      WHERE p.tenant_id = ${tenantId}
-        AND p.model_type = 'churn_risk'
-        AND p.predicted_at > NOW() - INTERVAL '7 days'
-        ${riskFilter ? sql.raw(riskFilter) : sql.raw('')}
+      WHERE ${sql.join(baseConditions, sql` AND `)}
       ORDER BY (features_used->>'riskScore')::int DESC
       LIMIT ${limit}
     `);
 
-    const predictions: ChurnPrediction[] = ((result as any[]) || []).map((row: any) => {
-      const daysInactive = parseFloat(row.days_since_last_activity || '0');
+    const predictions: ChurnPrediction[] = ((result as unknown as Record<string, unknown>[]) || []).map((row: Record<string, unknown>) => {
+      const daysInactive = parseFloat(String(row.days_since_last_activity || '0'));
       const lastActivity = new Date();
       lastActivity.setDate(lastActivity.getDate() - daysInactive);
 
       return {
-        memberId: String(row.member_id),
-        memberName: String(row.member_name),
-        riskScore: parseInt(row.risk_score || '0'),
+        memberId: String(row.member_id || ''),
+        memberName: String(row.member_name || ''),
+        riskScore: parseInt(String(row.risk_score || '0')),
         riskLevel: (row.risk_level || 'low') as 'low' | 'medium' | 'high',
         contributingFactors: Array.isArray(row.contributing_factors) 
           ? row.contributing_factors 
@@ -108,9 +117,9 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
           ? row.recommended_interventions
           : [],
         lastActivity,
-        unionTenure: parseFloat(row.union_tenure_years || '0'),
-        totalCases: parseInt(row.total_cases || '0'),
-        predictedAt: new Date(row.predicted_at)
+        unionTenure: parseFloat(String(row.union_tenure_years || '0')),
+        totalCases: parseInt(String(row.total_cases || '0')),
+        predictedAt: new Date(String(row.predicted_at))
       };
     });
 
@@ -126,16 +135,12 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     };
 
     // Log audit event
-    await logApiAuditEvent({
-      action: 'ml_prediction_read',
-      resourceType: 'AI_ML',
-      organizationId,
+    logger.info('ML prediction accessed', {
       userId,
-      metadata: {
-        predictionType: 'churn_risk',
-        count: predictions.length,
-        riskLevel: riskLevel || 'all',
-      },
+      organizationId,
+      predictionType: 'churn_risk',
+      count: predictions.length,
+      riskLevel: riskLevel || 'all',
     });
 
     return NextResponse.json({
@@ -144,23 +149,23 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       generatedAt: new Date()
     });
 
-  } catch (error) {
-return NextResponse.json(
+  } catch (err) {
+    logger.error('Failed to fetch churn predictions', err instanceof Error ? err : new Error(String(err)));
+    return NextResponse.json(
       { error: 'Failed to fetch churn predictions' },
       { status: 500 }
     );
   }
 });
 
-export async function POST(request: NextRequest) {
-  try {
-    const { userId, organizationId } = await requireUser();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const POST = withRoleAuth('officer', async (request, _context) => {
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const organizationId = user?.organizationId;
 
-    const body = await request.json();
-    const { memberId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
+    try {
+      const body = await request.json();
+      const { memberId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
     const organizationScopeId = organizationIdFromBody ?? organizationId ?? userId;
     const tenantId = tenantIdFromBody ?? organizationScopeId;
 
@@ -231,85 +236,67 @@ export async function POST(request: NextRequest) {
       FROM member_features
     `);
 
-    if ((result as any[] || []).length === 0) {
+    if ((result as unknown as Record<string, unknown>[] || []).length === 0) {
       return NextResponse.json(
         { error: 'Member not found' },
         { status: 404 }
       );
     }
 
-    const features = (result as any[])?.[0];
+    const features = (result as unknown as Record<string, unknown>[])?.[0];
 
-    // Calculate risk score
-    let riskScore = 0;
+    // ===== ML MODEL PREDICTION =====
+    // Use trained TensorFlow.js model instead of rule-based scoring
+    
+    const daysSinceLastActivity = parseFloat(String(features.days_since_last_activity || '0'));
+    const resolutionRate = parseFloat(String(features.resolution_rate || '0'));
+    const avgSatisfaction = parseFloat(String(features.avg_satisfaction || '3'));
+    const totalCases = parseInt(String(features.total_cases || '0'));
+    const unionTenure = parseFloat(String(features.union_tenure_years || '0'));
+
+    // Predict using ML model
+    const mlPrediction = await predictChurnRisk({
+      daysSinceLastActivity,
+      resolutionRate,
+      avgSatisfactionScore: avgSatisfaction,
+      totalCases,
+      unionTenure
+    });
+
+    const riskScore = mlPrediction.riskScore;
+    const riskLevel = mlPrediction.riskLevel;
+
+    // Generate contributing factors based on feature values
     const factors: string[] = [];
 
-    // Engagement risk (30%)
-    const daysSinceLastActivity = parseFloat(features.days_since_last_activity || '0');
     if (daysSinceLastActivity > 90) {
-      riskScore += 30;
       factors.push(`Inactive for ${Math.round(daysSinceLastActivity)} days`);
     } else if (daysSinceLastActivity > 60) {
-      riskScore += 20;
       factors.push(`Limited activity (${Math.round(daysSinceLastActivity)} days since last case)`);
-    } else if (daysSinceLastActivity > 30) {
-      riskScore += 10;
     }
 
-    const loginFrequency = parseFloat(features.login_frequency || '0');
-    if (loginFrequency < 1) riskScore += 15;
-    else if (loginFrequency < 2) riskScore += 5;
-
-    // Case outcome risk (25%)
-    const resolutionRate = parseFloat(features.resolution_rate || '0');
     if (resolutionRate < 50) {
-      riskScore += 20;
       factors.push(`Low case resolution rate (${resolutionRate.toFixed(0)}%)`);
     } else if (resolutionRate < 70) {
-      riskScore += 10;
       factors.push(`Below-average resolution rate (${resolutionRate.toFixed(0)}%)`);
     }
 
-    const avgResolutionDays = parseFloat(features.avg_resolution_days || '0');
-    if (avgResolutionDays > 90) riskScore += 10;
-    else if (avgResolutionDays > 60) riskScore += 5;
-
-    // Satisfaction risk (25%)
-    const avgSatisfaction = parseFloat(features.avg_satisfaction || '3');
     if (avgSatisfaction < 2.5) {
-      riskScore += 25;
       factors.push(`Very low satisfaction score (${avgSatisfaction.toFixed(1)}/5.0)`);
     } else if (avgSatisfaction < 3.5) {
-      riskScore += 15;
       factors.push(`Low satisfaction score (${avgSatisfaction.toFixed(1)}/5.0)`);
-    } else if (avgSatisfaction < 4.0) {
-      riskScore += 5;
     }
 
-    const negativeFeedback = parseInt(features.negative_feedback_count || '0');
+    const negativeFeedback = parseInt(String(features?.negative_feedback_count || '0'));
     if (negativeFeedback > 2) {
-      riskScore += 10;
       factors.push(`${negativeFeedback} negative feedback incidents`);
-    } else if (negativeFeedback > 0) {
-      riskScore += 5;
     }
 
-    // Communication risk (20%)
-    const responseRate = 100 - (daysSinceLastActivity / 3.65); // Simulated
-    if (responseRate < 40) {
-      riskScore += 15;
-      factors.push(`Low communication engagement (${responseRate.toFixed(0)}%)`);
-    } else if (responseRate < 60) {
-      riskScore += 8;
+    if (totalCases < 3 && unionTenure < 2) {
+      factors.push('New member with limited engagement history');
     }
 
-    riskScore = Math.min(riskScore, 100);
-
-    // Determine risk level
-    let riskLevel: 'low' | 'medium' | 'high';
-    if (riskScore >= 70) riskLevel = 'high';
-    else if (riskScore >= 40) riskLevel = 'medium';
-    else riskLevel = 'low';
+    // ===== END ML MODEL PREDICTION =====
 
     // Generate interventions
     const interventions: string[] = [];
@@ -350,22 +337,28 @@ export async function POST(request: NextRequest) {
         ${tenantId},
         ${memberId},
         'churn_risk',
-        1,
+        ${mlPrediction.modelVersion},
         ${riskLevel},
-        ${riskScore / 100},
+        ${mlPrediction.confidence},
         NOW(),
         ${Math.floor(200 + Math.random() * 300)},
         ${JSON.stringify({
           riskScore,
           riskLevel,
+          churnProbability: mlPrediction.churnProbability,
           contributingFactors: factors.slice(0, 3),
           recommendedInterventions: interventions.slice(0, 3),
           features: {
             daysSinceLastActivity,
             resolutionRate,
             avgSatisfactionScore: avgSatisfaction,
-            totalCases: parseInt(features.total_cases || '0'),
-            unionTenure: parseFloat(features.union_tenure_years || '0')
+            totalCases: parseInt(String(features?.total_cases || '0')),
+            unionTenure: parseFloat(String(features?.union_tenure_years || '0'))
+          },
+          modelMetadata: {
+            version: mlPrediction.modelVersion,
+            confidence: mlPrediction.confidence,
+            isPredictionFromML: true
           }
         })}
       )
@@ -377,23 +370,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       prediction: {
         memberId,
-        memberName: features.full_name,
+        memberName: String(features?. full_name || ''),
         riskScore,
         riskLevel,
         contributingFactors: factors.slice(0, 3),
         recommendedInterventions: interventions.slice(0, 3),
         lastActivity,
-        unionTenure: parseFloat(features.union_tenure_years || '0'),
-        totalCases: parseInt(features.total_cases || '0'),
+        unionTenure: parseFloat(String(features?.union_tenure_years || '0')),
+        totalCases: parseInt(String(features?.total_cases || '0')),
         predictedAt: new Date()
       }
     });
 
-  } catch (error) {
-return NextResponse.json(
+  } catch (err) {
+    logger.error('Failed to generate churn prediction', err instanceof Error ? err : new Error(String(err)));
+    return NextResponse.json(
       { error: 'Failed to generate churn prediction' },
       { status: 500 }
     );
   }
-}
+});
 

@@ -149,7 +149,6 @@ const nextConfig = {
   
   // Build optimizations
   reactStrictMode: true,
-  swcMinify: true,
   
   // Compiler optimizations
   // Note: removeConsole is not supported by Turbopack, only used in production builds
@@ -163,10 +162,6 @@ const nextConfig = {
   
   // Experimental features for faster builds
   experimental: {
-    // Disable turbotrace to prevent build hanging
-    turbotrace: process.env.DOCKER_BUILD === 'true' ? false : {
-      logAll: false,
-    },
     // Optimize package imports
     optimizePackageImports: [
       '@radix-ui/react-accordion',

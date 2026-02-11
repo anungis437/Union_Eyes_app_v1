@@ -96,12 +96,12 @@ export const GET = withApiAuth(async (
     
     let answers: any[] = [];
     if (responseIds.length > 0) {
+      // SECURITY FIX: Use Drizzle's inArray() instead of manual IN clause building
+      const { inArray } = await import('drizzle-orm');
       answers = await db
         .select()
         .from(surveyAnswers)
-        .where(
-          sql`${surveyAnswers.responseId} IN ${sql.raw(`(${responseIds.map(id => `'${id}'`).join(',')})`)}`
-        );
+        .where(inArray(surveyAnswers.responseId, responseIds));
     }
 
     // Aggregate results by question

@@ -41,14 +41,11 @@ async function postHandler(
     const body = await req.json();
     const { parameters } = body || {};
 
-    // Build dynamic query based on report config
-    // This is a simplified version - real implementation would be more robust
+    // SECURITY: Only execute pre-built queries from allowlisted data sources
+    // Custom SQL execution has been removed to prevent SQL injection
     let queryResult: any;
     
-    if (reportConfig.query) {
-      // Execute custom SQL query (with proper sanitization in production)
-      queryResult = await db.execute(sql.raw(reportConfig.query));
-    } else if (reportConfig.dataSource === 'claims') {
+    if (reportConfig.dataSource === 'claims') {
       // Pre-built queries for claims
       queryResult = await db.execute(sql`
         SELECT * FROM claims
@@ -61,9 +58,21 @@ async function postHandler(
         WHERE tenant_id = ${context.organizationId}
         LIMIT 1000
       `);
+    } else if (reportConfig.dataSource === 'deadlines') {
+      queryResult = await db.execute(sql`
+        SELECT * FROM deadlines
+        WHERE tenant_id = ${context.organizationId}
+        LIMIT 1000
+      `);
+    } else if (reportConfig.dataSource === 'grievances') {
+      queryResult = await db.execute(sql`
+        SELECT * FROM grievances
+        WHERE tenant_id = ${context.organizationId}
+        LIMIT 1000
+      `);
     } else {
       return NextResponse.json(
-        { error: 'Invalid report configuration' },
+        { error: 'Invalid report configuration - only predefined data sources are allowed' },
         { status: 400 }
       );
     }

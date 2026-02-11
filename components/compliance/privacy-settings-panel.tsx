@@ -59,8 +59,8 @@ export function PrivacySettingsPanel() {
     }
 
     const data = (await response.json()) as ConsentsResponse;
-    const mappedConsents: ConsentRecord[] = data.consents
-      .map((record) => {
+    const mappedConsents = data.consents
+      .map<ConsentRecord>((record) => {
         const purpose = data.purposes.find((p) => p.id === record.consentType);
         const granted = record.status === "granted";
         return {

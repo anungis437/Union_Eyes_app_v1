@@ -9,6 +9,7 @@
  * 4. Every AI answer includes citations and logs
  * 5. Treat outputs as assistive - never automate final legal decisions
  * 6. Respect privacy - minimize PII in prompts
+ * 7. Full observability with Langfuse for production monitoring
  * 
  * See RESPONSIBLE_AI.md for full documentation.
  */
@@ -20,6 +21,9 @@ export * from './types/query';
 // Client utilities (server-side only)
 export * from './client/openai';
 export * from './client/embeddings';
+
+// Observability (LLMOps)
+export * from './client/observability';
 
 // Prompts and constraints
 export * from './prompts/constraints';

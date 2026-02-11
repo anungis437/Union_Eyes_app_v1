@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from "@/lib/api-auth-guard";
 import { db } from "@/db";
 import { userConsents } from "@/db/schema";
-import { consentPurposes } from "@/lib/gdpr/consent-purposes";
+import { consentPurposes, consentTypeValues, type ConsentType } from "@/lib/gdpr/consent-purposes";
 import { ConsentManager } from "@/lib/gdpr/consent-manager";
 import { and, eq, desc } from "drizzle-orm";
-
-type ConsentType = (typeof consentPurposes)[number]["id"];
 
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
@@ -49,6 +47,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
   }
 });
 
+function isConsentType(value: string | undefined): value is ConsentType {
+  return value ? (consentTypeValues as readonly string[]).includes(value) : false;
+}
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
@@ -58,15 +60,17 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     const body = await request.json();
     const { tenantId, organizationId, granted } = body || {};
-    const consentType = body?.consentType as ConsentType | undefined;
+    const consentTypeRaw = body?.consentType as string | undefined;
     const resolvedTenantId = organizationId ?? tenantId;
 
-    if (!resolvedTenantId || !consentType) {
+    if (!resolvedTenantId || !isConsentType(consentTypeRaw)) {
       return NextResponse.json(
         { error: "tenantId and consentType are required" },
         { status: 400 }
       );
     }
+
+    const consentType = consentTypeRaw;
 
     const purpose = consentPurposes.find((p) => p.id === consentType);
     if (!purpose) {

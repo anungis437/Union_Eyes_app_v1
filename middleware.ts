@@ -43,8 +43,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import createIntlMiddleware from 'next-intl/middleware';
-import { locales, defaultLocale } from './i18n';
-import { PUBLIC_API_ROUTES, CRON_API_ROUTES, isPublicRoute as isPublicApiRoute } from './lib/api-auth-guard';
+import { locales, defaultLocale } from './lib/locales';
+import { PUBLIC_API_ROUTES, CRON_API_ROUTES, isPublicRoute as isPublicApiRoute } from './lib/public-routes';
 
 const isProtectedRoute = createRouteMatcher([
   "/:locale/dashboard(.*)"

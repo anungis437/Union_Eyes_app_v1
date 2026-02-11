@@ -54,18 +54,21 @@ export const GET = async (request: NextRequest) => {
         .orderBy(desc(sql`count(*)`))
         .limit(limit);
       
-      // Get organization names for most active orgs
+      // SECURITY: Get organization names using parameterized query
       let mostActiveOrgs: any[] = [];
       if (mostActiveOrgsData.length > 0) {
         const activeOrgIds = mostActiveOrgsData.map(o => o.organizationId).filter(Boolean);
         if (activeOrgIds.length > 0) {
-          const idList = activeOrgIds.map(id => `'${id}'`).join(',');
-          const orgResult = await db.execute(sql.raw(`
-          SELECT id, name, organization_type as \"organizationType\" 
-          FROM organizations 
-          WHERE id = ANY(ARRAY[${idList}]::uuid[])
-        `));
-          const orgData = new Map(((orgResult.rows || []) as any[]).map(o => [o.id, o]));
+          // Use Drizzle's inArray for safe parameterization
+          const orgResults = await db
+            .select({
+              id: organizations.id,
+              name: organizations.name,
+              organizationType: organizations.organizationType,
+            })
+            .from(organizations)
+            .where(inArray(organizations.id, activeOrgIds));
+          const orgData = new Map(orgResults.map(o => [o.id, o]));
           
           mostActiveOrgs = mostActiveOrgsData.map(o => {
             const org = orgData.get(o.organizationId);
@@ -163,20 +166,22 @@ export const GET = async (request: NextRequest) => {
         orgStats.set(precedent.sourceOrgId, existing);
       });
 
-      // Get organization details using raw SQL to avoid Drizzle issues
+      // SECURITY: Get organization details using parameterized query
       const contributorOrgIds = Array.from(orgStats.keys());
       logger.info('[org-activity] contributorOrgIds', { count: contributorOrgIds.length, sample: contributorOrgIds.slice(0, 3) });
       
       let contributorOrgs: Array<{id: string, name: string, organizationType: string | null}> = [];
       if (contributorOrgIds.length > 0) {
-        const idList = contributorOrgIds.map(id => `'${id}'`).join(',');
-        logger.debug('[org-activity] Executing SQL with idList', { idList });
-        const result = await db.execute(sql.raw(`
-        SELECT id, name, organization_type as "organizationType"
-        FROM organizations
-        WHERE id = ANY(ARRAY[${idList}]::uuid[])
-      `));
-        contributorOrgs = (result.rows || []) as Array<{id: string, name: string, organizationType: string | null}>;
+        // Use Drizzle's inArray for safe parameterization
+        const orgResults = await db
+          .select({
+            id: organizations.id,
+            name: organizations.name,
+            organizationType: organizations.organizationType,
+          })
+          .from(organizations)
+          .where(inArray(organizations.id, contributorOrgIds));
+        contributorOrgs = orgResults;
       }
       logger.info('[org-activity] contributorOrgs fetched', { count: contributorOrgs.length });
       logger.debug('[org-activity] contributorOrgs sample', { sample: contributorOrgs[0] });

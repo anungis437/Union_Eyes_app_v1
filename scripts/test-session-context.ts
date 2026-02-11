@@ -16,9 +16,12 @@ async function testSessionContext() {
     const testTenant = 'test-tenant-456';
     const testOrgId = '12345678-1234-1234-1234-123456789012';
     
-    await db.execute(sql`SET app.current_user_id = '${sql.raw(testUserId)}'`);
-    await db.execute(sql`SET app.current_tenant_id = '${sql.raw(testTenant)}'`);
-    await db.execute(sql`SET app.current_organization_id = '${sql.raw(testOrgId)}'`);
+    // SECURITY FIX: Use proper parameterization instead of sql.raw()
+    // NOTE: This is a test script with hardcoded values, but in production code
+    // NEVER use sql.raw() for session variables or any user input
+    await db.execute(sql`SET app.current_user_id = ${testUserId}`);
+    await db.execute(sql`SET app.current_tenant_id = ${testTenant}`);
+    await db.execute(sql`SET app.current_organization_id = ${testOrgId}`);
     
     console.log(`✅ Set session context:`);
     console.log(`   user_id: ${testUserId}`);

@@ -1,4 +1,3 @@
-import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Report Execution API
  * 
@@ -6,14 +5,21 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  * Dynamically builds and executes SQL queries based on report config
  * 
  * Created: November 16, 2025
+ * Updated: February 11, 2026 - Refactored to use secured ReportExecutor
  * Part of: Area 8 - Analytics Platform
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { sql } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { ReportExecutor } from '@/lib/report-executor';
+import { logApiAuditEvent } from '@/lib/middleware/api-security';
+
+interface AuthContext {
+  userId: string;
+  organizationId: string;
+  params?: Record<string, any>;
+}
 
 interface ReportConfig {
   dataSourceId: string;
@@ -38,162 +44,205 @@ interface ReportConfig {
   limit?: number;
 }
 
-export const POST = async (req: NextRequest) => {
-  return withRoleAuth(50, async (request, context) => {
-    const { userId, organizationId } = context;
+export const POST = withRoleAuth('officer', async (request: NextRequest, context: AuthContext) => {
+  const { userId, organizationId } =context;
+
+  try {
+    if (!userId || !organizationId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     // Rate limit report execution
     const rateLimitResult = await checkRateLimit(
-      RATE_LIMITS.REPORT_EXECUTION,
-      `report-execute-adhoc:${userId}`
+      `report-execute-adhoc:${userId}`,
+      RATE_LIMITS.REPORT_EXECUTION
     );
 
     if (!rateLimitResult.allowed) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/reports/execute',
+        method: 'POST',
+        eventType: 'auth_failed',
+        severity: 'medium',
+        details: {
+          reason: 'Rate limit exceeded',
+          resetIn: rateLimitResult.resetIn,
+        },
+      });
+
       return NextResponse.json(
         { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
         { status: 429 }
       );
     }
 
-  try {
+    const body = await request.json();
+    const config: ReportConfig = body.config;
 
-      if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
-      }
-
-      const body = await req.json();
-      const config: ReportConfig = body.config;
-
-      if (!config || !config.dataSourceId || !config.fields || config.fields.length === 0) {
-        return NextResponse.json(
-          { error: 'Invalid report configuration' },
-          { status: 400 }
-        );
-      }
-
-      // Build SQL query dynamically
-      const query = buildSQLQuery(config, organizationId);
-
-      // Execute query
-      const startTime = Date.now();
-      const results = await db.execute(sql.raw(query));
-      const executionTime = Date.now() - startTime;
-
-      return NextResponse.json({
-        success: true,
-        data: results,
-        rowCount: results.length,
-        executionTime,
-        query: query, // Return for transparency (remove in production)
-      });
-    } catch (error: any) {
-return NextResponse.json(
-        { error: 'Failed to execute report', details: error.message },
-        { status: 500 }
+    if (!config || !config.dataSourceId || !config.fields || config.fields.length === 0) {
+      return NextResponse.json(
+        { error: 'Invalid report configuration' },
+        { status: 400 }
       );
     }
-    })(request);
-};
+
+    // SECURITY: Validate config before execution
+    const validationError = validateReportConfig(config);
+    if (validationError) {
+      logApiAuditEvent({
+        timestamp: new Date().toISOString(),
+        userId,
+        endpoint: '/api/reports/execute',
+        method: 'POST',
+        eventType: 'validation_failed',
+        severity: 'medium',
+        details: {
+          reason: validationError,
+          dataSource: config.dataSourceId,
+          organizationId,
+        },
+      });
+
+      return NextResponse.json(
+        { error: validationError },
+        { status: 400 }
+      );
+    }
+
+    // Execute report using secured ReportExecutor
+    const executor = new ReportExecutor(organizationId, organizationId);
+    const result = await executor.execute(config as any);
+
+    // Log successful execution
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId,
+      endpoint: '/api/reports/execute',
+      method: 'POST',
+      eventType: 'success',
+      severity: 'low',
+      details: {
+        dataSource: config.dataSourceId,
+        fieldCount: config.fields.length,
+        filterCount: config.filters?.length || 0,
+        rowCount: result.rowCount,
+        executionTime: result.executionTimeMs,
+        success: result.success,
+        organizationId,
+      },
+    });
+
+    return NextResponse.json({
+      success: result.success,
+      data: result.data,
+      rowCount: result.rowCount,
+      executionTime: result.executionTimeMs,
+    });
+  } catch (error: any) {
+    logApiAuditEvent({
+      timestamp: new Date().toISOString(),
+      userId: userId || 'unknown',
+      endpoint: '/api/reports/execute',
+      method: 'POST',
+      eventType: 'auth_failed',
+      severity: 'high',
+      details: {
+        error: error.message,
+        organizationId: organizationId || 'unknown',
+      },
+    });
+
+    return NextResponse.json(
+      { error: 'Failed to execute report' },
+      { status: 500 }
+    );
+  }
+});
 
 /**
- * Build SQL query from report configuration
+ * SECURITY: Allowlisted tables and their valid columns
  */
-function buildSQLQuery(config: ReportConfig, tenantId: string): string {
-  const tableName = config.dataSourceId; // 'claims', 'members', 'deadlines'
-  
-  // Build SELECT clause
-  let selectClause = 'SELECT ';
-  const selectFields = config.fields.map(field => {
-    if (field.aggregation) {
-      const aggFunc = field.aggregation.toUpperCase();
-      if (aggFunc === 'DISTINCT') {
-        return `COUNT(DISTINCT ${field.fieldId}) AS ${field.alias || field.fieldId}`;
-      }
-      return `${aggFunc}(${field.fieldId}) AS ${field.alias || field.fieldId}`;
+const ALLOWED_TABLES: Record<string, string[]> = {
+  'claims': ['id', 'claim_number', 'status', 'amount', 'created_at', 'tenant_id', 'claimant_name', 'claim_type'],
+  'members': ['id', 'first_name', 'last_name', 'email', 'status', 'created_at', 'tenant_id', 'membership_number'],
+  'organization_members': ['id', 'first_name', 'last_name', 'email', 'status', 'created_at', 'tenant_id'],
+  'deadlines': ['id', 'title', 'due_date', 'status', 'created_at', 'tenant_id', 'priority'],
+  'grievances': ['id', 'grievance_number', 'status', 'created_at', 'tenant_id', 'grievance_type'],
+};
+
+const ALLOWED_AGGREGATIONS = ['count', 'sum', 'avg', 'min', 'max', 'distinct'];
+const ALLOWED_OPERATORS = ['equals', 'not_equals', 'contains', 'greater_than', 'less_than', 'between', 'in'];
+const ALLOWED_SORT_DIRECTIONS = ['asc', 'desc'];
+
+/**
+ * SECURITY: Validate report configuration against allowlists
+ */
+function validateReportConfig(config: ReportConfig): string | null {
+  // Validate table name
+  if (!ALLOWED_TABLES[config.dataSourceId]) {
+    return `Invalid data source: ${config.dataSourceId}`;
+  }
+
+  const allowedColumns = ALLOWED_TABLES[config.dataSourceId];
+
+  // SECURITY: Block custom formulas (P0 protection)
+  for (const field of config.fields) {
+    if ((field as any).formula) {
+      return 'Custom formulas are not supported for security reasons';
     }
-    return field.fieldId;
-  });
-  selectClause += selectFields.join(', ');
+  }
 
-  // Build FROM clause
-  let fromClause = `FROM ${tableName}`;
+  // Validate all field IDs
+  for (const field of config.fields) {
+    if (!allowedColumns.includes(field.fieldId)) {
+      return `Invalid field: ${field.fieldId}`;
+    }
+    if (field.aggregation && !ALLOWED_AGGREGATIONS.includes(field.aggregation)) {
+      return `Invalid aggregation: ${field.aggregation}`;
+    }
+    if (field.alias && !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(field.alias)) {
+      return `Invalid alias format: ${field.alias}`;
+    }
+  }
 
-  // Build WHERE clause (always include tenant filter)
-  let whereClause = `WHERE tenant_id = '${tenantId}'`;
-  
-  if (config.filters && config.filters.length > 0) {
-    const filterConditions = config.filters.map((filter, index) => {
-      const operator = filter.logicalOperator || 'AND';
-      const prefix = index === 0 ? 'AND' : operator;
-      
-      let condition = '';
-      switch (filter.operator) {
-        case 'equals':
-          condition = `${filter.fieldId} = '${filter.value}'`;
-          break;
-        case 'not_equals':
-          condition = `${filter.fieldId} != '${filter.value}'`;
-          break;
-        case 'contains':
-          condition = `${filter.fieldId} ILIKE '%${filter.value}%'`;
-          break;
-        case 'greater_than':
-          condition = `${filter.fieldId} > '${filter.value}'`;
-          break;
-        case 'less_than':
-          condition = `${filter.fieldId} < '${filter.value}'`;
-          break;
-        case 'between':
-          condition = `${filter.fieldId} BETWEEN '${filter.value.from}' AND '${filter.value.to}'`;
-          break;
-        case 'in':
-          const values = Array.isArray(filter.value) 
-            ? filter.value.map(v => `'${v}'`).join(', ')
-            : `'${filter.value}'`;
-          condition = `${filter.fieldId} IN (${values})`;
-          break;
-        default:
-          condition = `${filter.fieldId} = '${filter.value}'`;
+  // Validate filters
+  if (config.filters) {
+    for (const filter of config.filters) {
+      if (!allowedColumns.includes(filter.fieldId)) {
+        return `Invalid filter field: ${filter.fieldId}`;
       }
-      
-      return `${prefix} ${condition}`;
-    });
-    whereClause += ' ' + filterConditions.join(' ');
+      if (!ALLOWED_OPERATORS.includes(filter.operator)) {
+        return `Invalid operator: ${filter.operator}`;
+      }
+    }
   }
 
-  // Build GROUP BY clause
-  let groupByClause = '';
-  if (config.groupBy && config.groupBy.length > 0) {
-    groupByClause = `GROUP BY ${config.groupBy.join(', ')}`;
+  // Validate groupBy
+  if (config.groupBy) {
+    for (const field of config.groupBy) {
+      if (!allowedColumns.includes(field)) {
+        return `Invalid group by field: ${field}`;
+      }
+    }
   }
 
-  // Build ORDER BY clause
-  let orderByClause = '';
-  if (config.sortBy && config.sortBy.length > 0) {
-    const sortFields = config.sortBy.map(sort => 
-      `${sort.fieldId} ${sort.direction.toUpperCase()}`
-    );
-    orderByClause = `ORDER BY ${sortFields.join(', ')}`;
+  // Validate sortBy
+  if (config.sortBy) {
+    for (const sort of config.sortBy) {
+      if (!allowedColumns.includes(sort.fieldId)) {
+        return `Invalid sort field: ${sort.fieldId}`;
+      }
+      if (!ALLOWED_SORT_DIRECTIONS.includes(sort.direction)) {
+        return `Invalid sort direction: ${sort.direction}`;
+      }
+    }
   }
 
-  // Build LIMIT clause
-  const limitClause = `LIMIT ${config.limit || 1000}`;
-
-  // Combine all clauses
-  const query = [
-    selectClause,
-    fromClause,
-    whereClause,
-    groupByClause,
-    orderByClause,
-    limitClause,
-  ]
-    .filter(clause => clause !== '')
-    .join(' \\n');
-
-  return query;
+  return null;
 }
 

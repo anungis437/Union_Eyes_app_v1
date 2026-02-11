@@ -1,17 +1,16 @@
 import * as Sentry from '@sentry/nextjs';
-import { initializeConsoleWrapper } from './lib/console-wrapper';
 
 export async function register() {
-  // Initialize console wrapper for production logging control
-  initializeConsoleWrapper();
-
   // Skip Sentry initialization during build to prevent "self is not defined" errors
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return;
   }
 
-  // Validate environment variables on startup (Node.js runtime only)
+  // Node.js runtime initialization (not Edge runtime)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // Initialize console wrapper for production logging control (Node.js only)
+    const { initializeConsoleWrapper } = await import('./lib/console-wrapper');
+    initializeConsoleWrapper();
     try {
       const { logger } = await import('./lib/logger');
       // Import and run comprehensive environment validation

@@ -9,8 +9,9 @@
  * Part of: Area 5 - Analytics & Reporting System
  */
 
-import { sql } from 'drizzle-orm';
+import { sql, SQL } from 'drizzle-orm';
 import { db } from '@/db/db';
+import { safeColumnName } from '@/lib/safe-sql-identifiers';
 
 // ============================================================================
 // Type Definitions
@@ -979,33 +980,32 @@ export async function updateReport(
   }
 ): Promise<any> {
   const tenantId = organizationId;
-  const updates: string[] = [];
-  const values: any[] = [];
+  const setClauses: SQL[] = [];
 
-  if (data.name) {
-    updates.push(`name = $${values.length + 1}`);
-    values.push(data.name);
+  // Build SET clauses using safe column names and parameterized values
+  if (data.name !== undefined) {
+    setClauses.push(sql`${safeColumnName('name')} = ${data.name}`);
   }
   if (data.description !== undefined) {
-    updates.push(`description = $${values.length + 1}`);
-    values.push(data.description);
+    setClauses.push(sql`${safeColumnName('description')} = ${data.description}`);
   }
-  if (data.config) {
-    updates.push(`config = $${values.length + 1}`);
-    values.push(JSON.stringify(data.config));
+  if (data.config !== undefined) {
+    setClauses.push(sql`${safeColumnName('config')} = ${JSON.stringify(data.config)}`);
   }
   if (data.isPublic !== undefined) {
-    updates.push(`is_public = $${values.length + 1}`);
-    values.push(data.isPublic);
+    setClauses.push(sql`${safeColumnName('is_public')} = ${data.isPublic}`);
   }
 
-  updates.push(`updated_by = $${values.length + 1}`);
-  values.push(userId);
-  updates.push(`updated_at = NOW()`);
+  // Always update updated_by and updated_at
+  setClauses.push(sql`${safeColumnName('updated_by')} = ${userId}`);
+  setClauses.push(sql`${safeColumnName('updated_at')} = NOW()`);
+
+  // Join SET clauses with commas
+  const setClause = sql.join(setClauses, sql`, `);
 
   const result = await db.execute(sql`
     UPDATE reports
-    SET ${sql.raw(updates.join(', '))}
+    SET ${setClause}
     WHERE id = ${reportId} AND tenant_id = ${tenantId}
     RETURNING *
   `);
@@ -1101,6 +1101,7 @@ export async function getReportTemplates(
   organizationId?: string,
   category?: string
 ): Promise<any[]> {
+  const tenantId = organizationId;
   let conditions: any[] = [sql`rt.is_active = true`];
 
   // Include system templates and tenant-specific templates

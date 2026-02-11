@@ -22,6 +22,8 @@ import {
 } from "@/db/schema";
 import { eq, and, desc, sql, gt } from "drizzle-orm";
 import { createHash } from "crypto";
+import { embeddingCache } from "@/lib/services/ai/embedding-cache";
+import { logger } from "@/lib/logger";
 
 // AI Provider interfaces
 interface AIProvider {
@@ -83,6 +85,20 @@ class OpenAIProvider implements AIProvider {
   }
   
   async generateEmbedding(text: string): Promise<number[]> {
+    const model = "text-embedding-ada-002";
+    
+    // Check cache first
+    const cachedEmbedding = await embeddingCache.getCachedEmbedding(text, model);
+    
+    if (cachedEmbedding) {
+      logger?.debug('Using cached embedding (chatbot)', { 
+        model,
+        textLength: text.length 
+      });
+      return cachedEmbedding;
+    }
+
+    // Cache miss - call OpenAI API
     const response = await fetch("https://api.openai.com/v1/embeddings", {
       method: "POST",
       headers: {
@@ -90,7 +106,7 @@ class OpenAIProvider implements AIProvider {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: "text-embedding-ada-002",
+        model,
         input: text,
       }),
     });
@@ -100,7 +116,14 @@ class OpenAIProvider implements AIProvider {
     }
     
     const data = await response.json();
-    return data.data[0].embedding;
+    const embedding = data.data[0].embedding;
+    
+    // Store in cache for future use (non-blocking)
+    embeddingCache.setCachedEmbedding(text, model, embedding).catch(err => {
+      logger?.warn('Failed to cache embedding (chatbot)', { error: err.message });
+    });
+    
+    return embedding;
   }
 }
 

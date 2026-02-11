@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { observeCompletion, observeEmbedding } from './observability';
 /**
  * Initialize OpenAI client with safety constraints
  */
@@ -18,10 +19,10 @@ export function createOpenAIClient(config) {
     });
 }
 /**
- * Generate chat completion with safety constraints
+ * Generate chat completion with safety constraints and observability
  */
 export async function generateCompletion(client, prompt, options) {
-    const response = await client.chat.completions.create({
+    const response = await observeCompletion(client, {
         model: options?.model || 'gpt-4-turbo-preview',
         messages: [
             {
@@ -31,6 +32,11 @@ export async function generateCompletion(client, prompt, options) {
         ],
         temperature: options?.temperature ?? 0.3, // Lower temperature for more consistent legal research
         max_tokens: options?.maxTokens ?? 2000,
+    }, {
+        userId: options?.userId,
+        sessionId: options?.sessionId,
+        tags: options?.tags,
+        name: 'union-eyes-completion',
     });
     const content = response.choices[0]?.message?.content;
     if (!content) {
@@ -39,17 +45,22 @@ export async function generateCompletion(client, prompt, options) {
     return content;
 }
 /**
- * Generate embeddings for text chunks
+ * Generate embeddings for text chunks with observability
  */
 export async function generateEmbedding(client, text, options) {
-    const response = await client.embeddings.create({
+    const response = await observeEmbedding(client, {
         model: options?.model || 'text-embedding-ada-002',
         input: text,
+    }, {
+        userId: options?.userId,
+        sessionId: options?.sessionId,
+        tags: options?.tags,
+        name: 'union-eyes-embedding',
     });
     return response.data[0].embedding;
 }
 /**
- * Generate embeddings for multiple text chunks in batch
+ * Generate embeddings for multiple text chunks in batch with observability
  */
 export async function generateEmbeddingsBatch(client, texts, options) {
     const batchSize = options?.batchSize ?? 100;
@@ -57,9 +68,14 @@ export async function generateEmbeddingsBatch(client, texts, options) {
     // Process in batches to avoid rate limits
     for (let i = 0; i < texts.length; i += batchSize) {
         const batch = texts.slice(i, i + batchSize);
-        const response = await client.embeddings.create({
+        const response = await observeEmbedding(client, {
             model: options?.model || 'text-embedding-ada-002',
             input: batch,
+        }, {
+            userId: options?.userId,
+            sessionId: options?.sessionId,
+            tags: [...(options?.tags || []), `batch-${Math.floor(i / batchSize) + 1}`],
+            name: 'union-eyes-embedding-batch',
         });
         embeddings.push(...response.data.map((d) => d.embedding));
     }

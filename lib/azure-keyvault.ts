@@ -246,8 +246,10 @@ export async function setEncryptionKeyInSession(
 
     // Set session variable (works with both postgres and Drizzle)
     if (db.execute) {
-      // Drizzle db
-      await db.execute(`SET LOCAL app.encryption_key = '${encryptionKey}'`);
+      // Drizzle db - SECURITY FIX: Use proper parameterization instead of string interpolation
+      const { sql } = await import('drizzle-orm');
+      // Use parameterized query to safely set the encryption key
+      await db.execute(sql`SET LOCAL app.encryption_key = ${encryptionKey}`);
     } else if (db.query) {
       // postgres client
       await db.query(`SET LOCAL app.encryption_key = $1`, [encryptionKey]);

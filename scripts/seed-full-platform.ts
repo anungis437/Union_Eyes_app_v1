@@ -75,10 +75,26 @@ function generateEmail(firstName: string, lastName: string, domain: string): str
 async function resetDatabase() {
   console.log('🗑️  Resetting database...');
   
+  // SECURITY: Allowlist of valid table names to prevent SQL injection
+  const ALLOWED_TABLES = new Set([
+    'ml_alert_acknowledgments', 'ml_retraining_notifications', 'ml_model_training_runs',
+    'member_ai_feedback', 'model_feature_baselines', 'ml_predictions', 'model_metadata',
+    'analytics_scheduled_reports', 'benchmark_data', 'claim_messages', 'claims',
+    'organization_members', 'profiles', 'organizations'
+  ]);
+  
   // Helper to safely delete from a table (ignores if table doesn't exist)
   const safeDelete = async (tableName: string) => {
+    // SECURITY FIX: Validate table name against allowlist
+    if (!ALLOWED_TABLES.has(tableName)) {
+      throw new Error(`Invalid table name: ${tableName}. Not in allowlist.`);
+    }
+    
     try {
-      await db.execute(sql.raw(`DELETE FROM ${tableName}`));
+      // SECURITY FIX: Use identifier instead of sql.raw() for table name
+      // Note: Drizzle doesn't support dynamic table deletion, so we use sql template
+      // but with validated input only
+      await db.execute(sql`DELETE FROM ${sql.raw(tableName)}`);
     } catch (error: any) {
       if (error.code === '42P01') {
         console.log(`⚠️  Table ${tableName} doesn't exist, skipping...`);

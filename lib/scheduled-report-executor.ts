@@ -251,8 +251,13 @@ async function executeClaimsQuery(tenantId: string, config: any): Promise<any[]>
 async function executeAnalyticsQuery(tenantId: string, config: any): Promise<any[]> {
   const groupBy = config.groupBy || 'status';
 
-  // For analytics, we'll use sql.raw for the column name in GROUP BY
-  // This is safe since it's coming from config which is controlled by admins
+  // SECURITY FIX: Whitelist validation to prevent SQL injection via GROUP BY column
+  const ALLOWED_COLUMNS = ['status', 'priority', 'claim_type', 'created_at', 'updated_at', 'member_id'];
+  if (!ALLOWED_COLUMNS.includes(groupBy)) {
+    throw new Error(`Invalid groupBy column: ${groupBy}. Allowed columns: ${ALLOWED_COLUMNS.join(', ')}`);
+  }
+
+  // Safe to use sql.raw now that column is validated against whitelist
   const result = await db.execute(sql`
     SELECT 
       ${sql.raw(groupBy)} as category,
@@ -293,16 +298,71 @@ async function executeDefaultQuery(tenantId: string, config: any): Promise<any[]
 
 /**
  * Execute custom query (unsafe - admin only)
+ * 
+ * SECURITY WARNING: This function allows arbitrary SQL execution and is a critical
+ * security risk. It should ONLY be used with pre-approved, validated SQL queries.
+ * Implementation includes strict allowlist validation.
  */
 async function executeCustomQuery(tenantId: string, config: any): Promise<any[]> {
-  // Custom queries are dangerous - they should be admin-controlled
   const customQuery = config.query || '';
   if (!customQuery) {
     return executeDefaultQuery(tenantId, config);
   }
   
-  // Use raw query for custom SQL (already parameterized by admin)
-  const result = await db.execute(sql.raw(customQuery));
+  // SECURITY FIX: Implement strict SQL allowlist validation
+  // Only allow pre-approved queries to prevent SQL injection
+  const APPROVED_QUERIES: Record<string, { query: string; name: string }> = {
+    'claims_summary': { 
+      query: 'claims_summary',
+      name: 'Claims Summary'
+    },
+    'member_stats': { 
+      query: 'member_stats',
+      name: 'Member Statistics'
+    },
+    'recent_claims': { 
+      query: 'recent_claims',
+      name: 'Recent Claims'
+    }
+  };
+  
+  const queryKey = config.queryKey;
+  if (!queryKey || !APPROVED_QUERIES[queryKey]) {
+    throw new Error(
+      `Invalid or unapproved custom query. Must use queryKey with one of: ${Object.keys(APPROVED_QUERIES).join(', ')}`
+    );
+  }
+  
+  // SECURITY FIX: Use proper parameterization instead of string replacement
+  let result: any[];
+  switch (queryKey) {
+    case 'claims_summary':
+      result = await db.execute(sql`
+        SELECT COUNT(*) as total, SUM(claim_amount) as total_amount 
+        FROM claims 
+        WHERE tenant_id = ${tenantId}
+      `);
+      break;
+    case 'member_stats':
+      result = await db.execute(sql`
+        SELECT COUNT(*) as total, COUNT(DISTINCT union_id) as unique_unions 
+        FROM members 
+        WHERE tenant_id = ${tenantId}
+      `);
+      break;
+    case 'recent_claims':
+      result = await db.execute(sql`
+        SELECT id, claim_number, status, claim_amount, created_at 
+        FROM claims 
+        WHERE tenant_id = ${tenantId}
+        ORDER BY created_at DESC 
+        LIMIT 100
+      `);
+      break;
+    default:
+      throw new Error(`Query not implemented: ${queryKey}`);
+  }
+  
   return result as any[];
 }
 

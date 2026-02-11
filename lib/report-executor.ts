@@ -6,10 +6,14 @@
  * 
  * Created: December 5, 2025
  * Part of: Phase 2 - Enhanced Analytics & Reports
+ * 
+ * SECURITY: Uses safeIdentifier functions for all dynamic SQL identifiers
+ * Updated: February 11, 2026 - P2 Security Enhancement
  */
 
 import { sql, SQL } from 'drizzle-orm';
 import { db } from '@/db/db';
+import { safeTableName, safeColumnName, safeIdentifier } from '@/lib/safe-sql-identifiers';
 
 // ============================================================================
 // Type Definitions
@@ -236,11 +240,14 @@ return {
 
     // Validate fields exist in data source
     for (const field of config.fields) {
-      if (!field.formula) {
-        const fieldExists = dataSource.fields.some(f => f.id === field.fieldId);
-        if (!fieldExists) {
-          throw new Error(`Invalid field: ${field.fieldId}`);
-        }
+      // SECURITY FIX: Block custom formulas to prevent SQL injection
+      if (field.formula) {
+        throw new Error('Custom formulas are not supported for security reasons');
+      }
+      
+      const fieldExists = dataSource.fields.some(f => f.id === field.fieldId);
+      if (!fieldExists) {
+        throw new Error(`Invalid field: ${field.fieldId}`);
       }
     }
   }
@@ -256,7 +263,7 @@ return {
     const selectFields = this.buildSelectClause(config.fields, dataSource, config.groupBy);
 
     // Build FROM clause
-    let fromClause = sql.raw(baseTable);
+    let fromClause = safeTableName(baseTable);
 
     // Build JOIN clauses
     if (config.joins && config.joins.length > 0) {
@@ -267,7 +274,7 @@ return {
     let whereConditions: SQL[] = [];
     
     // Add tenant/organization filter
-    whereConditions.push(sql`${sql.raw(baseTable)}.organization_id = ${this.organizationId}`);
+    whereConditions.push(sql`${safeTableName(baseTable)}.organization_id = ${this.organizationId}`);
 
     if (config.filters && config.filters.length > 0) {
       const filterSQL = this.buildFilterClause(config.filters, dataSource);
@@ -335,55 +342,60 @@ return {
     for (const field of fields) {
       let fieldSQL: SQL;
 
+      // SECURITY: Custom formulas are blocked in validateConfig()
+      // This defensive check should never trigger after validation
       if (field.formula) {
-        // Custom formula field
-        fieldSQL = sql.raw(field.formula);
-      } else {
-        const fieldMeta = dataSource.fields.find(f => f.id === field.fieldId);
-        if (!fieldMeta) continue;
+        throw new Error('Custom formulas are blocked for security. This should have been caught during validation.');
+      }
 
-        const columnName = field.table
-          ? `${field.table}.${fieldMeta.column}`
-          : fieldMeta.column;
+      const fieldMeta = dataSource.fields.find(f => f.id === field.fieldId);
+      if (!fieldMeta) continue;
 
-        if (field.aggregation) {
-          // Aggregated field
-          switch (field.aggregation) {
-            case 'count':
-              fieldSQL = sql`COUNT(${sql.raw(columnName)})`;
-              break;
-            case 'count_distinct':
-              fieldSQL = sql`COUNT(DISTINCT ${sql.raw(columnName)})`;
-              break;
-            case 'sum':
-              fieldSQL = sql`SUM(${sql.raw(columnName)})`;
-              break;
-            case 'avg':
-              fieldSQL = sql`AVG(${sql.raw(columnName)})`;
-              break;
-            case 'min':
-              fieldSQL = sql`MIN(${sql.raw(columnName)})`;
-              break;
-            case 'max':
-              fieldSQL = sql`MAX(${sql.raw(columnName)})`;
-              break;
-            case 'string_agg':
-              fieldSQL = sql`STRING_AGG(${sql.raw(columnName)}, ', ')`;
-              break;
-            default:
-              fieldSQL = sql.raw(columnName);
-          }
-        } else {
-          // Regular field
-          fieldSQL = sql.raw(columnName);
+      const columnName = field.table
+        ? `${field.table}.${fieldMeta.column}`
+        : fieldMeta.column;
+
+      if (field.aggregation) {
+        // Aggregated field
+        switch (field.aggregation) {
+          case 'count':
+            fieldSQL = sql`COUNT(${safeColumnName(columnName)})`;
+            break;
+          case 'count_distinct':
+            fieldSQL = sql`COUNT(DISTINCT ${safeColumnName(columnName)})`;
+            break;
+          case 'sum':
+            fieldSQL = sql`SUM(${safeColumnName(columnName)})`;
+            break;
+          case 'avg':
+            fieldSQL = sql`AVG(${safeColumnName(columnName)})`;
+            break;
+          case 'min':
+            fieldSQL = sql`MIN(${safeColumnName(columnName)})`;
+            break;
+          case 'max':
+            fieldSQL = sql`MAX(${safeColumnName(columnName)})`;
+            break;
+          case 'string_agg':
+            fieldSQL = sql`STRING_AGG(${safeColumnName(columnName)}, ', ')`;
+            break;
+          default:
+            fieldSQL = safeColumnName(columnName);
         }
+      } else {
+        // Regular field
+        fieldSQL = safeColumnName(columnName);
       }
 
       // Add alias if provided
       if (field.alias) {
-        fieldSQL = sql`${fieldSQL} AS ${sql.raw(field.alias)}`;
+        // SECURITY FIX: Validate alias format (alphanumeric + underscore only)
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(field.alias)) {
+          throw new Error(`Invalid alias format: ${field.alias}`);
+        }
+        fieldSQL = sql`${fieldSQL} AS ${safeIdentifier(field.alias)}`;
       } else if (field.aggregation) {
-        fieldSQL = sql`${fieldSQL} AS ${sql.raw(`${field.fieldId}_${field.aggregation}`)}`;
+        fieldSQL = sql`${fieldSQL} AS ${safeIdentifier(`${field.fieldId}_${field.aggregation}`)}`;
       }
 
       fieldClauses.push(fieldSQL);
@@ -396,13 +408,32 @@ return {
    * Build JOIN clause
    */
   private buildJoinClause(fromClause: SQL, joins: JoinConfig[]): SQL {
+    const ALLOWED_JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'FULL'];
+    const ALLOWED_OPERATORS = ['=', '!=', '>', '<', '>=', '<='];
+    
     let result = fromClause;
 
     for (const join of joins) {
       const joinType = join.type.toUpperCase();
       const operator = join.on.operator || '=';
 
-      result = sql`${result} ${sql.raw(joinType)} JOIN ${sql.raw(join.table)} ON ${sql.raw(join.on.leftField)} ${sql.raw(operator)} ${sql.raw(join.on.rightField)}`;
+      // SECURITY FIX: Validate join type
+      if (!ALLOWED_JOIN_TYPES.includes(joinType)) {
+        throw new Error(`Invalid join type: ${join.type}`);
+      }
+
+      // SECURITY FIX: Validate operator
+      if (!ALLOWED_OPERATORS.includes(operator)) {
+        throw new Error(`Invalid join operator: ${operator}`);
+      }
+
+      // SECURITY FIX: Validate table exists in DATA_SOURCES
+      const tableExists = DATA_SOURCES.some(ds => ds.baseTable === join.table);
+      if (!tableExists) {
+        throw new Error(`Invalid join table: ${join.table}`);
+      }
+
+      result = sql`${result} ${sql.raw(joinType)} JOIN ${safeTableName(join.table)} ON ${safeColumnName(join.on.leftField)} ${sql.raw(operator)} ${safeColumnName(join.on.rightField)}`;
     }
 
     return result;
@@ -432,43 +463,43 @@ return {
       // Build individual condition with proper parameterization
       switch (filter.operator) {
         case 'eq':
-          condition = sql`${sql.raw(fieldName)} = ${filter.value}`;
+          condition = sql`${safeColumnName(fieldName)} = ${filter.value}`;
           break;
         case 'ne':
-          condition = sql`${sql.raw(fieldName)} != ${filter.value}`;
+          condition = sql`${safeColumnName(fieldName)} != ${filter.value}`;
           break;
         case 'gt':
-          condition = sql`${sql.raw(fieldName)} > ${filter.value}`;
+          condition = sql`${safeColumnName(fieldName)} > ${filter.value}`;
           break;
         case 'lt':
-          condition = sql`${sql.raw(fieldName)} < ${filter.value}`;
+          condition = sql`${safeColumnName(fieldName)} < ${filter.value}`;
           break;
         case 'gte':
-          condition = sql`${sql.raw(fieldName)} >= ${filter.value}`;
+          condition = sql`${safeColumnName(fieldName)} >= ${filter.value}`;
           break;
         case 'lte':
-          condition = sql`${sql.raw(fieldName)} <= ${filter.value}`;
+          condition = sql`${safeColumnName(fieldName)} <= ${filter.value}`;
           break;
         case 'like':
-          condition = sql`${sql.raw(fieldName)} LIKE ${`%${filter.value}%`}`;
+          condition = sql`${safeColumnName(fieldName)} LIKE ${`%${filter.value}%`}`;
           break;
         case 'ilike':
-          condition = sql`${sql.raw(fieldName)} ILIKE ${`%${filter.value}%`}`;
+          condition = sql`${safeColumnName(fieldName)} ILIKE ${`%${filter.value}%`}`;
           break;
         case 'in':
-          condition = sql`${sql.raw(fieldName)} IN (${sql.join(filter.values!.map((v: any) => sql`${v}`), sql`, `)})`;
+          condition = sql`${safeColumnName(fieldName)} IN (${sql.join(filter.values!.map((v: any) => sql`${v}`), sql`, `)})`;
           break;
         case 'not_in':
-          condition = sql`${sql.raw(fieldName)} NOT IN (${sql.join(filter.values!.map((v: any) => sql`${v}`), sql`, `)})`;
+          condition = sql`${safeColumnName(fieldName)} NOT IN (${sql.join(filter.values!.map((v: any) => sql`${v}`), sql`, `)})`;
           break;
         case 'is_null':
-          condition = sql`${sql.raw(fieldName)} IS NULL`;
+          condition = sql`${safeColumnName(fieldName)} IS NULL`;
           break;
         case 'is_not_null':
-          condition = sql`${sql.raw(fieldName)} IS NOT NULL`;
+          condition = sql`${safeColumnName(fieldName)} IS NOT NULL`;
           break;
         case 'between':
-          condition = sql`${sql.raw(fieldName)} BETWEEN ${filter.values![0]} AND ${filter.values![1]}`;
+          condition = sql`${safeColumnName(fieldName)} BETWEEN ${filter.values![0]} AND ${filter.values![1]}`;
           break;
         default:
           continue;
@@ -514,7 +545,7 @@ return {
    */
   private buildGroupByClause(groupBy: string[]): SQL {
     return sql.join(
-      groupBy.map(field => sql.raw(field)),
+      groupBy.map(field => safeColumnName(field)),
       sql`, `
     );
   }
@@ -526,7 +557,7 @@ return {
     const orderClauses: SQL[] = [];
 
     for (const sort of sortBy) {
-      let orderSQL = sql.raw(sort.fieldId);
+      let orderSQL = safeColumnName(sort.fieldId);
 
       if (sort.direction === 'desc') {
         orderSQL = sql`${orderSQL} DESC`;

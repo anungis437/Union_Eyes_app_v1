@@ -16,6 +16,7 @@ import { db } from '@/db';
 import { cbaClause, arbitrationDecisions } from '@/db/schema';
 import { eq, sql, and, or } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { embeddingCache } from './embedding-cache';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -48,16 +49,42 @@ export interface SemanticSearchOptions {
 
 /**
  * Generate embedding vector for text using OpenAI
+ * Uses Redis cache to reduce API calls and costs
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
+    // Check cache first
+    const cachedEmbedding = await embeddingCache.getCachedEmbedding(text, EMBEDDING_MODEL);
+    
+    if (cachedEmbedding) {
+      logger.debug('Using cached embedding', { 
+        model: EMBEDDING_MODEL,
+        textLength: text.length 
+      });
+      return cachedEmbedding;
+    }
+
+    // Cache miss - call OpenAI API
+    logger.info('Generating new embedding', { 
+      model: EMBEDDING_MODEL,
+      textLength: text.length,
+      reason: 'cache_miss'
+    });
+
     const response = await openai.embeddings.create({
       model: EMBEDDING_MODEL,
       input: text,
       dimensions: EMBEDDING_DIMENSIONS,
     });
 
-    return response.data[0].embedding;
+    const embedding = response.data[0].embedding;
+
+    // Store in cache for future use (non-blocking)
+    embeddingCache.setCachedEmbedding(text, EMBEDDING_MODEL, embedding).catch(err => {
+      logger.warn('Failed to cache embedding', { error: err.message });
+    });
+
+    return embedding;
   } catch (error) {
     logger.error('Error generating embedding', { error });
     throw new Error('Failed to generate embedding');

@@ -410,6 +410,45 @@ Before production deployment:
 - [ ] CORS configuration verified
 - [ ] Error messages don't leak internal details
 
+## Performance Optimization
+
+### Embedding Cache (Added: February 11, 2026)
+
+**Location:** `lib/services/ai/embedding-cache.ts`
+
+**Purpose:** Reduce OpenAI API costs and improve performance by caching embeddings
+
+**Features:**
+- Redis-based distributed caching (using Upstash)
+- SHA-256 cache key generation for consistency
+- 30-day default TTL for embeddings
+- Graceful degradation (fail-open) if Redis unavailable
+- Cache statistics tracking (hits, misses, cost savings)
+- Admin endpoint for monitoring at `/api/ai/cache-stats`
+
+**Cost Impact:**
+- text-embedding-3-small: $0.00002 per 1K tokens
+- Expected 80%+ cache hit rate after initial warmup
+- At 1000 queries/day: ~$3.65/year savings
+- At 100k queries/day: ~$365/year savings
+
+**Implementation:**
+- Integrated into `vector-search-service.ts` and `chatbot-service.ts`
+- Transparent to existing code (no breaking changes)
+- Works without Redis (degrades gracefully)
+- Admin can view stats, clear cache, or reset statistics
+
+**Configuration:**
+```env
+UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token-here
+```
+
+**Monitoring:**
+- GET `/api/ai/cache-stats` - View cache performance (admin-only)
+- POST `/api/ai/cache-stats` - Clear cache or reset stats (admin-only)
+  - Body: `{ "action": "clear" }` or `{ "action": "reset-stats" }`
+
 ## Team Training
 
 Before launch:
@@ -434,3 +473,4 @@ Before launch:
 **Implementation Lead:** GitHub Copilot  
 **Review Required:** Senior Developer, Legal Counsel  
 **Deployment Target:** Staging → Production (after 2-week pilot)
+

@@ -1,5 +1,16 @@
+export const consentTypeValues = [
+  "essential",
+  "functional",
+  "analytics",
+  "marketing",
+  "personalization",
+  "third_party",
+] as const;
+
+export type ConsentType = (typeof consentTypeValues)[number];
+
 export interface ConsentPurposeConfig {
-  id: string;
+  id: ConsentType;
   name: string;
   description: string;
   category: "essential" | "functional" | "analytics" | "marketing";

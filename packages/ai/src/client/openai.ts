@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { observeCompletion, observeEmbedding } from './observability';
 
 /**
  * OpenAI client wrapper for Union Eyes
@@ -8,6 +9,10 @@ import OpenAI from 'openai';
  * - Never expose client or API key to frontend
  * - All calls must be server-side only
  * - Set organization ID for proper usage tracking
+ * 
+ * OBSERVABILITY:
+ * - Automatically tracks all OpenAI API calls with Langfuse when configured
+ * - Gracefully degrades if Langfuse is not available
  */
 
 export interface OpenAIConfig {
@@ -39,7 +44,7 @@ export function createOpenAIClient(config: OpenAIConfig): OpenAI {
 }
 
 /**
- * Generate chat completion with safety constraints
+ * Generate chat completion with safety constraints and observability
  */
 export async function generateCompletion(
   client: OpenAI,
@@ -48,19 +53,31 @@ export async function generateCompletion(
     model?: string;
     temperature?: number;
     maxTokens?: number;
+    userId?: string;
+    sessionId?: string;
+    tags?: string[];
   }
 ): Promise<string> {
-  const response = await client.chat.completions.create({
-    model: options?.model || 'gpt-4-turbo-preview',
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    temperature: options?.temperature ?? 0.3, // Lower temperature for more consistent legal research
-    max_tokens: options?.maxTokens ?? 2000,
-  });
+  const response = await observeCompletion(
+    client,
+    {
+      model: options?.model || 'gpt-4-turbo-preview',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: options?.temperature ?? 0.3, // Lower temperature for more consistent legal research
+      max_tokens: options?.maxTokens ?? 2000,
+    },
+    {
+      userId: options?.userId,
+      sessionId: options?.sessionId,
+      tags: options?.tags,
+      name: 'union-eyes-completion',
+    }
+  );
   
   const content = response.choices[0]?.message?.content;
   
@@ -72,25 +89,37 @@ export async function generateCompletion(
 }
 
 /**
- * Generate embeddings for text chunks
+ * Generate embeddings for text chunks with observability
  */
 export async function generateEmbedding(
   client: OpenAI,
   text: string,
   options?: {
     model?: string;
+    userId?: string;
+    sessionId?: string;
+    tags?: string[];
   }
 ): Promise<number[]> {
-  const response = await client.embeddings.create({
-    model: options?.model || 'text-embedding-ada-002',
-    input: text,
-  });
+  const response = await observeEmbedding(
+    client,
+    {
+      model: options?.model || 'text-embedding-ada-002',
+      input: text,
+    },
+    {
+      userId: options?.userId,
+      sessionId: options?.sessionId,
+      tags: options?.tags,
+      name: 'union-eyes-embedding',
+    }
+  );
   
   return response.data[0].embedding;
 }
 
 /**
- * Generate embeddings for multiple text chunks in batch
+ * Generate embeddings for multiple text chunks in batch with observability
  */
 export async function generateEmbeddingsBatch(
   client: OpenAI,
@@ -98,6 +127,9 @@ export async function generateEmbeddingsBatch(
   options?: {
     model?: string;
     batchSize?: number;
+    userId?: string;
+    sessionId?: string;
+    tags?: string[];
   }
 ): Promise<number[][]> {
   const batchSize = options?.batchSize ?? 100;
@@ -106,10 +138,19 @@ export async function generateEmbeddingsBatch(
   // Process in batches to avoid rate limits
   for (let i = 0; i < texts.length; i += batchSize) {
     const batch = texts.slice(i, i + batchSize);
-    const response = await client.embeddings.create({
-      model: options?.model || 'text-embedding-ada-002',
-      input: batch,
-    });
+    const response = await observeEmbedding(
+      client,
+      {
+        model: options?.model || 'text-embedding-ada-002',
+        input: batch,
+      },
+      {
+        userId: options?.userId,
+        sessionId: options?.sessionId,
+        tags: [...(options?.tags || []), `batch-${Math.floor(i / batchSize) + 1}`],
+        name: 'union-eyes-embedding-batch',
+      }
+    );
     
     embeddings.push(...response.data.map((d: { embedding: number[] }) => d.embedding));
   }

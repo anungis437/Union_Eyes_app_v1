@@ -7,6 +7,10 @@ import OpenAI from 'openai';
  * - Never expose client or API key to frontend
  * - All calls must be server-side only
  * - Set organization ID for proper usage tracking
+ *
+ * OBSERVABILITY:
+ * - Automatically tracks all OpenAI API calls with Langfuse when configured
+ * - Gracefully degrades if Langfuse is not available
  */
 export interface OpenAIConfig {
     apiKey: string;
@@ -19,25 +23,34 @@ export interface OpenAIConfig {
  */
 export declare function createOpenAIClient(config: OpenAIConfig): OpenAI;
 /**
- * Generate chat completion with safety constraints
+ * Generate chat completion with safety constraints and observability
  */
 export declare function generateCompletion(client: OpenAI, prompt: string, options?: {
     model?: string;
     temperature?: number;
     maxTokens?: number;
+    userId?: string;
+    sessionId?: string;
+    tags?: string[];
 }): Promise<string>;
 /**
- * Generate embeddings for text chunks
+ * Generate embeddings for text chunks with observability
  */
 export declare function generateEmbedding(client: OpenAI, text: string, options?: {
     model?: string;
+    userId?: string;
+    sessionId?: string;
+    tags?: string[];
 }): Promise<number[]>;
 /**
- * Generate embeddings for multiple text chunks in batch
+ * Generate embeddings for multiple text chunks in batch with observability
  */
 export declare function generateEmbeddingsBatch(client: OpenAI, texts: string[], options?: {
     model?: string;
     batchSize?: number;
+    userId?: string;
+    sessionId?: string;
+    tags?: string[];
 }): Promise<number[][]>;
 /**
  * Calculate cosine similarity between two embedding vectors

@@ -13,6 +13,7 @@ import postgres from 'postgres';
 import { Pool } from 'pg';
 import * as schema from '@/db/schema';
 import { eq, and, or, sql, inArray, isNull, desc, asc, ilike, gte, lte } from 'drizzle-orm';
+import { safeColumnName } from '@/lib/safe-sql-identifiers';
 
 // Database types
 export type DatabaseType = 'postgresql' | 'azure-sql' | 'mssql';
@@ -121,24 +122,32 @@ throw error;
 
 /**
  * Handle full-text search differences between databases
+ * SECURITY: Column names are validated and safely escaped using safeColumnName()
  */
 export function createFullTextSearchQuery(
   searchTerm: string,
   columns: string[],
   dbType: DatabaseType = 'postgresql'
 ) {
+  // SECURITY FIX: Escape single quotes in searchTerm to prevent SQL injection
+  const escapedTerm = searchTerm.replace(/'/g, "''");
+  
   if (dbType === 'azure-sql' || dbType === 'mssql') {
     // Azure SQL uses CONTAINS or FREETEXT
-    const searchCondition = columns
-      .map(col => `CONTAINS(${col}, '${searchTerm}')`)
-      .join(' OR ');
-    return sql.raw(`(${searchCondition})`);
+    // SECURITY: Each column name is validated and escaped using safeColumnName()
+    const searchConditions = columns.map(col => {
+      const safeCol = safeColumnName(col);
+      return sql`CONTAINS(${safeCol}, '${sql.raw(escapedTerm)}')`;
+    });
+    return sql.join(searchConditions, sql.raw(' OR '));
   } else {
     // PostgreSQL uses to_tsquery and ts_rank
-    const searchCondition = columns
-      .map(col => `to_tsvector('english', ${col}) @@ plainto_tsquery('english', '${searchTerm}')`)
-      .join(' OR ');
-    return sql.raw(`(${searchCondition})`);
+    // SECURITY: Each column name is validated and escaped using safeColumnName()
+    const searchConditions = columns.map(col => {
+      const safeCol = safeColumnName(col);
+      return sql`to_tsvector('english', ${safeCol}) @@ plainto_tsquery('english', '${sql.raw(escapedTerm)}')`;
+    });
+    return sql.join(searchConditions, sql.raw(' OR '));
   }
 }
 
@@ -155,18 +164,22 @@ export function getCurrentTimestamp(dbType: DatabaseType = 'postgresql') {
 
 /**
  * Handle array operations differences
+ * SECURITY: Column name is validated and safely escaped using safeColumnName()
  */
 export function arrayAppend(
   column: string,
   value: string,
   dbType: DatabaseType = 'postgresql'
 ) {
+  // SECURITY: Validate and escape column name to prevent SQL injection
+  const safeCol = safeColumnName(column);
+  
   if (dbType === 'azure-sql' || dbType === 'mssql') {
     // Azure SQL doesn't have native array type, use JSON
-    return sql`JSON_MODIFY(${sql.raw(column)}, 'append $', ${value})`;
+    return sql`JSON_MODIFY(${safeCol}, 'append $', ${value})`;
   } else {
     // PostgreSQL array_append
-    return sql`array_append(${sql.raw(column)}, ${value})`;
+    return sql`array_append(${safeCol}, ${value})`;
   }
 }
 
@@ -189,16 +202,30 @@ export function createLikeQuery(
 
 /**
  * Handle JSON operations differences
+ * SECURITY: Column name validated with safeColumnName(), path escaped for safe interpolation
  */
 export function jsonExtract(
   column: string,
   path: string,
   dbType: DatabaseType = 'postgresql'
 ) {
+  // SECURITY: Validate and escape column name to prevent SQL injection
+  const safeCol = safeColumnName(column);
+  
+  // SECURITY: Escape path string (JSON paths use $ and . notation, validate format)
+  // Allowed characters: $, ., [, ], alphanumeric, underscore
+  if (!/^\$[.\[\]a-zA-Z0-9_]*$/.test(path)) {
+    throw new Error(`Invalid JSON path format: "${path}". Must start with $ and contain only ., [, ], alphanumeric, or underscore.`);
+  }
+  
   if (dbType === 'azure-sql' || dbType === 'mssql') {
-    return sql`JSON_VALUE(${sql.raw(column)}, '${sql.raw(path)}')`;
+    // Azure SQL JSON_VALUE - path is parameterized as string literal
+    return sql`JSON_VALUE(${safeCol}, ${path})`;
   } else {
-    return sql`${sql.raw(column)}::jsonb->>'${sql.raw(path)}'`;
+    // PostgreSQL JSONB operator - path is safe string literal
+    // Extract the key after the $ prefix (e.g., "$.key" -> "key")
+    const pathKey = path.substring(1).replace(/^\./,  '');
+    return sql`${safeCol}::jsonb->>${pathKey}`;
   }
 }
 

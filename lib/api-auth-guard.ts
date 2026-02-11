@@ -199,105 +199,18 @@ export interface ApiGuardOptions {
 // - Never use broad wildcards like '/api/*'
 //
 
-/**
- * Public API routes that do NOT require authentication
- * Each route is documented with justification
- */
-export const PUBLIC_API_ROUTES = new Set([
-  // ========================================================================
-  // HEALTH CHECKS & MONITORING
-  // Justification: Infrastructure monitoring, no sensitive data
-  // ========================================================================
-  '/api/health',              // Basic health check for uptime monitoring
-  '/api/health/liveness',      // Kubernetes liveness probe
-  '/api/status',               // System status endpoint for ops dashboards
-  '/api/docs/openapi.json',    // Public API documentation (describes public endpoints only)
-  
-  // ========================================================================
-  // WEBHOOKS
-  // Justification: External systems push events, authenticated via signatures
-  // ========================================================================
-  '/api/webhooks/stripe',      // Stripe payment events (verified via webhook signature)
-  '/api/webhooks/clc',         // CLC per-capita updates (verified via API key)
-  '/api/webhooks/signatures',  // DocuSign signature events (verified via webhook signature)
-  '/api/webhooks/whop',        // Whop membership events (verified via webhook signature)
-  '/api/signatures/webhooks/docusign', // Legacy DocuSign webhook endpoint
-  '/api/integrations/shopify/webhooks', // Shopify order events (verified via HMAC)
-  '/api/stripe/webhooks',      // Alternative Stripe webhook endpoint
-  '/api/whop/webhooks',        // Alternative Whop webhook endpoint
-  
-  // ========================================================================
-  // PUBLIC CHECKOUT/PAYMENT FLOWS
-  // Justification: Guest checkout required for payment processor integrations
-  // ========================================================================
-  '/api/whop/unauthenticated-checkout', // Guest checkout flow (creates session on success)
-  '/api/whop/create-checkout',          // Whop checkout creation (redirects to Whop auth)
-  
-  // ========================================================================
-  // PUBLIC TRACKING/ANALYTICS
-  // Justification: Email opens/clicks tracking, must work without auth
-  // Note: These use path prefixes - handler validates token in URL
-  // ========================================================================
-  '/api/communications/track/',    // Email tracking endpoints (token-based auth in URL)
-  '/api/communications/unsubscribe/', // Email unsubscribe (token-based)
-  
-  // ========================================================================
-  // DEV/TESTING ENDPOINTS
-  // Note: Sentry test endpoint removed for production security
-  // ========================================================================
-]);
+// =============================================================================
+// PUBLIC & CRON ROUTE CONSTANTS - Re-exported from lib/public-routes.ts
+// =============================================================================
 
 /**
- * Cron job routes that authenticate via secret header
+ * These route definitions are maintained in lib/public-routes.ts to avoid
+ * pulling database imports into Edge runtime (middleware.ts).
  * 
- * SECURITY: These routes check X-CRON-SECRET header matches CRON_SECRET env var
- * Justification: Background jobs must run without user authentication
+ * We re-export here for backward compatibility with existing code that
+ * imports these constants from api-auth-guard.ts.
  */
-export const CRON_API_ROUTES = new Set([
-  '/api/cron/analytics/daily-metrics',  // Daily analytics aggregation
-  '/api/cron/education-reminders',      // Send education course reminders
-  '/api/cron/monthly-dues',             // Process monthly dues payments
-  '/api/cron/monthly-per-capita',       // CLC per-capita reporting
-  '/api/cron/overdue-notifications',    // Send overdue claim notifications
-  '/api/cron/scheduled-reports',        // Generate scheduled reports
-  '/api/rewards/cron',                  // Process rewards point expiration
-  '/api/cron/external-data-sync',       // Sync data from external systems
-]);
-
-// =============================================================================
-// PUBLIC & CRON ROUTE HELPERS
-// =============================================================================
-
-/**
- * Check if a route path is in the public allowlist
- * Handles both exact matches and path prefix patterns (routes ending with '/')
- */
-export function isPublicRoute(pathname: string): boolean {
-  // Check exact matches first (most common case)
-  if (PUBLIC_API_ROUTES.has(pathname)) {
-    return true;
-  }
-  
-  // Check path prefix patterns (routes ending with '/')
-  for (const route of PUBLIC_API_ROUTES) {
-    if (route.endsWith('/') && pathname.startsWith(route)) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
-/**
- * Check if a route path is a cron job
- */
-export function isCronRoute(pathname: string): boolean {
-  for (const route of CRON_API_ROUTES) {
-    if (pathname.startsWith(route)) {
-      return true;
-    }
-  }
-  return false;
+export { PUBLIC_API_ROUTES, CRON_API_ROUTES, isPublicRoute, isCronRoute } from './public-routes';
 }
 
 /**
