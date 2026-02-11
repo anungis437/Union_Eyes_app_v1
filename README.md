@@ -3,18 +3,19 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Status](https://img.shields.io/badge/status-Production%20Ready-success)
+![Release](https://img.shields.io/badge/release-v2.0.0--rc1-orange)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Azure-blue)
 
-![Security Rating](https://img.shields.io/badge/Security-10%2F10-success?style=for-the-badge&logo=security&logoColor=white)
-![Tests Passing](https://img.shields.io/badge/Tests-80%2F80%20Passing-brightgreen?style=for-the-badge&logo=check&logoColor=white)
-![Compliance](https://img.shields.io/badge/Compliance-GDPR%20%7C%20PIPEDA%20%7C%20SOC2-blue?style=for-the-badge&logo=shield&logoColor=white)
+[![Release Contract](https://github.com/anungis437/Union_Eyes_app_v1/actions/workflows/release-contract.yml/badge.svg)](https://github.com/anungis437/Union_Eyes_app_v1/actions/workflows/release-contract.yml)
+![Security Rating](https://img.shields.io/badge/Security-A--Level-success?style=for-the-badge&logo=security&logoColor=white)
+![Tests Passing](https://img.shields.io/badge/Tests-58%2F58%20Required-brightgreen?style=for-the-badge&logo=check&logoColor=white)
+![Compliance](https://img.shields.io/badge/Compliance-SOC%202%20%7C%20GDPR%20Ready-blue?style=for-the-badge&logo=shield&logoColor=white)
 
-> **📢 Recent Update (Feb 9, 2026):** Latest improvements include defensibility pack system-of-record exports, wage benchmarking analytics, enhanced visibility controls, comprehensive documentation reorganization, and TypeScript type safety improvements. Repository streamlined to main branch with all features integrated.
+> **📢 v2.0.0-rc1 Released (Feb 11, 2026):** Security hardening cycle complete — database immutability enforcement, centralized authentication, governance module, and technical voting system. [Release Notes](docs/releases/v2.0.0-rc1.md) | [Validation Report](docs/audit/REPOSITORY_VALIDATION_REPORT.md)
 
 **A complete, enterprise-grade union management platform** built with Next.js 14, featuring claims management, CBA intelligence, member management, pension administration, organizing tools, strike fund management, cross-organization collaboration, and AI-powered assistance.
 
-**Current Status**: ✅ **Production Ready** | [Platform Assessment](docs/PLATFORM_READINESS_ASSESSMENT.md) | [Security Report](SECURITY_WORLD_CLASS_COMPLETE.md)
+**Current Status**: ✅ **Release Candidate 1** | [Release Notes](docs/releases/v2.0.0-rc1.md) | [Migration Guide](docs/operations/MIGRATION_VERIFICATION_GUIDE.md) | [Workflows](docs/operations/GITHUB_WORKFLOWS_INVENTORY.md)
 
 ---
 
