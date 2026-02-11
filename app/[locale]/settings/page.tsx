@@ -13,8 +13,7 @@
 import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationPreferences } from "@/components/communication/notification-preferences";
-import { PrivacyConsentManager } from "@/components/compliance/privacy-consent-manager";
-import { GdprDataExport } from "@/components/compliance/gdpr-data-export";
+import { PrivacySettingsPanel } from "@/components/compliance/privacy-settings-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -71,18 +70,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="privacy">
-          <div className="space-y-6">
-            <PrivacyConsentManager
-              memberId="current-member-id"
-              purposes={[]}
-              consents={[]}
-            />
-            <GdprDataExport
-              memberId="current-member-id"
-              memberName="Current User"
-              exportHistory={[]}
-            />
-          </div>
+          <PrivacySettingsPanel />
         </TabsContent>
 
         <TabsContent value="preferences">

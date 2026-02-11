@@ -126,6 +126,7 @@
     "drizzle-zod": "^0.8.3",
     "embla-carousel-react": "^8.2.0",
     "exceljs": "^4.4.0",
+    "firebase-admin": "^12.7.0",
     "framer-motion": "^11.3.30",
     "googleapis": "^166.0.0",
     "graphql": "^16.12.0",

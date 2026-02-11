@@ -4,7 +4,7 @@
  * Member data export with:
  * - Export request management
  * - Data collection from multiple sources
- * - Format options (JSON, CSV, PDF)
+ * - Format options (JSON, CSV, XML)
  * - Secure download links
  * - Audit trail
  * - Compliance tracking
@@ -53,7 +53,7 @@ import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 
 const exportRequestSchema = z.object({
-  format: z.enum(["json", "csv", "pdf"]),
+  format: z.enum(["json", "csv", "xml"]),
   includeProfile: z.boolean(),
   includeClaims: z.boolean(),
   includeDocuments: z.boolean(),
@@ -70,7 +70,7 @@ export interface ExportJob {
   memberId: string;
   memberName: string;
   status: "pending" | "processing" | "completed" | "failed";
-  format: "json" | "csv" | "pdf";
+  format: "json" | "csv" | "xml";
   requestedAt: Date;
   completedAt?: Date;
   downloadUrl?: string;
@@ -129,7 +129,7 @@ export function GdprDataExport({
         return <FileJson className="h-4 w-4" />;
       case "csv":
         return <FileText className="h-4 w-4" />;
-      case "pdf":
+      case "xml":
         return <FileText className="h-4 w-4" />;
       default:
         return <Download className="h-4 w-4" />;
@@ -220,10 +220,10 @@ export function GdprDataExport({
                             CSV (Spreadsheet)
                           </div>
                         </SelectItem>
-                        <SelectItem value="pdf">
+                        <SelectItem value="xml">
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4" />
-                            PDF (Human-readable)
+                            XML (Structured data)
                           </div>
                         </SelectItem>
                       </SelectContent>

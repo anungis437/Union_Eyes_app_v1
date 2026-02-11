@@ -19,6 +19,43 @@ import {
 } from "@/db/schema/notifications-schema";
 import { eq, and, or, lt, isNull } from "drizzle-orm";
 
+let firebaseAdmin: typeof import('firebase-admin') | null = null;
+let firebaseApp: any = null;
+
+async function getFirebaseMessaging() {
+  if (typeof window !== 'undefined') {
+    return null;
+  }
+
+  if (!firebaseAdmin) {
+    try {
+      firebaseAdmin = await import('firebase-admin');
+    } catch (error) {
+      logger.warn('firebase-admin not installed. Push notifications will be disabled.');
+      return null;
+    }
+  }
+
+  if (!firebaseApp) {
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!serviceAccount) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT not configured');
+    }
+
+    const credentials = JSON.parse(serviceAccount);
+
+    if (firebaseAdmin.apps?.length) {
+      firebaseApp = firebaseAdmin.app();
+    } else {
+      firebaseApp = firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.cert(credentials),
+      });
+    }
+  }
+
+  return firebaseAdmin.messaging(firebaseApp);
+}
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -375,17 +412,7 @@ export class TwilioSMSProvider implements NotificationProvider {
 
 export class FirebasePushProvider implements NotificationProvider {
   name = "firebase";
-  private projectId: string;
-  private accessToken: string = "";
-
-  constructor(projectId: string = process.env.FIREBASE_PROJECT_ID || "") {
-    if (!projectId) {
-      throw new Error("Firebase project ID not configured");
-    }
-    this.projectId = projectId;
-    // Access token would be retrieved via Google Cloud service account authentication
-    // For now, initialize empty - would be set via getAccessToken() method
-  }
+  constructor() {}
 
   async send(payload: NotificationPayload): Promise<NotificationResponse> {
     try {
@@ -393,60 +420,36 @@ export class FirebasePushProvider implements NotificationProvider {
         throw new Error("Recipient Firebase token not provided");
       }
 
-      // Get access token (would use service account in production)
-      // For now, use simplified approach with API key if available
-      const apiKey = process.env.FIREBASE_API_KEY;
-      if (!apiKey) {
-        throw new Error("Firebase API key not configured");
+      const messaging = await getFirebaseMessaging();
+      if (!messaging) {
+        throw new Error('Firebase messaging not initialized');
       }
 
-      // Build FCM message
       const fcmMessage = {
-        message: {
-          token: payload.recipientFirebaseToken,
+        token: payload.recipientFirebaseToken,
+        notification: {
+          title: payload.title || 'Notification',
+          body: payload.body,
+        },
+        data: payload.metadata ? Object.entries(payload.metadata).reduce((acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        }, {} as Record<string, string>) : {},
+        android: {
+          priority: 'high',
           notification: {
-            title: payload.title || 'Notification',
-            body: payload.body,
+            sound: 'default',
+            channelId: 'default',
           },
-          data: payload.metadata ? Object.entries(payload.metadata).reduce((acc, [key, value]) => {
-            acc[key] = String(value);
-            return acc;
-          }, {} as Record<string, string>) : {},
-          android: {
-            priority: 'high',
-            notification: {
-              sound: 'default',
-              channelId: 'default',
-            },
-          },
-          apns: {
-            headers: {
-              'apns-priority': '10',
-            },
+        },
+        apns: {
+          headers: {
+            'apns-priority': '10',
           },
         },
       };
 
-      // Send to Firebase Cloud Messaging API
-      const response = await fetch(
-        `https://fcm.googleapis.com/v1/projects/${this.projectId}/messages:send`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(fcmMessage),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Firebase API error (${response.status}): ${errorText}`);
-      }
-
-      const data = await response.json() as any;
-      const messageId = data.name || `fcm-${uuid()}`;
+      const messageId = await messaging.send(fcmMessage);
 
       logger.info("Push notification sent via Firebase", {
         token: payload.recipientFirebaseToken?.substring(0, 20) as any,

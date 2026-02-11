@@ -33,6 +33,8 @@ import { getNotificationService } from '../services/notification-service';
 import { eq, and, between, gte, lte, desc } from 'drizzle-orm';
 import { generatePDF } from '../utils/pdf-generator';
 import { generateExcel } from '../utils/excel-generator';
+import { DataExportService, GdprRequestManager } from '../gdpr/consent-manager';
+import Papa from 'papaparse';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -51,6 +53,72 @@ async function ensureReportsDir() {
   try {
     await fs.mkdir(REPORTS_DIR, { recursive: true });
   } catch (error) {
+}
+
+function flattenForExport(input: any, prefix = ''): Array<{ path: string; value: string }> {
+  if (input === null || input === undefined) {
+    return [{ path: prefix, value: '' }];
+  }
+
+  if (Array.isArray(input)) {
+    return input.flatMap((item, index) =>
+      flattenForExport(item, `${prefix}[${index}]`)
+    );
+  }
+
+  if (typeof input === 'object') {
+    return Object.entries(input).flatMap(([key, value]) =>
+      flattenForExport(value, prefix ? `${prefix}.${key}` : key)
+    );
+  }
+
+  return [{ path: prefix, value: String(input) }];
+}
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function toXml(entries: Array<{ path: string; value: string }>): string {
+  const items = entries
+    .map(
+      (entry) =>
+        `<entry><path>${escapeXml(entry.path)}</path><value>${escapeXml(entry.value)}</value></entry>`
+    )
+    .join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?><export>${items}</export>`;
+}
+
+async function generateGdprExport(
+  tenantId: string,
+  userId: string,
+  parameters: { requestId: string; format: 'json' | 'csv' | 'xml' }
+) {
+  const exportData = await DataExportService.exportUserData(
+    userId,
+    tenantId,
+    parameters.format
+  );
+
+  if (parameters.format === 'csv') {
+    const flattened = flattenForExport(exportData);
+    const csv = Papa.unparse(flattened);
+    return Buffer.from(csv, 'utf8');
+  }
+
+  if (parameters.format === 'xml') {
+    const flattened = flattenForExport(exportData);
+    const xml = toXml(flattened);
+    return Buffer.from(xml, 'utf8');
+  }
+
+  return Buffer.from(JSON.stringify(exportData, null, 2), 'utf8');
 }
 }
 
@@ -350,6 +418,11 @@ await ensureReportsDir();
         filename = `usage-report-${Date.now()}.${parameters.format}`;
         break;
 
+      case 'gdpr_export':
+        buffer = await generateGdprExport(tenantId, userId, parameters as any);
+        filename = `gdpr-export-${parameters.requestId}.${parameters.format}`;
+        break;
+
       default:
         throw new Error(`Unknown report type: ${reportType}`);
     }
@@ -360,6 +433,21 @@ await ensureReportsDir();
     const filepath = path.join(REPORTS_DIR, filename);
     await fs.writeFile(filepath, buffer);
 await job.updateProgress(90);
+
+    if (reportType === 'gdpr_export') {
+      const downloadUrl = `/api/gdpr/data-export?requestId=${parameters.requestId}&tenantId=${tenantId}`;
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      await GdprRequestManager.updateRequestStatus(parameters.requestId, 'completed', {
+        processedBy: 'system',
+        responseData: {
+          format: parameters.format,
+          fileName: filename,
+          fileUrl: downloadUrl,
+          expiresAt,
+        },
+      });
+    }
 
     // Notify user that report is ready
     try {

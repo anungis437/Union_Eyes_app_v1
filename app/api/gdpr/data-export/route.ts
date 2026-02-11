@@ -6,7 +6,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
-import { GdprRequestManager, DataExportService } from "@/lib/gdpr/consent-manager";
+import { GdprRequestManager } from "@/lib/gdpr/consent-manager";
+import { getReportQueue } from "@/lib/job-queue";
+import { logger } from "@/lib/logger";
+import fs from "fs";
+import path from "path";
 
 /**
  * Request data export
@@ -23,10 +27,18 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, preferredFormat, requestDetails } = body;
     const organizationId = organizationIdFromBody ?? tenantIdFromBody;
     const tenantId = organizationId;
+    const format = preferredFormat || "json";
 
     if (!organizationId) {
       return NextResponse.json(
         { error: "Organization ID required" },
+        { status: 400 }
+      );
+    }
+
+    if (!['json', 'csv', 'xml'].includes(format)) {
+      return NextResponse.json(
+        { error: "Unsupported export format" },
         { status: 400 }
       );
     }
@@ -36,54 +48,51 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       userId: userId,
       tenantId,
       requestDetails: {
-        preferredFormat: preferredFormat || "json",
+        preferredFormat: format,
         ...requestDetails,
       },
       verificationMethod: "email",
     });
 
-    // Start async export process (in real app, use queue/background job)
-    // For now, we'll generate it immediately for small datasets
+    await GdprRequestManager.updateRequestStatus(request.id, "in_progress", {
+      processedBy: "system",
+    });
+
     try {
-      const exportData = await DataExportService.exportUserData( userId,
-        tenantId,
-        preferredFormat || "json"
-      );
+      const queue = getReportQueue();
+      if (!queue) {
+        throw new Error("Report queue not available");
+      }
 
-      // In production, upload to secure storage (S3, etc.) and provide download link
-      const downloadUrl = `/api/gdpr/data-export/${request.id}`;
-
-      // Update request with download info
-      await GdprRequestManager.updateRequestStatus(request.id, "completed", {
-        processedBy: "system",
-        responseData: {
-          format: preferredFormat || "json",
-          fileUrl: downloadUrl,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+      await queue.add(
+        "gdpr-export",
+        {
+          reportType: "gdpr_export",
+          tenantId,
+          userId,
+          parameters: {
+            requestId: request.id,
+            format,
+          },
         },
-      });
-
-      return NextResponse.json({
-        success: true,
-        requestId: request.id,
-        downloadUrl,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        message: "Your data export is ready for download",
-      });
-    } catch (exportError) {
-// Mark as in progress, will be processed by background job
-      await GdprRequestManager.updateRequestStatus(request.id, "in_progress", {
-        processedBy: "system",
-      });
-
-      return NextResponse.json({
-        success: true,
-        requestId: request.id,
-        status: "processing",
-        message: "Your data export request has been received and is being processed",
-        estimatedCompletion: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-      });
+        {
+          attempts: 3,
+          backoff: { type: "exponential", delay: 5000 },
+          removeOnComplete: { count: 1000 },
+          removeOnFail: { count: 2000 },
+        }
+      );
+    } catch (queueError) {
+      logger.error("Failed to queue GDPR export job", queueError as Error);
     }
+
+    return NextResponse.json({
+      success: true,
+      requestId: request.id,
+      status: "processing",
+      message: "Your data export request has been received and is being processed",
+      estimatedCompletion: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
   } catch (error) {
 return NextResponse.json(
       { error: "Failed to process data export request" },
@@ -135,21 +144,50 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       );
     }
 
-    // Generate fresh export data
-    const exportData = await DataExportService.exportUserData( userId,
-      tenantId,
-      request.requestDetails?.preferredFormat || "json"
-    );
+    const responseData = request.responseData as any;
+    const fileName = responseData?.fileName;
+    const expiresAt = responseData?.expiresAt ? new Date(responseData.expiresAt) : null;
 
-    // Return as downloadable file
+    if (expiresAt && expiresAt.getTime() < Date.now()) {
+      return NextResponse.json(
+        { error: "Export link has expired" },
+        { status: 410 }
+      );
+    }
+
+    if (!fileName) {
+      return NextResponse.json(
+        { error: "Export file not available" },
+        { status: 404 }
+      );
+    }
+
+    const reportsDir = process.env.REPORTS_DIR || "./reports";
+    const filePath = path.join(reportsDir, fileName);
+
+    const stat = await fs.promises.stat(filePath).catch(() => null);
+    if (!stat) {
+      return NextResponse.json(
+        { error: "Export file not found" },
+        { status: 404 }
+      );
+    }
+
     const format = request.requestDetails?.preferredFormat || "json";
-    const filename = `union-eyes-data-export-${userId}-${Date.now()}.${format}`;
+    const contentType = format === "csv"
+      ? "text/csv"
+      : format === "xml"
+      ? "application/xml"
+      : "application/json";
 
-    return new NextResponse(JSON.stringify(exportData, null, 2), {
+    const stream = fs.createReadStream(filePath);
+
+    return new NextResponse(stream as any, {
       status: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Length": stat.size.toString(),
       },
     });
   } catch (error) {

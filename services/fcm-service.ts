@@ -76,6 +76,16 @@ export interface TopicSubscriptionResult {
   }>;
 }
 
+export interface DirectSendResult {
+  deviceId: string;
+  success: boolean;
+  messageId?: string;
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
 // =============================================
 // INITIALIZATION
 // =============================================
@@ -212,6 +222,83 @@ export function buildFCMMessage(
       },
       fcmOptions: {
         link: notification.clickAction || '/',
+      },
+    };
+  }
+
+  return message;
+}
+
+function buildDirectMessage(
+  payload: {
+    title: string;
+    body: string;
+    data?: Record<string, any>;
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    clickAction?: string;
+  },
+  device: PushDevice
+): FCMMessage {
+  const priority = payload.priority || 'normal';
+  const dataPayload: Record<string, string> = {};
+
+  if (payload.data) {
+    Object.entries(payload.data).forEach(([key, value]) => {
+      dataPayload[key] = String(value);
+    });
+  }
+
+  if (payload.clickAction) {
+    dataPayload.clickAction = payload.clickAction;
+  }
+
+  const message: FCMMessage = {
+    token: device.deviceToken,
+    notification: {
+      title: payload.title,
+      body: payload.body,
+    },
+    data: dataPayload,
+  };
+
+  if (device.platform === 'android') {
+    message.android = {
+      priority: priority === 'urgent' ? 'high' : 'normal',
+      notification: {
+        channelId: 'default',
+        sound: 'default',
+        priority: priority === 'urgent' ? 'high' : 'default',
+      },
+    };
+  } else if (device.platform === 'ios') {
+    message.apns = {
+      headers: {
+        'apns-priority': priority === 'urgent' ? '10' : '5',
+      },
+      payload: {
+        aps: {
+          alert: {
+            title: payload.title,
+            body: payload.body,
+          },
+          sound: 'default',
+        },
+      },
+    };
+  } else if (device.platform === 'web') {
+    message.webpush = {
+      headers: {
+        Urgency: priority === 'urgent' ? 'high' : 'normal',
+      },
+      notification: {
+        title: payload.title,
+        body: payload.body,
+        icon: '/icons/notification-icon.png',
+        badge: '/icons/badge.png',
+        requireInteraction: priority === 'urgent',
+      },
+      fcmOptions: {
+        link: payload.clickAction || '/',
       },
     };
   }
@@ -437,6 +524,77 @@ export async function sendToProfile(
   }
 
   return sendToDevices(notificationId, deviceIds);
+}
+
+/**
+ * Send a direct push notification to all enabled devices for a user.
+ * This is used by the notification worker for ad-hoc notifications.
+ */
+export async function sendToUser(payload: {
+  userId: string;
+  title: string;
+  body: string;
+  data?: Record<string, any>;
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  clickAction?: string;
+}): Promise<DirectSendResult[]> {
+  const messaging = getMessaging();
+  if (!messaging) {
+    return [];
+  }
+
+  const devices = await db
+    .select()
+    .from(pushDevices)
+    .where(
+      and(
+        eq(pushDevices.profileId, payload.userId),
+        eq(pushDevices.enabled, true)
+      )
+    );
+
+  if (devices.length === 0) {
+    return [];
+  }
+
+  const results = await Promise.all(
+    devices.map(async (device) => {
+      try {
+        const message = buildDirectMessage(payload, device);
+        const response = await messaging.send(message);
+
+        return {
+          deviceId: device.id,
+          success: true,
+          messageId: response,
+        } as DirectSendResult;
+      } catch (error: any) {
+        const errorCode = error?.code || 'unknown';
+        const errorMessage = error?.message || 'Unknown error';
+
+        if (
+          errorCode === 'messaging/invalid-registration-token' ||
+          errorCode === 'messaging/registration-token-not-registered'
+        ) {
+          await db
+            .update(pushDevices)
+            .set({ enabled: false })
+            .where(eq(pushDevices.id, device.id));
+        }
+
+        return {
+          deviceId: device.id,
+          success: false,
+          error: {
+            code: errorCode,
+            message: errorMessage,
+          },
+        } as DirectSendResult;
+      }
+    })
+  );
+
+  return results;
 }
 
 /**

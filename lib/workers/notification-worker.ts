@@ -28,6 +28,14 @@ import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { FCMService } from '@/services/fcm-service';
 
+const shouldLogInfo = process.env.NOTIFICATION_WORKER_VERBOSE === 'true';
+
+function logWorkerInfo(message: string, context?: Record<string, any>) {
+  if (shouldLogInfo) {
+    logger.info(message, context);
+  }
+}
+
 // Validate Redis configuration (deferred until actual use)
 let connection: IORedis | null = null;
 
@@ -141,10 +149,10 @@ async function sendInAppNotification(
       })
     );
     
-    logger.info('In-app notification sent with real-time pub/sub', { userId });
+    logWorkerInfo('In-app notification sent with real-time pub/sub', { userId });
   } catch (error) {
     logger.warn('Failed to publish real-time notification', { userId, error: error instanceof Error ? error.message : String(error) });
-    logger.info('In-app notification saved to database', { userId });
+    logWorkerInfo('In-app notification saved to database', { userId });
   }
 }
 
@@ -154,7 +162,7 @@ async function sendInAppNotification(
 async function processNotification(job: any) {
   const { userId, title, message, data, channels } = job.data;
 
-  logger.info('Processing notification job', { jobId: job.id, userId });
+  logWorkerInfo('Processing notification job', { jobId: job.id, userId });
 
   await job.updateProgress(10);
 
@@ -184,11 +192,11 @@ async function processNotification(job: any) {
   });
 
   if (enabledChannels.length === 0) {
-    logger.info('No enabled channels for user', { userId, inQuietHours });
+    logWorkerInfo('No enabled channels for user', { userId, inQuietHours });
     return { success: true, sent: 0, channels: [] };
   }
 
-  logger.info('Sending notification', { userId, channels: enabledChannels });
+  logWorkerInfo('Sending notification', { userId, channels: enabledChannels });
 
   await job.updateProgress(40);
 
@@ -231,8 +239,8 @@ async function processNotification(job: any) {
               .from(pushDevices)
               .where(
                 and(
-                  eq(pushDevices.userId, userId),
-                  eq(pushDevices.isActive, true)
+                  eq(pushDevices.profileId, userId),
+                  eq(pushDevices.enabled, true)
                 )
               );
 
@@ -375,7 +383,7 @@ export const notificationWorker = new Worker(
 
 // Event handlers
 notificationWorker.on('completed', (job: any) => {
-  logger.info('Notification job completed', { jobId: job.id });
+  logWorkerInfo('Notification job completed', { jobId: job.id });
 });
 
 notificationWorker.on('failed', (job: any, err: any) => {

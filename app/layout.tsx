@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { createProfileAction } from "@/actions/profiles-actions";
 import { claimPendingProfile } from "@/actions/whop-actions";
 import { OrganizationProvider } from "@/contexts/organization-context";
+import { CookieConsentProvider } from "@/components/gdpr/cookie-consent-provider";
 import { Poppins } from 'next/font/google';
 import './globals.css';
 
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <PaymentStatusAlert />
                 {children}
               </LayoutWrapper>
+              <CookieConsentProvider />
               <Toaster />
             </OrganizationProvider>
           </Providers>

@@ -2,6 +2,9 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import { secureStorage } from './storage';
+import { apiService } from './api';
+import { APP_VERSION } from '@/utils/constants';
+import { useAuthStore } from '@/store/authStore';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -34,15 +37,34 @@ class NotificationService {
       return;
     }
 
-    // Get the push token
+    // Get the native device push token (FCM/APNs)
     const token = (
-      await Notifications.getExpoPushTokenAsync({
-        projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-      })
+      await Notifications.getDevicePushTokenAsync()
     ).data;
 
     // Store the token
     await secureStorage.setItem('push_token', token);
+
+    // Register token with backend
+    try {
+      const { user } = useAuthStore.getState();
+      const organizationId = user?.organizationId;
+
+      if (organizationId) {
+        await apiService.post('/api/notifications/device', {
+          organizationId,
+          deviceToken: token,
+          platform: Platform.OS,
+          deviceName: Device.deviceName || undefined,
+          deviceModel: Device.modelName || undefined,
+          osVersion: Device.osVersion || undefined,
+          appVersion: APP_VERSION,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+      }
+    } catch (error) {
+      // Silent fail to avoid blocking app startup
+    }
 
     // Configure Android channel
     if (Platform.OS === 'android') {
