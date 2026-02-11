@@ -5,10 +5,12 @@
  * - Searching LRB agreements
  * - Triggering sync operations
  * - Getting wage comparisons
+ * 
+ * Security: Protected with withApiAuth guard (migrated Feb 2026)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { withApiAuth } from '@/lib/api-auth-guard';
 import { unifiedLRBService } from '@/lib/services/external-data/lrb-unified-service';
 import { db } from '@/db/db';
 import { lrbAgreements, lrbSyncLog } from '@/db/schema/lrb-agreements-schema';
@@ -19,18 +21,10 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
-// GET /api/external-data/lrb - Search agreements
-export async function GET(request: NextRequest) {
-  try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return standardErrorResponse(
-      ErrorCode.AUTH_REQUIRED,
-      'Unauthorized'
-    );
-    }
 
+// GET /api/external-data/lrb - Search agreements
+export const GET = withApiAuth(async (request: NextRequest) => {
+  try {
     const searchParams = request.nextUrl.searchParams;
     const action = searchParams.get('action') || 'search';
 
@@ -117,20 +111,11 @@ return standardErrorResponse(
       error
     );
   }
-}
+});
 
 // POST /api/external-data/lrb - Trigger sync operations
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return standardErrorResponse(
-      ErrorCode.AUTH_REQUIRED,
-      'Unauthorized'
-    );
-    }
-
     const body = await request.json();
     const { action, params } = body;
 
@@ -174,5 +159,5 @@ return standardErrorResponse(
       error
     );
   }
-}
+});
 

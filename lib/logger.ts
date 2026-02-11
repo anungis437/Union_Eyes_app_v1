@@ -223,12 +223,20 @@ class Logger {
    * Error level logging
    */
   error(message: string, error?: Error | unknown, context?: LogContext): void {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     const errorContext = {
       ...context,
       error: error instanceof Error ? {
         name: error.name,
         message: error.message,
-        stack: error.stack,
+        // Only include first 3 lines of stack trace in production (for debugging)
+        // Full stack trace leaks file paths and internal structure
+        stack: isProduction 
+          ? error.stack?.split('\n').slice(0, 3).join('\n')
+          : error.stack,
+        // Additional error properties (if any)
+        ...(error.cause ? { cause: String(error.cause) } : {}),
       } : String(error),
     };
 

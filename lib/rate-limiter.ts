@@ -13,6 +13,7 @@
 
 import { Redis } from '@upstash/redis';
 import { logger } from './logger';
+import { circuitBreakers, CIRCUIT_BREAKERS, CircuitBreakerOpenError } from './circuit-breaker';
 
 // Initialize Redis client (using Upstash for serverless-friendly Redis)
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -21,6 +22,9 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     })
   : null;
+
+// Initialize circuit breaker for Redis
+const redisCircuitBreaker = circuitBreakers.get('redis-rate-limiter', CIRCUIT_BREAKERS.REDIS);
 
 /**
  * Rate limit configuration
@@ -48,6 +52,8 @@ export interface RateLimitResult {
   remaining: number;
   /** Time in seconds until the window resets */
   resetIn: number;
+  /** Optional error message when rate limiting service unavailable */
+  error?: string;
 }
 
 /**
@@ -100,62 +106,91 @@ export async function checkRateLimit(
       identifier,
       message: 'Rate limiting service unavailable',
     });
-    throw new Error('Rate limiting service unavailable. Please contact support if this persists.');
+    return {
+      allowed: false,
+      current: 0,
+      limit,
+      remaining: 0,
+      resetIn: window,
+      error: 'Rate limiting service unavailable. Please contact support if this persists.',
+    };
   }
 
   try {
-    const now = Date.now();
-    const windowStart = now - window * 1000;
+    // Use circuit breaker to protect against Redis failures
+    return await redisCircuitBreaker.execute(async () => {
+      const now = Date.now();
+      const windowStart = now - window * 1000;
 
-    // Use Redis transaction to atomically:
-    // 1. Remove old entries outside the window
-    // 2. Count current requests in the window
-    // 3. Add new request timestamp
-    // 4. Set expiry on the key
-    const pipeline = redis.pipeline();
-    
-    // Remove timestamps outside the current window
-    pipeline.zremrangebyscore(redisKey, 0, windowStart);
-    
-    // Count requests in current window
-    pipeline.zcard(redisKey);
-    
-    // Add current request timestamp
-    pipeline.zadd(redisKey, { score: now, member: `${now}-${Math.random()}` });
-    
-    // Set expiry (window + 10 seconds buffer)
-    pipeline.expire(redisKey, window + 10);
+      // Use Redis transaction to atomically:
+      // 1. Remove old entries outside the window
+      // 2. Count current requests in the window
+      // 3. Add new request timestamp
+      // 4. Set expiry on the key
+      const pipeline = redis.pipeline();
+      
+      // Remove timestamps outside the current window
+      pipeline.zremrangebyscore(redisKey, 0, windowStart);
+      
+      // Count requests in current window
+      pipeline.zcard(redisKey);
+      
+      // Add current request timestamp
+      pipeline.zadd(redisKey, { score: now, member: `${now}-${Math.random()}` });
+      
+      // Set expiry (window + 10 seconds buffer)
+      pipeline.expire(redisKey, window + 10);
 
-    const results = await pipeline.exec();
-    
-    // Extract count before adding current request
-    const currentCount = (results[1] as number) || 0;
-    const allowed = currentCount < limit;
-    const remaining = Math.max(0, limit - currentCount - 1);
+      const results = await pipeline.exec();
+      
+      // Extract count before adding current request
+      const currentCount = (results[1] as number) || 0;
+      const allowed = currentCount < limit;
+      const remaining = Math.max(0, limit - currentCount - 1);
 
-    return {
-      allowed,
-      current: currentCount + 1,
-      limit,
-      remaining,
-      resetIn: window,
-    };
+      return {
+        allowed,
+        current: currentCount + 1,
+        limit,
+        remaining,
+        resetIn: window,
+      };
+    });
 
   } catch (error) {
-    // Log error but fail-open (allow request if Redis fails)
-    logger.error('Rate limit check failed - allowing request', error as Error, {
+    // Circuit breaker is open - service unavailable
+    if (error instanceof CircuitBreakerOpenError) {
+      logger.error('Rate limiting service unavailable (circuit breaker open)', {
+        key,
+        identifier,
+        stats: error.stats,
+      });
+      
+      return {
+        allowed: false,
+        current: 0,
+        limit,
+        remaining: 0,
+        resetIn: 60, // Suggest retry in 60 seconds
+        error: 'Rate limiting service temporarily unavailable',
+      };
+    }
+    
+    // Other Redis errors - fail closed for security
+    logger.error('Rate limit check failed - rejecting request for security', {
       key,
       identifier,
-      limit,
-      window,
+      error: (error as Error).message,
+      errorType: (error as Error).name,
     });
 
     return {
-      allowed: true,
+      allowed: false,
       current: 0,
       limit,
-      remaining: limit,
+      remaining: 0,
       resetIn: window,
+      error: 'Rate limiting service temporarily unavailable',
     };
   }
 }

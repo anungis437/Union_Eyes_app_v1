@@ -48,6 +48,10 @@ export enum ErrorCode {
   DATABASE_ERROR = 'DATABASE_ERROR',
   EXTERNAL_SERVICE_ERROR = 'EXTERNAL_SERVICE_ERROR',
   TIMEOUT = 'TIMEOUT',
+  
+  // Service Unavailability (503)
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
+  CIRCUIT_BREAKER_OPEN = 'CIRCUIT_BREAKER_OPEN',
 }
 
 /**
@@ -82,6 +86,10 @@ const ERROR_CODE_TO_STATUS: Record<ErrorCode, number> = {
   [ErrorCode.DATABASE_ERROR]: 500,
   [ErrorCode.EXTERNAL_SERVICE_ERROR]: 502,
   [ErrorCode.TIMEOUT]: 504,
+  
+  // Service unavailability
+  [ErrorCode.SERVICE_UNAVAILABLE]: 503,
+  [ErrorCode.CIRCUIT_BREAKER_OPEN]: 503,
 };
 
 /**
@@ -155,14 +163,17 @@ export function standardErrorResponse(
   // Generate or use existing trace ID
   const finalTraceId = traceId || generateTraceId();
   
-  // Log error with appropriate severity
+  // Sanitize details to prevent information leakage
+  const sanitizedDetails = isDevelopment ? details : sanitizeErrorDetails(details);
+  
+  // Log error with appropriate severity (never log raw Error objects)
   const severity = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';
   logger[severity]('API Error Response', {
     code,
     message,
     statusCode,
     traceId: finalTraceId,
-    details: isDevelopment ? details : undefined,
+    details: sanitizedDetails,
   });
   
   // Report 5xx errors to Sentry
@@ -232,6 +243,41 @@ function generateTraceId(): string {
   const timestamp = Date.now().toString(36);
   const randomPart = Math.random().toString(36).substring(2, 10);
   return `${timestamp}-${randomPart}`;
+}
+
+/**
+ * Sanitize error details to prevent leaking sensitive information
+ * Removes stack traces, removes sensitive keys, truncates long strings
+ */
+function sanitizeErrorDetails(details?: Record<string, any>): Record<string, any> | undefined {
+  if (!details) return undefined;
+  
+  const sensitiveKeys = ['password', 'token', 'secret', 'key', 'authorization', 'cookie', 'session'];
+  const sanitized: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(details)) {
+    // Skip sensitive keys
+    if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk))) {
+      continue;
+    }
+    
+    // Remove stack traces
+    if (key === 'stack' || key === 'stackTrace') {
+      continue;
+    }
+    
+    // Truncate long strings
+    if (typeof value === 'string' && value.length > 200) {
+      sanitized[key] = value.substring(0, 200) + '...';
+    } else if (typeof value === 'object' && value !== null) {
+      // Don't include nested objects in production
+      sanitized[key] = '[Object]';
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  
+  return Object.keys(sanitized).length > 0 ? sanitized : undefined;
 }
 
 /**

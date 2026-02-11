@@ -62,6 +62,21 @@ export const PUBLIC_API_ROUTES = new Set([
 ]);
 
 /**
+ * Infrastructure routes with custom authentication
+ * 
+ * These routes are NOT in PUBLIC_API_ROUTES but use non-standard auth patterns:
+ * 
+ * /api/metrics - Prometheus metrics endpoint
+ *   Auth: METRICS_AUTH_TOKEN via Authorization: Bearer header
+ *   Justification: Infrastructure monitoring, token-based auth sufficient
+ *   Location: app/api/metrics/route.ts
+ *   Security: 401 if token missing/invalid in production
+ * 
+ * These routes are documented here for security audit purposes but are NOT
+ * added to PUBLIC_API_ROUTES since they have authentication requirements.
+ */
+
+/**
  * Cron job routes that authenticate via secret header
  * 
  * SECURITY: These routes check X-CRON-SECRET header matches CRON_SECRET env var

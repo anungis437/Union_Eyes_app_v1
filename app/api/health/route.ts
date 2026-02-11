@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import * as Sentry from '@sentry/nextjs';
 import { Redis } from '@upstash/redis';
 import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { getApiHealthStatus } from '@/lib/api-client';
 
 interface HealthCheckResult {
   name: string;
@@ -182,6 +183,41 @@ async function checkExternalServices(): Promise<HealthCheckResult> {
 }
 
 /**
+ * Check circuit breaker states
+ */
+async function checkCircuitBreakers(): Promise<HealthCheckResult> {
+  const startTime = Date.now();
+  
+  try {
+    const circuitBreakerStats = getApiHealthStatus();
+    const openCircuits = Object.entries(circuitBreakerStats)
+      .filter(([_, stats]: [string, any]) => stats.state === 'OPEN')
+      .map(([name]) => name);
+
+    const status = openCircuits.length > 0 ? 'degraded' : 'healthy';
+
+    return {
+      name: 'circuit_breakers',
+      status,
+      responseTime: Date.now() - startTime,
+      details: {
+        total: Object.keys(circuitBreakerStats).length,
+        open: openCircuits.length,
+        openCircuits: openCircuits.length > 0 ? openCircuits : undefined,
+        stats: circuitBreakerStats,
+      }
+    };
+  } catch (error) {
+    return {
+      name: 'circuit_breakers',
+      status: 'degraded',
+      responseTime: Date.now() - startTime,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+/**
  * GET /api/health
  * Health check endpoint for monitoring and load balancers
  * 
@@ -198,7 +234,8 @@ export async function GET() {
       checkDatabase(),
       checkSentry(),
       checkRedis(),
-      checkExternalServices()
+      checkExternalServices(),
+      checkCircuitBreakers()
     ]);
 
     const overallResponseTime = Date.now() - startTime;

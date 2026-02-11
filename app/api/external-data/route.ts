@@ -149,7 +149,7 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
 // POST /api/external-data - Trigger sync operations
 
-const external-dataSchema = z.object({
+const externalDataSchema = z.object({
   action: z.unknown().optional(),
   params: z.unknown().optional(),
 });
@@ -158,7 +158,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     // Validate request body
-    const validation = external-dataSchema.safeParse(body);
+    const validation = externalDataSchema.safeParse(body);
     if (!validation.success) {
       return standardErrorResponse(
         ErrorCode.VALIDATION_ERROR,

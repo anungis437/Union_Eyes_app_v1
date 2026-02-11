@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/api-auth-guard";
+import { NextRequest, NextResponse } from "next/server";
+import { withApiAuth } from "@/lib/api-auth-guard";
 import { getProfileByUserId, updateProfile } from "@/db/queries/profiles-queries";
 
 import { 
@@ -7,18 +7,10 @@ import {
   standardSuccessResponse, 
   ErrorCode 
 } from '@/lib/api/standardized-responses';
-export async function POST() {
+
+export const POST = withApiAuth(async (request: NextRequest, context) => {
   try {
-    const { userId } = auth();
-
-    if (!userId) {
-      return standardErrorResponse(
-      ErrorCode.AUTH_REQUIRED,
-      'Unauthorized'
-    );
-    }
-
-    const profile = await getProfileByUserId(userId);
+    const profile = await getProfileByUserId(context.userId);
 
     if (!profile) {
       return standardErrorResponse(
@@ -60,4 +52,4 @@ return standardErrorResponse(
       error
     );
   }
-}
+});
