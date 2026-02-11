@@ -23,6 +23,19 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const calendar-syncConnectionsSyncSchema = z.object({
+  localCalendarId: z.string().uuid('Invalid localCalendarId'),
+  externalCalendarId: z.string().uuid('Invalid externalCalendarId'),
+  timeMin: z.string().datetime().optional(),
+  timeMax: z.string().datetime().optional(),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -43,10 +56,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .limit(1);
 
       if (!connection) {
-        return NextResponse.json(
-          { error: 'Connection not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Connection not found'
+    );
       }
 
       if (!connection.syncEnabled) {
@@ -58,6 +71,17 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Get request body
       const body = await request.json();
+    // Validate request body
+    const validation = calendar-syncConnectionsSyncSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { localCalendarId, externalCalendarId, timeMin, timeMax } = validation.data;
       const { 
         localCalendarId, 
         externalCalendarId,
@@ -66,10 +90,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       } = body;
 
       if (!localCalendarId || !externalCalendarId) {
-        return NextResponse.json(
-          { error: 'localCalendarId and externalCalendarId are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'localCalendarId and externalCalendarId are required'
+    );
       }
 
       // Update sync status

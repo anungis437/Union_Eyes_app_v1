@@ -13,6 +13,11 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -29,7 +34,10 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -38,10 +46,11 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
         `social-posts-read:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Parse query parameters
@@ -88,7 +97,10 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       const { data: posts, error, count } = await query;
 
       if (error) {
-return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch posts'
+    );
       }
 
       return NextResponse.json({
@@ -98,8 +110,26 @@ return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
         offset,
       });
     } catch (error) {
-return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
+});
+
+
+const socialMediaPostsSchema = z.object({
+  platforms: z.array(z.enum(["facebook", "twitter", "linkedin", "instagram"])).min(1, "At least one platform required"),
+  content: z.string().min(1, "Content is required").max(5000, "Content too long"),
+  media_urls: z.array(z.string().url("Invalid media URL")).max(10, "Maximum 10 media files").optional(),
+  link_url: z.string().url("Invalid URL").optional(),
+  link_title: z.string().max(200).optional(),
+  link_description: z.string().max(500).optional(),
+  hashtags: z.array(z.string().regex(/^[a-zA-Z0-9_]+$/, "Invalid hashtag format")).max(30, "Maximum 30 hashtags").optional(),
+  mentions: z.array(z.string().max(100)).max(20, "Maximum 20 mentions").optional(),
+  scheduled_for: z.string().datetime().optional(),
+  campaign_id: z.string().uuid("Invalid campaign_id").optional(),
 });
 
 export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
@@ -107,7 +137,10 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -116,14 +149,24 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
         `social-posts-create:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
-      // Parse request body
+      // Parse and validate request body
       const body = await request.json();
+      
+      const validation = socialMediaPostsSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          validation.error.errors[0]?.message || "Invalid request data"
+        );
+      }
+      
       const {
         platforms,
         content,
@@ -135,16 +178,7 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
         mentions,
         scheduled_for,
         campaign_id,
-      } = body;
-
-      // Validation
-      if (!platforms || platforms.length === 0) {
-        return NextResponse.json({ error: 'At least one platform required' }, { status: 400 });
-      }
-
-      if (!content || content.trim().length === 0) {
-        return NextResponse.json({ error: 'Content is required' }, { status: 400 });
-      }
+      } = validation.data;
 
       // Check character limits per platform
       const characterLimits: Record<string, number> = {
@@ -220,7 +254,10 @@ export const DELETE = withRoleAuth(20, async (request: NextRequest, context) => 
       const { userId, organizationId } = context;
       
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Get post ID from query params
@@ -228,7 +265,10 @@ export const DELETE = withRoleAuth(20, async (request: NextRequest, context) => 
       const postId = searchParams.get('id');
 
       if (!postId) {
-        return NextResponse.json({ error: 'Post ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Post ID required'
+    );
       }
 
       // Verify user has access to this post (belongs to their organization)
@@ -239,11 +279,17 @@ export const DELETE = withRoleAuth(20, async (request: NextRequest, context) => 
         .single();
 
       if (fetchError || !post) {
-        return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Post not found'
+    );
       }
 
       if (organizationId !== (post.account as any).organization_id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Unauthorized'
+        );
       }
 
       // Delete post using social media service

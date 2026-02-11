@@ -19,6 +19,11 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -98,7 +103,10 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
     try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userOrgId = organizationId;
@@ -149,7 +157,11 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found',
+      error
+    );
       }
 
       // Check access permission
@@ -160,7 +172,11 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
       );
 
       if (!hasAccess) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied',
+      error
+    );
       }
 
       // Increment view count (don't await to avoid slowing response)
@@ -183,15 +199,48 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         precedentId: id,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to fetch precedent" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch precedent',
+      error
+    );
     }
     })(request, { params });
 };
 
 // PATCH /api/arbitration/precedents/[id] - Update precedent (owner only)
+
+const arbitrationPrecedentsSchema = z.object({
+  caseNumber: z.unknown().optional(),
+  caseTitle: z.string().min(1, 'caseTitle is required'),
+  decisionDate: z.boolean().optional(),
+  isPartiesAnonymized: z.boolean().optional(),
+  unionName: z.string().min(1, 'unionName is required'),
+  employerName: z.string().min(1, 'employerName is required'),
+  arbitratorName: z.string().min(1, 'arbitratorName is required'),
+  jurisdiction: z.boolean().optional(),
+  grievanceType: z.unknown().optional(),
+  issueSummary: z.boolean().optional(),
+  unionPosition: z.unknown().optional(),
+  employerPosition: z.unknown().optional(),
+  outcome: z.unknown().optional(),
+  decisionSummary: z.boolean().optional(),
+  reasoning: z.unknown().optional(),
+  keyFindings: z.unknown().optional(),
+  relatedLegislation: z.boolean().optional(),
+  precedentLevel: z.unknown().optional(),
+  citedCases: z.unknown().optional(),
+  decisionDocumentUrl: z.string().url('Invalid URL'),
+  documentPath: z.unknown().optional(),
+  redactedDocumentUrl: z.string().url('Invalid URL'),
+  redactedDocumentPath: z.unknown().optional(),
+  sharingLevel: z.unknown().optional(),
+  sharedWithOrgIds: z.string().uuid('Invalid sharedWithOrgIds'),
+  sector: z.unknown().optional(),
+  province: z.unknown().optional(),
+  tags: z.unknown().optional(),
+});
+
 export const PATCH = async (request: NextRequest, context: RouteContext) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -201,7 +250,10 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
     try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userOrgId = organizationId;
@@ -214,15 +266,32 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!existing) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       // Verify ownership
       if (existing.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can update this precedent" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can update this precedent'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = arbitrationPrecedentsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { caseNumber, caseTitle, decisionDate, isPartiesAnonymized, unionName, employerName, arbitratorName, jurisdiction, grievanceType, issueSummary, unionPosition, employerPosition, outcome, decisionSummary, reasoning, keyFindings, relatedLegislation, precedentLevel, citedCases, decisionDocumentUrl, documentPath, redactedDocumentUrl, redactedDocumentPath, sharingLevel, sharedWithOrgIds, sector, province, tags } = validation.data;
 
       // Build update object (only include provided fields)
       const updates: any = {};
@@ -314,10 +383,11 @@ export const PATCH = async (request: NextRequest, context: RouteContext) => {
         precedentId: id,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to update precedent" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update precedent',
+      error
+    );
     }
     })(request, { params });
 };
@@ -332,7 +402,10 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
     try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userOrgId = organizationId;
@@ -345,12 +418,18 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!existing) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       // Verify ownership
       if (existing.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can delete this precedent" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can delete this precedent'
+    );
       }
 
       // Delete related data (cascades handled by DB, but doing explicitly for clarity)
@@ -377,10 +456,11 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
         precedentId: id,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to delete precedent" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete precedent',
+      error
+    );
     }
     })(request, { params });
 };

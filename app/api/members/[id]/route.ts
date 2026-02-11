@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { getMemberById, updateMember as updateMemberRecord } from '@/db/queries/organization-members-queries';
@@ -5,6 +6,7 @@ import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +15,11 @@ export const dynamic = 'force-dynamic';
  */
 async function getUserContext(userId: string): Promise<{ role: string; organizationId: string } | null> {
   try {
-    const result = await db.execute(
+    const result = await withRLSContext(async (tx) => {
+      return await tx.execute(
       sql`SELECT role, organization_id FROM organization_users WHERE user_id = ${userId} LIMIT 1`
     );
+    });
     if (result.length > 0) {
       return {
         role: result[0].role as string,

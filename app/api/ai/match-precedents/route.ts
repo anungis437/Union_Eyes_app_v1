@@ -16,6 +16,22 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const matchPrecedentsSchema = z.object({
+  action: z.enum(['match', 'analyze', 'memorandum']).default('match'),
+  claim: z.object({
+    facts: z.string().min(10, 'Facts must be at least 10 characters'),
+    issueType: z.string().min(1, 'Issue type is required'),
+    jurisdiction: z.string().optional(),
+    memberId: z.string().uuid().optional(),
+  }),
+  options: z.record(z.string(), z.unknown()).default({}),
+});
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
@@ -38,18 +54,22 @@ export const POST = async (request: NextRequest) => {
 
     try {
       const body = await request.json();
-      const {
-        action = 'match', // 'match', 'analyze', 'memorandum'
-        claim,
-        options = {},
-      } = body;
-
-      if (!claim || !claim.facts || !claim.issueType) {
-        return NextResponse.json(
-          { error: 'Claim object with facts and issueType is required' },
-          { status: 400 }
+      
+      // Validate request body
+      const validation = matchPrecedentsSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid precedent matching request',
+          validation.error.errors
         );
       }
+
+      const {
+        action,
+        claim,
+        options,
+      } = validation.data;
 
       switch (action) {
         case 'match':
@@ -102,10 +122,11 @@ export const POST = async (request: NextRequest) => {
           });
 
         default:
-          return NextResponse.json(
-            { error: 'Invalid action. Use: match, analyze, or memorandum' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action. Use: match, analyze, or memorandum'
+      // TODO: Migrate additional details: analyze, or memorandum'
+    );
       }
     } catch (error) {
 return NextResponse.json(

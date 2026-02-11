@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/voting-schema';
+import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
 import { eq, and, count, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent, SQLInjectionScanner } from '@/lib/middleware/api-security';
 import { RequestValidator } from '@/lib/middleware/request-validation';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;
@@ -42,10 +47,10 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'No authentication provided' },
         });
 
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       const sessionId = params.id;
@@ -61,10 +66,10 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'SQL injection attempt detected in sessionId' },
         });
 
-        return NextResponse.json(
-          { error: 'Invalid session ID format' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid session ID format'
+    );
       }
 
       // Get session
@@ -83,10 +88,10 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'Voting session not found', sessionId },
         });
 
-        return NextResponse.json(
-          { error: 'Voting session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Voting session not found'
+    );
       }
 
       // Get options
@@ -223,10 +228,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'No authentication provided' },
         });
 
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       const sessionId = params.id;
@@ -242,10 +247,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'SQL injection attempt detected' },
         });
 
-        return NextResponse.json(
-          { error: 'Invalid session ID format' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid session ID format'
+    );
       }
 
       // Get the session first to access organizationId
@@ -264,10 +269,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'Voting session not found' },
         });
 
-        return NextResponse.json(
-          { error: 'Voting session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Voting session not found'
+    );
       }
 
       // Check if user has admin/LRO permissions
@@ -282,10 +287,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'User lacks admin/officer permissions' },
         });
 
-        return NextResponse.json(
-          { error: 'Forbidden - Admin or Officer role required to update voting sessions' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin or Officer role required to update voting sessions'
+    );
       }
 
       const body = await request.json();
@@ -302,73 +307,11 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
           details: { errors: validationResult.error.flatten() },
         });
 
-        return NextResponse.json(
-          { error: 'Validation failed', details: validationResult.error.flatten() },
-          { status: 400 }
-        );
-      }
-
-      const {
-        title,
-        description,
-        status,
-        startTime,
-        endTime,
-        scheduledEndTime,
-        settings,
-      } = validationResult.data;
-
-      // Build update object
-      const updates: any = { updatedAt: new Date() };
-
-      if (title !== undefined) updates.title = title;
-      if (description !== undefined) updates.description = description;
-      if (status !== undefined) {
-        const validStatuses = ['draft', 'active', 'paused', 'closed', 'cancelled'];
-        if (!validStatuses.includes(status)) {
-          logApiAuditEvent({
-            timestamp: new Date().toISOString(), userId,
-            endpoint: '/api/voting/sessions/[id]',
-            method: 'PATCH',
-            eventType: 'validation_failed',
-            severity: 'low',
-            details: { reason: `Invalid status: ${status}` },
-          });
-
-          return NextResponse.json(
-            { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-            { status: 400 }
-          );
-        }
-        updates.status = status;
-        
-        // Set timestamps based on status
-        if (status === 'active' && !updates.startTime) {
-          updates.startTime = new Date();
-        }
-        if (status === 'closed' && !updates.endTime) {
-          updates.endTime = new Date();
-        }
-      }
-      if (startTime !== undefined) updates.startTime = new Date(startTime);
-      if (endTime !== undefined) updates.endTime = new Date(endTime);
-      if (scheduledEndTime !== undefined) updates.scheduledEndTime = new Date(scheduledEndTime);
-      if (settings !== undefined) updates.settings = settings;
-
-      if (Object.keys(updates).length === 1) {
-        logApiAuditEvent({
-          timestamp: new Date().toISOString(), userId,
-          endpoint: '/api/voting/sessions/[id]',
-          method: 'PATCH',
-          eventType: 'validation_failed',
-          severity: 'low',
-          details: { reason: 'No valid fields to update' },
-        });
-
-        return NextResponse.json(
-          { error: 'No valid fields to update' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed'
+      // TODO: Migrate additional details: details: validationResult.error.flatten()
+    );
       }
 
       // Update session
@@ -388,10 +331,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'Failed to update session' },
         });
 
-        return NextResponse.json(
-          { error: 'Voting session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Voting session not found'
+    );
       }
 
       logApiAuditEvent({
@@ -438,10 +381,10 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'No authentication provided' },
         });
 
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       const sessionId = params.id;
@@ -457,10 +400,10 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'SQL injection attempt detected' },
         });
 
-        return NextResponse.json(
-          { error: 'Invalid session ID format' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid session ID format'
+    );
       }
 
       // Check if session exists and has no votes yet
@@ -479,10 +422,10 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'Voting session not found' },
         });
 
-        return NextResponse.json(
-          { error: 'Voting session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Voting session not found'
+    );
       }
 
       // Check if user has admin/LRO permissions
@@ -497,10 +440,10 @@ export const DELETE = async (request: NextRequest, { params }: RouteParams) => {
           details: { reason: 'User lacks admin/officer permissions' },
         });
 
-        return NextResponse.json(
-          { error: 'Forbidden - Admin or Officer role required to delete voting sessions' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin or Officer role required to delete voting sessions'
+    );
       }
 
       // Check if there are any votes

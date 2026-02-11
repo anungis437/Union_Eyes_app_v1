@@ -15,12 +15,44 @@ import { eq, desc, and, or, like, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const cbaSearchSchema = z.object({
+  query: z.string().max(500, 'Query too long').optional(),
+  filters: z.object({
+    jurisdiction: z.array(z.string()).optional(),
+    employer: z.string().optional(),
+    union: z.string().optional(),
+    status: z.array(z.string()).optional(),
+    dateRange: z.object({
+      start: z.string().datetime().optional(),
+      end: z.string().datetime().optional(),
+    }).optional(),
+  }).default({}),
+  limit: z.number().int().min(1).max(100).default(20),
+  offset: z.number().int().min(0).default(0),
+});
 export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
   const user = { id: context.userId, organizationId: context.organizationId };
 
   try {
       const body = await request.json();
-      const { query, filters = {}, limit = 20, offset = 0 } = body;
+      
+      // Validate request body
+      const validation = cbaSearchSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid search request',
+          validation.error.errors
+        );
+      }
+
+      const { query, filters, limit, offset } = validation.data;
 
       // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
       return withRLSContext(async (tx) => {
@@ -118,9 +150,10 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       });
       }, user.organizationId);
   } catch (error) {
-return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });
@@ -175,9 +208,10 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
 
     return NextResponse.json({ results });
   } catch (error) {
-return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

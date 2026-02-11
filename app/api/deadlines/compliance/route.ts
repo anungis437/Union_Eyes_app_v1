@@ -5,6 +5,11 @@ import { cookies } from 'next/headers';
 import { db, organizations } from '@/db';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/deadlines/compliance
  * Get deadline compliance metrics for reporting
@@ -13,10 +18,10 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser(request);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     // Get organization from cookies
@@ -51,10 +56,10 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        { error: 'startDate and endDate are required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'startDate and endDate are required'
+    );
     }
 
     const metrics = await getDeadlineComplianceMetrics(
@@ -65,9 +70,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(metrics);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch compliance metrics' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch compliance metrics',
+      error
     );
   }
 }

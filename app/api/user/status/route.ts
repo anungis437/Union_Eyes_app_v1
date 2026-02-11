@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { requireApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/user/status
  * Get current user's status
@@ -28,6 +33,10 @@ export async function GET() {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-return NextResponse.json({ error: "Failed to fetch status" }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch status',
+      error
+    );
   }
 } 

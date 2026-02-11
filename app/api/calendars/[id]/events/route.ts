@@ -15,6 +15,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Check if user has access to calendar
  */
@@ -74,7 +79,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       // Check access
       const access = await checkCalendarAccess(calendarId, userId);
       if (!access.hasAccess) {
-        return NextResponse.json({ error: access.error }, { status: access.error === 'Calendar not found' ? 404 : 403 });
+        return standardErrorResponse(
+      access.error === 'Calendar not found' ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.FORBIDDEN,
+      access.error
+    );
       }
 
       // Parse query parameters
@@ -125,13 +133,45 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         count: filteredEvents.length,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to list events' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to list events',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const calendarsEventsSchema = z.object({
+  title: z.string().min(1, 'title is required'),
+  description: z.string().optional(),
+  location: z.unknown().optional(),
+  locationUrl: z.string().url('Invalid URL'),
+  startTime: z.string().datetime().optional(),
+  endTime: z.string().datetime().optional(),
+  timezone: z.string().datetime().optional(),
+  isAllDay = false: z.boolean().optional(),
+  isRecurring = false: z.boolean().optional(),
+  recurrenceRule: z.unknown().optional(),
+  recurrenceExceptions: z.unknown().optional(),
+  eventType = 'meeting': z.unknown().optional(),
+  status = 'scheduled': z.unknown().optional(),
+  priority = 'normal': z.unknown().optional(),
+  claimId: z.string().uuid('Invalid claimId'),
+  caseNumber: z.unknown().optional(),
+  memberId: z.string().uuid('Invalid memberId'),
+  meetingRoomId: z.string().uuid('Invalid meetingRoomId'),
+  meetingUrl: z.string().url('Invalid URL'),
+  meetingPassword: z.unknown().optional(),
+  agenda: z.unknown().optional(),
+  reminders = [15]: z.unknown().optional(),
+  isPrivate = false: z.boolean().optional(),
+  visibility = 'default': z.boolean().optional(),
+  metadata: z.unknown().optional(),
+  attachments: z.unknown().optional(),
+  attendees = []: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -140,11 +180,25 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
   try {
       const calendarId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = calendarsEventsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { title, description, location, locationUrl, startTime, endTime, timezone, isAllDay = false, isRecurring = false, recurrenceRule, recurrenceExceptions, eventType = 'meeting', status = 'scheduled', priority = 'normal', claimId, caseNumber, memberId, meetingRoomId, meetingUrl, meetingPassword, agenda, reminders = [15], isPrivate = false, visibility = 'default', metadata, attachments, attendees = [] } = validation.data;
 
       // Check access
       const access = await checkCalendarAccess(calendarId, userId);
       if (!access.hasAccess) {
-        return NextResponse.json({ error: access.error }, { status: access.error === 'Calendar not found' ? 404 : 403 });
+        return standardErrorResponse(
+      access.error === 'Calendar not found' ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.FORBIDDEN,
+      access.error
+    );
       }
 
       // Check create permission
@@ -187,10 +241,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Validation
       if (!title || !startTime || !endTime) {
-        return NextResponse.json(
-          { error: 'Title, start time, and end time are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Title, start time, and end time are required'
+      // TODO: Migrate additional details: start time, and end time are required'
+    );
       }
 
       if (new Date(endTime) <= new Date(startTime)) {
@@ -314,15 +369,20 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         }
       }
 
-      return NextResponse.json({
+      return standardSuccessResponse(
+      { 
         message: 'Event created successfully',
         event: newEvent,
-      }, { status: 201 });
+       },
+      undefined,
+      201
+    );
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to create event' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create event',
+      error
+    );
     }
     })(request, { params });
 };

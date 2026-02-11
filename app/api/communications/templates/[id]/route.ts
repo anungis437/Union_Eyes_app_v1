@@ -17,6 +17,11 @@ import { newsletterTemplates } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const updateTemplateSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -44,7 +49,10 @@ export const GET = withOrganizationAuth(async (
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json({ error: 'Template ID required' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Template ID required'
+    );
     }
 
     const [template] = await db
@@ -58,14 +66,18 @@ export const GET = withOrganizationAuth(async (
       );
 
     if (!template) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Template not found'
+    );
     }
 
     return NextResponse.json({ template });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch template' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch template',
+      error
     );
   }
 });
@@ -79,11 +91,21 @@ export const PUT = withOrganizationAuth(async (
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json({ error: 'Template ID required' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Template ID required'
+    );
     }
 
     const body = await request.json();
-    const validatedData = updateTemplateSchema.parse(body);
+    const validation = updateTemplateSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const validatedData = validation.data;
 
     // Check if template exists and is not a system template
     const [existing] = await db
@@ -97,7 +119,10 @@ export const PUT = withOrganizationAuth(async (
       );
 
     if (!existing) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Template not found'
+    );
     }
 
     if (existing.isSystem) {
@@ -116,28 +141,11 @@ export const PUT = withOrganizationAuth(async (
     return NextResponse.json({ template });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-return NextResponse.json(
-      { error: 'Failed to update template' },
-      { status: 500 }
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation error',
+      error
     );
-  }
-});
-
-export const DELETE = withOrganizationAuth(async (
-  request: NextRequest,
-  context,
-  params?: { id: string }
-) => {
-  try {
-    const { organizationId } = context;
-
-    if (!params?.id) {
-      return NextResponse.json({ error: 'Template ID required' }, { status: 400 });
     }
 
     // Check if template exists and is not a system template
@@ -152,7 +160,11 @@ export const DELETE = withOrganizationAuth(async (
       );
 
     if (!existing) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Template not found',
+      error
+    );
     }
 
     if (existing.isSystem) {
@@ -168,9 +180,10 @@ export const DELETE = withOrganizationAuth(async (
 
     return NextResponse.json({ success: true });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to delete template' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete template',
+      error
     );
   }
 });

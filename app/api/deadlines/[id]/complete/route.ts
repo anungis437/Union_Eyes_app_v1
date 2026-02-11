@@ -1,7 +1,17 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { completeDeadline } from '@/db/queries/deadline-queries';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const completeDeadlineSchema = z.object({
+  notes: z.string().max(1000, 'Notes cannot exceed 1000 characters').optional(),
+});
 /**
  * POST /api/deadlines/[id]/complete
  * Mark a deadline as completed
@@ -13,16 +23,27 @@ export async function POST(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const { id: userId } = user;
 
     const body = await request.json();
-    const { notes } = body;
+    
+    // Validate request body
+    const validation = completeDeadlineSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+
+    const { notes } = validation.data;
 
     const result = await completeDeadline(
       params.id,
@@ -31,10 +52,10 @@ export async function POST(
     );
 
     if (!result) {
-      return NextResponse.json(
-        { error: 'Deadline not found or already completed' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Deadline not found or already completed'
+    );
     }
 
     return NextResponse.json({
@@ -43,9 +64,10 @@ export async function POST(
       message: 'Deadline marked as completed',
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to complete deadline' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to complete deadline',
+      error
     );
   }
 }

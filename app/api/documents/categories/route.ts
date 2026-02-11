@@ -10,6 +10,11 @@ import { db } from "@/db/db";
 import { documents } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Predefined document categories
  */
@@ -58,7 +63,10 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'tenantId is required' },
       });
-      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'tenantId is required'
+    );
     }
 
     // Verify organization access
@@ -73,7 +81,10 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch' },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     // Get categories from existing documents
@@ -140,9 +151,10 @@ export const GET = withEnhancedRoleAuth(10, async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to fetch categories", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch categories',
+      error
     );
   }
 });

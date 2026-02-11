@@ -13,6 +13,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { safeColumnName } from '@/lib/safe-sql-identifiers';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface AuthContext {
   userId: string;
   organizationId: string;
@@ -28,10 +33,10 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context: 
       const viewType = searchParams.get('viewType') || 'department'; // department, shift, support_level
 
       if (!campaignId) {
-        return NextResponse.json(
-          { error: 'Bad Request - campaignId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - campaignId is required'
+    );
       }
 
       // SECURITY: Validate viewType against allowlist
@@ -98,16 +103,43 @@ export const GET = withRoleAuth('member', async (request: NextRequest, context: 
         campaignId: request.nextUrl.searchParams.get('campaignId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
+});
+
+
+const organizingWorkplace-mappingSchema = z.object({
+  campaignId: z.string().uuid('Invalid campaignId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  jobTitle: z.string().min(1, 'jobTitle is required'),
+  department: z.unknown().optional(),
+  shift: z.unknown().optional(),
+  supportLevel: z.unknown().optional(),
+  cardSigned: z.unknown().optional(),
+  cardSignedDate: z.string().datetime().optional(),
+  organizingCommitteeMember: z.unknown().optional(),
+  primaryIssues: z.boolean().optional(),
+  notes: z.string().optional(),
 });
 
 export const POST = withRoleAuth('steward', async (request: NextRequest, context: AuthContext) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = organizingWorkplace-mappingSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { campaignId, organizationId, jobTitle, department, shift, supportLevel, cardSigned, cardSignedDate, organizingCommitteeMember, primaryIssues, notes } = validation.data;
       const {
         campaignId,
         organizationId,
@@ -122,16 +154,19 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
         notes,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!campaignId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - campaignId and organizationId are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - campaignId and organizationId are required'
+    );
       }
 
       // Generate anonymous contact number
@@ -179,20 +214,22 @@ export const POST = withRoleAuth('steward', async (request: NextRequest, context
       RETURNING id, contact_number, job_title, department, shift, support_level, card_signed, organizing_committee_member
     `);
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Workplace contact added successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Workplace contact added successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to add workplace contact', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
 });
 

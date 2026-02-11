@@ -1,8 +1,10 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
+import { claims } from '@/db/schema/domains/claims';
 import { eq, and, gte, sql } from 'drizzle-orm';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 async function handler(req: NextRequest) {
   const tenantId = (req as any).tenantId;
@@ -13,7 +15,8 @@ async function handler(req: NextRequest) {
   startDate.setDate(startDate.getDate() - daysBack);
 
   // Get daily SLA metrics (using closedAt as completion time)
-  const slaMetrics = await db.execute(sql`
+  const slaMetrics = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
     WITH date_series AS (
       SELECT generate_series(
         date_trunc('day', ${startDate.toISOString()}::timestamp),
@@ -45,6 +48,7 @@ async function handler(req: NextRequest) {
     LEFT JOIN daily_sla sla ON ds.date = sla.date
     ORDER BY ds.date
   `);
+    });
 
   return NextResponse.json(slaMetrics);
 }

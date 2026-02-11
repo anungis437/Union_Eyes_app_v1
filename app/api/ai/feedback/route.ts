@@ -5,6 +5,11 @@ import { FeedbackSubmissionSchema } from '@unioneyes/ai';
 import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
   try {
@@ -12,7 +17,14 @@ export const POST = async (request: NextRequest) => {
       const { userId, organizationId } = context;
       // 2. Parse and validate request body
       const body = await request.json();
-      const validatedFeedback = FeedbackSubmissionSchema.parse(body);
+      const validation = FeedbackSubmissionSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const validatedFeedback = validation.data;
 
       const { query_id, rating, comment } = validatedFeedback;
 
@@ -27,10 +39,10 @@ export const POST = async (request: NextRequest) => {
         .single();
 
       if (queryError || !query) {
-        return NextResponse.json(
-          { error: 'Query not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Query not found'
+    );
       }
 
       // Verify organization access
@@ -70,41 +82,11 @@ return NextResponse.json(
     } catch (error) {
 // Validation error
       if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: 'Invalid request',
-            details: error.errors,
-          },
-          { status: 400 }
-        );
-      }
-
-      // Generic error
-      return NextResponse.json(
-        {
-          error: 'Failed to submit feedback',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
-
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-  try {
-      // 1. Authenticate with Clerk
-      const { organizationId } = context;
-      // 2. Get query ID from URL params
-      const { searchParams } = new URL(request.url);
-      const queryId = searchParams.get('query_id');
-
-      if (!queryId) {
-        return NextResponse.json(
-          { error: 'query_id parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request',
+      error
+    );
       }
 
       // 3. Create Supabase client

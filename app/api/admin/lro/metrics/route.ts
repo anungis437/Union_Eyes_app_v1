@@ -18,6 +18,11 @@ import {
 } from '@/lib/services/lro-metrics';
 import { detectAllSignals, getDashboardStats } from '@/lib/services/lro-signals';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/admin/lro/metrics
  * 
@@ -31,10 +36,10 @@ export async function GET(request: Request) {
     const { userId, orgId } = await getAuth(request as any);
     
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     // Parse query parameters

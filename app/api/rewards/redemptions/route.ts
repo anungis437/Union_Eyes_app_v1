@@ -11,6 +11,11 @@ import { z } from 'zod';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NextResponse } from "next/server";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -18,10 +23,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
       
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Organization context required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization context required'
+    );
       }
 
       // 2. Parse query parameters
@@ -67,10 +72,11 @@ export const GET = async (request: NextRequest) => {
       );
 
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
@@ -82,10 +88,10 @@ export const POST = async (request: NextRequest) => {
       const { userId, organizationId } = context;
       
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Organization context required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization context required'
+    );
       }
 
       // 2. Parse and validate request body
@@ -96,61 +102,11 @@ export const POST = async (request: NextRequest) => {
         validatedData = redemptionInitiateSchema.parse(body);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          return NextResponse.json(
-            { 
-              error: 'Validation failed', 
-              details: error.errors 
-            },
-            { status: 400 }
-          );
-        }
-        throw error;
-      }
-
-      // 3. Initiate redemption
-      const redemption = await initiateRedemption(
-        db, userId,
-        organizationId,
-        validatedData
-      );
-
-      // 4. Return response
-      return NextResponse.json(
-        {
-          redemption,
-          message: 'Redemption initiated successfully',
-        },
-        { status: 201 }
-      );
-
-    } catch (error: any) {
-// Handle specific business logic errors
-      if (error.message?.includes('Insufficient credits')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 400 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
-
-export const DELETE = async (request: NextRequest) => {
-  return withRoleAuth(20, async (request, context) => {
-  try {
-      // 1. Authenticate
-      const { userId, organizationId } = context;
-      
-      if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Organization context required' },
-          { status: 400 }
-        );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed',
+      error
+    );
       }
 
       // 2. Get redemption ID from query
@@ -158,10 +114,11 @@ export const DELETE = async (request: NextRequest) => {
       const redemptionId = searchParams.get('id');
 
       if (!redemptionId) {
-        return NextResponse.json(
-          { error: 'Redemption ID required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Redemption ID required',
+      error
+    );
       }
 
       // 3. Cancel redemption
@@ -172,13 +129,14 @@ export const DELETE = async (request: NextRequest) => {
       );
 
       // 4. Return response
-      return NextResponse.json(
-        {
+      return standardSuccessResponse(
+      { 
           redemption: cancelledRedemption,
           message: 'Redemption cancelled and credits refunded',
-        },
-        { status: 200 }
-      );
+         },
+      undefined,
+      200
+    );
 
     } catch (error: any) {
 // Handle specific business logic errors
@@ -190,16 +148,18 @@ export const DELETE = async (request: NextRequest) => {
       }
 
       if (error.message?.includes('not found')) {
-        return NextResponse.json(
-          { error: 'Redemption not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Redemption not found',
+      error
+    );
       }
 
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

@@ -1,7 +1,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/voting-schema';
+import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
 import { eq, and } from 'drizzle-orm';
 import {
   deriveVotingSessionKey,
@@ -12,11 +12,21 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;
   };
 }
+
+
+const votingSessionsVoteSchema = z.object({
+  optionId: z.string().uuid('Invalid optionId'),
+});
 
 export const POST = async (request: NextRequest, { params }: RouteParams) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -25,13 +35,24 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
   try {
       const sessionId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = votingSessionsVoteSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { optionId } = validation.data;
       const { optionId } = body;
 
       if (!optionId) {
-        return NextResponse.json(
-          { error: 'Missing required field: optionId' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required field: optionId'
+    );
       }
 
       // Get session
@@ -41,10 +62,10 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
         .where(eq(votingSessions.id, sessionId));
 
       if (!session) {
-        return NextResponse.json(
-          { error: 'Voting session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Voting session not found'
+    );
       }
 
       // Check if session is active
@@ -75,10 +96,10 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
         );
 
       if (!option) {
-        return NextResponse.json(
-          { error: 'Invalid option for this voting session' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid option for this voting session'
+    );
       }
 
       // Check if user has already voted
@@ -185,16 +206,18 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
           },
         }, { status: 201 });
       } catch (error) {
-return NextResponse.json(
-          { error: 'Vote submission failed - security configuration error' },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Vote submission failed - security configuration error',
+      error
+    );
       }
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

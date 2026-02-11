@@ -17,6 +17,11 @@ import { eq, desc } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 
 const createCampaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
@@ -37,7 +42,7 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     const { userId, organizationId } = context;
 
     if (!organizationId) {
-      return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      return standardErrorResponse(ErrorCode.FORBIDDEN, 'Organization context required');
     }
 
     // Rate limit check
@@ -46,9 +51,9 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       `campaign-read:${userId}`
     );
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
+      return standardErrorResponse(
+        ErrorCode.RATE_LIMIT_EXCEEDED,
+        'Rate limit exceeded. Please try again later.'
       );
     }
 
@@ -81,11 +86,12 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
       metadata: { count: campaigns.length, status },
     });
 
-    return NextResponse.json({ campaigns });
+    return standardSuccessResponse({ campaigns });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch campaigns' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch campaigns',
+      error
     );
   }
 });
@@ -95,7 +101,10 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
     const { userId, organizationId } = context;
 
     if (!organizationId) {
-      return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+      return standardErrorResponse(
+        ErrorCode.FORBIDDEN,
+        'Organization context required'
+      );
     }
 
     // Rate limit check
@@ -104,14 +113,22 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
       `campaign-ops:${userId}`
     );
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
+      return standardErrorResponse(
+        ErrorCode.RATE_LIMIT_EXCEEDED,
+        'Rate limit exceeded. Please try again later.'
       );
     }
 
     const body = await request.json();
-    const validatedData = createCampaignSchema.parse(body);
+    const validation = createCampaignSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid campaign data'
+      );
+    }
+
+    const validatedData = validation.data;
 
     // Verify distribution lists exist
     const lists = await db
@@ -125,9 +142,9 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
     );
 
     if (invalidListIds.length > 0) {
-      return NextResponse.json(
-        { error: 'Invalid distribution list IDs', invalidListIds },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        `Invalid distribution list IDs: ${invalidListIds.join(', ')}`
       );
     }
 
@@ -167,17 +184,16 @@ export const POST = withRoleAuth('member', async (request: NextRequest, context)
       metadata: { name: campaign.name, status: campaign.status },
     });
 
-    return NextResponse.json({ campaign }, { status: 201 });
+    return standardSuccessResponse(
+      { campaign },
+      'Campaign created successfully',
+      201
+    );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-return NextResponse.json(
-      { error: 'Failed to create campaign' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create campaign',
+      error
     );
   }
 });

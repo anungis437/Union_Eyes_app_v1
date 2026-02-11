@@ -13,7 +13,18 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
+
+
+const taxT4aSchema = z.object({
+  taxYear: z.unknown().optional(),
+  organizationId: z.string().uuid('Invalid organizationId'),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -36,26 +47,40 @@ export const POST = async (request: NextRequest) => {
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = taxT4aSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { taxYear, organizationId } = validation.data;
       const { taxYear, organizationId } = body;
   if (organizationId && organizationId !== contextOrganizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!taxYear || !organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - taxYear and organizationId are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - taxYear and organizationId are required'
+    );
       }
 
       // Validate tax year is a valid number
       const year = parseInt(taxYear);
       if (isNaN(year) || year < 2000 || year > 2100) {
-        return NextResponse.json(
-          { error: 'Bad Request - Invalid tax year' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - Invalid tax year'
+    );
       }
 
       // Call database function to generate T4A records
@@ -94,9 +119,10 @@ export const POST = async (request: NextRequest) => {
         organizationId: body.organizationId,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

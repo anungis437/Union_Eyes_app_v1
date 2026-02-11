@@ -19,6 +19,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from "@/lib/db/with-rls-context";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -32,7 +37,10 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
     try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       // Check if precedent exists
@@ -43,7 +51,10 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       // Get citations where this precedent is cited BY others
@@ -128,15 +139,23 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         precedentId: id,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to fetch citations" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch citations',
+      error
+    );
     }
     })(request, { params });
 };
 
 // POST /api/arbitration/precedents/[id]/citations - Add citation
+
+const arbitrationPrecedentsCitationsSchema = z.object({
+  citedPrecedentId: z.string().uuid('Invalid citedPrecedentId'),
+  citingClaimId: z.string().uuid('Invalid citingClaimId'),
+  citationContext: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest, context: RouteContext) => {
   return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -146,7 +165,10 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
     try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userUuid = await getOrCreateUserUuid(userId);
@@ -160,17 +182,31 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = arbitrationPrecedentsCitationsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { citedPrecedentId, citingClaimId, citationContext } = validation.data;
 
       // Validate required fields
       if (!body.citedPrecedentId) {
-        return NextResponse.json(
-          { error: "citedPrecedentId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'citedPrecedentId is required'
+    );
       }
 
       // Check if cited precedent exists
@@ -181,7 +217,10 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!citedPrecedent) {
-        return NextResponse.json({ error: "Cited precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Cited precedent not found'
+    );
       }
 
       // Check if citation already exists
@@ -195,10 +234,10 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (existingCitation) {
-        return NextResponse.json(
-          { error: "Citation already exists" },
-          { status: 409 }
-        );
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Citation already exists'
+    );
       }
 
       // Create citation
@@ -256,10 +295,11 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
         precedentId: id,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to create citation" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create citation',
+      error
+    );
     }
     })(request, { params });
 };

@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Elected Officials
@@ -12,6 +13,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -27,10 +33,10 @@ export const GET = async (request: NextRequest) => {
       const isCurrent = searchParams.get('isCurrent');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Build query
@@ -54,7 +60,8 @@ export const GET = async (request: NextRequest) => {
 
       const whereClause = sql.join(conditions, sql.raw(' AND '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         id,
         first_name,
@@ -80,6 +87,7 @@ export const GET = async (request: NextRequest) => {
       WHERE ${whereClause}
       ORDER BY government_level, jurisdiction, last_name
     `);
+    });
 
       return NextResponse.json({
         success: true,
@@ -92,13 +100,38 @@ export const GET = async (request: NextRequest) => {
         organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const copeOfficialsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  firstName: z.string().min(1, 'firstName is required'),
+  lastName: z.string().min(1, 'lastName is required'),
+  officeTitle: z.string().min(1, 'officeTitle is required'),
+  governmentLevel: z.unknown().optional(),
+  jurisdiction: z.boolean().optional(),
+  electoralDistrict: z.boolean().optional(),
+  politicalParty: z.unknown().optional(),
+  constituencyOfficePhone: z.string().min(10, 'Invalid phone number'),
+  email: z.string().email('Invalid email address'),
+  cabinetPosition: z.unknown().optional(),
+  laborFriendlyRating: z.unknown().optional(),
+  previousUnionMember: z.unknown().optional(),
+  unionEndorsed: z.unknown().optional(),
+  totalMeetingsHeld: z.unknown().optional(),
+  lastContactDate: z.string().datetime().optional(),
+  responsive: z.unknown().optional(),
+  isCurrent: z.boolean().optional(),
+  defeatDate: z.string().datetime().optional(),
+  retirementDate: z.string().datetime().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -106,6 +139,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = copeOfficialsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, firstName, lastName, officeTitle, governmentLevel, jurisdiction, electoralDistrict, politicalParty, constituencyOfficePhone, email, cabinetPosition, laborFriendlyRating, previousUnionMember, unionEndorsed, totalMeetingsHeld, lastContactDate, responsive, isCurrent, defeatDate, retirementDate } = validation.data;
       const {
         organizationId,
         firstName,
@@ -123,23 +167,28 @@ export const POST = async (request: NextRequest) => {
         unionEndorsed,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !firstName || !lastName || !governmentLevel) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, firstName, lastName, and governmentLevel are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, firstName, lastName, and governmentLevel are required'
+      // TODO: Migrate additional details: firstName, lastName, and governmentLevel are required'
+    );
       }
 
       // Generate full name
       const fullName = `${firstName} ${lastName}`;
 
       // Insert official
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO elected_officials (
         id,
         organization_id,
@@ -174,21 +223,24 @@ export const POST = async (request: NextRequest) => {
       )
       RETURNING *
     `);
+    });
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Elected official added successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Elected official added successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to add elected official', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
@@ -202,10 +254,10 @@ export const PATCH = async (request: NextRequest) => {
       const officialId = searchParams.get('id');
 
       if (!officialId) {
-        return NextResponse.json(
-          { error: 'Bad Request - id parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - id parameter is required'
+    );
       }
 
       const body = await request.json();
@@ -258,18 +310,20 @@ export const PATCH = async (request: NextRequest) => {
       updates.push(sql`updated_at = NOW()`);
       const setClause = sql.join(updates, sql.raw(', '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       UPDATE elected_officials
       SET ${setClause}
       WHERE id = ${officialId}
       RETURNING *
     `);
+    });
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Official not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Official not found'
+    );
       }
 
       return NextResponse.json({
@@ -283,10 +337,11 @@ export const PATCH = async (request: NextRequest) => {
         officialId: request.nextUrl.searchParams.get('id'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

@@ -15,6 +15,11 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { clerkClient } from '@clerk/nextjs/server';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
@@ -24,10 +29,10 @@ export const GET = async (request: NextRequest) => {
       const documentId = searchParams.get('documentId');
 
       if (!documentId) {
-        return NextResponse.json(
-          { error: 'Document ID required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Document ID required'
+    );
       }
 
       const signatures = await getDocumentSignatures(documentId, organizationId ?? undefined);
@@ -47,19 +52,43 @@ return NextResponse.json(
     })(request);
 };
 
+
+const adminPkiSignaturesSchema = z.object({
+  documentId: z.string().uuid('Invalid documentId'),
+  documentType: z.unknown().optional(),
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  workflowType: z.unknown().optional(),
+  steps: z.unknown().optional(),
+  dueDate: z.string().datetime().optional(),
+  expiresAt: z.unknown().optional(),
+  autoStart: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized - Organization context required' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Organization context required'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = adminPkiSignaturesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { documentId, documentType, name, description, workflowType, steps, dueDate, expiresAt, autoStart } = validation.data;
       const {
         documentId,
         documentType,
@@ -74,10 +103,11 @@ export const POST = async (request: NextRequest) => {
 
       // Validation
       if (!documentId || !documentType || !name || !workflowType || !steps) {
-        return NextResponse.json(
-          { error: 'Missing required fields: documentId, documentType, name, workflowType, steps' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: documentId, documentType, name, workflowType, steps'
+      // TODO: Migrate additional details: documentType, name, workflowType, steps'
+    );
       }
 
       const user = await clerkClient.users.getUser(userId);

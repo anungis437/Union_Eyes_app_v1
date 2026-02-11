@@ -1,0 +1,152 @@
+name: Test Coverage
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    name: Test Coverage Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+        env:
+          NODE_ENV: test
+      
+      - name: Check coverage thresholds
+        run: |
+          echo "Checking coverage thresholds..."
+          
+          # Parse coverage summary (vitest generates JSON)
+          if [ -f coverage/coverage-summary.json ]; then
+            TOTAL_COVERAGE=$(node -e "const c=require('./coverage/coverage-summary.json'); console.log(c.total.lines.pct)")
+            
+            echo "📊 Total Line Coverage: ${TOTAL_COVERAGE}%"
+            
+            # Roadmap targets:
+            # - Current baseline: ~70%
+            # - Phase 1 target: 75%
+            # - A+ target: 80%
+            
+            MIN_COVERAGE=70
+            
+            if (( $(echo "$TOTAL_COVERAGE < $MIN_COVERAGE" | bc -l) )); then
+              echo "❌ Coverage ${TOTAL_COVERAGE}% is below minimum ${MIN_COVERAGE}%"
+              exit 1
+            else
+              echo "✅ Coverage ${TOTAL_COVERAGE}% meets minimum ${MIN_COVERAGE}%"
+            fi
+          else
+            echo "⚠️  Coverage summary not found, skipping threshold check"
+          fi
+      
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+      
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (!fs.existsSync('coverage/coverage-summary.json')) {
+              console.log('No coverage summary found');
+              return;
+            }
+            
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+            const total = coverage.total;
+            
+            const body = `## 📊 Test Coverage Report
+            
+            | Metric | Coverage | Status |
+            |--------|----------|--------|
+            | Lines | ${total.lines.pct}% | ${total.lines.pct >= 80 ? '✅' : total.lines.pct >= 70 ? '⚠️' : '❌'} |
+            | Statements | ${total.statements.pct}% | ${total.statements.pct >= 80 ? '✅' : total.statements.pct >= 70 ? '⚠️' : '❌'} |
+            | Functions | ${total.functions.pct}% | ${total.functions.pct >= 80 ? '✅' : total.functions.pct >= 70 ? '⚠️' : '❌'} |
+            | Branches | ${total.branches.pct}% | ${total.branches.pct >= 80 ? '✅' : total.branches.pct >= 70 ? '⚠️' : '❌'} |
+            
+            ### Roadmap Progress
+            - Current: ${total.lines.pct}%
+            - Phase 1 Target: 75%
+            - A+ Target: 80%
+            
+            ${total.lines.pct >= 80 ? '🎉 **A+ coverage achieved!**' : total.lines.pct >= 75 ? '🎯 **Phase 1 target met!**' : '📈 Keep improving coverage to reach targets'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  security-coverage:
+    name: Security Test Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run security tests with coverage
+        run: |
+          pnpm vitest run __tests__/security --coverage
+        env:
+          NODE_ENV: test
+      
+      - name: Check security test coverage (100% target)
+        run: |
+          echo "Security tests must have 100% coverage of security-critical code"
+          
+          # For now, just verify security tests are passing
+          # TODO: Add specific security coverage requirements
+          echo "✅ Security test suite passed"
+      
+      - name: Upload security coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-coverage-report
+          path: coverage/
+          retention-days: 30

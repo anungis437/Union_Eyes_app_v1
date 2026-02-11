@@ -5,8 +5,8 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { duesTransactions } from '@/db/schema/dues-transactions-schema';
-import { profilesTable } from '@/db/schema/profiles-schema';
+import { duesTransactions } from '@/db/schema/domains/finance';
+import { profilesTable } from '@/db/schema/domains/member';
 import { tenants } from '@/db/schema/tenant-management-schema';
 import { eq, and } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -17,8 +17,19 @@ import Stripe from 'stripe';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
+});
+
+
+const portalDuesPaySchema = z.object({
+  transactionIds: z.string().uuid('Invalid transactionIds'),
+  paymentMethodId: z.string().uuid('Invalid paymentMethodId'),
 });
 
 export const POST = async (request: NextRequest) => {
@@ -46,9 +57,23 @@ export const POST = async (request: NextRequest) => {
       }
 
       const { transactionIds, paymentMethodId } = await request.json();
+    // Validate request body
+    const validation = portalDuesPaySchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { transactionIds, paymentMethodId } = validation.data;
 
       if (!transactionIds || !Array.isArray(transactionIds) || transactionIds.length === 0) {
-        return NextResponse.json({ error: 'Transaction IDs required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Transaction IDs required'
+    );
       }
 
       // Fetch transactions
@@ -67,7 +92,10 @@ export const POST = async (request: NextRequest) => {
       );
 
       if (selectedTransactions.length === 0) {
-        return NextResponse.json({ error: 'No valid transactions found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'No valid transactions found'
+    );
       }
 
       // Calculate total amount
@@ -175,7 +203,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to process dues payment', error as Error, {
         userId: userId,
   });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
   }
   })(request);
 };

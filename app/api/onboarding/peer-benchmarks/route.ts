@@ -17,6 +17,11 @@ import { logger } from '@/lib/logger';
 import { eventBus, AppEvents } from '@/lib/events';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withRoleAuth('member', async (request, context) => {
   const { userId, organizationId } = context;
 
@@ -37,10 +42,10 @@ export const GET = withRoleAuth('member', async (request, context) => {
     const reqOrgId = searchParams.get('organizationId');
 
     if (!reqOrgId) {
-      return NextResponse.json(
-        { error: 'organizationId is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
     }
 
     const benchmarks = await getPeerBenchmarks(reqOrgId);

@@ -13,6 +13,16 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const taxRl-1GenerateSchema = z.object({
+  year: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
     const { userId, organizationId } = context;
@@ -34,9 +44,23 @@ export const POST = async (request: NextRequest) => {
       }
 
       const { year } = await request.json();
+    // Validate request body
+    const validation = taxRl-1GenerateSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { year } = validation.data;
 
       if (!year || year < 2020 || year > new Date().getFullYear()) {
-        return NextResponse.json({ error: 'Invalid year' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid year'
+    );
       }
 
       // Calculate annual COPE and PAC contributions from dues transactions
@@ -161,7 +185,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to generate RL-1 tax slip', error as Error, {
         userId: userId,
   });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
   }
   })(request);
 };

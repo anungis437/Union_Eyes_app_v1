@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Course Registrations
@@ -13,6 +14,11 @@ import { sendRegistrationConfirmation } from '@/lib/email/training-notifications
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -24,10 +30,10 @@ export const GET = async (request: NextRequest) => {
       const registrationStatus = searchParams.get('registrationStatus');
 
       if (!memberId && !sessionId) {
-        return NextResponse.json(
-          { error: 'Bad Request - Either memberId or sessionId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - Either memberId or sessionId is required'
+    );
       }
 
       // Build query with joins to get course and session details
@@ -49,7 +55,8 @@ export const GET = async (request: NextRequest) => {
         ? sql.join(conditions, sql.raw(' AND '))
         : sql`1=1`;
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         cr.id,
         cr.member_id,
@@ -83,6 +90,7 @@ export const GET = async (request: NextRequest) => {
       WHERE ${whereClause}
       ORDER BY cr.registration_date DESC
     `);
+    });
 
       return NextResponse.json({
         success: true,
@@ -96,18 +104,44 @@ export const GET = async (request: NextRequest) => {
         sessionId: request.nextUrl.searchParams.get('sessionId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const educationRegistrationsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  memberId: z.string().uuid('Invalid memberId'),
+  courseId: z.string().uuid('Invalid courseId'),
+  sessionId: z.string().uuid('Invalid sessionId'),
+  travelRequired: z.unknown().optional(),
+  travelSubsidyRequested: z.string().uuid('Invalid travelSubsidyRequested'),
+  accommodationRequired: z.unknown().optional(),
+  registrationStatus: z.boolean().optional(),
+  attended: z.unknown().optional(),
+  attendanceHours: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationRegistrationsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, memberId, courseId, sessionId, travelRequired, travelSubsidyRequested, accommodationRequired, registrationStatus, attended, attendanceHours } = validation.data;
       const {
         organizationId,
         memberId,
@@ -118,20 +152,25 @@ export const POST = async (request: NextRequest) => {
         accommodationRequired,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !memberId || !courseId || !sessionId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, memberId, courseId, and sessionId are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, memberId, courseId, and sessionId are required'
+      // TODO: Migrate additional details: memberId, courseId, and sessionId are required'
+    );
       }
 
       // Check session capacity
-      const capacityCheck = await db.execute(sql`
+      const capacityCheck = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         cs.max_enrollment,
         cs.registration_count,
@@ -139,12 +178,13 @@ export const POST = async (request: NextRequest) => {
       FROM course_sessions cs
       WHERE cs.id = ${sessionId}
     `);
+    });
 
       if (capacityCheck.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Session not found'
+    );
       }
 
       const session = capacityCheck[0];
@@ -159,20 +199,23 @@ export const POST = async (request: NextRequest) => {
       }
 
       // Check for duplicate registration
-      const duplicateCheck = await db.execute(sql`
+      const duplicateCheck = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT id FROM course_registrations
       WHERE member_id = ${memberId} AND session_id = ${sessionId}
     `);
+    });
 
       if (duplicateCheck.length > 0) {
-        return NextResponse.json(
-          { error: 'Conflict - Member already registered for this session' },
-          { status: 409 }
-        );
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Conflict - Member already registered for this session'
+    );
       }
 
       // Insert registration
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO course_registrations (
         id,
         organization_id,
@@ -198,6 +241,7 @@ export const POST = async (request: NextRequest) => {
       RETURNING 
         id, member_id, course_id, session_id, registration_date, registration_status
     `);
+    });
 
       // Update session registration count
       if (registrationStatus === 'registered') {
@@ -216,7 +260,8 @@ export const POST = async (request: NextRequest) => {
 
       // Send registration confirmation email (non-blocking)
       if (registrationStatus === 'registered') {
-        const emailData = await db.execute(sql`
+        const emailData = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
         SELECT 
           m.email, m.first_name, m.last_name,
           c.course_name, c.course_code, c.total_hours,
@@ -229,6 +274,7 @@ export const POST = async (request: NextRequest) => {
         LEFT JOIN members i ON i.id = cs.lead_instructor_id
         WHERE cr.id = ${result[0].id}
       `) as unknown as Record<string, unknown>[];
+    });
 
         if (emailData.length > 0) {
           const data = emailData[0] as Record<string, unknown>;
@@ -247,20 +293,22 @@ export const POST = async (request: NextRequest) => {
         }
       }
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: isFull ? 'Added to waitlist successfully' : 'Registration successful',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: isFull ? 'Added to waitlist successfully' : 'Registration successful', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to register for course', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
@@ -272,10 +320,10 @@ export const PATCH = async (request: NextRequest) => {
       const registrationId = searchParams.get('id');
 
       if (!registrationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - id parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - id parameter is required'
+    );
       }
 
       const body = await request.json();
@@ -308,18 +356,20 @@ export const PATCH = async (request: NextRequest) => {
       updates.push(sql`updated_at = NOW()`);
       const setClause = sql.join(updates, sql.raw(', '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       UPDATE course_registrations
       SET ${setClause}
       WHERE id = ${registrationId}
       RETURNING *
     `);
+    });
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Registration not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Registration not found'
+    );
       }
 
       return NextResponse.json({
@@ -333,10 +383,11 @@ export const PATCH = async (request: NextRequest) => {
         registrationId: request.nextUrl.searchParams.get('id'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

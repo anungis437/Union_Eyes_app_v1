@@ -17,6 +17,11 @@ import {
 } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export async function POST(
   request: NextRequest,
   { params }: { params: { recipientId: string } }
@@ -29,7 +34,10 @@ export async function POST(
       .where(eq(newsletterRecipients.id, params.recipientId));
 
     if (!recipient) {
-      return NextResponse.json({ error: 'Recipient not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Recipient not found'
+    );
     }
 
     // Record unsubscribe event
@@ -57,9 +65,10 @@ export async function POST(
       message: 'Successfully unsubscribed from newsletters',
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to unsubscribe' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to unsubscribe',
+      error
     );
   }
 }

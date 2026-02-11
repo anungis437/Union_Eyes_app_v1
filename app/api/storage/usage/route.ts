@@ -11,6 +11,11 @@ import { db } from "@/db/db";
 import { documents } from "@/db/schema";
 import { eq, sql, and, isNull } from "drizzle-orm";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/storage/usage
  * Get storage usage statistics for an organization
@@ -71,7 +76,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'tenantId is required' },
       });
-      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'tenantId is required'
+    );
     }
 
     // Verify organization access (admin only)
@@ -86,7 +94,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch' },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     // Get total storage usage
@@ -190,9 +201,10 @@ export const GET = withEnhancedRoleAuth(90, async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to fetch storage usage", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch storage usage',
+      error
     );
   }
 });

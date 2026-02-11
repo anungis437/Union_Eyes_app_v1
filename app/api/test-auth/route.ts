@@ -1,6 +1,7 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,10 +21,7 @@ return NextResponse.json({
         message: authResult.userId ? 'Authenticated' : 'Not authenticated',
       });
     } catch (error) {
-return NextResponse.json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }, { status: 500 });
+return standardErrorResponse(ErrorCode.INTERNAL_ERROR);
     }
     })(request);
 };

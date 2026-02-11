@@ -7,12 +7,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { pensionTrustees } from '@/db/migrations/schema';
+import { pensionTrustees } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -25,10 +30,10 @@ export const GET = async (request: NextRequest) => {
       const activeOnly = searchParams.get('activeOnly') === 'true';
 
       if (!trustBoardId) {
-        return NextResponse.json(
-          { error: 'Bad Request - trustBoardId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - trustBoardId is required'
+    );
       }
 
       const conditions = [eq(pensionTrustees.trusteeBoardId, trustBoardId)];
@@ -58,13 +63,34 @@ export const GET = async (request: NextRequest) => {
         trustBoardId: request.nextUrl.searchParams.get('trustBoardId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
 };
+
+
+const pensionTrusteesSchema = z.object({
+  trustBoardId: z.string().uuid('Invalid trustBoardId'),
+  userId: z.string().uuid('Invalid userId'),
+  trusteeName: z.string().min(1, 'trusteeName is required'),
+  trusteeType: z.unknown().optional(),
+  // 'employer' | 'union' | 'independent'
+        position: z.string().min(1, '// 'employer' | 'union' | 'independent'
+        position is required'),
+  termStartDate: z.string().datetime().optional(),
+  termEndDate: z.string().datetime().optional(),
+  termLengthYears = 3: z.unknown().optional(),
+  isVotingMember = true: z.boolean().optional(),
+  representingOrganization: z.unknown().optional(),
+  representingOrganizationId: z.string().uuid('Invalid representingOrganizationId'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Invalid phone number'),
+  notes: z.string().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -72,13 +98,25 @@ export const POST = async (request: NextRequest) => {
 
   try {
       if (!userId) {
-        return NextResponse.json(
-          { error: 'Unauthorized - Authentication required' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Authentication required'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = pensionTrusteesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { trustBoardId, userId, trusteeName, trusteeType, // 'employer' | 'union' | 'independent'
+        position, termStartDate, termEndDate, termLengthYears = 3, isVotingMember = true, representingOrganization, representingOrganizationId, email, phone, notes } = validation.data;
       const {
         trustBoardId,
         userId: trusteeUserId,
@@ -98,10 +136,11 @@ export const POST = async (request: NextRequest) => {
 
       // Validate required fields
       if (!trustBoardId || !trusteeName || !trusteeType || !termStartDate) {
-        return NextResponse.json(
-          { error: 'Bad Request - trustBoardId, trusteeName, trusteeType, and termStartDate are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - trustBoardId, trusteeName, trusteeType, and termStartDate are required'
+      // TODO: Migrate additional details: trusteeName, trusteeType, and termStartDate are required'
+    );
       }
 
       // Check if user already a trustee on this board (if user.id provided)
@@ -119,10 +158,10 @@ export const POST = async (request: NextRequest) => {
           .limit(1);
 
         if (existing && existing.length > 0) {
-          return NextResponse.json(
-            { error: 'Conflict - User is already an active trustee on this board' },
-            { status: 409 }
-          );
+          return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Conflict - User is already an active trustee on this board'
+    );
         }
       }
 
@@ -160,9 +199,10 @@ export const POST = async (request: NextRequest) => {
         userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

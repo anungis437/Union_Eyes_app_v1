@@ -15,6 +15,11 @@ import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -40,7 +45,14 @@ export const POST = async (request: NextRequest) => {
       try {
         // 1. Parse and validate request body
         const body = await request.json();
-        const validatedRequest = SearchRequestSchema.parse(body);
+        const validation = SearchRequestSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const validatedRequest = validation.data;
 
         const { query, filters = {}, max_sources: maxSources = 5 } = validatedRequest;
 

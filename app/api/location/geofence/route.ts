@@ -1,12 +1,31 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Geofence Management API
  * POST: Create geofence
  * GET: Check if location is within geofence
  */
+
+
+const locationGeofenceSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  geofenceType: z.unknown().optional(),
+  centerLatitude: z.string().min(1, 'centerLatitude is required'),
+  centerLongitude: z.string().min(1, 'centerLongitude is required'),
+  radiusMeters: z.unknown().optional(),
+  strikeId: z.string().uuid('Invalid strikeId'),
+  unionLocalId: z.string().uuid('Invalid unionLocalId'),
+});
+
 
 export const POST = withApiAuth(async (req: NextRequest) => {
   try {
@@ -14,23 +33,33 @@ export const POST = withApiAuth(async (req: NextRequest) => {
     const { name, description, geofenceType, centerLatitude, centerLongitude, radiusMeters, strikeId, unionLocalId } = body;
 
     if (!name || !geofenceType || centerLatitude === undefined || centerLongitude === undefined || !radiusMeters) {
-      return NextResponse.json(
-        { error: "Missing required fields: name, geofenceType, centerLatitude, centerLongitude, radiusMeters" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: name, geofenceType, centerLatitude, centerLongitude, radiusMeters'
+      // TODO: Migrate additional details: geofenceType, centerLatitude, centerLongitude, radiusMeters"
+    );
     }
 
     // Validate coordinates
     if (centerLatitude < -90 || centerLatitude > 90) {
-      return NextResponse.json({ error: "Invalid centerLatitude (must be -90 to 90)" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid centerLatitude (must be -90 to 90)'
+    );
     }
 
     if (centerLongitude < -180 || centerLongitude > 180) {
-      return NextResponse.json({ error: "Invalid centerLongitude (must be -180 to 180)" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid centerLongitude (must be -180 to 180)'
+    );
     }
 
     if (radiusMeters <= 0) {
-      return NextResponse.json({ error: "Invalid radiusMeters (must be > 0)" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid radiusMeters (must be > 0)'
+    );
     }
 
     const geofence = await GeofencePrivacyService.createGeofence({
@@ -44,13 +73,11 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       unionLocalId,
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        geofence,
-        message: "Geofence created successfully",
-      },
-      { status: 201 }
+    return standardSuccessResponse(
+      { geofence,
+        message: "Geofence created successfully", },
+      undefined,
+      201
     );
   } catch (error: any) {
     return NextResponse.json(
@@ -69,17 +96,21 @@ export const GET = withApiAuth(async (req: NextRequest) => {
     const longitude = searchParams.get("longitude");
 
     if (!userId || !geofenceId || !latitude || !longitude) {
-      return NextResponse.json(
-        { error: "Missing required parameters: userId, geofenceId, latitude, longitude" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required parameters: userId, geofenceId, latitude, longitude'
+      // TODO: Migrate additional details: geofenceId, latitude, longitude"
+    );
     }
 
     const lat = parseFloat(latitude);
     const lon = parseFloat(longitude);
 
     if (isNaN(lat) || isNaN(lon)) {
-      return NextResponse.json({ error: "Invalid latitude or longitude" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid latitude or longitude'
+    );
     }
 
     const result = await GeofencePrivacyService.checkGeofenceEntry(userId, lat, lon, geofenceId);

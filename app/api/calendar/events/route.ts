@@ -19,6 +19,11 @@ import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser }
 import { logApiAuditEvent } from "@/lib/middleware/request-validation";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schema
 const eventSchema = z.object({
   calendarId: z.string().uuid().optional(),
@@ -140,9 +145,10 @@ await logApiAuditEvent({
       details: { error: error instanceof Error ? error.message : "Unknown error" },
     });
 
-    return NextResponse.json(
-      { error: "Failed to fetch events" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch events',
+      error
     );
   }
 });
@@ -245,9 +251,10 @@ await logApiAuditEvent({
       details: { error: error instanceof Error ? error.message : "Unknown error" },
     });
 
-    return NextResponse.json(
-      { error: "Failed to create event" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create event',
+      error
     );
   }
 });

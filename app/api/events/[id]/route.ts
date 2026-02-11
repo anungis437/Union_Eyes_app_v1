@@ -20,6 +20,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Check if user has access to event
  */
@@ -118,7 +123,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       const access = await checkEventAccess(eventId, userId);
       if (!access.hasAccess) {
-        return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
+        return standardErrorResponse(
+      access.error === 'Event not found' ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.FORBIDDEN,
+      access.error
+    );
       }
 
       // Get attendees
@@ -139,13 +147,45 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to get event' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get event',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const eventsSchema = z.object({
+  title: z.string().min(1, 'title is required'),
+  description: z.string().optional(),
+  location: z.unknown().optional(),
+  locationUrl: z.string().url('Invalid URL'),
+  startTime: z.string().datetime().optional(),
+  endTime: z.string().datetime().optional(),
+  timezone: z.string().datetime().optional(),
+  isAllDay: z.boolean().optional(),
+  isRecurring: z.boolean().optional(),
+  recurrenceRule: z.unknown().optional(),
+  recurrenceExceptions: z.unknown().optional(),
+  eventType: z.unknown().optional(),
+  status: z.unknown().optional(),
+  priority: z.unknown().optional(),
+  claimId: z.string().uuid('Invalid claimId'),
+  caseNumber: z.unknown().optional(),
+  memberId: z.string().uuid('Invalid memberId'),
+  meetingRoomId: z.string().uuid('Invalid meetingRoomId'),
+  meetingUrl: z.string().url('Invalid URL'),
+  meetingPassword: z.unknown().optional(),
+  agenda: z.unknown().optional(),
+  reminders: z.unknown().optional(),
+  isPrivate: z.boolean().optional(),
+  visibility: z.boolean().optional(),
+  metadata: z.unknown().optional(),
+  attachments: z.unknown().optional(),
+  attendees: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -170,10 +210,24 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       const eventId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = eventsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { title, description, location, locationUrl, startTime, endTime, timezone, isAllDay, isRecurring, recurrenceRule, recurrenceExceptions, eventType, status, priority, claimId, caseNumber, memberId, meetingRoomId, meetingUrl, meetingPassword, agenda, reminders, isPrivate, visibility, metadata, attachments, attendees } = validation.data;
 
       const access = await checkEventAccess(eventId, userId);
       if (!access.hasAccess) {
-        return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
+        return standardErrorResponse(
+      access.error === 'Event not found' ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.FORBIDDEN,
+      access.error
+    );
       }
 
       if (!access.canEdit) {
@@ -291,10 +345,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to update event' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update event',
+      error
+    );
     }
     })(request, { params });
 };
@@ -326,7 +381,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
 
       const access = await checkEventAccess(eventId, userId);
       if (!access.hasAccess) {
-        return NextResponse.json({ error: access.error }, { status: access.error === 'Event not found' ? 404 : 403 });
+        return standardErrorResponse(
+      access.error === 'Event not found' ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.FORBIDDEN,
+      access.error
+    );
       }
 
       if (!access.canDelete) {
@@ -405,10 +463,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         message: 'Event cancelled successfully',
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to delete event' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete event',
+      error
+    );
     }
     })(request, { params });
 };

@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { desc } from "drizzle-orm";
 import { db } from "@/db/db";
-import { governanceEvents } from "@/db/schema/governance-schema";
+import { governanceEvents } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const listEventsSchema = z.object({
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 50)),
 });
@@ -18,7 +23,10 @@ export const GET = async (request: NextRequest) =>
     );
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     try {
@@ -51,7 +59,11 @@ export const GET = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to fetch governance events" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch governance events',
+      error
+    );
     }
   })(request, {});
 

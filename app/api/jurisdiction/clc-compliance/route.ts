@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: CLC Tier Compliance Check
@@ -12,7 +13,82 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionClc-complianceSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tierName: z.string().min(1, 'tierName is required'),
+  checkDate: z.string().datetime().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -23,27 +99,32 @@ export const POST = async (request: NextRequest) => {
       body = await request.json();
       const { organizationId, tierName, checkDate } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!organizationId || !tierName) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId and tierName are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId and tierName are required'
+    );
       }
 
       const date = checkDate || new Date().toISOString().split('T')[0];
 
       // Call database function
-      const result = await db.execute(
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(
         sql`SELECT * FROM check_clc_tier_compliance(
         ${organizationId}::uuid, 
         ${tierName}::VARCHAR, 
         ${date}::date
       )`
       );
+    });
 
       const compliance = result[0];
 
@@ -64,10 +145,11 @@ export const POST = async (request: NextRequest) => {
         tierName: body?.tierName,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

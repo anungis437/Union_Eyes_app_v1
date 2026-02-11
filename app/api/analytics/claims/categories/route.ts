@@ -5,11 +5,17 @@
  * Returns claims grouped by category with trend comparison
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface CategoryBreakdown {
   category: string;
   count: number;
@@ -23,10 +29,10 @@ async function handler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     const url = new URL(req.url);
@@ -37,7 +43,8 @@ async function handler(req: NextRequest, context) {
     startDate.setDate(startDate.getDate() - daysBack);
 
     // Get current period categories
-    const currentCategories = await db.execute(sql`
+    const currentCategories = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         claim_type AS category,
         COUNT(*) AS count
@@ -47,6 +54,7 @@ async function handler(req: NextRequest, context) {
       GROUP BY claim_type
       ORDER BY COUNT(*) DESC
     `) as any[];
+    });
 
     const totalCurrent = currentCategories.reduce((sum, cat) => sum + parseInt(cat.count), 0);
 
@@ -55,7 +63,8 @@ async function handler(req: NextRequest, context) {
     prevStartDate.setDate(prevStartDate.getDate() - daysBack);
     const prevEndDate = startDate;
 
-    const previousCategories = await db.execute(sql`
+    const previousCategories = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         claim_type AS category,
         COUNT(*) AS count
@@ -64,6 +73,7 @@ async function handler(req: NextRequest, context) {
         AND created_at BETWEEN ${prevStartDate} AND ${prevEndDate}
       GROUP BY claim_type
     `) as any[];
+    });
 
     const prevCategoryMap = new Map(
       previousCategories.map(cat => [cat.category, parseInt(cat.count)])
@@ -88,9 +98,10 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(breakdown);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch category breakdown' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch category breakdown',
+      error
     );
   }
 }

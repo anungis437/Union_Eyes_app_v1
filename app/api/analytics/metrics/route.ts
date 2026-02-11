@@ -11,25 +11,52 @@ import { calculateMetrics, getAnalyticsMetrics } from '@/actions/analytics-actio
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const analyticsMetricsSchema = z.object({
+  metricType: z.unknown().optional(),
+  metricName: z.string().min(1, 'metricName is required'),
+  periodType: z.unknown().optional(),
+  periodStart: z.unknown().optional(),
+  periodEnd: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = analyticsMetricsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { metricType, metricName, periodType, periodStart, periodEnd } = validation.data;
       const { metricType, metricName, periodType, periodStart, periodEnd } = body;
       
       // Validate input
       if (!metricType || !metricName || !periodType || !periodStart || !periodEnd) {
-        return NextResponse.json(
-          { error: 'Missing required fields: metricType, metricName, periodType, periodStart, periodEnd' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: metricType, metricName, periodType, periodStart, periodEnd'
+      // TODO: Migrate additional details: metricName, periodType, periodStart, periodEnd'
+    );
       }
       
       if (!['daily', 'weekly', 'monthly', 'quarterly', 'yearly'].includes(periodType)) {
-        return NextResponse.json(
-          { error: 'Invalid periodType. Must be one of: daily, weekly, monthly, quarterly, yearly' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid periodType. Must be one of: daily, weekly, monthly, quarterly, yearly'
+      // TODO: Migrate additional details: weekly, monthly, quarterly, yearly'
+    );
       }
       
       // Calculate and store metric
@@ -53,10 +80,11 @@ export const POST = async (request: NextRequest) => {
         metric: result.metric
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
@@ -92,10 +120,11 @@ export const GET = async (request: NextRequest) => {
         metrics: result.metrics
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

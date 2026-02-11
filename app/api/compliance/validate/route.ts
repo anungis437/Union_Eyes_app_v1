@@ -1,6 +1,12 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface ComplianceCheck {
   id: string;
   ruleName: string;
@@ -22,10 +28,10 @@ async function handler(request: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user || (!user.organizationId && !user.tenantId)) {
-      return NextResponse.json(
-        { error: 'Authentication and organization context required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and organization context required'
+    );
     }
 
     const body = (await request.json().catch(() => ({}))) as ComplianceRequestBody;
@@ -162,11 +168,20 @@ async function handler(request: NextRequest) {
 
     return NextResponse.json({ checks });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Compliance validation failed' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Compliance validation failed',
+      error
     );
   }
 }
+
+
+const complianceValidateSchema = z.object({
+  jurisdiction: z.boolean().optional(),
+  checksToPerform: z.unknown().optional(),
+  data: z.unknown().optional(),
+});
+
 
 export const POST = withApiAuth(handler);

@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { smsConversations } from '@/db/schema/sms-communications-schema';
+import { smsConversations } from '@/db/schema/domains/communications';
 import { and, desc, eq, ilike, or } from 'drizzle-orm';
 import { withRoleAuth, getUserContext } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 type SmsConversationsContext = { params?: Record<string, any>; organizationId?: string; userId?: string };
 
 export const GET = withRoleAuth<SmsConversationsContext>('member', async (request, context) => {
@@ -17,7 +22,10 @@ export const GET = withRoleAuth<SmsConversationsContext>('member', async (reques
     }
 
     if (!organizationId) {
-      return NextResponse.json({ error: 'Missing organizationId' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing organizationId'
+    );
     }
 
     const status = searchParams.get('status');
@@ -51,9 +59,10 @@ export const GET = withRoleAuth<SmsConversationsContext>('member', async (reques
 
     return NextResponse.json({ conversations });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch conversations' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch conversations',
+      error
     );
   }
 });

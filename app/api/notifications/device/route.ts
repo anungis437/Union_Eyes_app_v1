@@ -5,9 +5,26 @@
  */
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/db";
 import { pushDevices } from "@/db/schema";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
+import { 
+  standardErrorResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const deviceRegistrationSchema = z.object({
+  deviceToken: z.string().min(10, 'Device token must be at least 10 characters'),
+  platform: z.enum(['ios', 'android', 'web']),
+  deviceName: z.string().optional(),
+  deviceModel: z.string().optional(),
+  osVersion: z.string().optional(),
+  appVersion: z.string().optional(),
+  timezone: z.string().optional(),
+  organizationId: z.string().uuid('Invalid organization ID').optional(),
+  tenantId: z.string().uuid('Invalid tenant ID').optional(),
+});
 
 export const POST = withEnhancedRoleAuth<{
   success: boolean;
@@ -16,6 +33,17 @@ export const POST = withEnhancedRoleAuth<{
 }>(10, async (request, context) => {
   try {
     const body = await request.json();
+    
+    // Validate request body
+    const validation = deviceRegistrationSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid device registration data',
+        validation.error.errors
+      );
+    }
+    
     const {
       deviceToken,
       platform,
@@ -26,21 +54,14 @@ export const POST = withEnhancedRoleAuth<{
       timezone,
       organizationId,
       tenantId,
-    } = body || {};
+    } = validation.data;
 
     const resolvedOrgId = context.organizationId || organizationId || tenantId;
 
     if (!resolvedOrgId) {
-      return NextResponse.json(
-        { success: false, error: "Organization ID required" },
-        { status: 400 }
-      );
-    }
-
-    if (!deviceToken || !platform) {
-      return NextResponse.json(
-        { success: false, error: "deviceToken and platform are required" },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'Organization ID required'
       );
     }
 

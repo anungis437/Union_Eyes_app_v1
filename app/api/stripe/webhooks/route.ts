@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { updateProfile, updateProfileByStripeCustomerId } from "@/db/queries/profiles-queries";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { logger } from '@/lib/logger';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 const relevantEvents = new Set<Stripe.Event.Type>([
   "checkout.session.completed", 

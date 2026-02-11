@@ -14,7 +14,20 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from "@/lib/db/with-rls-context";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // PATCH /api/clause-library/[id]/share - Update sharing settings
+
+const clause-libraryShareSchema = z.object({
+  sharingLevel: z.unknown().optional(),
+  sharedWithOrgIds: z.string().uuid('Invalid sharedWithOrgIds'),
+  isAnonymized: z.boolean().optional(),
+  anonymizedEmployerName: z.string().min(1, 'anonymizedEmployerName is required'),
+});
+
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -24,7 +37,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userOrgId = organizationId;
@@ -37,15 +53,32 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       });
 
       if (!existingClause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       // Only owner can update sharing settings
       if (existingClause.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can update sharing settings" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can update sharing settings'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = clause-libraryShareSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { sharingLevel, sharedWithOrgIds, isAnonymized, anonymizedEmployerName } = validation.data;
       const { 
         sharingLevel, 
         sharedWithOrgIds, 
@@ -104,10 +137,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         userId,
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to update sharing settings" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update sharing settings',
+      error
+    );
     }
     })(request, { params });
 };

@@ -14,6 +14,7 @@
  * Created: February 11, 2026
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { embeddingCache } from '@/lib/services/ai/embedding-cache';
@@ -66,10 +67,26 @@ export const GET = withAdminAuth(async (_request: NextRequest) => {
  * Admin action to clear cache or reset stats
  * Requires admin role
  */
+
+const aiCache-statsSchema = z.object({
+  action: z.unknown().optional(),
+});
+
 export const POST = withAdminAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     const body = await request.json();
+    // Validate request body
+    const validation = aiCache-statsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { action } = validation.data;
     const { action } = body;
 
       if (!action || !['clear', 'reset-stats'].includes(action)) {

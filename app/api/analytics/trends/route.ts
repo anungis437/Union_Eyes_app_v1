@@ -12,18 +12,40 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const analyticsTrendsSchema = z.object({
+  metricType: z.string().min(1, 'metricType is required'),
+  daysBack: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = analyticsTrendsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { metricType, daysBack } = validation.data;
       const { metricType, daysBack } = body;
       
       // Validate input
       if (!metricType) {
-        return NextResponse.json(
-          { error: 'Missing required field: metricType' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required field: metricType'
+    );
       }
       
       // Detect trends
@@ -49,10 +71,11 @@ export const POST = async (request: NextRequest) => {
         }
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
@@ -68,7 +91,7 @@ export const GET = async (request: NextRequest) => {
       
       // Get recent trend analyses from database
       const { db } = await import('@/db');
-      const { trendAnalyses } = await import('@/db/migrations/schema');
+      const { trendAnalyses } = await import('@/db/schema');
       const { eq, desc, and } = await import('drizzle-orm');
       
       const conditions = [];
@@ -94,10 +117,11 @@ export const GET = async (request: NextRequest) => {
         trends
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

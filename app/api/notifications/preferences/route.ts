@@ -13,6 +13,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -45,13 +50,32 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json(preferences);
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const notificationsPreferencesSchema = z.object({
+  emailEnabled: z.boolean().optional(),
+  smsEnabled: z.boolean().optional(),
+  pushEnabled: z.boolean().optional(),
+  inAppEnabled: z.boolean().optional(),
+  digestFrequency: z.enum(["daily", "weekly", "monthly", "realtime"]).optional(),
+  quietHoursStart: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").optional().nullable(),
+  quietHoursEnd: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)").optional().nullable(),
+  claimUpdates: z.boolean().optional(),
+  documentUpdates: z.boolean().optional(),
+  deadlineAlerts: z.boolean().optional(),
+  systemAnnouncements: z.boolean().optional(),
+  securityAlerts: z.boolean().optional(),
+  email: z.string().email("Invalid email address").optional(),
+  phone: z.string().min(10, "Invalid phone number").max(20).optional(),
+});
 
 export const PUT = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -59,6 +83,17 @@ export const PUT = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = notificationsPreferencesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { emailEnabled, smsEnabled, pushEnabled, inAppEnabled, digestFrequency, quietHoursStart, quietHoursEnd, claimUpdates, documentUpdates, deadlineAlerts, systemAnnouncements, securityAlerts, email, phone } = validation.data;
 
       // Validate input
       const {
@@ -115,10 +150,10 @@ export const PUT = async (request: NextRequest) => {
       } else {
         // Create new preferences
         if (!email) {
-          return NextResponse.json(
-            { error: 'Email is required for new preferences' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Email is required for new preferences'
+    );
         }
 
         result = await db
@@ -146,10 +181,11 @@ export const PUT = async (request: NextRequest) => {
 
       return NextResponse.json(result[0]);
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

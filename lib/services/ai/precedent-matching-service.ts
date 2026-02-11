@@ -19,7 +19,7 @@ import { db } from '@/db';
 import { arbitrationDecisions, arbitratorProfiles } from '@/db/schema';
 import { eq, and, or, sql, inArray } from 'drizzle-orm';
 import { semanticPrecedentSearch } from './vector-search-service';
-import type { OutcomeEnum, PrecedentValueEnum } from '@/db/schema/cba-intelligence-schema';
+import type { OutcomeEnum, PrecedentValueEnum } from '@/db/schema/domains/agreements';
 import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({

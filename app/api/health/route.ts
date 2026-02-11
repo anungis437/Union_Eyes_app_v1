@@ -3,6 +3,7 @@ import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
 import * as Sentry from '@sentry/nextjs';
 import { Redis } from '@upstash/redis';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 interface HealthCheckResult {
   name: string;
@@ -250,15 +251,7 @@ export async function GET() {
     // Critical error in health check itself
     Sentry.captureException(error);
 
-    return NextResponse.json(
-      {
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Health check failed',
-        uptime: process.uptime()
-      },
-      { status: 503 }
-    );
+    return standardErrorResponse(ErrorCode.SERVICE_UNAVAILABLE);
   }
 }
 

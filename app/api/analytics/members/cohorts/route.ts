@@ -5,12 +5,18 @@
  * Returns cohort-based retention analysis grouped by signup month
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { sql, db } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface CohortData {
   cohortMonth: string;
   size: number;
@@ -29,9 +35,10 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
 
@@ -39,17 +46,18 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Organization ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const url = new URL(req.url);
     const monthsBack = parseInt(url.searchParams.get('months') || '12');
 
     // Calculate cohort metrics
-    const cohorts = await db.execute(sql`
+    const cohorts = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       WITH cohort_members AS (
         SELECT 
           id,
@@ -83,6 +91,7 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
       GROUP BY cohort_month
       ORDER BY cohort_month DESC
     `) as any[];
+    });
 
     const cohortData: CohortData[] = cohorts.map(row => ({
       cohortMonth: row.cohort_month,
@@ -94,9 +103,10 @@ export const GET = withEnhancedRoleAuth(40, async (req: NextRequest, context) =>
 
     return NextResponse.json(cohortData);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch cohort analysis' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch cohort analysis',
+      error
     );
   }
 });

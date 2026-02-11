@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrivacyRules, assessBreachNotification } from '@/lib/services/provincial-privacy-service';
 import type { PIPEDABreachRequest, PIPEDABreachAssessment } from '@/lib/types/compliance-api-types';
@@ -12,9 +13,29 @@ import { withApiAuth } from '@/lib/api-auth-guard';
  * POST /api/emergency/pipeda
  * Assess if data breach requires PIPEDA notification
  */
+
+const emergencyPipedaSchema = z.object({
+  memberId: z.string().uuid('Invalid memberId'),
+  breachDate: z.string().datetime().optional(),
+  affectedDataTypes: z.unknown().optional(),
+  estimatedAffectedCount: z.number().int().positive(),
+  province: z.unknown().optional(),
+});
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const body = await request.json() as PIPEDABreachRequest;
+    const body = await request.json()
+    // Validate request body
+    const validation = emergencyPipedaSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = validation.data; as PIPEDABreachRequest;
     const { memberId, breachDate, affectedDataTypes, estimatedAffectedCount, province } = body;
 
     // Validate required fields

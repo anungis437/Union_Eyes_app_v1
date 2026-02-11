@@ -20,6 +20,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Helper to check if user can access precedent based on sharing level
 async function canAccessPrecedent(
   userId: string,
@@ -100,7 +105,7 @@ export const GET = async (request: NextRequest) => {
   try {
       // Use authenticated organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No organization context");
       }
 
       const userOrgId = organizationId;
@@ -233,15 +238,49 @@ export const GET = async (request: NextRequest) => {
       logger.error('Failed to fetch precedents', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to fetch precedents" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch precedents',
+      error
+    );
     }
     })(request);
 };
 
 // POST /api/arbitration/precedents - Create new precedent
+
+const arbitrationPrecedentsSchema = z.object({
+  caseTitle: z.string().min(1, 'caseTitle is required'),
+  decisionDate: z.boolean().optional(),
+  arbitratorName: z.string().min(1, 'arbitratorName is required'),
+  jurisdiction: z.boolean().optional(),
+  grievanceType: z.unknown().optional(),
+  outcome: z.unknown().optional(),
+  issueSummary: z.boolean().optional(),
+  decisionSummary: z.boolean().optional(),
+  sourceDecisionId: z.string().uuid('Invalid sourceDecisionId'),
+  caseNumber: z.unknown().optional(),
+  isPartiesAnonymized: z.boolean().optional(),
+  unionName: z.string().min(1, 'unionName is required'),
+  employerName: z.string().min(1, 'employerName is required'),
+  unionPosition: z.unknown().optional(),
+  employerPosition: z.unknown().optional(),
+  reasoning: z.unknown().optional(),
+  keyFindings: z.unknown().optional(),
+  relatedLegislation: z.boolean().optional(),
+  precedentLevel: z.unknown().optional(),
+  citedCases: z.unknown().optional(),
+  decisionDocumentUrl: z.string().url('Invalid URL'),
+  documentPath: z.unknown().optional(),
+  redactedDocumentUrl: z.string().url('Invalid URL'),
+  redactedDocumentPath: z.unknown().optional(),
+  sharingLevel: z.unknown().optional(),
+  sharedWithOrgIds: z.string().uuid('Invalid sharedWithOrgIds'),
+  sector: z.unknown().optional(),
+  province: z.unknown().optional(),
+  tags: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -249,22 +288,33 @@ export const POST = async (request: NextRequest) => {
   try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No active organization");
       }
 
       const userUuid = await getOrCreateUserUuid(userId);
       const userOrgId = organizationId;
 
       const body = await request.json();
+    // Validate request body
+    const validation = arbitrationPrecedentsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { caseTitle, decisionDate, arbitratorName, jurisdiction, grievanceType, outcome, issueSummary, decisionSummary, sourceDecisionId, caseNumber, isPartiesAnonymized, unionName, employerName, unionPosition, employerPosition, reasoning, keyFindings, relatedLegislation, precedentLevel, citedCases, decisionDocumentUrl, documentPath, redactedDocumentUrl, redactedDocumentPath, sharingLevel, sharedWithOrgIds, sector, province, tags } = validation.data;
 
       // Validate required fields
       if (!body.caseTitle || !body.decisionDate || !body.arbitratorName || 
           !body.jurisdiction || !body.grievanceType || !body.outcome || 
           !body.issueSummary || !body.decisionSummary) {
-        return NextResponse.json(
-          { error: "Missing required fields" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
       }
 
       // Create precedent
@@ -347,10 +397,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to create precedent', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to create precedent" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create precedent',
+      error
+    );
     }
     })(request);
 };

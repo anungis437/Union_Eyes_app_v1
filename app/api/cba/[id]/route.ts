@@ -14,6 +14,11 @@ import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -29,7 +34,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
           .limit(1);
 
         if (!cba) {
-          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
         }
 
         // Fetch all clauses for this CBA
@@ -60,10 +68,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         });
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -89,16 +98,20 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
           .returning();
 
         if (!updatedCba) {
-          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
         }
 
         return NextResponse.json(updatedCba);
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -116,16 +129,20 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
           .returning();
 
         if (!deletedCba) {
-          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
         }
 
         return NextResponse.json({ success: true, deletedId: id });
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

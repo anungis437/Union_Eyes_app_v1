@@ -22,6 +22,11 @@ import { remittanceValidator } from '@/services/clc/remittance-validation';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/admin/clc/remittances/[id]/export
  * 
@@ -115,16 +120,18 @@ export const GET = async (
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
 if (error instanceof Error && error.message === 'No remittances found for export') {
-          return NextResponse.json(
-            { error: 'Remittance not found' },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Remittance not found',
+      error
+    );
         }
 
-        return NextResponse.json(
-          { error: 'Failed to export remittance' },
-          { status: 500 }
-        );
+        return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to export remittance',
+      error
+    );
     }
   })(request, { params });
 };

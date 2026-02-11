@@ -6,6 +6,11 @@ import { arrearsCases, members, duesTransactions } from '@/services/financial-se
 import { eq, and, desc } from 'drizzle-orm';
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Get detailed arrears case information
  */
@@ -32,7 +37,10 @@ export const GET = async (
           severity: 'medium',
           details: { reason: 'Member not found' },
         });
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
 
       try {
@@ -71,7 +79,10 @@ export const GET = async (
             severity: 'medium',
             details: { reason: 'Arrears case not found', memberId: params.memberId },
           });
-          return NextResponse.json({ error: 'Arrears case not found' }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Arrears case not found'
+    );
         }
 
         // Get unpaid transactions
@@ -159,10 +170,11 @@ export const GET = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error', memberId: params.memberId },
         });
-return NextResponse.json(
-          { error: 'Failed to get arrears case' },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get arrears case',
+      error
+    );
       }
   })(req, { params });
 };

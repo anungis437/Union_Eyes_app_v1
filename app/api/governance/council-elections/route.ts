@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { desc } from "drizzle-orm";
 import { db } from "@/db/db";
-import { councilElections } from "@/db/schema/governance-schema";
+import { councilElections } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
-import type { NewCouncilElection } from "@/db/schema/governance-schema";
+import type { NewCouncilElection } from "@/db/schema/domains/governance";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const listElectionsSchema = z.object({
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 25)),
 });
@@ -33,7 +38,10 @@ export const GET = async (request: NextRequest) =>
     );
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     try {
@@ -66,7 +74,11 @@ export const GET = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to fetch council elections" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch council elections',
+      error
+    );
     }
   })(request, {});
 
@@ -78,12 +90,20 @@ export const POST = async (request: NextRequest) =>
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
     }
 
     const parsed = electionSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
     }
 
     try {
@@ -113,7 +133,11 @@ export const POST = async (request: NextRequest) =>
         details: { electionId: election.id, electionYear: body.electionYear },
       });
 
-      return NextResponse.json({ success: true, data: election }, { status: 201 });
+      return standardSuccessResponse(
+      { data: election },
+      undefined,
+      201
+    );
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -125,7 +149,11 @@ export const POST = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to create council election" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create council election',
+      error
+    );
     }
   })(request, {});
 

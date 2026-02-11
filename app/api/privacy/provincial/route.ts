@@ -5,6 +5,11 @@ import { eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Provincial Privacy API
  * Handles province-specific privacy rules (AB PIPA, BC PIPA, QC Law 25, ON PHIPA)
@@ -22,10 +27,10 @@ export const GET = withRoleAuth(50, async (request) => {
     );
 
     if (!query.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     const province = query.data.province.toUpperCase();
@@ -37,10 +42,10 @@ export const GET = withRoleAuth(50, async (request) => {
       .limit(1);
 
     if (config.length === 0) {
-      return NextResponse.json(
-        { error: 'Privacy configuration not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Privacy configuration not found'
+    );
     }
 
     const rules = getProvincialRules(province);
@@ -52,9 +57,10 @@ export const GET = withRoleAuth(50, async (request) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });
@@ -81,10 +87,10 @@ export const POST = withRoleAuth(90, async (request) => {
     const parsed = privacyConfigSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body'
+    );
     }
 
     const {
@@ -147,9 +153,10 @@ export const POST = withRoleAuth(90, async (request) => {
       config: config[0],
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to update configuration' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update configuration',
+      error
     );
   }
 });

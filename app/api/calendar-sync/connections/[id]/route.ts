@@ -28,6 +28,11 @@ import {
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -47,10 +52,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!connection) {
-        return NextResponse.json(
-          { error: 'Connection not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Connection not found'
+    );
       }
 
       // Fetch available calendars from provider
@@ -81,13 +86,21 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         availableCalendars,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch connection' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch connection',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const calendar-syncConnectionsSchema = z.object({
+  syncEnabled: z.boolean().optional(),
+  syncDirection: z.unknown().optional(),
+  calendarMappings: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -96,6 +109,17 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
   try {
       const connectionId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = calendar-syncConnectionsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { syncEnabled, syncDirection, calendarMappings } = validation.data;
       const { syncEnabled, syncDirection, calendarMappings } = body;
 
       // Verify ownership
@@ -111,10 +135,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .limit(1);
 
       if (!connection) {
-        return NextResponse.json(
-          { error: 'Connection not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Connection not found'
+    );
       }
 
       // Update connection
@@ -134,10 +158,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         connection: updated,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to update connection' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update connection',
+      error
+    );
     }
     })(request, { params });
 };
@@ -162,10 +187,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .limit(1);
 
       if (!connection) {
-        return NextResponse.json(
-          { error: 'Connection not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Connection not found'
+    );
       }
 
       // Delete connection
@@ -177,10 +202,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         message: 'Connection deleted successfully',
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to delete connection' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete connection',
+      error
+    );
     }
     })(request, { params });
 };

@@ -10,6 +10,11 @@ import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
 import { getOrganizationAncestors } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/ancestors
  * Get all ancestor organizations up to the root
@@ -24,10 +29,10 @@ export async function GET(
     const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Authentication required'
+    );
     }
 
     const resolvedParams = await params;

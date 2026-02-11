@@ -5,6 +5,11 @@ import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schema for NLRB filing submission
 const NLRBFilingSchema = z.object({
   campaignId: z.string().uuid('Campaign ID must be a valid UUID'),
@@ -61,10 +66,10 @@ export const POST = async (req: NextRequest, { params }: { params?: Record<strin
       .limit(1);
 
     if (!campaign) {
-      return NextResponse.json(
-        { error: 'Campaign not found or does not belong to your organization' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found or does not belong to your organization'
+    );
     }
 
     // Generate filing number (format: ORG-YEAR-NNNN)
@@ -101,17 +106,19 @@ export const POST = async (req: NextRequest, { params }: { params?: Record<strin
       })
       .returning();
 
-    return NextResponse.json(
-      {
+    return standardSuccessResponse(
+      { 
         filing,
         message: 'NLRB filing submitted successfully',
-      },
-      { status: 201 }
+       },
+      undefined,
+      201
     );
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to submit NLRB filing' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to submit NLRB filing',
+      error
     );
   }
   })(req, params || {});
@@ -152,9 +159,10 @@ export const GET = async () => {
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch NLRB filings' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch NLRB filings',
+      error
     );
   }
   });

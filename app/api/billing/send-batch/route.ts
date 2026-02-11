@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { members, billingTemplates } from "@/services/financial-service/src/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { addEmailJob } from "@/lib/job-queue";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const renderTemplate = (template: string, data: Record<string, string>) => {
   let result = template;
   Object.entries(data).forEach(([key, value]) => {
@@ -18,7 +24,10 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const [currentMember] = await db
@@ -28,25 +37,37 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!currentMember) {
-      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
     }
 
     const body = await req.json();
-    const { templateId, memberIds, filters } = body;
+    
+    // Validate input
+    const sendBatchSchema = z.object({
+      templateId: z.string().uuid("Invalid template ID"),
+      memberIds: z.array(z.string().uuid("Invalid member ID")).min(1, "At least one member ID required").optional(),
+      filters: z.object({
+        status: z.enum(["active", "inactive", "suspended", "pending"]).optional(),
+        department: z.string().max(100).optional(),
+        role: z.string().max(50).optional()
+      }).optional()
+    }).refine(
+      (data) => data.memberIds || data.filters,
+      { message: "Either memberIds or filters must be provided" }
+    );
 
-    if (!templateId) {
-      return NextResponse.json(
-        { error: "templateId is required" },
-        { status: 400 }
+    const validation = sendBatchSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || "Validation failed"
       );
     }
 
-    if (!memberIds && !filters) {
-      return NextResponse.json(
-        { error: "Either memberIds or filters must be provided" },
-        { status: 400 }
-      );
-    }
+    const { templateId, memberIds, filters } = validation.data;
 
     const [template] = await db
       .select()
@@ -60,7 +81,10 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!template) {
-      return NextResponse.json({ error: "Template not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Template not found'
+    );
     }
 
     let recipients;
@@ -87,10 +111,10 @@ export async function POST(req: NextRequest) {
     const validRecipients = recipients.filter((member) => member.email);
 
     if (validRecipients.length === 0) {
-      return NextResponse.json(
-        { error: "No valid recipients found (all members missing email addresses)" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'No valid recipients found (all members missing email addresses)'
+    );
     }
 
     const batchId = `batch-${Date.now()}-${Math.random().toString(36).substring(7)}`;
@@ -135,9 +159,10 @@ export async function POST(req: NextRequest) {
       status: "queued",
     });
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to queue batch email" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to queue batch email',
+      error
     );
   }
 }

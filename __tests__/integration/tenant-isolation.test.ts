@@ -17,7 +17,7 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { db } from '@/db';
 import { organizations, organizationMembers, claims } from '@/db/schema';
-import { users } from '@/db/schema/user-management-schema';
+import { users } from '@/db/schema/domains/member';
 import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 

@@ -10,6 +10,11 @@ import { withAuth, logApiAuditEvent } from '@/lib/middleware/api-security';
 import { searchOrganizations } from '@/db/queries/organization-queries';
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/search
  * Search organizations with filters
@@ -27,10 +32,10 @@ export async function GET(request: NextRequest) {
     const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Authentication required'
+    );
     }
 
     const { searchParams } = new URL(request.url);

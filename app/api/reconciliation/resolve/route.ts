@@ -1,12 +1,27 @@
+import { z } from 'zod';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { members, duesTransactions, employerRemittances } from '@/services/financial-service/src/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { withApiAuth,withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { sendEmail } from '@/lib/email-service';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const reconciliationResolveSchema = z.object({
+  remittanceId: z.string().uuid('Invalid remittance ID'),
+  rowIndex: z.number().int().min(0, 'Row index must be non-negative'),
+  action: z.enum(['create_member', 'adjust_amount', 'mark_resolved', 'request_correction'], {
+    errorMap: () => ({ message: 'Invalid action' })
+  }),
+  actionData: z.record(z.string(), z.unknown()).optional(),
+});
 // Resolve reconciliation discrepancies
 export const POST = async (req: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
@@ -36,28 +51,25 @@ export const POST = async (req: NextRequest) => {
         .limit(1);
 
       if (!member) {
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
 
       const body = await req.json();
-      const { remittanceId, rowIndex, action, actionData } = body;
-
-      // Validate required fields
-      if (!remittanceId || rowIndex === undefined || !action) {
-        return NextResponse.json(
-          { error: 'remittanceId, rowIndex, and action are required' },
-          { status: 400 }
+      
+      // Validate request body
+      const validation = reconciliationResolveSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid reconciliation resolution request',
+          validation.error.errors
         );
       }
 
-      // Validate action
-      const validActions = ['create_member', 'adjust_amount', 'mark_resolved', 'request_correction'];
-      if (!validActions.includes(action)) {
-        return NextResponse.json(
-          { error: 'Invalid action. Must be: create_member, adjust_amount, mark_resolved, or request_correction' },
-          { status: 400 }
-        );
-      }
+      const { remittanceId, rowIndex, action, actionData } = validation.data;
 
       // Get remittance record
       const [remittance] = await db
@@ -72,7 +84,10 @@ export const POST = async (req: NextRequest) => {
         .limit(1);
 
       if (!remittance) {
-        return NextResponse.json({ error: 'Remittance not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Remittance not found'
+    );
       }
 
       // Parse metadata to get results
@@ -83,7 +98,10 @@ export const POST = async (req: NextRequest) => {
 
       const results = metadata.results || [];
       if (!results[rowIndex]) {
-        return NextResponse.json({ error: 'Row index not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Row index not found'
+    );
       }
 
       const row = results[rowIndex];
@@ -94,10 +112,10 @@ export const POST = async (req: NextRequest) => {
         case 'create_member':
           // Create new member from row data
           if (!actionData?.name) {
-            return NextResponse.json(
-              { error: 'name required for create_member action' },
-              { status: 400 }
-            );
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'name required for create_member action'
+    );
           }
 
           const [newMember] = await db
@@ -237,10 +255,11 @@ export const POST = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-return NextResponse.json(
-        { error: 'Failed to resolve reconciliation' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to resolve reconciliation',
+      error
+    );
     }
     })(request);
 };

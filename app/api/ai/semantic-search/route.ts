@@ -17,6 +17,28 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const semanticSearchSchema = z.object({
+  query: z.string().max(1000, 'Query too long').optional(),
+  searchType: z.enum(['clauses', 'precedents', 'unified', 'similar']).default('unified'),
+  clauseId: z.string().uuid().optional(),
+  limit: z.number().int().min(1).max(100).default(10),
+  threshold: z.number().min(0).max(1).default(0.7),
+  filters: z.record(z.string(), z.unknown()).default({}),
+  hybridSearch: z.object({
+    enabled: z.boolean().default(false),
+    keywordWeight: z.number().min(0).max(1).default(0.3),
+  }).default({ enabled: false, keywordWeight: 0.3 }),
+}).refine((data) => {
+  if (data.searchType !== 'similar' && !data.query) return false;
+  if (data.searchType === 'similar' && !data.clauseId) return false;
+  return true;
+}, { message: 'Query required for non-similar searches, clauseId required for similar searches' });
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
@@ -39,26 +61,26 @@ export const POST = async (request: NextRequest) => {
 
     try {
       const body = await request.json();
-      const {
-        query,
-        searchType = 'unified', // 'clauses', 'precedents', 'unified', 'similar'
-        clauseId, // For 'similar' search type
-        limit = 10,
-        threshold = 0.7,
-        filters = {},
-        hybridSearch = { enabled: false, keywordWeight: 0.3 },
-      } = body;
-
-      if (!query && searchType !== 'similar') {
-        return NextResponse.json({ error: 'Query is required' }, { status: 400 });
-      }
-
-      if (searchType === 'similar' && !clauseId) {
-        return NextResponse.json(
-          { error: 'clauseId is required for similar search' },
-          { status: 400 }
+      
+      // Validate request body
+      const validation = semanticSearchSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid semantic search request',
+          validation.error.errors
         );
       }
+
+      const {
+        query,
+        searchType,
+        clauseId,
+        limit,
+        threshold,
+        filters,
+        hybridSearch,
+      } = validation.data;
 
       let results;
 
@@ -125,10 +147,11 @@ export const POST = async (request: NextRequest) => {
           });
 
         default:
-          return NextResponse.json(
-            { error: 'Invalid searchType. Use: clauses, precedents, unified, or similar' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid searchType. Use: clauses, precedents, unified, or similar'
+      // TODO: Migrate additional details: precedents, unified, or similar'
+    );
       }
     } catch (error) {
 return NextResponse.json(
@@ -163,7 +186,11 @@ export const GET = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-return NextResponse.json({ error: 'Status check failed' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Status check failed',
+      error
+    );
     }
     })(request);
 };

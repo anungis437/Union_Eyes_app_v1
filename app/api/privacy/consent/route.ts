@@ -1,7 +1,24 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { ProvincialPrivacyService, type Province } from "@/services/provincial-privacy-service";
 import { requireApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const consentSchema = z.object({
+  province: z.enum(['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'], {
+    errorMap: () => ({ message: 'Invalid province code' })
+  }),
+  consentType: z.string().min(1, 'Consent type is required'),
+  consentGiven: z.boolean(),
+  consentText: z.string().min(10, 'Consent text must be at least 10 characters'),
+  consentLanguage: z.enum(['en', 'fr']).default('en'),
+  consentMethod: z.enum(['explicit_checkbox', 'opt_in', 'opt_out', 'implicit']).default('explicit_checkbox'),
+});
 /**
  * POST /api/privacy/consent
  * Record user consent for provincial privacy compliance
@@ -14,11 +31,18 @@ export async function POST(request: NextRequest) {
     const { userId } = await requireApiAuth();
 
     const body = await request.json();
-    const { province, consentType, consentGiven, consentText, consentLanguage } = body;
-
-    if (!province || !consentType || typeof consentGiven !== "boolean" || !consentText) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    
+    // Validate request body
+    const validation = consentSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid consent data',
+        validation.error.errors
+      );
     }
+
+    const { province, consentType, consentGiven, consentText, consentLanguage, consentMethod } = validation.data;
 
     // Get user IP and user agent for audit trail
     const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined;
@@ -29,9 +53,9 @@ export async function POST(request: NextRequest) {
       province: province as Province,
       consentType,
       consentGiven,
-      consentMethod: body.consentMethod || "explicit_checkbox",
+      consentMethod,
       consentText,
-      consentLanguage: consentLanguage || "en",
+      consentLanguage,
       ipAddress,
       userAgent,
     });
@@ -65,7 +89,10 @@ export async function GET(request: NextRequest) {
     const consentType = searchParams.get("consentType");
 
     if (!province || !consentType) {
-      return NextResponse.json({ error: "Missing province or consentType" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing province or consentType'
+    );
     }
 
     const hasConsent = await ProvincialPrivacyService.hasValidConsent(
@@ -91,18 +118,27 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     const userId = session.user?.id;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const body = await request.json();
     const { province, consentType } = body;
 
     if (!province || !consentType) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
     }
 
     await ProvincialPrivacyService.revokeConsent(

@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { strikeFunds } from '@/db/migrations/schema';
+import { strikeFunds } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
@@ -14,6 +14,11 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -45,19 +50,19 @@ export const GET = withRoleAuth('steward', async (request, context) => {
     );
 
     if (!queryResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     const { organizationId, status } = queryResult.data;
 
     if (organizationId !== context.organizationId) {
-      return NextResponse.json(
-        { error: 'Forbidden' },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
       // Rate limiting: 15 operations per hour per user
@@ -139,9 +144,10 @@ export const GET = withRoleAuth('steward', async (request, context) => {
     });
 
     logger.error('Failed to fetch strike funds', error as Error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });
@@ -156,10 +162,10 @@ export const POST = withRoleAuth(90, async (request, context) => {
     const parsed = createFundSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body'
+    );
     }
 
     const {
@@ -173,10 +179,10 @@ export const POST = withRoleAuth(90, async (request, context) => {
     } = parsed.data;
 
     if (organizationId !== context.organizationId) {
-      return NextResponse.json(
-        { error: 'Forbidden' },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
       // Rate limiting for creation operations
@@ -249,14 +255,12 @@ export const POST = withRoleAuth(90, async (request, context) => {
         },
       });
 
-      return NextResponse.json(
-        {
-          success: true,
-          data: newFund,
-          message: 'Strike fund created successfully',
-        },
-        { status: 201 }
-      );
+      return standardSuccessResponse(
+      { data: newFund,
+          message: 'Strike fund created successfully', },
+      undefined,
+      201
+    );
   } catch (error) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(),
@@ -271,9 +275,10 @@ export const POST = withRoleAuth(90, async (request, context) => {
     });
 
     logger.error('Failed to create strike fund', error as Error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

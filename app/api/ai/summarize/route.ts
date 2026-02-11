@@ -10,6 +10,11 @@ import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * POST /api/ai/summarize
  * Generate case summary or brief draft (U2 use case)
@@ -84,10 +89,10 @@ return NextResponse.json(
           .single();
 
       if (claimError || !claim) {
-        return NextResponse.json(
-          { error: 'Claim not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       // 6. Format case content for summarization
@@ -169,41 +174,11 @@ return NextResponse.json(
     } catch (error) {
 // Validation error
       if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: 'Invalid request',
-            details: error.errors,
-          },
-          { status: 400 }
-        );
-      }
-
-      // Generic error
-      return NextResponse.json(
-        {
-          error: 'Summarization failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
-
-export const GET = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(10, async (request, context) => {
-    const user = { id: context.userId, organizationId: context.organizationId };
-
-  try {
-        // 1. Get claim ID from URL params
-        const { searchParams } = new URL(request.url);
-        const claimId = searchParams.get('claim_id');
-
-        if (!claimId) {
-          return NextResponse.json(
-            { error: 'claim_id parameter is required' },
-            { status: 400 }
-          );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request',
+      error
+    );
         }
 
         // 2. Create Supabase client

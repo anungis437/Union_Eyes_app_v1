@@ -4,6 +4,11 @@ import { surveys, surveyQuestions, surveyResponses, surveyAnswers } from '@/db/s
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface QuestionResult {
   questionId: string;
   questionText: string;
@@ -23,10 +28,10 @@ export const GET = withApiAuth(async (
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     const { searchParams } = new URL(request.url);
@@ -40,10 +45,10 @@ export const GET = withApiAuth(async (
       .limit(1);
 
     if (!survey) {
-      return NextResponse.json(
-        { error: 'Survey not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Survey not found'
+    );
     }
 
     // Calculate date filter
@@ -235,9 +240,10 @@ export const GET = withApiAuth(async (
       dateRange,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch survey results' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch survey results',
+      error
     );
   }
 });

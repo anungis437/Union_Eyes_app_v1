@@ -15,7 +15,7 @@
 
 import { db } from '@/db';
 import { digitalSignatures } from '@/services/financial-service/src/db/schema';
-import { signatureWorkflows } from '@/db/schema/signature-workflows-schema';
+import { signatureWorkflows } from '@/db/schema/domains/documents';
 import { eq, and, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
 import { logger } from '@/lib/logger';

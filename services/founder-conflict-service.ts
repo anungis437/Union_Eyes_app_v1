@@ -8,7 +8,7 @@ import {
   conflictReviewCommittee,
   conflictTraining,
   conflictAuditLog,
-} from "@/db/schema/founder-conflict-schema";
+} from "@/db/schema/domains/governance";
 import { eq, and, lte, desc } from "drizzle-orm";
 
 /**

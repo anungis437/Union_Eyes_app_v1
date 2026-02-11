@@ -52,13 +52,13 @@ describe('P0 Security Fixes Validation', () => {
       // Previously: returned null (treated as anonymous)
       // Now: throws error (rejects request)
       
-      await expect(getCurrentUser()).rejects.toThrow('Authentication system unavailable');
+      await expect(getCurrentUser()).rejects.toThrow('Service temporarily unavailable');
     });
 
     it('should include proper error message on auth failure', async () => {
       vi.mocked(clerkServer.auth).mockRejectedValue(new Error('Clerk service unavailable'));
       
-      await expect(getCurrentUser()).rejects.toThrow('Authentication system unavailable');
+      await expect(getCurrentUser()).rejects.toThrow('Service temporarily unavailable');
     });
 
     it('should log critical auth failures for monitoring', async () => {

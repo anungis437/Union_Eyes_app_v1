@@ -13,6 +13,11 @@ import { externalCalendarConnections } from '@/db/schema/calendar-schema';
 import { exchangeCodeForTokens } from '@/lib/external-calendar-sync/google-calendar-service';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -30,18 +35,18 @@ export const GET = async (request: NextRequest) => {
       }
 
       if (!code || !state) {
-        return NextResponse.json(
-          { error: 'Missing code or state parameter' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing code or state parameter'
+    );
       }
 
       // Verify state matches current user
       if (userId !== state) {
-        return NextResponse.json(
-          { error: 'Invalid state parameter' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid state parameter'
+    );
       }
 
       // Exchange code for tokens

@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 /**
@@ -8,12 +9,17 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { equitySnapshots } from '@/db/migrations/schema';
+import { equitySnapshots } from '@/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -75,10 +81,10 @@ export const GET = async (request: NextRequest) => {
             reason: 'Missing organizationId parameter',
           },
         });
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Verify organization access (critical for PIPEDA compliance)
@@ -101,10 +107,10 @@ export const GET = async (request: NextRequest) => {
             requestedOrgId,
           },
         });
-        return NextResponse.json(
-          { error: 'Forbidden - Cannot access other organization equity data' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Cannot access other organization equity data'
+    );
       }
 
       const snapshots = await db
@@ -153,13 +159,20 @@ export const GET = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
 };
+
+
+const equitySnapshotsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  snapshotDate: z.string().datetime().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(60, async (request, context) => {
@@ -167,6 +180,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = equitySnapshotsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, snapshotDate } = validation.data;
       const { organizationId: requestedOrgId, snapshotDate } = body;
       
       if (!requestedOrgId) {
@@ -182,10 +206,10 @@ export const POST = async (request: NextRequest) => {
             reason: 'Missing organizationId',
           },
         });
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Verify organization access
@@ -208,18 +232,20 @@ export const POST = async (request: NextRequest) => {
             requestedOrgId,
           },
         });
-        return NextResponse.json(
-          { error: 'Forbidden - Cannot generate snapshots for other organizations' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Cannot generate snapshots for other organizations'
+    );
       }
 
       const date = snapshotDate || new Date().toISOString().split('T')[0];
 
       // Call database function to generate snapshot
-      const result = await db.execute(
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(
         sql`SELECT generate_equity_snapshot(${requestedOrgId}::uuid, ${date}::date) as snapshot_id`
       );
+    });
 
       const snapshotId = (result[0] as any).snapshot_id;
 
@@ -269,9 +295,10 @@ export const POST = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

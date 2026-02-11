@@ -15,6 +15,7 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 // Lazy initialization for Supabase client
 let supabase: SupabaseClient | null = null;

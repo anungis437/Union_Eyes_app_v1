@@ -9,12 +9,18 @@
  * Part of: Area 8 - Analytics Platform
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { ReportExecutor } from '@/lib/report-executor';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface AuthContext {
   userId: string;
   organizationId: string;
@@ -44,15 +50,20 @@ interface ReportConfig {
   limit?: number;
 }
 
+
+const reportsExecuteSchema = z.object({
+  config: z.unknown().optional(),
+});
+
 export const POST = withRoleAuth('officer', async (request: NextRequest, context: AuthContext) => {
   const { userId, organizationId } =context;
 
   try {
     if (!userId || !organizationId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     // Rate limit report execution
@@ -75,20 +86,32 @@ export const POST = withRoleAuth('officer', async (request: NextRequest, context
         },
       });
 
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
     }
 
     const body = await request.json();
+    // Validate request body
+    const validation = reportsExecuteSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { config } = validation.data;
     const config: ReportConfig = body.config;
 
     if (!config || !config.dataSourceId || !config.fields || config.fields.length === 0) {
-      return NextResponse.json(
-        { error: 'Invalid report configuration' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid report configuration'
+    );
     }
 
     // SECURITY: Validate config before execution
@@ -157,9 +180,10 @@ export const POST = withRoleAuth('officer', async (request: NextRequest, context
       },
     });
 
-    return NextResponse.json(
-      { error: 'Failed to execute report' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to execute report',
+      error
     );
   }
 });

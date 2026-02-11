@@ -12,6 +12,11 @@ import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 // Validation schema for GET query parameters
@@ -38,10 +43,10 @@ export const GET = withRoleAuth('steward', async (request, context) => {
     );
 
     if (!queryResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     const { fundId, limit } = queryResult.data;
@@ -105,9 +110,10 @@ export const GET = withRoleAuth('steward', async (request, context) => {
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });
@@ -122,10 +128,10 @@ export const POST = withRoleAuth(90, async (request, context) => {
     const parsed = calculateStipendsSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body'
+    );
     }
 
     const { fundId, weekStartDate, weekEndDate } = parsed.data;
@@ -232,9 +238,10 @@ export const POST = withRoleAuth(90, async (request, context) => {
       },
     });
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

@@ -13,20 +13,46 @@ import type { SignDocumentParams } from '@/services/pki/signature-service';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const adminPkiSignaturesSignSchema = z.object({
+  documentType: z.unknown().optional(),
+  documentUrl: z.string().url('Invalid URL'),
+  userName: z.string().min(1, 'userName is required'),
+  userTitle: z.string().min(1, 'userTitle is required'),
+  userEmail: z.string().email('Invalid email address'),
+  workflowId: z.string().uuid('Invalid workflowId'),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized - Organization context required' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Organization context required'
+    );
       }
 
       const documentId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = adminPkiSignaturesSignSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { documentType, documentUrl, userName, userTitle, userEmail, workflowId } = validation.data;
       const {
         documentType,
         documentUrl,
@@ -37,10 +63,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       } = body;
 
       if (!documentType || !userName) {
-        return NextResponse.json(
-          { error: 'Missing required fields: documentType, userName' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: documentType, userName'
+      // TODO: Migrate additional details: userName'
+    );
       }
 
       // Get client info for audit trail

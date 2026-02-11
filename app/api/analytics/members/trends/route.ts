@@ -5,11 +5,17 @@
  * Returns monthly trends for member engagement metrics
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface EngagementTrend {
   month: string;
   activeMembers: number;
@@ -24,17 +30,18 @@ async function handler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     const url = new URL(req.url);
     const monthsBack = parseInt(url.searchParams.get('months') || '12');
 
     // Get monthly engagement trends
-    const trends = await db.execute(sql`
+    const trends = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       WITH monthly_members AS (
         SELECT 
           TO_CHAR(month_series, 'YYYY-MM') AS month,
@@ -97,6 +104,7 @@ async function handler(req: NextRequest, context) {
       LEFT JOIN churned_estimate ce ON ce.month = mm.month
       ORDER BY mm.month_series
     `) as any[];
+    });
 
     const engagementTrends: EngagementTrend[] = trends.map(row => ({
       month: row.month,
@@ -108,9 +116,10 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(engagementTrends);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch engagement trends' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch engagement trends',
+      error
     );
   }
 }

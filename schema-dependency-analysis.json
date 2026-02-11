@@ -1,0 +1,3488 @@
+{
+  "timestamp": "2026-02-11T15:14:33.359Z",
+  "summary": {
+    "totalFiles": 75,
+    "circularDependencies": 0,
+    "maxDepth": 5
+  },
+  "nodes": [
+    {
+      "file": "whiplash-prevention-schema.ts",
+      "imports": [],
+      "exports": [
+        "stripeConnectAccounts",
+        "paymentClassificationPolicy",
+        "paymentRoutingRules",
+        "separatedPaymentTransactions",
+        "whiplashViolations",
+        "strikeFundPaymentAudit",
+        "accountBalanceReconciliation",
+        "whiplashPreventionAudit"
+      ],
+      "exportedTables": [
+        "stripeConnectAccounts",
+        "paymentClassificationPolicy",
+        "paymentRoutingRules",
+        "separatedPaymentTransactions",
+        "whiplashViolations",
+        "strikeFundPaymentAudit",
+        "accountBalanceReconciliation",
+        "whiplashPreventionAudit"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 178
+    },
+    {
+      "file": "wage-benchmarks-schema.ts",
+      "imports": [],
+      "exports": [
+        "wageBenchmarks",
+        "unionDensity",
+        "costOfLivingData",
+        "contributionRates",
+        "externalDataSyncLog",
+        "WageBenchmark",
+        "WageBenchmarkInsert",
+        "UnionDensity",
+        "UnionDensityInsert",
+        "CostOfLivingData",
+        "CostOfLivingDataInsert",
+        "ContributionRate",
+        "ContributionRateInsert",
+        "ExternalDataSyncLog",
+        "ExternalDataSyncLogInsert"
+      ],
+      "exportedTables": [
+        "wageBenchmarks",
+        "unionDensity",
+        "costOfLivingData",
+        "contributionRates",
+        "externalDataSyncLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "WageBenchmark",
+        "WageBenchmarkInsert",
+        "UnionDensity",
+        "UnionDensityInsert",
+        "CostOfLivingData",
+        "CostOfLivingDataInsert",
+        "ContributionRate",
+        "ContributionRateInsert",
+        "ExternalDataSyncLog",
+        "ExternalDataSyncLogInsert"
+      ],
+      "lineCount": 301
+    },
+    {
+      "file": "voting-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./organization-members-schema"
+      ],
+      "exports": [
+        "votingSessions",
+        "votingOptions",
+        "voterEligibility",
+        "votes",
+        "votingNotifications",
+        "votingAuditLog",
+        "VotingSession",
+        "NewVotingSession",
+        "VotingOption",
+        "NewVotingOption",
+        "VoterEligibility",
+        "NewVoterEligibility",
+        "Vote",
+        "NewVote",
+        "VotingNotification",
+        "NewVotingNotification",
+        "VotingAuditLog",
+        "NewVotingAuditLog"
+      ],
+      "exportedTables": [
+        "votingSessions",
+        "votingOptions",
+        "voterEligibility",
+        "votes",
+        "votingNotifications",
+        "votingAuditLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "VotingSession",
+        "NewVotingSession",
+        "VotingOption",
+        "NewVotingOption",
+        "VoterEligibility",
+        "NewVoterEligibility",
+        "Vote",
+        "NewVote",
+        "VotingNotification",
+        "NewVotingNotification",
+        "VotingAuditLog",
+        "NewVotingAuditLog"
+      ],
+      "lineCount": 152
+    },
+    {
+      "file": "user-uuid-mapping-schema.ts",
+      "imports": [],
+      "exports": [
+        "userUuidMapping",
+        "UserUuidMapping",
+        "NewUserUuidMapping"
+      ],
+      "exportedTables": [
+        "userUuidMapping"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "UserUuidMapping",
+        "NewUserUuidMapping"
+      ],
+      "lineCount": 27
+    },
+    {
+      "file": "user-management-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "User",
+        "NewUser",
+        "OrganizationUser",
+        "NewOrganizationUser",
+        "UserSession",
+        "NewUserSession",
+        "OAuthProvider",
+        "NewOAuthProvider"
+      ],
+      "exportedTables": [],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "User",
+        "NewUser",
+        "OrganizationUser",
+        "NewOrganizationUser",
+        "UserSession",
+        "NewUserSession",
+        "OAuthProvider",
+        "NewOAuthProvider"
+      ],
+      "lineCount": 119
+    },
+    {
+      "file": "transfer-pricing-schema.ts",
+      "imports": [],
+      "exports": [
+        "currencyEnforcementPolicy",
+        "bankOfCanadaRates",
+        "transactionCurrencyConversions",
+        "currencyEnforcementViolations",
+        "t106FilingTracking",
+        "transferPricingDocumentation",
+        "fxRateAuditLog",
+        "currencyEnforcementAudit",
+        "exchangeRates",
+        "crossBorderTransactions"
+      ],
+      "exportedTables": [
+        "currencyEnforcementPolicy",
+        "bankOfCanadaRates",
+        "transactionCurrencyConversions",
+        "currencyEnforcementViolations",
+        "t106FilingTracking",
+        "transferPricingDocumentation",
+        "fxRateAuditLog",
+        "currencyEnforcementAudit",
+        "exchangeRates",
+        "crossBorderTransactions"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 296
+    },
+    {
+      "file": "tenant-management-schema.ts",
+      "imports": [],
+      "exports": [
+        "Tenant",
+        "NewTenant",
+        "TenantConfiguration",
+        "NewTenantConfiguration",
+        "TenantUsage",
+        "NewTenantUsage",
+        "DatabasePool",
+        "NewDatabasePool"
+      ],
+      "exportedTables": [],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "Tenant",
+        "NewTenant",
+        "TenantConfiguration",
+        "NewTenantConfiguration",
+        "TenantUsage",
+        "NewTenantUsage",
+        "DatabasePool",
+        "NewDatabasePool"
+      ],
+      "lineCount": 121
+    },
+    {
+      "file": "survey-polling-schema.ts",
+      "imports": [
+        "./tenant-management-schema",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "surveys",
+        "surveyQuestions",
+        "surveyResponses",
+        "surveyAnswers",
+        "polls",
+        "pollVotes",
+        "Survey",
+        "NewSurvey",
+        "SurveyQuestion",
+        "NewSurveyQuestion",
+        "SurveyResponse",
+        "NewSurveyResponse",
+        "SurveyAnswer",
+        "NewSurveyAnswer",
+        "Poll",
+        "NewPoll",
+        "PollVote",
+        "NewPollVote",
+        "QuestionType",
+        "SurveyType",
+        "SurveyStatus",
+        "ResponseStatus",
+        "PollStatus"
+      ],
+      "exportedTables": [
+        "surveys",
+        "surveyQuestions",
+        "surveyResponses",
+        "surveyAnswers",
+        "polls",
+        "pollVotes"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "Survey",
+        "NewSurvey",
+        "SurveyQuestion",
+        "NewSurveyQuestion",
+        "SurveyResponse",
+        "NewSurveyResponse",
+        "SurveyAnswer",
+        "NewSurveyAnswer",
+        "Poll",
+        "NewPoll",
+        "PollVote",
+        "NewPollVote",
+        "QuestionType",
+        "SurveyType",
+        "SurveyStatus",
+        "ResponseStatus",
+        "PollStatus"
+      ],
+      "lineCount": 538
+    },
+    {
+      "file": "strike-fund-tax-schema.ts",
+      "imports": [],
+      "exports": [
+        "strikeFundDisbursements",
+        "t4aTaxSlips",
+        "rl1TaxSlips",
+        "taxYearEndProcessing",
+        "weeklyThresholdTracking"
+      ],
+      "exportedTables": [
+        "strikeFundDisbursements",
+        "t4aTaxSlips",
+        "rl1TaxSlips",
+        "taxYearEndProcessing",
+        "weeklyThresholdTracking"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 222
+    },
+    {
+      "file": "social-media-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "socialAccounts",
+        "socialPosts",
+        "socialCampaigns",
+        "socialAnalytics",
+        "socialFeeds",
+        "socialEngagement",
+        "socialPlatformEnum",
+        "socialAccountStatusEnum",
+        "socialPostStatusEnum",
+        "socialPostTypeEnum",
+        "engagementTypeEnum",
+        "campaignStatusEnum",
+        "SocialAccount",
+        "NewSocialAccount",
+        "SocialPost",
+        "NewSocialPost",
+        "SocialCampaign",
+        "NewSocialCampaign",
+        "SocialAnalytics",
+        "NewSocialAnalytics",
+        "SocialFeed",
+        "NewSocialFeed",
+        "SocialEngagement",
+        "NewSocialEngagement",
+        "SocialPlatform",
+        "SocialAccountStatus",
+        "SocialPostStatus",
+        "SocialPostType",
+        "EngagementType",
+        "CampaignStatus"
+      ],
+      "exportedTables": [
+        "socialAccounts",
+        "socialPosts",
+        "socialCampaigns",
+        "socialAnalytics",
+        "socialFeeds",
+        "socialEngagement"
+      ],
+      "exportedEnums": [
+        "socialPlatformEnum",
+        "socialAccountStatusEnum",
+        "socialPostStatusEnum",
+        "socialPostTypeEnum",
+        "engagementTypeEnum",
+        "campaignStatusEnum"
+      ],
+      "exportedTypes": [
+        "SocialAccount",
+        "NewSocialAccount",
+        "SocialPost",
+        "NewSocialPost",
+        "SocialCampaign",
+        "NewSocialCampaign",
+        "SocialAnalytics",
+        "NewSocialAnalytics",
+        "SocialFeed",
+        "NewSocialFeed",
+        "SocialEngagement",
+        "NewSocialEngagement",
+        "SocialPlatform",
+        "SocialAccountStatus",
+        "SocialPostStatus",
+        "SocialPostType",
+        "EngagementType",
+        "CampaignStatus"
+      ],
+      "lineCount": 484
+    },
+    {
+      "file": "sms-communications-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "smsTemplates",
+        "smsCampaigns",
+        "smsMessages",
+        "smsConversations",
+        "smsCampaignRecipients",
+        "smsOptOuts",
+        "smsRateLimits",
+        "SmsTemplate",
+        "NewSmsTemplate",
+        "SmsCampaign",
+        "NewSmsCampaign",
+        "SmsMessage",
+        "NewSmsMessage",
+        "SmsConversation",
+        "NewSmsConversation",
+        "SmsCampaignRecipient",
+        "NewSmsCampaignRecipient",
+        "SmsOptOut",
+        "NewSmsOptOut",
+        "SmsRateLimit",
+        "NewSmsRateLimit"
+      ],
+      "exportedTables": [
+        "smsTemplates",
+        "smsCampaigns",
+        "smsMessages",
+        "smsConversations",
+        "smsCampaignRecipients",
+        "smsOptOuts",
+        "smsRateLimits"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "SmsTemplate",
+        "NewSmsTemplate",
+        "SmsCampaign",
+        "NewSmsCampaign",
+        "SmsMessage",
+        "NewSmsMessage",
+        "SmsConversation",
+        "NewSmsConversation",
+        "SmsCampaignRecipient",
+        "NewSmsCampaignRecipient",
+        "SmsOptOut",
+        "NewSmsOptOut",
+        "SmsRateLimit",
+        "NewSmsRateLimit"
+      ],
+      "lineCount": 313
+    },
+    {
+      "file": "signature-workflows-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema",
+        "./documents-schema"
+      ],
+      "exports": [
+        "signatureWorkflows",
+        "signers",
+        "signatureAuditLog",
+        "signatureVerification",
+        "signatureWorkflowStatusEnum",
+        "signerStatusEnum",
+        "signatureProviderEnum"
+      ],
+      "exportedTables": [
+        "signatureWorkflows",
+        "signers",
+        "signatureAuditLog",
+        "signatureVerification"
+      ],
+      "exportedEnums": [
+        "signatureWorkflowStatusEnum",
+        "signerStatusEnum",
+        "signatureProviderEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 309
+    },
+    {
+      "file": "sharing-permissions-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "organizationSharingSettings",
+        "crossOrgAccessLog",
+        "organizationSharingGrants",
+        "OrganizationSharingSettings",
+        "NewOrganizationSharingSettings",
+        "CrossOrgAccessLog",
+        "NewCrossOrgAccessLog",
+        "OrganizationSharingGrant",
+        "NewOrganizationSharingGrant",
+        "SharingLevel",
+        "ResourceType",
+        "AccessType"
+      ],
+      "exportedTables": [
+        "organizationSharingSettings",
+        "crossOrgAccessLog",
+        "organizationSharingGrants"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "OrganizationSharingSettings",
+        "NewOrganizationSharingSettings",
+        "CrossOrgAccessLog",
+        "NewCrossOrgAccessLog",
+        "OrganizationSharingGrant",
+        "NewOrganizationSharingGrant",
+        "SharingLevel",
+        "ResourceType",
+        "AccessType"
+      ],
+      "lineCount": 188
+    },
+    {
+      "file": "shared-clause-library-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./cba-schema",
+        "./cba-clauses-schema"
+      ],
+      "exports": [
+        "sharedClauseLibrary",
+        "clauseLibraryTags",
+        "clauseComparisonsHistory",
+        "SharedClause",
+        "NewSharedClause",
+        "ClauseLibraryTag",
+        "NewClauseLibraryTag",
+        "ClauseComparison",
+        "NewClauseComparison",
+        "SharingLevel",
+        "ClauseType",
+        "ProvinceCode",
+        "SectorType"
+      ],
+      "exportedTables": [
+        "sharedClauseLibrary",
+        "clauseLibraryTags",
+        "clauseComparisonsHistory"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "SharedClause",
+        "NewSharedClause",
+        "ClauseLibraryTag",
+        "NewClauseLibraryTag",
+        "ClauseComparison",
+        "NewClauseComparison",
+        "SharingLevel",
+        "ClauseType",
+        "ProvinceCode",
+        "SectorType"
+      ],
+      "lineCount": 199
+    },
+    {
+      "file": "reports-schema.ts",
+      "imports": [],
+      "exports": [
+        "reports",
+        "reportTemplates",
+        "reportExecutions",
+        "scheduledReports",
+        "reportShares",
+        "reportTypeEnum",
+        "reportCategoryEnum",
+        "reportFormatEnum",
+        "scheduleFrequencyEnum"
+      ],
+      "exportedTables": [
+        "reports",
+        "reportTemplates",
+        "reportExecutions",
+        "scheduledReports",
+        "reportShares"
+      ],
+      "exportedEnums": [
+        "reportTypeEnum",
+        "reportCategoryEnum",
+        "reportFormatEnum",
+        "scheduleFrequencyEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 197
+    },
+    {
+      "file": "recognition-rewards-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "recognitionPrograms",
+        "recognitionAwardTypes",
+        "recognitionAwards",
+        "rewardWalletLedger",
+        "rewardBudgetEnvelopes",
+        "rewardRedemptions",
+        "shopifyConfig",
+        "webhookReceipts",
+        "automationRules",
+        "programStatusEnum",
+        "awardKindEnum",
+        "awardStatusEnum",
+        "walletEventTypeEnum",
+        "walletSourceTypeEnum",
+        "budgetScopeTypeEnum",
+        "budgetPeriodEnum",
+        "redemptionStatusEnum",
+        "redemptionProviderEnum",
+        "webhookProviderEnum",
+        "RecognitionProgram",
+        "NewRecognitionProgram",
+        "RecognitionAwardType",
+        "NewRecognitionAwardType",
+        "RecognitionAward",
+        "NewRecognitionAward",
+        "RewardWalletLedgerEntry",
+        "NewRewardWalletLedgerEntry",
+        "RewardBudgetEnvelope",
+        "NewRewardBudgetEnvelope",
+        "RewardRedemption",
+        "NewRewardRedemption",
+        "ShopifyConfig",
+        "NewShopifyConfig",
+        "WebhookReceipt",
+        "NewWebhookReceipt",
+        "AutomationRule",
+        "NewAutomationRule"
+      ],
+      "exportedTables": [
+        "recognitionPrograms",
+        "recognitionAwardTypes",
+        "recognitionAwards",
+        "rewardWalletLedger",
+        "rewardBudgetEnvelopes",
+        "rewardRedemptions",
+        "shopifyConfig",
+        "webhookReceipts",
+        "automationRules"
+      ],
+      "exportedEnums": [
+        "programStatusEnum",
+        "awardKindEnum",
+        "awardStatusEnum",
+        "walletEventTypeEnum",
+        "walletSourceTypeEnum",
+        "budgetScopeTypeEnum",
+        "budgetPeriodEnum",
+        "redemptionStatusEnum",
+        "redemptionProviderEnum",
+        "webhookProviderEnum"
+      ],
+      "exportedTypes": [
+        "RecognitionProgram",
+        "NewRecognitionProgram",
+        "RecognitionAwardType",
+        "NewRecognitionAwardType",
+        "RecognitionAward",
+        "NewRecognitionAward",
+        "RewardWalletLedgerEntry",
+        "NewRewardWalletLedgerEntry",
+        "RewardBudgetEnvelope",
+        "NewRewardBudgetEnvelope",
+        "RewardRedemption",
+        "NewRewardRedemption",
+        "ShopifyConfig",
+        "NewShopifyConfig",
+        "WebhookReceipt",
+        "NewWebhookReceipt",
+        "AutomationRule",
+        "NewAutomationRule"
+      ],
+      "lineCount": 563
+    },
+    {
+      "file": "push-notifications.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "pushDevices",
+        "pushNotificationTemplates",
+        "pushNotifications",
+        "pushDeliveries",
+        "pushPlatformEnum",
+        "pushNotificationStatusEnum",
+        "pushDeliveryStatusEnum",
+        "pushPriorityEnum",
+        "PushDevice",
+        "NewPushDevice",
+        "PushNotificationTemplate",
+        "NewPushNotificationTemplate",
+        "PushNotification",
+        "NewPushNotification",
+        "PushDelivery",
+        "NewPushDelivery"
+      ],
+      "exportedTables": [
+        "pushDevices",
+        "pushNotificationTemplates",
+        "pushNotifications",
+        "pushDeliveries"
+      ],
+      "exportedEnums": [
+        "pushPlatformEnum",
+        "pushNotificationStatusEnum",
+        "pushDeliveryStatusEnum",
+        "pushPriorityEnum"
+      ],
+      "exportedTypes": [
+        "PushDevice",
+        "NewPushDevice",
+        "PushNotificationTemplate",
+        "NewPushNotificationTemplate",
+        "PushNotification",
+        "NewPushNotification",
+        "PushDelivery",
+        "NewPushDelivery"
+      ],
+      "lineCount": 365
+    },
+    {
+      "file": "provincial-privacy-schema.ts",
+      "imports": [],
+      "exports": [
+        "provincialPrivacyConfig",
+        "provincialConsent",
+        "privacyBreaches",
+        "provincialDataHandling",
+        "dataSubjectAccessRequests"
+      ],
+      "exportedTables": [
+        "provincialPrivacyConfig",
+        "provincialConsent",
+        "privacyBreaches",
+        "provincialDataHandling",
+        "dataSubjectAccessRequests"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 135
+    },
+    {
+      "file": "profiles-schema.ts",
+      "imports": [],
+      "exports": [
+        "profilesTable",
+        "membershipEnum",
+        "paymentProviderEnum",
+        "InsertProfile",
+        "SelectProfile"
+      ],
+      "exportedTables": [
+        "profilesTable"
+      ],
+      "exportedEnums": [
+        "membershipEnum",
+        "paymentProviderEnum"
+      ],
+      "exportedTypes": [
+        "InsertProfile",
+        "SelectProfile"
+      ],
+      "lineCount": 82
+    },
+    {
+      "file": "pending-profiles-schema.ts",
+      "imports": [
+        "./profiles-schema"
+      ],
+      "exports": [
+        "pendingProfilesTable",
+        "InsertPendingProfile",
+        "SelectPendingProfile"
+      ],
+      "exportedTables": [
+        "pendingProfilesTable"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "InsertPendingProfile",
+        "SelectPendingProfile"
+      ],
+      "lineCount": 43
+    },
+    {
+      "file": "organizing-tools-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "organizingCampaigns",
+        "organizingContacts",
+        "cardSigningEvents",
+        "nlrbClrbFilings",
+        "unionRepresentationVotes",
+        "fieldOrganizerActivities",
+        "employerResponses",
+        "organizingCampaignMilestones",
+        "OrganizingCampaign",
+        "NewOrganizingCampaign",
+        "OrganizingContact",
+        "NewOrganizingContact",
+        "CardSigningEvent",
+        "NewCardSigningEvent",
+        "NlrbClrbFiling",
+        "NewNlrbClrbFiling",
+        "UnionRepresentationVote",
+        "NewUnionRepresentationVote",
+        "FieldOrganizerActivity",
+        "NewFieldOrganizerActivity",
+        "EmployerResponse",
+        "NewEmployerResponse",
+        "OrganizingCampaignMilestone",
+        "NewOrganizingCampaignMilestone"
+      ],
+      "exportedTables": [
+        "organizingCampaigns",
+        "organizingContacts",
+        "cardSigningEvents",
+        "nlrbClrbFilings",
+        "unionRepresentationVotes",
+        "fieldOrganizerActivities",
+        "employerResponses",
+        "organizingCampaignMilestones"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "OrganizingCampaign",
+        "NewOrganizingCampaign",
+        "OrganizingContact",
+        "NewOrganizingContact",
+        "CardSigningEvent",
+        "NewCardSigningEvent",
+        "NlrbClrbFiling",
+        "NewNlrbClrbFiling",
+        "UnionRepresentationVote",
+        "NewUnionRepresentationVote",
+        "FieldOrganizerActivity",
+        "NewFieldOrganizerActivity",
+        "EmployerResponse",
+        "NewEmployerResponse",
+        "OrganizingCampaignMilestone",
+        "NewOrganizingCampaignMilestone"
+      ],
+      "lineCount": 727
+    },
+    {
+      "file": "organization-members-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./user-management-schema"
+      ],
+      "exports": [
+        "organizationMembers",
+        "memberCategoryEnum",
+        "InsertOrganizationMember",
+        "SelectOrganizationMember"
+      ],
+      "exportedTables": [
+        "organizationMembers"
+      ],
+      "exportedEnums": [
+        "memberCategoryEnum"
+      ],
+      "exportedTypes": [
+        "InsertOrganizationMember",
+        "SelectOrganizationMember"
+      ],
+      "lineCount": 43
+    },
+    {
+      "file": "notifications-schema.ts",
+      "imports": [],
+      "exports": [
+        "userNotificationPreferences",
+        "notificationTracking",
+        "inAppNotifications",
+        "notificationHistory",
+        "notifications",
+        "notificationTemplates",
+        "notificationQueue",
+        "notificationDeliveryLog",
+        "notificationBounces",
+        "notificationChannelEnum",
+        "notificationStatusEnum",
+        "notificationTypeEnum",
+        "notificationPriorityEnum",
+        "digestFrequencyEnum",
+        "notificationScheduleStatusEnum",
+        "notificationTemplateStatusEnum",
+        "notificationTemplateTypeEnum",
+        "notificationQueueStatusEnum",
+        "notificationBounceTypeEnum",
+        "NotificationTracking",
+        "NewNotificationTracking",
+        "Notification",
+        "NewNotification",
+        "UserNotificationPreferences",
+        "NewUserNotificationPreferences",
+        "InAppNotification",
+        "NewInAppNotification",
+        "NotificationHistory",
+        "NewNotificationHistory"
+      ],
+      "exportedTables": [
+        "userNotificationPreferences",
+        "notificationTracking",
+        "inAppNotifications",
+        "notificationHistory",
+        "notifications",
+        "notificationTemplates",
+        "notificationQueue",
+        "notificationDeliveryLog",
+        "notificationBounces"
+      ],
+      "exportedEnums": [
+        "notificationChannelEnum",
+        "notificationStatusEnum",
+        "notificationTypeEnum",
+        "notificationPriorityEnum",
+        "digestFrequencyEnum",
+        "notificationScheduleStatusEnum",
+        "notificationTemplateStatusEnum",
+        "notificationTemplateTypeEnum",
+        "notificationQueueStatusEnum",
+        "notificationBounceTypeEnum"
+      ],
+      "exportedTypes": [
+        "NotificationTracking",
+        "NewNotificationTracking",
+        "Notification",
+        "NewNotification",
+        "UserNotificationPreferences",
+        "NewUserNotificationPreferences",
+        "InAppNotification",
+        "NewInAppNotification",
+        "NotificationHistory",
+        "NewNotificationHistory"
+      ],
+      "lineCount": 453
+    },
+    {
+      "file": "newsletter-schema.ts",
+      "imports": [
+        "./profiles-schema",
+        "../schema-organizations"
+      ],
+      "exports": [
+        "newsletterTemplates",
+        "newsletterDistributionLists",
+        "newsletterListSubscribers",
+        "newsletterCampaigns",
+        "newsletterRecipients",
+        "newsletterEngagement",
+        "templateCategoryEnum",
+        "listTypeEnum",
+        "subscriberStatusEnum",
+        "campaignStatusEnum",
+        "recipientStatusEnum",
+        "bounceTypeEnum",
+        "engagementEventEnum",
+        "NewsletterTemplate",
+        "NewNewsletterTemplate",
+        "NewsletterDistributionList",
+        "NewNewsletterDistributionList",
+        "NewsletterListSubscriber",
+        "NewNewsletterListSubscriber",
+        "NewsletterCampaign",
+        "NewNewsletterCampaign",
+        "NewsletterRecipient",
+        "NewNewsletterRecipient",
+        "NewsletterEngagement",
+        "NewNewsletterEngagement"
+      ],
+      "exportedTables": [
+        "newsletterTemplates",
+        "newsletterDistributionLists",
+        "newsletterListSubscribers",
+        "newsletterCampaigns",
+        "newsletterRecipients",
+        "newsletterEngagement"
+      ],
+      "exportedEnums": [
+        "templateCategoryEnum",
+        "listTypeEnum",
+        "subscriberStatusEnum",
+        "campaignStatusEnum",
+        "recipientStatusEnum",
+        "bounceTypeEnum",
+        "engagementEventEnum"
+      ],
+      "exportedTypes": [
+        "NewsletterTemplate",
+        "NewNewsletterTemplate",
+        "NewsletterDistributionList",
+        "NewNewsletterDistributionList",
+        "NewsletterListSubscriber",
+        "NewNewsletterListSubscriber",
+        "NewsletterCampaign",
+        "NewNewsletterCampaign",
+        "NewsletterRecipient",
+        "NewNewsletterRecipient",
+        "NewsletterEngagement",
+        "NewNewsletterEngagement"
+      ],
+      "lineCount": 440
+    },
+    {
+      "file": "ml-predictions-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "mlPredictions",
+        "modelMetadata",
+        "MlPrediction",
+        "InsertMlPrediction",
+        "ModelMetadata",
+        "InsertModelMetadata"
+      ],
+      "exportedTables": [
+        "mlPredictions",
+        "modelMetadata"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "MlPrediction",
+        "InsertMlPrediction",
+        "ModelMetadata",
+        "InsertModelMetadata"
+      ],
+      "lineCount": 74
+    },
+    {
+      "file": "messages-schema.ts",
+      "imports": [],
+      "exports": [
+        "messageThreads",
+        "messages",
+        "messageReadReceipts",
+        "messageParticipants",
+        "messageNotifications",
+        "messageStatusEnum",
+        "messageTypeEnum"
+      ],
+      "exportedTables": [
+        "messageThreads",
+        "messages",
+        "messageReadReceipts",
+        "messageParticipants",
+        "messageNotifications"
+      ],
+      "exportedEnums": [
+        "messageStatusEnum",
+        "messageTypeEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 81
+    },
+    {
+      "file": "member-documents-schema.ts",
+      "imports": [],
+      "exports": [
+        "memberDocuments",
+        "MemberDocument",
+        "NewMemberDocument"
+      ],
+      "exportedTables": [
+        "memberDocuments"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "MemberDocument",
+        "NewMemberDocument"
+      ],
+      "lineCount": 22
+    },
+    {
+      "file": "lrb-agreements-schema.ts",
+      "imports": [],
+      "exports": [
+        "lrbAgreements",
+        "lrbEmployers",
+        "lrbUnions",
+        "lrbSyncLog",
+        "LRBSource",
+        "AgreementStatus",
+        "Sector",
+        "LRBAgreement",
+        "LRBAgreementInsert",
+        "LRBEmployer",
+        "LRBEmployerInsert",
+        "LRBUnion",
+        "LRBUnionInsert",
+        "LRBSyncLog",
+        "LRBSyncLogInsert"
+      ],
+      "exportedTables": [
+        "lrbAgreements",
+        "lrbEmployers",
+        "lrbUnions",
+        "lrbSyncLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "LRBSource",
+        "AgreementStatus",
+        "Sector",
+        "LRBAgreement",
+        "LRBAgreementInsert",
+        "LRBEmployer",
+        "LRBEmployerInsert",
+        "LRBUnion",
+        "LRBUnionInsert",
+        "LRBSyncLog",
+        "LRBSyncLogInsert"
+      ],
+      "lineCount": 229
+    },
+    {
+      "file": "lmbp-immigration-schema.ts",
+      "imports": [],
+      "exports": [
+        "foreignWorkers",
+        "lmbpLetters",
+        "gssApplications",
+        "mentorships",
+        "lmbpComplianceAlerts",
+        "lmbpComplianceReports",
+        "ForeignWorker",
+        "NewForeignWorker",
+        "LMBPLetter",
+        "NewLMBPLetter",
+        "GSSApplication",
+        "NewGSSApplication",
+        "Mentorship",
+        "NewMentorship",
+        "LMBPComplianceAlert",
+        "NewLMBPComplianceAlert",
+        "LMBPComplianceReport",
+        "NewLMBPComplianceReport"
+      ],
+      "exportedTables": [
+        "foreignWorkers",
+        "lmbpLetters",
+        "gssApplications",
+        "mentorships",
+        "lmbpComplianceAlerts",
+        "lmbpComplianceReports"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "ForeignWorker",
+        "NewForeignWorker",
+        "LMBPLetter",
+        "NewLMBPLetter",
+        "GSSApplication",
+        "NewGSSApplication",
+        "Mentorship",
+        "NewMentorship",
+        "LMBPComplianceAlert",
+        "NewLMBPComplianceAlert",
+        "LMBPComplianceReport",
+        "NewLMBPComplianceReport"
+      ],
+      "lineCount": 301
+    },
+    {
+      "file": "joint-trust-fmv-schema.ts",
+      "imports": [],
+      "exports": [
+        "fmvPolicy",
+        "cpiData",
+        "fmvBenchmarks",
+        "procurementRequests",
+        "procurementBids",
+        "independentAppraisals",
+        "cpiAdjustedPricing",
+        "fmvViolations",
+        "fmvAuditLog"
+      ],
+      "exportedTables": [
+        "fmvPolicy",
+        "cpiData",
+        "fmvBenchmarks",
+        "procurementRequests",
+        "procurementBids",
+        "independentAppraisals",
+        "cpiAdjustedPricing",
+        "fmvViolations",
+        "fmvAuditLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 303
+    },
+    {
+      "file": "international-address-schema.ts",
+      "imports": [
+        "./profiles-schema"
+      ],
+      "exports": [
+        "internationalAddresses",
+        "countryAddressFormats",
+        "addressValidationCache",
+        "addressChangeHistory",
+        "addressTypeEnum",
+        "addressStatusEnum",
+        "InternationalAddress",
+        "NewInternationalAddress",
+        "CountryAddressFormat",
+        "NewCountryAddressFormat",
+        "AddressValidationCache",
+        "AddressChangeHistory"
+      ],
+      "exportedTables": [
+        "internationalAddresses",
+        "countryAddressFormats",
+        "addressValidationCache",
+        "addressChangeHistory"
+      ],
+      "exportedEnums": [
+        "addressTypeEnum",
+        "addressStatusEnum"
+      ],
+      "exportedTypes": [
+        "InternationalAddress",
+        "NewInternationalAddress",
+        "CountryAddressFormat",
+        "NewCountryAddressFormat",
+        "AddressValidationCache",
+        "AddressChangeHistory"
+      ],
+      "lineCount": 346
+    },
+    {
+      "file": "indigenous-data-schema.ts",
+      "imports": [],
+      "exports": [
+        "bandCouncils",
+        "bandCouncilConsent",
+        "indigenousMemberData",
+        "indigenousDataAccessLog",
+        "indigenousDataSharingAgreements",
+        "traditionalKnowledgeRegistry"
+      ],
+      "exportedTables": [
+        "bandCouncils",
+        "bandCouncilConsent",
+        "indigenousMemberData",
+        "indigenousDataAccessLog",
+        "indigenousDataSharingAgreements",
+        "traditionalKnowledgeRegistry"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 189
+    },
+    {
+      "file": "index.ts",
+      "imports": [
+        "./profiles-schema",
+        "./pending-profiles-schema",
+        "./collective-agreements-schema",
+        "./cba-clauses-schema",
+        "./claims-schema",
+        "./voting-schema",
+        "./user-management-schema",
+        "./user-uuid-mapping-schema",
+        "./tenant-management-schema",
+        "./audit-security-schema",
+        "./cba-intelligence-schema",
+        "./organization-members-schema",
+        "./notifications-schema",
+        "./calendar-schema",
+        "./deadlines-schema",
+        "./reports-schema",
+        "./dues-transactions-schema",
+        "./autopay-settings-schema",
+        "../schema-organizations",
+        "./shared-clause-library-schema",
+        "./arbitration-precedents-schema",
+        "./sharing-permissions-schema",
+        "./clc-per-capita-schema",
+        "./clc-sync-audit-schema",
+        "./messages-schema",
+        "./sms-communications-schema",
+        "./survey-polling-schema",
+        "./newsletter-schema",
+        "./push-notifications",
+        "./communication-analytics-schema",
+        "./grievance-workflow-schema",
+        "./education-training-schema",
+        "./analytics",
+        "./documents-schema",
+        "./ml-predictions-schema",
+        "./recognition-rewards-schema",
+        "./feature-flags-schema",
+        "./lmbp-immigration-schema",
+        "./governance-schema",
+        "./provincial-privacy-schema",
+        "./indigenous-data-schema",
+        "./strike-fund-tax-schema",
+        "./force-majeure-schema",
+        "./geofence-privacy-schema",
+        "./transfer-pricing-schema",
+        "./founder-conflict-schema",
+        "./joint-trust-fmv-schema",
+        "./certification-management-schema",
+        "./employer-non-interference-schema",
+        "./whiplash-prevention-schema",
+        "./gdpr-compliance-schema",
+        "./e-signature-schema",
+        "./ai-chatbot-schema",
+        "./accessibility-schema",
+        "./international-address-schema",
+        "./wage-benchmarks-schema",
+        "./lrb-agreements-schema",
+        "./clc-partnership-schema",
+        "./congress-memberships-schema",
+        "./award-templates-schema",
+        "./automation-rules-schema",
+        "./grievance-schema",
+        "./organizing-tools-schema",
+        "./defensibility-packs-schema",
+        "./cba-clauses-schema",
+        "./clc-partnership-schema",
+        "./award-templates-schema",
+        "./award-templates-schema",
+        "./automation-rules-schema",
+        "./grievance-schema"
+      ],
+      "exports": [],
+      "exportedTables": [],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 149
+    },
+    {
+      "file": "grievance-workflow-schema.ts",
+      "imports": [
+        "./claims-schema"
+      ],
+      "exports": [
+        "grievanceWorkflows",
+        "grievanceStages",
+        "grievanceTransitions",
+        "grievanceAssignments",
+        "grievanceDocuments",
+        "grievanceDeadlines",
+        "grievanceSettlements",
+        "grievanceCommunications",
+        "grievanceApprovals",
+        "grievanceWorkflowStatusEnum",
+        "grievanceStageTypeEnum",
+        "transitionTriggerTypeEnum",
+        "assignmentStatusEnum",
+        "documentVersionStatusEnum",
+        "settlementStatusEnum",
+        "assignmentRoleEnum",
+        "WorkflowStageConfig",
+        "StageCondition",
+        "StageAction",
+        "PaymentSchedule",
+        "SettlementTerms",
+        "SignatureData",
+        "GrievanceWorkflow",
+        "InsertGrievanceWorkflow",
+        "GrievanceStage",
+        "InsertGrievanceStage",
+        "GrievanceTransition",
+        "InsertGrievanceTransition",
+        "GrievanceApproval",
+        "InsertGrievanceApproval",
+        "GrievanceAssignment",
+        "InsertGrievanceAssignment",
+        "GrievanceDocument",
+        "InsertGrievanceDocument",
+        "GrievanceDeadline",
+        "InsertGrievanceDeadline",
+        "GrievanceSettlement",
+        "InsertGrievanceSettlement",
+        "GrievanceCommunication",
+        "InsertGrievanceCommunication"
+      ],
+      "exportedTables": [
+        "grievanceWorkflows",
+        "grievanceStages",
+        "grievanceTransitions",
+        "grievanceAssignments",
+        "grievanceDocuments",
+        "grievanceDeadlines",
+        "grievanceSettlements",
+        "grievanceCommunications",
+        "grievanceApprovals"
+      ],
+      "exportedEnums": [
+        "grievanceWorkflowStatusEnum",
+        "grievanceStageTypeEnum",
+        "transitionTriggerTypeEnum",
+        "assignmentStatusEnum",
+        "documentVersionStatusEnum",
+        "settlementStatusEnum",
+        "assignmentRoleEnum"
+      ],
+      "exportedTypes": [
+        "WorkflowStageConfig",
+        "StageCondition",
+        "StageAction",
+        "PaymentSchedule",
+        "SettlementTerms",
+        "SignatureData",
+        "GrievanceWorkflow",
+        "InsertGrievanceWorkflow",
+        "GrievanceStage",
+        "InsertGrievanceStage",
+        "GrievanceTransition",
+        "InsertGrievanceTransition",
+        "GrievanceApproval",
+        "InsertGrievanceApproval",
+        "GrievanceAssignment",
+        "InsertGrievanceAssignment",
+        "GrievanceDocument",
+        "InsertGrievanceDocument",
+        "GrievanceDeadline",
+        "InsertGrievanceDeadline",
+        "GrievanceSettlement",
+        "InsertGrievanceSettlement",
+        "GrievanceCommunication",
+        "InsertGrievanceCommunication"
+      ],
+      "lineCount": 708
+    },
+    {
+      "file": "grievance-schema.ts",
+      "imports": [],
+      "exports": [
+        "grievances",
+        "grievanceResponses",
+        "arbitrations",
+        "settlements",
+        "grievanceTimeline",
+        "grievanceDeadlines",
+        "grievanceTypeEnum",
+        "grievanceStatusEnum",
+        "grievancePriorityEnum",
+        "grievanceStepEnum",
+        "arbitrationStatusEnum",
+        "settlementTypeEnum",
+        "GrievanceType",
+        "GrievanceStatus",
+        "GrievancePriority",
+        "GrievanceStep",
+        "ArbitrationStatus",
+        "SettlementType",
+        "Grievance",
+        "GrievanceInsert",
+        "GrievanceResponse",
+        "Arbitration",
+        "Settlement",
+        "GrievanceTimeline",
+        "GrievanceDeadline"
+      ],
+      "exportedTables": [
+        "grievances",
+        "grievanceResponses",
+        "arbitrations",
+        "settlements",
+        "grievanceTimeline",
+        "grievanceDeadlines"
+      ],
+      "exportedEnums": [
+        "grievanceTypeEnum",
+        "grievanceStatusEnum",
+        "grievancePriorityEnum",
+        "grievanceStepEnum",
+        "arbitrationStatusEnum",
+        "settlementTypeEnum"
+      ],
+      "exportedTypes": [
+        "GrievanceType",
+        "GrievanceStatus",
+        "GrievancePriority",
+        "GrievanceStep",
+        "ArbitrationStatus",
+        "SettlementType",
+        "Grievance",
+        "GrievanceInsert",
+        "GrievanceResponse",
+        "Arbitration",
+        "Settlement",
+        "GrievanceTimeline",
+        "GrievanceDeadline"
+      ],
+      "lineCount": 415
+    },
+    {
+      "file": "governance-schema.ts",
+      "imports": [],
+      "exports": [
+        "goldenShares",
+        "reservedMatterVotes",
+        "missionAudits",
+        "governanceEvents",
+        "councilElections",
+        "GoldenShare",
+        "NewGoldenShare",
+        "ReservedMatterVote",
+        "NewReservedMatterVote",
+        "MissionAudit",
+        "NewMissionAudit",
+        "GovernanceEvent",
+        "NewGovernanceEvent",
+        "CouncilElection",
+        "NewCouncilElection"
+      ],
+      "exportedTables": [
+        "goldenShares",
+        "reservedMatterVotes",
+        "missionAudits",
+        "governanceEvents",
+        "councilElections"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "GoldenShare",
+        "NewGoldenShare",
+        "ReservedMatterVote",
+        "NewReservedMatterVote",
+        "MissionAudit",
+        "NewMissionAudit",
+        "GovernanceEvent",
+        "NewGovernanceEvent",
+        "CouncilElection",
+        "NewCouncilElection"
+      ],
+      "lineCount": 243
+    },
+    {
+      "file": "geofence-privacy-schema.ts",
+      "imports": [],
+      "exports": [
+        "memberLocationConsent",
+        "locationTracking",
+        "geofences",
+        "geofenceEvents",
+        "locationTrackingAudit",
+        "locationDeletionLog",
+        "locationTrackingConfig"
+      ],
+      "exportedTables": [
+        "memberLocationConsent",
+        "locationTracking",
+        "geofences",
+        "geofenceEvents",
+        "locationTrackingAudit",
+        "locationDeletionLog",
+        "locationTrackingConfig"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 210
+    },
+    {
+      "file": "gdpr-compliance-schema.ts",
+      "imports": [
+        "./profiles-schema"
+      ],
+      "exports": [
+        "userConsents",
+        "cookieConsents",
+        "gdprDataRequests",
+        "dataProcessingRecords",
+        "dataRetentionPolicies",
+        "dataAnonymizationLog",
+        "consentTypeEnum",
+        "consentStatusEnum",
+        "processingPurposeEnum",
+        "gdprRequestTypeEnum",
+        "gdprRequestStatusEnum",
+        "UserConsent",
+        "NewUserConsent",
+        "CookieConsent",
+        "NewCookieConsent",
+        "GdprDataRequest",
+        "NewGdprDataRequest",
+        "DataProcessingRecord",
+        "NewDataProcessingRecord",
+        "DataRetentionPolicy",
+        "NewDataRetentionPolicy",
+        "DataAnonymizationLog",
+        "NewDataAnonymizationLog"
+      ],
+      "exportedTables": [
+        "userConsents",
+        "cookieConsents",
+        "gdprDataRequests",
+        "dataProcessingRecords",
+        "dataRetentionPolicies",
+        "dataAnonymizationLog"
+      ],
+      "exportedEnums": [
+        "consentTypeEnum",
+        "consentStatusEnum",
+        "processingPurposeEnum",
+        "gdprRequestTypeEnum",
+        "gdprRequestStatusEnum"
+      ],
+      "exportedTypes": [
+        "UserConsent",
+        "NewUserConsent",
+        "CookieConsent",
+        "NewCookieConsent",
+        "GdprDataRequest",
+        "NewGdprDataRequest",
+        "DataProcessingRecord",
+        "NewDataProcessingRecord",
+        "DataRetentionPolicy",
+        "NewDataRetentionPolicy",
+        "DataAnonymizationLog",
+        "NewDataAnonymizationLog"
+      ],
+      "lineCount": 385
+    },
+    {
+      "file": "founder-conflict-schema.ts",
+      "imports": [],
+      "exports": [
+        "conflictOfInterestPolicy",
+        "blindTrustRegistry",
+        "conflictDisclosures",
+        "armsLengthVerification",
+        "recusalTracking",
+        "conflictReviewCommittee",
+        "conflictTraining",
+        "conflictAuditLog"
+      ],
+      "exportedTables": [
+        "conflictOfInterestPolicy",
+        "blindTrustRegistry",
+        "conflictDisclosures",
+        "armsLengthVerification",
+        "recusalTracking",
+        "conflictReviewCommittee",
+        "conflictTraining",
+        "conflictAuditLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 279
+    },
+    {
+      "file": "force-majeure-schema.ts",
+      "imports": [],
+      "exports": [
+        "swissColdStorage",
+        "breakGlassSystem",
+        "disasterRecoveryDrills",
+        "keyHolderRegistry",
+        "recoveryTimeObjectives",
+        "emergencyDeclarations",
+        "breakGlassActivations"
+      ],
+      "exportedTables": [
+        "swissColdStorage",
+        "breakGlassSystem",
+        "disasterRecoveryDrills",
+        "keyHolderRegistry",
+        "recoveryTimeObjectives",
+        "emergencyDeclarations",
+        "breakGlassActivations"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 278
+    },
+    {
+      "file": "financial-payments-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "payments",
+        "paymentCycles",
+        "paymentMethods",
+        "bankReconciliation",
+        "paymentDisputes",
+        "stripeWebhookEvents",
+        "paymentStatusEnum",
+        "paymentMethodEnum",
+        "paymentTypeEnum",
+        "reconciliationStatusEnum"
+      ],
+      "exportedTables": [
+        "payments",
+        "paymentCycles",
+        "paymentMethods",
+        "bankReconciliation",
+        "paymentDisputes",
+        "stripeWebhookEvents"
+      ],
+      "exportedEnums": [
+        "paymentStatusEnum",
+        "paymentMethodEnum",
+        "paymentTypeEnum",
+        "reconciliationStatusEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 390
+    },
+    {
+      "file": "feature-flags-schema.ts",
+      "imports": [],
+      "exports": [
+        "featureFlags",
+        "FeatureFlag",
+        "NewFeatureFlag"
+      ],
+      "exportedTables": [
+        "featureFlags"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "FeatureFlag",
+        "NewFeatureFlag"
+      ],
+      "lineCount": 42
+    },
+    {
+      "file": "erp-integration-schema.ts",
+      "imports": [],
+      "exports": [
+        "erpConnectors",
+        "chartOfAccounts",
+        "glAccountMappings",
+        "journalEntries",
+        "journalEntryLines",
+        "erpInvoices",
+        "bankAccounts",
+        "bankTransactions",
+        "bankReconciliations",
+        "syncJobs",
+        "financialAuditLog",
+        "currencyExchangeRates",
+        "erpSystemEnum",
+        "accountTypeEnum",
+        "syncStatusEnum",
+        "syncDirectionEnum",
+        "auditActionEnum"
+      ],
+      "exportedTables": [
+        "erpConnectors",
+        "chartOfAccounts",
+        "glAccountMappings",
+        "journalEntries",
+        "journalEntryLines",
+        "erpInvoices",
+        "bankAccounts",
+        "bankTransactions",
+        "bankReconciliations",
+        "syncJobs",
+        "financialAuditLog",
+        "currencyExchangeRates"
+      ],
+      "exportedEnums": [
+        "erpSystemEnum",
+        "accountTypeEnum",
+        "syncStatusEnum",
+        "syncDirectionEnum",
+        "auditActionEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 519
+    },
+    {
+      "file": "employer-non-interference-schema.ts",
+      "imports": [],
+      "exports": [
+        "dataClassificationPolicy",
+        "dataClassificationRegistry",
+        "firewallAccessRules",
+        "employerAccessAttempts",
+        "accessJustificationRequests",
+        "unionOnlyDataTags",
+        "firewallViolations",
+        "firewallComplianceAudit"
+      ],
+      "exportedTables": [
+        "dataClassificationPolicy",
+        "dataClassificationRegistry",
+        "firewallAccessRules",
+        "employerAccessAttempts",
+        "accessJustificationRequests",
+        "unionOnlyDataTags",
+        "firewallViolations",
+        "firewallComplianceAudit"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 175
+    },
+    {
+      "file": "education-training-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "trainingCourses",
+        "courseSessions",
+        "courseRegistrations",
+        "memberCertifications",
+        "trainingPrograms",
+        "programEnrollments"
+      ],
+      "exportedTables": [
+        "trainingCourses",
+        "courseSessions",
+        "courseRegistrations",
+        "memberCertifications",
+        "trainingPrograms",
+        "programEnrollments"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 436
+    },
+    {
+      "file": "e-signature-schema.ts",
+      "imports": [
+        "./profiles-schema"
+      ],
+      "exports": [
+        "signatureDocuments",
+        "documentSigners",
+        "signatureAuditTrail",
+        "signatureTemplates",
+        "signatureWebhooksLog",
+        "signatureProviderEnum",
+        "signatureDocumentStatusEnum",
+        "signerStatusEnum",
+        "signatureTypeEnum",
+        "authenticationMethodEnum",
+        "SignatureDocument",
+        "NewSignatureDocument",
+        "DocumentSigner",
+        "NewDocumentSigner",
+        "SignatureAuditTrail",
+        "NewSignatureAuditTrail",
+        "SignatureTemplate",
+        "NewSignatureTemplate",
+        "SignatureWebhookLog",
+        "NewSignatureWebhookLog"
+      ],
+      "exportedTables": [
+        "signatureDocuments",
+        "documentSigners",
+        "signatureAuditTrail",
+        "signatureTemplates",
+        "signatureWebhooksLog"
+      ],
+      "exportedEnums": [
+        "signatureProviderEnum",
+        "signatureDocumentStatusEnum",
+        "signerStatusEnum",
+        "signatureTypeEnum",
+        "authenticationMethodEnum"
+      ],
+      "exportedTypes": [
+        "SignatureDocument",
+        "NewSignatureDocument",
+        "DocumentSigner",
+        "NewDocumentSigner",
+        "SignatureAuditTrail",
+        "NewSignatureAuditTrail",
+        "SignatureTemplate",
+        "NewSignatureTemplate",
+        "SignatureWebhookLog",
+        "NewSignatureWebhookLog"
+      ],
+      "lineCount": 466
+    },
+    {
+      "file": "dues-transactions-schema.ts",
+      "imports": [],
+      "exports": [
+        "duesTransactions",
+        "transactionStatusEnum",
+        "transactionTypeEnum",
+        "DuesTransaction",
+        "NewDuesTransaction"
+      ],
+      "exportedTables": [
+        "duesTransactions"
+      ],
+      "exportedEnums": [
+        "transactionStatusEnum",
+        "transactionTypeEnum"
+      ],
+      "exportedTypes": [
+        "DuesTransaction",
+        "NewDuesTransaction"
+      ],
+      "lineCount": 67
+    },
+    {
+      "file": "documents-schema.ts",
+      "imports": [],
+      "exports": [
+        "documentFolders",
+        "documents",
+        "Document",
+        "NewDocument",
+        "DocumentFolder",
+        "NewDocumentFolder"
+      ],
+      "exportedTables": [
+        "documentFolders",
+        "documents"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "Document",
+        "NewDocument",
+        "DocumentFolder",
+        "NewDocumentFolder"
+      ],
+      "lineCount": 61
+    },
+    {
+      "file": "defensibility-packs-schema.ts",
+      "imports": [],
+      "exports": [
+        "defensibilityPacks",
+        "packDownloadLog",
+        "packVerificationLog"
+      ],
+      "exportedTables": [
+        "defensibilityPacks",
+        "packDownloadLog",
+        "packVerificationLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 140
+    },
+    {
+      "file": "deadlines-schema.ts",
+      "imports": [],
+      "exports": [
+        "deadlineRules",
+        "deadlines",
+        "deadlineExtensions",
+        "deadlineAlerts",
+        "holidays",
+        "deadlineStatusEnum",
+        "deadlinePriorityEnum",
+        "extensionStatusEnum",
+        "alertSeverityEnum",
+        "deliveryMethodEnum",
+        "deliveryStatusEnum"
+      ],
+      "exportedTables": [
+        "deadlineRules",
+        "deadlines",
+        "deadlineExtensions",
+        "deadlineAlerts",
+        "holidays"
+      ],
+      "exportedEnums": [
+        "deadlineStatusEnum",
+        "deadlinePriorityEnum",
+        "extensionStatusEnum",
+        "alertSeverityEnum",
+        "deliveryMethodEnum",
+        "deliveryStatusEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 223
+    },
+    {
+      "file": "congress-memberships-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "congressMemberships",
+        "congressMembershipStatusEnum"
+      ],
+      "exportedTables": [
+        "congressMemberships"
+      ],
+      "exportedEnums": [
+        "congressMembershipStatusEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 65
+    },
+    {
+      "file": "communication-analytics-schema.ts",
+      "imports": [
+        "./profiles-schema",
+        "../schema-organizations"
+      ],
+      "exports": [
+        "communicationAnalytics",
+        "userEngagementScores",
+        "communicationPreferences",
+        "communicationChannelEnum",
+        "CommunicationAnalytics",
+        "NewCommunicationAnalytics",
+        "UserEngagementScore",
+        "NewUserEngagementScore",
+        "CommunicationPreference",
+        "NewCommunicationPreference"
+      ],
+      "exportedTables": [
+        "communicationAnalytics",
+        "userEngagementScores",
+        "communicationPreferences"
+      ],
+      "exportedEnums": [
+        "communicationChannelEnum"
+      ],
+      "exportedTypes": [
+        "CommunicationAnalytics",
+        "NewCommunicationAnalytics",
+        "UserEngagementScore",
+        "NewUserEngagementScore",
+        "CommunicationPreference",
+        "NewCommunicationPreference"
+      ],
+      "lineCount": 214
+    },
+    {
+      "file": "collective-agreements-schema.ts",
+      "imports": [],
+      "exports": [
+        "collectiveAgreements",
+        "cbaVersionHistory",
+        "cbaContacts",
+        "jurisdictionEnum",
+        "cbaLanguageEnum",
+        "cbaStatusEnum"
+      ],
+      "exportedTables": [
+        "collectiveAgreements",
+        "cbaVersionHistory",
+        "cbaContacts"
+      ],
+      "exportedEnums": [
+        "jurisdictionEnum",
+        "cbaLanguageEnum",
+        "cbaStatusEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 153
+    },
+    {
+      "file": "cms-website-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "cmsTemplates",
+        "cmsPages",
+        "cmsBlocks",
+        "cmsNavigationMenus",
+        "cmsMediaLibrary",
+        "donationCampaigns",
+        "donations",
+        "donationReceipts",
+        "publicEvents",
+        "eventRegistrations",
+        "eventCheckIns",
+        "jobPostings",
+        "jobApplications",
+        "jobSaved",
+        "websiteSettings",
+        "pageAnalytics",
+        "CmsTemplate",
+        "NewCmsTemplate",
+        "CmsPage",
+        "NewCmsPage",
+        "CmsBlock",
+        "NewCmsBlock",
+        "CmsNavigationMenu",
+        "NewCmsNavigationMenu",
+        "CmsMedia",
+        "NewCmsMedia",
+        "DonationCampaign",
+        "NewDonationCampaign",
+        "Donation",
+        "NewDonation",
+        "DonationReceipt",
+        "NewDonationReceipt",
+        "PublicEvent",
+        "NewPublicEvent",
+        "EventRegistration",
+        "NewEventRegistration",
+        "EventCheckIn",
+        "NewEventCheckIn",
+        "JobPosting",
+        "NewJobPosting",
+        "JobApplication",
+        "NewJobApplication",
+        "JobSaved",
+        "NewJobSaved",
+        "WebsiteSettings",
+        "NewWebsiteSettings",
+        "PageAnalytics",
+        "NewPageAnalytics"
+      ],
+      "exportedTables": [
+        "cmsTemplates",
+        "cmsPages",
+        "cmsBlocks",
+        "cmsNavigationMenus",
+        "cmsMediaLibrary",
+        "donationCampaigns",
+        "donations",
+        "donationReceipts",
+        "publicEvents",
+        "eventRegistrations",
+        "eventCheckIns",
+        "jobPostings",
+        "jobApplications",
+        "jobSaved",
+        "websiteSettings",
+        "pageAnalytics"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "CmsTemplate",
+        "NewCmsTemplate",
+        "CmsPage",
+        "NewCmsPage",
+        "CmsBlock",
+        "NewCmsBlock",
+        "CmsNavigationMenu",
+        "NewCmsNavigationMenu",
+        "CmsMedia",
+        "NewCmsMedia",
+        "DonationCampaign",
+        "NewDonationCampaign",
+        "Donation",
+        "NewDonation",
+        "DonationReceipt",
+        "NewDonationReceipt",
+        "PublicEvent",
+        "NewPublicEvent",
+        "EventRegistration",
+        "NewEventRegistration",
+        "EventCheckIn",
+        "NewEventCheckIn",
+        "JobPosting",
+        "NewJobPosting",
+        "JobApplication",
+        "NewJobApplication",
+        "JobSaved",
+        "NewJobSaved",
+        "WebsiteSettings",
+        "NewWebsiteSettings",
+        "PageAnalytics",
+        "NewPageAnalytics"
+      ],
+      "lineCount": 717
+    },
+    {
+      "file": "clc-sync-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "clcSyncLog",
+        "clcWebhookLog",
+        "clcRemittanceMapping",
+        "clcApiConfig",
+        "clcSyncStatusEnum",
+        "clcSyncTypeEnum",
+        "clcWebhookStatusEnum"
+      ],
+      "exportedTables": [
+        "clcSyncLog",
+        "clcWebhookLog",
+        "clcRemittanceMapping",
+        "clcApiConfig"
+      ],
+      "exportedEnums": [
+        "clcSyncStatusEnum",
+        "clcSyncTypeEnum",
+        "clcWebhookStatusEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 284
+    },
+    {
+      "file": "clc-sync-audit-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "clcOrganizationSyncLog",
+        "clcWebhookLog",
+        "chartOfAccounts",
+        "ClcOrganizationSyncLog",
+        "NewClcOrganizationSyncLog",
+        "ClcWebhookLog",
+        "NewClcWebhookLog",
+        "ChartOfAccount",
+        "NewChartOfAccount"
+      ],
+      "exportedTables": [
+        "clcOrganizationSyncLog",
+        "clcWebhookLog",
+        "chartOfAccounts"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "ClcOrganizationSyncLog",
+        "NewClcOrganizationSyncLog",
+        "ClcWebhookLog",
+        "NewClcWebhookLog",
+        "ChartOfAccount",
+        "NewChartOfAccount"
+      ],
+      "lineCount": 164
+    },
+    {
+      "file": "clc-per-capita-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "perCapitaRemittances",
+        "clcChartOfAccounts",
+        "remittanceApprovals",
+        "clcSyncLog",
+        "clcWebhookLog",
+        "organizationContacts",
+        "notificationLog",
+        "PerCapitaRemittance",
+        "NewPerCapitaRemittance",
+        "ClcChartOfAccount",
+        "NewClcChartOfAccount",
+        "RemittanceApproval",
+        "NewRemittanceApproval",
+        "ClcSyncLogEntry",
+        "NewClcSyncLogEntry",
+        "ClcWebhookLogEntry",
+        "NewClcWebhookLogEntry",
+        "OrganizationContact",
+        "NewOrganizationContact",
+        "NotificationLogEntry",
+        "NewNotificationLogEntry"
+      ],
+      "exportedTables": [
+        "perCapitaRemittances",
+        "clcChartOfAccounts",
+        "remittanceApprovals",
+        "clcSyncLog",
+        "clcWebhookLog",
+        "organizationContacts",
+        "notificationLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "PerCapitaRemittance",
+        "NewPerCapitaRemittance",
+        "ClcChartOfAccount",
+        "NewClcChartOfAccount",
+        "RemittanceApproval",
+        "NewRemittanceApproval",
+        "ClcSyncLogEntry",
+        "NewClcSyncLogEntry",
+        "ClcWebhookLogEntry",
+        "NewClcWebhookLogEntry",
+        "OrganizationContact",
+        "NewOrganizationContact",
+        "NotificationLogEntry",
+        "NewNotificationLogEntry"
+      ],
+      "lineCount": 354
+    },
+    {
+      "file": "clc-partnership-schema.ts",
+      "imports": [],
+      "exports": [
+        "clcPerCapitaBenchmarks",
+        "clcUnionDensity",
+        "clcBargainingTrends",
+        "clcSyncLog",
+        "clcOAuthTokens",
+        "CLCDataType",
+        "CLCSyncStatus",
+        "CLCPerCapitaBenchmark",
+        "CLCPerCapitaBenchmarkInsert",
+        "CLCUnionDensity",
+        "CLCUnionDensityInsert",
+        "CLCBargainingTrend",
+        "CLCBargainingTrendInsert",
+        "CLCSyncLog",
+        "CLCSyncLogInsert",
+        "CLCOAuthToken",
+        "CLCOAuthTokenInsert"
+      ],
+      "exportedTables": [
+        "clcPerCapitaBenchmarks",
+        "clcUnionDensity",
+        "clcBargainingTrends",
+        "clcSyncLog",
+        "clcOAuthTokens"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "CLCDataType",
+        "CLCSyncStatus",
+        "CLCPerCapitaBenchmark",
+        "CLCPerCapitaBenchmarkInsert",
+        "CLCUnionDensity",
+        "CLCUnionDensityInsert",
+        "CLCBargainingTrend",
+        "CLCBargainingTrendInsert",
+        "CLCSyncLog",
+        "CLCSyncLogInsert",
+        "CLCOAuthToken",
+        "CLCOAuthTokenInsert"
+      ],
+      "lineCount": 259
+    },
+    {
+      "file": "claims-schema.ts",
+      "imports": [],
+      "exports": [
+        "claims",
+        "claimUpdates",
+        "claimStatusEnum",
+        "claimPriorityEnum",
+        "claimTypeEnum",
+        "visibilityScopeEnum",
+        "Claim",
+        "NewClaim",
+        "ClaimUpdate",
+        "NewClaimUpdate"
+      ],
+      "exportedTables": [
+        "claims",
+        "claimUpdates"
+      ],
+      "exportedEnums": [
+        "claimStatusEnum",
+        "claimPriorityEnum",
+        "claimTypeEnum",
+        "visibilityScopeEnum"
+      ],
+      "exportedTypes": [
+        "Claim",
+        "NewClaim",
+        "ClaimUpdate",
+        "NewClaimUpdate"
+      ],
+      "lineCount": 136
+    },
+    {
+      "file": "chart-of-accounts-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "chartOfAccounts",
+        "costCenters",
+        "glAccountMappings",
+        "glTransactionLog",
+        "glTrialBalance",
+        "accountTypeEnum",
+        "accountStatusEnum",
+        "costCenterTypeEnum"
+      ],
+      "exportedTables": [
+        "chartOfAccounts",
+        "costCenters",
+        "glAccountMappings",
+        "glTransactionLog",
+        "glTrialBalance"
+      ],
+      "exportedEnums": [
+        "accountTypeEnum",
+        "accountStatusEnum",
+        "costCenterTypeEnum"
+      ],
+      "exportedTypes": [],
+      "lineCount": 393
+    },
+    {
+      "file": "certification-management-schema.ts",
+      "imports": [],
+      "exports": [
+        "certificationTypes",
+        "staffCertifications",
+        "continuingEducation",
+        "licenseRenewals",
+        "certificationAlerts",
+        "certificationComplianceReports",
+        "certificationAuditLog"
+      ],
+      "exportedTables": [
+        "certificationTypes",
+        "staffCertifications",
+        "continuingEducation",
+        "licenseRenewals",
+        "certificationAlerts",
+        "certificationComplianceReports",
+        "certificationAuditLog"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 224
+    },
+    {
+      "file": "cba-schema.ts",
+      "imports": [],
+      "exports": [
+        "cba"
+      ],
+      "exportedTables": [
+        "cba"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 25
+    },
+    {
+      "file": "cba-intelligence-schema.ts",
+      "imports": [
+        "./collective-agreements-schema",
+        "./cba-clauses-schema"
+      ],
+      "exports": [
+        "arbitrationDecisions",
+        "arbitratorProfiles",
+        "bargainingNotes",
+        "cbaFootnotes",
+        "claimPrecedentAnalysis",
+        "tribunalTypeEnum",
+        "decisionTypeEnum",
+        "outcomeEnum",
+        "precedentValueEnum",
+        "DecisionTypeEnum",
+        "OutcomeEnum",
+        "PrecedentValueEnum"
+      ],
+      "exportedTables": [
+        "arbitrationDecisions",
+        "arbitratorProfiles",
+        "bargainingNotes",
+        "cbaFootnotes",
+        "claimPrecedentAnalysis"
+      ],
+      "exportedEnums": [
+        "tribunalTypeEnum",
+        "decisionTypeEnum",
+        "outcomeEnum",
+        "precedentValueEnum"
+      ],
+      "exportedTypes": [
+        "DecisionTypeEnum",
+        "OutcomeEnum",
+        "PrecedentValueEnum"
+      ],
+      "lineCount": 334
+    },
+    {
+      "file": "cba-clauses-schema.ts",
+      "imports": [
+        "./collective-agreements-schema"
+      ],
+      "exports": [
+        "cbaClause",
+        "clauseComparisons",
+        "wageProgressions",
+        "benefitComparisons",
+        "clauseTypeEnum",
+        "entityTypeEnum",
+        "ClauseType"
+      ],
+      "exportedTables": [
+        "cbaClause",
+        "clauseComparisons",
+        "wageProgressions",
+        "benefitComparisons"
+      ],
+      "exportedEnums": [
+        "clauseTypeEnum",
+        "entityTypeEnum"
+      ],
+      "exportedTypes": [
+        "ClauseType"
+      ],
+      "lineCount": 203
+    },
+    {
+      "file": "calendar-schema.ts",
+      "imports": [],
+      "exports": [
+        "calendars",
+        "calendarEvents",
+        "eventAttendees",
+        "meetingRooms",
+        "roomBookings",
+        "calendarSharing",
+        "externalCalendarConnections",
+        "eventReminders",
+        "eventTypeEnum",
+        "eventStatusEnum",
+        "attendeeStatusEnum",
+        "roomStatusEnum",
+        "calendarPermissionEnum",
+        "syncStatusEnum",
+        "Calendar",
+        "NewCalendar",
+        "CalendarEvent",
+        "NewCalendarEvent",
+        "EventAttendee",
+        "NewEventAttendee",
+        "MeetingRoom",
+        "NewMeetingRoom",
+        "RoomBooking",
+        "NewRoomBooking",
+        "CalendarSharing",
+        "NewCalendarSharing",
+        "ExternalCalendarConnection",
+        "NewExternalCalendarConnection",
+        "EventReminder",
+        "NewEventReminder"
+      ],
+      "exportedTables": [
+        "calendars",
+        "calendarEvents",
+        "eventAttendees",
+        "meetingRooms",
+        "roomBookings",
+        "calendarSharing",
+        "externalCalendarConnections",
+        "eventReminders"
+      ],
+      "exportedEnums": [
+        "eventTypeEnum",
+        "eventStatusEnum",
+        "attendeeStatusEnum",
+        "roomStatusEnum",
+        "calendarPermissionEnum",
+        "syncStatusEnum"
+      ],
+      "exportedTypes": [
+        "Calendar",
+        "NewCalendar",
+        "CalendarEvent",
+        "NewCalendarEvent",
+        "EventAttendee",
+        "NewEventAttendee",
+        "MeetingRoom",
+        "NewMeetingRoom",
+        "RoomBooking",
+        "NewRoomBooking",
+        "CalendarSharing",
+        "NewCalendarSharing",
+        "ExternalCalendarConnection",
+        "NewExternalCalendarConnection",
+        "EventReminder",
+        "NewEventReminder"
+      ],
+      "lineCount": 517
+    },
+    {
+      "file": "award-templates-schema.ts",
+      "imports": [],
+      "exports": [
+        "awardTemplates",
+        "awardHistory",
+        "rewardWalletLedger",
+        "budgetPool",
+        "budgetReservations",
+        "AwardCategory",
+        "AwardType",
+        "AwardStatus",
+        "AwardTemplate",
+        "AwardHistoryRecord",
+        "RewardWallet",
+        "BudgetPool"
+      ],
+      "exportedTables": [
+        "awardTemplates",
+        "awardHistory",
+        "rewardWalletLedger",
+        "budgetPool",
+        "budgetReservations"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "AwardCategory",
+        "AwardType",
+        "AwardStatus",
+        "AwardTemplate",
+        "AwardHistoryRecord",
+        "RewardWallet",
+        "BudgetPool"
+      ],
+      "lineCount": 154
+    },
+    {
+      "file": "autopay-settings-schema.ts",
+      "imports": [],
+      "exports": [
+        "autoPaySettings",
+        "AutoPaySettings",
+        "NewAutoPaySettings"
+      ],
+      "exportedTables": [
+        "autoPaySettings"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "AutoPaySettings",
+        "NewAutoPaySettings"
+      ],
+      "lineCount": 58
+    },
+    {
+      "file": "automation-rules-schema.ts",
+      "imports": [],
+      "exports": [
+        "automationRules",
+        "automationExecutionLog",
+        "automationSchedules",
+        "AutomationRuleStatus",
+        "AutomationTriggerType",
+        "AutomationActionType",
+        "AutomationTargetEntity",
+        "AutomationRule",
+        "AutomationRuleInsert",
+        "AutomationExecutionLogRecord",
+        "AutomationSchedule"
+      ],
+      "exportedTables": [
+        "automationRules",
+        "automationExecutionLog",
+        "automationSchedules"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "AutomationRuleStatus",
+        "AutomationTriggerType",
+        "AutomationActionType",
+        "AutomationTargetEntity",
+        "AutomationRule",
+        "AutomationRuleInsert",
+        "AutomationExecutionLogRecord",
+        "AutomationSchedule"
+      ],
+      "lineCount": 178
+    },
+    {
+      "file": "audit-security-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./user-management-schema"
+      ],
+      "exports": [
+        "AuditLog",
+        "NewAuditLog",
+        "SecurityEvent",
+        "NewSecurityEvent",
+        "FailedLoginAttempt",
+        "NewFailedLoginAttempt",
+        "RateLimitEvent",
+        "NewRateLimitEvent"
+      ],
+      "exportedTables": [],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "AuditLog",
+        "NewAuditLog",
+        "SecurityEvent",
+        "NewSecurityEvent",
+        "FailedLoginAttempt",
+        "NewFailedLoginAttempt",
+        "RateLimitEvent",
+        "NewRateLimitEvent"
+      ],
+      "lineCount": 109
+    },
+    {
+      "file": "arbitration-precedents-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./cba-intelligence-schema"
+      ],
+      "exports": [
+        "arbitrationPrecedents",
+        "precedentTags",
+        "precedentCitations",
+        "ArbitrationPrecedent",
+        "NewArbitrationPrecedent",
+        "PrecedentTag",
+        "NewPrecedentTag",
+        "PrecedentCitation",
+        "NewPrecedentCitation",
+        "PrecedentOutcome",
+        "PrecedentLevel",
+        "CitationType",
+        "GrievanceType",
+        "BargainingUnitSize",
+        "Jurisdiction"
+      ],
+      "exportedTables": [
+        "arbitrationPrecedents",
+        "precedentTags",
+        "precedentCitations"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "ArbitrationPrecedent",
+        "NewArbitrationPrecedent",
+        "PrecedentTag",
+        "NewPrecedentTag",
+        "PrecedentCitation",
+        "NewPrecedentCitation",
+        "PrecedentOutcome",
+        "PrecedentLevel",
+        "CitationType",
+        "GrievanceType",
+        "BargainingUnitSize",
+        "Jurisdiction"
+      ],
+      "lineCount": 235
+    },
+    {
+      "file": "analytics.ts",
+      "imports": [
+        "../../db/schema-organizations",
+        "../../db/schema/user-management-schema"
+      ],
+      "exports": [
+        "analyticsMetrics",
+        "kpiConfigurations",
+        "mlPredictions",
+        "trendAnalyses",
+        "insightRecommendations",
+        "comparativeAnalyses"
+      ],
+      "exportedTables": [
+        "analyticsMetrics",
+        "kpiConfigurations",
+        "mlPredictions",
+        "trendAnalyses",
+        "insightRecommendations",
+        "comparativeAnalyses"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [],
+      "lineCount": 241
+    },
+    {
+      "file": "analytics-reporting-schema.ts",
+      "imports": [
+        "../schema-organizations"
+      ],
+      "exports": [
+        "analyticsScheduledReports",
+        "reportDeliveryHistory",
+        "benchmarkCategories",
+        "benchmarkData",
+        "tenantBenchmarkSnapshots",
+        "AnalyticsScheduledReport",
+        "NewAnalyticsScheduledReport",
+        "ReportDeliveryHistory",
+        "NewReportDeliveryHistory",
+        "BenchmarkCategory",
+        "NewBenchmarkCategory",
+        "BenchmarkData",
+        "NewBenchmarkData",
+        "TenantBenchmarkSnapshot",
+        "NewTenantBenchmarkSnapshot",
+        "ReportType",
+        "ScheduleType",
+        "DeliveryFormat",
+        "DeliveryStatus",
+        "UnionType",
+        "UnionSizeBracket",
+        "PerformanceIndicator",
+        "TrendDirection",
+        "BenchmarkCategoryGroup",
+        "UnitType"
+      ],
+      "exportedTables": [
+        "analyticsScheduledReports",
+        "reportDeliveryHistory",
+        "benchmarkCategories",
+        "benchmarkData",
+        "tenantBenchmarkSnapshots"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "AnalyticsScheduledReport",
+        "NewAnalyticsScheduledReport",
+        "ReportDeliveryHistory",
+        "NewReportDeliveryHistory",
+        "BenchmarkCategory",
+        "NewBenchmarkCategory",
+        "BenchmarkData",
+        "NewBenchmarkData",
+        "TenantBenchmarkSnapshot",
+        "NewTenantBenchmarkSnapshot",
+        "ReportType",
+        "ScheduleType",
+        "DeliveryFormat",
+        "DeliveryStatus",
+        "UnionType",
+        "UnionSizeBracket",
+        "PerformanceIndicator",
+        "TrendDirection",
+        "BenchmarkCategoryGroup",
+        "UnitType"
+      ],
+      "lineCount": 593
+    },
+    {
+      "file": "alerting-automation-schema.ts",
+      "imports": [
+        "../schema-organizations",
+        "./profiles-schema"
+      ],
+      "exports": [
+        "alertRules",
+        "alertConditions",
+        "alertActions",
+        "alertEscalations",
+        "alertExecutions",
+        "workflowDefinitions",
+        "workflowExecutions",
+        "alertRecipients",
+        "AlertRule",
+        "NewAlertRule",
+        "AlertCondition",
+        "NewAlertCondition",
+        "AlertAction",
+        "NewAlertAction",
+        "AlertEscalation",
+        "NewAlertEscalation",
+        "AlertExecution",
+        "NewAlertExecution",
+        "WorkflowDefinition",
+        "NewWorkflowDefinition",
+        "WorkflowExecution",
+        "NewWorkflowExecution",
+        "AlertRecipient",
+        "NewAlertRecipient",
+        "AlertTriggerType",
+        "AlertConditionOperator",
+        "AlertActionType",
+        "AlertFrequency",
+        "AlertSeverity",
+        "AlertExecutionStatus",
+        "EscalationStatus",
+        "WorkflowTriggerType",
+        "WorkflowActionType",
+        "WorkflowExecutionStatus"
+      ],
+      "exportedTables": [
+        "alertRules",
+        "alertConditions",
+        "alertActions",
+        "alertEscalations",
+        "alertExecutions",
+        "workflowDefinitions",
+        "workflowExecutions",
+        "alertRecipients"
+      ],
+      "exportedEnums": [],
+      "exportedTypes": [
+        "AlertRule",
+        "NewAlertRule",
+        "AlertCondition",
+        "NewAlertCondition",
+        "AlertAction",
+        "NewAlertAction",
+        "AlertEscalation",
+        "NewAlertEscalation",
+        "AlertExecution",
+        "NewAlertExecution",
+        "WorkflowDefinition",
+        "NewWorkflowDefinition",
+        "WorkflowExecution",
+        "NewWorkflowExecution",
+        "AlertRecipient",
+        "NewAlertRecipient",
+        "AlertTriggerType",
+        "AlertConditionOperator",
+        "AlertActionType",
+        "AlertFrequency",
+        "AlertSeverity",
+        "AlertExecutionStatus",
+        "EscalationStatus",
+        "WorkflowTriggerType",
+        "WorkflowActionType",
+        "WorkflowExecutionStatus"
+      ],
+      "lineCount": 595
+    },
+    {
+      "file": "ai-chatbot-schema.ts",
+      "imports": [
+        "./profiles-schema"
+      ],
+      "exports": [
+        "chatSessions",
+        "chatMessages",
+        "knowledgeBase",
+        "chatbotSuggestions",
+        "chatbotAnalytics",
+        "aiSafetyFilters",
+        "chatSessionStatusEnum",
+        "messageRoleEnum",
+        "aiProviderEnum",
+        "knowledgeDocumentTypeEnum",
+        "ChatSession",
+        "NewChatSession",
+        "ChatMessage",
+        "NewChatMessage",
+        "KnowledgeBase",
+        "NewKnowledgeBase",
+        "ChatbotSuggestion",
+        "NewChatbotSuggestion",
+        "ChatbotAnalytics",
+        "AISafetyFilter"
+      ],
+      "exportedTables": [
+        "chatSessions",
+        "chatMessages",
+        "knowledgeBase",
+        "chatbotSuggestions",
+        "chatbotAnalytics",
+        "aiSafetyFilters"
+      ],
+      "exportedEnums": [
+        "chatSessionStatusEnum",
+        "messageRoleEnum",
+        "aiProviderEnum",
+        "knowledgeDocumentTypeEnum"
+      ],
+      "exportedTypes": [
+        "ChatSession",
+        "NewChatSession",
+        "ChatMessage",
+        "NewChatMessage",
+        "KnowledgeBase",
+        "NewKnowledgeBase",
+        "ChatbotSuggestion",
+        "NewChatbotSuggestion",
+        "ChatbotAnalytics",
+        "AISafetyFilter"
+      ],
+      "lineCount": 381
+    },
+    {
+      "file": "accessibility-schema.ts",
+      "imports": [
+        "./profiles-schema"
+      ],
+      "exports": [
+        "accessibilityAudits",
+        "accessibilityIssues",
+        "wcagSuccessCriteria",
+        "accessibilityTestSuites",
+        "accessibilityUserTesting",
+        "wcagLevelEnum",
+        "auditStatusEnum",
+        "a11yIssueSeverityEnum",
+        "a11yIssueStatusEnum",
+        "AccessibilityAudit",
+        "NewAccessibilityAudit",
+        "AccessibilityIssue",
+        "NewAccessibilityIssue",
+        "WcagSuccessCriteria",
+        "NewWcagSuccessCriteria",
+        "AccessibilityTestSuite",
+        "NewAccessibilityTestSuite",
+        "AccessibilityUserTesting",
+        "NewAccessibilityUserTesting"
+      ],
+      "exportedTables": [
+        "accessibilityAudits",
+        "accessibilityIssues",
+        "wcagSuccessCriteria",
+        "accessibilityTestSuites",
+        "accessibilityUserTesting"
+      ],
+      "exportedEnums": [
+        "wcagLevelEnum",
+        "auditStatusEnum",
+        "a11yIssueSeverityEnum",
+        "a11yIssueStatusEnum"
+      ],
+      "exportedTypes": [
+        "AccessibilityAudit",
+        "NewAccessibilityAudit",
+        "AccessibilityIssue",
+        "NewAccessibilityIssue",
+        "WcagSuccessCriteria",
+        "NewWcagSuccessCriteria",
+        "AccessibilityTestSuite",
+        "NewAccessibilityTestSuite",
+        "AccessibilityUserTesting",
+        "NewAccessibilityUserTesting"
+      ],
+      "lineCount": 386
+    }
+  ],
+  "edges": [
+    {
+      "from": "whiplash-prevention-schema.ts",
+      "to": []
+    },
+    {
+      "from": "wage-benchmarks-schema.ts",
+      "to": []
+    },
+    {
+      "from": "voting-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "organization-members-schema.ts"
+      ]
+    },
+    {
+      "from": "user-uuid-mapping-schema.ts",
+      "to": []
+    },
+    {
+      "from": "user-management-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "transfer-pricing-schema.ts",
+      "to": []
+    },
+    {
+      "from": "tenant-management-schema.ts",
+      "to": []
+    },
+    {
+      "from": "survey-polling-schema.ts",
+      "to": [
+        "tenant-management-schema.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "strike-fund-tax-schema.ts",
+      "to": []
+    },
+    {
+      "from": "social-media-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "sms-communications-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "signature-workflows-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts",
+        "documents-schema.ts"
+      ]
+    },
+    {
+      "from": "sharing-permissions-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "shared-clause-library-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "cba-schema.ts",
+        "cba-clauses-schema.ts"
+      ]
+    },
+    {
+      "from": "reports-schema.ts",
+      "to": []
+    },
+    {
+      "from": "recognition-rewards-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "push-notifications.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "provincial-privacy-schema.ts",
+      "to": []
+    },
+    {
+      "from": "profiles-schema.ts",
+      "to": []
+    },
+    {
+      "from": "pending-profiles-schema.ts",
+      "to": [
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "organizing-tools-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "organization-members-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "user-management-schema.ts"
+      ]
+    },
+    {
+      "from": "notifications-schema.ts",
+      "to": []
+    },
+    {
+      "from": "newsletter-schema.ts",
+      "to": [
+        "profiles-schema.ts",
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "ml-predictions-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "messages-schema.ts",
+      "to": []
+    },
+    {
+      "from": "member-documents-schema.ts",
+      "to": []
+    },
+    {
+      "from": "lrb-agreements-schema.ts",
+      "to": []
+    },
+    {
+      "from": "lmbp-immigration-schema.ts",
+      "to": []
+    },
+    {
+      "from": "joint-trust-fmv-schema.ts",
+      "to": []
+    },
+    {
+      "from": "international-address-schema.ts",
+      "to": [
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "indigenous-data-schema.ts",
+      "to": []
+    },
+    {
+      "from": "index.ts",
+      "to": [
+        "profiles-schema.ts",
+        "pending-profiles-schema.ts",
+        "collective-agreements-schema.ts",
+        "cba-clauses-schema.ts",
+        "claims-schema.ts",
+        "voting-schema.ts",
+        "user-management-schema.ts",
+        "user-uuid-mapping-schema.ts",
+        "tenant-management-schema.ts",
+        "audit-security-schema.ts",
+        "cba-intelligence-schema.ts",
+        "organization-members-schema.ts",
+        "notifications-schema.ts",
+        "calendar-schema.ts",
+        "deadlines-schema.ts",
+        "reports-schema.ts",
+        "dues-transactions-schema.ts",
+        "autopay-settings-schema.ts",
+        "schema-organizations.ts",
+        "shared-clause-library-schema.ts",
+        "arbitration-precedents-schema.ts",
+        "sharing-permissions-schema.ts",
+        "clc-per-capita-schema.ts",
+        "clc-sync-audit-schema.ts",
+        "messages-schema.ts",
+        "sms-communications-schema.ts",
+        "survey-polling-schema.ts",
+        "newsletter-schema.ts",
+        "push-notifications.ts",
+        "communication-analytics-schema.ts",
+        "grievance-workflow-schema.ts",
+        "education-training-schema.ts",
+        "analytics.ts",
+        "documents-schema.ts",
+        "ml-predictions-schema.ts",
+        "recognition-rewards-schema.ts",
+        "feature-flags-schema.ts",
+        "lmbp-immigration-schema.ts",
+        "governance-schema.ts",
+        "provincial-privacy-schema.ts",
+        "indigenous-data-schema.ts",
+        "strike-fund-tax-schema.ts",
+        "force-majeure-schema.ts",
+        "geofence-privacy-schema.ts",
+        "transfer-pricing-schema.ts",
+        "founder-conflict-schema.ts",
+        "joint-trust-fmv-schema.ts",
+        "certification-management-schema.ts",
+        "employer-non-interference-schema.ts",
+        "whiplash-prevention-schema.ts",
+        "gdpr-compliance-schema.ts",
+        "e-signature-schema.ts",
+        "ai-chatbot-schema.ts",
+        "accessibility-schema.ts",
+        "international-address-schema.ts",
+        "wage-benchmarks-schema.ts",
+        "lrb-agreements-schema.ts",
+        "clc-partnership-schema.ts",
+        "congress-memberships-schema.ts",
+        "award-templates-schema.ts",
+        "automation-rules-schema.ts",
+        "grievance-schema.ts",
+        "organizing-tools-schema.ts",
+        "defensibility-packs-schema.ts"
+      ]
+    },
+    {
+      "from": "grievance-workflow-schema.ts",
+      "to": [
+        "claims-schema.ts"
+      ]
+    },
+    {
+      "from": "grievance-schema.ts",
+      "to": []
+    },
+    {
+      "from": "governance-schema.ts",
+      "to": []
+    },
+    {
+      "from": "geofence-privacy-schema.ts",
+      "to": []
+    },
+    {
+      "from": "gdpr-compliance-schema.ts",
+      "to": [
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "founder-conflict-schema.ts",
+      "to": []
+    },
+    {
+      "from": "force-majeure-schema.ts",
+      "to": []
+    },
+    {
+      "from": "financial-payments-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "feature-flags-schema.ts",
+      "to": []
+    },
+    {
+      "from": "erp-integration-schema.ts",
+      "to": []
+    },
+    {
+      "from": "employer-non-interference-schema.ts",
+      "to": []
+    },
+    {
+      "from": "education-training-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "e-signature-schema.ts",
+      "to": [
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "dues-transactions-schema.ts",
+      "to": []
+    },
+    {
+      "from": "documents-schema.ts",
+      "to": []
+    },
+    {
+      "from": "defensibility-packs-schema.ts",
+      "to": []
+    },
+    {
+      "from": "deadlines-schema.ts",
+      "to": []
+    },
+    {
+      "from": "congress-memberships-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "communication-analytics-schema.ts",
+      "to": [
+        "profiles-schema.ts",
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "collective-agreements-schema.ts",
+      "to": []
+    },
+    {
+      "from": "cms-website-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "clc-sync-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "clc-sync-audit-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "clc-per-capita-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "clc-partnership-schema.ts",
+      "to": []
+    },
+    {
+      "from": "claims-schema.ts",
+      "to": []
+    },
+    {
+      "from": "chart-of-accounts-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "certification-management-schema.ts",
+      "to": []
+    },
+    {
+      "from": "cba-schema.ts",
+      "to": []
+    },
+    {
+      "from": "cba-intelligence-schema.ts",
+      "to": [
+        "collective-agreements-schema.ts",
+        "cba-clauses-schema.ts"
+      ]
+    },
+    {
+      "from": "cba-clauses-schema.ts",
+      "to": [
+        "collective-agreements-schema.ts"
+      ]
+    },
+    {
+      "from": "calendar-schema.ts",
+      "to": []
+    },
+    {
+      "from": "award-templates-schema.ts",
+      "to": []
+    },
+    {
+      "from": "autopay-settings-schema.ts",
+      "to": []
+    },
+    {
+      "from": "automation-rules-schema.ts",
+      "to": []
+    },
+    {
+      "from": "audit-security-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "user-management-schema.ts"
+      ]
+    },
+    {
+      "from": "arbitration-precedents-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "cba-intelligence-schema.ts"
+      ]
+    },
+    {
+      "from": "analytics.ts",
+      "to": [
+        "schema-organizations.ts",
+        "user-management-schema.ts"
+      ]
+    },
+    {
+      "from": "analytics-reporting-schema.ts",
+      "to": [
+        "schema-organizations.ts"
+      ]
+    },
+    {
+      "from": "alerting-automation-schema.ts",
+      "to": [
+        "schema-organizations.ts",
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "ai-chatbot-schema.ts",
+      "to": [
+        "profiles-schema.ts"
+      ]
+    },
+    {
+      "from": "accessibility-schema.ts",
+      "to": [
+        "profiles-schema.ts"
+      ]
+    }
+  ],
+  "circularDependencies": []
+}

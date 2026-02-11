@@ -12,6 +12,18 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const analyticsPredictionsSchema = z.object({
+  predictionType: z.string().min(1, 'predictionType is required'),
+  periodsAhead: z.unknown().optional(),
+  modelName: z.string().min(1, 'modelName is required'),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('member', async (request, context) => {
     const { userId, organizationId } = context;
@@ -23,29 +35,43 @@ export const POST = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
     }
 
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = analyticsPredictionsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { predictionType, periodsAhead, modelName } = validation.data;
       const { predictionType, periodsAhead, modelName } = body;
       
       // Validate input
       if (!predictionType || !periodsAhead) {
-        return NextResponse.json(
-          { error: 'Missing required fields: predictionType, periodsAhead' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: predictionType, periodsAhead'
+      // TODO: Migrate additional details: periodsAhead'
+    );
       }
       
       if (!['claims_volume', 'resource_needs', 'budget_forecast'].includes(predictionType)) {
-        return NextResponse.json(
-          { error: 'Invalid predictionType. Must be one of: claims_volume, resource_needs, budget_forecast' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid predictionType. Must be one of: claims_volume, resource_needs, budget_forecast'
+      // TODO: Migrate additional details: resource_needs, budget_forecast'
+    );
       }
       
       if (periodsAhead < 1 || periodsAhead > 90) {
@@ -91,10 +117,11 @@ export const POST = async (request: NextRequest) => {
         }
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
@@ -109,15 +136,15 @@ export const GET = async (request: NextRequest) => {
       const limit = parseInt(searchParams.get('limit') || '30');
       
       if (!predictionType) {
-        return NextResponse.json(
-          { error: 'Missing required parameter: predictionType' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required parameter: predictionType'
+    );
       }
       
       // Get recent predictions from database
       const { db } = await import('@/db');
-      const { mlPredictions } = await import('@/db/migrations/schema');
+      const { mlPredictions } = await import('@/db/schema');
       const { eq, desc } = await import('drizzle-orm');
       
       // Get user's org ID (simplified for now)
@@ -134,10 +161,11 @@ export const GET = async (request: NextRequest) => {
         predictions
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

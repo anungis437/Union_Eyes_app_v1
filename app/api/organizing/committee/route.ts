@@ -12,6 +12,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -21,10 +26,10 @@ export const GET = async (request: NextRequest) => {
       const campaignId = searchParams.get('campaignId');
 
       if (!campaignId) {
-        return NextResponse.json(
-          { error: 'Bad Request - campaignId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - campaignId is required'
+    );
       }
 
       // Fetch committee members
@@ -86,18 +91,37 @@ export const GET = async (request: NextRequest) => {
         campaignId: request.nextUrl.searchParams.get('campaignId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const organizingCommitteeSchema = z.object({
+  contactId: z.string().uuid('Invalid contactId'),
+  organizingCommitteeRole: z.unknown().optional(),
+  naturalLeader: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = organizingCommitteeSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { contactId, organizingCommitteeRole, naturalLeader } = validation.data;
       const {
         contactId,
         organizingCommitteeRole,
@@ -106,10 +130,10 @@ export const POST = async (request: NextRequest) => {
 
       // Validate required fields
       if (!contactId) {
-        return NextResponse.json(
-          { error: 'Bad Request - contactId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - contactId is required'
+    );
       }
 
       // Update contact to add to committee
@@ -127,10 +151,10 @@ export const POST = async (request: NextRequest) => {
     `);
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Contact not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Contact not found'
+    );
       }
 
       return NextResponse.json({
@@ -143,10 +167,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to add contact to committee', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
@@ -158,10 +183,10 @@ export const DELETE = async (request: NextRequest) => {
       const contactId = searchParams.get('contactId');
 
       if (!contactId) {
-        return NextResponse.json(
-          { error: 'Bad Request - contactId parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - contactId parameter is required'
+    );
       }
 
       // Update contact to remove from committee
@@ -176,10 +201,10 @@ export const DELETE = async (request: NextRequest) => {
     `);
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Contact not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Contact not found'
+    );
       }
 
       return NextResponse.json({
@@ -193,10 +218,11 @@ export const DELETE = async (request: NextRequest) => {
         contactId: request.nextUrl.searchParams.get('contactId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

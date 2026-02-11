@@ -7,6 +7,7 @@ import {
 import type { EmergencyActivationRequest, EmergencyActivationResponse } from '@/lib/types/compliance-api-types';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { z } from 'zod';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * Emergency Activation API

@@ -13,6 +13,11 @@ import { eq } from "drizzle-orm";
 import { AuditTrailService } from "@/lib/signature/signature-service";
 import { createHmac } from "crypto";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * DocuSign Webhook Handler
  */
@@ -24,13 +29,20 @@ export async function POST(req: NextRequest) {
     // Verify webhook signature
     const isValid = verifyDocuSignSignature(body, signature);
     if (!isValid) {
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Invalid signature'
+    );
     }
 
-    const payload = JSON.parse(body);
+    const validation = JSON.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const payload = validation.data;
     const event = payload.event;
     const envelopeId = payload.data?.envelopeId;
 
@@ -50,9 +62,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Webhook processing failed',
+      error
     );
   }
 }

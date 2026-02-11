@@ -17,7 +17,7 @@
 
 import { db } from '@/db';
 import { eq, and, gte, lte } from 'drizzle-orm';
-import { crossBorderTransactions, exchangeRates } from '@/db/schema/transfer-pricing-schema';
+import { crossBorderTransactions, exchangeRates } from '@/db/schema/domains/finance';
 import { logger } from '@/lib/logger';
 
 export type Currency = 'CAD' | 'USD' | 'EUR' | 'GBP' | 'MXN';

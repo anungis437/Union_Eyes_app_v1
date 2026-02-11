@@ -7,6 +7,11 @@ import { eq } from 'drizzle-orm';
 import { stripe } from '@/lib/stripe';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Create Stripe SetupIntent for saving payment method without charging
  */
@@ -31,7 +36,10 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
         severity: 'medium',
         details: { reason: 'Member not found' },
       });
-      return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
     }
 
     try {
@@ -102,10 +110,11 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-return NextResponse.json(
-        { error: 'Failed to create setup intent' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create setup intent',
+      error
+    );
     }
 });
 

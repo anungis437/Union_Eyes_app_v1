@@ -6,12 +6,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { organizationUsers } from '@/db/schema/user-management-schema';
+import { organizationUsers } from '@/db/schema/domains/member';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // This route uses dynamic features and must not be statically generated
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +51,11 @@ async function checkAdminRole(userId: string): Promise<boolean> {
 export const GET = withRoleAuth(90, async (request, context) => {
   const parsed = jobsQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters',
+      error
+    );
   }
 
   const query = parsed.data;
@@ -54,7 +63,11 @@ export const GET = withRoleAuth(90, async (request, context) => {
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
   }
 
 // Import job-queue functions only at runtime, not at module load time
@@ -74,10 +87,10 @@ export const GET = withRoleAuth(90, async (request, context) => {
           details: { reason: 'Non-admin attempted to access job queue' },
         });
 
-        return NextResponse.json(
-          { error: 'Forbidden - Admin role required' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin role required'
+    );
       }
 
       const { queue, showFailed } = query;

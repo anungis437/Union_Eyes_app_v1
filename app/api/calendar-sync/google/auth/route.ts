@@ -11,6 +11,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthorizationUrl } from '@/lib/external-calendar-sync/google-calendar-service';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -22,10 +27,11 @@ export const GET = async (request: NextRequest) => {
       // Redirect to Google authorization page
       return NextResponse.redirect(authUrl);
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to initiate Google Calendar authorization' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to initiate Google Calendar authorization',
+      error
+    );
     }
     })(request);
 };

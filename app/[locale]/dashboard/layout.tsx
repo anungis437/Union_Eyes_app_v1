@@ -16,7 +16,7 @@ import { OrganizationSelector } from "@/components/organization/organization-sel
 import { OrganizationBreadcrumb } from "@/components/organization/organization-breadcrumb";
 import LanguageSwitcher from "@/components/language-switcher";
 import { cookies } from "next/headers";
-import type { SelectProfile } from "@/db/schema/profiles-schema";
+import type { SelectProfile } from "@/db/schema/domains/member";
 import { logger } from "@/lib/logger";
 import { getUserRoleInOrganization, getOrganizationIdForUser } from "@/lib/organization-utils";
 import { db } from "@/db/db";

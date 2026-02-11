@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/voting-schema';
+import { votingSessions, votingOptions, voterEligibility, votes } from '@/db/schema/domains/governance';
 import { eq, desc, and, count } from 'drizzle-orm';
 import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Validation schemas
  */
@@ -38,7 +43,10 @@ const createSessionSchema = z.object({
 export const GET = withRoleAuth(10, async (request, context) => {
   const parsed = listSessionsSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
   }
 
   const query = parsed.data;
@@ -46,7 +54,10 @@ export const GET = withRoleAuth(10, async (request, context) => {
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 try {
@@ -178,12 +189,20 @@ export const POST = withRoleAuth(20, async (request, context) => {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
   }
 
   const parsed = createSessionSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
   }
 
   const body = parsed.data;
@@ -191,7 +210,11 @@ export const POST = withRoleAuth(20, async (request, context) => {
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
   }
 
 try {
@@ -232,10 +255,10 @@ try {
           details: { reason: 'Non-admin attempted voting session creation', userRole: member?.role },
         });
 
-        return NextResponse.json(
-          { error: 'Forbidden - Admin or Officer role required' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin or Officer role required'
+    );
       }
 
       // Create session
@@ -287,10 +310,14 @@ try {
         },
       });
 
-      return NextResponse.json({
+      return standardSuccessResponse(
+      { 
         message: 'Voting session created successfully',
         session: newSession,
-      }, { status: 201 });
+       },
+      undefined,
+      201
+    );
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(), userId,

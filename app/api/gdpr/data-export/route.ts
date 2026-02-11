@@ -4,6 +4,7 @@
  * GET /api/gdpr/data-export - Download exported data
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { GdprRequestManager } from "@/lib/gdpr/consent-manager";
@@ -12,28 +13,55 @@ import { logger } from "@/lib/logger";
 import fs from "fs";
 import path from "path";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Request data export
  */
+
+const gdprData-exportSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tenantId: z.string().uuid('Invalid tenantId'),
+  preferredFormat: z.unknown().optional(),
+  requestDetails: z.unknown().optional(),
+});
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
     const body = await request.json();
+    // Validate request body
+    const validation = gdprData-exportSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, tenantId, preferredFormat, requestDetails } = validation.data;
     const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, preferredFormat, requestDetails } = body;
     const organizationId = organizationIdFromBody ?? tenantIdFromBody;
     const tenantId = organizationId;
     const format = preferredFormat || "json";
 
     if (!organizationId) {
-      return NextResponse.json(
-        { error: "Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     if (!['json', 'csv', 'xml'].includes(format)) {
@@ -94,9 +122,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       estimatedCompletion: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to process data export request" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to process data export request',
+      error
     );
   }
 });
@@ -108,7 +137,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
@@ -118,10 +150,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const tenantId = organizationIdFromQuery;
 
     if (!requestId || !tenantId) {
-      return NextResponse.json(
-        { error: "Request ID and Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Request ID and Organization ID required'
+    );
     }
 
     // Get request status
@@ -131,17 +163,21 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const request = requests.find((r) => r.id === requestId);
 
     if (!request) {
-      return NextResponse.json({ error: "Request not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Request not found'
+    );
     }
 
     if (request.status !== "completed") {
-      return NextResponse.json(
-        {
+      return standardSuccessResponse(
+      { 
           status: request.status,
           message: "Export is still being processed",
-        },
-        { status: 202 }
-      );
+         },
+      undefined,
+      202
+    );
     }
 
     const responseData = request.responseData as any;
@@ -167,10 +203,11 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     const stat = await fs.promises.stat(filePath).catch(() => null);
     if (!stat) {
-      return NextResponse.json(
-        { error: "Export file not found" },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Export file not found',
+      error
+    );
     }
 
     const format = request.requestDetails?.preferredFormat || "json";
@@ -192,9 +229,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error('Data export request error', error as Error);
-    return NextResponse.json(
-      { error: "Failed to download data export" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to download data export',
+      error
     );
   }
 });

@@ -5,6 +5,11 @@ import { and, eq, desc, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schemas
 const PollOptionSchema = z.object({
   id: z.string().optional(),
@@ -30,10 +35,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     const status = searchParams.get('status') as 'draft' | 'active' | 'closed' | null;
@@ -83,9 +88,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch polls' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch polls',
+      error
     );
   }
 });
@@ -98,10 +104,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const userId = request.headers.get('x-user-id');
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID are required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID are required'
+    );
     }
 
     const body = await request.json();
@@ -141,17 +147,19 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       })
       .returning();
 
-    return NextResponse.json(
-      {
+    return standardSuccessResponse(
+      { 
         poll,
         message: data.status === 'active' ? 'Poll published successfully' : 'Poll created as draft',
-      },
-      { status: 201 }
+       },
+      undefined,
+      201
     );
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to create poll' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create poll',
+      error
     );
   }
 });

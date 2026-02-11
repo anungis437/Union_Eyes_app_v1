@@ -3,16 +3,21 @@ import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { client } from '@/db/db';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     const searchParams = req.nextUrl.searchParams;
@@ -53,9 +58,10 @@ async function handler(req: NextRequest, context) {
     return NextResponse.json(result);
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch outcome financials' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch outcome financials',
+      error
     );
   }
 }

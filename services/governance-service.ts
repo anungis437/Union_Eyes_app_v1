@@ -13,7 +13,7 @@ import {
   type NewMissionAudit,
   type NewGovernanceEvent,
   type NewCouncilElection,
-} from '@/db/schema/governance-schema';
+} from '@/db/schema/domains/governance';
 import { eq, and, desc, gte, lte } from 'drizzle-orm';
 
 /**

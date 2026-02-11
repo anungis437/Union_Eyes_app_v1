@@ -14,8 +14,8 @@ import {
 } from '@/db/queries/organization-queries';
 import { getMemberCount } from '@/db/queries/organization-members-queries';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
-import { organizationUsers } from '@/db/schema/user-management-schema';
+import { claims } from '@/db/schema/domains/claims';
+import { organizationUsers } from '@/db/schema/domains/member';
 import { eq, and, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { validateBody, bodySchemas } from '@/lib/validation';
@@ -23,6 +23,11 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser, getUserRole } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations
  * List organizations based on query parameters
@@ -110,10 +115,10 @@ export const GET = async (request: NextRequest) => {
                   requestedUserId 
                 },
               });
-              return NextResponse.json(
-                { error: 'Forbidden - Admin role required to view other users organizations' },
-                { status: 403 }
-              );
+              return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin role required to view other users organizations'
+    );
             }
           }
           organizations = await getUserVisibleOrganizations(requestedUserId);
@@ -318,11 +323,12 @@ export const POST = async (request: NextRequest) => {
           },
         });
 
-        return NextResponse.json({
-          success: true,
-          data: newOrganization,
-          message: 'Organization created successfully',
-        }, { status: 201 });
+        return standardSuccessResponse(
+      { data: newOrganization,
+          message: 'Organization created successfully', },
+      undefined,
+      201
+    );
       } catch (error: any) {
         logger.error('Error creating organization', error as Error, {      organizationSlug: error.detail,
           correlationId: request.headers.get('x-correlation-id')
@@ -343,18 +349,20 @@ export const POST = async (request: NextRequest) => {
 
         // Handle unique constraint violations
         if (error.code === '23505') {
-          return NextResponse.json(
-            { error: 'An organization with this slug already exists' },
-            { status: 409 }
-          );
+          return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'An organization with this slug already exists',
+      error
+    );
         }
 
         // Handle foreign key violations (invalid parent)
         if (error.code === '23503') {
-          return NextResponse.json(
-            { error: 'Invalid parent organization ID' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid parent organization ID',
+      error
+    );
         }
 
         return NextResponse.json(

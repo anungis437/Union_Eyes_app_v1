@@ -18,7 +18,7 @@ import {
 } from '@/lib/services/case-timeline-service';
 import { db } from '@/db/db';
 import { claims, claimUpdates, organizations } from '@/db/schema';
-import { users } from '@/db/schema/user-management-schema';
+import { users } from '@/db/schema/domains/member';
 import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 

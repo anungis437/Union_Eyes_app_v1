@@ -7,6 +7,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Helper to check if user has security/admin role
  */
@@ -31,6 +36,17 @@ async function checkSecurityPermissions(userId: string, organizationId: string):
   }
 }
 
+
+const privacyBreachSchema = z.object({
+  breachType: z.unknown().optional(),
+  severity: z.unknown().optional(),
+  affectedProvince: z.unknown().optional(),
+  affectedUserCount: z.number().int().positive(),
+  dataTypes: z.unknown().optional(),
+  breachDescription: z.string().optional(),
+  discoveredAt: z.boolean().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
@@ -39,13 +55,24 @@ export const POST = async (request: NextRequest) => {
       // Check if user has admin/security role
       const hasPermission = await checkSecurityPermissions(userId, organizationId);
       if (!hasPermission) {
-        return NextResponse.json(
-          { error: "Forbidden - admin or security officer role required" },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - admin or security officer role required'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = privacyBreachSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { breachType, severity, affectedProvince, affectedUserCount, dataTypes, breachDescription, discoveredAt } = validation.data;
       const {
         breachType,
         severity,
@@ -64,7 +91,10 @@ export const POST = async (request: NextRequest) => {
         !breachDescription ||
         !discoveredAt
       ) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
       }
 
       const breach = await ProvincialPrivacyService.reportBreach({
@@ -104,10 +134,10 @@ export const GET = async (request: NextRequest) => {
       // Check if user has admin/security role
       const hasPermission = await checkSecurityPermissions(userId, organizationId);
       if (!hasPermission) {
-        return NextResponse.json(
-          { error: "Forbidden - admin or security officer role required" },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - admin or security officer role required'
+    );
       }
 
       const breaches = await ProvincialPrivacyService.getBreachesApproachingDeadline();

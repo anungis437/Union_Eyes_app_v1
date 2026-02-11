@@ -10,13 +10,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminUsers } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { tenants } from "@/db/schema/tenant-management-schema";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withSecureAPI, logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Validation schemas for admin users API
  */
@@ -36,7 +41,10 @@ const listUsersQuerySchema = z.object({
 export const GET = withRoleAuth('admin', async (request, context) => {
   const parsed = listUsersQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
   }
 
   const query = parsed.data;
@@ -44,7 +52,10 @@ export const GET = withRoleAuth('admin', async (request, context) => {
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 try {
@@ -77,10 +88,10 @@ try {
 
         // Validate pagination
         if (page < 1 || limit < 1 || limit > 100) {
-          return NextResponse.json(
-            { error: "Invalid pagination parameters" },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid pagination parameters'
+    );
         }
 
         const users = await getAdminUsers(tx, search, tenantId, role);
@@ -113,10 +124,11 @@ try {
         severity: "high",
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
-      return NextResponse.json(
-        { error: "Failed to fetch users" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch users',
+      error
+    );
     }
 });
 
@@ -135,7 +147,11 @@ const createUserSchema = z.object({
 export const POST = withRoleAuth('admin', async (request, context) => {
   const parsed = z.object({}).safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters',
+      error
+    );
   }
 
   const query = parsed.data;
@@ -143,7 +159,11 @@ export const POST = withRoleAuth('admin', async (request, context) => {
 
   const orgId = (query as Record<string, unknown>)["organizationId"] ?? (query as Record<string, unknown>)["orgId"] ?? (query as Record<string, unknown>)["organization_id"] ?? (query as Record<string, unknown>)["org_id"] ?? (query as Record<string, unknown>)["tenantId"] ?? (query as Record<string, unknown>)["tenant_id"] ?? (query as Record<string, unknown>)["unionId"] ?? (query as Record<string, unknown>)["union_id"] ?? (query as Record<string, unknown>)["localId"] ?? (query as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
   }
 
 try {
@@ -203,10 +223,10 @@ try {
           .limit(1);
 
         if (!tenant) {
-          return NextResponse.json(
-            { error: "Tenant not found" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Tenant not found'
+    );
         }
 
         // Add user to tenant
@@ -242,10 +262,11 @@ try {
           role,
         });
 
-        return NextResponse.json({
-          success: true,
-          data: newUser,
-        }, { status: 201 });
+        return standardSuccessResponse(
+      { data: newUser, },
+      undefined,
+      201
+    );
       });
     } catch (error) {
       logger.error("Failed to create user", error);
@@ -257,10 +278,11 @@ try {
         severity: "high",
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
-      return NextResponse.json(
-        { error: "Failed to create user" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create user',
+      error
+    );
     }
 });
 

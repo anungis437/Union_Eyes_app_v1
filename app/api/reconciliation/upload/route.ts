@@ -9,6 +9,11 @@ import * as XLSX from 'xlsx';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Upload and parse employer remittance file
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -38,7 +43,10 @@ export const POST = async (req: NextRequest) => {
         .limit(1);
 
       if (!member) {
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
 
       // Parse multipart form data
@@ -46,7 +54,7 @@ export const POST = async (req: NextRequest) => {
       const file = formData.get('file') as File;
 
       if (!file) {
-        return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+        return standardErrorResponse(ErrorCode.VALIDATION_ERROR, 'No file uploaded');
       }
 
       // Validate file type
@@ -156,10 +164,11 @@ export const POST = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-return NextResponse.json(
-        { error: 'Failed to upload file' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to upload file',
+      error
+    );
     }
     })(request);
 };

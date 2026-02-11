@@ -1,66 +1,38 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
-import { requireUser } from '@/lib/api-auth-guard';
+import { withApiAuth } from '@/lib/api-auth-guard';
+import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
+import { z } from 'zod';
+
+const feedbackSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email().optional(),
+  category: z.enum(['general', 'concern', 'incorrect', 'suggestion', 'question', 'opt-out']),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+});
 
 /**
  * POST /api/member/ai-feedback
  * 
  * Submit member feedback about AI features
- * 
- * Request body:
- * {
- *   name: string,
- *   email?: string,
- *   category: 'general' | 'concern' | 'incorrect' | 'suggestion' | 'question' | 'opt-out',
- *   message: string
- * }
- * 
- * Response:
- * {
- *   success: boolean,
- *   feedbackId: string,
- *   message: string
- * }
+ * Security: Protected with withApiAuth
+ * Updated: Feb 2026 - Migrated to standardized error responses
  */
-export async function POST(request: NextRequest) {
+export const POST = withApiAuth(async (request: NextRequest, context) => {
   try {
-    const { userId, organizationId } = await requireUser();
+    const { userId, organizationId } = context;
+    const tenantId = organizationId || userId;
     
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
-    const { name, email, category, message } = await request.json();
-
-    // Validation
-    if (!name || !category || !message) {
-      return NextResponse.json(
-        { error: 'name, category, and message are required' },
-        { status: 400 }
-      );
-    }
-
-    if (message.length < 10) {
-      return NextResponse.json(
-        { error: 'message must be at least 10 characters' },
-        { status: 400 }
-      );
-    }
-
-    const validCategories = ['general', 'concern', 'incorrect', 'suggestion', 'question', 'opt-out'];
-    if (!validCategories.includes(category)) {
-      return NextResponse.json(
-        { error: 'invalid category' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const validatedData = feedbackSchema.parse(body);
+    const { name, email, category, message } = validatedData;
 
     // Insert feedback into database
-    const result = await db.execute(sql`
+    const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO member_ai_feedback (
         tenant_id,
         user_id,
@@ -84,6 +56,7 @@ export async function POST(request: NextRequest) {
       )
       RETURNING id
     `);
+    });
 
     const feedbackId = result[0]?.id;
 
@@ -92,56 +65,43 @@ export async function POST(request: NextRequest) {
       // In production, send notification to AI Governance Committee
 }
 
-    return NextResponse.json({
-      success: true,
+    return standardSuccessResponse({
       feedbackId,
       message: 'Thank you for your feedback. A steward will follow up within 2 business days.'
     });
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to submit feedback' },
-      { status: 500 }
+    if (error instanceof z.ZodError) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid feedback data',
+        { errors: error.errors }
+      );
+    }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to submit feedback'
     );
   }
-}
+});
 
 /**
  * GET /api/member/ai-feedback
  * 
  * Get feedback submissions for current user (or all if admin)
- * 
- * Query parameters:
- * - status: 'pending' | 'reviewed' | 'resolved' | 'all' (default: 'all')
- * 
- * Response:
- * {
- *   feedback: [{
- *     id: string,
- *     category: string,
- *     message: string,
- *     status: string,
- *     submittedAt: string,
- *     reviewedAt?: string,
- *     response?: string
- *   }]
- * }
+ * Security: Protected with withApiAuth
+ * Updated: Feb 2026 - Migrated to standardized error responses
  */
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest, context) => {
   try {
-    const { userId, organizationId } = await requireUser();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const organizationScopeId = organizationId || userId;
-    const tenantId = organizationScopeId;
+    const { userId, organizationId } = context;
+    const tenantId = organizationId || userId;
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get('status') || 'all';
 
     // Build query with optional status filter
-    const feedbackData = await db.execute(sql`
+    const feedbackData = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         id,
         feedback_category as category,
@@ -157,6 +117,7 @@ export async function GET(request: NextRequest) {
       ORDER BY submitted_at DESC
       LIMIT 50
     `);
+    });
 
     const feedback = (feedbackData || []).map((row: any) => ({
       id: row.id,
@@ -168,13 +129,13 @@ export async function GET(request: NextRequest) {
       response: row.response
     }));
 
-    return NextResponse.json({ feedback });
+    return standardSuccessResponse({ feedback });
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch feedback' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch feedback'
     );
   }
-}
+});
 

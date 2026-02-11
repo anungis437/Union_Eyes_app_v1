@@ -16,6 +16,11 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
@@ -60,26 +65,42 @@ return NextResponse.json(
     })(request);
 };
 
+
+const adminPkiCertificatesSchema = z.object({
+  certificatePem: z.string().min(1, 'certificatePem is required'),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized - Organization context required' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Organization context required'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = adminPkiCertificatesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { certificatePem } = validation.data;
       const { certificatePem } = body;
 
       if (!certificatePem) {
-        return NextResponse.json(
-          { error: 'Certificate PEM required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Certificate PEM required'
+    );
       }
 
       // Store certificate

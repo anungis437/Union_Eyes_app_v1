@@ -15,6 +15,11 @@ import { db } from '@/db';
 import { newsletterTemplates } from '@/db/schema';
 import { eq, and, or, like, desc } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 
 const createTemplateSchema = z.object({
   name: z.string().min(1, 'Template name is required'),
@@ -64,11 +69,12 @@ export const GET = withOrganizationAuth(async (request: NextRequest, context) =>
 
     const templates = await query.orderBy(desc(newsletterTemplates.createdAt));
 
-    return NextResponse.json({ templates });
+    return standardSuccessResponse({ templates });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch templates' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch templates',
+      error
     );
   }
 });
@@ -78,7 +84,15 @@ export const POST = withOrganizationAuth(async (request: NextRequest, context) =
     const { organizationId, userId } = context;
 
     const body = await request.json();
-    const validatedData = createTemplateSchema.parse(body);
+    const validation = createTemplateSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid template data'
+      );
+    }
+
+    const validatedData = validation.data;
 
     const [template] = await db
       .insert(newsletterTemplates)
@@ -89,17 +103,16 @@ export const POST = withOrganizationAuth(async (request: NextRequest, context) =
       })
       .returning();
 
-    return NextResponse.json({ template }, { status: 201 });
+    return standardSuccessResponse(
+      { template },
+      'Template created successfully',
+      201
+    );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-return NextResponse.json(
-      { error: 'Failed to create template' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create template',
+      error
     );
   }
 });

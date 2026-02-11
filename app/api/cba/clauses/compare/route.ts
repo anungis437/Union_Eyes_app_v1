@@ -6,6 +6,7 @@
  * - RLS policies enforce tenant isolation at database level
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { cbaClause, clauseComparisons, collectiveAgreements } from "@/db/schema";
@@ -13,6 +14,11 @@ import { inArray, eq, and } from "drizzle-orm";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * POST /api/cba/clauses/compare
  * Compare clauses across multiple CBAs
@@ -23,26 +29,43 @@ import { db } from '@/db/db';
  *   analysisType: 'wages' | 'benefits' | 'working_conditions' | 'general'
  * }
  */
+
+const cbaClausesCompareSchema = z.object({
+  clauseIds: z.string().uuid('Invalid clauseIds'),
+  analysisType = "general": z.boolean().optional(),
+});
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.tenantId) {
-      return NextResponse.json(
-        { error: 'Authentication and tenant context required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and tenant context required'
+    );
     }
     
     const tenantId = user.tenantId;
     const userId = user.id;
     const body = await request.json();
+    // Validate request body
+    const validation = cbaClausesCompareSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { clauseIds, analysisType = "general" } = validation.data;
     const { clauseIds, analysisType = "general" } = body;
 
     if (!clauseIds || !Array.isArray(clauseIds) || clauseIds.length < 2) {
-      return NextResponse.json(
-        { error: "At least 2 clause IDs required for comparison" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'At least 2 clause IDs required for comparison'
+    );
     }
 
     // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
@@ -60,10 +83,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
         );
 
       if (clauses.length !== clauseIds.length) {
-        return NextResponse.json(
-          { error: "Some clauses not found or don't belong to your organization" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Some clauses not found or don'
+    );
       }
 
       // Extract just the cbaClause objects
@@ -120,9 +143,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       return NextResponse.json(savedComparison);
     });
   } catch (error) {
-return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });
@@ -194,10 +218,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.tenantId) {
-      return NextResponse.json(
-        { error: 'Authentication and tenant context required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and tenant context required'
+    );
     }
     
     const tenantId = user.tenantId;
@@ -205,10 +229,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const clauseIds = searchParams.get("clauseIds")?.split(",") || [];
 
     if (clauseIds.length === 0) {
-      return NextResponse.json(
-        { error: "Clause IDs required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Clause IDs required'
+    );
     }
 
     // Find comparisons involving these clauses, filtered by tenant
@@ -225,9 +249,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json({ comparisons });
   } catch (error) {
-return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

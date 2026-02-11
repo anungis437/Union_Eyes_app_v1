@@ -8,6 +8,11 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { claims, users, deadlines } from '@/db/schema';
 import { eq, and, isNull, lte, gte, sql, desc, ne, or } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/recommendations?type=steward|deadline|strategy|priority
  * Smart recommendations engine
@@ -94,9 +99,10 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     return NextResponse.json({ recommendations });
     
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to generate recommendations' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate recommendations',
+      error
     );
   }
 });

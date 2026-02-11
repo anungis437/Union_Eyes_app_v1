@@ -24,6 +24,11 @@ import {
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // ============================================================================
 // GET /api/events/[id]/occurrences
 // List all instances of a recurring event
@@ -60,7 +65,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!parentEvent) {
-        return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Event not found'
+    );
       }
 
       if (!parentEvent.isRecurring) {
@@ -146,10 +154,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         headers: createRateLimitHeaders(rateLimitResult),
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -158,6 +167,13 @@ return NextResponse.json(
 // POST /api/events/[id]/occurrences
 // Generate database instances for a recurring event
 // ============================================================================
+
+
+const eventsOccurrencesSchema = z.object({
+  startDate = new Date(): z.string().datetime().optional(),
+  endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000): z.string().datetime().optional(),
+  // 90 days: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -174,7 +190,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .limit(1);
 
       if (!parentEvent) {
-        return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Event not found'
+    );
       }
 
       if (!parentEvent.isRecurring) {
@@ -186,14 +205,25 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Check if user is organizer
       if (parentEvent.organizerId !== userId) {
-        return NextResponse.json(
-          { error: 'Only the organizer can generate instances' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the organizer can generate instances'
+    );
       }
 
       // Get request body
       const body = await request.json();
+    // Validate request body
+    const validation = eventsOccurrencesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { startDate = new Date(), endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days } = validation.data;
       const {
         startDate = new Date(),
         endDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
@@ -245,7 +275,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .limit(1);
 
       if (!parentEvent) {
-        return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Event not found'
+    );
       }
 
       if (!parentEvent.isRecurring) {
@@ -257,10 +290,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
 
       // Check if user is organizer
       if (parentEvent.organizerId !== userId) {
-        return NextResponse.json(
-          { error: 'Only the organizer can delete occurrences' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the organizer can delete occurrences'
+    );
       }
 
       // Get date from query parameter
@@ -268,19 +301,19 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       const dateParam = searchParams.get('date');
 
       if (!dateParam) {
-        return NextResponse.json(
-          { error: 'Date parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Date parameter is required'
+    );
       }
 
       const exceptionDate = new Date(dateParam);
 
       if (isNaN(exceptionDate.getTime())) {
-        return NextResponse.json(
-          { error: 'Invalid date format' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid date format'
+    );
       }
 
       // Add exception

@@ -10,25 +10,47 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { tenants } from "@/db/schema/tenant-management-schema";
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const tenantSwitchSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tenantId: z.string().uuid('Invalid tenantId'),
+});
+
 export const POST = async (request: Request) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = tenantSwitchSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, tenantId } = validation.data;
       const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
       const organizationId = organizationIdFromBody ?? tenantIdFromBody;
       const tenantId = organizationId;
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: "Organization ID is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID is required'
+    );
       }
 
       // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
@@ -41,10 +63,10 @@ export const POST = async (request: Request) => {
           .limit(1);
 
         if (tenant.length === 0) {
-          return NextResponse.json(
-            { error: "Tenant not found" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Tenant not found'
+    );
         }
 
         // Verify user has access to this tenant
@@ -102,10 +124,11 @@ export const POST = async (request: Request) => {
         });
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Failed to switch tenant" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to switch tenant',
+      error
+    );
     }
     })(request);
 };

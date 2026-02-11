@@ -5,14 +5,19 @@ import { db } from '@/db/db';
 import { getDataSource, getFieldMetadata } from '@/lib/report-executor';
 import { safeTableName, safeColumnName } from '@/lib/safe-sql-identifiers';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function handler(request: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user || (!user.organizationId && !user.tenantId)) {
-      return NextResponse.json(
-        { error: 'Authentication and organization context required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and organization context required'
+    );
     }
 
     const { searchParams } = new URL(request.url);
@@ -20,10 +25,10 @@ async function handler(request: NextRequest) {
     const fieldId = searchParams.get('fieldId');
 
     if (!sourceId || !fieldId) {
-      return NextResponse.json(
-        { error: 'sourceId and fieldId are required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'sourceId and fieldId are required'
+    );
     }
 
     const dataSource = getDataSource(sourceId);
@@ -58,18 +63,18 @@ async function handler(request: NextRequest) {
 
     // Validate table exists in allowlist
     if (!ALLOWED_TABLES[table]) {
-      return NextResponse.json(
-        { error: 'Invalid data source table' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid data source table'
+    );
     }
 
     // Validate column exists for this table
     if (!ALLOWED_TABLES[table].includes(column)) {
-      return NextResponse.json(
-        { error: 'Invalid field column' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid field column'
+    );
     }
 
     // SECURITY: Use validated identifiers with safe escaping functions
@@ -92,9 +97,10 @@ async function handler(request: NextRequest) {
       count: samples.length,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch sample data' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch sample data',
+      error
     );
   }
 }

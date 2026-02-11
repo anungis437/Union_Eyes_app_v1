@@ -9,12 +9,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { claims } from "@/db/schema/claims-schema";
+import { claims } from "@/db/schema/domains/claims";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
+import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for creating claims
@@ -180,19 +181,19 @@ export const POST = withRoleAuth(30, async (request, context) => {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(ErrorCode.VALIDATION_ERROR, 'Invalid JSON in request body');
   }
 
   const parsed = createClaimSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return standardErrorResponse(ErrorCode.VALIDATION_ERROR, 'Invalid request body');
   }
 
   const body = parsed.data;
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(ErrorCode.FORBIDDEN, 'Forbidden');
   }
 
   try {

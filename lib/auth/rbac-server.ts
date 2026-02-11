@@ -7,7 +7,7 @@
 
 import { auth, currentUser } from '@/lib/api-auth-guard';
 import { db } from "@/db/db";
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { eq } from "drizzle-orm";
 import { UserRole, Permission, hasPermission, hasAnyPermission, hasAllPermissions, canAccessRoute } from "./roles";
 

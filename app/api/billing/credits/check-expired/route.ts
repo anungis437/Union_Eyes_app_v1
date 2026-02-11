@@ -2,18 +2,29 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/api-auth-guard";
 import { getProfileByUserId, updateProfile } from "@/db/queries/profiles-queries";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export async function POST() {
   try {
     const { userId } = auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const profile = await getProfileByUserId(userId);
 
     if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Profile not found'
+    );
     }
 
     let updatedProfile = profile;
@@ -43,9 +54,10 @@ export async function POST() {
 
     return NextResponse.json({ changed, profile: updatedProfile });
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to check expired credits" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to check expired credits',
+      error
     );
   }
 }

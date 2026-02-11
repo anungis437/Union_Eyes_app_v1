@@ -3,6 +3,7 @@
  * POST /api/storage/cleanup - Clean up deleted documents and orphaned files
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
@@ -12,6 +13,11 @@ import { documents } from "@/db/schema";
 import { eq, sql, and, lte } from "drizzle-orm";
 import { del } from "@vercel/blob";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface CleanupOptions {
   tenantId: string;
   daysOld?: number;
@@ -27,6 +33,14 @@ interface CleanupOptions {
  * - daysOld: number (optional) - Delete files older than X days (default: 30)
  * - dryRun: boolean (optional) - Preview cleanup without actually deleting
  */
+
+const storageCleanupSchema = z.object({
+  tenantId: z.string().uuid('Invalid tenantId'),
+  daysOld: z.unknown().optional(),
+  dryRun: z.unknown().optional(),
+});
+
+
 export const POST = withRoleAuth(90, async (request, context) => {
   const { userId, organizationId } = context;
 
@@ -78,7 +92,11 @@ export const POST = withRoleAuth(90, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'Invalid JSON in request body' },
       });
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
     }
 
     const body = rawBody as CleanupOptions;
@@ -97,7 +115,11 @@ export const POST = withRoleAuth(90, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'tenantId is required' },
       });
-      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'tenantId is required',
+      error
+    );
     }
 
     // Verify organization access (admin only)
@@ -112,7 +134,11 @@ export const POST = withRoleAuth(90, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch' },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
     }
 
     // Calculate cutoff date
@@ -220,9 +246,10 @@ export const POST = withRoleAuth(90, async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to perform cleanup", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to perform cleanup',
+      error
     );
   }
 });

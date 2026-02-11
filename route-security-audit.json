@@ -1,0 +1,6794 @@
+{
+  "totalRoutes": 413,
+  "scannedFiles": 413,
+  "securityScore": 99,
+  "categoryCounts": {
+    "critical": 0,
+    "high": 3,
+    "medium": 36,
+    "low": 4,
+    "info": 0
+  },
+  "routeAnalyses": [
+    {
+      "path": "/api/activities",
+      "file": "app\\api\\activities\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/analytics/anomalies",
+      "file": "app\\api\\admin\\clc\\analytics\\anomalies\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/analytics/forecast",
+      "file": "app\\api\\admin\\clc\\analytics\\forecast\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/analytics/organizations",
+      "file": "app\\api\\admin\\clc\\analytics\\organizations\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/analytics/patterns",
+      "file": "app\\api\\admin\\clc\\analytics\\patterns\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/analytics/trends",
+      "file": "app\\api\\admin\\clc\\analytics\\trends\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/remittances/export",
+      "file": "app\\api\\admin\\clc\\remittances\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/remittances",
+      "file": "app\\api\\admin\\clc\\remittances\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/remittances/[id]/export",
+      "file": "app\\api\\admin\\clc\\remittances\\[id]\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/clc/remittances/[id]",
+      "file": "app\\api\\admin\\clc\\remittances\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\admin\\clc\\remittances\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/admin/clc/remittances/[id]/submit",
+      "file": "app\\api\\admin\\clc\\remittances\\[id]\\submit\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/database/health",
+      "file": "app\\api\\admin\\database\\health\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/database/optimize",
+      "file": "app\\api\\admin\\database\\optimize\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\admin\\database\\optimize\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/admin/feature-flags",
+      "file": "app\\api\\admin\\feature-flags\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/fix-super-admin-roles",
+      "file": "app\\api\\admin\\fix-super-admin-roles\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/jobs/retry",
+      "file": "app\\api\\admin\\jobs\\retry\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/jobs",
+      "file": "app\\api\\admin\\jobs\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/jobs/[action]",
+      "file": "app\\api\\admin\\jobs\\[action]\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/lro/metrics",
+      "file": "app\\api\\admin\\lro\\metrics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 70
+    },
+    {
+      "path": "/api/admin/members/bulk-import",
+      "file": "app\\api\\admin\\members\\bulk-import\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/organizations/bulk-import",
+      "file": "app\\api\\admin\\organizations\\bulk-import\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\admin\\organizations\\bulk-import\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/admin/organizations",
+      "file": "app\\api\\admin\\organizations\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/organizations/[id]",
+      "file": "app\\api\\admin\\organizations\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/certificates",
+      "file": "app\\api\\admin\\pki\\certificates\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/certificates/[id]",
+      "file": "app\\api\\admin\\pki\\certificates\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/signatures",
+      "file": "app\\api\\admin\\pki\\signatures\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/signatures/[id]/sign",
+      "file": "app\\api\\admin\\pki\\signatures\\[id]\\sign\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/signatures/[id]/verify",
+      "file": "app\\api\\admin\\pki\\signatures\\[id]\\verify\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/workflows",
+      "file": "app\\api\\admin\\pki\\workflows\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/pki/workflows/[id]",
+      "file": "app\\api\\admin\\pki\\workflows\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/seed-test-data",
+      "file": "app\\api\\admin\\seed-test-data\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/stats/activity",
+      "file": "app\\api\\admin\\stats\\activity\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/stats/overview",
+      "file": "app\\api\\admin\\stats\\overview\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/system/cache",
+      "file": "app\\api\\admin\\system\\cache\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/system/settings",
+      "file": "app\\api\\admin\\system\\settings\\route.ts",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/update-role",
+      "file": "app\\api\\admin\\update-role\\route.ts",
+      "methods": [
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/users",
+      "file": "app\\api\\admin\\users\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/admin/users/[userId]",
+      "file": "app\\api\\admin\\users\\[userId]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/cache-stats",
+      "file": "app\\api\\ai\\cache-stats\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/classify",
+      "file": "app\\api\\ai\\classify\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/extract-clauses",
+      "file": "app\\api\\ai\\extract-clauses\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/feedback",
+      "file": "app\\api\\ai\\feedback\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/match-precedents",
+      "file": "app\\api\\ai\\match-precedents\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/search",
+      "file": "app\\api\\ai\\search\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/semantic-search",
+      "file": "app\\api\\ai\\semantic-search\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ai/summarize",
+      "file": "app\\api\\ai\\summarize\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/claims/categories",
+      "file": "app\\api\\analytics\\claims\\categories\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/claims",
+      "file": "app\\api\\analytics\\claims\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/claims/stewards",
+      "file": "app\\api\\analytics\\claims\\stewards\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/claims/trends",
+      "file": "app\\api\\analytics\\claims\\trends\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/clause-stats",
+      "file": "app\\api\\analytics\\clause-stats\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/comparative",
+      "file": "app\\api\\analytics\\comparative\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/dashboard",
+      "file": "app\\api\\analytics\\dashboard\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/deadlines-metrics",
+      "file": "app\\api\\analytics\\deadlines-metrics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/executive",
+      "file": "app\\api\\analytics\\executive\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/financial/categories",
+      "file": "app\\api\\analytics\\financial\\categories\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/financial/costs",
+      "file": "app\\api\\analytics\\financial\\costs\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/financial/outcomes",
+      "file": "app\\api\\analytics\\financial\\outcomes\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/financial",
+      "file": "app\\api\\analytics\\financial\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/financial/trends",
+      "file": "app\\api\\analytics\\financial\\trends\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/heatmap",
+      "file": "app\\api\\analytics\\heatmap\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/insights",
+      "file": "app\\api\\analytics\\insights\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/kpis",
+      "file": "app\\api\\analytics\\kpis\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/members/churn-risk",
+      "file": "app\\api\\analytics\\members\\churn-risk\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/members/cohorts",
+      "file": "app\\api\\analytics\\members\\cohorts\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/members",
+      "file": "app\\api\\analytics\\members\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/members/trends",
+      "file": "app\\api\\analytics\\members\\trends\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/metrics",
+      "file": "app\\api\\analytics\\metrics\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/operational/bottlenecks",
+      "file": "app\\api\\analytics\\operational\\bottlenecks\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/operational/queues",
+      "file": "app\\api\\analytics\\operational\\queues\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/operational",
+      "file": "app\\api\\analytics\\operational\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/operational/sla",
+      "file": "app\\api\\analytics\\operational\\sla\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/operational/workload",
+      "file": "app\\api\\analytics\\operational\\workload\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/org-activity",
+      "file": "app\\api\\analytics\\org-activity\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/precedent-stats",
+      "file": "app\\api\\analytics\\precedent-stats\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/predictions",
+      "file": "app\\api\\analytics\\predictions\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/analytics/refresh",
+      "file": "app\\api\\analytics\\refresh\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\analytics\\refresh\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/analytics/trends",
+      "file": "app\\api\\analytics\\trends\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arbitration/precedents",
+      "file": "app\\api\\arbitration\\precedents\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arbitration/precedents/search",
+      "file": "app\\api\\arbitration\\precedents\\search\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arbitration/precedents/[id]/citations",
+      "file": "app\\api\\arbitration\\precedents\\[id]\\citations\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arbitration/precedents/[id]/documents",
+      "file": "app\\api\\arbitration\\precedents\\[id]\\documents\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arbitration/precedents/[id]",
+      "file": "app\\api\\arbitration\\precedents\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arrears/case/[memberId]",
+      "file": "app\\api\\arrears\\case\\[memberId]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arrears/cases",
+      "file": "app\\api\\arrears\\cases\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arrears/create-payment-plan",
+      "file": "app\\api\\arrears\\create-payment-plan\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arrears/escalate/[caseId]",
+      "file": "app\\api\\arrears\\escalate\\[caseId]\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arrears/log-contact",
+      "file": "app\\api\\arrears\\log-contact\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/arrears/resolve/[caseId]",
+      "file": "app\\api\\arrears\\resolve\\[caseId]\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/auth/role",
+      "file": "app\\api\\auth\\role\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "low",
+          "category": "Rate Limiting",
+          "message": "Sensitive endpoint without rate limiting",
+          "file": "app\\api\\auth\\role\\route.ts",
+          "suggestion": "Add rate limiting with @upstash/ratelimit"
+        }
+      ],
+      "score": 90
+    },
+    {
+      "path": "/api/auth/user-role",
+      "file": "app\\api\\auth\\user-role\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "low",
+          "category": "Rate Limiting",
+          "message": "Sensitive endpoint without rate limiting",
+          "file": "app\\api\\auth\\user-role\\route.ts",
+          "suggestion": "Add rate limiting with @upstash/ratelimit"
+        }
+      ],
+      "score": 90
+    },
+    {
+      "path": "/api/bargaining-notes",
+      "file": "app\\api\\bargaining-notes\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/bargaining-notes/[id]",
+      "file": "app\\api\\bargaining-notes\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/billing/batch-status/[jobId]",
+      "file": "app\\api\\billing\\batch-status\\[jobId]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/billing/credits/check-expired",
+      "file": "app\\api\\billing\\credits\\check-expired\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\billing\\credits\\check-expired\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/billing/invoices",
+      "file": "app\\api\\billing\\invoices\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/billing/send-batch",
+      "file": "app\\api\\billing\\send-batch\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "high",
+          "category": "Authorization",
+          "message": "Database query without RLS context",
+          "file": "app\\api\\billing\\send-batch\\route.ts",
+          "suggestion": "Wrap database operations with withRLSContext()"
+        }
+      ],
+      "score": 80
+    },
+    {
+      "path": "/api/billing/send-invoice",
+      "file": "app\\api\\billing\\send-invoice\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "high",
+          "category": "Authorization",
+          "message": "Database query without RLS context",
+          "file": "app\\api\\billing\\send-invoice\\route.ts",
+          "suggestion": "Wrap database operations with withRLSContext()"
+        }
+      ],
+      "score": 80
+    },
+    {
+      "path": "/api/billing/validate",
+      "file": "app\\api\\billing\\validate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar/events",
+      "file": "app\\api\\calendar\\events\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar/events/[id]",
+      "file": "app\\api\\calendar\\events\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar-sync/connections",
+      "file": "app\\api\\calendar-sync\\connections\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar-sync/connections/[id]",
+      "file": "app\\api\\calendar-sync\\connections\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar-sync/connections/[id]/sync",
+      "file": "app\\api\\calendar-sync\\connections\\[id]\\sync\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar-sync/google/auth",
+      "file": "app\\api\\calendar-sync\\google\\auth\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "low",
+          "category": "Rate Limiting",
+          "message": "Sensitive endpoint without rate limiting",
+          "file": "app\\api\\calendar-sync\\google\\auth\\route.ts",
+          "suggestion": "Add rate limiting with @upstash/ratelimit"
+        }
+      ],
+      "score": 90
+    },
+    {
+      "path": "/api/calendar-sync/google/callback",
+      "file": "app\\api\\calendar-sync\\google\\callback\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendar-sync/microsoft/auth",
+      "file": "app\\api\\calendar-sync\\microsoft\\auth\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "low",
+          "category": "Rate Limiting",
+          "message": "Sensitive endpoint without rate limiting",
+          "file": "app\\api\\calendar-sync\\microsoft\\auth\\route.ts",
+          "suggestion": "Add rate limiting with @upstash/ratelimit"
+        }
+      ],
+      "score": 90
+    },
+    {
+      "path": "/api/calendar-sync/microsoft/callback",
+      "file": "app\\api\\calendar-sync\\microsoft\\callback\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendars",
+      "file": "app\\api\\calendars\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendars/[id]/events",
+      "file": "app\\api\\calendars\\[id]\\events\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/calendars/[id]",
+      "file": "app\\api\\calendars\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/carbon/dashboard",
+      "file": "app\\api\\carbon\\dashboard\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/carbon/infrastructure",
+      "file": "app\\api\\carbon\\infrastructure\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/carbon/validate",
+      "file": "app\\api\\carbon\\validate\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cba/clauses/compare",
+      "file": "app\\api\\cba\\clauses\\compare\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cba/footnotes/[clauseId]",
+      "file": "app\\api\\cba\\footnotes\\[clauseId]\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cba/precedents",
+      "file": "app\\api\\cba\\precedents\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cba/search",
+      "file": "app\\api\\cba\\search\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cba/[id]",
+      "file": "app\\api\\cba\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\cba\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/cbas",
+      "file": "app\\api\\cbas\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cbas/[id]",
+      "file": "app\\api\\cbas\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims",
+      "file": "app\\api\\claims\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims/[id]/defensibility-pack",
+      "file": "app\\api\\claims\\[id]\\defensibility-pack\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims/[id]",
+      "file": "app\\api\\claims\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims/[id]/status",
+      "file": "app\\api\\claims\\[id]\\status\\route.ts",
+      "methods": [
+        "PATCH",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims/[id]/updates",
+      "file": "app\\api\\claims\\[id]\\updates\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims/[id]/workflow/history",
+      "file": "app\\api\\claims\\[id]\\workflow\\history\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/claims/[id]/workflow",
+      "file": "app\\api\\claims\\[id]\\workflow\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clause-library/compare",
+      "file": "app\\api\\clause-library\\compare\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clause-library",
+      "file": "app\\api\\clause-library\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clause-library/search",
+      "file": "app\\api\\clause-library\\search\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clause-library/[id]",
+      "file": "app\\api\\clause-library\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clause-library/[id]/share",
+      "file": "app\\api\\clause-library\\[id]\\share\\route.ts",
+      "methods": [
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clause-library/[id]/tags",
+      "file": "app\\api\\clause-library\\[id]\\tags\\route.ts",
+      "methods": [
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clauses/compare",
+      "file": "app\\api\\clauses\\compare\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clauses",
+      "file": "app\\api\\clauses\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clauses/search",
+      "file": "app\\api\\clauses\\search\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/clauses/[id]",
+      "file": "app\\api\\clauses\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\clauses\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/communications/campaigns",
+      "file": "app\\api\\communications\\campaigns\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/campaigns/[id]/analytics/export",
+      "file": "app\\api\\communications\\campaigns\\[id]\\analytics\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/campaigns/[id]/analytics",
+      "file": "app\\api\\communications\\campaigns\\[id]\\analytics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/campaigns/[id]",
+      "file": "app\\api\\communications\\campaigns\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/campaigns/[id]/schedule",
+      "file": "app\\api\\communications\\campaigns\\[id]\\schedule\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/campaigns/[id]/send-test",
+      "file": "app\\api\\communications\\campaigns\\[id]\\send-test\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/distribution-lists",
+      "file": "app\\api\\communications\\distribution-lists\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/distribution-lists/[id]/export",
+      "file": "app\\api\\communications\\distribution-lists\\[id]\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/distribution-lists/[id]",
+      "file": "app\\api\\communications\\distribution-lists\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/distribution-lists/[id]/subscribers",
+      "file": "app\\api\\communications\\distribution-lists\\[id]\\subscribers\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/polls",
+      "file": "app\\api\\communications\\polls\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/polls/[pollId]",
+      "file": "app\\api\\communications\\polls\\[pollId]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/polls/[pollId]/vote",
+      "file": "app\\api\\communications\\polls\\[pollId]\\vote\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/sms/campaigns",
+      "file": "app\\api\\communications\\sms\\campaigns\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/sms/conversations",
+      "file": "app\\api\\communications\\sms\\conversations\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/sms/conversations/[conversationId]/archive",
+      "file": "app\\api\\communications\\sms\\conversations\\[conversationId]\\archive\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\communications\\sms\\conversations\\[conversationId]\\archive\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/communications/sms/conversations/[conversationId]/read",
+      "file": "app\\api\\communications\\sms\\conversations\\[conversationId]\\read\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\communications\\sms\\conversations\\[conversationId]\\read\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/communications/sms",
+      "file": "app\\api\\communications\\sms\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/surveys",
+      "file": "app\\api\\communications\\surveys\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/surveys/[surveyId]/export",
+      "file": "app\\api\\communications\\surveys\\[surveyId]\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/surveys/[surveyId]/responses",
+      "file": "app\\api\\communications\\surveys\\[surveyId]\\responses\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/surveys/[surveyId]/results",
+      "file": "app\\api\\communications\\surveys\\[surveyId]\\results\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/surveys/[surveyId]",
+      "file": "app\\api\\communications\\surveys\\[surveyId]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/templates",
+      "file": "app\\api\\communications\\templates\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/templates/[id]/duplicate",
+      "file": "app\\api\\communications\\templates\\[id]\\duplicate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\communications\\templates\\[id]\\duplicate\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/communications/templates/[id]",
+      "file": "app\\api\\communications\\templates\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/track/click",
+      "file": "app\\api\\communications\\track\\click\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/track/open/[campaignId]/[recipientId]",
+      "file": "app\\api\\communications\\track\\open\\[campaignId]\\[recipientId]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/communications/unsubscribe/[recipientId]",
+      "file": "app\\api\\communications\\unsubscribe\\[recipientId]\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\communications\\unsubscribe\\[recipientId]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/compliance/validate",
+      "file": "app\\api\\compliance\\validate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cope/campaigns",
+      "file": "app\\api\\cope\\campaigns\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cope/canvassing",
+      "file": "app\\api\\cope\\canvassing\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cope/officials",
+      "file": "app\\api\\cope\\officials\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/analytics/daily-metrics",
+      "file": "app\\api\\cron\\analytics\\daily-metrics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/education-reminders",
+      "file": "app\\api\\cron\\education-reminders\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/external-data-sync",
+      "file": "app\\api\\cron\\external-data-sync\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\cron\\external-data-sync\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/monthly-dues",
+      "file": "app\\api\\cron\\monthly-dues\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\cron\\monthly-dues\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/monthly-per-capita",
+      "file": "app\\api\\cron\\monthly-per-capita\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\cron\\monthly-per-capita\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/overdue-notifications",
+      "file": "app\\api\\cron\\overdue-notifications\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\cron\\overdue-notifications\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/cron/scheduled-reports",
+      "file": "app\\api\\cron\\scheduled-reports\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\cron\\scheduled-reports\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/currency/convert",
+      "file": "app\\api\\currency\\convert\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dashboard/stats",
+      "file": "app\\api\\dashboard\\stats\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines/compliance",
+      "file": "app\\api\\deadlines\\compliance\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines/dashboard",
+      "file": "app\\api\\deadlines\\dashboard\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines/overdue",
+      "file": "app\\api\\deadlines\\overdue\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines",
+      "file": "app\\api\\deadlines\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines/upcoming",
+      "file": "app\\api\\deadlines\\upcoming\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines/[id]/complete",
+      "file": "app\\api\\deadlines\\[id]\\complete\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/deadlines/[id]/extend",
+      "file": "app\\api\\deadlines\\[id]\\extend\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/debug/user-role",
+      "file": "app\\api\\debug\\user-role\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/docs/openapi.json",
+      "file": "app\\api\\docs\\openapi.json\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents/bulk",
+      "file": "app\\api\\documents\\bulk\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents/categories",
+      "file": "app\\api\\documents\\categories\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents/folders",
+      "file": "app\\api\\documents\\folders\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents",
+      "file": "app\\api\\documents\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents/upload",
+      "file": "app\\api\\documents\\upload\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents/[id]/download",
+      "file": "app\\api\\documents\\[id]\\download\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/documents/[id]/ocr",
+      "file": "app\\api\\documents\\[id]\\ocr\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\documents\\[id]\\ocr\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/documents/[id]",
+      "file": "app\\api\\documents\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/balance",
+      "file": "app\\api\\dues\\balance\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/billing-cycle",
+      "file": "app\\api\\dues\\billing-cycle\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/calculate",
+      "file": "app\\api\\dues\\calculate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/create-payment-intent",
+      "file": "app\\api\\dues\\create-payment-intent\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/late-fees",
+      "file": "app\\api\\dues\\late-fees\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/payment-history",
+      "file": "app\\api\\dues\\payment-history\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/receipt/[id]",
+      "file": "app\\api\\dues\\receipt\\[id]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/dues/setup-intent",
+      "file": "app\\api\\dues\\setup-intent\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/certifications/generate",
+      "file": "app\\api\\education\\certifications\\generate\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/certifications/renewal-reminders",
+      "file": "app\\api\\education\\certifications\\renewal-reminders\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/certifications",
+      "file": "app\\api\\education\\certifications\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/completions/certificates",
+      "file": "app\\api\\education\\completions\\certificates\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/completions",
+      "file": "app\\api\\education\\completions\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/courses",
+      "file": "app\\api\\education\\courses\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/notification-preferences",
+      "file": "app\\api\\education\\notification-preferences\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/programs",
+      "file": "app\\api\\education\\programs\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/programs/[id]/enrollments",
+      "file": "app\\api\\education\\programs\\[id]\\enrollments\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/registrations",
+      "file": "app\\api\\education\\registrations\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/sessions",
+      "file": "app\\api\\education\\sessions\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/education/sessions/[id]/attendance",
+      "file": "app\\api\\education\\sessions\\[id]\\attendance\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/emergency/activate",
+      "file": "app\\api\\emergency\\activate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/emergency/dashboard",
+      "file": "app\\api\\emergency\\dashboard\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/emergency/pipeda",
+      "file": "app\\api\\emergency\\pipeda\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/emergency/recovery",
+      "file": "app\\api\\emergency\\recovery\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/equity/monitoring",
+      "file": "app\\api\\equity\\monitoring\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/equity/self-identify",
+      "file": "app\\api\\equity\\self-identify\\route.ts",
+      "methods": [
+        "POST",
+        "GET",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/equity/snapshots",
+      "file": "app\\api\\equity\\snapshots\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/events/[id]/occurrences",
+      "file": "app\\api\\events\\[id]\\occurrences\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/events/[id]",
+      "file": "app\\api\\events\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/exports/csv",
+      "file": "app\\api\\exports\\csv\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/exports/excel",
+      "file": "app\\api\\exports\\excel\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/exports/pdf",
+      "file": "app\\api\\exports\\pdf\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/exports",
+      "file": "app\\api\\exports\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/exports/[id]",
+      "file": "app\\api\\exports\\[id]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/extensions/[id]",
+      "file": "app\\api\\extensions\\[id]\\route.ts",
+      "methods": [
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\extensions\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/external-data/lrb",
+      "file": "app\\api\\external-data\\lrb\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\external-data\\lrb\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/external-data",
+      "file": "app\\api\\external-data\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "high",
+          "category": "Authorization",
+          "message": "Database query without RLS context",
+          "file": "app\\api\\external-data\\route.ts",
+          "suggestion": "Wrap database operations with withRLSContext()"
+        }
+      ],
+      "score": 80
+    },
+    {
+      "path": "/api/feature-flags",
+      "file": "app\\api\\feature-flags\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/financial/reports/aged-receivables",
+      "file": "app\\api\\financial\\reports\\aged-receivables\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/financial/reports/balance-sheet",
+      "file": "app\\api\\financial\\reports\\balance-sheet\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/financial/reports/cash-flow",
+      "file": "app\\api\\financial\\reports\\cash-flow\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/financial/reports/income-statement",
+      "file": "app\\api\\financial\\reports\\income-statement\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/gdpr/consents",
+      "file": "app\\api\\gdpr\\consents\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/gdpr/cookie-consent",
+      "file": "app\\api\\gdpr\\cookie-consent\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/gdpr/data-erasure",
+      "file": "app\\api\\gdpr\\data-erasure\\route.ts",
+      "methods": [
+        "POST",
+        "DELETE",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/gdpr/data-export",
+      "file": "app\\api\\gdpr\\data-export\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/gdpr/requests",
+      "file": "app\\api\\gdpr\\requests\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/council-elections",
+      "file": "app\\api\\governance\\council-elections\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/dashboard",
+      "file": "app\\api\\governance\\dashboard\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/events",
+      "file": "app\\api\\governance\\events\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/golden-share",
+      "file": "app\\api\\governance\\golden-share\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/mission-audits",
+      "file": "app\\api\\governance\\mission-audits\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/reserved-matters",
+      "file": "app\\api\\governance\\reserved-matters\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/reserved-matters/[id]/class-b-vote",
+      "file": "app\\api\\governance\\reserved-matters\\[id]\\class-b-vote\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/governance/reserved-matters/[id]",
+      "file": "app\\api\\governance\\reserved-matters\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/graphql",
+      "file": "app\\api\\graphql\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\graphql\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/health/liveness",
+      "file": "app\\api\\health\\liveness\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/health",
+      "file": "app\\api\\health\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/healthwelfare/plans",
+      "file": "app\\api\\healthwelfare\\plans\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/integrations/shopify/webhooks",
+      "file": "app\\api\\integrations\\shopify\\webhooks\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\integrations\\shopify\\webhooks\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/jurisdiction/clc-compliance",
+      "file": "app\\api\\jurisdiction\\clc-compliance\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/jurisdiction/validate-deadline",
+      "file": "app\\api\\jurisdiction\\validate-deadline\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/jurisdiction-rules",
+      "file": "app\\api\\jurisdiction-rules\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/location/consent",
+      "file": "app\\api\\location\\consent\\route.ts",
+      "methods": [
+        "POST",
+        "GET",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/location/geofence",
+      "file": "app\\api\\location\\geofence\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/location/track",
+      "file": "app\\api\\location\\track\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/meeting-rooms",
+      "file": "app\\api\\meeting-rooms\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/meeting-rooms/[id]/bookings",
+      "file": "app\\api\\meeting-rooms\\[id]\\bookings\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/member/ai-feedback",
+      "file": "app\\api\\member\\ai-feedback\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/bulk",
+      "file": "app\\api\\members\\bulk\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/export",
+      "file": "app\\api\\members\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/me",
+      "file": "app\\api\\members\\me\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/merge",
+      "file": "app\\api\\members\\merge\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/search",
+      "file": "app\\api\\members\\search\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/[id]/claims",
+      "file": "app\\api\\members\\[id]\\claims\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/members/[id]",
+      "file": "app\\api\\members\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/messages/notifications",
+      "file": "app\\api\\messages\\notifications\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/messages/threads",
+      "file": "app\\api\\messages\\threads\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/messages/threads/[threadId]/messages",
+      "file": "app\\api\\messages\\threads\\[threadId]\\messages\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/messages/threads/[threadId]",
+      "file": "app\\api\\messages\\threads\\[threadId]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/metrics",
+      "file": "app\\api\\metrics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/monitoring/alerts",
+      "file": "app\\api\\ml\\monitoring\\alerts\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/monitoring/drift",
+      "file": "app\\api\\ml\\monitoring\\drift\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/monitoring/metrics",
+      "file": "app\\api\\ml\\monitoring\\metrics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/monitoring/usage",
+      "file": "app\\api\\ml\\monitoring\\usage\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/predictions/churn-risk",
+      "file": "app\\api\\ml\\predictions\\churn-risk\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/predictions/claim-outcome",
+      "file": "app\\api\\ml\\predictions\\claim-outcome\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/predictions/timeline",
+      "file": "app\\api\\ml\\predictions\\timeline\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/predictions/workload-forecast",
+      "file": "app\\api\\ml\\predictions\\workload-forecast\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/query",
+      "file": "app\\api\\ml\\query\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/ml/recommendations",
+      "file": "app\\api\\ml\\recommendations\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/notifications/count",
+      "file": "app\\api\\notifications\\count\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/notifications/device",
+      "file": "app\\api\\notifications\\device\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/notifications/mark-all-read",
+      "file": "app\\api\\notifications\\mark-all-read\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\notifications\\mark-all-read\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/notifications/preferences",
+      "file": "app\\api\\notifications\\preferences\\route.ts",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/notifications",
+      "file": "app\\api\\notifications\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/notifications/test",
+      "file": "app\\api\\notifications\\test\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/notifications/[id]",
+      "file": "app\\api\\notifications\\[id]\\route.ts",
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\notifications\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/onboarding/discover-federation",
+      "file": "app\\api\\onboarding\\discover-federation\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/onboarding/peer-benchmarks",
+      "file": "app\\api\\onboarding\\peer-benchmarks\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/onboarding",
+      "file": "app\\api\\onboarding\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/onboarding/smart-defaults",
+      "file": "app\\api\\onboarding\\smart-defaults\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/onboarding/suggest-clauses",
+      "file": "app\\api\\onboarding\\suggest-clauses\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organization/members",
+      "file": "app\\api\\organization\\members\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organization/members/search",
+      "file": "app\\api\\organization\\members\\search\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/hierarchy",
+      "file": "app\\api\\organizations\\hierarchy\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations",
+      "file": "app\\api\\organizations\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/search",
+      "file": "app\\api\\organizations\\search\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/switch",
+      "file": "app\\api\\organizations\\switch\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/tree",
+      "file": "app\\api\\organizations\\tree\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/access-logs",
+      "file": "app\\api\\organizations\\[id]\\access-logs\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/analytics",
+      "file": "app\\api\\organizations\\[id]\\analytics\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/ancestors",
+      "file": "app\\api\\organizations\\[id]\\ancestors\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/children",
+      "file": "app\\api\\organizations\\[id]\\children\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/descendants",
+      "file": "app\\api\\organizations\\[id]\\descendants\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/members",
+      "file": "app\\api\\organizations\\[id]\\members\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/path",
+      "file": "app\\api\\organizations\\[id]\\path\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]",
+      "file": "app\\api\\organizations\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizations/[id]/sharing-settings",
+      "file": "app\\api\\organizations\\[id]\\sharing-settings\\route.ts",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/campaigns",
+      "file": "app\\api\\organizing\\campaigns\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/card-check",
+      "file": "app\\api\\organizing\\card-check\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/committee",
+      "file": "app\\api\\organizing\\committee\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/forms/generate",
+      "file": "app\\api\\organizing\\forms\\generate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/labour-board",
+      "file": "app\\api\\organizing\\labour-board\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/nlrb-filings",
+      "file": "app\\api\\organizing\\nlrb-filings\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/support-percentage",
+      "file": "app\\api\\organizing\\support-percentage\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/organizing/workplace-mapping",
+      "file": "app\\api\\organizing\\workplace-mapping\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/benefits",
+      "file": "app\\api\\pension\\benefits\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/members",
+      "file": "app\\api\\pension\\members\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/plans",
+      "file": "app\\api\\pension\\plans\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/plans/[id]",
+      "file": "app\\api\\pension\\plans\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\pension\\plans\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/pension/retirement-eligibility",
+      "file": "app\\api\\pension\\retirement-eligibility\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/trustee-meetings",
+      "file": "app\\api\\pension\\trustee-meetings\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/trustee-meetings/[id]",
+      "file": "app\\api\\pension\\trustee-meetings\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\pension\\trustee-meetings\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/pension/trustees",
+      "file": "app\\api\\pension\\trustees\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/pension/trustees/[id]",
+      "file": "app\\api\\pension\\trustees\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\pension\\trustees\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/portal/documents",
+      "file": "app\\api\\portal\\documents\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/portal/documents/upload",
+      "file": "app\\api\\portal\\documents\\upload\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/portal/dues/balance",
+      "file": "app\\api\\portal\\dues\\balance\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/portal/dues/pay",
+      "file": "app\\api\\portal\\dues\\pay\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/precedents",
+      "file": "app\\api\\precedents\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/precedents/search",
+      "file": "app\\api\\precedents\\search\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/precedents/[id]",
+      "file": "app\\api\\precedents\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\precedents\\[id]\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/privacy/breach",
+      "file": "app\\api\\privacy\\breach\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/privacy/consent",
+      "file": "app\\api\\privacy\\consent\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/privacy/dsar",
+      "file": "app\\api\\privacy\\dsar\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/privacy/provincial",
+      "file": "app\\api\\privacy\\provincial\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/profile/roles",
+      "file": "app\\api\\profile\\roles\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reconciliation/bank",
+      "file": "app\\api\\reconciliation\\bank\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reconciliation/process",
+      "file": "app\\api\\reconciliation\\process\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reconciliation/resolve",
+      "file": "app\\api\\reconciliation\\resolve\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reconciliation/upload",
+      "file": "app\\api\\reconciliation\\upload\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\reconciliation\\upload\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/reports/builder",
+      "file": "app\\api\\reports\\builder\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/datasources",
+      "file": "app\\api\\reports\\datasources\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/datasources/sample",
+      "file": "app\\api\\reports\\datasources\\sample\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/execute",
+      "file": "app\\api\\reports\\execute\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports",
+      "file": "app\\api\\reports\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/scheduled",
+      "file": "app\\api\\reports\\scheduled\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/scheduled/[id]",
+      "file": "app\\api\\reports\\scheduled\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/templates",
+      "file": "app\\api\\reports\\templates\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/[id]/execute",
+      "file": "app\\api\\reports\\[id]\\execute\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/[id]",
+      "file": "app\\api\\reports\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/[id]/run",
+      "file": "app\\api\\reports\\[id]\\run\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/reports/[id]/share",
+      "file": "app\\api\\reports\\[id]\\share\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/rewards/cron",
+      "file": "app\\api\\rewards\\cron\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\rewards\\cron\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/rewards/export",
+      "file": "app\\api\\rewards\\export\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/rewards/redemptions",
+      "file": "app\\api\\rewards\\redemptions\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/rewards/wallet",
+      "file": "app\\api\\rewards\\wallet\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/signatures/audit/[documentId]",
+      "file": "app\\api\\signatures\\audit\\[documentId]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/signatures/documents",
+      "file": "app\\api\\signatures\\documents\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/signatures/documents/[id]",
+      "file": "app\\api\\signatures\\documents\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/signatures/sign",
+      "file": "app\\api\\signatures\\sign\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/signatures/webhooks/docusign",
+      "file": "app\\api\\signatures\\webhooks\\docusign\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/social-media/accounts/callback",
+      "file": "app\\api\\social-media\\accounts\\callback\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/social-media/accounts",
+      "file": "app\\api\\social-media\\accounts\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE",
+        "PUT"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/social-media/analytics",
+      "file": "app\\api\\social-media\\analytics\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/social-media/campaigns",
+      "file": "app\\api\\social-media\\campaigns\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/social-media/feed",
+      "file": "app\\api\\social-media\\feed\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/social-media/posts",
+      "file": "app\\api\\social-media\\posts\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/status",
+      "file": "app\\api\\status\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/storage/cleanup",
+      "file": "app\\api\\storage\\cleanup\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/storage/usage",
+      "file": "app\\api\\storage\\usage\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/strike/disbursements",
+      "file": "app\\api\\strike\\disbursements\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/strike/eligibility",
+      "file": "app\\api\\strike\\eligibility\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/strike/funds",
+      "file": "app\\api\\strike\\funds\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/strike/picket-lines",
+      "file": "app\\api\\strike\\picket-lines\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/strike/stipends",
+      "file": "app\\api\\strike\\stipends\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/stripe/webhooks",
+      "file": "app\\api\\stripe\\webhooks\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\stripe\\webhooks\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 55
+    },
+    {
+      "path": "/api/tax/cope/receipts",
+      "file": "app\\api\\tax\\cope\\receipts\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tax/cra/export",
+      "file": "app\\api\\tax\\cra\\export\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tax/rl-1/generate",
+      "file": "app\\api\\tax\\rl-1\\generate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tax/slips",
+      "file": "app\\api\\tax\\slips\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tax/t106",
+      "file": "app\\api\\tax\\t106\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tax/t4a",
+      "file": "app\\api\\tax\\t4a\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tenant/current",
+      "file": "app\\api\\tenant\\current\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/tenant/switch",
+      "file": "app\\api\\tenant\\switch\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/test-auth",
+      "file": "app\\api\\test-auth\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/upload",
+      "file": "app\\api\\upload\\route.ts",
+      "methods": [
+        "POST",
+        "GET",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/user/status",
+      "file": "app\\api\\user\\status\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/users/me/organizations",
+      "file": "app\\api\\users\\me\\organizations\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/v1/claims",
+      "file": "app\\api\\v1\\claims\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/voice/transcribe",
+      "file": "app\\api\\voice\\transcribe\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\voice\\transcribe\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/voice/upload",
+      "file": "app\\api\\voice\\upload\\route.ts",
+      "methods": [
+        "POST",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/voting/sessions",
+      "file": "app\\api\\voting\\sessions\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/voting/sessions/[id]/results",
+      "file": "app\\api\\voting\\sessions\\[id]\\results\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/voting/sessions/[id]",
+      "file": "app\\api\\voting\\sessions\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/voting/sessions/[id]/vote",
+      "file": "app\\api\\voting\\sessions\\[id]\\vote\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/webhooks/clc",
+      "file": "app\\api\\webhooks\\clc\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\webhooks\\clc\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/webhooks/signatures",
+      "file": "app\\api\\webhooks\\signatures\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": true,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": true,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/webhooks/stripe",
+      "file": "app\\api\\webhooks\\stripe\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": true,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": true,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\webhooks\\stripe\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/whop/create-checkout",
+      "file": "app\\api\\whop\\create-checkout\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\whop\\create-checkout\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 85
+    },
+    {
+      "path": "/api/whop/unauthenticated-checkout",
+      "file": "app\\api\\whop\\unauthenticated-checkout\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\whop\\unauthenticated-checkout\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/whop/webhooks",
+      "file": "app\\api\\whop\\webhooks\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": false,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": true,
+      "issues": [
+        {
+          "severity": "medium",
+          "category": "Input Validation",
+          "message": "No input validation detected for mutation endpoint",
+          "file": "app\\api\\whop\\webhooks\\route.ts",
+          "suggestion": "Use Zod schema or validateRequired() for input validation"
+        }
+      ],
+      "score": 100
+    },
+    {
+      "path": "/api/workbench/assign",
+      "file": "app\\api\\workbench\\assign\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": true,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/workbench/assigned",
+      "file": "app\\api\\workbench\\assigned\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    },
+    {
+      "path": "/api/workflow/overdue",
+      "file": "app\\api\\workflow\\overdue\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "hasAuthGuard": true,
+      "hasRLSContext": false,
+      "hasInputValidation": false,
+      "hasStandardizedErrors": true,
+      "hasRateLimiting": false,
+      "isPublicRoute": false,
+      "issues": [],
+      "score": 100
+    }
+  ],
+  "summary": {
+    "withAuth": 411,
+    "withRLS": 107,
+    "withValidation": 253,
+    "withStandardizedErrors": 413,
+    "publicRoutes": 24,
+    "needsReview": 43
+  }
+}

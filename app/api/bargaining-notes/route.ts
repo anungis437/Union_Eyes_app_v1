@@ -19,6 +19,11 @@ import {
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -31,7 +36,10 @@ export const GET = async (request: NextRequest) => {
       const cbaId = searchParams.get("cbaId");
       const organizationId = searchParams.get("organizationId");
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
@@ -113,13 +121,24 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const bargaining-notesSchema = z.object({
+  map: z.unknown().optional(),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  sessionDate: z.string().datetime().optional(),
+  sessionType: z.unknown().optional(),
+  title: z.string().min(1, 'title is required'),
+  content: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -127,6 +146,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = bargaining-notesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { map, organizationId, sessionDate, sessionType, title, content } = validation.data;
 
       // Check if bulk create
       if (Array.isArray(body)) {
@@ -148,44 +178,48 @@ export const POST = async (request: NextRequest) => {
         }));
 
         const notes = await bulkCreateBargainingNotes(notesWithUser);
-        return NextResponse.json({ notes, count: notes.length }, { status: 201 });
+        return standardSuccessResponse(
+      {  notes, count: notes.length  },
+      undefined,
+      201
+    );
       }
 
       // Single note creation
       // Validate required fields
       if (!body.organizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       if (!body.sessionDate) {
-        return NextResponse.json(
-          { error: "sessionDate is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'sessionDate is required'
+    );
       }
 
       if (!body.sessionType) {
-        return NextResponse.json(
-          { error: "sessionType is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'sessionType is required'
+    );
       }
 
       if (!body.title) {
-        return NextResponse.json(
-          { error: "title is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'title is required'
+    );
       }
 
       if (!body.content) {
-        return NextResponse.json(
-          { error: "content is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'content is required'
+    );
       }
 
       // Create note
@@ -195,12 +229,17 @@ export const POST = async (request: NextRequest) => {
         lastModifiedBy: userId,
       });
 
-      return NextResponse.json({ note }, { status: 201 });
+      return standardSuccessResponse(
+      {  note  },
+      undefined,
+      201
+    );
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

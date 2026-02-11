@@ -18,6 +18,11 @@ import { erpConnectors } from '@/db/schema/erp-integration-schema';
 import { eq, and } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
@@ -28,7 +33,10 @@ export const GET = async (request: NextRequest) => {
       const connectorId = searchParams.get('connectorId');
 
       if (!asOfDate) {
-        return NextResponse.json({ error: 'asOfDate parameter required (YYYY-MM-DD)' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'asOfDate parameter required (YYYY-MM-DD)'
+    );
       }
 
       // Get ERP connector
@@ -44,7 +52,10 @@ export const GET = async (request: NextRequest) => {
         .limit(1);
 
       if (!connector) {
-        return NextResponse.json({ error: 'ERP connector not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'ERP connector not found'
+    );
       }
 
       // Create connector instance
@@ -96,10 +107,11 @@ export const GET = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to generate balance sheet', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate balance sheet',
+      error
+    );
     }
     })(request);
 };

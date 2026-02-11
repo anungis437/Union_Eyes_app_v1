@@ -6,6 +6,11 @@ import { eq, and } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schema for contact log
 const logContactSchema = z.object({
   memberId: z.string().uuid('Invalid member ID format'),
@@ -26,12 +31,20 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
   }
 
   const parsed = logContactSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
   }
 
   const body = parsed.data;
@@ -39,7 +52,11 @@ export const POST = withEnhancedRoleAuth(20, async (request, context) => {
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
   }
 
 try {
@@ -59,7 +76,10 @@ try {
           severity: 'medium',
           details: { reason: 'Member not found' },
         });
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
 
       const { memberId, contactType, contactDate, outcome, notes, attachmentUrl } = body;
@@ -85,7 +105,10 @@ try {
           severity: 'medium',
           details: { reason: 'Arrears case not found', memberId },
         });
-        return NextResponse.json({ error: 'Arrears case not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Arrears case not found'
+    );
       }
 
       // Parse existing contact history
@@ -158,10 +181,11 @@ contactHistory = [];
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-      return NextResponse.json(
-        { error: 'Failed to log contact' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to log contact',
+      error
+    );
     }
   });
 

@@ -5,7 +5,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { messageThreads, messages, messageNotifications } from '@/db/schema/messages-schema';
+import { messageThreads, messages, messageNotifications } from '@/db/schema/domains/communications';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { put } from '@vercel/blob';
@@ -13,6 +13,16 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { withRLSContext } from '@/lib/db/with-rls-context';
+
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const messagesThreadsMessagesSchema = z.object({
+  content: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -44,12 +54,18 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
         .where(eq(messageThreads.id, threadId));
 
       if (!thread) {
-        return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Thread not found'
+    );
       }
 
       // Verify access
       if (thread.memberId !== userId && thread.staffId !== userId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
       }
 
       const contentType = request.headers.get('content-type');
@@ -68,7 +84,10 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
         if (file) {
           // Validate file (10MB max)
           if (file.size > 10 * 1024 * 1024) {
-            return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'File too large (max 10MB)'
+    );
           }
 
           // Upload to Vercel Blob
@@ -84,11 +103,25 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
         }
       } else {
         const body = await request.json();
+    // Validate request body
+    const validation = messagesThreadsMessagesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { content } = validation.data;
         content = body.content;
       }
 
       if (!content && !fileUrl) {
-        return NextResponse.json({ error: 'Content or file required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Content or file required'
+    );
       }
 
       // Determine sender role
@@ -135,10 +168,18 @@ export const POST = async (request: NextRequest, { params }: { params: { threadI
         messageType,
       });
 
-      return NextResponse.json({ message }, { status: 201 });
+      return standardSuccessResponse(
+      {  message  },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error('Failed to send message', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

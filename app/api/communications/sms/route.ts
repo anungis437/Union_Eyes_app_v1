@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * SMS API Routes (Phase 5 - Week 1)
@@ -36,10 +37,15 @@ import {
   smsCampaignRecipients,
   type NewSmsTemplate,
   type NewSmsCampaign,
-} from '@/db/schema/sms-communications-schema';
+} from '@/db/schema/domains/communications';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // ============================================================================
 // GET HANDLER - Routes based on action parameter
 // ============================================================================
@@ -56,7 +62,10 @@ export const GET = async (req: NextRequest) => {
       const campaignId = searchParams.get('campaignId');
 
       if (!tenantId) {
-        return NextResponse.json({ error: 'Missing organizationId parameter' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing organizationId parameter'
+    );
       }
 
       switch (action) {
@@ -66,14 +75,18 @@ export const GET = async (req: NextRequest) => {
           return getCampaigns(tenantId);
         case 'campaign-details':
           if (!campaignId) {
-            return NextResponse.json({ error: 'Missing campaignId parameter' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing campaignId parameter'
+    );
           }
           return getCampaignDetails(campaignId);
         default:
-          return NextResponse.json(
-            { error: 'Invalid action. Valid actions: templates, campaigns, campaign-details' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action. Valid actions: templates, campaigns, campaign-details'
+      // TODO: Migrate additional details: campaigns, campaign-details'
+    );
       }
     } catch (error: any) {
 return NextResponse.json(
@@ -87,6 +100,30 @@ return NextResponse.json(
 // ============================================================================
 // POST HANDLER - Routes based on action in body
 // ============================================================================
+
+
+const communicationsSmsSchema = z.object({
+  action: z.unknown().optional(),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tenantId: z.string().uuid('Invalid tenantId'),
+  phoneNumber: z.string().min(10, 'Invalid phone number'),
+  message: z.unknown().optional(),
+  templateId: z.string().uuid('Invalid templateId'),
+  variables: z.unknown().optional(),
+  recipients: z.unknown().optional(),
+  campaignId: z.string().uuid('Invalid campaignId'),
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  messageTemplate: z.unknown().optional(),
+  category: z.unknown().optional(),
+  recipientFilter: z.unknown().optional(),
+  scheduledFor: z.unknown().optional(),
+  MessageSid: z.string().uuid('Invalid MessageSid'),
+  MessageStatus: z.unknown().optional(),
+  From: z.unknown().optional(),
+  Body: z.unknown().optional(),
+});
+
 
 export const POST = async (req: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -110,10 +147,11 @@ export const POST = async (req: NextRequest) => {
         case 'webhook':
           return handleWebhook(body);
         default:
-          return NextResponse.json(
-            { error: 'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action. Valid actions: send, bulk, create-template, create-campaign, send-campaign, webhook'
+      // TODO: Migrate additional details: bulk, create-template, create-campaign, send-campaign, webhook'
+    );
       }
     } catch (error: any) {
 return NextResponse.json(
@@ -156,7 +194,10 @@ async function getCampaignDetails(campaignId: string) {
     .limit(1);
 
   if (!campaign) {
-    return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
   }
 
   const messages = await db
@@ -183,16 +224,18 @@ async function sendSingleSms(userId: string, body: any) {
   const tenantId = organizationId;
 
   if (!tenantId || !phoneNumber || !message) {
-    return NextResponse.json(
-      { error: 'Missing required fields: organizationId, phoneNumber, message' },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, phoneNumber, message'
+      // TODO: Migrate additional details: phoneNumber, message'
     );
   }
 
   if (!validatePhoneNumber(phoneNumber)) {
-    return NextResponse.json(
-      { error: 'Invalid phone number. Must be E.164 format (e.g., +14155552671)' },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid phone number. Must be E.164 format (e.g., +14155552671)'
+      // TODO: Migrate additional details: +14155552671)'
     );
   }
 
@@ -212,7 +255,10 @@ async function sendSingleSms(userId: string, body: any) {
   const result = await sendSms(options);
 
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      result.error
+    );
   }
 
   return NextResponse.json({
@@ -230,9 +276,10 @@ async function sendBulkSmsAction(userId: string, body: any) {
   const tenantId = organizationId;
 
   if (!tenantId || !recipients || !Array.isArray(recipients) || !message) {
-    return NextResponse.json(
-      { error: 'Missing required fields: organizationId, recipients (array), message' },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, recipients (array), message'
+      // TODO: Migrate additional details: recipients (array), message'
     );
   }
 
@@ -261,9 +308,10 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
   const tenantId = organizationId;
 
   if (!tenantId || !name || !messageTemplate) {
-    return NextResponse.json(
-      { error: 'Missing required fields: organizationId, name, messageTemplate' },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, name, messageTemplate'
+      // TODO: Migrate additional details: name, messageTemplate'
     );
   }
 
@@ -289,7 +337,11 @@ async function createTemplate(userId: string, contextOrganizationId: string, bod
     return await db.insert(smsTemplates).values(newTemplate).returning();
   });
 
-  return NextResponse.json({ template }, { status: 201 });
+  return standardSuccessResponse(
+      {  template  },
+      undefined,
+      201
+    );
 }
 
 async function createCampaign(userId: string, contextOrganizationId: string, body: any) {
@@ -298,9 +350,10 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
   const tenantId = organizationId;
 
   if (!tenantId || !name || !message) {
-    return NextResponse.json(
-      { error: 'Missing required fields: organizationId, name, message' },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, name, message'
+      // TODO: Migrate additional details: name, message'
     );
   }
 
@@ -320,14 +373,21 @@ async function createCampaign(userId: string, contextOrganizationId: string, bod
     return await db.insert(smsCampaigns).values(newCampaign).returning();
   });
 
-  return NextResponse.json({ campaign }, { status: 201 });
+  return standardSuccessResponse(
+      {  campaign  },
+      undefined,
+      201
+    );
 }
 
 async function sendCampaignAction(userId: string, body: any) {
   const { campaignId, recipients } = body;
 
   if (!campaignId) {
-    return NextResponse.json({ error: 'Missing campaignId' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing campaignId'
+    );
   }
 
   const [campaign] = await db
@@ -337,7 +397,10 @@ async function sendCampaignAction(userId: string, body: any) {
     .limit(1);
 
   if (!campaign) {
-    return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
   }
 
   if (campaign.status !== 'draft' && campaign.status !== 'scheduled') {
@@ -356,9 +419,9 @@ async function sendCampaignAction(userId: string, body: any) {
     .where(eq(smsCampaigns.id, campaignId));
 
   if (!recipients || !Array.isArray(recipients)) {
-    return NextResponse.json(
-      { error: 'Missing recipients array in request body' },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing recipients array in request body'
     );
   }
 
@@ -409,6 +472,9 @@ async function handleWebhook(body: any) {
     return NextResponse.json({ success: true });
   }
 
-  return NextResponse.json({ error: 'Invalid webhook data' }, { status: 400 });
+  return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid webhook data'
+    );
 }
 

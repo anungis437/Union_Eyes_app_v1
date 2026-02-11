@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
@@ -13,6 +14,11 @@ import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     try {
@@ -273,9 +279,11 @@ export const GET = async (request: NextRequest) => {
         
         if (orgIds.length > 0) {
           const idList = orgIds.map(id => `'${id}'`).join(',');
-          const orgResult = await db.execute(sql.raw(`
+          const orgResult = await withRLSContext(async (tx) => {
+      return await tx.execute(sql.raw(`
           SELECT id, name FROM organizations WHERE id = ANY(ARRAY[${idList}]::uuid[])
         `));
+    });
           const orgNames = new Map(((orgResult.rows || []) as any[]).map(o => [o.id, o.name]));
           
           collaborationPatterns = collaborationData.map(c => ({
@@ -357,9 +365,11 @@ export const GET = async (request: NextRequest) => {
       let orgTypes = new Map<string, string | null>();
       if (accessedOrgIds.length > 0) {
         const idList = accessedOrgIds.map(id => `'${id}'`).join(',');
-        const orgTypesResult = await db.execute(sql.raw(`
+        const orgTypesResult = await withRLSContext(async (tx) => {
+      return await tx.execute(sql.raw(`
         SELECT id, organization_type FROM organizations WHERE id = ANY(ARRAY[${idList}]::uuid[])
       `));
+    });
         orgTypes = new Map(((orgTypesResult.rows || []) as any[]).map(o => [o.id, o.organization_type]));
       }
       
@@ -440,10 +450,11 @@ export const GET = async (request: NextRequest) => {
       logger.error('Error fetching org activity stats', error as Error, {
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to fetch organization activity statistics" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch organization activity statistics',
+      error
+    );
     }
     })(request);
 };

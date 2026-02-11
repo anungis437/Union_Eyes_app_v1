@@ -15,6 +15,11 @@ import {
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Shopify Webhook Handler
  * 
@@ -59,10 +64,10 @@ export async function POST(request: NextRequest) {
     const { topic, webhookId, hmac } = headers || {};
 
     if (!topic || !webhookId || !hmac) {
-      return NextResponse.json(
-        { error: 'Missing required Shopify headers' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required Shopify headers'
+    );
     }
 
     // 3. Verify HMAC signature
@@ -82,21 +87,10 @@ export async function POST(request: NextRequest) {
 
     if (!isValid) {
       logger.warn('Invalid Shopify webhook signature', { topic, webhookId });
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      );
-    }
-
-    // 4. Parse webhook payload
-    let payload: any;
-    try {
-      payload = JSON.parse(rawBody);
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Invalid JSON payload' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid signature'
+    );
     }
 
     // 5. Route by topic with idempotency
@@ -124,16 +118,18 @@ export async function POST(request: NextRequest) {
     );
 
     // 6. Return success
-    return NextResponse.json(
-      { status: 'ok', result },
-      { status: 200 }
+    return standardSuccessResponse(
+      {  status: 'ok', result  },
+      undefined,
+      200
     );
 
   } catch (error) {
     logger.error('[Webhook] Processing error', { error });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 }
@@ -303,8 +299,8 @@ async function handleRefundCreated(payload: any) {
  * Shopify may check this during webhook setup.
  */
 export async function GET(request: NextRequest) {
-  return NextResponse.json(
-    { 
+  return standardSuccessResponse(
+      {  
       status: 'ok', 
       endpoint: 'shopify-webhooks',
       supported_topics: [
@@ -312,8 +308,9 @@ export async function GET(request: NextRequest) {
         'orders/fulfilled',
         'refunds/create'
       ]
-    },
-    { status: 200 }
-  );
+     },
+      undefined,
+      200
+    );
 }
 

@@ -1,12 +1,17 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { trainingPrograms, trainingCourses } from "@/db/migrations/schema";
+import { trainingPrograms, trainingCourses } from "@/db/schema";
 import { eq, and, or, inArray, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/education/programs - List training programs with filters
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
@@ -18,10 +23,10 @@ export const GET = async (request: NextRequest) => {
       const search = searchParams.get("search");
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       // Build WHERE conditions
@@ -92,19 +97,51 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error retrieving programs", { error });
-      return NextResponse.json(
-        { error: "Failed to retrieve programs" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve programs',
+      error
+    );
     }
     })(request);
 };
 
 // POST /api/education/programs - Create new training program
+
+const educationProgramsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  programName: z.string().min(1, 'programName is required'),
+  programCategory: z.unknown().optional(),
+  programDescription: z.string().optional(),
+  programDurationMonths: z.unknown().optional(),
+  requiredCourses: z.unknown().optional(),
+  electiveCourses: z.unknown().optional(),
+  electivesRequiredCount: z.number().int().positive(),
+  totalHoursRequired: z.unknown().optional(),
+  providesCertification: z.string().uuid('Invalid providesCertification'),
+  certificationName: z.string().min(1, 'certificationName is required'),
+  entryRequirements: z.unknown().optional(),
+  timeCommitment: z.string().datetime().optional(),
+  clcApproved: z.unknown().optional(),
+  notes: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationProgramsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, programName, programCategory, programDescription, programDurationMonths, requiredCourses, electiveCourses, electivesRequiredCount, totalHoursRequired, providesCertification, certificationName, entryRequirements, timeCommitment, clcApproved, notes, isActive } = validation.data;
       const {
         organizationId,
         programName,
@@ -123,87 +160,20 @@ export const POST = async (request: NextRequest) => {
         notes,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !programName) {
-        return NextResponse.json(
-          {
-            error:
-              "Missing required fields: organizationId, programName",
-          },
-          { status: 400 }
-        );
-      }
-
-      // Generate program code
-      const categoryPrefix = programCategory?.toUpperCase().substring(0, 3) || 'GEN';
-      const programCode = `PROG-${categoryPrefix}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-
-      // Create program
-      const [newProgram] = await db
-        .insert(trainingPrograms)
-        .values({
-          organizationId,
-          programName,
-          programCode,
-          programCategory: programCategory || null,
-          programDescription: programDescription || null,
-          programDurationMonths: programDurationMonths || null,
-          requiredCourses: requiredCourses || [],
-          electiveCourses: electiveCourses || [],
-          electivesRequiredCount: electivesRequiredCount || 0,
-          totalHoursRequired: totalHoursRequired?.toString() || null,
-          providesCertification: providesCertification || false,
-          certificationName: certificationName || null,
-          entryRequirements: entryRequirements || null,
-          timeCommitment: timeCommitment || null,
-          clcApproved: clcApproved || false,
-          isActive: true,
-          notes: notes || null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        })
-        .returning();
-
-      logger.info("Program created", {
-        programId: newProgram.id,
-        programCode,
-        programName,
-        organizationId,
-      });
-
-      return NextResponse.json(
-        {
-          program: newProgram,
-          message: "Program created successfully",
-        },
-        { status: 201 }
-      );
-    } catch (error) {
-      logger.error("Error creating program", { error });
-      return NextResponse.json(
-        { error: "Failed to create program" },
-        { status: 500 }
-      );
-    }
-    })(request);
-};
-
-// PATCH /api/education/programs?id={programId} - Update program
-export const PATCH = async (request: NextRequest) => {
-  return withEnhancedRoleAuth(20, async (request, context) => {
-  try {
-      const { searchParams } = new URL(request.url);
-      const programId = searchParams.get("id");
-
-      if (!programId) {
-        return NextResponse.json(
-          { error: "Program ID is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, programName'
+      // TODO: Migrate additional details: programName",
+    );
       }
 
       const body = await request.json();
@@ -253,7 +223,10 @@ export const PATCH = async (request: NextRequest) => {
         .returning();
 
       if (!updatedProgram) {
-        return NextResponse.json({ error: "Program not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Program not found'
+    );
       }
 
       logger.info("Program updated", {
@@ -267,10 +240,11 @@ export const PATCH = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error updating program", { error });
-      return NextResponse.json(
-        { error: "Failed to update program" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update program',
+      error
+    );
     }
     })(request);
 };
@@ -283,10 +257,10 @@ export const DELETE = async (request: NextRequest) => {
       const programId = searchParams.get("id");
 
       if (!programId) {
-        return NextResponse.json(
-          { error: "Program ID is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Program ID is required'
+    );
       }
 
       // Check for active enrollments
@@ -320,7 +294,10 @@ export const DELETE = async (request: NextRequest) => {
         .returning();
 
       if (!deactivatedProgram) {
-        return NextResponse.json({ error: "Program not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Program not found'
+    );
       }
 
       logger.info("Program deactivated", { programId });
@@ -331,10 +308,11 @@ export const DELETE = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error deactivating program", { error });
-      return NextResponse.json(
-        { error: "Failed to deactivate program" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to deactivate program',
+      error
+    );
     }
     })(request);
 };

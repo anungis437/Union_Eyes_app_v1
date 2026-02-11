@@ -1,0 +1,191 @@
+{
+  "timestamp": "2026-02-11T15:14:36.686Z",
+  "summary": {
+    "currentFiles": "70+",
+    "targetDomains": 13,
+    "deprecatedSchemas": 2
+  },
+  "domains": [
+    {
+      "domain": "member",
+      "description": "Member profiles and user management",
+      "schemas": [
+        "profiles-schema.ts",
+        "organization-members-schema.ts",
+        "pending-profiles-schema.ts",
+        "user-management-schema.ts"
+      ],
+      "estimatedLines": 800,
+      "priority": 1
+    },
+    {
+      "domain": "claims",
+      "description": "Claims, grievances, and deadlines",
+      "schemas": [
+        "claims-schema.ts",
+        "grievance-schema.ts",
+        "deadlines-schema.ts",
+        "grievance-workflow-schema.ts"
+      ],
+      "estimatedLines": 900,
+      "priority": 2
+    },
+    {
+      "domain": "agreements",
+      "description": "Collective bargaining agreements",
+      "schemas": [
+        "collective-agreements-schema.ts",
+        "cba-schema.ts",
+        "cba-clauses-schema.ts",
+        "cba-intelligence-schema.ts",
+        "shared-clause-library-schema.ts"
+      ],
+      "estimatedLines": 1000,
+      "priority": 3
+    },
+    {
+      "domain": "finance",
+      "description": "Financial transactions and accounting",
+      "schemas": [
+        "dues-transactions-schema.ts",
+        "autopay-settings-schema.ts",
+        "financial-payments-schema.ts",
+        "chart-of-accounts-schema.ts",
+        "strike-fund-tax-schema.ts",
+        "transfer-pricing-schema.ts"
+      ],
+      "estimatedLines": 900,
+      "priority": 4
+    },
+    {
+      "domain": "governance",
+      "description": "Governance, voting, and organizational structure",
+      "schemas": [
+        "governance-schema.ts",
+        "founder-conflict-schema.ts",
+        "voting-schema.ts"
+      ],
+      "estimatedLines": 600,
+      "priority": 5
+    },
+    {
+      "domain": "communications",
+      "description": "Member communications and engagement",
+      "schemas": [
+        "messages-schema.ts",
+        "notifications-schema.ts",
+        "newsletter-schema.ts",
+        "sms-communications-schema.ts",
+        "survey-polling-schema.ts",
+        "communication-analytics-schema.ts",
+        "push-notifications.ts"
+      ],
+      "estimatedLines": 1200,
+      "priority": 6
+    },
+    {
+      "domain": "documents",
+      "description": "Document storage and management",
+      "schemas": [
+        "documents-schema.ts",
+        "member-documents-schema.ts",
+        "e-signature-schema.ts",
+        "signature-workflows-schema.ts"
+      ],
+      "estimatedLines": 700,
+      "priority": 7
+    },
+    {
+      "domain": "scheduling",
+      "description": "Calendar, events, and training",
+      "schemas": [
+        "calendar-schema.ts",
+        "education-training-schema.ts"
+      ],
+      "estimatedLines": 400,
+      "priority": 8
+    },
+    {
+      "domain": "compliance",
+      "description": "Regulatory compliance and privacy",
+      "schemas": [
+        "provincial-privacy-schema.ts",
+        "gdpr-compliance-schema.ts",
+        "geofence-privacy-schema.ts",
+        "indigenous-data-schema.ts",
+        "lmbp-immigration-schema.ts",
+        "force-majeure-schema.ts",
+        "employer-non-interference-schema.ts",
+        "whiplash-prevention-schema.ts",
+        "certification-management-schema.ts"
+      ],
+      "estimatedLines": 1100,
+      "priority": 9
+    },
+    {
+      "domain": "data",
+      "description": "External data integration",
+      "schemas": [
+        "wage-benchmarks-schema.ts",
+        "lrb-agreements-schema.ts",
+        "arbitration-precedents-schema.ts",
+        "congress-memberships-schema.ts"
+      ],
+      "estimatedLines": 600,
+      "priority": 10
+    },
+    {
+      "domain": "ml",
+      "description": "Machine learning and AI",
+      "schemas": [
+        "ml-predictions-schema.ts",
+        "ai-chatbot-schema.ts"
+      ],
+      "estimatedLines": 400,
+      "priority": 11
+    },
+    {
+      "domain": "analytics",
+      "description": "Analytics and reporting",
+      "schemas": [
+        "analytics.ts",
+        "analytics-reporting-schema.ts",
+        "reports-schema.ts"
+      ],
+      "estimatedLines": 500,
+      "priority": 12
+    },
+    {
+      "domain": "infrastructure",
+      "description": "System infrastructure and integrations",
+      "schemas": [
+        "audit-security-schema.ts",
+        "feature-flags-schema.ts",
+        "user-uuid-mapping-schema.ts",
+        "alerting-automation-schema.ts",
+        "automation-rules-schema.ts",
+        "recognition-rewards-schema.ts",
+        "award-templates-schema.ts",
+        "organizing-tools-schema.ts",
+        "sharing-permissions-schema.ts",
+        "cms-website-schema.ts",
+        "erp-integration-schema.ts",
+        "clc-partnership-schema.ts",
+        "clc-sync-schema.ts",
+        "clc-per-capita-schema.ts",
+        "clc-sync-audit-schema.ts",
+        "international-address-schema.ts",
+        "social-media-schema.ts",
+        "joint-trust-fmv-schema.ts",
+        "defensibility-packs-schema.ts",
+        "accessibility-schema.ts"
+      ],
+      "estimatedLines": 3000,
+      "priority": 13
+    }
+  ],
+  "deprecated": [
+    "tenant-management-schema.ts",
+    "organization-members-schema.ts"
+  ]
+}

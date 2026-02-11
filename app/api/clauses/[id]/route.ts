@@ -16,6 +16,11 @@ import {
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(10, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
@@ -30,7 +35,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         const hierarchy = await getClauseHierarchy(id);
         
         if (!hierarchy.clause) {
-          return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
         }
 
         return NextResponse.json(hierarchy);
@@ -40,15 +48,19 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       const clause = await getClauseById(id);
 
       if (!clause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       return NextResponse.json({ clause });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -65,15 +77,19 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       const updatedClause = await updateClause(id, body);
 
       if (!updatedClause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       return NextResponse.json({ clause: updatedClause });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -88,7 +104,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       const success = await deleteClause(id);
       
       if (!success) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       return NextResponse.json({ 
@@ -96,10 +115,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         deleted: true 
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

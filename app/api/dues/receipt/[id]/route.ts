@@ -11,6 +11,11 @@ import { ReceiptDocument, ReceiptData } from '@/components/pdf/receipt-template'
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { organizations } from '@/db/schema-organizations';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET: Generate and download receipt PDF for transaction
  * 
@@ -46,7 +51,10 @@ export const GET = async (
           severity: 'medium',
           details: { reason: 'Member not found' },
         });
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
       try {
         // Get transaction
@@ -71,10 +79,10 @@ export const GET = async (
             severity: 'medium',
             details: { reason: 'Transaction not found', transactionId },
           });
-          return NextResponse.json(
-            { error: 'Transaction not found' },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Transaction not found'
+    );
         }
 
         if (transaction.status !== 'completed') {
@@ -267,10 +275,11 @@ export const GET = async (
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error', transactionId },
         });
-return NextResponse.json(
-          { error: 'Failed to generate receipt' },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate receipt',
+      error
+    );
       }
   })(req, { params });
 };

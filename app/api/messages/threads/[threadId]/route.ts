@@ -5,12 +5,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { messageThreads, messages } from '@/db/schema/messages-schema';
+import { messageThreads, messages } from '@/db/schema/domains/communications';
 import { eq, and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -25,12 +30,18 @@ export const GET = async (request: NextRequest, { params }: { params: { threadId
         .where(eq(messageThreads.id, threadId));
 
       if (!thread) {
-        return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Thread not found'
+    );
       }
 
       // Verify access
       if (thread.memberId !== userId && thread.staffId !== userId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
       }
 
       // Fetch messages
@@ -57,10 +68,21 @@ export const GET = async (request: NextRequest, { params }: { params: { threadId
       });
     } catch (error) {
       logger.error('Failed to fetch thread', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const messagesThreadsSchema = z.object({
+  status: z.unknown().optional(),
+  priority: z.unknown().optional(),
+  staffId: z.string().uuid('Invalid staffId'),
+});
 
 export const PATCH = async (request: NextRequest, { params }: { params: { threadId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -69,6 +91,17 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
   try {
       const threadId = params.threadId;
       const { status, priority, staffId } = await request.json();
+    // Validate request body
+    const validation = messagesThreadsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { status, priority, staffId } = validation.data;
 
       // Fetch thread
       const [thread] = await db
@@ -77,12 +110,18 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
         .where(eq(messageThreads.id, threadId));
 
       if (!thread) {
-        return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Thread not found'
+    );
       }
 
       // Verify access
       if (thread.memberId !== userId && thread.staffId !== userId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
       }
 
       // Update thread
@@ -106,7 +145,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { thread
       return NextResponse.json({ thread: updatedThread });
     } catch (error) {
       logger.error('Failed to update thread', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -125,12 +168,18 @@ export const DELETE = async (request: NextRequest, { params }: { params: { threa
         .where(eq(messageThreads.id, threadId));
 
       if (!thread) {
-        return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Thread not found'
+    );
       }
 
       // Verify access (only member can delete their threads)
       if (thread.memberId !== userId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
       }
 
       // Archive instead of delete
@@ -147,7 +196,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { threa
       return NextResponse.json({ success: true });
     } catch (error) {
       logger.error('Failed to archive thread', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

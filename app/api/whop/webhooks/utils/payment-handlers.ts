@@ -19,7 +19,7 @@ import { revalidateAfterPayment } from "./path-utils";
 import { convertTimestampToDate } from "./plan-utils";
 import { eq } from "drizzle-orm";
 import { withSystemContext } from '@/lib/db/with-rls-context';
-import { profilesTable } from "@/db/schema/profiles-schema";
+import { profilesTable } from "@/db/schema/domains/member";
 import { isFrictionlessPayment, handleFrictionlessPayment, createOrUpdatePendingProfile } from "./frictionless-payment-handlers";
 
 /**

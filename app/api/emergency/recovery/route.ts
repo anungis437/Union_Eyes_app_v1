@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { purgeExpiredLocations } from '@/lib/services/geofence-privacy-service';
 import type { EmergencyRecoveryRequest, EmergencyRecoveryResponse } from '@/lib/types/compliance-api-types';
@@ -12,9 +13,26 @@ import { withApiAuth } from '@/lib/api-auth-guard';
  * POST /api/emergency/recovery
  * End emergency mode and cleanup location data within 48 hours
  */
+
+const emergencyRecoverySchema = z.object({
+  emergencyId: z.string().uuid('Invalid emergencyId'),
+  memberId: z.string().uuid('Invalid memberId'),
+});
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const body = await request.json() as EmergencyRecoveryRequest;
+    const body = await request.json()
+    // Validate request body
+    const validation = emergencyRecoverySchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { emergencyId, memberId } = validation.data; as EmergencyRecoveryRequest;
     const { emergencyId, memberId } = body;
 
     if (!emergencyId || !memberId) {

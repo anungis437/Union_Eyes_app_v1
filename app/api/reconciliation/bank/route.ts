@@ -7,6 +7,11 @@ import { stripe } from '@/lib/stripe';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Bank reconciliation - compare Stripe payouts with recorded transactions
 export const GET = async (req: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -36,7 +41,10 @@ export const GET = async (req: NextRequest) => {
         .limit(1);
 
       if (!member) {
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
 
       // Get query parameters
@@ -45,10 +53,10 @@ export const GET = async (req: NextRequest) => {
       const endDate = searchParams.get('endDate');
 
       if (!startDate || !endDate) {
-        return NextResponse.json(
-          { error: 'startDate and endDate are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'startDate and endDate are required'
+    );
       }
 
       const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
@@ -184,10 +192,11 @@ export const GET = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-return NextResponse.json(
-        { error: 'Failed to perform bank reconciliation' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to perform bank reconciliation',
+      error
+    );
     }
     })(request);
 };

@@ -1,4 +1,4 @@
-import { pendingProfilesTable, InsertPendingProfile, SelectPendingProfile } from "@/db/schema/pending-profiles-schema";
+import { pendingProfilesTable, InsertPendingProfile, SelectPendingProfile } from "@/db/schema/domains/member";
 import { eq, and } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withRLSContext } from "@/lib/rls-middleware";

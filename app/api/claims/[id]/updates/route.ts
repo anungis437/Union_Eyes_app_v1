@@ -6,12 +6,18 @@
  * - RLS policies enforce tenant isolation at database level
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
-import { claimUpdates } from "@/db/schema/claims-schema";
+import { claimUpdates } from "@/db/schema/domains/claims";
 import { desc, eq } from "drizzle-orm";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/claims/[id]/updates
  * Fetch all updates for a specific claim
@@ -44,6 +50,14 @@ export const GET = async (
  * POST /api/claims/[id]/updates
  * Add a new update to a claim
  */
+
+const claimsUpdatesSchema = z.object({
+  updateType: z.string().datetime().optional(),
+  message: z.unknown().optional(),
+  isInternal: z.boolean().optional(),
+  metadata: z.unknown().optional(),
+});
+
 export const POST = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -54,13 +68,24 @@ export const POST = async (
     const resolvedParams = await params;
     const claimId = resolvedParams.id;
     const body = await request.json();
+    // Validate request body
+    const validation = claimsUpdatesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { updateType, message, isInternal, metadata } = validation.data;
 
     // Validate required fields
     if (!body.updateType || !body.message) {
-      return NextResponse.json(
-        { error: "Update type and message are required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Update type and message are required'
+    );
     }
 
     // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
@@ -78,10 +103,14 @@ export const POST = async (
         })
         .returning();
 
-      return NextResponse.json({
+      return standardSuccessResponse(
+      { 
         update: newUpdate,
         message: "Update added successfully",
-      }, { status: 201 });
+       },
+      undefined,
+      201
+    );
     });
   })(request, { params });
 };

@@ -9,6 +9,11 @@ import { listMembers } from "@/lib/services/member-service";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/members/export
  * Export members data as CSV or JSON
@@ -46,7 +51,10 @@ export const GET = withRoleAuth(20, async (request, context) => {
         const { searchParams } = new URL(request.url);
         const orgIdParam = searchParams.get("organizationId");
   if (orgIdParam && orgIdParam !== organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
@@ -61,7 +69,10 @@ export const GET = withRoleAuth(20, async (request, context) => {
             dataType: 'MEMBER_DATA',
             details: { reason: 'organizationId is required' },
           });
-          return NextResponse.json({ error: "organizationId is required" }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
         }
 
         const format = searchParams.get("format") || "csv";
@@ -171,10 +182,11 @@ export const GET = withRoleAuth(20, async (request, context) => {
           dataType: 'MEMBER_DATA',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-return NextResponse.json(
-          { error: "Failed to export members", details: error instanceof Error ? error.message : "Unknown error" },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to export members',
+      error
+    );
       }
 });
 

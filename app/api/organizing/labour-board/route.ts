@@ -12,6 +12,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -22,10 +27,10 @@ export const GET = async (request: NextRequest) => {
       const campaignId = searchParams.get('campaignId');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Build query
@@ -73,18 +78,47 @@ export const GET = async (request: NextRequest) => {
         organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const organizingLabour-boardSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  campaignId: z.string().uuid('Invalid campaignId'),
+  filingType: z.unknown().optional(),
+  laborBoardName: z.string().min(1, 'laborBoardName is required'),
+  filedDate: z.string().datetime().optional(),
+  bargainingUnitDescription: z.string().optional(),
+  estimatedUnitSize: z.unknown().optional(),
+  supportingDocumentation: z.unknown().optional(),
+  filingStatus: z.unknown().optional(),
+  hearingDate: z.string().datetime().optional(),
+  decisionDate: z.boolean().optional(),
+  decisionOutcome: z.boolean().optional(),
+  certificationNumber: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = organizingLabour-boardSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, campaignId, filingType, laborBoardName, filedDate, bargainingUnitDescription, estimatedUnitSize, supportingDocumentation, filingStatus, hearingDate, decisionDate, decisionOutcome, certificationNumber } = validation.data;
       const {
         organizationId,
         campaignId,
@@ -96,16 +130,20 @@ export const POST = async (request: NextRequest) => {
         supportingDocumentation,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !campaignId || !filingType || !laborBoardName) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, campaignId, filingType, and laborBoardName are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, campaignId, filingType, and laborBoardName are required'
+      // TODO: Migrate additional details: campaignId, filingType, and laborBoardName are required'
+    );
       }
 
       // Generate filing number
@@ -141,20 +179,22 @@ export const POST = async (request: NextRequest) => {
       RETURNING *
     `);
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Labour board filing created successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Labour board filing created successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to create labour board filing', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
@@ -166,10 +206,10 @@ export const PATCH = async (request: NextRequest) => {
       const filingId = searchParams.get('id');
 
       if (!filingId) {
-        return NextResponse.json(
-          { error: 'Bad Request - id parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - id parameter is required'
+    );
       }
 
       const body = await request.json();
@@ -218,10 +258,10 @@ export const PATCH = async (request: NextRequest) => {
     `);
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Filing not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Filing not found'
+    );
       }
 
       return NextResponse.json({
@@ -235,10 +275,11 @@ export const PATCH = async (request: NextRequest) => {
         filingId: request.nextUrl.searchParams.get('id'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

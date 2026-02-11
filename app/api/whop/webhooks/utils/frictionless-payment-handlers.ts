@@ -18,8 +18,8 @@ import { convertTimestampToDate } from "./plan-utils";
 import { revalidateAfterPayment } from "./path-utils";
 import { eq } from "drizzle-orm";
 import { withSystemContext } from '@/lib/db/with-rls-context';
-import { profilesTable } from "@/db/schema/profiles-schema";
-import { pendingProfilesTable } from "@/db/schema/pending-profiles-schema";
+import { profilesTable } from "@/db/schema/domains/member";
+import { pendingProfilesTable } from "@/db/schema/domains/member";
 import { v4 as uuidv4 } from "uuid";
 
 /**

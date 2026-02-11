@@ -11,7 +11,7 @@ import {
   signers,
   signatureAuditLog,
   signatureVerification,
-} from "@/db/schema/signature-workflows-schema";
+} from "@/db/schema/domains/documents";
 import {
   getSignatureProvider,
   SignatureProviderType,

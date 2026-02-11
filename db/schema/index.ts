@@ -1,148 +1,46 @@
-export * from "./profiles-schema";
-export * from "./pending-profiles-schema";
-export * from "./collective-agreements-schema";
-export * from "./cba-clauses-schema";
-export * from "./claims-schema";
-export * from "./voting-schema";
-export * from "./user-management-schema";
-export * from "./user-uuid-mapping-schema";
-export * from "./tenant-management-schema";
-export * from "./audit-security-schema";
-export * from "./cba-intelligence-schema";
-// export * from "./organization-members-schema"; // Commented out - using Phase 5A version from schema-organizations instead
-export * from "./notifications-schema";
-export * from "./calendar-schema";
-export * from "./deadlines-schema";
-export * from "./reports-schema";
-export * from "./dues-transactions-schema";
-export * from "./autopay-settings-schema";
+/**
+ * Domain-Driven Database Schema
+ * 
+ * Consolidated schema exports organized by business domain.
+ * 
+ * This replaces the previous flat 75-file structure with 13 domain modules,
+ * reducing import depth from 5 to 2 levels and eliminating 18 duplicates.
+ * 
+ * Migration Status: COMPLETE - All domains migrated
+ * Date: February 11, 2026
+ * 
+ * @see SCHEMA_CONSOLIDATION_DESIGN.md for full consolidation plan
+ * @see SCHEMA_CONSOLIDATION_STATUS.md for migration status
+ */
 
-// Phase 5A: CLC Organizations
+// ============================================================================
+// DOMAIN EXPORTS (New Structure)
+// ============================================================================
+
+// Core Business Domains
+export * from "./domains/member";           // Priority 1: Member profiles and user management
+export * from "./domains/claims";           // Priority 2: Claims, grievances, deadlines
+export * from "./domains/agreements";       // Priority 3: Collective bargaining agreements
+export * from "./domains/finance";          // Priority 4: Financial transactions and accounting
+export * from "./domains/governance";       // Priority 5: Governance, voting, structure
+
+// Communication & Content Domains
+export * from "./domains/communications";   // Priority 6: Member engagement and notifications
+export * from "./domains/documents";        // Priority 7: Document storage and e-signatures
+export * from "./domains/scheduling";       // Priority 8: Calendar, events, training
+
+// Compliance & Data Domains
+export * from "./domains/compliance";       // Priority 9: Regulatory compliance and privacy
+export * from "./domains/data";             // Priority 10: External data integration
+
+// Advanced Feature Domains
+export * from "./domains/ml";               // Priority 11: Machine learning and AI
+export * from "./domains/analytics";        // Priority 12: Reporting and analytics
+export * from "./domains/infrastructure";   // Priority 13: System infrastructure and integrations
+
+// ============================================================================
+// EXTERNAL EXPORTS (Outside Domain Structure)
+// ============================================================================
+
+// Organizations (CLC-level schema, external to local union domains)
 export * from "../schema-organizations";
-
-// Phase 5B: Inter-Union Features
-export * from "./shared-clause-library-schema";
-export * from "./arbitration-precedents-schema";
-export * from "./sharing-permissions-schema";
-
-// CLC Per-Capita Remittances
-export * from "./clc-per-capita-schema";
-
-// CLC Sync and Audit (Organization Sync, Webhooks, Chart of Accounts)
-export * from "./clc-sync-audit-schema";
-
-// Phase 1.5: Messages System
-export * from "./messages-schema";
-
-// Phase 5: Member Communications - SMS Integration
-export * from "./sms-communications-schema";
-
-// Phase 5: Member Communications - Surveys & Polls
-export * from "./survey-polling-schema";
-
-// Phase 5: Member Communications - Newsletter System
-export * from "./newsletter-schema";
-
-// Phase 5: Member Communications - Push Notifications
-export * from "./push-notifications";
-
-// Phase 5: Member Communications - Analytics & Engagement
-export * from "./communication-analytics-schema";
-
-// Phase 6: Advanced Grievance Management
-export * from "./grievance-workflow-schema";
-
-// Education & Training System
-export * from "./education-training-schema";
-
-// Q1 2025: Advanced Analytics
-export * from "./analytics";
-
-// Document Management System
-export * from "./documents-schema";
-
-// Machine Learning & Predictions
-// NOTE: ML predictions now part of Q1 2025 analytics schema (exported above)
-// export * from "./ml-predictions-schema";
-
-// Recognition & Rewards System
-export * from "./recognition-rewards-schema";
-
-// Feature Flags & Architecture
-export * from "./feature-flags-schema";
-
-// Phase 1: Canada Federal Compliance (Validator Recommendations)
-export * from "./lmbp-immigration-schema"; // LMBP Immigration System (Validator #14)
-export * from "./governance-schema"; // Golden Share Governance (Validator #16)
-
-// P1: Critical Compliance Validators (Consolidated - duplicates removed)
-export * from "./provincial-privacy-schema"; // #1 Provincial Privacy (PIPEDA, PIPA, Law 25, PHIPA)
-export * from "./indigenous-data-schema"; // #3 Indigenous Data Sovereignty (OCAP®, BCR consent)
-export * from "./strike-fund-tax-schema"; // #4 Strike Fund Tax (T4A/RL-1, $500/week threshold)
-export * from "./force-majeure-schema"; // #13 Force Majeure (Break-glass, Shamir's Secret Sharing)
-
-// P2: High-Impact Compliance Validators
-export * from "./geofence-privacy-schema"; // #5 Geofence Privacy (Location tracking opt-in, 24-hour retention)
-export * from "./transfer-pricing-schema"; // #12 Transfer Pricing (CAD enforcement, Bank of Canada FX, T106)
-export * from "./founder-conflict-schema"; // #11 Founder Conflict (Blind trust, conflict disclosure, arms-length)
-export * from "./joint-trust-fmv-schema"; // #6 Joint-Trust FMV (Fair market value, CPI escalator, 3-bid procurement)
-
-// P3: Documentation & Lower-Priority Compliance Validators
-export * from "./certification-management-schema";
-export * from "./employer-non-interference-schema";
-export * from "./whiplash-prevention-schema";
-
-// GDPR Compliance & Data Privacy
-export * from "./gdpr-compliance-schema";
-
-// E-Signature Integration
-export * from "./e-signature-schema";
-
-// Priority 2: AI Chatbot (Union Rights Q&A with RAG)
-export * from "./ai-chatbot-schema";
-
-// Priority 2: Accessibility Audit (WCAG 2.2 AA Compliance)
-export * from "./accessibility-schema";
-
-// Priority 2: International Address Formats
-export * from "./international-address-schema";
-
-// External Data Integration (Statistics Canada, LRB, CLC)
-export * from "./wage-benchmarks-schema";
-export * from "./lrb-agreements-schema";
-export * from "./clc-partnership-schema";
-export * from "./congress-memberships-schema";
-
-// Rewards System
-export * from "./award-templates-schema";
-
-// Automation & Workflows
-export * from "./automation-rules-schema";
-
-// Grievance & Arbitration
-export * from "./grievance-schema";
-
-// Organizing Tools (Campaigns, NLRB/CLRB Filings, Card Signing)
-export * from "./organizing-tools-schema";
-
-// PR-12: Defensibility Packs (System-of-Record Exports for Arbitration)
-export * from "./defensibility-packs-schema";
-
-// ============================================================================
-// EXPLICIT RE-EXPORTS TO RESOLVE AMBIGUITIES
-// ============================================================================
-
-// ClauseType: Use the one from cba-clauses-schema (more specific enum)
-export { type ClauseType } from "./cba-clauses-schema";
-
-// clcSyncLog: Use the one from clc-partnership-schema (main definition)
-export { clcSyncLog } from "./clc-partnership-schema";
-
-// Rewards: Use the ones from award-templates-schema and automation-rules-schema
-export { awardStatusEnum } from "./award-templates-schema";
-export { rewardWalletLedger } from "./award-templates-schema";
-export { automationRules, type AutomationRule } from "./automation-rules-schema";
-
-// Grievance: Use the ones from grievance-schema (main definitions)
-export { type GrievanceType, grievanceDeadlines, type GrievanceDeadline } from "./grievance-schema";
-

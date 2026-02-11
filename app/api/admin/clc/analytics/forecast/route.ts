@@ -12,6 +12,11 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { forecastRemittances } from '@/services/clc/compliance-reports';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
@@ -29,10 +34,10 @@ export const GET = async (request: NextRequest) => {
             severity: 'low',
             details: { reason: 'Invalid months parameter', monthsAhead },
           });
-          return NextResponse.json(
-            { error: 'Invalid months parameter. Must be between 1 and 24' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid months parameter. Must be between 1 and 24'
+    );
         }
 
         const forecast = await forecastRemittances(monthsAhead);
@@ -61,10 +66,11 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-return NextResponse.json(
-          { error: 'Failed to generate forecast' },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate forecast',
+      error
+    );
       }
       })(request);
 };

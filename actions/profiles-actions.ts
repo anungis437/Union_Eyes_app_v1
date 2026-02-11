@@ -1,7 +1,7 @@
 "use server";
 
 import { createProfile, deleteProfile, getAllProfiles, getProfileByUserId, updateProfile, getUserPlanInfo } from "@/db/queries/profiles-queries";
-import { InsertProfile, SelectProfile } from "@/db/schema/profiles-schema";
+import { InsertProfile, SelectProfile } from "@/db/schema/domains/member";
 import { ActionResult } from "@/types/actions/actions-types";
 import { revalidatePath } from "next/cache";
 import { auth } from '@/lib/api-auth-guard';

@@ -7,12 +7,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { taxSlips } from '@/db/migrations/schema';
+import { taxSlips } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -41,7 +46,10 @@ export const GET = async (request: NextRequest) => {
       const { searchParams } = new URL(request.url);
       const organizationId = searchParams.get('organizationId');
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
       const taxYear = searchParams.get('taxYear');
@@ -49,10 +57,10 @@ export const GET = async (request: NextRequest) => {
       const memberId = searchParams.get('memberId');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Build query conditions
@@ -95,9 +103,10 @@ export const GET = async (request: NextRequest) => {
         slipType: searchParams.get('slipType'),
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

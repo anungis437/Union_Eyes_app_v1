@@ -5,11 +5,17 @@
  * Returns members at risk of churning based on activity patterns
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface ChurnRiskMember {
   id: string;
   name: string;
@@ -25,10 +31,10 @@ async function handler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     const url = new URL(req.url);
@@ -38,7 +44,8 @@ async function handler(req: NextRequest, context) {
     // - Days since last activity (weight: 50%)
     // - Total claims (weight: 30%)
     // - Claim frequency trend (weight: 20%)
-    const members = await db.execute(sql`
+    const members = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       WITH member_activity AS (
         SELECT 
           om.id,
@@ -78,6 +85,7 @@ async function handler(req: NextRequest, context) {
       ORDER BY churn_risk_score DESC
       LIMIT 100
     `) as any[];
+    });
 
     // Categorize risk levels
     const churnRisk: ChurnRiskMember[] = members
@@ -105,9 +113,10 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(churnRisk);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch churn risk analysis' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch churn risk analysis',
+      error
     );
   }
 }

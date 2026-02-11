@@ -14,12 +14,17 @@ import {
   deleteUserFromTenant 
 } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { userId: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
@@ -50,10 +55,10 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
           .where(eq(organizationUsers.userId, targetUserId));
 
         if (userDetails.length === 0) {
-          return NextResponse.json(
-            { error: "User not found" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'User not found'
+    );
         }
 
         return NextResponse.json({
@@ -63,13 +68,22 @@ export const GET = async (request: NextRequest, { params }: { params: { userId: 
       });
     } catch (error) {
       logger.error("Failed to fetch user details", error);
-      return NextResponse.json(
-        { error: "Failed to fetch user details" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch user details',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const adminUsersSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tenantId: z.string().uuid('Invalid tenantId'),
+  action: z.unknown().optional(),
+  role: z.unknown().optional(),
+});
 
 export const PUT = async (request: NextRequest, { params }: { params: { userId: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -78,15 +92,26 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
   try {
       const targetUserId = params.userId;
       const body = await request.json();
+    // Validate request body
+    const validation = adminUsersSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, tenantId, action, role } = validation.data;
       const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, action, role } = body;
       const requestedOrganizationId = organizationIdFromBody ?? tenantIdFromBody;
       const tenantId = requestedOrganizationId;
 
       if (!requestedOrganizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       // Check admin role using RLS-protected query
@@ -118,18 +143,19 @@ export const PUT = async (request: NextRequest, { params }: { params: { userId: 
             message: "User status toggled",
           });
         } else {
-          return NextResponse.json(
-            { error: "Invalid action" },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
+    );
         }
       });
     } catch (error) {
       logger.error("Failed to update user", error);
-      return NextResponse.json(
-        { error: "Failed to update user" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update user',
+      error
+    );
     }
     })(request, { params });
 };
@@ -145,10 +171,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
       const tenantId = requestedOrganizationId;
 
       if (!requestedOrganizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       // Check admin role and execute deletion using RLS-protected query
@@ -175,10 +201,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { userI
       }, organizationId);
     } catch (error) {
       logger.error("Failed to delete user", error);
-      return NextResponse.json(
-        { error: "Failed to delete user" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete user',
+      error
+    );
     }
     })(request, { params });
 };

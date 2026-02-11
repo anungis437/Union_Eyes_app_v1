@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Health & Welfare Plans
@@ -12,6 +13,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -23,13 +29,14 @@ export const GET = async (request: NextRequest) => {
       const organizationId = searchParams.get('organizationId');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         id,
         organization_id,
@@ -56,6 +63,7 @@ export const GET = async (request: NextRequest) => {
       WHERE organization_id = ${organizationId}
       ORDER BY plan_name ASC
     `);
+    });
 
       return NextResponse.json({
         success: true,
@@ -67,13 +75,25 @@ export const GET = async (request: NextRequest) => {
       logger.error('Failed to fetch H&W plans', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const healthwelfarePlansSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  planName: z.string().min(1, 'planName is required'),
+  planType: z.unknown().optional(),
+  insuranceCarrier: z.unknown().optional(),
+  coverageStartDate: z.string().datetime().optional(),
+  monthlyPremiumSingle: z.unknown().optional(),
+  monthlyPremiumFamily: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -81,6 +101,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = healthwelfarePlansSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, planName, planType, insuranceCarrier, coverageStartDate, monthlyPremiumSingle, monthlyPremiumFamily } = validation.data;
       const {
         organizationId,
         planName,
@@ -91,18 +122,23 @@ export const POST = async (request: NextRequest) => {
         monthlyPremiumFamily,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!organizationId || !planName || !planType || !coverageStartDate) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, planName, planType, and coverageStartDate are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, planName, planType, and coverageStartDate are required'
+      // TODO: Migrate additional details: planName, planType, and coverageStartDate are required'
+    );
       }
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO hw_plans (
         id,
         organization_id,
@@ -124,21 +160,24 @@ export const POST = async (request: NextRequest) => {
       )
       RETURNING *
     `);
+    });
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'H&W plan created successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'H&W plan created successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to create H&W plan', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

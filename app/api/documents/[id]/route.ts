@@ -17,6 +17,11 @@ import {
 } from "@/lib/services/document-service";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Validation schema for updating documents
  */
@@ -64,7 +69,10 @@ export const GET = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Document not found', documentId: params.id },
       });
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Document not found'
+    );
     }
 
     // Verify organization access
@@ -79,7 +87,10 @@ export const GET = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch', documentId: params.id },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     if (versions) {
@@ -120,9 +131,10 @@ export const GET = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to fetch document", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch document',
+      error
     );
   }
   })(request);
@@ -155,7 +167,11 @@ export const PATCH = async (
       dataType: 'DOCUMENTS',
       details: { reason: 'Invalid JSON in request body' },
     });
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
   }
 
   const parsed = updateDocumentSchema.safeParse(rawBody);
@@ -192,7 +208,10 @@ export const PATCH = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Document not found', documentId: params.id },
       });
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Document not found'
+    );
     }
 
     // Verify organization access
@@ -207,7 +226,10 @@ export const PATCH = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch', documentId: params.id },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     const updated = await updateDocument(params.id, body);
@@ -235,9 +257,10 @@ export const PATCH = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to update document", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update document',
+      error
     );
   }
   })(request);
@@ -274,7 +297,10 @@ export const DELETE = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Document not found', documentId: params.id },
       });
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Document not found'
+    );
     }
 
     // Verify organization access
@@ -289,7 +315,10 @@ export const DELETE = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch', documentId: params.id },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     const success = permanent
@@ -307,7 +336,10 @@ export const DELETE = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Delete operation failed', documentId: params.id },
       });
-      return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete document'
+    );
     }
 
     logApiAuditEvent({
@@ -333,9 +365,10 @@ export const DELETE = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to delete document", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete document',
+      error
     );
   }
   })(request);

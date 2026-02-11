@@ -9,6 +9,11 @@ import { getDocumentById } from "@/lib/services/document-service";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/documents/[id]/download
  * Download a document file
@@ -70,7 +75,10 @@ export const GET = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Document not found', documentId: params.id },
       });
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Document not found'
+    );
     }
 
     // Verify organization access
@@ -85,7 +93,10 @@ export const GET = async (
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch', documentId: params.id },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     // Check access level permissions
@@ -137,9 +148,10 @@ export const GET = async (
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to download document", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to download document',
+      error
     );
   }
   })(request);

@@ -12,6 +12,11 @@ import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 // Validation schema for GET query
@@ -44,10 +49,10 @@ export const GET = withEnhancedRoleAuth(60, async (request, context) => {
     );
 
     if (!queryResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     const { fundId } = queryResult.data;
@@ -116,9 +121,10 @@ export const GET = withEnhancedRoleAuth(60, async (request, context) => {
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });
@@ -133,10 +139,10 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
     const parsed = createPicketLineSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body'
+    );
     }
 
     const {
@@ -211,11 +217,12 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
         },
       });
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Picket line created successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Picket line created successfully', },
+      undefined,
+      201
+    );
 
   } catch (error) {
     logger.error('Failed to create picket line', error as Error, {
@@ -233,9 +240,10 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

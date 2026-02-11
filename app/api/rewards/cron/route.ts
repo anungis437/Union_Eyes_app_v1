@@ -13,6 +13,11 @@ import { db } from '@/db';
 import { processAnniversaryAwards, processScheduledAwards } from '@/lib/services/rewards/automation-service';
 import { sendBatchExpirationWarnings } from '@/lib/services/rewards/notification-service';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * POST /api/rewards/cron
  * 
@@ -31,10 +36,10 @@ export async function POST(request: NextRequest) {
     const secret = authHeader?.replace('Bearer ', '');
 
     if (secret !== process.env.CRON_SECRET) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     // 2. Get task parameter

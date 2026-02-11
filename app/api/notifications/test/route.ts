@@ -11,19 +11,44 @@ import { sendClaimStatusNotification } from '@/lib/claim-notifications';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const notificationsTestSchema = z.object({
+  claimId: z.string().uuid('Invalid claimId'),
+  previousStatus: z.unknown().optional(),
+  newStatus: z.unknown().optional(),
+  notes: z.string().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       // Verify authentication
       // Parse request body
       const body = await request.json();
+    // Validate request body
+    const validation = notificationsTestSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { claimId, previousStatus, newStatus, notes } = validation.data;
       const { claimId, previousStatus, newStatus, notes } = body;
 
       if (!claimId || !newStatus) {
-        return NextResponse.json(
-          { error: 'Missing required fields: claimId, newStatus' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: claimId, newStatus'
+      // TODO: Migrate additional details: newStatus'
+    );
       }
 
       // Send test notification
@@ -46,10 +71,11 @@ export const POST = async (request: NextRequest) => {
         message: 'Test notification sent successfully',
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

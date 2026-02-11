@@ -17,6 +17,7 @@
 
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { db as drizzleDb } from "@/db";
 import { organizationMembers } from "@/db/schema-organizations";
@@ -25,6 +26,11 @@ import { eq, and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Type definitions for import
 interface ImportRow {
   organizationSlug: string;
@@ -82,35 +88,47 @@ export const POST = async (request: NextRequest) => {
       // Check admin/officer role
       const hasPermission = await checkAdminOrOfficerRole(userId);
       if (!hasPermission) {
-        return NextResponse.json(
-          { error: "Forbidden - Admin or Officer role required" },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin or Officer role required'
+    );
       }
 
       const formData = await request.formData();
       const file = formData.get("file") as File;
-      const preview = formData.get("preview") === "true";
-      const organizationId = formData.get("organizationId") as string | null;
+      const preview = formData.get("preview");
+      const organizationId = formData.get("organizationId");
 
-      if (!file) {
-        return NextResponse.json(
-          { error: "No file provided" },
-          { status: 400 }
+      // Validate inputs
+      const bulkImportSchema = z.object({
+        file: z.object({
+          name: z.string().min(1, "File name is required"),
+          size: z.number().max(50 * 1024 * 1024, "File size exceeds 50MB limit"),
+          type: z.enum(["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"], {
+            errorMap: () => ({ message: "Invalid file type. Please upload CSV or Excel file" })
+          })
+        }),
+        preview: z.boolean().optional().default(false),
+        organizationId: z.string().uuid("Invalid organization ID").optional().nullable()
+      });
+
+      const validation = bulkImportSchema.safeParse({
+        file: file ? { name: file.name, size: file.size, type: file.type } : null,
+        preview: preview === "true",
+        organizationId: organizationId || null
+      });
+
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          validation.error.errors[0]?.message || "Validation failed"
         );
       }
 
-      // Validate file type
-      const validTypes = [
-        "text/csv",
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      ];
-
-      if (!validTypes.includes(file.type)) {
-        return NextResponse.json(
-          { error: "Invalid file type. Please upload CSV or Excel file" },
-          { status: 400 }
+      if (!file) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          "No file provided"
         );
       }
 
@@ -119,10 +137,10 @@ export const POST = async (request: NextRequest) => {
       const rows = parseCSV(text);
 
       if (rows.length === 0) {
-        return NextResponse.json(
-          { error: "File is empty or invalid" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'File is empty or invalid'
+    );
       }
 
       // Validate and process rows

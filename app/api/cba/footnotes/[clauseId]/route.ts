@@ -14,6 +14,11 @@ import { eq, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { clauseId: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -49,13 +54,26 @@ export const GET = async (request: NextRequest, { params }: { params: { clauseId
         });
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const cbaFootnotesSchema = z.object({
+  targetClauseId: z.string().uuid('Invalid targetClauseId'),
+  targetDecisionId: z.string().uuid('Invalid targetDecisionId'),
+  footnoteText: z.unknown().optional(),
+  linkType: z.unknown().optional(),
+  footnoteNumber: z.unknown().optional(),
+  context: z.unknown().optional(),
+  startOffset: z.unknown().optional(),
+  endOffset: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest, { params }: { params: { clauseId: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -64,6 +82,17 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
   try {
       const { clauseId } = params;
       const body = await request.json();
+    // Validate request body
+    const validation = cbaFootnotesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { targetClauseId, targetDecisionId, footnoteText, linkType, footnoteNumber, context, startOffset, endOffset } = validation.data;
 
       const { 
         targetClauseId, 
@@ -106,10 +135,11 @@ export const POST = async (request: NextRequest, { params }: { params: { clauseI
         return NextResponse.json(footnote);
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -121,10 +151,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { clause
       const footnoteId = searchParams.get("footnoteId");
 
       if (!footnoteId) {
-        return NextResponse.json(
-          { error: "Footnote ID required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Footnote ID required'
+    );
       }
 
       // Increment click count
@@ -137,10 +167,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { clause
 
       return NextResponse.json({ success: true });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

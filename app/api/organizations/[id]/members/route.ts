@@ -17,6 +17,11 @@ import {
 import { logger } from '@/lib/logger';
 import { clerkClient } from '@clerk/nextjs/server';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/members
  * Get all members of an organization
@@ -90,10 +95,10 @@ export const GET = async (
             requestedOrgId: id,
           },
         });
-        return NextResponse.json(
-          { error: 'Forbidden - Cannot access other organization members' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Cannot access other organization members'
+    );
       }
       
       const members = await getOrganizationMembers(id);
@@ -215,10 +220,10 @@ export const POST = async (
             requestedOrgId: id,
           },
         });
-        return NextResponse.json(
-          { error: 'Forbidden - Cannot add members to other organizations' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Cannot add members to other organizations'
+    );
       }
 
       const body = await request.json();
@@ -252,26 +257,11 @@ export const POST = async (
             errors: validated.error.errors,
           },
         });
-        return NextResponse.json(
-          { error: 'Validation failed', details: validated.error.errors },
-          { status: 400 }
-        );
-      }
-
-      const memberUser = await clerkClient.users.getUser(validated.data.memberId);
-      if (!memberUser) {
-        return NextResponse.json(
-          { error: 'Member not found' },
-          { status: 404 }
-        );
-      }
-
-      const memberEmail = memberUser.emailAddresses?.[0]?.emailAddress;
-      if (!memberEmail) {
-        return NextResponse.json(
-          { error: 'Member email not found' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed'
+      // TODO: Migrate additional details: details: validated.error.errors
+    );
       }
 
       const memberName = `${memberUser.firstName || ''} ${memberUser.lastName || ''}`.trim() || 'Member';
@@ -337,10 +327,11 @@ export const POST = async (
 
       // Handle foreign key violations
       if (error.code === '23503') {
-        return NextResponse.json(
-          { error: 'Invalid organization or member ID' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid organization or member ID',
+      error
+    );
       }
 
       return NextResponse.json(

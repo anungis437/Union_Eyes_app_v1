@@ -14,7 +14,7 @@ import { RequestValidator } from '@/lib/middleware/request-validation';
 import { AuthenticationService, SUPPORTED_ROLES } from '@/lib/middleware/auth-middleware';
 import { db } from '@/db';
 import { organizationMembers } from '@/db/schema/organization-members-schema';
-import { organizationUsers } from '@/db/schema/user-management-schema';
+import { organizationUsers } from '@/db/schema/domains/member';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';

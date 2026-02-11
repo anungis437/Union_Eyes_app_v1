@@ -1,22 +1,29 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
+import { claims } from '@/db/schema/domains/claims';
 import { eq, and, sql } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || !user.tenantId) {
-    return NextResponse.json(
-      { error: 'Authentication and tenant context required' },
-      { status: 401 }
+    return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and tenant context required'
     );
   }
   
   const tenantId = user.tenantId;
 
   // Get queue metrics by priority
-  const queues = await db.execute(sql`
+  const queues = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
     SELECT 
       ${claims.priority} as priority,
       COUNT(*) as count,
@@ -34,6 +41,7 @@ async function handler(req: NextRequest) {
         WHEN 'low' THEN 4
       END
   `);
+    });
 
   return NextResponse.json(queues);
 }

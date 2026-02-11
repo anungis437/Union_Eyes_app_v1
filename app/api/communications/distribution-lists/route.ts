@@ -16,6 +16,11 @@ import { newsletterDistributionLists } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const createListSchema = z.object({
   name: z.string().min(1, 'List name is required'),
   description: z.string().optional(),
@@ -45,9 +50,10 @@ export const GET = withOrganizationAuth(async (request: NextRequest, context) =>
 
     return NextResponse.json({ lists });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch distribution lists' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch distribution lists',
+      error
     );
   }
 });
@@ -57,7 +63,14 @@ export const POST = withOrganizationAuth(async (request: NextRequest, context) =
     const { organizationId, userId } = context;
 
     const body = await request.json();
-    const validatedData = createListSchema.parse(body);
+    const validation = createListSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const validatedData = validation.data;
 
     const [list] = await db
       .insert(newsletterDistributionLists)
@@ -68,7 +81,11 @@ export const POST = withOrganizationAuth(async (request: NextRequest, context) =
       })
       .returning();
 
-    return NextResponse.json({ list }, { status: 201 });
+    return standardSuccessResponse(
+      {  list  },
+      undefined,
+      201
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -76,9 +93,10 @@ export const POST = withOrganizationAuth(async (request: NextRequest, context) =
         { status: 400 }
       );
     }
-return NextResponse.json(
-      { error: 'Failed to create distribution list' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create distribution list',
+      error
     );
   }
 });

@@ -2,6 +2,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { transcribeAudioWithLanguage, type SupportedLanguage } from "@/lib/azure-speech";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Maximum duration in seconds
@@ -16,28 +17,19 @@ export const POST = async (request: NextRequest) => {
       const language = (formData.get("language") as SupportedLanguage) || "en-CA";
 
       if (!audioFile) {
-        return NextResponse.json(
-          { error: "No audio file provided" },
-          { status: 400 }
-        );
+        return standardErrorResponse(ErrorCode.VALIDATION_ERROR);
       }
 
       // Validate file type
       const validTypes = ["audio/wav", "audio/webm", "audio/ogg", "audio/mp3", "audio/mpeg"];
       if (!validTypes.includes(audioFile.type)) {
-        return NextResponse.json(
-          { error: `Invalid audio type: ${audioFile.type}. Supported: WAV, WebM, OGG, MP3` },
-          { status: 400 }
-        );
+        return standardErrorResponse(ErrorCode.VALIDATION_ERROR);
       }
 
       // Validate file size (max 25MB)
       const maxSize = 25 * 1024 * 1024;
       if (audioFile.size > maxSize) {
-        return NextResponse.json(
-          { error: "Audio file too large. Maximum size: 25MB" },
-          { status: 400 }
-        );
+        return standardErrorResponse(ErrorCode.VALIDATION_ERROR);
       }
 
       // Convert file to buffer
@@ -48,10 +40,7 @@ export const POST = async (request: NextRequest) => {
       const text = await transcribeAudioWithLanguage(buffer, language);
 
       if (!text || text.trim().length === 0) {
-        return NextResponse.json(
-          { error: "No speech detected in audio" },
-          { status: 400 }
-        );
+        return standardErrorResponse(ErrorCode.VALIDATION_ERROR);
       }
 
       return NextResponse.json({
@@ -62,13 +51,7 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
-return NextResponse.json(
-        { 
-          error: "Failed to transcribe audio",
-          details: error instanceof Error ? error.message : "Unknown error"
-        },
-        { status: 500 }
-      );
+return standardErrorResponse(ErrorCode.INTERNAL_ERROR);
     }
     })(request);
 };

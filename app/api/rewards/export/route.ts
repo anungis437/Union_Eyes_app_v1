@@ -11,6 +11,11 @@ import {
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -18,10 +23,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
       
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       // Check admin role
@@ -96,10 +101,10 @@ export const GET = async (request: NextRequest) => {
 
       case 'analytics':
         if (!startDate || !endDate) {
-          return NextResponse.json(
-            { error: 'startDate and endDate are required for analytics export' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'startDate and endDate are required for analytics export'
+    );
         }
         csv = await exportAnalyticsToCSV(
           organizationId,

@@ -6,13 +6,18 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { messageThreads, messages, messageParticipants } from '@/db/schema/messages-schema';
+import { messageThreads, messages, messageParticipants } from '@/db/schema/domains/communications';
 import { eq, and, desc, or, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -95,10 +100,24 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error('Failed to fetch message threads', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const messagesThreadsSchema = z.object({
+  subject: z.unknown().optional(),
+  staffId: z.string().uuid('Invalid staffId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  category: z.unknown().optional(),
+  priority: z.unknown().optional(),
+  initialMessage: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -120,9 +139,23 @@ export const POST = async (request: NextRequest) => {
     }
   try {
       const { subject, staffId, organizationId, category, priority, initialMessage } = await request.json();
+    // Validate request body
+    const validation = messagesThreadsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { subject, staffId, organizationId, category, priority, initialMessage } = validation.data;
 
       if (!subject || !organizationId) {
-        return NextResponse.json({ error: 'Subject and organization ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Subject and organization ID required'
+    );
       }
 
       // Create thread
@@ -181,10 +214,18 @@ export const POST = async (request: NextRequest) => {
         organizationId,
       });
 
-      return NextResponse.json({ thread }, { status: 201 });
+      return standardSuccessResponse(
+      {  thread  },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error('Failed to create message thread', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

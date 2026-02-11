@@ -13,6 +13,11 @@ import { eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (req: NextRequest) => {
@@ -101,10 +106,11 @@ export const GET = async (req: NextRequest) => {
       });
     } catch (error) {
       logger.error('Error fetching user organizations', error as Error);
-      return NextResponse.json(
-        { error: 'Failed to fetch organizations' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch organizations',
+      error
+    );
     }
     })(request);
 };

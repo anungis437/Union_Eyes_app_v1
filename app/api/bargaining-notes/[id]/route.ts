@@ -16,6 +16,11 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -25,18 +30,31 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       const note = await getBargainingNoteById(id);
 
       if (!note) {
-        return NextResponse.json({ error: "Bargaining note not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Bargaining note not found'
+    );
       }
 
       return NextResponse.json({ note });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const bargaining-notesSchema = z.object({
+  filename: z.string().min(1, 'filename is required'),
+  url: z.string().url('Invalid URL'),
+  fileType: z.unknown().optional(),
+  action: z.unknown().optional(),
+  attachment: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -45,16 +63,28 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
   try {
       const { id } = params;
       const body = await request.json();
+    // Validate request body
+    const validation = bargaining-notesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { filename, url, fileType, action, attachment } = validation.data;
 
       // Check for special action: addAttachment
       if (body.action === "addAttachment" && body.attachment) {
         const { filename, url, fileType } = body.attachment;
 
         if (!filename || !url || !fileType) {
-          return NextResponse.json(
-            { error: "filename, url, and fileType are required for attachment" },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'filename, url, and fileType are required for attachment'
+      // TODO: Migrate additional details: url, and fileType are required for attachment"
+    );
         }
 
         const updatedNote = await addAttachmentToNote(id, {
@@ -64,7 +94,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         });
 
         if (!updatedNote) {
-          return NextResponse.json({ error: "Bargaining note not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Bargaining note not found'
+    );
         }
 
         return NextResponse.json({ note: updatedNote });
@@ -77,15 +110,19 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       });
 
       if (!updatedNote) {
-        return NextResponse.json({ error: "Bargaining note not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Bargaining note not found'
+    );
       }
 
       return NextResponse.json({ note: updatedNote });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -98,7 +135,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       const success = await deleteBargainingNote(id);
       
       if (!success) {
-        return NextResponse.json({ error: "Bargaining note not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Bargaining note not found'
+    );
       }
 
       return NextResponse.json({ 
@@ -106,10 +146,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         deleted: true 
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

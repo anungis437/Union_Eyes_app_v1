@@ -20,6 +20,11 @@ import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/request-validation";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const updateEventSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -72,10 +77,10 @@ export const GET = withEnhancedRoleAuth(10, async (
       );
 
     if (!event) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Event not found'
+    );
     }
 
     // Fetch attendees
@@ -124,9 +129,10 @@ await logApiAuditEvent({
       details: { error: error instanceof Error ? error.message : "Unknown error" },
     });
 
-    return NextResponse.json(
-      { error: "Failed to fetch event" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch event',
+      error
     );
   }
 });
@@ -186,10 +192,10 @@ export const PATCH = withEnhancedRoleAuth(40, async (
       );
 
     if (!existingEvent) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Event not found'
+    );
     }
 
     // Update event
@@ -248,9 +254,10 @@ await logApiAuditEvent({
       details: { error: error instanceof Error ? error.message : "Unknown error" },
     });
 
-    return NextResponse.json(
-      { error: "Failed to update event" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update event',
+      error
     );
   }
 });
@@ -294,10 +301,10 @@ export const DELETE = withEnhancedRoleAuth(40, async (
       );
 
     if (!existingEvent) {
-      return NextResponse.json(
-        { error: "Event not found" },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Event not found'
+    );
     }
 
     // Delete attendees first (foreign key constraint)
@@ -345,9 +352,10 @@ await logApiAuditEvent({
       details: { error: error instanceof Error ? error.message : "Unknown error" },
     });
 
-    return NextResponse.json(
-      { error: "Failed to delete event" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete event',
+      error
     );
   }
 });

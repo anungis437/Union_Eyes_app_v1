@@ -4,12 +4,18 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  * Upload personal documents to Vercel Blob Storage
  */
 import { put } from '@vercel/blob';
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { memberDocuments } from '@/db/schema/member-documents-schema';
+import { memberDocuments } from '@/db/schema/domains/documents';
 import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Maximum file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -39,8 +45,31 @@ export const POST = async (request: NextRequest) => {
       const files = formData.getAll('files') as File[];
 
       // Validate inputs
+      const portalUploadSchema = z.object({
+        files: z.array(
+          z.object({
+            name: z.string().min(1, "File name is required"),
+            size: z.number().max(MAX_FILE_SIZE, `File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`),
+            type: z.enum(ALLOWED_TYPES as [string, ...string[]], {
+              errorMap: () => ({ message: "File type not allowed" })
+            })
+          })
+        ).min(1, "At least one file is required").max(10, "Maximum 10 files allowed")
+      });
+
+      const validation = portalUploadSchema.safeParse({
+        files: files.map(f => ({ name: f.name, size: f.size, type: f.type }))
+      });
+
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          validation.error.errors[0]?.message || "Validation failed"
+        );
+      }
+
       if (!files || files.length === 0) {
-        return NextResponse.json({ error: 'No files provided' }, { status: 400 });
+        return standardErrorResponse(ErrorCode.VALIDATION_ERROR, 'No files provided');
       }
 
       const uploadedDocuments = [];
@@ -112,7 +141,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to upload documents', error as Error, {
         userId: userId,
   });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
   }
   })(request);
 };

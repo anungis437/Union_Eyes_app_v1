@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { requestDeadlineExtension } from '@/db/queries/deadline-queries';
 import { getCurrentUser } from '@/lib/api-auth-guard';
@@ -5,6 +6,16 @@ import { cookies } from 'next/headers';
 import { db, organizations } from '@/db';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const extendDeadlineSchema = z.object({
+  daysRequested: z.number().int().min(1, 'Days requested must be at least 1').max(365, 'Cannot request more than 365 days'),
+  reason: z.string().min(20, 'Reason must be at least 20 characters').max(500, 'Reason cannot exceed 500 characters'),
+});
 /**
  * POST /api/deadlines/[id]/extend
  * Request a deadline extension
@@ -16,10 +27,10 @@ export async function POST(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const { id: userId } = user;
@@ -52,22 +63,18 @@ export async function POST(
     const organizationId = orgResult[0].id;
 
     const body = await request.json();
-    const { daysRequested, reason } = body;
-
-    // Validation
-    if (!daysRequested || daysRequested < 1) {
-      return NextResponse.json(
-        { error: 'Days requested must be at least 1' },
-        { status: 400 }
+    
+    // Validate request body
+    const validation = extendDeadlineSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid extension request',
+        validation.error.errors
       );
     }
 
-    if (!reason || reason.trim().length < 20) {
-      return NextResponse.json(
-        { error: 'Reason must be at least 20 characters' },
-        { status: 400 }
-      );
-    }
+    const { daysRequested, reason } = validation.data;
 
     const extension = await requestDeadlineExtension(
       params.id,

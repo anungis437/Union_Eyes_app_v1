@@ -16,6 +16,11 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Lazy initialization to avoid build-time execution
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
@@ -34,7 +39,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -43,10 +51,11 @@ export const GET = async (request: NextRequest) => {
         `social-accounts:${organizationId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Fetch accounts
@@ -71,7 +80,10 @@ export const GET = async (request: NextRequest) => {
         .order('connected_at', { ascending: false });
 
       if (error) {
-return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch accounts'
+    );
       }
 
       // Audit log
@@ -86,20 +98,44 @@ return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 })
 
       return NextResponse.json({ accounts: accounts || [] });
     } catch (error) {
-return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const social-mediaAccountsSchema = z.object({
+  platform: z.string().min(1, 'platform is required'),
+  account_id: z.string().uuid('Invalid account_id'),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
   try {
       const { userId, organizationId } = context;
       const body = await request.json();
+    // Validate request body
+    const validation = social-mediaAccountsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { platform, account_id } = validation.data;
       const { platform } = body;
 
       if (!platform) {
-        return NextResponse.json({ error: 'Platform is required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Platform is required'
+    );
       }
 
       // Rate limit check
@@ -108,10 +144,11 @@ export const POST = async (request: NextRequest) => {
         `social-connect:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Generate OAuth state
@@ -173,7 +210,10 @@ export const POST = async (request: NextRequest) => {
         }
 
         default:
-          return NextResponse.json({ error: 'Unsupported platform' }, { status: 400 });
+          return standardErrorResponse(
+            ErrorCode.VALIDATION_ERROR,
+            'Unsupported platform'
+          );
       }
 
       // Store OAuth state in cookie
@@ -218,10 +258,11 @@ export const DELETE = async (request: NextRequest) => {
         `social-disconnect:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Get account ID from query params
@@ -229,7 +270,10 @@ export const DELETE = async (request: NextRequest) => {
       const accountId = searchParams.get('id');
 
       if (!accountId) {
-        return NextResponse.json({ error: 'Account ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Account ID required'
+    );
       }
 
       // Verify user has access to this account
@@ -240,11 +284,17 @@ export const DELETE = async (request: NextRequest) => {
         .single();
 
       if (fetchError || !account) {
-        return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Account not found'
+    );
       }
 
       if (organizationId !== account.organization_id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Unauthorized'
+        );
       }
 
       // Revoke tokens on the platform (if supported)
@@ -271,7 +321,11 @@ export const DELETE = async (request: NextRequest) => {
         .eq('id', accountId);
 
       if (deleteError) {
-return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete account',
+      error
+    );
       }
 
       // Audit log
@@ -307,14 +361,20 @@ export const PUT = async (request: NextRequest) => {
       const { userId, organizationId } = context;
       
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       const body = await request.json();
       const { account_id } = body;
 
       if (!account_id) {
-        return NextResponse.json({ error: 'Account ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Account ID required'
+    );
       }
 
       // Verify user has access to this account
@@ -326,7 +386,10 @@ export const PUT = async (request: NextRequest) => {
         .single();
 
       if (fetchError || !account) {
-        return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Account not found'
+    );
       }
 
       // Refresh token based on platform

@@ -71,8 +71,38 @@ const PORT = process.env.PORT || 3007;
 
 // Security middleware
 app.use(helmet());
+
+// CORS configuration with origin whitelist (Security Hardened - Feb 2026)
+const getAllowedOrigins = (): string[] => {
+  const originsEnv = process.env.CORS_ALLOWED_ORIGINS || process.env.CORS_ORIGIN || '';
+  
+  if (process.env.NODE_ENV === 'development') {
+    return ['http://localhost:3000', 'http://localhost:3001'];
+  }
+  
+  if (!originsEnv) {
+    logger.warn('⚠️  CORS_ALLOWED_ORIGINS not configured - CORS disabled');
+    return [];
+  }
+  
+  return originsEnv.split(',').map(o => o.trim()).filter(Boolean);
+};
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    const allowedOrigins = getAllowedOrigins();
+    
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy: Origin not allowed'));
+    }
+  },
   credentials: true,
 }));
 

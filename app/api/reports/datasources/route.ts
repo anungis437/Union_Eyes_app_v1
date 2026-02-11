@@ -13,14 +13,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getAllDataSources } from '@/lib/report-executor';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function getHandler(req: NextRequest, context) {
   try {
     const user = await getCurrentUser();
     if (!user || !user.tenantId) {
-      return NextResponse.json(
-        { error: 'Authentication and tenant context required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and tenant context required'
+    );
     }
     
     const tenantId = user.tenantId;

@@ -8,6 +8,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { SignatureService } from "@/lib/signature/signature-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Create signature request
  */
@@ -15,7 +20,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
@@ -32,13 +40,20 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const sequentialSigning = formData.get("sequentialSigning") as string;
 
     if (!file || !title || !organizationId || !signersJson) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
     }
 
-    const signers = JSON.parse(signersJson);
+    const validation = JSON.safeParse(signersJson);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const signers = validation.data;
 
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
@@ -70,9 +85,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to create signature request" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create signature request',
+      error
     );
   }
 });
@@ -84,7 +100,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
@@ -92,10 +111,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const organizationId = (searchParams.get("organizationId") ?? searchParams.get("tenantId"));
 
     if (!organizationId) {
-      return NextResponse.json(
-        { error: "Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const documents = await SignatureService.getUserDocuments( userId,
@@ -104,9 +123,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json(documents);
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to retrieve documents" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve documents',
+      error
     );
   }
 });

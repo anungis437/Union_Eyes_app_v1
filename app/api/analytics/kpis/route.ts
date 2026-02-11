@@ -12,6 +12,26 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const analyticsKpisSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  metricType: z.unknown().optional(),
+  dataSource: z.unknown().optional(),
+  calculation: z.unknown().optional(),
+  visualizationType: z.boolean().optional(),
+  targetValue: z.unknown().optional(),
+  warningThreshold: z.unknown().optional(),
+  criticalThreshold: z.unknown().optional(),
+  alertEnabled: z.boolean().optional(),
+  alertRecipients: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
@@ -23,14 +43,26 @@ export const POST = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
     }
 
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = analyticsKpisSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { name, description, metricType, dataSource, calculation, visualizationType, targetValue, warningThreshold, criticalThreshold, alertEnabled, alertRecipients } = validation.data;
       const {
         name,
         description,
@@ -47,17 +79,19 @@ export const POST = async (request: NextRequest) => {
       
       // Validate input
       if (!name || !metricType || !dataSource || !calculation || !visualizationType) {
-        return NextResponse.json(
-          { error: 'Missing required fields: name, metricType, dataSource, calculation, visualizationType' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: name, metricType, dataSource, calculation, visualizationType'
+      // TODO: Migrate additional details: metricType, dataSource, calculation, visualizationType'
+    );
       }
       
       if (!['line', 'bar', 'pie', 'gauge', 'number'].includes(visualizationType)) {
-        return NextResponse.json(
-          { error: 'Invalid visualizationType. Must be one of: line, bar, pie, gauge, number' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid visualizationType. Must be one of: line, bar, pie, gauge, number'
+      // TODO: Migrate additional details: bar, pie, gauge, number'
+    );
       }
       
       // Create KPI
@@ -98,10 +132,11 @@ export const POST = async (request: NextRequest) => {
         kpi: result.kpi
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
@@ -117,7 +152,7 @@ export const GET = async (request: NextRequest) => {
       
       // Get KPI configurations from database
       const { db } = await import('@/db');
-      const { kpiConfigurations } = await import('@/db/migrations/schema');
+      const { kpiConfigurations } = await import('@/db/schema');
       const { eq, desc } = await import('drizzle-orm');
       
       const conditions = [];
@@ -139,10 +174,11 @@ export const GET = async (request: NextRequest) => {
         kpis
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

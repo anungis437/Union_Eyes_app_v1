@@ -14,6 +14,7 @@ import {
   getDocumentStatistics 
 } from "@/lib/services/document-service";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for creating documents
@@ -74,7 +75,10 @@ export const GET = withRoleAuth(10, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'tenantId is required' },
       });
-      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'tenantId is required'
+      );
     }
 
     // Verify organization ID matches context
@@ -89,7 +93,10 @@ export const GET = withRoleAuth(10, async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch' },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+        ErrorCode.FORBIDDEN,
+        'You do not have access to this organization\'s documents'
+      );
     }
 
     // Check for special modes
@@ -241,7 +248,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { reason: 'Invalid JSON in request body' },
     });
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(ErrorCode.VALIDATION_ERROR, 'Invalid JSON in request body');
   }
 
   const parsed = createDocumentSchema.safeParse(rawBody);
@@ -276,7 +283,7 @@ export const POST = withRoleAuth('member', async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { reason: 'Organization ID mismatch' },
     });
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(ErrorCode.FORBIDDEN, 'Forbidden');
   }
 
   try {

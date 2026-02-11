@@ -16,7 +16,7 @@ import {
   notificationDeliveryLog,
   notificationBounces,
   notificationTemplates,
-} from "@/db/schema/notifications-schema";
+} from "@/db/schema/domains/communications";
 import { eq, and, or, lt, isNull } from "drizzle-orm";
 
 let firebaseAdmin: typeof import('firebase-admin') | null = null;
@@ -114,7 +114,7 @@ export interface NotificationProvider {
 // - notificationHistory: Audit log for all notifications
 // - userNotificationPreferences: User-specific channel preferences
 //
-// Import from: import { notifications } from '@/db/schema/notifications-schema';
+// Import from: import { notifications } from '@/db/schema/domains/communications';
 /*
 Schema reference for notifications table:
 export const notifications = pgTable('notifications', {

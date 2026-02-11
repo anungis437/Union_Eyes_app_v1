@@ -11,6 +11,11 @@ import { getExecutiveSummary, getMonthlyTrends } from '@/db/queries/analytics-qu
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -21,9 +26,10 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
 
@@ -31,10 +37,10 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Organization ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     // Get date range from query params (default: last 30 days)
@@ -71,9 +77,10 @@ export const GET = withEnhancedRoleAuth(60, async (req: NextRequest, context) =>
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch executive analytics' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch executive analytics',
+      error
     );
   }
 });

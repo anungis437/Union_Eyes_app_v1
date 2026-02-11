@@ -5,6 +5,11 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/monitoring/drift
  * 
@@ -156,9 +161,10 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     });
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch drift metrics' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch drift metrics',
+      error
     );
   }
 });

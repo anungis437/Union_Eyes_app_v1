@@ -13,6 +13,11 @@ import { logger } from '@/lib/logger';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -78,10 +83,10 @@ export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
           requestedOrgId: rootOrgId,
         },
       });
-      return NextResponse.json(
-        { error: 'Forbidden - Cannot access other organization hierarchy' },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Cannot access other organization hierarchy'
+    );
     }
 
     let query;
@@ -217,9 +222,10 @@ export const GET = withRoleAuth(10, async (request: NextRequest, context) => {
         error: error instanceof Error ? error.message : 'Unknown error',
       },
     });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withApiAuth } from '@/lib/api-auth-guard';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 const defaultRules = [
   {
@@ -11,7 +13,7 @@ const defaultRules = [
   },
 ];
 
-export const GET = async (request: NextRequest) => {
+async function handler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const jurisdiction = searchParams.get('jurisdiction') || 'CA-FED';
@@ -28,10 +30,11 @@ export const GET = async (request: NextRequest) => {
       data: rules,
     });
   } catch (error) {
-return NextResponse.json(
+    return NextResponse.json(
       { success: false, error: 'Failed to fetch jurisdiction rules' },
       { status: 500 }
     );
   }
-};
+}
 
+export const GET = withApiAuth(handler);

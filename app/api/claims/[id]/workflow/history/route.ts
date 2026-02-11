@@ -12,6 +12,11 @@ import { eq, desc, and } from "drizzle-orm";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -37,7 +42,10 @@ export const GET = async (
         .limit(1);
 
       if (claim.length === 0) {
-        return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       const claimData = claim[0];
@@ -65,7 +73,10 @@ export const GET = async (
 
       // User must be owner or assigned steward
       if (!isOwner && !isSteward) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
       }
 
       // Get workflow history with user emails - RLS policies enforce tenant isolation

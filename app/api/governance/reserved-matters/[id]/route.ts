@@ -2,11 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/db";
-import { reservedMatterVotes } from "@/db/schema/governance-schema";
+import { reservedMatterVotes } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;
@@ -31,7 +36,10 @@ export const GET = async (request: NextRequest, { params }: RouteParams) =>
         .limit(1);
 
       if (!record) {
-        return NextResponse.json({ error: "Reserved matter vote not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Reserved matter vote not found'
+    );
       }
 
       logApiAuditEvent({
@@ -56,7 +64,11 @@ export const GET = async (request: NextRequest, { params }: RouteParams) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to fetch reserved matter" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch reserved matter',
+      error
+    );
     }
   })(request, { params });
 
@@ -68,12 +80,20 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) =>
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
     }
 
     const parsed = classAVoteSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
     }
 
     try {
@@ -107,6 +127,10 @@ export const PATCH = async (request: NextRequest, { params }: RouteParams) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to record Class A vote" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to record Class A vote',
+      error
+    );
     }
   })(request, { params });

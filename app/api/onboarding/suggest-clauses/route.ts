@@ -9,12 +9,23 @@
  * - Sharing level availability
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withRoleAuth } from '@/lib/role-middleware';
 import { suggestRelevantClauses } from '@/lib/utils/smart-onboarding';
 import { logger } from '@/lib/logger';
 import { eventBus, AppEvents } from '@/lib/events';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
+
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const onboardingSuggest-clausesSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+});
 
 export const POST = withRoleAuth('officer', async (request, context) => {
   const { userId, organizationId } = context;
@@ -33,12 +44,23 @@ export const POST = withRoleAuth('officer', async (request, context) => {
     }
 
     const { organizationId: reqOrgId } = await request.json();
+    // Validate request body
+    const validation = onboardingSuggest-clausesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId } = validation.data;
 
     if (!reqOrgId) {
-      return NextResponse.json(
-        { error: 'organizationId is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
     }
 
     const suggestions = await suggestRelevantClauses(reqOrgId);

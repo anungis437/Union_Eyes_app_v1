@@ -7,7 +7,7 @@
 
 import { db } from "@/database";
 import { profiles } from "@/db/schema/organization-members-schema";
-import { claims } from "@/db/schema/claims-schema";
+import { claims } from "@/db/schema/domains/claims";
 import { getNotificationService } from "./notification-service";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";

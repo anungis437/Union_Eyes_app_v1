@@ -9,7 +9,7 @@ import { OpenAI } from 'openai';
 import { db } from '@/db';
 import { cbaClause, collectiveAgreements } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import type { ClauseType } from '@/db/schema/cba-clauses-schema';
+import type { ClauseType } from '@/db/schema/domains/agreements';
 import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({

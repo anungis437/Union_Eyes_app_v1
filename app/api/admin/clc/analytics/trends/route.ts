@@ -13,6 +13,11 @@ import { analyzeMultiYearTrends } from '@/services/clc/compliance-reports';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId } = context;
@@ -45,10 +50,11 @@ export const GET = async (request: NextRequest) => {
             severity: 'low',
             details: { reason: 'Invalid years parameter', years },
           });
-          return NextResponse.json(
-            { error: 'Invalid years parameter. Must be 3, 5, or 10' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid years parameter. Must be 3, 5, or 10'
+      // TODO: Migrate additional details: 5, or 10'
+    );
         }
 
         const trends = await analyzeMultiYearTrends({ years: years as 3 | 5 | 10 });
@@ -77,10 +83,11 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-return NextResponse.json(
-          { error: 'Failed to fetch trend data' },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch trend data',
+      error
+    );
       }
       })(request);
 };

@@ -5,25 +5,27 @@
  * - Statistics Canada wage and labor data
  * - Provincial Labour Relations Board data
  * - CLC Partnership data
+ * 
+ * Security: Protected with withApiAuth guard (migrated Feb 2026)
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { withApiAuth } from '@/lib/api-auth-guard';
 import { wageEnrichmentService } from '@/lib/services/external-data/wage-enrichment-service';
 import { statCanClient, provinceToGeographyCode } from '@/lib/services/external-data/statcan-client';
 import { db } from '@/db/db';
 import { wageBenchmarks, unionDensity as unionDensityTable, costOfLivingData } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/external-data - List available endpoints and sync status
-export async function GET(request: NextRequest) {
+export const GET = withApiAuth(async (request: NextRequest) => {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const searchParams = request.nextUrl.searchParams;
     const action = searchParams.get('action') || 'list';
 
@@ -62,7 +64,10 @@ export async function GET(request: NextRequest) {
         const year = searchParams.get('year');
 
         if (!noc) {
-          return NextResponse.json({ error: 'NOC code required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'NOC code required'
+    );
         }
 
         const wages = await statCanClient.getWageData({
@@ -108,7 +113,10 @@ export async function GET(request: NextRequest) {
         const geo = searchParams.get('geo') || '35';
 
         if (nocCodes.length === 0) {
-          return NextResponse.json({ error: 'nocCodes required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'nocCodes required'
+    );
         }
 
         const benchmarks = await db.select()
@@ -125,32 +133,50 @@ export async function GET(request: NextRequest) {
       }
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
+    );
     }
   } catch (error) {
-return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
-}
+});
 
 // POST /api/external-data - Trigger sync operations
-export async function POST(request: NextRequest) {
-  try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
+const external-dataSchema = z.object({
+  action: z.unknown().optional(),
+  params: z.unknown().optional(),
+});
+
+export const POST = withApiAuth(async (request: NextRequest) => {
+  try {
     const body = await request.json();
+    // Validate request body
+    const validation = external-dataSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { action, params } = validation.data;
     const { action, params } = body;
 
     switch (action) {
       case 'sync-wages': {
         if (!params?.nocCodes || !Array.isArray(params.nocCodes)) {
-          return NextResponse.json({ error: 'nocCodes array required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'nocCodes array required'
+    );
         }
 
         const result = await wageEnrichmentService.syncWageData({
@@ -174,7 +200,10 @@ export async function POST(request: NextRequest) {
 
       case 'sync-cola': {
         if (!params?.geography) {
-          return NextResponse.json({ error: 'geography required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'geography required'
+    );
         }
 
         const result = await wageEnrichmentService.syncCOLAData({
@@ -216,7 +245,10 @@ export async function POST(request: NextRequest) {
 
       case 'get-benchmarks': {
         if (!params?.nocCodes || !params?.geography) {
-          return NextResponse.json({ error: 'nocCodes and geography required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'nocCodes and geography required'
+    );
         }
 
         const benchmarks = await wageEnrichmentService.getBenchmarksForCBA({
@@ -229,13 +261,17 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
+    );
     }
   } catch (error) {
-return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
-}
+});
 

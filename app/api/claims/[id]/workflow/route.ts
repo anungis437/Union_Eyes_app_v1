@@ -7,13 +7,18 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { claims } from "@/db/schema/claims-schema";
+import { claims } from "@/db/schema/domains/claims";
 import { eq } from "drizzle-orm";
 import { getClaimWorkflowStatus } from "@/lib/workflow-engine";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/claims/[id]/workflow
  * Get workflow status and allowed transitions for a claim
@@ -44,10 +49,10 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
           dataType: 'CLAIMS',
           details: { reason: 'Claim not found', claimNumber },
         });
-        return NextResponse.json(
-          { error: "Claim not found" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       // Check if user has access (claim owner or assigned steward)
@@ -98,9 +103,10 @@ export const GET = withEnhancedRoleAuth(30, async (request, context) => {
       dataType: 'CLAIMS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-return NextResponse.json(
-      { error: "Failed to get workflow status" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get workflow status',
+      error
     );
   }
 }, { params });

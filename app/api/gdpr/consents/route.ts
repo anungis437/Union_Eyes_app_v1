@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from "@/lib/api-auth-guard";
 import { db } from "@/db";
@@ -6,11 +7,19 @@ import { consentPurposes, consentTypeValues, type ConsentType } from "@/lib/gdpr
 import { ConsentManager } from "@/lib/gdpr/consent-manager";
 import { and, eq, desc } from "drizzle-orm";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const { searchParams } = new URL(request.url);
@@ -18,10 +27,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       searchParams.get("organizationId") ?? searchParams.get("tenantId");
 
     if (!organizationIdFromQuery) {
-      return NextResponse.json(
-        { error: "Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const consents = await db
@@ -40,9 +49,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       consents,
     });
   } catch {
-    return NextResponse.json(
-      { error: "Failed to load consents" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to load consents',
+      error
     );
   }
 });
@@ -51,23 +61,44 @@ function isConsentType(value: string | undefined): value is ConsentType {
   return value ? (consentTypeValues as readonly string[]).includes(value) : false;
 }
 
+
+const gdprConsentsSchema = z.object({
+  tenantId: z.string().uuid('Invalid tenantId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  granted: z.unknown().optional(),
+});
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const body = await request.json();
+    // Validate request body
+    const validation = gdprConsentsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { tenantId, organizationId, granted } = validation.data;
     const { tenantId, organizationId, granted } = body || {};
     const consentTypeRaw = body?.consentType as string | undefined;
     const resolvedTenantId = organizationId ?? tenantId;
 
     if (!resolvedTenantId || !isConsentType(consentTypeRaw)) {
-      return NextResponse.json(
-        { error: "tenantId and consentType are required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'tenantId and consentType are required'
+    );
     }
 
     const consentType = consentTypeRaw;
@@ -130,9 +161,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json(
-      { error: "Failed to update consent" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update consent',
+      error
     );
   }
 });

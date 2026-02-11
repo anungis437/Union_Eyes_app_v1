@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
-import { SelectProfile } from "@/db/schema/profiles-schema";
+import { SelectProfile } from "@/db/schema/domains/member";
 
 interface UpgradePlanPopupProps {
   profile: SelectProfile;

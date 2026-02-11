@@ -16,7 +16,7 @@ import {
   trendAnalyses, 
   insightRecommendations,
   comparativeAnalyses 
-} from '@/db/migrations/schema';
+} from '@/db/schema';
 import { 
   forecastLinearRegression, 
   generateEnsembleForecast,

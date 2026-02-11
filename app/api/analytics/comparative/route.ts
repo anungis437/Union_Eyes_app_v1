@@ -8,11 +8,16 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { comparativeAnalyses, organizations } from '@/db/migrations/schema';
+import { comparativeAnalyses, organizations } from '@/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth('member', async (request, context) => {
     const { userId, organizationId } = context;
@@ -24,10 +29,11 @@ export const GET = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
     }
 
     try {
@@ -37,10 +43,10 @@ export const GET = async (request: NextRequest) => {
       const timeRange = searchParams.get('timeRange') || '30d';
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Organization ID is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID is required'
+    );
       }
 
       // Calculate time range
@@ -90,13 +96,21 @@ export const GET = async (request: NextRequest) => {
         recommendations: analysis.recommendations || []
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch comparative analysis' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch comparative analysis',
+      error
+    );
     }
     })(request);
 };
+
+
+const analyticsComparativeSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  metricType: z.unknown().optional(),
+  peerOrganizationIds: z.string().uuid('Invalid peerOrganizationIds'),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -109,25 +123,40 @@ export const POST = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded',
+      error
+    );
     }
 
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = analyticsComparativeSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, metricType, peerOrganizationIds } = validation.data;
       const { organizationId, metricType, peerOrganizationIds } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!organizationId || !metricType) {
-        return NextResponse.json(
-          { error: 'Organization ID and metric type are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID and metric type are required'
+    );
       }
 
       // Generate comparative analysis
@@ -162,10 +191,11 @@ export const POST = async (request: NextRequest) => {
         analysis: result
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to create comparative analysis' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create comparative analysis',
+      error
+    );
     }
     })(request);
 };

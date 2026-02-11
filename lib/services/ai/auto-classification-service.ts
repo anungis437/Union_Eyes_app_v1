@@ -12,8 +12,8 @@
  */
 
 import { OpenAI } from 'openai';
-import type { ClauseType } from '@/db/schema/cba-clauses-schema';
-import type { PrecedentValueEnum, OutcomeEnum, DecisionTypeEnum } from '@/db/schema/cba-intelligence-schema';
+import type { ClauseType } from '@/db/schema/domains/agreements';
+import type { PrecedentValueEnum, OutcomeEnum, DecisionTypeEnum } from '@/db/schema/domains/agreements';
 import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({

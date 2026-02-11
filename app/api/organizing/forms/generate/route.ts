@@ -12,6 +12,11 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface FormField {
   id: string;
   label: string;
@@ -22,16 +27,35 @@ interface FormField {
   height?: number;
 }
 
+
+const organizingFormsGenerateSchema = z.object({
+  campaignId: z.string().uuid('Invalid campaignId'),
+  templateId: z.string().uuid('Invalid templateId'),
+  formData: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       const { campaignId, templateId, formData } = await request.json();
+    // Validate request body
+    const validation = organizingFormsGenerateSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { campaignId, templateId, formData } = validation.data;
 
       if (!campaignId || !templateId || !formData) {
-        return NextResponse.json(
-          { error: 'Campaign ID, template ID, and form data are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Campaign ID, template ID, and form data are required'
+      // TODO: Migrate additional details: template ID, and form data are required'
+    );
       }
 
       // Fetch campaign details
@@ -59,10 +83,10 @@ export const POST = async (request: NextRequest) => {
     `);
 
       if (campaignResult.length === 0) {
-        return NextResponse.json(
-          { error: 'Campaign not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
       }
 
       const campaign = campaignResult[0];
@@ -100,10 +124,11 @@ export const POST = async (request: NextRequest) => {
         },
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

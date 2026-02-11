@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { requireUser, withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 /**
@@ -16,6 +17,11 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 import { 
   predictWorkloadBatch, 
   calculateMovingAverage, 
@@ -86,10 +92,11 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     const organizationId = searchParams.get('organizationId') || organizationId || userId;
 
     if (![30, 60, 90].includes(horizon)) {
-      return NextResponse.json(
-        { error: 'Invalid horizon. Must be 30, 60, or 90 days.' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid horizon. Must be 30, 60, or 90 days.'
+      // TODO: Migrate additional details: 60, or 90 days.'
+    );
     }
 
     // Get forecast predictions from database
@@ -189,11 +196,19 @@ export const GET = withEnhancedRoleAuth(20, async (request: NextRequest, context
     return NextResponse.json(response);
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch workload forecast' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch workload forecast',
+      error
     );
   }
+});
+
+
+const mlPredictionsWorkload-forecastSchema = z.object({
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  organizationId: z.string().uuid('Invalid organizationId'),
 });
 
 export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
@@ -202,13 +217,24 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
   try {
 
     const body = await request.json();
+    // Validate request body
+    const validation = mlPredictionsWorkload-forecastSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { startDate, endDate, organizationId } = validation.data;
     const { startDate, endDate, organizationId: requestOrganizationId } = body;
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        { error: 'startDate and endDate are required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'startDate and endDate are required'
+    );
     }
 
     const requestOrgId = body.organizationId || organizationId || userId;
@@ -405,9 +431,10 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
     });
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to generate workload forecast' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate workload forecast',
+      error
     );
   }
 });

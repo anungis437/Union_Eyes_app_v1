@@ -12,6 +12,11 @@ import { unstable_cache } from 'next/cache';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     try {
@@ -202,10 +207,11 @@ export const GET = async (request: NextRequest) => {
       logger.error('Error fetching clause stats', error as Error, {
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to fetch clause statistics" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch clause statistics',
+      error
+    );
     }
     })(request);
 };

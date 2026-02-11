@@ -8,13 +8,18 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { insightRecommendations } from '@/db/migrations/schema';
+import { insightRecommendations } from '@/db/schema';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(30, async (request, context) => {
     const { userId, organizationId } = context;
@@ -26,10 +31,11 @@ export const GET = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
     }
 
   try {
@@ -77,13 +83,38 @@ export const GET = async (request: NextRequest) => {
         insights
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const analyticsInsightsSchema = z.object({
+  insightId: z.string().uuid('Invalid insightId'),
+  status: z.unknown().optional(),
+  notes: z.string().optional(),
+  dismissalReason: z.boolean().optional(),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  insightType: z.unknown().optional(),
+  category: z.unknown().optional(),
+  priority: z.unknown().optional(),
+  title: z.string().min(1, 'title is required'),
+  description: z.string().optional(),
+  dataSource: z.unknown().optional(),
+  metrics: z.unknown().optional(),
+  trend: z.unknown().optional(),
+  impact: z.unknown().optional(),
+  recommendations: z.unknown().optional(),
+  actionRequired: z.unknown().optional(),
+  actionDeadline: z.unknown().optional(),
+  estimatedBenefit: z.unknown().optional(),
+  confidenceScore: z.string().uuid('Invalid confidenceScore'),
+  relatedEntities: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest) => {
   return withRoleAuth('member', async (request, context) => {
@@ -96,28 +127,42 @@ export const PATCH = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded',
+      error
+    );
     }
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = analyticsInsightsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { insightId, status, notes, dismissalReason, organizationId, insightType, category, priority, title, description, dataSource, metrics, trend, impact, recommendations, actionRequired, actionDeadline, estimatedBenefit, confidenceScore, relatedEntities } = validation.data;
       const { insightId, status, notes, dismissalReason } = body;
       
       if (!insightId || !status) {
-        return NextResponse.json(
-          { error: 'Missing required fields: insightId, status' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: insightId, status'
+      // TODO: Migrate additional details: status'
+    );
       }
       
       if (!['new', 'acknowledged', 'in_progress', 'completed', 'dismissed'].includes(status)) {
-        return NextResponse.json(
-          { error: 'Invalid status. Must be one of: new, acknowledged, in_progress, completed, dismissed' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid status. Must be one of: new, acknowledged, in_progress, completed, dismissed'
+      // TODO: Migrate additional details: acknowledged, in_progress, completed, dismissed'
+    );
       }
       
       // Update insight status
@@ -167,10 +212,11 @@ export const PATCH = async (request: NextRequest) => {
         insight: updated
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
@@ -186,10 +232,11 @@ export const POST = async (request: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded',
+      error
+    );
     }
 
   try {
@@ -216,16 +263,19 @@ export const POST = async (request: NextRequest) => {
         relatedEntities
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
       
       // Validate required fields
       if (!organizationId || !insightType || !category || !priority || !title || !description) {
-        return NextResponse.json(
-          { error: 'Missing required fields' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
       }
       
       const [insight] = await withRLSContext({ organizationId }, async (db) => {
@@ -265,10 +315,11 @@ export const POST = async (request: NextRequest) => {
         insight
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

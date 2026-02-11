@@ -4,12 +4,18 @@
  * POST /api/reports/[id]/run - Execute report and return data
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
 import { db } from '@/db';
 import { sql } from '@/db';
 import { updateReportRunStats } from '@/db/queries/analytics-queries';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function postHandler(
   req: NextRequest,
   context: OrganizationContext,
@@ -17,10 +23,10 @@ async function postHandler(
 ) {
   try {
     if (!params?.id) {
-      return NextResponse.json(
-        { error: 'Report ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Report ID required'
+    );
     }
 
     // Get report config
@@ -30,10 +36,10 @@ async function postHandler(
     `);
 
     if (!reportResult || reportResult.length === 0) {
-      return NextResponse.json(
-        { error: 'Report not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Report not found'
+    );
     }
 
     const report = reportResult[0];
@@ -71,10 +77,10 @@ async function postHandler(
         LIMIT 1000
       `);
     } else {
-      return NextResponse.json(
-        { error: 'Invalid report configuration - only predefined data sources are allowed' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid report configuration - only predefined data sources are allowed'
+    );
     }
 
     // Update run statistics
@@ -87,11 +93,18 @@ async function postHandler(
       executedAt: new Date().toISOString(),
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to run report' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to run report',
+      error
     );
   }
 }
+
+
+const reportsRunSchema = z.object({
+  parameters: z.unknown().optional(),
+});
+
 
 export const POST = withOrganizationAuth(postHandler);

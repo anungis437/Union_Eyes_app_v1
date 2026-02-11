@@ -2,11 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/db";
-import { reservedMatterVotes } from "@/db/schema/governance-schema";
+import { reservedMatterVotes } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const listReservedMattersSchema = z.object({
   status: z.string().optional(),
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 50)),
@@ -30,7 +35,10 @@ export const GET = async (request: NextRequest) =>
     );
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     try {
@@ -64,7 +72,11 @@ export const GET = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to fetch reserved matters" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch reserved matters',
+      error
+    );
     }
   })(request, {});
 
@@ -76,12 +88,20 @@ export const POST = async (request: NextRequest) =>
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
     }
 
     const parsed = createReservedMatterSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
     }
 
     try {
@@ -106,7 +126,11 @@ export const POST = async (request: NextRequest) =>
         details: { voteId: vote.id, matterType: body.matterType },
       });
 
-      return NextResponse.json({ success: true, data: vote }, { status: 201 });
+      return standardSuccessResponse(
+      { data: vote },
+      undefined,
+      201
+    );
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -118,7 +142,11 @@ export const POST = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to create reserved matter" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create reserved matter',
+      error
+    );
     }
   })(request, {});
 

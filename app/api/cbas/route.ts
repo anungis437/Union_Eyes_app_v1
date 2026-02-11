@@ -16,6 +16,11 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logger } from "@/lib/logger";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -26,7 +31,10 @@ export const GET = async (request: NextRequest) => {
       const statistics = searchParams.get("statistics") === "true";
       const organizationId = searchParams.get("organizationId");
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
@@ -117,13 +125,27 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json(result);
     } catch (error) {
       logger.error("Error listing CBAs", error as Error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const cbasSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  cbaNumber: z.unknown().optional(),
+  title: z.string().min(1, 'title is required'),
+  jurisdiction: z.boolean().optional(),
+  employerName: z.string().min(1, 'employerName is required'),
+  unionName: z.string().min(1, 'unionName is required'),
+  effectiveDate: z.string().datetime().optional(),
+  expiryDate: z.string().datetime().optional(),
+  industrySector: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -131,69 +153,80 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = cbasSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, cbaNumber, title, jurisdiction, employerName, unionName, effectiveDate, expiryDate, industrySector } = validation.data;
 
       // Validate required fields
       if (!body.organizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       if (!body.cbaNumber) {
-        return NextResponse.json(
-          { error: "cbaNumber is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'cbaNumber is required'
+    );
       }
 
       if (!body.title) {
-        return NextResponse.json(
-          { error: "title is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'title is required'
+    );
       }
 
       if (!body.jurisdiction) {
-        return NextResponse.json(
-          { error: "jurisdiction is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'jurisdiction is required'
+    );
       }
 
       if (!body.employerName) {
-        return NextResponse.json(
-          { error: "employerName is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'employerName is required'
+    );
       }
 
       if (!body.unionName) {
-        return NextResponse.json(
-          { error: "unionName is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'unionName is required'
+    );
       }
 
       if (!body.effectiveDate) {
-        return NextResponse.json(
-          { error: "effectiveDate is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'effectiveDate is required'
+    );
       }
 
       if (!body.expiryDate) {
-        return NextResponse.json(
-          { error: "expiryDate is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'expiryDate is required'
+    );
       }
 
       if (!body.industrySector) {
-        return NextResponse.json(
-          { error: "industrySector is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'industrySector is required'
+    );
       }
 
       // Create CBA
@@ -203,22 +236,28 @@ export const POST = async (request: NextRequest) => {
         lastModifiedBy: userId,
       });
 
-      return NextResponse.json({ cba }, { status: 201 });
+      return standardSuccessResponse(
+      {  cba  },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error("Error creating CBA", error as Error);
       
       // Handle unique constraint violations
       if ((error as any)?.code === "23505") {
-        return NextResponse.json(
-          { error: "CBA number already exists" },
-          { status: 409 }
-        );
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'CBA number already exists',
+      error
+    );
       }
 
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async () => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -25,7 +30,10 @@ export const GET = async () => {
       });
 
       if (!response.ok) {
-        return NextResponse.json({ error: 'Failed to fetch dues balance' }, { status: response.status });
+        return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch dues balance'
+    );
       }
 
       const data = await response.json();
@@ -59,7 +67,11 @@ export const GET = async () => {
       logger.error('Failed to fetch dues balance', error as Error, {
         userId: userId,
   });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
   }
   })(request);
 };

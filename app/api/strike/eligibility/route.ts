@@ -12,6 +12,11 @@ import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 // Validation schema for eligibility check
@@ -32,10 +37,10 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
     const parsed = eligibilityCheckSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body'
+    );
     }
 
     const { strikeFundId, memberId, checkDate } = parsed.data;
@@ -97,9 +102,10 @@ export const POST = withEnhancedRoleAuth(60, async (request, context) => {
       },
     });
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

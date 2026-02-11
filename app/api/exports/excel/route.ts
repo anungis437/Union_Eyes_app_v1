@@ -4,11 +4,17 @@
  * POST /api/exports/excel - Generate Excel export from report data
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { createExportJob, updateExportJobStatus } from '@/db/queries/analytics-queries';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function postHandler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
@@ -16,19 +22,19 @@ async function postHandler(req: NextRequest, context) {
     const userId = context.userId;
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID required'
+    );
     }
 
     const body = await req.json();
     
     if (!body.reportId) {
-      return NextResponse.json(
-        { error: 'Report ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Report ID required'
+    );
     }
 
     // Create export job
@@ -40,18 +46,29 @@ async function postHandler(req: NextRequest, context) {
     // Update status to processing
     await updateExportJobStatus(job.id, 'processing');
 
-    return NextResponse.json({
+    return standardSuccessResponse(
+      { 
       jobId: job.id,
       status: 'processing',
       message: 'Excel export job created. Poll /api/exports/[id] for status.',
-    }, { status: 202 });
+     },
+      undefined,
+      202
+    );
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to create Excel export' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create Excel export',
+      error
     );
   }
 }
+
+
+const exportsExcelSchema = z.object({
+  reportId: z.string().uuid('Invalid reportId'),
+});
+
 
 export const POST = withOrganizationAuth(postHandler);
 

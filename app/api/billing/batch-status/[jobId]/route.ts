@@ -2,6 +2,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Get batch job status
 export const GET = async (req: NextRequest, { params }: { params: { jobId: string } }) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -109,10 +114,11 @@ export const GET = async (req: NextRequest, { params }: { params: { jobId: strin
       });
 
     } catch (error) {
-      return NextResponse.json(
-        { error: 'Failed to get batch status' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get batch status',
+      error
+    );
     }
     })(request, { params });
 };

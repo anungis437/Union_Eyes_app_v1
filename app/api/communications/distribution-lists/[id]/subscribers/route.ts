@@ -21,6 +21,11 @@ import {
 import { eq, and, inArray } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const addSubscribersSchema = z.object({
   profileIds: z.array(z.string()).min(1, 'At least one profile ID required'),
 });
@@ -38,7 +43,10 @@ export const GET = withOrganizationAuth(async (
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'List ID required'
+    );
     }
 
     // Verify list exists and user has access
@@ -53,7 +61,10 @@ export const GET = withOrganizationAuth(async (
       );
 
     if (!list) {
-      return NextResponse.json({ error: 'List not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'List not found'
+    );
     }
 
     // Get subscribers with profile details
@@ -73,9 +84,10 @@ export const GET = withOrganizationAuth(async (
 
     return NextResponse.json({ subscribers });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch subscribers' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch subscribers',
+      error
     );
   }
 });
@@ -89,7 +101,10 @@ export const POST = withOrganizationAuth(async (
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'List ID required'
+    );
     }
 
     const body = await request.json();
@@ -107,7 +122,10 @@ export const POST = withOrganizationAuth(async (
       );
 
     if (!list) {
-      return NextResponse.json({ error: 'List not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'List not found'
+    );
     }
 
     // Get profile emails
@@ -118,7 +136,10 @@ export const POST = withOrganizationAuth(async (
       .where(inArray(profiles.userId, profileIds));
 
     if (profilesData.length === 0) {
-      return NextResponse.json({ error: 'No valid profiles found' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'No valid profiles found'
+    );
     }
 
     // Insert subscribers
@@ -136,35 +157,22 @@ export const POST = withOrganizationAuth(async (
       .onConflictDoNothing()
       .returning();
 
-    return NextResponse.json({ 
+    return standardSuccessResponse(
+      {  
       subscribers,
       added: subscribers.length,
       skipped: profilesData.length - subscribers.length,
-    }, { status: 201 });
+     },
+      undefined,
+      201
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-return NextResponse.json(
-      { error: 'Failed to add subscribers' },
-      { status: 500 }
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation error',
+      error
     );
-  }
-});
-
-export const DELETE = withOrganizationAuth(async (
-  request: NextRequest,
-  context,
-  params?: { id: string }
-) => {
-  try {
-    const { organizationId } = context;
-
-    if (!params?.id) {
-      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -187,9 +195,10 @@ export const DELETE = withOrganizationAuth(async (
         { status: 400 }
       );
     }
-return NextResponse.json(
-      { error: 'Failed to remove subscribers' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to remove subscribers',
+      error
     );
   }
 });

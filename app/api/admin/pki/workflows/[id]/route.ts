@@ -18,6 +18,11 @@ import {
 import { z } from "zod";
 import { withAdminAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withAdminAuth(async (request, context) => {
   try {
@@ -30,10 +35,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         const workflow = getWorkflow(workflowId);
         
         if (!workflow) {
-          return NextResponse.json(
-            { error: 'Workflow not found' },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Workflow not found'
+    );
         }
 
         return NextResponse.json({
@@ -58,6 +63,11 @@ return NextResponse.json(
     }
     })(request, { params });
 };
+
+
+const adminPkiWorkflowsSchema = z.object({
+  reason: z.string().min(1, 'reason is required'),
+});
 
 export const PUT = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withAdminAuth(async (request, context) => {
@@ -90,13 +100,24 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
   try {
       const workflowId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = adminPkiWorkflowsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { reason } = validation.data;
       const { reason } = body;
 
       if (!reason) {
-        return NextResponse.json(
-          { error: 'Cancellation reason required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Cancellation reason required'
+    );
       }
 
       cancelWorkflow(workflowId, userId, reason);

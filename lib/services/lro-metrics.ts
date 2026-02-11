@@ -214,7 +214,7 @@ export async function getAggregatedMetrics(
   endDate: Date,
   organizationId?: string
 ): Promise<AggregatedMetrics> {
-  const { grievances } = await import('@/db/schema/grievance-schema');
+  const { grievances } = await import('@/db/schema/domains/claims');
   const { analyticsMetrics } = await import('@/db/schema/analytics');
   const { eq, and, gte, lte, count, avg, sql } = await import('drizzle-orm');
   

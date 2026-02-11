@@ -1,12 +1,17 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { courseRegistrations, courseSessions, trainingCourses, members } from "@/db/migrations/schema";
+import { courseRegistrations, courseSessions, trainingCourses, members } from "@/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/education/sessions/[id]/attendance - Get attendance records for session
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
@@ -14,7 +19,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       const sessionId = params.id;
 
       if (!sessionId) {
-        return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Session ID is required'
+    );
       }
 
       // Get session details
@@ -36,7 +44,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!session || session.length === 0) {
-        return NextResponse.json({ error: "Session not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Session not found'
+    );
       }
 
       // Get all registrations for this session with member details
@@ -79,24 +90,50 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       });
     } catch (error) {
       logger.error("Error retrieving attendance records", { error });
-      return NextResponse.json(
-        { error: "Failed to retrieve attendance records" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve attendance records',
+      error
+    );
     }
     })(request, { params });
 };
 
 // POST /api/education/sessions/[id]/attendance - Mark attendance (single or bulk)
+
+const educationSessionsAttendanceSchema = z.object({
+  registrationIds: z.string().uuid('Invalid registrationIds'),
+  memberId: z.string().uuid('Invalid memberId'),
+  attended: z.unknown().optional(),
+  attendanceDate: z.string().datetime().optional(),
+  attendanceHours: z.unknown().optional(),
+  registrationId: z.string().uuid('Invalid registrationId'),
+  attendanceDates: z.string().datetime().optional(),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       const sessionId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = educationSessionsAttendanceSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { registrationIds, memberId, attended, attendanceDate, attendanceHours, registrationId, attendanceDates } = validation.data;
       const { registrationIds, memberId, attended, attendanceDate, attendanceHours } = body;
 
       if (!sessionId) {
-        return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Session ID is required'
+    );
       }
 
       // Verify session exists
@@ -107,7 +144,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .limit(1);
 
       if (!session || session.length === 0) {
-        return NextResponse.json({ error: "Session not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Session not found'
+    );
       }
 
       const attendanceDateValue = attendanceDate ? new Date(attendanceDate) : new Date();
@@ -197,10 +237,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           .limit(1);
 
         if (!registration) {
-          return NextResponse.json(
-            { error: "Registration not found for this member and session" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Registration not found for this member and session'
+    );
         }
 
         // Build attendance dates array
@@ -254,16 +294,17 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         });
       }
 
-      return NextResponse.json(
-        { error: "Either registrationIds or memberId is required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Either registrationIds or memberId is required'
+    );
     } catch (error) {
       logger.error("Error marking attendance", { error });
-      return NextResponse.json(
-        { error: "Failed to mark attendance" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to mark attendance',
+      error
+    );
     }
     })(request, { params });
 };
@@ -277,10 +318,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       const { registrationId, attended, attendanceHours, attendanceDates } = body;
 
       if (!registrationId) {
-        return NextResponse.json(
-          { error: "Registration ID is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Registration ID is required'
+    );
       }
 
       // Build update object
@@ -307,10 +348,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .returning();
 
       if (!updatedRegistration) {
-        return NextResponse.json(
-          { error: "Registration not found" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Registration not found'
+    );
       }
 
       // Update session attended count
@@ -344,10 +385,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       });
     } catch (error) {
       logger.error("Error updating attendance", { error });
-      return NextResponse.json(
-        { error: "Failed to update attendance" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update attendance',
+      error
+    );
     }
     })(request, { params });
 };

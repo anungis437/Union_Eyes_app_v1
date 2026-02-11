@@ -16,6 +16,11 @@ import {
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -120,114 +125,147 @@ export const GET = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const precedentsSchema = z.object({
+  caseNumber: z.unknown().optional(),
+  caseTitle: z.string().min(1, 'caseTitle is required'),
+  tribunal: z.unknown().optional(),
+  decisionType: z.boolean().optional(),
+  decisionDate: z.boolean().optional(),
+  arbitrator: z.unknown().optional(),
+  union: z.unknown().optional(),
+  employer: z.unknown().optional(),
+  outcome: z.unknown().optional(),
+  precedentValue: z.unknown().optional(),
+  fullText: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = precedentsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { caseNumber, caseTitle, tribunal, decisionType, decisionDate, arbitrator, union, employer, outcome, precedentValue, fullText } = validation.data;
 
       // Validate required fields
       if (!body.caseNumber) {
-        return NextResponse.json(
-          { error: "caseNumber is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'caseNumber is required'
+    );
       }
 
       if (!body.caseTitle) {
-        return NextResponse.json(
-          { error: "caseTitle is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'caseTitle is required'
+    );
       }
 
       if (!body.tribunal) {
-        return NextResponse.json(
-          { error: "tribunal is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'tribunal is required'
+    );
       }
 
       if (!body.decisionType) {
-        return NextResponse.json(
-          { error: "decisionType is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'decisionType is required'
+    );
       }
 
       if (!body.decisionDate) {
-        return NextResponse.json(
-          { error: "decisionDate is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'decisionDate is required'
+    );
       }
 
       if (!body.arbitrator) {
-        return NextResponse.json(
-          { error: "arbitrator is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'arbitrator is required'
+    );
       }
 
       if (!body.union) {
-        return NextResponse.json(
-          { error: "union is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'union is required'
+    );
       }
 
       if (!body.employer) {
-        return NextResponse.json(
-          { error: "employer is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'employer is required'
+    );
       }
 
       if (!body.outcome) {
-        return NextResponse.json(
-          { error: "outcome is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'outcome is required'
+    );
       }
 
       if (!body.precedentValue) {
-        return NextResponse.json(
-          { error: "precedentValue is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'precedentValue is required'
+    );
       }
 
       if (!body.fullText) {
-        return NextResponse.json(
-          { error: "fullText is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'fullText is required'
+    );
       }
 
       // Create precedent
       const precedent = await createPrecedent(body);
 
-      return NextResponse.json({ precedent }, { status: 201 });
+      return standardSuccessResponse(
+      {  precedent  },
+      undefined,
+      201
+    );
     } catch (error) {
 // Handle unique constraint violations
       if ((error as any)?.code === "23505") {
-        return NextResponse.json(
-          { error: "Case number already exists" },
-          { status: 409 }
-        );
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Case number already exists',
+      error
+    );
       }
 
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

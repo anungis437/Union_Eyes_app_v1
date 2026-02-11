@@ -7,6 +7,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { AuditTrailService } from "@/lib/signature/signature-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withApiAuth(async (
   req: NextRequest,
   { params }: { params: { documentId: string } }
@@ -14,7 +19,10 @@ export const GET = withApiAuth(async (
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const documentId = params.documentId;
@@ -42,9 +50,10 @@ export const GET = withApiAuth(async (
       });
     }
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to retrieve audit trail" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve audit trail',
+      error
     );
   }
 });

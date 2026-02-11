@@ -17,6 +17,11 @@ import { eq, and } from 'drizzle-orm';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -31,7 +36,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!calendar) {
-        return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Calendar not found'
+    );
       }
 
       // Check if user has access
@@ -53,7 +61,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
           .limit(1);
 
         if (!sharedPermission) {
-          return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+          return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied'
+    );
         }
 
         return NextResponse.json({
@@ -75,13 +86,30 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         },
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to get calendar' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get calendar',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const calendarsSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  color: z.unknown().optional(),
+  icon: z.unknown().optional(),
+  isShared: z.boolean().optional(),
+  isPublic: z.boolean().optional(),
+  timezone: z.string().datetime().optional(),
+  defaultEventDuration: z.unknown().optional(),
+  reminderDefaultMinutes: z.unknown().optional(),
+  allowOverlap: z.unknown().optional(),
+  requireApproval: z.unknown().optional(),
+  metadata: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -90,6 +118,17 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
   try {
       const calendarId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = calendarsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { name, description, color, icon, isShared, isPublic, timezone, defaultEventDuration, reminderDefaultMinutes, allowOverlap, requireApproval, metadata } = validation.data;
 
       // Verify ownership or edit permission
       const [calendar] = await db
@@ -99,7 +138,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .limit(1);
 
       if (!calendar) {
-        return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Calendar not found'
+    );
       }
 
       const isOwner = calendar.ownerId === userId;
@@ -119,7 +161,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
           .limit(1);
 
         if (!permission || permission.permission === 'viewer') {
-          return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+          return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied'
+    );
         }
       }
 
@@ -163,10 +208,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         calendar: updatedCalendar,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to update calendar' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update calendar',
+      error
+    );
     }
     })(request, { params });
 };
@@ -186,11 +232,17 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .limit(1);
 
       if (!calendar) {
-        return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Calendar not found'
+    );
       }
 
       if (calendar.ownerId !== userId) {
-        return NextResponse.json({ error: 'Only owner can delete calendar' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only owner can delete calendar'
+    );
       }
 
       // Soft delete
@@ -203,10 +255,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         message: 'Calendar deleted successfully',
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to delete calendar' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete calendar',
+      error
+    );
     }
     })(request, { params });
 };

@@ -13,6 +13,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 import {
   getClaimDeadlines,
   getCriticalDeadlines,
@@ -56,9 +61,10 @@ export const GET = withApiAuth(async (request: NextRequest, context: any) => {
     
     return NextResponse.json({ deadlines });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch deadlines' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch deadlines',
+      error
     );
   }
 });

@@ -14,6 +14,11 @@ import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Helper to check access
 async function canAccessPrecedent(
   userId: string,
@@ -80,6 +85,29 @@ async function canAccessPrecedent(
 }
 
 // POST /api/arbitration/precedents/search - Advanced search
+
+const arbitrationPrecedentsSearchSchema = z.object({
+  query: z.unknown().optional(),
+  grievanceTypes: z.unknown().optional(),
+  outcomes: z.unknown().optional(),
+  jurisdictions: z.boolean().optional(),
+  precedentLevels: z.unknown().optional(),
+  sectors: z.unknown().optional(),
+  industries: z.unknown().optional(),
+  provinces: z.unknown().optional(),
+  arbitratorNames: z.string().min(1, 'arbitratorNames is required'),
+  fromDate: z.string().datetime().optional(),
+  toDate: z.string().datetime().optional(),
+  tags: z.unknown().optional(),
+  sharingLevels: z.unknown().optional(),
+  minCitations: z.unknown().optional(),
+  maxCitations: z.unknown().optional(),
+  page = 1: z.unknown().optional(),
+  limit = 20: z.unknown().optional(),
+  sortBy = 'decisionDate': z.boolean().optional(),
+  sortOrder = 'desc': z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -87,7 +115,7 @@ export const POST = async (request: NextRequest) => {
   try {
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No active organization");
       }
 
       const userOrgId = organizationId;
@@ -102,6 +130,17 @@ export const POST = async (request: NextRequest) => {
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = arbitrationPrecedentsSearchSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { query, grievanceTypes, outcomes, jurisdictions, precedentLevels, sectors, industries, provinces, arbitratorNames, fromDate, toDate, tags, sharingLevels, minCitations, maxCitations, page = 1, limit = 20, sortBy = 'decisionDate', sortOrder = 'desc' } = validation.data;
 
       // Parse search criteria
       const {
@@ -301,10 +340,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to search precedents', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: "Failed to search precedents" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to search precedents',
+      error
+    );
     }
     })(request);
 };

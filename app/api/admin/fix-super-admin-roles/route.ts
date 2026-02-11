@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema-organizations';
@@ -6,6 +7,11 @@ import { z } from 'zod';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const DEFAULT_ORG_ID = '458a56cb-251a-4c91-a0b5-81bb8ac39087';
 
 const SUPER_ADMINS = [
@@ -23,8 +29,10 @@ const fixRolesSchema = z.object({}).strict();
  */
 async function checkAdminRole(userId: string): Promise<boolean> {
   try {
-    const member = await db.query.organizationMembers.findFirst({
+    const member = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: (om, { eq: eqOp }) => eqOp(om.userId, userId),
+    });
     });
     return member ? ['admin', 'super_admin'].includes(member.role) : false;
   } catch (_error) {
@@ -41,12 +49,20 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
   }
 
   const parsed = fixRolesSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
   }
 
   const body = parsed.data;
@@ -54,7 +70,11 @@ export const POST = withEnhancedRoleAuth(90, async (request, context) => {
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
   }
 
 try {
@@ -69,10 +89,10 @@ try {
           severity: 'high',
           details: { reason: 'Non-admin attempted super admin correction' },
         });
-        return NextResponse.json(
-          { error: 'Forbidden - Admin role required' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin role required'
+    );
       }
 
       const results = [];
@@ -136,10 +156,11 @@ try {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-return NextResponse.json(
-        { error: 'Failed to update super admin roles' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update super admin roles',
+      error
+    );
     }
 });
 

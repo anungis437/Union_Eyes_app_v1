@@ -9,6 +9,7 @@
  * @module app/api/members/merge/route
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
@@ -19,18 +20,25 @@ import {
   auditLogs,
 } from "@/db/schema";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
-import { memberDocuments } from "@/db/schema/member-documents-schema";
+import { memberDocuments } from "@/db/schema/domains/documents";
 import { eq, sql } from "drizzle-orm";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Helper function to get user's organization context
  */
 async function getUserOrganization(userId: string): Promise<string | null> {
   try {
-    const result = await db.execute(
+    const result = await withRLSContext(async (tx) => {
+      return await tx.execute(
       sql`SELECT organization_id FROM organization_users WHERE user_id = ${userId} LIMIT 1`
     );
+    });
     if (result.length > 0) {
       return result[0].organization_id as string;
     }
@@ -57,12 +65,20 @@ export const POST = withRoleAuth(20, async (request, context) => {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
   }
 
   const parsed = mergeSchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
   }
 
   const body = parsed.data;
@@ -70,7 +86,11 @@ export const POST = withRoleAuth(20, async (request, context) => {
 
   const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
   if (typeof orgId === 'string' && orgId.length > 0 && orgId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
   }
 
 try {
@@ -87,7 +107,10 @@ try {
           severity: 'medium',
           details: { reason: 'User organization not found' },
         });
-        return NextResponse.json({ error: 'User organization not found' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'User organization not found'
+    );
       }
 
       // Prevent self-merge
@@ -126,10 +149,10 @@ try {
           severity: 'low',
           details: { reason: 'One or both members not found', primaryMemberId, duplicateMemberId },
         });
-        return NextResponse.json(
-          { error: "One or both members not found" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'One or both members not found'
+    );
       }
 
       // Verify both belong to same organization
@@ -282,7 +305,10 @@ export const GET = async (request: NextRequest) => {
             severity: 'medium',
             details: { reason: 'User organization not found' },
           });
-          return NextResponse.json({ error: 'User organization not found' }, { status: 403 });
+          return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'User organization not found'
+    );
         }
 
         // In production, implement sophisticated duplicate detection:
@@ -341,10 +367,11 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-return NextResponse.json(
-          { error: "Failed to find duplicates" },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to find duplicates',
+      error
+    );
       }
       })(request);
 };

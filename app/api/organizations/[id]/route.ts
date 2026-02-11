@@ -3,6 +3,7 @@
  * Get, update, or delete a specific organization
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import {
@@ -13,6 +14,11 @@ import {
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]
  * Get a specific organization by ID
@@ -43,10 +49,10 @@ export const GET = async (
             severity: 'low',
             details: { reason: 'Organization not found', organizationId: id },
           });
-          return NextResponse.json(
-            { error: 'Organization not found' },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
         }
 
         logApiAuditEvent({
@@ -97,6 +103,12 @@ export const GET = async (
  * PATCH /api/organizations/[id]
  * Update an organization
  */
+
+const organizationsSchema = z.object({
+  slug: z.unknown().optional(),
+  type: z.unknown().optional(),
+});
+
 export const PATCH = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -109,6 +121,17 @@ export const PATCH = async (
         const resolvedParams = await params;
         id = resolvedParams.id;
         const body = await request.json();
+    // Validate request body
+    const validation = organizationsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { slug, type } = validation.data;
 
         // Validate slug format if provided
         if (body.slug) {
@@ -174,10 +197,10 @@ export const PATCH = async (
               organizationId: id 
             },
           });
-          return NextResponse.json(
-            { error: 'Organization not found' },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
         }
 
         logApiAuditEvent({
@@ -221,18 +244,20 @@ export const PATCH = async (
 
         // Handle unique constraint violations
         if (error.code === '23505') {
-          return NextResponse.json(
-            { error: 'An organization with this slug already exists' },
-            { status: 409 }
-          );
+          return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'An organization with this slug already exists',
+      error
+    );
         }
 
         // Handle foreign key violations (invalid parent)
         if (error.code === '23503') {
-          return NextResponse.json(
-            { error: 'Invalid parent organization ID' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid parent organization ID',
+      error
+    );
         }
 
         return NextResponse.json(
@@ -275,10 +300,10 @@ export const DELETE = async (
               organizationId: id 
             },
           });
-          return NextResponse.json(
-            { error: 'Organization not found' },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
         }
 
         logApiAuditEvent({

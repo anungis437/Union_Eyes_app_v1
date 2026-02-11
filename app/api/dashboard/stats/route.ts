@@ -15,6 +15,11 @@ import { unstable_cache } from 'next/cache';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Cache dashboard stats for 60 seconds per tenant
 const getCachedDashboardStats = unstable_cache(
   async (tenantId: string) => {
@@ -59,9 +64,10 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
   try {

@@ -18,6 +18,11 @@ import { eq, and } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -48,13 +53,19 @@ export const GET = async (request: NextRequest) => {
         count: safeConnections.length,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch connections' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch connections',
+      error
+    );
     }
     })(request);
 };
+
+
+const calendar-syncConnectionsSchema = z.object({
+  provider: z.string().uuid('Invalid provider'),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -62,13 +73,24 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = calendar-syncConnectionsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { provider } = validation.data;
       const { provider } = body;
 
       if (!provider || !['google', 'microsoft'].includes(provider)) {
-        return NextResponse.json(
-          { error: 'Invalid provider. Must be "google" or "microsoft"' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid provider. Must be '
+    );
       }
 
       // Return OAuth URL for client to redirect to
@@ -79,10 +101,11 @@ export const POST = async (request: NextRequest) => {
         authUrl,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to create connection' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create connection',
+      error
+    );
     }
     })(request);
 };

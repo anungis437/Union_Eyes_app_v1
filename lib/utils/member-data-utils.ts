@@ -6,7 +6,7 @@
  */
 
 import { db } from '@/db/db';
-import { profilesTable } from '@/db/schema/profiles-schema';
+import { profilesTable } from '@/db/schema/domains/member';
 import { eq } from 'drizzle-orm';
 
 export interface MemberDetails {

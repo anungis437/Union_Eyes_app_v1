@@ -5,6 +5,11 @@ import { and, eq, desc, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schemas
 const SurveyQuestionSchema = z.object({
   questionText: z.string().min(1, 'Question text is required'),
@@ -49,10 +54,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     const status = searchParams.get('status') as 'draft' | 'published' | 'closed' | null;
@@ -102,9 +107,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch surveys' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch surveys',
+      error
     );
   }
 });
@@ -117,10 +123,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const userId = request.headers.get('x-user-id');
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID are required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID are required'
+    );
     }
 
     const body = await request.json();
@@ -128,20 +134,11 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     // Validate request body
     const validation = CreateSurveySchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const data = validation.data;
-
-    // Additional validation
-    if (data.requireAuthentication && data.allowAnonymous) {
-      return NextResponse.json(
-        { error: 'Cannot require authentication and allow anonymous responses' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed'
+      // TODO: Migrate additional details: details: validation.error.errors
+    );
     }
 
     // Validate choice-based questions have choices
@@ -225,18 +222,20 @@ export const POST = withApiAuth(async (request: NextRequest) => {
       .values(questionValues)
       .returning();
 
-    return NextResponse.json(
-      {
+    return standardSuccessResponse(
+      { 
         survey,
         questions: createdQuestions,
         message: data.status === 'published' ? 'Survey published successfully' : 'Survey created as draft',
-      },
-      { status: 201 }
+       },
+      undefined,
+      201
     );
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to create survey' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create survey',
+      error
     );
   }
 });

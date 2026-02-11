@@ -7,13 +7,73 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { memberDemographics, members } from '@/db/migrations/schema';
+import { memberDemographics, members } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
+
+
+const equitySelf-identifySchema = z.object({
+  memberId: z.string().uuid('Invalid memberId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  // Consent (REQUIRED)
+        dataCollectionConsent: z.unknown().optional(),
+  consentType = 'explicit': z.unknown().optional(),
+  consentPurpose: z.string().min(1, 'consentPurpose is required'),
+  dataRetentionYears = 7: z.unknown().optional(),
+  // Equity groups
+        equityGroups = []: z.unknown().optional(),
+  // Gender identity
+        genderIdentity: z.string().uuid('Invalid // Gender identity
+        genderIdentity'),
+  genderIdentityOther: z.string().uuid('Invalid genderIdentityOther'),
+  // Indigenous identity (OCAP)
+        isIndigenous: z.string().uuid('Invalid // Indigenous identity (OCAP)
+        isIndigenous'),
+  indigenousIdentity: z.string().uuid('Invalid indigenousIdentity'),
+  indigenousNation: z.unknown().optional(),
+  indigenousTreatyNumber: z.unknown().optional(),
+  indigenousDataGovernanceConsent = false: z.unknown().optional(),
+  // Visible minority
+        isVisibleMinority: z.boolean().optional(),
+  visibleMinorityGroups: z.boolean().optional(),
+  // Disability
+        hasDisability: z.boolean().optional(),
+  disabilityTypes: z.boolean().optional(),
+  requiresAccommodation: z.unknown().optional(),
+  accommodationDetailsEncrypted: z.unknown().optional(),
+  // LGBTQ2+
+        isLgbtq2Plus: z.boolean().optional(),
+  lgbtq2PlusIdentity: z.string().uuid('Invalid lgbtq2PlusIdentity'),
+  // Demographics
+        dateOfBirth: z.string().datetime().optional(),
+  ageRange: z.unknown().optional(),
+  isNewcomer: z.boolean().optional(),
+  immigrationYear: z.unknown().optional(),
+  countryOfOrigin: z.number().int().positive(),
+  primaryLanguage: z.unknown().optional(),
+  speaksFrench: z.unknown().optional(),
+  speaksIndigenousLanguage: z.unknown().optional(),
+  indigenousLanguageName: z.string().min(1, 'indigenousLanguageName is required'),
+  // Accessibility
+        needsInterpretation: z.unknown().optional(),
+  interpretationLanguage: z.unknown().optional(),
+  needsTranslation: z.unknown().optional(),
+  translationLanguage: z.unknown().optional(),
+  needsMobilityAccommodation: z.unknown().optional(),
+  // Privacy controls
+        allowAggregateReporting = true: z.unknown().optional(),
+  allowResearchParticipation = false: z.unknown().optional(),
+  allowExternalReporting = false: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -21,6 +81,27 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = equitySelf-identifySchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { memberId, organizationId, // Consent (REQUIRED)
+        dataCollectionConsent, consentType = 'explicit', consentPurpose, dataRetentionYears = 7, // Equity groups
+        equityGroups = [], // Gender identity
+        genderIdentity, genderIdentityOther, // Indigenous identity (OCAP)
+        isIndigenous, indigenousIdentity, indigenousNation, indigenousTreatyNumber, indigenousDataGovernanceConsent = false, // Visible minority
+        isVisibleMinority, visibleMinorityGroups, // Disability
+        hasDisability, disabilityTypes, requiresAccommodation, accommodationDetailsEncrypted, // LGBTQ2+
+        isLgbtq2Plus, lgbtq2PlusIdentity, // Demographics
+        dateOfBirth, ageRange, isNewcomer, immigrationYear, countryOfOrigin, primaryLanguage, speaksFrench, speaksIndigenousLanguage, indigenousLanguageName, // Accessibility
+        needsInterpretation, interpretationLanguage, needsTranslation, translationLanguage, needsMobilityAccommodation, // Privacy controls
+        allowAggregateReporting = true, allowResearchParticipation = false, allowExternalReporting = false } = validation.data;
       const {
         memberId,
         organizationId,
@@ -73,7 +154,10 @@ export const POST = async (request: NextRequest) => {
         allowExternalReporting = false,
       } = body;
   if (organizationId && organizationId !== contextOrganizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
@@ -91,10 +175,10 @@ export const POST = async (request: NextRequest) => {
             reason: 'Missing required fields',
           },
         });
-        return NextResponse.json(
-          { error: 'Bad Request - memberId and organizationId are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId and organizationId are required'
+    );
       }
 
       // CRITICAL: Consent validation (PIPEDA requirement)
@@ -111,10 +195,10 @@ export const POST = async (request: NextRequest) => {
             reason: 'Data collection consent required - PIPEDA compliance',
           },
         });
-        return NextResponse.json(
-          { error: 'Bad Request - Data collection consent is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - Data collection consent is required'
+    );
       }
 
       if (!consentPurpose) {
@@ -162,10 +246,10 @@ export const POST = async (request: NextRequest) => {
             memberId,
           },
         });
-        return NextResponse.json(
-          { error: 'Not Found - Member not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Member not found'
+    );
       }
 
       // Calculate intersectionality count
@@ -333,9 +417,10 @@ export const POST = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
@@ -350,10 +435,10 @@ export const GET = async (request: NextRequest) => {
       const memberId = searchParams.get('memberId');
 
       if (!memberId) {
-        return NextResponse.json(
-          { error: 'Bad Request - memberId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId is required'
+    );
       }
 
       const data = await db
@@ -420,9 +505,10 @@ export const GET = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
@@ -437,10 +523,10 @@ export const DELETE = async (request: NextRequest) => {
       const memberId = searchParams.get('memberId');
 
       if (!memberId) {
-        return NextResponse.json(
-          { error: 'Bad Request - memberId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId is required'
+    );
       }
 
       // Soft delete: mark consent as withdrawn
@@ -468,10 +554,10 @@ export const DELETE = async (request: NextRequest) => {
             memberId,
           },
         });
-        return NextResponse.json(
-          { error: 'Not Found - No demographic data found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - No demographic data found'
+    );
       }
 
       logApiAuditEvent({
@@ -512,9 +598,10 @@ export const DELETE = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

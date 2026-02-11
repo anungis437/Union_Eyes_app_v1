@@ -21,6 +21,11 @@ import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser }
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const scheduleSchema = z.object({
   scheduledAt: z.string().nullable(),
   timezone: z.string().default('UTC'),
@@ -35,7 +40,10 @@ export async function POST(
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Organization context required'
+    );
       }
 
       // Rate limit check
@@ -44,10 +52,11 @@ export async function POST(
         `campaign-schedule:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
     const body = await request.json();
@@ -65,7 +74,10 @@ export async function POST(
         );
 
     if (!campaign) {
-      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
     }
 
     if (!['draft', 'scheduled'].includes(campaign.status || '')) {
@@ -213,9 +225,10 @@ export async function POST(
         { status: 400 }
       );
     }
-return NextResponse.json(
-      { error: 'Failed to schedule campaign' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to schedule campaign',
+      error
     );
   }
   })(request);

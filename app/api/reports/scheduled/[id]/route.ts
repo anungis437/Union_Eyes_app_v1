@@ -8,8 +8,14 @@
  * Part of: Phase 2.4 - Scheduled Reports System
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 import {
   getScheduledReportById,
   updateScheduledReport,
@@ -33,19 +39,19 @@ async function getHandler(req: NextRequest, context: OrganizationContext, params
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json(
-        { error: 'Schedule ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Schedule ID is required'
+    );
     }
 
     const schedule = await getScheduledReportById(params.id, tenantId);
 
     if (!schedule) {
-      return NextResponse.json(
-        { error: 'Scheduled report not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Scheduled report not found'
+    );
     }
 
     // Optionally include execution history
@@ -62,9 +68,10 @@ async function getHandler(req: NextRequest, context: OrganizationContext, params
 
     return NextResponse.json(schedule);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch scheduled report' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch scheduled report',
+      error
     );
   }
 }
@@ -78,10 +85,10 @@ async function patchHandler(req: NextRequest, context: OrganizationContext, para
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json(
-        { error: 'Schedule ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Schedule ID is required'
+    );
     }
 
     const body = await req.json();
@@ -125,9 +132,10 @@ async function patchHandler(req: NextRequest, context: OrganizationContext, para
 
     return NextResponse.json(schedule);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to update scheduled report' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update scheduled report',
+      error
     );
   }
 }
@@ -141,23 +149,36 @@ async function deleteHandler(req: NextRequest, context: OrganizationContext, par
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json(
-        { error: 'Schedule ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Schedule ID is required'
+    );
     }
 
     await deleteScheduledReport(params.id, tenantId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to delete scheduled report' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete scheduled report',
+      error
     );
   }
 }
 
 export const GET = withOrganizationAuth(getHandler);
+
+const reportsScheduledSchema = z.object({
+  action: z.unknown().optional(),
+  scheduleType: z.unknown().optional(),
+  scheduleConfig: z.unknown().optional(),
+  deliveryMethod: z.unknown().optional(),
+  recipients: z.unknown().optional(),
+  exportFormat: z.unknown().optional(),
+  isActive: z.boolean().optional(),
+});
+
+
 export const PATCH = withOrganizationAuth(patchHandler);
 export const DELETE = withOrganizationAuth(deleteHandler);

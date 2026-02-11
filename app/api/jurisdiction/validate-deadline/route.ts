@@ -12,7 +12,92 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
+
+
+const jurisdictionValidate-deadlineSchema = z.object({
+  jurisdictionId: z.string().uuid('Invalid jurisdictionId'),
+  actionType: z.unknown().optional(),
+  proposedDate: z.string().datetime().optional(),
+  eventDate: z.string().datetime().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -22,10 +107,11 @@ export const POST = async (request: NextRequest) => {
       const { jurisdictionId, actionType, proposedDate, eventDate } = body;
 
       if (!jurisdictionId || !actionType || !proposedDate || !eventDate) {
-        return NextResponse.json(
-          { error: 'Bad Request - jurisdictionId, actionType, proposedDate, and eventDate are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - jurisdictionId, actionType, proposedDate, and eventDate are required'
+      // TODO: Migrate additional details: actionType, proposedDate, and eventDate are required'
+    );
       }
 
       // Call database function
@@ -59,10 +145,11 @@ export const POST = async (request: NextRequest) => {
       logger.error('Failed to validate jurisdiction deadline', error as Error, {      jurisdictionId: body?.jurisdictionId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

@@ -14,6 +14,11 @@ import { newsletterTemplates } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -21,12 +26,18 @@ export async function POST(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     const { id: userId, tenantId } = user;
 
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Tenant context required'
+    );
     }
 
     // Fetch original template
@@ -41,7 +52,10 @@ export async function POST(
       );
 
     if (!original) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Template not found'
+    );
     }
 
     // Create duplicate - note: subject/preheader are campaign-level fields, not template-level
@@ -61,11 +75,16 @@ export async function POST(
       })
       .returning();
 
-    return NextResponse.json({ template: duplicate }, { status: 201 });
+    return standardSuccessResponse(
+      {  template: duplicate  },
+      undefined,
+      201
+    );
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to duplicate template' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to duplicate template',
+      error
     );
   }
 }

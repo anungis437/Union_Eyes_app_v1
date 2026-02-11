@@ -13,7 +13,21 @@ import { eventBus, AppEvents } from '@/lib/events';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const runtime = 'nodejs';
+
+
+const onboardingSchema = z.object({
+  orgName: z.string().min(1, 'orgName is required'),
+  orgType: z.unknown().optional(),
+  province: z.unknown().optional(),
+  memberCount: z.number().int().positive(),
+  plan: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -21,14 +35,25 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = onboardingSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { orgName, orgType, province, memberCount, plan } = validation.data;
       const { orgName, orgType, province, memberCount, plan } = body;
 
       // Validate required fields
       if (!orgName || !orgType || !province || !memberCount || !plan) {
-        return NextResponse.json(
-          { error: 'Missing required fields' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
       }
 
       // Create organization
@@ -65,10 +90,11 @@ export const POST = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error('Onboarding failed', { error });
-      return NextResponse.json(
-        { error: 'Failed to process onboarding' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to process onboarding',
+      error
+    );
     }
     })(request);
 };

@@ -16,6 +16,11 @@ import { db } from '@/db';
 import { perCapitaRemittances } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // =====================================================================================
 // GET - Get remittance details
 // =====================================================================================
@@ -61,10 +66,10 @@ export const GET = async (
         .limit(1);
 
       if (remittance.length === 0) {
-        return NextResponse.json(
-          { error: 'Remittance not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Remittance not found'
+    );
       }
 
       return NextResponse.json(
@@ -72,10 +77,11 @@ export const GET = async (
         { status: 200, headers: createRateLimitHeaders(rateLimitResult) }
       );
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch remittance details' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch remittance details',
+      error
+    );
     }
   })(request, { params });
 };
@@ -112,10 +118,10 @@ export const PUT = async (
         .limit(1);
 
       if (existing.length === 0) {
-        return NextResponse.json(
-          { error: 'Remittance not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Remittance not found'
+    );
       }
 
       // Update remittance
@@ -128,14 +134,12 @@ export const PUT = async (
         .where(eq(perCapitaRemittances.id, params.id))
         .returning();
 
-      return NextResponse.json(
-        { 
-          success: true,
-          remittance: updated[0],
-          message: 'Remittance updated successfully'
-        },
-        { status: 200 }
-      );
+      return standardSuccessResponse(
+      { remittance: updated[0],
+          message: 'Remittance updated successfully' },
+      undefined,
+      200
+    );
     } catch (error) {
 logApiAuditEvent({
         timestamp: new Date().toISOString(), 
@@ -147,10 +151,11 @@ logApiAuditEvent({
         details: { remittanceId: params.id, error: String(error) },
       });
 
-      return NextResponse.json(
-        { error: 'Failed to update remittance' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update remittance',
+      error
+    );
     }
   })(request, { params });
 };
@@ -185,10 +190,10 @@ export const DELETE = async (
         .limit(1);
 
       if (existing.length === 0) {
-        return NextResponse.json(
-          { error: 'Remittance not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Remittance not found'
+    );
       }
 
       // Only allow deletion if status is 'draft' or 'pending'
@@ -205,13 +210,11 @@ export const DELETE = async (
         .delete(perCapitaRemittances)
         .where(eq(perCapitaRemittances.id, params.id));
 
-      return NextResponse.json(
-        { 
-          success: true,
-          message: 'Remittance deleted successfully'
-        },
-        { status: 200 }
-      );
+      return standardSuccessResponse(
+      { message: 'Remittance deleted successfully' },
+      undefined,
+      200
+    );
     } catch (error) {
 logApiAuditEvent({
         timestamp: new Date().toISOString(), 
@@ -223,10 +226,11 @@ logApiAuditEvent({
         details: { remittanceId: params.id, error: String(error) },
       });
 
-      return NextResponse.json(
-        { error: 'Failed to delete remittance' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete remittance',
+      error
+    );
     }
   })(request, { params });
 };

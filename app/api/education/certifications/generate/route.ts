@@ -7,7 +7,7 @@ import {
   courseSessions,
   members,
   memberCertifications,
-} from "@/db/migrations/schema";
+} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { put } from "@vercel/blob";
@@ -20,6 +20,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { organizations } from '@/db/schema-organizations';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/education/certifications/generate?registrationId={id} - Generate certificate PDF
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -29,10 +34,10 @@ export const GET = async (request: NextRequest) => {
       const download = searchParams.get("download") === "true";
 
       if (!registrationId) {
-        return NextResponse.json(
-          { error: "registrationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'registrationId is required'
+    );
       }
 
       // Fetch registration with course, session, and member details
@@ -70,10 +75,10 @@ export const GET = async (request: NextRequest) => {
         .where(eq(courseRegistrations.id, registrationId));
 
       if (!registration) {
-        return NextResponse.json(
-          { error: "Registration not found" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Registration not found'
+    );
       }
 
       // Verify completion status
@@ -245,26 +250,44 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error generating certificate", { error });
-      return NextResponse.json(
-        { error: "Failed to generate certificate" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate certificate',
+      error
+    );
     }
     })(request);
 };
 
 // POST /api/education/certifications/generate - Generate certificate for completed registration
+
+const educationCertificationsGenerateSchema = z.object({
+  registrationId: z.string().uuid('Invalid registrationId'),
+  sendEmail = false: z.string().email('Invalid email address'),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationCertificationsGenerateSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { registrationId, sendEmail = false } = validation.data;
       const { registrationId, sendEmail = false } = body;
 
       if (!registrationId) {
-        return NextResponse.json(
-          { error: "registrationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'registrationId is required'
+    );
       }
 
       // Use GET endpoint logic by redirecting
@@ -349,10 +372,11 @@ export const POST = async (request: NextRequest) => {
       return NextResponse.json(certificateData);
     } catch (error) {
       logger.error("Error generating certificate via POST", { error });
-      return NextResponse.json(
-        { error: "Failed to generate certificate" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate certificate',
+      error
+    );
     }
     })(request);
 };

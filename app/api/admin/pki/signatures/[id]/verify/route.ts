@@ -11,11 +11,28 @@ import { verifySignature, verifyDocumentIntegrity } from '@/services/pki/verific
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+
+const adminPkiSignaturesVerifySchema = z.object({
+  verifyType: z.unknown().optional(),
+  documentContent: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(90, async (request, context) => {
   try {
       const signatureOrDocumentId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = adminPkiSignaturesVerifySchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { verifyType, documentContent } = validation.data;
       const { verifyType, documentContent } = body;
 
       // Determine verification type

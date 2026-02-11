@@ -11,6 +11,11 @@ import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -20,10 +25,10 @@ export const GET = async (request: NextRequest) => {
       const memberId = searchParams.get('memberId');
 
       if (!memberId) {
-        return NextResponse.json(
-          { error: 'Bad Request - memberId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId is required'
+    );
       }
 
       const result = await db.execute(sql`
@@ -74,10 +79,11 @@ export const GET = async (request: NextRequest) => {
         memberId: request.nextUrl.searchParams.get('memberId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

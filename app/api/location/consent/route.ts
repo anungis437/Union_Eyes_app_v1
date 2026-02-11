@@ -1,7 +1,13 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { GeofencePrivacyService } from "@/services/geofence-privacy-service";
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Location Tracking Consent API
  * POST: Request location tracking consent
@@ -9,16 +15,28 @@ import { withApiAuth } from '@/lib/api-auth-guard';
  * DELETE: Revoke consent
  */
 
+
+const locationConsentSchema = z.object({
+  userId: z.string().uuid('Invalid userId'),
+  purpose: z.unknown().optional(),
+  purposeDescription: z.string().optional(),
+  consentText: z.unknown().optional(),
+  allowedDuringStrike: z.unknown().optional(),
+  allowedDuringEvents: z.unknown().optional(),
+});
+
+
 export const POST = withApiAuth(async (req: NextRequest) => {
   try {
     const body = await req.json();
     const { userId, purpose, purposeDescription, consentText, allowedDuringStrike, allowedDuringEvents } = body;
 
     if (!userId || !purpose || !purposeDescription || !consentText) {
-      return NextResponse.json(
-        { error: "Missing required fields: userId, purpose, purposeDescription, consentText" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: userId, purpose, purposeDescription, consentText'
+      // TODO: Migrate additional details: purpose, purposeDescription, consentText"
+    );
     }
 
     // Get IP and User-Agent for audit
@@ -36,13 +54,11 @@ export const POST = withApiAuth(async (req: NextRequest) => {
       userAgent,
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        consent,
-        message: "Location tracking consent granted. Data will be retained for 24 hours maximum.",
-      },
-      { status: 201 }
+    return standardSuccessResponse(
+      { consent,
+        message: "Location tracking consent granted. Data will be retained for 24 hours maximum.", },
+      undefined,
+      201
     );
   } catch (error: any) {
     return NextResponse.json(
@@ -59,7 +75,10 @@ export const GET = withApiAuth(async (req: NextRequest) => {
     const context = searchParams.get("context") as "strike" | "event" | undefined;
 
     if (!userId) {
-      return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing userId parameter'
+    );
     }
 
     const hasConsent = await GeofencePrivacyService.hasValidConsent(userId, context);
@@ -84,7 +103,10 @@ export const DELETE = withApiAuth(async (req: NextRequest) => {
     const reason = searchParams.get("reason");
 
     if (!userId) {
-      return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing userId parameter'
+    );
     }
 
     await GeofencePrivacyService.revokeLocationConsent(userId, reason || undefined);

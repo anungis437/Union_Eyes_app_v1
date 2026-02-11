@@ -10,10 +10,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { deadlines } from '@/db/schema/deadlines-schema';
+import { deadlines } from '@/db/schema/domains/claims';
 import { and, eq } from 'drizzle-orm';
 import { sendOverdueClaimNotification } from '@/lib/claim-notifications';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret (for security)
@@ -21,7 +26,10 @@ export async function GET(request: NextRequest) {
     const cronSecret = process.env.CRON_SECRET;
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const overdueDeadlines = await db

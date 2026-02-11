@@ -8,6 +8,11 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const TimelineRequestSchema = z.object({
   claimId: z.string().uuid(),
 });
@@ -70,7 +75,10 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     );
     
     if (!claim || claim.organizationId !== tenantId) {
-      return NextResponse.json({ error: 'Claim not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
     }
 
     // Call AI service for timeline prediction
@@ -119,9 +127,10 @@ if (error instanceof z.ZodError) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Failed to predict timeline' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to predict timeline',
+      error
     );
   }
 });

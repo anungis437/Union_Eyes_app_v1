@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { client } from '@/db/db';
+import { standardErrorResponse, standardSuccessResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
-async function handler(req: NextRequest) {
+async function handler(req: NextRequest, context?: any) {
   try {
-    const user = await getCurrentUser();
+    const user = context || await getCurrentUser();
     if (!user || !user.tenantId) {
-      return NextResponse.json(
-        { error: 'Authentication and tenant context required' },
-        { status: 401 }
+      return standardErrorResponse(
+        ErrorCode.AUTH_REQUIRED,
+        'Authentication and tenant context required'
       );
     }
     
@@ -66,12 +67,12 @@ async function handler(req: NextRequest) {
       ORDER BY amount DESC
     `;
 
-    return NextResponse.json(result);
+    return standardSuccessResponse(result);
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch cost breakdown' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch cost breakdown'
     );
   }
 }

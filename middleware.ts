@@ -74,27 +74,68 @@ const intlMiddleware = createIntlMiddleware({
   localeDetection: true
 });
 
+// =============================================================================
+// CORS ORIGIN WHITELIST (Security Hardened - Feb 2026)
+// =============================================================================
+// Allowed origins for CORS requests. Never falls back to wildcard in production.
+// Multiple origins can be specified as comma-separated list.
+const getAllowedOrigins = (): string[] => {
+  const originsEnv = process.env.CORS_ALLOWED_ORIGINS || process.env.CORS_ORIGIN || '';
+  
+  // Development: Allow localhost
+  if (process.env.NODE_ENV === 'development') {
+    const devOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+    return originsEnv ? [...devOrigins, ...originsEnv.split(',').map(o => o.trim())] : devOrigins;
+  }
+  
+  // Production: Require explicit configuration, fail secure
+  if (!originsEnv) {
+    console.warn('⚠️  CORS_ALLOWED_ORIGINS not configured - CORS disabled for security');
+    return [];
+  }
+  
+  return originsEnv.split(',').map(o => o.trim()).filter(Boolean);
+};
+
+const isOriginAllowed = (origin: string | null): boolean => {
+  if (!origin) return false;
+  const allowedOrigins = getAllowedOrigins();
+  return allowedOrigins.includes(origin);
+};
+
 // This handles both payment provider use cases from whop-setup.md and stripe-setup.md
 export default clerkMiddleware((auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api')) {
     // PR #4: Use centralized public route checker from api-auth-guard.ts
     if (isPublicApiRoute(req.nextUrl.pathname)) {
+      const origin = req.headers.get('origin');
+      
       // Handle CORS preflight for public API routes
       if (req.method === 'OPTIONS') {
-        return new NextResponse(null, {
-          status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-            'Access-Control-Max-Age': '86400',
-          },
-        });
+        // Security: Only allow configured origins
+        if (origin && isOriginAllowed(origin)) {
+          return new NextResponse(null, {
+            status: 200,
+            headers: {
+              'Access-Control-Allow-Origin': origin,
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+              'Access-Control-Max-Age': '86400',
+              'Vary': 'Origin',
+            },
+          });
+        }
+        // Reject disallowed origins
+        return new NextResponse(null, { status: 403 });
       }
 
       const response = NextResponse.next();
-      response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-      response.headers.set('Access-Control-Allow-Credentials', 'true');
+      // Security: Only set CORS headers for allowed origins
+      if (origin && isOriginAllowed(origin)) {
+        response.headers.set('Access-Control-Allow-Origin', origin);
+        response.headers.set('Access-Control-Allow-Credentials', 'true');
+        response.headers.set('Vary', 'Origin');
+      }
       return response;
     }
 

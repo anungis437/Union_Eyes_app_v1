@@ -12,6 +12,21 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const aiExtract-clausesSchema = z.object({
+  pdfUrl: z.string().url('Invalid URL'),
+  cbaId: z.string().uuid('Invalid cbaId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  autoSave = true: z.unknown().optional(),
+  batch = false: z.unknown().optional(),
+  cbas = []: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
@@ -34,6 +49,17 @@ export const POST = async (request: NextRequest) => {
 
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = aiExtract-clausesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { pdfUrl, cbaId, organizationId, autoSave = true, batch = false, cbas = [] } = validation.data;
       const {
         pdfUrl,
         cbaId,
@@ -43,7 +69,10 @@ export const POST = async (request: NextRequest) => {
         cbas = [],
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
@@ -70,10 +99,11 @@ export const POST = async (request: NextRequest) => {
 
       // Single extraction
       if (!pdfUrl || !cbaId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Missing required fields: pdfUrl, cbaId, organizationId' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: pdfUrl, cbaId, organizationId'
+      // TODO: Migrate additional details: cbaId, organizationId'
+    );
       }
 
       const result = await extractClausesFromPDF(pdfUrl, cbaId, {
@@ -89,10 +119,11 @@ export const POST = async (request: NextRequest) => {
         errors: result.errors,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to extract clauses', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to extract clauses',
+      error
+    );
     }
     })(request);
 };

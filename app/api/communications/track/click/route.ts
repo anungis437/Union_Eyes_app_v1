@@ -17,6 +17,11 @@ import { db } from '@/db';
 import { newsletterEngagement } from '@/db/schema';
 import { resolveIpGeolocation } from '@/lib/geo/ip-geolocation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -29,10 +34,10 @@ export async function GET(request: NextRequest) {
       if (url) {
         return NextResponse.redirect(url);
       }
-      return NextResponse.json(
-        { error: 'Missing required parameters' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required parameters'
+    );
     }
 
     // Get user agent and IP
@@ -70,9 +75,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    return NextResponse.json(
-      { error: 'Failed to track click' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to track click',
+      error
     );
   }
 }

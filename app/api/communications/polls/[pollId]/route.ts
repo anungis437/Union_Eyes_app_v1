@@ -5,6 +5,11 @@ import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schema for update
 const UpdatePollSchema = z.object({
   question: z.string().min(1).max(200).optional(),
@@ -29,10 +34,10 @@ export const GET = withApiAuth(async (
     const userId = request.headers.get('x-user-id') || null;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     // Fetch poll
@@ -43,10 +48,10 @@ export const GET = withApiAuth(async (
       .limit(1);
 
     if (!poll) {
-      return NextResponse.json(
-        { error: 'Poll not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Poll not found'
+    );
     }
 
     // Calculate percentages for options
@@ -75,9 +80,10 @@ export const GET = withApiAuth(async (
       userVote,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch poll' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch poll',
+      error
     );
   }
 });
@@ -94,10 +100,10 @@ export const PUT = withApiAuth(async (
     const userId = request.headers.get('x-user-id');
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID are required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID are required'
+    );
     }
 
     const body = await request.json();
@@ -105,34 +111,11 @@ export const PUT = withApiAuth(async (
     // Validate request body
     const validation = UpdatePollSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const data = validation.data;
-
-    // Check if poll exists
-    const [existingPoll] = await db
-      .select()
-      .from(polls)
-      .where(and(eq(polls.id, pollId), eq(polls.tenantId, tenantId)))
-      .limit(1);
-
-    if (!existingPoll) {
-      return NextResponse.json(
-        { error: 'Poll not found' },
-        { status: 404 }
-      );
-    }
-
-    // Don't allow editing active polls with votes
-    if (existingPoll.status === 'active' && existingPoll.totalVotes > 0) {
-      return NextResponse.json(
-        { error: 'Cannot edit poll that has votes. Please close and create a new one.' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed'
+      // TODO: Migrate additional details: details: validation.error.errors
+    );
     }
 
     // Prepare update data
@@ -171,9 +154,10 @@ export const PUT = withApiAuth(async (
       message: 'Poll updated successfully',
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to update poll' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update poll',
+      error
     );
   }
 });
@@ -189,10 +173,10 @@ export const DELETE = withApiAuth(async (
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     // Check if poll exists
@@ -203,10 +187,10 @@ export const DELETE = withApiAuth(async (
       .limit(1);
 
     if (!existingPoll) {
-      return NextResponse.json(
-        { error: 'Poll not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Poll not found'
+    );
     }
 
     // Don't allow deleting active polls with votes
@@ -231,9 +215,10 @@ export const DELETE = withApiAuth(async (
       message: 'Poll deleted successfully',
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to delete poll' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete poll',
+      error
     );
   }
 });

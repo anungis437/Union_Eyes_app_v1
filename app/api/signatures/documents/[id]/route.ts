@@ -4,10 +4,16 @@
  * PATCH /api/signatures/documents/[id] - Update document (void, etc.)
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { SignatureService, AuditTrailService } from "@/lib/signature/signature-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withApiAuth(async (
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -15,7 +21,10 @@ export const GET = withApiAuth(async (
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const documentId = params.id;
@@ -23,19 +32,30 @@ export const GET = withApiAuth(async (
     // SECURITY FIX: Verify user has access to this document (prevent IDOR)
     const hasAccess = await SignatureService.verifyDocumentAccess(documentId, user.id);
     if (!hasAccess) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied'
+    );
     }
 
     const document = await SignatureService.getDocumentStatus(documentId);
 
     return NextResponse.json(document);
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to retrieve document" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve document',
+      error
     );
   }
 });
+
+
+const signaturesDocumentsSchema = z.object({
+  action: z.unknown().optional(),
+  reason: z.string().min(1, 'reason is required'),
+});
+
 
 export const PATCH = withApiAuth(async (
   req: NextRequest,
@@ -44,7 +64,10 @@ export const PATCH = withApiAuth(async (
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
@@ -53,7 +76,10 @@ export const PATCH = withApiAuth(async (
     // SECURITY FIX: Verify user has access to this document (prevent IDOR)
     const hasAccess = await SignatureService.verifyDocumentAccess(documentId, userId);
     if (!hasAccess) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied'
+    );
     }
     
     const body = await req.json();
@@ -61,10 +87,10 @@ export const PATCH = withApiAuth(async (
 
     if (action === "void") {
       if (!reason) {
-        return NextResponse.json(
-          { error: "Void reason required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Void reason required'
+    );
       }
 
       await SignatureService.voidDocument(documentId, userId, reason);
@@ -75,14 +101,15 @@ export const PATCH = withApiAuth(async (
       });
     }
 
-    return NextResponse.json(
-      { error: "Invalid action" },
-      { status: 400 }
+    return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
     );
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to update document" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update document',
+      error
     );
   }
 });

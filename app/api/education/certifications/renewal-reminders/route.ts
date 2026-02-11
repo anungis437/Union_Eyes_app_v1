@@ -15,6 +15,11 @@ import { eq, inArray, and, lte } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 import { sendEmail } from '@/lib/email-service';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const renewalSchema = z.object({
   certificationIds: z.array(z.string()).min(1),
 });
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
       const { organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+        return standardErrorResponse(ErrorCode.FORBIDDEN, 'Organization context required');
       }
 
       const body = await request.json();
@@ -57,10 +62,11 @@ export async function POST(request: NextRequest) {
         );
 
       if (expiringCerts.length === 0) {
-        return NextResponse.json(
-          { message: 'No expiring certifications found', sent: 0 },
-          { status: 200 }
-        );
+        return standardSuccessResponse(
+      {  message: 'No expiring certifications found', sent: 0  },
+      undefined,
+      200
+    );
       }
 
       // Send renewal reminder emails
@@ -132,10 +138,11 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-return NextResponse.json(
-        { error: 'Failed to send renewal reminders' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to send renewal reminders',
+      error
+    );
     }
   })(request, {});
 }

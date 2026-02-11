@@ -12,19 +12,41 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
+
+
+const organizingCard-checkSchema = z.object({
+  campaignId: z.string().uuid('Invalid campaignId'),
+  validationDate: z.string().uuid('Invalid validationDate'),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = organizingCard-checkSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { campaignId, validationDate } = validation.data;
       const { campaignId, validationDate } = body;
 
       if (!campaignId) {
-        return NextResponse.json(
-          { error: 'Bad Request - campaignId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - campaignId is required'
+    );
       }
 
       const date = validationDate || new Date().toISOString().split('T')[0];
@@ -52,10 +74,11 @@ export const POST = async (request: NextRequest) => {
     } catch (error) {
       logger.error('Failed to validate card check', error as Error, {      correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

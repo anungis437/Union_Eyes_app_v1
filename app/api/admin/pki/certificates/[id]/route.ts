@@ -10,11 +10,16 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { revokeCertificate } from '@/services/pki/certificate-manager';
 import { db } from '@/db';
-import { digitalSignatures } from '@/db/migrations/schema';
+import { digitalSignatures } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(90, async (request, context) => {
   try {
@@ -36,10 +41,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!cert) {
-        return NextResponse.json(
-          { error: 'Certificate not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Certificate not found'
+    );
       }
 
       // Parse certificate info
@@ -85,10 +90,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       const { reason } = body;
 
       if (!reason) {
-        return NextResponse.json(
-          { error: 'Revocation reason required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Revocation reason required'
+    );
       }
 
       // Verify certificate belongs to user's organization
@@ -105,10 +110,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .limit(1);
 
       if (!cert) {
-        return NextResponse.json(
-          { error: 'Certificate not found or access denied' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Certificate not found or access denied'
+    );
       }
 
       // Revoke certificate

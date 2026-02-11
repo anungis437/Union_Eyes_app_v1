@@ -13,7 +13,7 @@ import { auth } from '@/lib/api-auth-guard';
 import { requireAdmin } from '@/lib/auth/rbac-server';
 import { db } from '@/db/db';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { organizationUsers, users } from "@/db/schema/user-management-schema";
+import { organizationUsers, users } from "@/db/schema/domains/member";
 import { tenants, tenantConfigurations, tenantUsage } from "@/db/schema/tenant-management-schema";
 import { eq, and, desc, sql, count, like, or, isNull } from "drizzle-orm";
 import { logger } from "@/lib/logger";

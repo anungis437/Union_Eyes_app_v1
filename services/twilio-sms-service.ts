@@ -34,7 +34,7 @@ import {
   type NewSmsMessage,
   type NewSmsConversation,
   type SmsCampaign,
-} from '@/db/schema/sms-communications-schema';
+} from '@/db/schema/domains/communications';
 import { organizations } from '@/db/schema-organizations';
 import { logger } from '@/lib/logger';
 

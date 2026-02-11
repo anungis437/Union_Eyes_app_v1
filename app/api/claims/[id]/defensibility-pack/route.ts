@@ -19,7 +19,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { defensibilityPacks, packDownloadLog, packVerificationLog } from '@/db/schema/defensibility-packs-schema';
-import { claims } from '@/db/schema/claims-schema';
+import { claims } from '@/db/schema/domains/claims';
 import { eq, desc, and } from 'drizzle-orm';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
@@ -27,6 +27,11 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { verifyPackIntegrity } from '@/lib/services/defensibility-pack';
 import { createHash } from 'crypto';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/claims/[id]/defensibility-pack
  * Download the latest defensibility pack for a claim
@@ -63,7 +68,10 @@ export const GET = withRoleAuth(30, async (request, context) => {
           dataType: 'DEFENSIBILITY_PACKS',
           details: { reason: 'Claim not found', claimNumber },
         });
-        return NextResponse.json({ error: 'Claim not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       // Fetch latest defensibility pack for this claim (RLS policies enforce access)
@@ -141,10 +149,10 @@ export const GET = withRoleAuth(30, async (request, context) => {
           },
         });
 
-        return NextResponse.json(
-          { error: 'Pack integrity verification failed. This pack may have been tampered with.' },
-          { status: 500 }
-        );
+        return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Pack integrity verification failed. This pack may have been tampered with.'
+    );
       }
 
       // Log successful verification
@@ -244,9 +252,10 @@ export const GET = withRoleAuth(30, async (request, context) => {
       dataType: 'DEFENSIBILITY_PACKS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-return NextResponse.json(
-      { error: 'Failed to download defensibility pack', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to download defensibility pack',
+      error
     );
   }
 });

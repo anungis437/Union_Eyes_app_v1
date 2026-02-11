@@ -9,10 +9,11 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { eq, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
@@ -29,10 +30,7 @@ export const POST = async (request: NextRequest) => {
           .limit(1);
 
         if (adminCheck.length === 0 || adminCheck[0].role !== "admin") {
-          return NextResponse.json(
-            { error: "Admin access required" },
-            { status: 403 }
-          );
+          return standardErrorResponse(ErrorCode.FORBIDDEN);
         }
 
         // Run VACUUM ANALYZE (requires special connection settings)
@@ -48,13 +46,7 @@ export const POST = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Failed to optimize database", error);
-      return NextResponse.json(
-        { 
-          error: "Failed to optimize database",
-          message: "ANALYZE completed, but VACUUM may require database administrator privileges" 
-        },
-        { status: 500 }
-      );
+      return standardErrorResponse(ErrorCode.INTERNAL_ERROR);
     }
     })(request);
 };

@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/api-auth-guard";
 import { getUserRole } from "@/lib/auth/rbac-server";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/auth/user-role
  * Fetch the current user's role from the database
@@ -11,10 +16,10 @@ export async function GET(req: NextRequest) {
     const { userId } = auth();
     
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     // Use userId from URL params if provided (for admin use), otherwise use authenticated user
@@ -27,9 +32,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ role });
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to fetch user role" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch user role',
+      error
     );
   }
 }

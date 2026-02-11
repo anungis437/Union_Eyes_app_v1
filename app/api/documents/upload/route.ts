@@ -11,16 +11,7 @@ import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser }
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { put } from "@vercel/blob";
 
-/**
- * Maximum file size: 50MB
- */
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
-
-/**
- * Allowed MIME types
- */
-const ALLOWED_MIME_TYPES = [
-  // Documents
+const ALLOWED_MIME_TYPES_LIST = [
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -30,17 +21,43 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'text/plain',
   'text/csv',
-  // Images
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
   'image/svg+xml',
-  // Archives
   'application/zip',
   'application/x-zip-compressed',
   'application/x-rar-compressed',
-];
+] as const;
+
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+/**
+ * Maximum file size: 50MB
+ */
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+const documentUploadSchema = z.object({
+  file: z.object({
+    name: z.string().min(1, "File name is required"),
+    size: z.number().max(MAX_FILE_SIZE, "File size exceeds 50MB limit"),
+    type: z.enum(ALLOWED_MIME_TYPES_LIST as unknown as [string, ...string[]], {
+      errorMap: () => ({ message: "Invalid file type" })
+    })
+  }),
+  tenantId: z.string().uuid("Invalid tenant ID"),
+  folderId: z.string().uuid("Invalid folder ID").optional(),
+  name: z.string().max(255, "Name too long").optional(),
+  description: z.string().max(1000, "Description too long").optional(),
+  tags: z.array(z.string().max(50)).max(20, "Too many tags").optional(),
+  category: z.string().max(100).optional(),
+  isConfidential: z.boolean().optional(),
+  accessLevel: z.enum(["public", "private", "restricted", "confidential"]).optional()
+});
 
 /**
  * POST /api/documents/upload
@@ -119,7 +136,10 @@ export const POST = withRoleAuth('member', async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'File is required' },
       });
-      return NextResponse.json({ error: "File is required" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'File is required'
+    );
     }
 
     if (!tenantId) {
@@ -133,7 +153,10 @@ export const POST = withRoleAuth('member', async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'tenantId is required' },
       });
-      return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'tenantId is required'
+    );
     }
 
     // Verify organization ID matches context
@@ -148,7 +171,10 @@ export const POST = withRoleAuth('member', async (request, context) => {
         dataType: 'DOCUMENTS',
         details: { reason: 'Organization ID mismatch' },
       });
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     // Validate file size
@@ -256,9 +282,10 @@ export const POST = withRoleAuth('member', async (request, context) => {
       dataType: 'DOCUMENTS',
       details: { error: error instanceof Error ? error.message : 'Unknown error' },
     });
-return NextResponse.json(
-      { error: "Failed to upload document", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to upload document',
+      error
     );
   }
 });

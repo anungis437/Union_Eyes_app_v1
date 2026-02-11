@@ -13,6 +13,11 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -30,7 +35,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -39,10 +47,11 @@ export const GET = async (request: NextRequest) => {
         `social-feed-read:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Parse query parameters
@@ -127,7 +136,10 @@ export const GET = async (request: NextRequest) => {
       const { data: posts, error, count } = await query;
 
       if (error) {
-return NextResponse.json({ error: 'Failed to fetch feed' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch feed'
+    );
       }
 
       return NextResponse.json({
@@ -149,13 +161,21 @@ return NextResponse.json(
     })(request);
 };
 
+
+const social-mediaFeedSchema = z.object({
+  account_ids: z.string().uuid('Invalid account_ids'),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(40, async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -164,13 +184,25 @@ export const POST = async (request: NextRequest) => {
         `social-feed-refresh:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = social-mediaFeedSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { account_ids } = validation.data;
       const { account_ids } = body;
 
       // Get accounts to refresh
@@ -187,11 +219,17 @@ export const POST = async (request: NextRequest) => {
       const { data: accounts, error: accountsError } = await accountsQuery;
 
       if (accountsError) {
-return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch accounts'
+    );
       }
 
       if (!accounts || accounts.length === 0) {
-        return NextResponse.json({ error: 'No active accounts found' }, { status: 404 });
+        return standardErrorResponse(
+          ErrorCode.RESOURCE_NOT_FOUND,
+          'No active accounts found'
+        );
       }
 
       const socialMediaService = createSocialMediaService();
@@ -261,7 +299,10 @@ export const PUT = async (request: NextRequest) => {
       const postId = searchParams.get('id');
 
       if (!postId) {
-        return NextResponse.json({ error: 'Post ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Post ID required'
+    );
       }
 
       // Fetch post with all related data
@@ -297,12 +338,18 @@ export const PUT = async (request: NextRequest) => {
         .single();
 
       if (error || !post) {
-        return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Post not found'
+    );
       }
 
       // Verify user has access to this post
       if (organizationId !== post.account.organization_id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Unauthorized'
+        );
       }
 
       // Get engagement timeline if available
@@ -393,7 +440,10 @@ export const DELETE = async (request: NextRequest) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Parse query parameters
@@ -401,7 +451,10 @@ export const DELETE = async (request: NextRequest) => {
       const postIds = searchParams.get('ids')?.split(',') || [];
 
       if (postIds.length === 0) {
-        return NextResponse.json({ error: 'No post IDs provided' }, { status: 400 });
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'No post IDs provided'
+        );
       }
 
       const socialMediaService = createSocialMediaService();

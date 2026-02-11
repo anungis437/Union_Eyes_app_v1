@@ -1,12 +1,17 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { memberCertifications, trainingCourses, members, organizations } from "@/db/migrations/schema";
+import { memberCertifications, trainingCourses, members, organizations } from "@/db/schema";
 import { eq, and, or, gte, lte, inArray, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/education/certifications - List certifications with filters
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -20,10 +25,10 @@ export const GET = async (request: NextRequest) => {
       const courseId = searchParams.get("courseId");
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       // Build WHERE conditions
@@ -144,19 +149,58 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error retrieving certifications", { error });
-      return NextResponse.json(
-        { error: "Failed to retrieve certifications" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve certifications',
+      error
+    );
     }
     })(request);
 };
 
 // POST /api/education/certifications - Issue new certification
+
+const educationCertificationsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  memberId: z.string().uuid('Invalid memberId'),
+  certificationName: z.string().min(1, 'certificationName is required'),
+  certificationType: z.unknown().optional(),
+  issuedByOrganization: z.boolean().optional(),
+  issueDate: z.boolean().optional(),
+  expiryDate: z.string().datetime().optional(),
+  validYears: z.string().uuid('Invalid validYears'),
+  courseId: z.string().uuid('Invalid courseId'),
+  sessionId: z.string().uuid('Invalid sessionId'),
+  registrationId: z.string().uuid('Invalid registrationId'),
+  renewalRequired: z.unknown().optional(),
+  renewalCourseId: z.string().uuid('Invalid renewalCourseId'),
+  clcRegistered: z.boolean().optional(),
+  clcRegistrationNumber: z.boolean().optional(),
+  certificateUrl: z.string().url('Invalid URL'),
+  notes: z.string().optional(),
+  certificationStatus: z.unknown().optional(),
+  renewalDate: z.string().datetime().optional(),
+  clcRegistrationDate: z.boolean().optional(),
+  digitalBadgeUrl: z.string().url('Invalid URL'),
+  revocationReason: z.unknown().optional(),
+  revocationDate: z.string().datetime().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationCertificationsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, memberId, certificationName, certificationType, issuedByOrganization, issueDate, expiryDate, validYears, courseId, sessionId, registrationId, renewalRequired, renewalCourseId, clcRegistered, clcRegistrationNumber, certificateUrl, notes, certificationStatus, renewalDate, clcRegistrationDate, digitalBadgeUrl, revocationReason, revocationDate } = validation.data;
       const {
         organizationId,
         memberId,
@@ -177,16 +221,20 @@ export const POST = async (request: NextRequest) => {
         notes,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !memberId || !certificationName || !issueDate) {
-        return NextResponse.json(
-          { error: "Missing required fields: organizationId, memberId, certificationName, issueDate" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, memberId, certificationName, issueDate'
+      // TODO: Migrate additional details: memberId, certificationName, issueDate"
+    );
       }
 
       // Generate certification number
@@ -248,19 +296,21 @@ export const POST = async (request: NextRequest) => {
         organizationId,
       });
 
-      return NextResponse.json(
-        {
+      return standardSuccessResponse(
+      { 
           certification: newCertification,
           message: "Certification issued successfully",
-        },
-        { status: 201 }
-      );
+         },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error("Error issuing certification", { error });
-      return NextResponse.json(
-        { error: "Failed to issue certification" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to issue certification',
+      error
+    );
     }
     })(request);
 };
@@ -273,7 +323,10 @@ export const PATCH = async (request: NextRequest) => {
       const certificationId = searchParams.get("id");
 
       if (!certificationId) {
-        return NextResponse.json({ error: "Certification ID is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Certification ID is required'
+    );
       }
 
       const body = await request.json();
@@ -327,7 +380,10 @@ export const PATCH = async (request: NextRequest) => {
         .returning();
 
       if (!updatedCertification) {
-        return NextResponse.json({ error: "Certification not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Certification not found'
+    );
       }
 
       logger.info("Certification updated", {
@@ -341,10 +397,11 @@ export const PATCH = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error updating certification", { error });
-      return NextResponse.json(
-        { error: "Failed to update certification" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update certification',
+      error
+    );
     }
     })(request);
 };
@@ -360,7 +417,10 @@ export const DELETE = async (request: NextRequest) => {
       const reason = searchParams.get("reason");
 
       if (!certificationId) {
-        return NextResponse.json({ error: "Certification ID is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Certification ID is required'
+    );
       }
 
       // Revoke certification (soft delete)
@@ -377,7 +437,10 @@ export const DELETE = async (request: NextRequest) => {
         .returning();
 
       if (!revokedCertification) {
-        return NextResponse.json({ error: "Certification not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Certification not found'
+    );
       }
 
       logger.info("Certification revoked", {
@@ -392,10 +455,11 @@ export const DELETE = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error revoking certification", { error });
-      return NextResponse.json(
-        { error: "Failed to revoke certification" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to revoke certification',
+      error
+    );
     }
     })(request);
 };

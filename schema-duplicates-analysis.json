@@ -1,0 +1,161 @@
+{
+  "timestamp": "2026-02-11T15:14:35.036Z",
+  "summary": {
+    "totalDuplicates": 18,
+    "deprecatedSchemas": 3
+  },
+  "duplicates": [
+    {
+      "name": "rewardWalletLedger",
+      "type": "table",
+      "locations": [
+        "recognition-rewards-schema.ts",
+        "award-templates-schema.ts"
+      ]
+    },
+    {
+      "name": "automationRules",
+      "type": "table",
+      "locations": [
+        "recognition-rewards-schema.ts",
+        "automation-rules-schema.ts"
+      ]
+    },
+    {
+      "name": "mlPredictions",
+      "type": "table",
+      "locations": [
+        "ml-predictions-schema.ts",
+        "analytics.ts"
+      ]
+    },
+    {
+      "name": "grievanceDeadlines",
+      "type": "table",
+      "locations": [
+        "grievance-workflow-schema.ts",
+        "grievance-schema.ts"
+      ]
+    },
+    {
+      "name": "chartOfAccounts",
+      "type": "table",
+      "locations": [
+        "erp-integration-schema.ts",
+        "clc-sync-audit-schema.ts",
+        "chart-of-accounts-schema.ts"
+      ]
+    },
+    {
+      "name": "glAccountMappings",
+      "type": "table",
+      "locations": [
+        "erp-integration-schema.ts",
+        "chart-of-accounts-schema.ts"
+      ]
+    },
+    {
+      "name": "clcSyncLog",
+      "type": "table",
+      "locations": [
+        "clc-sync-schema.ts",
+        "clc-per-capita-schema.ts",
+        "clc-partnership-schema.ts"
+      ]
+    },
+    {
+      "name": "clcWebhookLog",
+      "type": "table",
+      "locations": [
+        "clc-sync-schema.ts",
+        "clc-sync-audit-schema.ts",
+        "clc-per-capita-schema.ts"
+      ]
+    },
+    {
+      "name": "campaignStatusEnum",
+      "type": "enum",
+      "locations": [
+        "social-media-schema.ts",
+        "newsletter-schema.ts"
+      ]
+    },
+    {
+      "name": "signerStatusEnum",
+      "type": "enum",
+      "locations": [
+        "signature-workflows-schema.ts",
+        "e-signature-schema.ts"
+      ]
+    },
+    {
+      "name": "signatureProviderEnum",
+      "type": "enum",
+      "locations": [
+        "signature-workflows-schema.ts",
+        "e-signature-schema.ts"
+      ]
+    },
+    {
+      "name": "accountTypeEnum",
+      "type": "enum",
+      "locations": [
+        "erp-integration-schema.ts",
+        "chart-of-accounts-schema.ts"
+      ]
+    },
+    {
+      "name": "syncStatusEnum",
+      "type": "enum",
+      "locations": [
+        "erp-integration-schema.ts",
+        "calendar-schema.ts"
+      ]
+    },
+    {
+      "name": "SharingLevel",
+      "type": "type",
+      "locations": [
+        "sharing-permissions-schema.ts",
+        "shared-clause-library-schema.ts"
+      ]
+    },
+    {
+      "name": "ClauseType",
+      "type": "type",
+      "locations": [
+        "shared-clause-library-schema.ts",
+        "cba-clauses-schema.ts"
+      ]
+    },
+    {
+      "name": "AutomationRule",
+      "type": "type",
+      "locations": [
+        "recognition-rewards-schema.ts",
+        "automation-rules-schema.ts"
+      ]
+    },
+    {
+      "name": "GrievanceDeadline",
+      "type": "type",
+      "locations": [
+        "grievance-workflow-schema.ts",
+        "grievance-schema.ts"
+      ]
+    },
+    {
+      "name": "GrievanceType",
+      "type": "type",
+      "locations": [
+        "grievance-schema.ts",
+        "arbitration-precedents-schema.ts"
+      ]
+    }
+  ],
+  "deprecated": [
+    "organization-members-schema.ts",
+    "ml-predictions-schema.ts",
+    "notifications-schema.ts"
+  ]
+}

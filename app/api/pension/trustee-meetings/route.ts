@@ -7,12 +7,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { pensionTrusteeMeetings, pensionTrustees } from '@/db/migrations/schema';
+import { pensionTrusteeMeetings, pensionTrustees } from '@/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -25,10 +30,10 @@ export const GET = async (request: NextRequest) => {
       const limit = parseInt(searchParams.get('limit') || '50');
 
       if (!trustBoardId) {
-        return NextResponse.json(
-          { error: 'Bad Request - trustBoardId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - trustBoardId is required'
+    );
       }
 
       const meetings = await db
@@ -50,13 +55,27 @@ export const GET = async (request: NextRequest) => {
         trustBoardId: request.nextUrl.searchParams.get('trustBoardId'),
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
 };
+
+
+const pensionTrustee-meetingsSchema = z.object({
+  trustBoardId: z.string().uuid('Invalid trustBoardId'),
+  meetingDate: z.string().datetime().optional(),
+  meetingType: z.unknown().optional(),
+  location: z.unknown().optional(),
+  agendaItems: z.unknown().optional(),
+  attendeeIds = []: z.string().uuid('Invalid attendeeIds = []'),
+  quorumMet: z.unknown().optional(),
+  minutesDocument: z.unknown().optional(),
+  votingRecords: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -64,6 +83,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = pensionTrustee-meetingsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { trustBoardId, meetingDate, meetingType, location, agendaItems, attendeeIds = [], quorumMet, minutesDocument, votingRecords } = validation.data;
       const {
         trustBoardId,
         meetingDate,
@@ -78,10 +108,11 @@ export const POST = async (request: NextRequest) => {
 
       // Validate required fields
       if (!trustBoardId || !meetingDate || !meetingType) {
-        return NextResponse.json(
-          { error: 'Bad Request - trustBoardId, meetingDate, and meetingType are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - trustBoardId, meetingDate, and meetingType are required'
+      // TODO: Migrate additional details: meetingDate, and meetingType are required'
+    );
       }
 
       // Insert meeting
@@ -110,9 +141,10 @@ export const POST = async (request: NextRequest) => {
         userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

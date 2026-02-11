@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withRoleAuth } from '@/lib/role-middleware';
 import { getSmartDefaults } from '@/lib/utils/smart-onboarding';
 import { logger } from '@/lib/logger';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const GET = withRoleAuth('member', async (request, context) => {
   const { userId, organizationId } = context;
@@ -42,13 +43,7 @@ export const GET = withRoleAuth('member', async (request, context) => {
 
   } catch (error) {
     logger.error('Smart defaults generation failed', { error });
-    return NextResponse.json(
-      { 
-        error: 'Failed to get smart defaults',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return standardErrorResponse(ErrorCode.INTERNAL_ERROR);
   }
 });
 

@@ -11,6 +11,11 @@ import { logger } from '@/lib/logger';
 import { getOrganizationById } from '@/db/queries/organization-queries';
 import { getMemberCount, getActiveMemberCount, getMembersByRole } from '@/db/queries/organization-members-queries';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/analytics
  * Get comprehensive analytics for an organization
@@ -25,10 +30,10 @@ export async function GET(
     const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Authentication required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized - Authentication required'
+    );
     }
 
     const resolvedParams = await params;

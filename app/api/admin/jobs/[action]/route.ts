@@ -9,6 +9,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from "zod";
 import { withAdminAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const adminJobsSchema = z.object({
+  queue: z.string().min(1, 'queue is required'),
+  olderThanMs: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { action: string } }) => {
   return withAdminAuth(async (request, context) => {
   // Import job-queue functions only at runtime, not at module load time
@@ -17,13 +28,24 @@ export const POST = async (request: NextRequest, { params }: { params: { action:
     try {
       const { action } = params;
       const body = await request.json();
+    // Validate request body
+    const validation = adminJobsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { queue, olderThanMs } = validation.data;
       const { queue } = body;
 
       if (!queue) {
-        return NextResponse.json(
-          { error: 'Queue name is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Queue name is required'
+    );
       }
 
       switch (action) {
@@ -41,16 +63,17 @@ export const POST = async (request: NextRequest, { params }: { params: { action:
           return NextResponse.json({ success: true, message: `Queue ${queue} cleaned` });
 
         default:
-          return NextResponse.json(
-            { error: 'Invalid action' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
+    );
       }
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

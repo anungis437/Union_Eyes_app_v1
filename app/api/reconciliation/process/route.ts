@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
@@ -8,6 +9,23 @@ import * as XLSX from 'xlsx';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const reconciliationProcessSchema = z.object({
+  fileUrl: z.string().url('Invalid file URL'),
+  columnMapping: z.record(z.string(), z.string()).refine(
+    (mapping) => Object.keys(mapping).length > 0,
+    { message: 'Column mapping cannot be empty' }
+  ),
+  periodStart: z.string().datetime('Invalid start date'),
+  periodEnd: z.string().datetime('Invalid end date'),
+  employerName: z.string().optional(),
+  employerId: z.string().uuid('Invalid employer ID').optional(),
+});
 // Process reconciliation file and match with transactions
 export const POST = async (req: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -37,10 +55,24 @@ export const POST = async (req: NextRequest) => {
         .limit(1);
 
       if (!member) {
-        return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
       }
 
       const body = await req.json();
+      
+      // Validate request body
+      const validation = reconciliationProcessSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid reconciliation data',
+          validation.error.errors
+        );
+      }
+
       const { 
         fileUrl, 
         columnMapping, 
@@ -48,20 +80,15 @@ export const POST = async (req: NextRequest) => {
         periodEnd,
         employerName,
         employerId,
-      } = body;
-
-      // Validate required fields
-      if (!fileUrl || !columnMapping || !periodStart || !periodEnd) {
-        return NextResponse.json(
-          { error: 'fileUrl, columnMapping, periodStart, and periodEnd are required' },
-          { status: 400 }
-        );
-      }
+      } = validation.data;
 
       // Download file from URL
       const response = await fetch(fileUrl);
       if (!response.ok) {
-        return NextResponse.json({ error: 'Failed to download file' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Failed to download file'
+    );
       }
 
       const fileBuffer = await response.arrayBuffer();
@@ -306,10 +333,11 @@ export const POST = async (req: NextRequest) => {
         severity: 'high',
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
       });
-return NextResponse.json(
-        { error: 'Failed to process reconciliation' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to process reconciliation',
+      error
+    );
     }
     })(request);
 };

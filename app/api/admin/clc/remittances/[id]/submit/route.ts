@@ -19,6 +19,11 @@ import { eq, sql } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const submitRemittanceSchema = z.object({
   notes: z.string().optional(),
 });
@@ -36,12 +41,20 @@ export const POST = async (
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
     }
 
     const parsed = submitRemittanceSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
     }
 
     const body = parsed.data;
@@ -49,7 +62,11 @@ export const POST = async (
 
     const orgId = (body as Record<string, unknown>)["organizationId"] ?? (body as Record<string, unknown>)["orgId"] ?? (body as Record<string, unknown>)["organization_id"] ?? (body as Record<string, unknown>)["org_id"] ?? (body as Record<string, unknown>)["tenantId"] ?? (body as Record<string, unknown>)["tenant_id"] ?? (body as Record<string, unknown>)["unionId"] ?? (body as Record<string, unknown>)["union_id"] ?? (body as Record<string, unknown>)["localId"] ?? (body as Record<string, unknown>)["local_id"];
     if (typeof orgId === 'string' && orgId.length > 0 && orgId !== organizationId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden',
+      error
+    );
     }
 
   try {
@@ -73,10 +90,10 @@ export const POST = async (
               severity: 'medium',
               details: { reason: 'Remittance not found', remittanceId },
             });
-            return NextResponse.json(
-              { error: 'Remittance not found' },
-              { status: 404 }
-            );
+            return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Remittance not found'
+    );
           }
 
           // Validate current status
@@ -151,10 +168,11 @@ export const POST = async (
             severity: 'high',
             details: { error: error instanceof Error ? error.message : 'Unknown error', remittanceId: params.id },
           });
-return NextResponse.json(
-            { error: 'Failed to submit remittance' },
-            { status: 500 }
-          );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to submit remittance',
+      error
+    );
         }
   })(request, { params });
 };

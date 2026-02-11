@@ -13,12 +13,37 @@ import {
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const clausesCompareSchema = z.object({
+  clauseIds: z.string().uuid('Invalid clauseIds'),
+  analysisType = "all": z.boolean().optional(),
+  save = false: z.unknown().optional(),
+  comparisonName: z.boolean().optional(),
+  organizationId: z.string().uuid('Invalid organizationId'),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = clausesCompareSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { clauseIds, analysisType = "all", save = false, comparisonName, organizationId } = validation.data;
       const { 
         clauseIds, 
         analysisType = "all",
@@ -27,15 +52,18 @@ export const POST = async (request: NextRequest) => {
         organizationId
       } = body;
   if (organizationId && organizationId !== contextOrganizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!clauseIds || !Array.isArray(clauseIds) || clauseIds.length < 2) {
-        return NextResponse.json(
-          { error: "At least 2 clause IDs are required for comparison" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'At least 2 clause IDs are required for comparison'
+    );
       }
 
       if (clauseIds.length > 10) {
@@ -54,10 +82,10 @@ export const POST = async (request: NextRequest) => {
       // Optionally save the comparison
       if (save) {
         if (!comparisonName || !organizationId) {
-          return NextResponse.json(
-            { error: "comparisonName and organizationId are required to save comparison" },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'comparisonName and organizationId are required to save comparison'
+    );
         }
 
         const clauseType = result.clauses[0]?.clauseType || "other";
@@ -83,10 +111,11 @@ export const POST = async (request: NextRequest) => {
 
       return NextResponse.json(result);
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

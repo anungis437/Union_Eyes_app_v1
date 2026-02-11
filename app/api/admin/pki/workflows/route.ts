@@ -14,6 +14,7 @@ import {
   getDocumentWorkflows,
 } from '@/services/pki/workflow-engine';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
@@ -44,10 +45,7 @@ export const GET = async (request: NextRequest) => {
       });
 
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch workflows', details: (error as Error).message },
-        { status: 500 }
-      );
+return standardErrorResponse(ErrorCode.INTERNAL_ERROR);
     }
     })(request);
 };

@@ -19,6 +19,11 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const updateCampaignSchema = z.object({
   name: z.string().min(1).optional(),
   subject: z.string().min(1).optional(),
@@ -39,7 +44,10 @@ export async function GET(
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Organization context required'
+    );
       }
 
       // Rate limit check
@@ -48,10 +56,11 @@ export async function GET(
         `campaign-read:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       const [campaign] = await db
@@ -65,7 +74,10 @@ export async function GET(
         );
 
       if (!campaign) {
-        return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
       }
 
       // Audit log
@@ -80,10 +92,11 @@ export async function GET(
 
       return NextResponse.json({ campaign });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch campaign' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch campaign',
+      error
+    );
     }
   })(request);
 }
@@ -97,7 +110,10 @@ export async function PUT(
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Organization context required'
+    );
       }
 
       // Rate limit check
@@ -106,14 +122,22 @@ export async function PUT(
         `campaign-ops:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
     const body = await request.json();
-    const validatedData = updateCampaignSchema.parse(body);
+    const validation = updateCampaignSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const validatedData = validation.data;
 
       // Check if campaign can be edited
       const [existing] = await db
@@ -127,7 +151,10 @@ export async function PUT(
         );
 
     if (!existing) {
-      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
     }
 
     if (['sending', 'sent'].includes(existing.status || '')) {
@@ -167,10 +194,11 @@ export async function PUT(
           { status: 400 }
         );
       }
-return NextResponse.json(
-        { error: 'Failed to update campaign' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update campaign',
+      error
+    );
     }
   })(request);
 }
@@ -184,7 +212,10 @@ export async function DELETE(
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'Organization context required' }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Organization context required'
+    );
       }
 
       // Rate limit check
@@ -193,10 +224,11 @@ export async function DELETE(
         `campaign-ops:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Check if campaign can be deleted
@@ -211,7 +243,10 @@ export async function DELETE(
         );
 
     if (!existing) {
-      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
     }
 
     if (existing.status === 'sending') {
@@ -237,10 +272,11 @@ export async function DELETE(
 
       return NextResponse.json({ success: true });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to delete campaign' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete campaign',
+      error
+    );
     }
   })(request);
 }

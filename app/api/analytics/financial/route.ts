@@ -8,12 +8,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
+import { claims } from '@/db/schema/domains/claims';
 import { sql, gte, and, eq } from 'drizzle-orm';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withRoleAuth('steward', async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -24,9 +29,10 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
 
@@ -34,10 +40,10 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Organization ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const url = new URL(req.url);
@@ -119,9 +125,10 @@ export const GET = withRoleAuth('steward', async (req: NextRequest, context) => 
       }
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch financial analytics' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch financial analytics',
+      error
     );
   }
 });

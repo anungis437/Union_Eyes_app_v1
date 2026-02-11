@@ -5,6 +5,7 @@
  * Returns comprehensive claims metrics, trends, and breakdowns with period comparison
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
@@ -12,6 +13,11 @@ import { sql, db } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -22,9 +28,10 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
 
@@ -32,10 +39,10 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Organization ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const url = new URL(req.url);
@@ -158,9 +165,10 @@ export const GET = withEnhancedRoleAuth(30, async (req: NextRequest, context) =>
       filters: Object.keys(filters).length > 0 ? filters : null,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch claims analytics' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch claims analytics',
+      error
     );
   }
 });
@@ -208,7 +216,9 @@ async function getClaimsByDateRange(
 
   query = sql`${query} ORDER BY created_at DESC`;
 
-  const result = await db.execute(query);
+  const result = await withRLSContext(async (tx) => {
+      return await tx.execute(query);
+    });
   return result as any[];
 }
 

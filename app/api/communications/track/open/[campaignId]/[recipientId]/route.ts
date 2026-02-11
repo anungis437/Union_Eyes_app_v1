@@ -13,6 +13,7 @@ import { db } from '@/db';
 import { newsletterEngagement, newsletterRecipients } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { resolveIpGeolocation } from '@/lib/geo/ip-geolocation';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 // 1x1 transparent GIF pixel
 const TRACKING_PIXEL = Buffer.from(

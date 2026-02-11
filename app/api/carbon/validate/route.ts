@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import type { CarbonValidationRequest, CarbonValidationResponse } from '@/lib/types/compliance-api-types';
 import { withApiAuth } from '@/lib/api-auth-guard';
@@ -11,9 +12,26 @@ import { withApiAuth } from '@/lib/api-auth-guard';
  * POST /api/carbon/validate
  * Validate carbon neutrality or sustainability claims
  */
+
+const carbonValidateSchema = z.object({
+  claimType: z.unknown().optional(),
+  dataPoints: z.unknown().optional(),
+});
+
 export const POST = withApiAuth(async (request: NextRequest) => {
   try {
-    const body = await request.json() as CarbonValidationRequest;
+    const body = await request.json()
+    // Validate request body
+    const validation = carbonValidateSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { claimType, dataPoints } = validation.data; as CarbonValidationRequest;
     const { claimType, dataPoints } = body;
 
     // Validate required fields

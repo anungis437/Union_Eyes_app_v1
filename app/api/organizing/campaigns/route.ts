@@ -7,12 +7,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { organizingCampaigns } from '@/db/migrations/schema';
+import { organizingCampaigns } from '@/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -23,10 +28,10 @@ export const GET = async (request: NextRequest) => {
       const status = searchParams.get('status');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Build query conditions
@@ -53,18 +58,41 @@ export const GET = async (request: NextRequest) => {
       logger.error('Failed to fetch organizing campaigns', error as Error, {      organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const organizingCampaignsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  campaignName: z.string().min(1, 'campaignName is required'),
+  campaignCode: z.unknown().optional(),
+  campaignType: z.unknown().optional(),
+  targetEmployerName: z.string().min(1, 'targetEmployerName is required'),
+  estimatedEligibleWorkers: z.unknown().optional(),
+  laborBoardJurisdiction: z.boolean().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = organizingCampaignsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, campaignName, campaignCode, campaignType, targetEmployerName, estimatedEligibleWorkers, laborBoardJurisdiction } = validation.data;
       const {
         organizationId,
         campaignName,
@@ -75,16 +103,20 @@ export const POST = async (request: NextRequest) => {
         laborBoardJurisdiction,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !campaignName || !campaignCode || !campaignType || !targetEmployerName) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, campaignName, campaignCode, campaignType, and targetEmployerName are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, campaignName, campaignCode, campaignType, and targetEmployerName are required'
+      // TODO: Migrate additional details: campaignName, campaignCode, campaignType, and targetEmployerName are required'
+    );
       }
 
       // Create campaign
@@ -104,19 +136,21 @@ export const POST = async (request: NextRequest) => {
         })
         .returning();
 
-      return NextResponse.json({
-        success: true,
-        data: newCampaign,
-        message: 'Organizing campaign created successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: newCampaign,
+        message: 'Organizing campaign created successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to create organizing campaign', error as Error, {      correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

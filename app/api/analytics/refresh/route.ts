@@ -10,6 +10,11 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function postHandler(req: NextRequest, context) {
   const { userId, organizationId } = context;
 
@@ -20,9 +25,10 @@ async function postHandler(req: NextRequest, context) {
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
 
@@ -30,10 +36,10 @@ async function postHandler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     // Refresh all views
@@ -62,9 +68,10 @@ async function postHandler(req: NextRequest, context) {
       totalDurationMs: duration,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to refresh analytics views' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to refresh analytics views',
+      error
     );
   }
 }
@@ -75,10 +82,10 @@ async function getHandler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     const stats = await getViewRefreshStats();
@@ -91,9 +98,10 @@ async function getHandler(req: NextRequest, context) {
       })),
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch view refresh stats' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch view refresh stats',
+      error
     );
   }
 }

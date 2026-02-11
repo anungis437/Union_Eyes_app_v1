@@ -13,6 +13,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -38,7 +43,10 @@ export const GET = async (request: NextRequest) => {
       const { searchParams } = new URL(request.url);
       const organizationId = searchParams.get('organizationId');
   if (organizationId && organizationId !== contextOrganizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
       const taxYear = parseInt(searchParams.get('taxYear') || new Date().getFullYear().toString());
@@ -46,10 +54,10 @@ export const GET = async (request: NextRequest) => {
       const download = searchParams.get('download') === 'true';
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Call database function to generate CRA XML
@@ -105,13 +113,21 @@ export const GET = async (request: NextRequest) => {
         taxYear: request.nextUrl.searchParams.get('taxYear'),
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
 };
+
+
+const taxCraExportSchema = z.object({
+  organizationIds: z.string().uuid('Invalid organizationIds'),
+  taxYear: z.string().min(1, 'taxYear is required'),
+  slipType = 't4a': z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -119,20 +135,31 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = taxCraExportSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationIds, taxYear, slipType = 't4a' } = validation.data;
       const { organizationIds, taxYear, slipType = 't4a' } = body;
 
       if (!organizationIds || !Array.isArray(organizationIds) || organizationIds.length === 0) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationIds array is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationIds array is required'
+    );
       }
 
       if (!taxYear) {
-        return NextResponse.json(
-          { error: 'Bad Request - taxYear is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - taxYear is required'
+    );
       }
 
       // Generate XML for each organization
@@ -184,9 +211,10 @@ export const POST = async (request: NextRequest) => {
         userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

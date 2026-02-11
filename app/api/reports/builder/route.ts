@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * Report Builder API
@@ -16,6 +17,23 @@ import { eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const reportsBuilderSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  config: z.unknown().optional(),
+  description: z.string().optional(),
+  category: z.unknown().optional(),
+  isPublic: z.boolean().optional(),
+  isTemplate: z.boolean().optional(),
+  templateId: z.string().uuid('Invalid templateId'),
+});
+
+
 export const POST = async (req: NextRequest) => {
   return withRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
@@ -27,38 +45,39 @@ export const POST = async (req: NextRequest) => {
     );
 
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
     }
 
   try {
 
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       const body = await req.json();
 
       // Validate required fields
       if (!body.name || !body.config) {
-        return NextResponse.json(
-          { error: 'Report name and configuration are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Report name and configuration are required'
+    );
       }
 
       // Validate config structure
       const config = body.config;
       if (!config.dataSourceId || !config.fields || config.fields.length === 0) {
-        return NextResponse.json(
-          { error: 'Invalid report configuration: missing data source or fields' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid report configuration: missing data source or fields'
+    );
       }
 
       // Create report
@@ -116,10 +135,10 @@ export const GET = async (req: NextRequest) => {
   try {
 
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       // Get all custom reports for this tenant

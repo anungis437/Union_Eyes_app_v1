@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
@@ -7,13 +8,18 @@ import {
   members,
   courseRegistrations,
   trainingCourses,
-} from "@/db/migrations/schema";
+} from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { sendProgramMilestone } from "@/lib/email/training-notifications";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/education/programs/[id]/enrollments - List program enrollments
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(10, async (request, context) => {
@@ -30,7 +36,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .where(eq(trainingPrograms.id, programId));
 
       if (!program) {
-        return NextResponse.json({ error: "Program not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Program not found'
+    );
       }
 
       // Build WHERE conditions
@@ -80,7 +89,8 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         enrichedEnrollments = await Promise.all(
           enrollments.map(async (enrollment) => {
             // Get completed courses for this member in this program
-            const completedCourses = await db.execute(sql`
+            const completedCourses = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
             SELECT 
               cr.id as registration_id,
               tc.id as course_id,
@@ -96,6 +106,7 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
               AND tc.id = ANY(${program.requiredCourses || []})
             ORDER BY cr.completion_date DESC
           `);
+    });
 
             // Calculate progress metrics
             const requiredCoursesArray = Array.isArray(program.requiredCourses) ? program.requiredCourses : [];
@@ -171,20 +182,48 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       });
     } catch (error) {
       logger.error("Error retrieving program enrollments", { error });
-      return NextResponse.json(
-        { error: "Failed to retrieve program enrollments" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve program enrollments',
+      error
+    );
     }
     })(request, { params });
 };
 
 // POST /api/education/programs/[id]/enrollments - Enroll member in program
+
+const educationProgramsEnrollmentsSchema = z.object({
+  memberId: z.string().uuid('Invalid memberId'),
+  startDate: z.string().datetime().optional(),
+  expectedCompletionDate: z.string().datetime().optional(),
+  mentorId: z.string().uuid('Invalid mentorId'),
+  currentLevel: z.unknown().optional(),
+  enrollmentStatus: z.unknown().optional(),
+  completionPercentage: z.unknown().optional(),
+  hoursCompleted: z.unknown().optional(),
+  coursesCompleted: z.unknown().optional(),
+  actualCompletionDate: z.string().datetime().optional(),
+  withdrawalReason: z.unknown().optional(),
+  notes: z.string().optional(),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const programId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = educationProgramsEnrollmentsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { memberId, startDate, expectedCompletionDate, mentorId, currentLevel, enrollmentStatus, completionPercentage, hoursCompleted, coursesCompleted, actualCompletionDate, withdrawalReason, notes } = validation.data;
       const {
         memberId,
         startDate,
@@ -195,10 +234,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Validate required fields
       if (!memberId) {
-        return NextResponse.json(
-          { error: "memberId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'memberId is required'
+    );
       }
 
       // Verify program exists and is active
@@ -208,7 +247,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .where(eq(trainingPrograms.id, programId));
 
       if (!program) {
-        return NextResponse.json({ error: "Program not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Program not found'
+    );
       }
 
       if (!program.isActive) {
@@ -267,19 +309,21 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         memberId,
       });
 
-      return NextResponse.json(
-        {
+      return standardSuccessResponse(
+      { 
           enrollment: newEnrollment,
           message: "Member enrolled successfully",
-        },
-        { status: 201 }
-      );
+         },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error("Error enrolling member in program", { error });
-      return NextResponse.json(
-        { error: "Failed to enroll member in program" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to enroll member in program',
+      error
+    );
     }
     })(request, { params });
 };
@@ -292,10 +336,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       const enrollmentId = searchParams.get("enrollmentId");
 
       if (!enrollmentId) {
-        return NextResponse.json(
-          { error: "enrollmentId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'enrollmentId is required'
+    );
       }
 
       const body = await request.json();
@@ -351,10 +395,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .returning();
 
       if (!updatedEnrollment) {
-        return NextResponse.json(
-          { error: "Enrollment not found" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Enrollment not found'
+    );
       }
 
       // Send milestone email if enrollment completed (non-blocking)
@@ -405,10 +449,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       });
     } catch (error) {
       logger.error("Error updating program enrollment", { error });
-      return NextResponse.json(
-        { error: "Failed to update enrollment" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update enrollment',
+      error
+    );
     }
     })(request, { params });
 };

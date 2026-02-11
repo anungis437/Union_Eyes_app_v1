@@ -5,6 +5,11 @@ import { and, eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schema
 const AnswerSchema = z.object({
   questionId: z.string().uuid(),
@@ -31,10 +36,10 @@ export const GET = withApiAuth(async (
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     const { searchParams } = new URL(request.url);
@@ -50,10 +55,10 @@ export const GET = withApiAuth(async (
       .limit(1);
 
     if (!survey) {
-      return NextResponse.json(
-        { error: 'Survey not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Survey not found'
+    );
     }
 
     // Fetch responses
@@ -92,9 +97,10 @@ export const GET = withApiAuth(async (
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch responses' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch responses',
+      error
     );
   }
 });
@@ -111,10 +117,10 @@ export const POST = withApiAuth(async (
     const userId = request.headers.get('x-user-id') || null;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     const body = await request.json();
@@ -122,34 +128,11 @@ export const POST = withApiAuth(async (
     // Validate request body
     const validation = CreateResponseSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const data = validation.data;
-
-    // Fetch survey with questions
-    const [survey] = await db
-      .select()
-      .from(surveys)
-      .where(and(eq(surveys.id, surveyId), eq(surveys.tenantId, tenantId)))
-      .limit(1);
-
-    if (!survey) {
-      return NextResponse.json(
-        { error: 'Survey not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check survey status
-    if (survey.status !== 'published') {
-      return NextResponse.json(
-        { error: 'Survey is not published' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed'
+      // TODO: Migrate additional details: details: validation.error.errors
+    );
     }
 
     // Check if survey is closed
@@ -162,10 +145,10 @@ export const POST = withApiAuth(async (
 
     // Check authentication requirements
     if (survey.requireAuthentication && !userId) {
-      return NextResponse.json(
-        { error: 'Authentication required to submit response' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication required to submit response'
+    );
     }
 
     // Fetch questions for validation
@@ -282,18 +265,20 @@ export const POST = withApiAuth(async (
       .values(answerValues)
       .returning();
 
-    return NextResponse.json(
-      {
+    return standardSuccessResponse(
+      { 
         response,
         answers: createdAnswers,
         message: 'Response submitted successfully',
-      },
-      { status: 201 }
+       },
+      undefined,
+      201
     );
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to submit response' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to submit response',
+      error
     );
   }
 });

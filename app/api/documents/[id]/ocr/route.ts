@@ -8,6 +8,11 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { processDocumentOCR } from "@/lib/services/document-service";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * POST /api/documents/[id]/ocr
  * Process document with OCR to extract text content
@@ -41,10 +46,11 @@ export const POST = async (
           severity: 'high',
           details: { documentId: params.id, error: error instanceof Error ? error.message : 'Unknown error' },
         });
-return NextResponse.json(
-          { error: "Failed to process document OCR", details: error instanceof Error ? error.message : "Unknown error" },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to process document OCR',
+      error
+    );
       }
       })(request, { params });
 };

@@ -7,7 +7,7 @@
  */
 
 import { tenants } from "@/db/schema/tenant-management-schema";
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { eq, and } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";

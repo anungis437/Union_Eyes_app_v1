@@ -9,6 +9,11 @@ import { claims } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { mlPredictions } from '@/db/schema/ml-predictions-schema';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * POST /api/ml/predictions/claim-outcome
  * Predict claim outcome using ML model
@@ -41,6 +46,12 @@ import { mlPredictions } from '@/db/schema/ml-predictions-schema';
  *   }
  * }
  */
+
+const mlPredictionsClaim-outcomeSchema = z.object({
+  claimId: z.string().uuid('Invalid claimId'),
+  claimData: z.unknown().optional(),
+});
+
 export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -63,6 +74,17 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
   try {
     const tenantId = organizationId || userId;
     const body = await request.json();
+    // Validate request body
+    const validation = mlPredictionsClaim-outcomeSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { claimId, claimData } = validation.data;
     
     let claimData: any;
     
@@ -76,7 +98,10 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
       );
       
       if (!claim || claim.organizationId !== tenantId) {
-        return NextResponse.json({ error: 'Claim not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
       
       claimData = {
@@ -87,10 +112,10 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
     } else if (body.claimData) {
       claimData = body.claimData;
     } else {
-      return NextResponse.json(
-        { error: 'Either claimId or claimData is required' }, 
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Either claimId or claimData is required'
+    );
     }
 
     // Call AI service for prediction
@@ -142,9 +167,10 @@ export const POST = withEnhancedRoleAuth(20, async (request: NextRequest, contex
     return NextResponse.json({ prediction });
     
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to predict claim outcome' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to predict claim outcome',
+      error
     );
   }
 });

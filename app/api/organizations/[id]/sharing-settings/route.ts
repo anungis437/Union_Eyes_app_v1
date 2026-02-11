@@ -6,6 +6,11 @@ import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/sharing-settings
  * Retrieve sharing settings for an organization
@@ -19,12 +24,18 @@ export async function GET(
     const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const organizationId = params.id;
   if (authResult.organizationId && organizationId !== authResult.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
     const supabase = await createClient();
@@ -36,10 +47,10 @@ export async function GET(
     );
 
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: "Access denied - admin or officer role required" },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied - admin or officer role required'
+    );
     }
 
     // Get sharing settings
@@ -78,9 +89,10 @@ export async function GET(
       userId,
       correlationId: request.headers.get('x-correlation-id')
     });
-    return NextResponse.json(
-      { error: "Failed to fetch sharing settings" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch sharing settings',
+      error
     );
   }
 }
@@ -98,7 +110,10 @@ export async function PUT(
     const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const organizationId = params.id;
@@ -112,10 +127,10 @@ export async function PUT(
     );
 
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: "Access denied - admin or officer role required" },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied - admin or officer role required'
+    );
     }
 
     // Validate sharing levels
@@ -124,19 +139,19 @@ export async function PUT(
       body.default_clause_sharing_level &&
       !validSharingLevels.includes(body.default_clause_sharing_level)
     ) {
-      return NextResponse.json(
-        { error: "Invalid clause sharing level" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid clause sharing level'
+    );
     }
     if (
       body.default_precedent_sharing_level &&
       !validSharingLevels.includes(body.default_precedent_sharing_level)
     ) {
-      return NextResponse.json(
-        { error: "Invalid precedent sharing level" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid precedent sharing level'
+    );
     }
 
     // Validate federation/congress sharing authorization
@@ -213,9 +228,10 @@ export async function PUT(
       userId,
       correlationId: request.headers.get('x-correlation-id')
     });
-    return NextResponse.json(
-      { error: "Failed to update sharing settings" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update sharing settings',
+      error
     );
   }
 }

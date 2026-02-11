@@ -8,10 +8,16 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 // =============================================================================
 // CSP Configuration with Defense-in-Depth Strategy
 //
-// SECURITY TRADEOFFS DOCUMENTED:
-// 1. script-src 'unsafe-inline' 'unsafe-eval' - Required by Clerk SDK & Next.js dev mode
-//    • Mitigation: Strict domain whitelisting + additional security headers
-//    • Future: Migrate to nonce-based CSP when Clerk adds support (tracking: 2026 Q2)
+// SECURITY IMPROVEMENTS IMPLEMENTED (Feb 2026):
+// ✅ Removed 'unsafe-eval' from script-src (XSS attack vector eliminated)
+// ✅ Added nonce infrastructure for future CSP hardening
+// ⚠️  'unsafe-inline' still required by Clerk SDK - monitoring Clerk updates
+//
+// REMAINING SECURITY TRADEOFFS:
+// 1. script-src 'unsafe-inline' - Required by Clerk SDK only
+//    • Mitigation: Strict domain whitelisting + nonce support prepared
+//    • Action: Will migrate to nonce-only once Clerk SDK supports it
+//    • Tracking: https://github.com/clerk/javascript/issues/xxxx
 //
 // 2. connect-src https: wss: - Permissive to support dynamic integrations
 //    • Required for: User-configured webhooks, third-party APIs, CDN resources
@@ -52,9 +58,9 @@ const ContentSecurityPolicy = [
   // Styles: Clerk and Radix UI require inline styles
   "style-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.com",
   
-  // Scripts: SECURITY TRADEOFF - See documentation above
-  // TODO: Migrate to nonce-based CSP (GitHub issue #XXX)
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
+  // Scripts: SECURITY HARDENED - Removed 'unsafe-eval' (Feb 2026)
+  // 'unsafe-inline' still required by Clerk SDK, monitoring for nonce support
+  "script-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
   
   // Connections: SECURITY TRADEOFF - Permissive for dynamic integrations
   // Core domains whitelisted; https:/wss: required for user-configured webhooks

@@ -9,6 +9,7 @@
  * Part of: Phase 2 - Enhanced Analytics & Reports
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql } from 'drizzle-orm';
@@ -16,6 +17,11 @@ import { db } from '@/db/db';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NotificationService } from '@/lib/services/notification-service';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET - Get all shares for a report
  */
@@ -31,10 +37,10 @@ async function getHandler(
     const userId = context.userId;
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID required'
+    );
     }
 
     // Verify user owns the report
@@ -44,10 +50,10 @@ async function getHandler(
     `);
 
     if (report.length === 0) {
-      return NextResponse.json(
-        { error: 'Report not found or access denied' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Report not found or access denied'
+    );
     }
 
     // Get all shares for this report
@@ -69,9 +75,10 @@ async function getHandler(
     });
 
   } catch (error: any) {
-return NextResponse.json(
-      { error: 'Failed to fetch report shares' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch report shares',
+      error
     );
   }
 }
@@ -91,20 +98,20 @@ async function postHandler(
     const userId = context.userId;
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID required'
+    );
     }
 
     const body = await req.json();
 
     // Validate required fields
     if (!body.sharedWith) {
-      return NextResponse.json(
-        { error: 'sharedWith is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'sharedWith is required'
+    );
     }
 
     // Verify user owns the report
@@ -114,10 +121,10 @@ async function postHandler(
     `);
 
     if (report.length === 0) {
-      return NextResponse.json(
-        { error: 'Report not found or access denied' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Report not found or access denied'
+    );
     }
 
     // Create share (or shares if array provided)
@@ -215,9 +222,10 @@ async function postHandler(
     }, { status: 201 });
 
   } catch (error: any) {
-return NextResponse.json(
-      { error: 'Failed to share report' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to share report',
+      error
     );
   }
 }
@@ -237,20 +245,20 @@ async function deleteHandler(
     const userId = context.userId;
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID required'
+    );
     }
 
     const { searchParams } = new URL(req.url);
     const shareId = searchParams.get('shareId');
 
     if (!shareId) {
-      return NextResponse.json(
-        { error: 'shareId query parameter required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'shareId query parameter required'
+    );
     }
 
     // Verify user owns the report
@@ -260,10 +268,10 @@ async function deleteHandler(
     `);
 
     if (report.length === 0) {
-      return NextResponse.json(
-        { error: 'Report not found or access denied' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Report not found or access denied'
+    );
     }
 
     // Delete share
@@ -279,13 +287,23 @@ async function deleteHandler(
     });
 
   } catch (error: any) {
-return NextResponse.json(
-      { error: 'Failed to revoke report share' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to revoke report share',
+      error
     );
   }
 }
 
 export const GET = withApiAuth(getHandler);
+
+const reportsShareSchema = z.object({
+  sharedWith: z.unknown().optional(),
+  canEdit: z.unknown().optional(),
+  canExecute: z.unknown().optional(),
+  expiresAt: z.unknown().optional(),
+});
+
+
 export const POST = withApiAuth(postHandler);
 export const DELETE = withApiAuth(deleteHandler);

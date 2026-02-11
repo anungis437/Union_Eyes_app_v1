@@ -4,13 +4,21 @@ import { db } from "@/db";
 import { gdprDataRequests } from "@/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 type GdprRequestType = typeof gdprDataRequests.$inferSelect.requestType;
 
 export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const { searchParams } = new URL(request.url);
@@ -19,10 +27,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const requestType = searchParams.get("type") as GdprRequestType | null;
 
     if (!organizationIdFromQuery) {
-      return NextResponse.json(
-        { error: "Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const conditions = [
@@ -42,9 +50,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
 
     return NextResponse.json({ requests });
   } catch {
-    return NextResponse.json(
-      { error: "Failed to load GDPR requests" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to load GDPR requests',
+      error
     );
   }
 });

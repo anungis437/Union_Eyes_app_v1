@@ -13,6 +13,11 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -30,7 +35,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -39,10 +47,11 @@ export const GET = async (request: NextRequest) => {
         `social-analytics-read:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Parse query parameters
@@ -84,7 +93,10 @@ export const GET = async (request: NextRequest) => {
       const { data: analytics, error } = await query;
 
       if (error) {
-return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch analytics'
+    );
       }
 
       // Group analytics by account
@@ -151,13 +163,26 @@ return NextResponse.json(
     })(request);
 };
 
+
+const social-mediaAnalyticsSchema = z.object({
+  platform: z.unknown().optional(),
+  campaign_id: z.string().uuid('Invalid campaign_id'),
+  start_date: z.string().datetime().optional(),
+  end_date: z.string().datetime().optional(),
+  limit = 50: z.unknown().optional(),
+  offset = 0: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('member', async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -166,13 +191,25 @@ export const POST = async (request: NextRequest) => {
         `social-analytics-refresh:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = social-mediaAnalyticsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { platform, campaign_id, start_date, end_date, limit = 50, offset = 0 } = validation.data;
       const { platform, campaign_id, start_date, end_date, limit = 50, offset = 0 } = body;
 
       const startDateStr = start_date || format(subDays(new Date(), 30), 'yyyy-MM-dd');
@@ -224,7 +261,10 @@ export const POST = async (request: NextRequest) => {
       const { data: posts, error, count } = await query;
 
       if (error) {
-return NextResponse.json({ error: 'Failed to fetch post analytics' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch post analytics'
+    );
       }
 
       // Calculate summary metrics
@@ -291,7 +331,10 @@ export const PUT = async (request: NextRequest) => {
       const campaignId = searchParams.get('id');
 
       if (!campaignId) {
-        return NextResponse.json({ error: 'Campaign ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Campaign ID required'
+    );
       }
 
       // Verify user has access to this campaign
@@ -302,11 +345,17 @@ export const PUT = async (request: NextRequest) => {
         .single();
 
       if (fetchError || !campaign) {
-        return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
       }
 
       if (organizationId !== campaign.organization_id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Unauthorized'
+        );
       }
 
       // Get campaign posts
@@ -469,7 +518,10 @@ export const DELETE = async (request: NextRequest) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Parse query parameters
@@ -619,7 +671,10 @@ export const DELETE = async (request: NextRequest) => {
         }
 
         default:
-          return NextResponse.json({ error: 'Invalid data type' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid data type'
+    );
       }
 
       // Generate CSV

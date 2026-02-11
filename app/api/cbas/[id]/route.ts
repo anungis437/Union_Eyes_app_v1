@@ -19,6 +19,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logger } from "@/lib/logger";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -36,7 +41,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       });
 
       if (!cba) {
-        return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
       }
 
       const response: any = { cba };
@@ -58,13 +66,19 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(response);
     } catch (error) {
       logger.error("Error fetching CBA", error as Error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
+
+
+const cbasSchema = z.object({
+  status: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
@@ -73,13 +87,27 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
   try {
       const { id } = params;
       const body = await request.json();
+    // Validate request body
+    const validation = cbasSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { status } = validation.data;
 
       // If only updating status, use specialized function
       if (body.status && Object.keys(body).length === 1) {
         const updatedCba = await updateCBAStatus(id, body.status);
         
         if (!updatedCba) {
-          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
         }
 
         return NextResponse.json({ cba: updatedCba });
@@ -92,7 +120,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       });
 
       if (!updatedCba) {
-        return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
       }
 
       return NextResponse.json({ cba: updatedCba });
@@ -101,16 +132,18 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       
       // Handle unique constraint violations
       if ((error as any)?.code === "23505") {
-        return NextResponse.json(
-          { error: "CBA number already exists" },
-          { status: 409 }
-        );
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'CBA number already exists',
+      error
+    );
       }
 
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -128,7 +161,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         const success = await deleteCBA(id); // This does soft delete by default
         
         if (!success) {
-          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
         }
 
         return NextResponse.json({ 
@@ -140,7 +176,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         const success = await deleteCBA(id);
         
         if (!success) {
-          return NextResponse.json({ error: "CBA not found" }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'CBA not found'
+    );
         }
 
         return NextResponse.json({ 
@@ -150,10 +189,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       }
     } catch (error) {
       logger.error("Error deleting CBA", error as Error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

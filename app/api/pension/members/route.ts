@@ -12,6 +12,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -22,10 +27,10 @@ export const GET = async (request: NextRequest) => {
       const memberId = searchParams.get('memberId');
 
       if (!planId) {
-        return NextResponse.json(
-          { error: 'Bad Request - planId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - planId is required'
+    );
       }
 
       const conditions = [sql`ppm.pension_plan_id = ${planId}`];
@@ -65,18 +70,39 @@ export const GET = async (request: NextRequest) => {
       logger.error('Failed to fetch pension plan members', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const pensionMembersSchema = z.object({
+  pensionPlanId: z.string().uuid('Invalid pensionPlanId'),
+  memberId: z.string().uuid('Invalid memberId'),
+  enrollmentDate: z.string().datetime().optional(),
+  beneficiaryName: z.string().min(1, 'beneficiaryName is required'),
+  beneficiaryRelationship: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = pensionMembersSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { pensionPlanId, memberId, enrollmentDate, beneficiaryName, beneficiaryRelationship } = validation.data;
       const {
         pensionPlanId,
         memberId,
@@ -86,10 +112,11 @@ export const POST = async (request: NextRequest) => {
       } = body;
 
       if (!pensionPlanId || !memberId || !enrollmentDate) {
-        return NextResponse.json(
-          { error: 'Bad Request - pensionPlanId, memberId, and enrollmentDate are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - pensionPlanId, memberId, and enrollmentDate are required'
+      // TODO: Migrate additional details: memberId, and enrollmentDate are required'
+    );
       }
 
       const result = await db.execute(sql`
@@ -115,20 +142,22 @@ export const POST = async (request: NextRequest) => {
       RETURNING *
     `);
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Member enrolled in pension plan successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Member enrolled in pension plan successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to enroll member in pension plan', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

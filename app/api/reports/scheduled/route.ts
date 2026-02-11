@@ -8,8 +8,14 @@
  * GUARDED: withOrganizationAuth (existing guard is acceptable)
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth, OrganizationContext } from '@/lib/organization-middleware';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 import {
   getScheduledReports,
   createScheduledReport,
@@ -46,9 +52,10 @@ async function getHandler(req: NextRequest, context: OrganizationContext) {
       count: schedules.length,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch scheduled reports' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch scheduled reports',
+      error
     );
   }
 }
@@ -65,38 +72,38 @@ async function postHandler(req: NextRequest, context: OrganizationContext) {
 
     // Validate required fields
     if (!body.reportId) {
-      return NextResponse.json(
-        { error: 'Report ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Report ID is required'
+    );
     }
 
     if (!body.scheduleType) {
-      return NextResponse.json(
-        { error: 'Schedule type is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Schedule type is required'
+    );
     }
 
     if (!body.deliveryMethod) {
-      return NextResponse.json(
-        { error: 'Delivery method is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Delivery method is required'
+    );
     }
 
     if (!body.recipients || body.recipients.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one recipient is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'At least one recipient is required'
+    );
     }
 
     if (!body.exportFormat) {
-      return NextResponse.json(
-        { error: 'Export format is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Export format is required'
+    );
     }
 
     // Create the scheduled report
@@ -114,13 +121,26 @@ async function postHandler(req: NextRequest, context: OrganizationContext) {
 
     return NextResponse.json(schedule, { status: 201 });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to create scheduled report' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create scheduled report',
+      error
     );
   }
 }
 
 export const GET = withOrganizationAuth(getHandler);
+
+const reportsScheduledSchema = z.object({
+  reportId: z.string().uuid('Invalid reportId'),
+  scheduleType: z.unknown().optional(),
+  deliveryMethod: z.unknown().optional(),
+  recipients: z.unknown().optional(),
+  exportFormat: z.unknown().optional(),
+  scheduleConfig: z.unknown().optional(),
+  isActive: z.boolean().optional(),
+});
+
+
 export const POST = withOrganizationAuth(postHandler);
 

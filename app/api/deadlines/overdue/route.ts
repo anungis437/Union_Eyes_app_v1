@@ -5,6 +5,11 @@ import { cookies } from 'next/headers';
 import { db, organizations } from '@/db';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/deadlines/overdue
  * Get all overdue deadlines for the tenant
@@ -13,10 +18,10 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser(request);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     // Get organization from cookies
@@ -53,9 +58,10 @@ export async function GET(request: NextRequest) {
       count: deadlines.length,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch overdue deadlines' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch overdue deadlines',
+      error
     );
   }
 }

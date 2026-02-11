@@ -23,6 +23,11 @@ import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateHierarchyAccess, validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 import type { InferSelectModel } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // =============================================================================
 // VALIDATION SCHEMAS
 // =============================================================================
@@ -129,7 +134,7 @@ export const GET = async (request: NextRequest) => {
           dataType: 'CLAUSE_LIBRARY',
           details: { reason: 'No organization context' },
         });
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No organization context");
       }
 
       const userOrgId = organizationId;
@@ -253,10 +258,11 @@ export const GET = async (request: NextRequest) => {
     } catch (error) {
       logger.error('Error fetching clauses', error as Error, {      correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to fetch clauses" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch clauses',
+      error
+    );
     }
     })(request);
 };
@@ -279,7 +285,7 @@ export const POST = async (request: NextRequest) => {
           dataType: 'CLAUSE_LIBRARY',
           details: { reason: 'No organization context' },
         });
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No organization context");
       }
 
       const body = await request.json();
@@ -496,10 +502,11 @@ export const POST = async (request: NextRequest) => {
     } catch (error) {
       logger.error('Error creating clause', error as Error, {      correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to create clause" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create clause',
+      error
+    );
     }
     })(request);
 };

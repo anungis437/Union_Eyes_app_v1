@@ -15,10 +15,15 @@ import {
   arbitratorProfiles, 
   claimPrecedentAnalysis
 } from "@/db/schema";
-import { claims } from "@/db/schema/claims-schema";
+import { claims } from "@/db/schema/domains/claims";
 import { eq, desc, and, or, like, inArray, sql } from "drizzle-orm";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
 
@@ -69,7 +74,10 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
             .limit(1);
 
           if (!claim) {
-            return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+            return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
           }
 
           // Generate new analysis based on claim
@@ -143,9 +151,10 @@ export const GET = withEnhancedRoleAuth(10, async (request: NextRequest, context
       });
       }, organizationId);
   } catch (error) {
-return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 });

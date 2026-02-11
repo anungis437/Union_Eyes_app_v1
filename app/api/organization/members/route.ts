@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { 
@@ -12,6 +13,11 @@ import {
   getActiveMemberCount,
   createMember
 } from '@/db/queries/organization-members-queries';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,15 +42,12 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
       details: { organizationId, memberCount: members.length },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        members,
-        stats: {
-          total: totalCount,
-          active: activeCount,
-          inactive: totalCount - activeCount,
-        },
+    return standardSuccessResponse({
+      members,
+      stats: {
+        total: totalCount,
+        active: activeCount,
+        inactive: totalCount - activeCount,
       },
     });
   } catch (error) {
@@ -58,11 +61,25 @@ export const GET = withEnhancedRoleAuth(20, async (request, context) => {
       dataType: 'MEMBER_DATA',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-return NextResponse.json(
-      { success: false, error: 'Failed to fetch members' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch members',
+      error
     );
   }
+});
+
+const createMemberSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Valid email is required'),
+  membershipNumber: z.string().min(1, 'Membership number is required'),
+  phone: z.string().nullable().optional(),
+  role: z.string().optional(),
+  status: z.string().optional(),
+  department: z.string().nullable().optional(),
+  position: z.string().nullable().optional(),
+  hireDate: z.string().nullable().optional(),
+  unionJoinDate: z.string().nullable().optional(),
 });
 
 /**
@@ -76,9 +93,9 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
   try {
     const body = await request.json();
 
-    // Validate required fields
-    const { name, email, membershipNumber } = body;
-    if (!name || !email || !membershipNumber) {
+    // Validate request body
+    const validation = createMemberSchema.safeParse(body);
+    if (!validation.success) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -87,13 +104,15 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'MEMBER_DATA',
-        details: { reason: 'Name, email, and membership number are required', organizationId },
+        details: { reason: validation.error.message, organizationId },
       });
-      return NextResponse.json(
-        { success: false, error: 'Name, email, and membership number are required' },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
       );
     }
+
+    const { name, email, membershipNumber } = validation.data;
 
     // Create member with organization ID
     const newMember = await createMember({
@@ -124,11 +143,11 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
       details: { organizationId, memberEmail: email, membershipNumber },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: newMember,
-      message: 'Member created successfully'
-    }, { status: 201 });
+    return standardSuccessResponse(
+      newMember,
+      'Member created successfully',
+      201
+    );
   } catch (error: any) {
     logApiAuditEvent({
       timestamp: new Date().toISOString(),
@@ -140,17 +159,18 @@ export const POST = withEnhancedRoleAuth(40, async (request, context) => {
       dataType: 'MEMBER_DATA',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-// Handle unique constraint violations
-    if (error.code === '23505') {
-      return NextResponse.json(
-        { success: false, error: 'A member with this email or membership number already exists' },
-        { status: 409 }
+    // Handle unique constraint violations
+    if ((error as any).code === '23505') {
+      return standardErrorResponse(
+        ErrorCode.RESOURCE_ALREADY_EXISTS,
+        'A member with this email or membership number already exists'
       );
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to create member' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create member',
+      error
     );
   }
 });

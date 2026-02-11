@@ -17,6 +17,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { wageEnrichmentService } from '@/lib/services/external-data/wage-enrichment-service';
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Common NOC codes for unionized occupations
 const COMMON_NOC_CODES = [
   '6513', // Food and beverage servers
@@ -51,7 +56,10 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     logger.warn('[CRON] Unauthorized external data sync attempt');
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
   }
 
   logger.info('[CRON] Starting external data sync...');

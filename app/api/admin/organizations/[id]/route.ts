@@ -29,6 +29,11 @@ import { eq, and, sql } from "drizzle-orm";
 import { z } from "zod";
 import { withEnhancedRoleAuth, withAdminAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // =====================================================
 // GET - Get Organization by ID
 // =====================================================
@@ -44,10 +49,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         const org = await getOrganizationById(id, tx);
 
         if (!org) {
-          return NextResponse.json(
-            { error: "Organization not found" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
         }
 
         // Get additional statistics using RLS-protected queries
@@ -96,10 +101,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         });
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Failed to fetch organization" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch organization',
+      error
+    );
     }
     })(request, { params });
 };
@@ -108,6 +114,13 @@ return NextResponse.json(
 // PUT - Update Organization
 // =====================================================
 
+
+const adminOrganizationsSchema = z.object({
+  slug: z.unknown().optional(),
+  parentId: z.string().uuid('Invalid parentId'),
+  organizationType: z.unknown().optional(),
+});
+
 export const PUT = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId } = context;
@@ -115,16 +128,27 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
   try {
       const { id } = params;
       const body = await request.json();
+    // Validate request body
+    const validation = adminOrganizationsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { slug, parentId, organizationType } = validation.data;
 
       // Wrap all operations in RLS context for transaction consistency
       return withRLSContext(async (tx) => {
         // Check if organization exists
         const existingOrg = await getOrganizationById(id, tx);
         if (!existingOrg) {
-          return NextResponse.json(
-            { error: "Organization not found" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
         }
 
         // Validate slug uniqueness if being changed
@@ -136,10 +160,10 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
             .limit(1);
 
           if (slugCheck) {
-            return NextResponse.json(
-              { error: "Organization with this slug already exists" },
-              { status: 409 }
-            );
+            return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Organization with this slug already exists'
+    );
           }
         }
 
@@ -172,10 +196,10 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
             .limit(1);
 
           if (!newParent) {
-            return NextResponse.json(
-              { error: "Parent organization not found" },
-              { status: 404 }
-            );
+            return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Parent organization not found'
+    );
           }
 
           // Validate type hierarchy
@@ -213,10 +237,11 @@ export const PUT = async (request: NextRequest, { params }: { params: { id: stri
       });
     });
     } catch (error) {
-return NextResponse.json(
-        { error: "Failed to update organization" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update organization',
+      error
+    );
     }
     })(request, { params });
 };
@@ -235,10 +260,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         // Check if organization exists
         const existingOrg = await getOrganizationById(id, tx);
         if (!existingOrg) {
-          return NextResponse.json(
-            { error: "Organization not found" },
-            { status: 404 }
-          );
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
         }
 
         // Check for child organizations
@@ -296,10 +321,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         });
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Failed to archive organization" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to archive organization',
+      error
+    );
     }
     })(request, { params });
 };

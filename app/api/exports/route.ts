@@ -9,6 +9,11 @@ import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getUserExportJobs } from '@/db/queries/analytics-queries';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function getHandler(req: NextRequest, context) {
   try {
     const organizationId = context.organizationId;
@@ -16,10 +21,10 @@ async function getHandler(req: NextRequest, context) {
     const userId = context.userId;
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Tenant ID and User ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID and User ID required'
+    );
     }
 
     const jobs = await getUserExportJobs(tenantId, userId);
@@ -39,9 +44,10 @@ async function getHandler(req: NextRequest, context) {
       })),
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch export jobs' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch export jobs',
+      error
     );
   }
 }

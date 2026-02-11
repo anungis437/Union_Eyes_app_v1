@@ -3,6 +3,11 @@ import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) =>
   withEnhancedRoleAuth(10, async (_request, context) => {
     const { userId } = context;
@@ -32,7 +37,11 @@ export const GET = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to load governance dashboard" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to load governance dashboard',
+      error
+    );
     }
   })(request, {});
 

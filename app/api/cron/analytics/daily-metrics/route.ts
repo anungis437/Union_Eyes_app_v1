@@ -5,13 +5,19 @@
  * Runs daily to calculate metrics, generate predictions, and detect trends
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { organizations } from '@/db/migrations/schema';
+import { organizations } from '@/db/schema';
 import { calculateMetrics, generatePredictions, detectMetricTrends } from '@/actions/analytics-actions';
 import { generateInsights, saveInsights } from '@/lib/ai/insights-generator';
 import { getNotificationService } from '@/lib/services/notification-service';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -23,12 +29,14 @@ async function sendInsightNotifications(organizationId: string, insights: any[])
     const notificationService = getNotificationService();
     
     // Get organization admins
-    const admins = await db.query.organizationMembers.findMany({
+    const admins = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: (members, { eq, and }) => and(
         eq(members.organizationId, organizationId),
         eq(members.role, 'admin')
       ),
       limit: 10,
+    });
     });
 
     if (admins.length === 0) {
@@ -72,11 +80,16 @@ export async function GET(request: NextRequest) {
     // Verify cron secret
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 // Get all active organizations
-    const allOrgs = await db.query.organizations.findMany({
+    const allOrgs = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: (orgs, { eq }) => eq(orgs.status, 'active')
+    });
     });
 const results = {
       organizations: allOrgs.length,

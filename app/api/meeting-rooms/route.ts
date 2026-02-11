@@ -16,6 +16,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Helper to check if user is admin
  */
@@ -131,13 +136,41 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error('List meeting rooms error', { error });
-      return NextResponse.json(
-        { error: 'Failed to list meeting rooms' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to list meeting rooms',
+      error
+    );
     }
     })(request);
 };
+
+
+const meeting-roomsSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  displayName: z.boolean().optional(),
+  description: z.string().optional(),
+  buildingName: z.string().min(1, 'buildingName is required'),
+  floor: z.unknown().optional(),
+  roomNumber: z.unknown().optional(),
+  address: z.unknown().optional(),
+  capacity = 10: z.unknown().optional(),
+  features = []: z.unknown().optional(),
+  equipment = []: z.unknown().optional(),
+  requiresApproval = false: z.unknown().optional(),
+  minBookingDuration = 30: z.unknown().optional(),
+  maxBookingDuration = 480: z.unknown().optional(),
+  advanceBookingDays = 90: z.unknown().optional(),
+  operatingHours: z.unknown().optional(),
+  allowedUserRoles: z.unknown().optional(),
+  blockedDates = []: z.string().datetime().optional(),
+  contactPersonId: z.string().uuid('Invalid contactPersonId'),
+  contactEmail: z.string().email('Invalid email address'),
+  contactPhone: z.string().min(10, 'Invalid phone number'),
+  imageUrl: z.string().url('Invalid URL'),
+  floorPlanUrl: z.string().url('Invalid URL'),
+  metadata: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -147,10 +180,21 @@ export const POST = async (request: NextRequest) => {
       // Check if user is admin
       const isAdmin = await checkAdminRole(userId);
       if (!isAdmin) {
-        return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+        return standardErrorResponse(ErrorCode.FORBIDDEN, 'Admin access required');
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = meeting-roomsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { name, displayName, description, buildingName, floor, roomNumber, address, capacity = 10, features = [], equipment = [], requiresApproval = false, minBookingDuration = 30, maxBookingDuration = 480, advanceBookingDays = 90, operatingHours, allowedUserRoles, blockedDates = [], contactPersonId, contactEmail, contactPhone, imageUrl, floorPlanUrl, metadata } = validation.data;
       const {
         name,
         displayName,
@@ -178,10 +222,10 @@ export const POST = async (request: NextRequest) => {
       } = body;
 
       if (!name) {
-        return NextResponse.json(
-          { error: 'Room name is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Room name is required'
+    );
       }
 
       // Get tenant ID
@@ -217,16 +261,21 @@ export const POST = async (request: NextRequest) => {
         })
         .returning();
 
-      return NextResponse.json({
+      return standardSuccessResponse(
+      { 
         message: 'Meeting room created successfully',
         room: newRoom,
-      }, { status: 201 });
+       },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error('Create meeting room error', { error });
-      return NextResponse.json(
-        { error: 'Failed to create meeting room' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create meeting room',
+      error
+    );
     }
     })(request);
 };

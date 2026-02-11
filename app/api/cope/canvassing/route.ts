@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Canvassing Activities
@@ -12,6 +13,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -26,10 +32,10 @@ export const GET = async (request: NextRequest) => {
       const endDate = searchParams.get('endDate');
 
       if (!campaignId) {
-        return NextResponse.json(
-          { error: 'Bad Request - campaignId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - campaignId is required'
+    );
       }
 
       // Build query
@@ -49,7 +55,8 @@ export const GET = async (request: NextRequest) => {
 
       const whereClause = sql.join(conditions, sql.raw(' AND '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         id,
         campaign_id,
@@ -73,9 +80,11 @@ export const GET = async (request: NextRequest) => {
       ORDER BY activity_date DESC, created_at DESC
       LIMIT 1000
     `);
+    });
 
       // Get summary statistics
-      const summaryResult = await db.execute(sql`
+      const summaryResult = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         activity_type,
         COUNT(*) as total_activities,
@@ -91,6 +100,7 @@ export const GET = async (request: NextRequest) => {
       WHERE campaign_id = ${campaignId}
       GROUP BY activity_type
     `);
+    });
 
       return NextResponse.json({
         success: true,
@@ -106,13 +116,34 @@ export const GET = async (request: NextRequest) => {
         campaignId: request.nextUrl.searchParams.get('campaignId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const copeCanvassingSchema = z.object({
+  campaignId: z.string().uuid('Invalid campaignId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  activityType: z.unknown().optional(),
+  activityDate: z.string().datetime().optional(),
+  volunteerMemberId: z.string().uuid('Invalid volunteerMemberId'),
+  volunteerName: z.string().min(1, 'volunteerName is required'),
+  contactName: z.string().min(1, 'contactName is required'),
+  contactAddress: z.unknown().optional(),
+  contactPhone: z.string().min(10, 'Invalid phone number'),
+  contactEmail: z.string().email('Invalid email address'),
+  responseType: z.unknown().optional(),
+  supportLevel: z.unknown().optional(),
+  issuesDiscussed: z.boolean().optional(),
+  followUpRequired: z.unknown().optional(),
+  followUpNotes: z.string().optional(),
+  durationMinutes: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -120,6 +151,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = copeCanvassingSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { campaignId, organizationId, activityType, activityDate, volunteerMemberId, volunteerName, contactName, contactAddress, contactPhone, contactEmail, responseType, supportLevel, issuesDiscussed, followUpRequired, followUpNotes, durationMinutes } = validation.data;
       const {
         campaignId,
         organizationId,
@@ -139,20 +181,25 @@ export const POST = async (request: NextRequest) => {
         durationMinutes,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!campaignId || !organizationId || !activityType) {
-        return NextResponse.json(
-          { error: 'Bad Request - campaignId, organizationId, and activityType are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - campaignId, organizationId, and activityType are required'
+      // TODO: Migrate additional details: organizationId, and activityType are required'
+    );
       }
 
       // Insert activity
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO canvassing_activities (
         id,
         campaign_id,
@@ -190,6 +237,7 @@ export const POST = async (request: NextRequest) => {
         id, activity_type, activity_date, volunteer_name, contact_name, 
         response_type, support_level, duration_minutes
     `);
+    });
 
       // Update campaign progress counters
       if (activityType === 'door_knock') {
@@ -212,20 +260,22 @@ export const POST = async (request: NextRequest) => {
       `);
       }
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Canvassing activity logged successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Canvassing activity logged successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to log canvassing activity', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

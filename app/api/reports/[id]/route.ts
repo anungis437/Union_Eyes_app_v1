@@ -6,12 +6,18 @@
  * DELETE /api/reports/[id] - Delete report
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { db } from '@/db';
 import { sql } from '@/db';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 
 async function getHandler(
   req: NextRequest,
@@ -27,9 +33,9 @@ async function getHandler(
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded. Please try again later.'
     );
   }
 
@@ -51,9 +57,9 @@ async function getHandler(
     `);
 
     if (!reportResult || reportResult.length === 0) {
-      return NextResponse.json(
-        { error: 'Report not found' },
-        { status: 404 }
+      return standardErrorResponse(
+        ErrorCode.RESOURCE_NOT_FOUND,
+        'Report not found'
       );
     }
 
@@ -67,11 +73,12 @@ async function getHandler(
       dataType: 'ANALYTICS',
     });
 
-    return NextResponse.json({ report: reportResult[0] });
+    return standardSuccessResponse({ report: reportResult[0] });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch report' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch report',
+      error
     );
   }
 }
@@ -90,9 +97,9 @@ async function putHandler(
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded. Please try again later.'
     );
   }
 
@@ -132,11 +139,12 @@ async function putHandler(
       RETURNING *
     `);
 
-    return NextResponse.json({ report: updatedResult[0] });
+    return standardSuccessResponse({ report: updatedResult[0] });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to update report' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update report',
+      error
     );
   }
 }
@@ -155,17 +163,17 @@ async function deleteHandler(
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded. Please try again later.'
     );
   }
 
   try {
     if (!params?.id) {
-      return NextResponse.json(
-        { error: 'Report ID required' },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'Report ID required'
       );
     }
 
@@ -176,9 +184,9 @@ async function deleteHandler(
     `);
 
     if (!existingResult || existingResult.length === 0) {
-      return NextResponse.json(
-        { error: 'Report not found' },
-        { status: 404 }
+      return standardErrorResponse(
+        ErrorCode.RESOURCE_NOT_FOUND,
+        'Report not found'
       );
     }
 
@@ -198,15 +206,26 @@ async function deleteHandler(
       dataType: 'ANALYTICS',
     });
 
-    return NextResponse.json({ success: true });
+    return standardSuccessResponse(null, 'Report deleted successfully');
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to delete report' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete report',
+      error
     );
   }
 }
 
 export const GET = withEnhancedRoleAuth(30, getHandler);
+
+const reportsSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  category: z.unknown().optional(),
+  config: z.unknown().optional(),
+  isPublic: z.boolean().optional(),
+});
+
+
 export const PUT = withEnhancedRoleAuth(50, putHandler);
 export const DELETE = withEnhancedRoleAuth(60, deleteHandler);

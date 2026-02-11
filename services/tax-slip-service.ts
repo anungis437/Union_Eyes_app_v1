@@ -5,8 +5,8 @@ import {
   rl1TaxSlips,
   taxYearEndProcessing,
   weeklyThresholdTracking,
-} from "@/db/schema/strike-fund-tax-schema";
-import { users } from "@/db/schema/user-management-schema";
+} from "@/db/schema/domains/finance";
+import { users } from "@/db/schema/domains/member";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { NotificationService } from "@/lib/services/notification-service";

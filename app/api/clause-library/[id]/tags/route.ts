@@ -14,7 +14,17 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // POST /api/clause-library/[id]/tags - Add tag
+
+const clause-libraryTagsSchema = z.object({
+  tagName: z.string().min(1, 'tagName is required'),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -24,7 +34,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userOrgId = organizationId;
@@ -37,28 +50,54 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       });
 
       if (!existingClause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       // Only owner can add tags
       if (existingClause.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can add tags" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can add tags'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = clause-libraryTagsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { tagName } = validation.data;
       const { tagName } = body;
 
       if (!tagName || typeof tagName !== "string") {
-        return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tag name is required'
+    );
       }
 
       const trimmedTag = tagName.trim();
       if (trimmedTag.length === 0) {
-        return NextResponse.json({ error: "Tag name cannot be empty" }, { status: 400 });
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Tag name cannot be empty'
+        );
       }
 
       if (trimmedTag.length > 100) {
-        return NextResponse.json({ error: "Tag name cannot exceed 100 characters" }, { status: 400 });
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Tag name cannot exceed 100 characters'
+        );
       }
 
       // Check if tag already exists
@@ -73,7 +112,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
       });
 
       if (existingTag) {
-        return NextResponse.json({ error: "Tag already exists" }, { status: 409 });
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Tag already exists'
+    );
       }
 
       // Add tag
@@ -104,10 +146,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         userId,
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to add tag" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to add tag',
+      error
+    );
     }
     })(request, { params });
 };
@@ -122,7 +165,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
 
       // Validate organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No active organization" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No active organization'
+    );
       }
 
       const userOrgId = organizationId;
@@ -135,19 +181,28 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       });
 
       if (!existingClause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       // Only owner can remove tags
       if (existingClause.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can remove tags" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can remove tags'
+    );
       }
 
       const body = await request.json();
       const { tagName } = body;
 
       if (!tagName || typeof tagName !== "string") {
-        return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tag name is required'
+    );
       }
 
       // Delete tag
@@ -181,10 +236,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         userId,
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to remove tag" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to remove tag',
+      error
+    );
     }
     })(request, { params });
 };

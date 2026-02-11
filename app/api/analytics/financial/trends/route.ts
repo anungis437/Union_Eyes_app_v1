@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { client } from '@/db/db';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user || !user.tenantId) {
-      return NextResponse.json(
-        { error: 'Authentication and tenant context required' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and tenant context required'
+    );
     }
     
     const tenantId = user.tenantId;
@@ -75,9 +80,10 @@ async function handler(req: NextRequest) {
     return NextResponse.json(result);
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch financial trends' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch financial trends',
+      error
     );
   }
 }

@@ -7,13 +7,18 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { copeContributions, members } from '@/db/migrations/schema';
+import { copeContributions, members } from '@/db/schema';
 import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -42,10 +47,10 @@ export const GET = async (request: NextRequest) => {
       const format = searchParams.get('format') || 'json'; // 'json' | 'pdf'
 
       if (!memberId) {
-        return NextResponse.json(
-          { error: 'Bad Request - memberId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId is required'
+    );
       }
 
       // Verify member exists
@@ -56,10 +61,10 @@ export const GET = async (request: NextRequest) => {
         .limit(1);
 
       if (!member || member.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Member not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Member not found'
+    );
       }
 
       // Query COPE contributions for the tax year
@@ -149,13 +154,31 @@ export const GET = async (request: NextRequest) => {
         taxYear: request.nextUrl.searchParams.get('taxYear'),
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);
 };
+
+
+const taxCopeReceiptsSchema = z.object({
+  memberId: z.string().uuid('Invalid memberId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  contributionDate: z.string().datetime().optional(),
+  totalAmount: z.number().positive('totalAmount must be positive'),
+  politicalPortion: z.unknown().optional(),
+  administrativePortion: z.boolean().optional(),
+  contributionType = 'payroll_deduction': z.unknown().optional(),
+  paymentMethod: z.unknown().optional(),
+  paymentReference: z.unknown().optional(),
+  isEligibleForCredit = true: z.boolean().optional(),
+  receiptIssued = true: z.boolean().optional(),
+  receiptIssuedDate: z.boolean().optional(),
+  notes: z.string().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('steward', async (request, context) => {
@@ -163,6 +186,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = taxCopeReceiptsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { memberId, organizationId, contributionDate, totalAmount, politicalPortion, administrativePortion, contributionType = 'payroll_deduction', paymentMethod, paymentReference, isEligibleForCredit = true, receiptIssued = true, receiptIssuedDate, notes } = validation.data;
       const {
         memberId,
         organizationId,
@@ -179,16 +213,20 @@ export const POST = async (request: NextRequest) => {
         notes,
       } = body;
   if (organizationId && organizationId !== contextOrganizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!memberId || !organizationId || !contributionDate || !totalAmount || !politicalPortion || !administrativePortion) {
-        return NextResponse.json(
-          { error: 'Bad Request - memberId, organizationId, contributionDate, totalAmount, politicalPortion, and administrativePortion are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId, organizationId, contributionDate, totalAmount, politicalPortion, and administrativePortion are required'
+      // TODO: Migrate additional details: organizationId, contributionDate, totalAmount, politicalPortion, and administrativePortion are required'
+    );
       }
 
       // Insert contribution
@@ -247,9 +285,10 @@ export const POST = async (request: NextRequest) => {
         userId: userId,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

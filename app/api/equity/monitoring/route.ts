@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 /**
@@ -12,6 +13,11 @@ import { sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -72,10 +78,10 @@ export const GET = async (request: NextRequest) => {
             reason: 'Missing organizationId parameter',
           },
         });
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // CRITICAL: Verify organization access (PIPEDA compliance)
@@ -98,15 +104,16 @@ export const GET = async (request: NextRequest) => {
             requestedOrgId,
           },
         });
-        return NextResponse.json(
-          { error: 'Forbidden - Cannot access other organization equity data' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Cannot access other organization equity data'
+    );
       }
 
       // Query anonymized equity statistics
       // Uses v_equity_statistics_anonymized view (10+ member threshold)
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         COUNT(*) FILTER (WHERE data_collection_consent = true) as total_consented,
         COUNT(*) FILTER (WHERE gender_identity = 'woman') as women_count,
@@ -127,6 +134,7 @@ export const GET = async (request: NextRequest) => {
         AND data_collection_consent = true
         AND allow_aggregate_reporting = true
     `);
+    });
 
       const stats = result[0] as any;
 
@@ -248,9 +256,10 @@ export const GET = async (request: NextRequest) => {
           error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request);

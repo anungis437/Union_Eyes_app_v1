@@ -9,18 +9,33 @@ import { searchPrecedents } from "@/lib/services/precedent-service";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const precedentSearchSchema = z.object({
+  query: z.string().min(1, 'Query is required').max(500, 'Query too long'),
+  filters: z.record(z.string(), z.unknown()).default({}),
+  limit: z.number().int().min(1).max(100).default(50),
+});
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
-      const { query, filters = {}, limit = 50 } = body;
-
-      if (!query) {
-        return NextResponse.json(
-          { error: "query is required" },
-          { status: 400 }
+      
+      // Validate request body
+      const validation = precedentSearchSchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid search request',
+          validation.error.errors
         );
       }
+
+      const { query, filters, limit } = validation.data;
 
       const results = await searchPrecedents(query, filters, limit);
 
@@ -29,10 +44,11 @@ export const POST = async (request: NextRequest) => {
         count: results.length
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

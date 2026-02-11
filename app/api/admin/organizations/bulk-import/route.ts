@@ -24,6 +24,11 @@ import { createOrganization } from "@/db/queries/organization-queries";
 import { eq } from "drizzle-orm";
 import { withAdminAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Type definitions for import
 type Jurisdiction = "federal" | "AB" | "BC" | "MB" | "NB" | "NL" | "NS" | "NT" | "NU" | "ON" | "PE" | "QC" | "SK" | "YT";
 type LabourSector = "healthcare" | "education" | "public_service" | "trades" | "manufacturing" | "transportation" | "retail" | "hospitality" | "technology" | "construction" | "utilities" | "telecommunications" | "financial_services" | "agriculture" | "arts_culture" | "other";
@@ -95,10 +100,10 @@ export const POST = async (request: NextRequest) => {
       ];
 
       if (!validTypes.includes(file.type)) {
-        return NextResponse.json(
-          { error: "Invalid file type. Please upload CSV or Excel file" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid file type. Please upload CSV or Excel file'
+    );
       }
 
       // Parse file content
@@ -106,10 +111,10 @@ export const POST = async (request: NextRequest) => {
       const rows = parseCSV(text);
 
       if (rows.length === 0) {
-        return NextResponse.json(
-          { error: "File is empty or invalid" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'File is empty or invalid'
+    );
       }
 
       // Validate and process rows
@@ -348,10 +353,11 @@ validationErrors.push({
         message: `Successfully imported ${createdOrgs.length} organization(s)`,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Failed to bulk import organizations" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to bulk import organizations',
+      error
+    );
     }
     })(request);
 };

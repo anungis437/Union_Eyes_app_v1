@@ -5,9 +5,10 @@
  * Processes signature events and updates workflow status
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database";
-import { signatureAuditLog } from "@/db/schema/signature-workflows-schema";
+import { signatureAuditLog } from "@/db/schema/domains/documents";
 import {
   handleSignerCompleted,
   getWorkflowStatus,
@@ -17,6 +18,11 @@ import { logger } from "@/lib/logger";
 import { createHmac } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // ============================================================================
 // DOCUSIGN WEBHOOK HANDLER
 // ============================================================================
@@ -68,10 +74,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Verify signature
     if (!verifyDocuSignSignature(body, signature)) {
       logger.warn("DocuSign webhook signature verification failed");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Invalid signature'
+    );
     }
 
-    const payload = JSON.parse(body);
+    const validation = JSON.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const payload = validation.data;
     logger.info("DocuSign webhook received", { event: payload.event });
 
     // Extract workflow ID from envelope custom fields
@@ -107,9 +123,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ received: true });
   } catch (error) {
     logger.error("DocuSign webhook handler failed", { error });
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Webhook processing failed',
+      error
     );
   }
 }
@@ -151,7 +168,14 @@ export async function handleHelloSignWebhook(
   try {
     const formData = await request.formData();
     const json = formData.get("json") as string;
-    const payload = JSON.parse(json);
+    const validation = JSON.safeParse(json);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const payload = validation.data;
 
     logger.info("HelloSign webhook received", { event: payload.event.event_type });
 
@@ -166,7 +190,10 @@ export async function handleHelloSignWebhook(
       )
     ) {
       logger.warn("HelloSign webhook signature verification failed");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Invalid signature'
+    );
     }
 
     const workflowId = payload.signature_request.signature_request_id;
@@ -201,9 +228,10 @@ export async function handleHelloSignWebhook(
     return NextResponse.json({ hello_signature: "HelloAPI" });
   } catch (error) {
     logger.error("HelloSign webhook handler failed", { error });
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Webhook processing failed',
+      error
     );
   }
 }
@@ -239,10 +267,13 @@ export async function handleAdobeSignWebhook(
     const clientId = process.env.ADOBE_SIGN_CLIENT_ID || "";
     if (!verifyAdobeSignWebhook(payload, clientId)) {
       logger.warn("Adobe Sign webhook verification failed");
-      return NextResponse.json({ error: "Invalid webhook" }, { status: 401 });
+      return standardErrorResponse(
+        ErrorCode.AUTH_ERROR,
+        "Invalid webhook"
+      );
     }
 
-    const workflowId = payload.agreement?.id || payload.agreementId;
+    const workflow Id = payload.agreement?.id || payload.agreementId;
     const event = payload.event;
 
     // Handle different events
@@ -274,9 +305,10 @@ export async function handleAdobeSignWebhook(
     return NextResponse.json({ received: true });
   } catch (error) {
     logger.error("Adobe Sign webhook handler failed", { error });
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Webhook processing failed',
+      error
     );
   }
 }
@@ -400,15 +432,19 @@ async function handleEnvelopeDeclined(
       const notificationService = getNotificationService();
       
       // Get workflow details to find creator
-      const workflow = await db.query.signatureWorkflows.findFirst({
+      const workflow = await withRLSContext(async (tx) => {
+      return await tx.query({
         where: (table, { eq }) => eq(table.id, workflowId),
       });
+    });
 
       if (workflow && workflow.createdBy) {
         // Get creator's email from profiles
-        const creator = await db.query.profiles.findFirst({
+        const creator = await withRLSContext(async (tx) => {
+      return await tx.query({
           where: (table, { eq }) => eq(table.userId, workflow.createdBy),
         });
+    });
 
         if (creator && creator.email) {
           await notificationService.send({

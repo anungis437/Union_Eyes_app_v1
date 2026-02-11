@@ -5,6 +5,11 @@ import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (req: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -27,24 +32,27 @@ export const GET = async (req: NextRequest) => {
 
         logger.info('Retrieved notification count', { userId, count: unreadCount.length });
 
-        return NextResponse.json(
-          { count: unreadCount.length },
-          { status: 200 }
-        );
+        return standardSuccessResponse(
+      {  count: unreadCount.length  },
+      undefined,
+      200
+    );
       } catch (error) {
         // If notifications table doesn't exist, return 0
         logger.warn('Notifications table not available', { error });
-        return NextResponse.json(
-          { count: 0 },
-          { status: 200 }
-        );
+        return standardSuccessResponse(
+      {  count: 0  },
+      undefined,
+      200
+    );
       }
     } catch (error) {
       logger.error('Failed to get notification count', { error });
-      return NextResponse.json(
-        { error: 'Failed to retrieve notification count' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve notification count',
+      error
+    );
     }
     })(request);
 };

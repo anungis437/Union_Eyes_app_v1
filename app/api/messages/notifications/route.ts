@@ -5,12 +5,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { messageNotifications, messages, messageThreads } from '@/db/schema/messages-schema';
+import { messageNotifications, messages, messageThreads } from '@/db/schema/domains/communications';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -73,10 +78,20 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error('Failed to fetch notifications', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };
+
+
+const messagesNotificationsSchema = z.object({
+  notificationIds: z.string().uuid('Invalid notificationIds'),
+  markAllAsRead: z.unknown().optional(),
+});
 
 export const PATCH = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
@@ -84,6 +99,17 @@ export const PATCH = async (request: NextRequest) => {
 
   try {
       const { notificationIds, markAllAsRead } = await request.json();
+    // Validate request body
+    const validation = messagesNotificationsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { notificationIds, markAllAsRead } = validation.data;
 
       if (markAllAsRead) {
         // Mark all notifications as read
@@ -103,7 +129,10 @@ export const PATCH = async (request: NextRequest) => {
       }
 
       if (!notificationIds || !Array.isArray(notificationIds)) {
-        return NextResponse.json({ error: 'Notification IDs required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Notification IDs required'
+    );
       }
 
       // Mark specific notifications as read
@@ -125,7 +154,11 @@ export const PATCH = async (request: NextRequest) => {
       return NextResponse.json({ success: true });
     } catch (error) {
       logger.error('Failed to update notifications', error as Error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

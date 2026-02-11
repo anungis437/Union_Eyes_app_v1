@@ -4,6 +4,11 @@ import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { z } from 'zod';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const QuerySchema = z.object({
   question: z.string().min(1).max(500),
   context: z.any().optional(),
@@ -114,9 +119,10 @@ if (error instanceof z.ZodError) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'Failed to process natural language query' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to process natural language query',
+      error
     );
   }
 });

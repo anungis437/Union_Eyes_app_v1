@@ -4,6 +4,11 @@ import { getOverdueClaims, getClaimsApproachingDeadline } from "@/lib/workflow-e
 import { requireApiAuth } from '@/lib/api-auth-guard';
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/workflow/overdue
  * Get all overdue claims (requires admin/steward access)
@@ -35,9 +40,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logger.error('Error getting overdue claims', error as Error);
-    return NextResponse.json(
-      { error: "Failed to get overdue claims" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get overdue claims',
+      error
     );
   }
 }

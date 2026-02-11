@@ -7,12 +7,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { pensionPlans } from '@/db/migrations/schema';
+import { pensionPlans } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
@@ -29,10 +34,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!plan) {
-        return NextResponse.json(
-          { error: 'Not Found - Pension plan not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Pension plan not found'
+    );
       }
 
       return NextResponse.json({
@@ -46,10 +51,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         userId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -74,10 +80,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .returning();
 
       if (!updatedPlan) {
-        return NextResponse.json(
-          { error: 'Not Found - Pension plan not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Pension plan not found'
+    );
       }
 
       return NextResponse.json({
@@ -92,10 +98,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         userId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -118,10 +125,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .returning();
 
       if (!deletedPlan) {
-        return NextResponse.json(
-          { error: 'Not Found - Pension plan not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Pension plan not found'
+    );
       }
 
       return NextResponse.json({
@@ -135,10 +142,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         userId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request, { params });
 };

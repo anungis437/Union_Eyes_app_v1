@@ -1,10 +1,15 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { votingSessions, votingOptions, votes } from '@/db/schema/voting-schema';
+import { votingSessions, votingOptions, votes } from '@/db/schema/domains/governance';
 import { eq, desc, count } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface RouteParams {
   params: {
     id: string;
@@ -25,10 +30,10 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
         .where(eq(votingSessions.id, sessionId));
 
       if (!session) {
-        return NextResponse.json(
-          { error: 'Voting session not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Voting session not found'
+    );
       }
 
       // Check if results should be visible
@@ -148,10 +153,11 @@ export const GET = async (request: NextRequest, { params }: RouteParams) => {
 
       return NextResponse.json(results);
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

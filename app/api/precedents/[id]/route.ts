@@ -16,6 +16,11 @@ import {
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(10, async (request, context) => {
   try {
@@ -32,7 +37,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       const response: any = { precedent };
@@ -45,10 +53,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       return NextResponse.json(response);
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -63,23 +72,28 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       const updatedPrecedent = await updatePrecedent(id, body);
 
       if (!updatedPrecedent) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       return NextResponse.json({ precedent: updatedPrecedent });
     } catch (error) {
 // Handle unique constraint violations
       if ((error as any)?.code === "23505") {
-        return NextResponse.json(
-          { error: "Case number already exists" },
-          { status: 409 }
-        );
+        return standardErrorResponse(
+      ErrorCode.ALREADY_EXISTS,
+      'Case number already exists',
+      error
+    );
       }
 
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };
@@ -92,7 +106,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       const success = await deletePrecedent(id);
       
       if (!success) {
-        return NextResponse.json({ error: "Precedent not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       return NextResponse.json({ 
@@ -100,10 +117,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         deleted: true 
       });
     } catch (error) {
-return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request, { params });
 };

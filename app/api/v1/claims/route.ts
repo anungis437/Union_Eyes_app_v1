@@ -21,13 +21,21 @@ import { claims } from '@/db/schema';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { eq } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Version 1 Handler - Original API
  */
 async function handleV1(request: NextRequest): Promise<NextResponse> {
   const user = await getCurrentUser();
   if (!user?.organizationId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
   }
 
   const claimsList = await withRLSContext(
@@ -49,7 +57,10 @@ async function handleV1(request: NextRequest): Promise<NextResponse> {
 async function handleV2(request: NextRequest): Promise<NextResponse> {
   const user = await getCurrentUser();
   if (!user?.organizationId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
   }
 
   const searchParams = request.nextUrl.searchParams;

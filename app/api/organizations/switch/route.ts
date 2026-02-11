@@ -11,6 +11,7 @@
  * - Returns signed token for additional verification
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { currentUser } from '@clerk/nextjs/server';
@@ -22,6 +23,17 @@ import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const organizationsSwitchSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+});
+
+
 export const POST = async (req: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const { userId, organizationId: currentOrgId } = context;
@@ -30,24 +42,27 @@ export const POST = async (req: NextRequest) => {
       const body = await req.json();
       const { organizationId } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!organizationId || typeof organizationId !== 'string') {
-        return NextResponse.json(
-          { error: 'Invalid organization ID' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid organization ID'
+    );
       }
 
       // Get user details from Clerk for logging
       const clerkUser = await currentUser();
       if (!user) {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'User not found'
+    );
       }
 
       // Check if organization exists
@@ -64,10 +79,10 @@ export const POST = async (req: NextRequest) => {
           userEmail: clerkUser.emailAddresses[0]?.emailAddress,
         });
         
-        return NextResponse.json(
-          { error: 'Organization not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Organization not found'
+    );
       }
 
       // Check if user is super admin
@@ -138,10 +153,10 @@ export const POST = async (req: NextRequest) => {
             orgName: targetOrg.name,
           });
 
-          return NextResponse.json(
-            { error: 'Access denied. You do not have permission to access this organization.' },
-            { status: 403 }
-          );
+          return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied. You do not have permission to access this organization.'
+    );
         }
 
         logger.info('User switched organization via hierarchical access', {
@@ -185,10 +200,11 @@ export const POST = async (req: NextRequest) => {
         path: '/api/organizations/switch',
       });
 
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

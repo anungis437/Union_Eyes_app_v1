@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 // Import utility functions
 import { handlePaymentSuccess, handlePaymentFailed } from "./utils/payment-handlers";
 import { handleMembershipChange } from "./utils/membership-handlers";
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 // Lazy initialization to avoid module-level env var access during build
 let handleWebhook: ReturnType<typeof makeWebhookHandler> | null = null;

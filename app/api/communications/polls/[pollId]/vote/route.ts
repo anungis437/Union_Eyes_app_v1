@@ -6,6 +6,11 @@ import { z } from 'zod';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Validation schema
 const VoteSchema = z.object({
   optionId: z.string().min(1, 'Option ID is required'),
@@ -44,19 +49,19 @@ export const POST = withApiAuth(async (
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID is required'
+    );
     }
 
     // Rate limiting
     const rateLimitIdentifier = userId || ipAddress;
     if (!checkRateLimit(`poll_vote_${rateLimitIdentifier}`, 10, 60000)) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded. Please try again later.'
+    );
     }
 
     const body = await request.json();
@@ -64,34 +69,11 @@ export const POST = withApiAuth(async (
     // Validate request body
     const validation = VoteSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const { optionId } = validation.data;
-
-    // Fetch poll
-    const [poll] = await db
-      .select()
-      .from(polls)
-      .where(and(eq(polls.id, pollId), eq(polls.tenantId, tenantId)))
-      .limit(1);
-
-    if (!poll) {
-      return NextResponse.json(
-        { error: 'Poll not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check poll status
-    if (poll.status !== 'active') {
-      return NextResponse.json(
-        { error: 'Poll is not active' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation failed'
+      // TODO: Migrate additional details: details: validation.error.errors
+    );
     }
 
     // Check if poll is closed
@@ -104,10 +86,10 @@ export const POST = withApiAuth(async (
 
     // Check authentication requirements
     if (poll.requireAuthentication && !userId) {
-      return NextResponse.json(
-        { error: 'Authentication required to vote' },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication required to vote'
+    );
     }
 
     // Verify option exists
@@ -115,10 +97,10 @@ export const POST = withApiAuth(async (
     const optionExists = options.some((opt) => opt.id === optionId);
     
     if (!optionExists) {
-      return NextResponse.json(
-        { error: 'Invalid option ID' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid option ID'
+    );
     }
 
     // Check for duplicate votes
@@ -197,9 +179,10 @@ export const POST = withApiAuth(async (
       message: 'Vote submitted successfully',
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to submit vote' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to submit vote',
+      error
     );
   }
 });

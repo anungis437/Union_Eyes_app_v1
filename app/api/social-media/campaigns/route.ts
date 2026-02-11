@@ -12,6 +12,11 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Lazy initialization - env vars not available during build
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 function getSupabaseClient() {
@@ -29,7 +34,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -38,10 +46,11 @@ export const GET = async (request: NextRequest) => {
         `social-campaigns-read:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       // Parse query parameters
@@ -94,7 +103,10 @@ export const GET = async (request: NextRequest) => {
       const { data: campaigns, error, count } = await query;
 
       if (error) {
-return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch campaigns'
+    );
       }
 
       // Calculate campaign metrics
@@ -154,13 +166,29 @@ return NextResponse.json(
     })(request);
 };
 
+
+const social-mediaCampaignsSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  platforms: z.unknown().optional(),
+  start_date: z.string().datetime().optional(),
+  end_date: z.string().datetime().optional(),
+  goals: z.unknown().optional(),
+  hashtags: z.unknown().optional(),
+  target_audience: z.unknown().optional(),
+  status: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth('member', async (request, context) => {
   try {
       const { userId, organizationId } = context;
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       // Rate limit check
@@ -169,26 +197,47 @@ export const POST = async (request: NextRequest) => {
         `social-campaigns-create:${userId}`
       );
       if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-          { status: 429 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
+    );
       }
 
       if (!organizationId) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'No organization found'
+        );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = social-mediaCampaignsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { name, description, platforms, start_date, end_date, goals, hashtags, target_audience, status } = validation.data;
       const { name, description, platforms, start_date, end_date, goals, hashtags, target_audience } = body;
 
       // Validate required fields
       if (!name) {
-        return NextResponse.json({ error: 'Campaign name is required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Campaign name is required'
+    );
       }
 
       if (!platforms || platforms.length === 0) {
-        return NextResponse.json({ error: 'At least one platform is required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'At least one platform is required'
+    );
       }
 
       // Validate dates
@@ -196,7 +245,10 @@ export const POST = async (request: NextRequest) => {
         const start = new Date(start_date);
         const end = new Date(end_date);
         if (start > end) {
-          return NextResponse.json({ error: 'Start date must be before end date' }, { status: 400 });
+          return standardErrorResponse(
+            ErrorCode.VALIDATION_ERROR,
+            'Start date must be before end date'
+          );
         }
       }
 
@@ -210,7 +262,10 @@ export const POST = async (request: NextRequest) => {
             );
           }
           if (goal.target_value <= 0) {
-            return NextResponse.json({ error: 'Target value must be positive' }, { status: 400 });
+            return standardErrorResponse(
+              ErrorCode.VALIDATION_ERROR,
+              'Target value must be positive'
+            );
           }
         }
       }
@@ -235,10 +290,17 @@ export const POST = async (request: NextRequest) => {
         .single();
 
       if (error) {
-return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create campaign'
+    );
       }
 
-      return NextResponse.json({ campaign }, { status: 201 });
+      return standardSuccessResponse(
+      {  campaign  },
+      undefined,
+      201
+    );
     } catch (error) {
 return NextResponse.json(
         {
@@ -261,7 +323,10 @@ export const PUT = async (request: NextRequest) => {
       const campaignId = searchParams.get('id');
 
       if (!campaignId) {
-        return NextResponse.json({ error: 'Campaign ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Campaign ID required'
+    );
       }
 
       // Verify user has access to this campaign
@@ -272,11 +337,17 @@ export const PUT = async (request: NextRequest) => {
         .single();
 
       if (fetchError || !campaign) {
-        return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
       }
 
       if (organizationId !== campaign.organization_id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Unauthorized'
+        );
       }
 
       const body = await request.json();
@@ -287,7 +358,10 @@ export const PUT = async (request: NextRequest) => {
         const start = new Date(start_date);
         const end = new Date(end_date);
         if (start > end) {
-          return NextResponse.json({ error: 'Start date must be before end date' }, { status: 400 });
+          return standardErrorResponse(
+            ErrorCode.VALIDATION_ERROR,
+            'Start date must be before end date'
+          );
         }
       }
 
@@ -301,7 +375,10 @@ export const PUT = async (request: NextRequest) => {
             );
           }
           if (goal.target_value <= 0) {
-            return NextResponse.json({ error: 'Target value must be positive' }, { status: 400 });
+            return standardErrorResponse(
+              ErrorCode.VALIDATION_ERROR,
+              'Target value must be positive'
+            );
           }
         }
       }
@@ -329,7 +406,10 @@ export const PUT = async (request: NextRequest) => {
         .single();
 
       if (updateError) {
-return NextResponse.json({ error: 'Failed to update campaign' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update campaign'
+    );
       }
 
       return NextResponse.json({ campaign: updatedCampaign });
@@ -355,7 +435,10 @@ export const DELETE = async (request: NextRequest) => {
       const campaignId = searchParams.get('id');
 
       if (!campaignId) {
-        return NextResponse.json({ error: 'Campaign ID required' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Campaign ID required'
+    );
       }
 
       // Verify user has access to this campaign
@@ -366,11 +449,17 @@ export const DELETE = async (request: NextRequest) => {
         .single();
 
       if (fetchError || !campaign) {
-        return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Campaign not found'
+    );
       }
 
       if (organizationId !== campaign.organization_id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return standardErrorResponse(
+          ErrorCode.FORBIDDEN,
+          'Unauthorized'
+        );
       }
 
       // Check if campaign has posts
@@ -397,7 +486,10 @@ export const DELETE = async (request: NextRequest) => {
         .eq('id', campaignId);
 
       if (deleteError) {
-return NextResponse.json({ error: 'Failed to delete campaign' }, { status: 500 });
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete campaign'
+    );
       }
 
       return NextResponse.json({

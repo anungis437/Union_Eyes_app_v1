@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: Training Courses
@@ -12,6 +13,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -26,10 +32,10 @@ export const GET = async (request: NextRequest) => {
       const search = searchParams.get('search');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Build query
@@ -58,7 +64,8 @@ export const GET = async (request: NextRequest) => {
 
       const whereClause = sql.join(conditions, sql.raw(' AND '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         id,
         course_code,
@@ -86,6 +93,7 @@ export const GET = async (request: NextRequest) => {
       WHERE ${whereClause}
       ORDER BY course_category, course_name
     `);
+    });
 
       return NextResponse.json({
         success: true,
@@ -98,13 +106,37 @@ export const GET = async (request: NextRequest) => {
         organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const educationCoursesSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  courseName: z.string().min(1, 'courseName is required'),
+  courseDescription: z.string().optional(),
+  courseCategory: z.unknown().optional(),
+  deliveryMethod: z.unknown().optional(),
+  courseDifficulty: z.unknown().optional(),
+  durationHours: z.unknown().optional(),
+  durationDays: z.unknown().optional(),
+  learningObjectives: z.unknown().optional(),
+  courseOutline: z.unknown().optional(),
+  providesCertification: z.string().uuid('Invalid providesCertification'),
+  certificationName: z.string().min(1, 'certificationName is required'),
+  certificationValidYears: z.string().uuid('Invalid certificationValidYears'),
+  clcApproved: z.unknown().optional(),
+  minEnrollment: z.unknown().optional(),
+  maxEnrollment: z.unknown().optional(),
+  courseMaterialsUrl: z.string().url('Invalid URL'),
+  isActive: z.boolean().optional(),
+  clcApprovalDate: z.string().datetime().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -112,6 +144,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationCoursesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, courseName, courseDescription, courseCategory, deliveryMethod, courseDifficulty, durationHours, durationDays, learningObjectives, courseOutline, providesCertification, certificationName, certificationValidYears, clcApproved, minEnrollment, maxEnrollment, courseMaterialsUrl, isActive, clcApprovalDate } = validation.data;
       const {
         organizationId,
         courseName,
@@ -131,16 +174,20 @@ export const POST = async (request: NextRequest) => {
         maxEnrollment,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !courseName || !courseCategory || !deliveryMethod) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, courseName, courseCategory, and deliveryMethod are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, courseName, courseCategory, and deliveryMethod are required'
+      // TODO: Migrate additional details: courseName, courseCategory, and deliveryMethod are required'
+    );
       }
 
       // Generate course code
@@ -150,7 +197,8 @@ export const POST = async (request: NextRequest) => {
       const courseCode = `${categoryPrefix}-${timestamp}-${random}`;
 
       // Insert course
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO training_courses (
         id,
         organization_id,
@@ -189,21 +237,24 @@ export const POST = async (request: NextRequest) => {
       )
       RETURNING *
     `);
+    });
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Training course created successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Training course created successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to create training course', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
@@ -215,10 +266,10 @@ export const PATCH = async (request: NextRequest) => {
       const courseId = searchParams.get('id');
 
       if (!courseId) {
-        return NextResponse.json(
-          { error: 'Bad Request - id parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - id parameter is required'
+    );
       }
 
       const body = await request.json();
@@ -267,18 +318,20 @@ export const PATCH = async (request: NextRequest) => {
       updates.push(sql`updated_at = NOW()`);
       const setClause = sql.join(updates, sql.raw(', '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       UPDATE training_courses
       SET ${setClause}
       WHERE id = ${courseId}
       RETURNING *
     `);
+    });
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Course not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Course not found'
+    );
       }
 
       return NextResponse.json({
@@ -292,10 +345,11 @@ export const PATCH = async (request: NextRequest) => {
         courseId: request.nextUrl.searchParams.get('id'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

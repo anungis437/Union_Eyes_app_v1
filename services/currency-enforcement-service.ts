@@ -3,7 +3,7 @@
 // Implements Bank of Canada noon rate FX conversions and T106 filing
 
 import { db } from '@/db';
-import { crossBorderTransactions, t106Filings, type NewCrossBorderTransaction } from '@/db/schema/transfer-pricing-schema';
+import { crossBorderTransactions, t106Filings, type NewCrossBorderTransaction } from '@/db/schema/domains/finance';
 import { eq, and, gte, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 

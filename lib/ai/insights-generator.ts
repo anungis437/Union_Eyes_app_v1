@@ -12,7 +12,7 @@ import {
   trendAnalyses,
   insightRecommendations,
   mlPredictions
-} from '@/db/migrations/schema';
+} from '@/db/schema';
 import { eq, and, desc, gte, sql } from 'drizzle-orm';
 
 interface InsightConfig {

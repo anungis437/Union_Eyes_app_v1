@@ -10,11 +10,16 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { getRecentActivity } from "@/actions/admin-actions";
 import { withRLSContext } from '@/lib/db/with-rls-context';
-import { organizationUsers } from "@/db/schema/user-management-schema";
+import { organizationUsers } from "@/db/schema/domains/member";
 import { eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withEnhancedRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
@@ -48,10 +53,11 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Failed to fetch activity", error);
-      return NextResponse.json(
-        { error: "Failed to fetch activity" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch activity',
+      error
+    );
     }
     })(request);
 };

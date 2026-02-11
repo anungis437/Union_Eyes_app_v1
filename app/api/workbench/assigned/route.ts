@@ -12,15 +12,20 @@ import { withOrganizationAuth } from "@/lib/organization-middleware";
 import { logger } from '@/lib/logger';
 import { getMemberDetailsById } from '@/lib/utils/member-data-utils';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
     const { organizationId: organizationId, userId: clerkUserId } = context;
     
     if (!clerkUserId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     // Get Clerk user to access email

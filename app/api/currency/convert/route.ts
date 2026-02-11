@@ -3,6 +3,7 @@ import { convertUSDToCAD, getBankOfCanadaNoonRate } from '@/lib/services/transfe
 import type { CurrencyConversionResponse } from '@/lib/types/compliance-api-types';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { z } from 'zod';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 /**
  * FX Conversion API

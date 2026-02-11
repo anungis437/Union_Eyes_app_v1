@@ -1,4 +1,9 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * API Route: GET /api/activities
  * 
@@ -23,9 +28,9 @@ export const GET = async (request: NextRequest) => {
       const limit = parseInt(searchParams.get('limit') || '10');
 
       if (!tenantId) {
-        return NextResponse.json(
-          { error: 'tenantId parameter is required' },
-          { status: 400 }
+        return standardErrorResponse(
+          ErrorCode.MISSING_REQUIRED_FIELD,
+          'tenantId parameter is required'
         );
       }
 // Get recent member additions (simplified approach for now)
@@ -69,14 +74,15 @@ export const GET = async (request: NextRequest) => {
         icon: 'user',
         color: 'purple',
       }));
-return NextResponse.json({
+return standardSuccessResponse({
         activities: activities,
         count: activities.length,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
+return standardErrorResponse(
+        ErrorCode.INTERNAL_ERROR,
+        'Failed to fetch activities',
+        error
       );
     }
     })(request);

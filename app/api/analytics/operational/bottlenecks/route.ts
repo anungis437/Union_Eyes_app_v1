@@ -1,8 +1,10 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
+import { claims } from '@/db/schema/domains/claims';
 import { eq, and, gte, sql } from 'drizzle-orm';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 async function handler(req: NextRequest) {
   const tenantId = (req as any).tenantId;
@@ -13,7 +15,8 @@ async function handler(req: NextRequest) {
   startDate.setDate(startDate.getDate() - daysBack);
 
   // Identify bottlenecks by analyzing stage duration
-  const bottlenecks = await db.execute(sql`
+  const bottlenecks = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
     WITH stage_durations AS (
       SELECT
         ${claims.status} as stage,
@@ -40,6 +43,7 @@ async function handler(req: NextRequest) {
     ORDER BY avg_duration DESC
     LIMIT 10
   `);
+    });
 
   return NextResponse.json(bottlenecks);
 }

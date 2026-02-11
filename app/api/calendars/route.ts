@@ -14,6 +14,11 @@ import { eq, and, or, desc } from 'drizzle-orm';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -73,13 +78,31 @@ export const GET = async (request: NextRequest) => {
         ],
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to list calendars' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to list calendars',
+      error
+    );
     }
     })(request);
 };
+
+
+const calendarsSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional(),
+  color: z.unknown().optional(),
+  icon: z.unknown().optional(),
+  isPersonal = true: z.boolean().optional(),
+  isShared = false: z.boolean().optional(),
+  isPublic = false: z.boolean().optional(),
+  timezone = 'America/New_York': z.string().datetime().optional(),
+  defaultEventDuration = 60: z.unknown().optional(),
+  reminderDefaultMinutes = 15: z.unknown().optional(),
+  allowOverlap = true: z.unknown().optional(),
+  requireApproval = false: z.unknown().optional(),
+  metadata: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -87,6 +110,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = calendarsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { name, description, color, icon, isPersonal = true, isShared = false, isPublic = false, timezone = 'America/New_York', defaultEventDuration = 60, reminderDefaultMinutes = 15, allowOverlap = true, requireApproval = false, metadata } = validation.data;
       const {
         name,
         description,
@@ -104,10 +138,10 @@ export const POST = async (request: NextRequest) => {
       } = body;
 
       if (!name) {
-        return NextResponse.json(
-          { error: 'Calendar name is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Calendar name is required'
+    );
       }
 
       // Validate organization context
@@ -142,15 +176,20 @@ export const POST = async (request: NextRequest) => {
         })
         .returning();
 
-      return NextResponse.json({
+      return standardSuccessResponse(
+      { 
         message: 'Calendar created successfully',
         calendar: newCalendar,
-      }, { status: 201 });
+       },
+      undefined,
+      201
+    );
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to create calendar' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create calendar',
+      error
+    );
     }
     })(request);
 };

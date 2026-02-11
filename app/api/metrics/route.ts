@@ -25,6 +25,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMetrics, getMetricsContentType, dbConnectionsActive, dbConnectionsIdle, dbConnectionsMax } from '@/lib/observability/metrics';
 import { db } from '@/db/db';
 import { sql } from 'drizzle-orm';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

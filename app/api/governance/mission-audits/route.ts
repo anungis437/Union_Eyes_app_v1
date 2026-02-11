@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { desc } from "drizzle-orm";
 import { db } from "@/db/db";
-import { missionAudits } from "@/db/schema/governance-schema";
+import { missionAudits } from "@/db/schema/domains/governance";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { governanceService } from "@/services/governance-service";
-import type { NewMissionAudit } from "@/db/schema/governance-schema";
+import type { NewMissionAudit } from "@/db/schema/domains/governance";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const listAuditsSchema = z.object({
   limit: z.string().optional().transform(value => (value ? parseInt(value, 10) : 25)),
 });
@@ -43,7 +48,10 @@ export const GET = async (request: NextRequest) =>
     );
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request parameters'
+    );
     }
 
     try {
@@ -76,7 +84,11 @@ export const GET = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to fetch mission audits" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch mission audits',
+      error
+    );
     }
   })(request, {});
 
@@ -88,12 +100,20 @@ export const POST = async (request: NextRequest) =>
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body',
+      error
+    );
     }
 
     const parsed = createAuditSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request body',
+      error
+    );
     }
 
     try {
@@ -133,7 +153,11 @@ export const POST = async (request: NextRequest) =>
         details: { auditYear: body.auditYear, auditId: audit.id },
       });
 
-      return NextResponse.json({ success: true, data: audit }, { status: 201 });
+      return standardSuccessResponse(
+      { data: audit },
+      undefined,
+      201
+    );
     } catch (error) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
@@ -145,7 +169,11 @@ export const POST = async (request: NextRequest) =>
         details: { error: error instanceof Error ? error.message : "Unknown error" },
       });
 
-      return NextResponse.json({ error: "Failed to create mission audit" }, { status: 500 });
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create mission audit',
+      error
+    );
     }
   })(request, {});
 

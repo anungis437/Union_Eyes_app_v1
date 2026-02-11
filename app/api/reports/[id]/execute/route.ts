@@ -7,6 +7,7 @@
  * Part of: Phase 2 - Enhanced Analytics & Reports
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getReportById, logReportExecution } from '@/db/queries/analytics-queries';
@@ -14,6 +15,11 @@ import { ReportExecutor } from '@/lib/report-executor';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function postHandler(
   req: NextRequest,
   context: any,
@@ -30,9 +36,10 @@ async function postHandler(
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded'
+      // TODO: Migrate additional details: resetIn: rateLimitResult.resetIn
     );
   }
 
@@ -43,25 +50,29 @@ async function postHandler(
     const headerOrganizationId = req.headers.get('x-organization-id');
     const effectiveOrganizationId = headerOrganizationId ?? organizationId;
     if (headerOrganizationId && headerOrganizationId !== organizationId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
     }
 
     
     if (!tenantId || !userId || !effectiveOrganizationId) {
-      return NextResponse.json(
-        { error: 'Tenant ID, User ID, and Organization ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID, User ID, and Organization ID required'
+      // TODO: Migrate additional details: User ID, and Organization ID required'
+    );
     }
 
     // Get report configuration
     const report = await getReportById(reportId, tenantId);
 
     if (!report) {
-      return NextResponse.json(
-        { error: 'Report not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Report not found'
+    );
     }
 
     // Check permissions (user must be creator, or report must be public/shared)
@@ -71,10 +82,10 @@ async function postHandler(
       await checkReportAccess(reportId, userId);
 
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: 'Access denied' },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied'
+    );
     }
 
     // Parse request body for runtime parameters
@@ -146,5 +157,11 @@ async function checkReportAccess(
 
   return shares.length > 0;
 }
+
+
+const reportsExecuteSchema = z.object({
+  parameters: z.unknown().optional(),
+});
+
 
 export const POST = withRoleAuth(40, postHandler);

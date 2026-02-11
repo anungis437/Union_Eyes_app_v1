@@ -8,6 +8,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { getExportJob } from '@/db/queries/analytics-queries';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function getHandler(
   req: NextRequest,
   context: { tenantId: string; userId: string },
@@ -15,19 +20,19 @@ async function getHandler(
 ) {
   try {
     if (!params?.id) {
-      return NextResponse.json(
-        { error: 'Export ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Export ID required'
+    );
     }
 
     const job = await getExportJob(params.id);
 
     if (!job || job.tenant_id !== context.organizationId) {
-      return NextResponse.json(
-        { error: 'Export job not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Export job not found'
+    );
     }
 
     return NextResponse.json({
@@ -46,9 +51,10 @@ async function getHandler(
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch export job' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch export job',
+      error
     );
   }
 }

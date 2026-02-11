@@ -5,11 +5,17 @@
  * POST /api/reports - Create new report
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { getReports, createReport } from '@/db/queries/analytics-queries';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logApiAuditEvent } from '@/lib/middleware/request-validation';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 
 async function getHandler(req: NextRequest, context) {
   const { userId, organizationId } = context;
@@ -21,9 +27,9 @@ async function getHandler(req: NextRequest, context) {
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded. Please try again later.'
     );
   }
 
@@ -59,14 +65,15 @@ async function getHandler(req: NextRequest, context) {
       dataType: 'ANALYTICS',
     });
 
-    return NextResponse.json({ 
+    return standardSuccessResponse({ 
       reports,
       count: reports.length,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch reports' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch reports',
+      error
     );
   }
 }
@@ -81,9 +88,9 @@ async function postHandler(req: NextRequest, context) {
   );
 
   if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded', resetIn: rateLimitResult.resetIn },
-      { status: 429 }
+    return standardErrorResponse(
+      ErrorCode.RATE_LIMIT_EXCEEDED,
+      'Rate limit exceeded. Please try again later.'
     );
   }
 
@@ -91,9 +98,9 @@ async function postHandler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Organization ID and User ID required' },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'Organization ID and User ID required'
       );
     }
 
@@ -101,9 +108,9 @@ async function postHandler(req: NextRequest, context) {
     
     // Validate required fields
     if (!body.name || !body.config) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, config' },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.MISSING_REQUIRED_FIELD,
+        'Missing required fields: name, config'
       );
     }
 
@@ -129,18 +136,31 @@ async function postHandler(req: NextRequest, context) {
       dataType: 'ANALYTICS',
     });
 
-    return NextResponse.json({ 
+    return standardSuccessResponse({ 
       report,
-      message: 'Report created successfully',
-    }, { status: 201 });
+    }, 'Report created successfully', 201);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to create report' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create report',
+      error
     );
   }
 }
 
 export const GET = withRoleAuth(30, getHandler);
+
+const reportsSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  config: z.unknown().optional(),
+  description: z.string().optional(),
+  reportType: z.unknown().optional(),
+  category: z.unknown().optional(),
+  isPublic: z.boolean().optional(),
+  isTemplate: z.boolean().optional(),
+  templateId: z.string().uuid('Invalid templateId'),
+});
+
+
 export const POST = withRoleAuth(50, postHandler);
 

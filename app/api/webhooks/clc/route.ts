@@ -6,6 +6,7 @@
  * Implements signature verification and delivery tracking
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database";
 import {
@@ -24,6 +25,11 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 import { cacheGet, cacheSet } from "@/lib/services/cache-service";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -151,7 +157,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       payload = JSON.parse(rawBody) as CLCWebhookPayload;
     } catch (error) {
       logger.warn("CLC webhook invalid JSON", { error });
-      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON',
+      error
+    );
     }
 
     logger.info("CLC webhook event received", {
@@ -160,11 +170,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Get CLC API config for this organization
-    const config = await db.query.clcApiConfig.findFirst({
+    const config = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: and(
         eq(clcApiConfig.organizationId, payload.organization_id),
         eq(clcApiConfig.isActive, true)
       ),
+    });
     });
 
     if (!config?.sharedSecret) {
@@ -197,10 +209,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         eventType: payload.event_type,
         eventId: payload.event_id,
       });
-      return NextResponse.json(
-        { error: "Missing signature" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing signature'
+    );
     }
 
     const timestampCheck = isTimestampValid(payload.timestamp);
@@ -245,10 +257,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         timestamp: new Date(payload.timestamp * 1000),
       });
 
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 }
-      );
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Invalid signature'
+    );
     }
 
     // Mark event as processed for replay protection (24 hours)
@@ -335,9 +347,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ received: true, eventId: payload.event_id });
   } catch (error) {
     logger.error("CLC webhook handler failed", { error });
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Webhook processing failed',
+      error
     );
   }
 }
@@ -460,12 +473,14 @@ async function handleRemittanceFailed(payload: CLCWebhookPayload): Promise<void>
 
     // Send alert notification for manual review
     const notificationService = getNotificationService();
-    const orgAdmins = await db.query.organizationMembers.findMany({
+    const orgAdmins = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.role, "admin")
       ),
       limit: 5,
+    });
     });
 
     for (const admin of orgAdmins) {
@@ -539,11 +554,13 @@ async function handleRemittanceRejected(payload: CLCWebhookPayload): Promise<voi
 
     // Send urgent alert to all admins
     const notificationService = getNotificationService();
-    const orgAdmins = await db.query.organizationMembers.findMany({
+    const orgAdmins = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.role, "admin")
       ),
+    });
     });
 
     for (const admin of orgAdmins) {
@@ -598,11 +615,13 @@ async function handleMemberSynced(payload: CLCWebhookPayload): Promise<void> {
     });
 
     // Update member data from CLC
-    const existingMember = await db.query.organizationMembers.findFirst({
+    const existingMember = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.externalId, payload.data.member_id)
       ),
+    });
     });
 
     if (existingMember) {
@@ -663,11 +682,13 @@ async function handleMemberAdded(payload: CLCWebhookPayload): Promise<void> {
     });
 
     // Create new member record if not exists
-    const existingMember = await db.query.organizationMembers.findFirst({
+    const existingMember = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: and(
         eq(organizationMembers.organizationId, payload.organization_id),
         eq(organizationMembers.externalId, payload.data.member_id)
       ),
+    });
     });
 
     if (!existingMember) {
@@ -728,7 +749,8 @@ async function handleMemberRemoved(payload: CLCWebhookPayload): Promise<void> {
     });
 
     // Deactivate member record
-    const updateResult = await db.update(organizationMembers)
+    const updateResult = await withRLSContext(async (tx) => {
+      return await tx.update(organizationMembers)
       .set({
         status: 'inactive',
         membershipStatus: 'inactive',
@@ -741,6 +763,7 @@ async function handleMemberRemoved(payload: CLCWebhookPayload): Promise<void> {
           eq(organizationMembers.externalId, payload.data.member_id)
         )
       );
+    });
 
     // Create audit log
     await createAuditLog({
@@ -887,8 +910,10 @@ export async function acknowledgeCLCWebhook(
 export async function retryCLCWebhook(eventId: string): Promise<void> {
   try {
     // Fetch webhook from clcWebhookLog
-    const webhookLog = await db.query.clcWebhookLog.findFirst({
+    const webhookLog = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: eq(clcWebhookLog.eventId, eventId),
+    });
     });
 
     if (!webhookLog) {

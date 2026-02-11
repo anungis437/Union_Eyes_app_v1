@@ -47,7 +47,7 @@ import { auth, currentUser as clerkCurrentUser } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db/db';
 import { organizationMembers } from '@/db/schema';
-import { users } from '@/db/schema/user-management-schema';
+import { users } from '@/db/schema/domains/member';
 import {
   getMemberRoles,
   getMemberHighestRoleLevel,
@@ -211,7 +211,6 @@ export interface ApiGuardOptions {
  * imports these constants from api-auth-guard.ts.
  */
 export { PUBLIC_API_ROUTES, CRON_API_ROUTES, isPublicRoute, isCronRoute } from './public-routes';
-}
 
 /**
  * Verify cron secret header
@@ -267,9 +266,14 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     };
   } catch (error) {
     // SECURITY FIX: Fail closed - authentication system errors should not result in anonymous access
-    // Log the error for monitoring but throw to reject the request
+    // Log the error for monitoring but throw to reject the request with standardized error
     logger.error('CRITICAL: Authentication system error', error instanceof Error ? error : new Error(String(error)), { context: 'Auth' });
-    throw new Error('Authentication system unavailable');
+    
+    // Throw standardized error (doesn't leak system details)
+    const authError = new Error('Service temporarily unavailable');
+    (authError as any).statusCode = 503;
+    (authError as any).code = 'AUTH_SERVICE_ERROR';
+    throw authError;
   }
 }
 
@@ -576,7 +580,7 @@ export async function getUserRole(
   organizationId: string
 ): Promise<UserRole | null> {
   try {
-    const { organizationUsers } = await import('@/db/schema/user-management-schema');
+    const { organizationUsers } = await import('@/db/schema/domains/member');
     const { tenants } = await import('@/db/schema/tenant-management-schema');
     const { and } = await import('drizzle-orm');
     

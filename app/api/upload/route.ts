@@ -1,11 +1,17 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { put } from '@vercel/blob';
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { claims } from '@/db/schema/claims-schema';
+import { claims } from '@/db/schema/domains/claims';
 import { eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Maximum file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -45,33 +51,33 @@ export const POST = async (request: NextRequest) => {
       const claimId = formData.get('claimId') as string;
 
       // Validate inputs
+      const claimUploadSchema = z.object({
+        file: z.object({
+          name: z.string().min(1, "File name is required"),
+          size: z.number().max(MAX_FILE_SIZE, `File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`),
+          type: z.enum(ALLOWED_TYPES as [string, ...string[]], {
+            errorMap: () => ({ message: "File type not allowed" })
+          })
+        }),
+        claimId: z.string().uuid("Invalid claim ID")
+      });
+
+      const validation = claimUploadSchema.safeParse({
+        file: file ? { name: file.name, size: file.size, type: file.type } : null,
+        claimId
+      });
+
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          validation.error.errors[0]?.message || "Validation failed"
+        );
+      }
+
       if (!file) {
-        return NextResponse.json(
-          { error: 'No file provided' },
-          { status: 400 }
-        );
-      }
-
-      if (!claimId) {
-        return NextResponse.json(
-          { error: 'claimId is required' },
-          { status: 400 }
-        );
-      }
-
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json(
-          { error: `File size exceeds maximum of ${MAX_FILE_SIZE / 1024 / 1024}MB` },
-          { status: 400 }
-        );
-      }
-
-      // Validate file type
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        return NextResponse.json(
-          { error: 'File type not allowed' },
-          { status: 400 }
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          "No file provided"
         );
       }
 
@@ -83,10 +89,10 @@ export const POST = async (request: NextRequest) => {
         .limit(1);
 
       if (!claim) {
-        return NextResponse.json(
-          { error: 'Claim not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       // Verify user owns the claim or is assigned to it
@@ -140,10 +146,11 @@ export const POST = async (request: NextRequest) => {
       });
 
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to upload file' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to upload file',
+      error
+    );
     }
     })(request);
 };
@@ -158,10 +165,10 @@ export const GET = async (request: NextRequest) => {
       const claimId = searchParams.get('claimId');
 
       if (!claimId) {
-        return NextResponse.json(
-          { error: 'claimId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'claimId is required'
+    );
       }
 
       // Fetch claim
@@ -172,10 +179,10 @@ export const GET = async (request: NextRequest) => {
         .limit(1);
 
       if (!claim) {
-        return NextResponse.json(
-          { error: 'Claim not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       // Verify user has access
@@ -192,10 +199,11 @@ export const GET = async (request: NextRequest) => {
       });
 
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to fetch attachments' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch attachments',
+      error
+    );
     }
     })(request);
 };
@@ -211,10 +219,10 @@ export const DELETE = async (request: NextRequest) => {
       const fileUrl = searchParams.get('fileUrl');
 
       if (!claimId || !fileUrl) {
-        return NextResponse.json(
-          { error: 'claimId and fileUrl are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'claimId and fileUrl are required'
+    );
       }
 
       // Fetch claim
@@ -225,10 +233,10 @@ export const DELETE = async (request: NextRequest) => {
         .limit(1);
 
       if (!claim) {
-        return NextResponse.json(
-          { error: 'Claim not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Claim not found'
+    );
       }
 
       // Verify user has access
@@ -263,10 +271,11 @@ export const DELETE = async (request: NextRequest) => {
       });
 
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to delete attachment' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete attachment',
+      error
+    );
     }
     })(request);
 };

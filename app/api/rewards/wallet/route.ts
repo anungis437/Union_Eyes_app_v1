@@ -5,6 +5,11 @@ import { getBalance, listLedger } from '@/lib/services/rewards/wallet-service';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { NextResponse } from "next/server";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
   try {
@@ -12,10 +17,10 @@ export const GET = async (request: NextRequest) => {
       const { userId, organizationId } = context;
       
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Organization context required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization context required'
+    );
       }
 
       // 2. Parse query parameters
@@ -52,10 +57,11 @@ export const GET = async (request: NextRequest) => {
       );
 
     } catch (error) {
-return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
     }
     })(request);
 };

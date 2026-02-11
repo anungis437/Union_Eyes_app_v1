@@ -1,27 +1,39 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { logger } from '@/lib/logger';
 import { withApiAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const profileRolesSchema = z.object({
+  userId: z.string().uuid('Invalid userId'),
+  organizationId: z.string().uuid('Invalid organizationId').optional(),
+  tenantId: z.string().uuid('Invalid tenantId').optional(),
+}).refine((data) => data.organizationId || data.tenantId, {
+  message: 'Either organizationId or tenantId is required'
+});
 export const POST = withApiAuth(async (req: NextRequest) => {
   try {
-    const { userId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = await req.json();
+    const body = await req.json();
+    
+    // Validate request body
+    const validation = profileRolesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+
+    const { userId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = validation.data;
     const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'userId is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!organizationId) {
-      return NextResponse.json(
-        { error: 'organizationId is required' },
-        { status: 400 }
-      );
-    }
 
     // Query organizationMembers to find the user's role
     const memberRecord = await withRLSContext({ organizationId }, async (db) => {
@@ -32,10 +44,11 @@ export const POST = withApiAuth(async (req: NextRequest) => {
 
     if (!memberRecord) {
       logger.info('User has no organization membership', { userId });
-      return NextResponse.json(
-        { role: 'user', roles: [] },
-        { status: 200 }
-      );
+      return standardSuccessResponse(
+      {  role: 'user', roles: []  },
+      undefined,
+      200
+    );
     }
 
     // Extract roles from the member record
@@ -46,19 +59,21 @@ export const POST = withApiAuth(async (req: NextRequest) => {
 
     logger.info('Retrieved user roles', { userId, role: memberRecord.role, roles });
 
-    return NextResponse.json(
-      {
+    return standardSuccessResponse(
+      { 
         role: memberRecord.role || 'user',
         roles,
         organizationId: memberRecord.organizationId,
-      },
-      { status: 200 }
+       },
+      undefined,
+      200
     );
   } catch (error) {
     logger.error('Failed to get user roles', { error });
-    return NextResponse.json(
-      { error: 'Failed to retrieve user roles' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve user roles',
+      error
     );
   }
 });

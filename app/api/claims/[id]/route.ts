@@ -10,13 +10,18 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { claims, claimUpdates } from "@/db/schema/claims-schema";
+import { claims, claimUpdates } from "@/db/schema/domains/claims";
 import { eq, desc, sql } from "drizzle-orm";
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { updateClaimStatus, type ClaimStatus } from '@/lib/workflow-engine';
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 
 /**
  * Validation schema for updating claims
@@ -66,7 +71,10 @@ export const GET = async (
           dataType: 'CLAIMS',
           details: { reason: 'Claim not found', claimNumber },
         });
-          return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+          return standardErrorResponse(
+            ErrorCode.RESOURCE_NOT_FOUND,
+            'Claim not found'
+          );
         }
 
         // Fetch claim updates using the claim's UUID - RLS policies enforce access
@@ -87,7 +95,7 @@ export const GET = async (
           details: { claimNumber, organizationId, updatesCount: updates.length },
         });
 
-        return NextResponse.json({
+        return standardSuccessResponse({
           claim,
           updates,
         });
@@ -103,9 +111,10 @@ export const GET = async (
           dataType: 'CLAIMS',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-return NextResponse.json(
-          { error: "Failed to fetch claim" },
-          { status: 500 }
+        return standardErrorResponse(
+          ErrorCode.INTERNAL_ERROR,
+          'Failed to fetch claim',
+          error
         );
       }
   })(request);
@@ -125,12 +134,18 @@ export const PATCH = async (
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid JSON in request body'
+    );
     }
 
     const parsed = updateClaimSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        parsed.error.errors[0]?.message || 'Invalid request body'
+      );
     }
 
     const body = parsed.data;
@@ -157,7 +172,10 @@ export const PATCH = async (
             dataType: 'CLAIMS',
             details: { reason: 'Claim not found', claimNumber },
           });
-          return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+          return standardErrorResponse(
+            ErrorCode.RESOURCE_NOT_FOUND,
+            'Claim not found'
+          );
         }
 
         // SECURITY FIX (PR #7): Extract status from body to enforce FSM validation
@@ -189,9 +207,9 @@ export const PATCH = async (
                 error: result.error,
               },
             });
-            return NextResponse.json(
-              { error: result.error || 'Invalid status transition' },
-              { status: 400 }
+            return standardErrorResponse(
+              ErrorCode.INVALID_STATE_TRANSITION,
+              result.error || 'Invalid status transition'
             );
           }
         }
@@ -217,10 +235,10 @@ export const PATCH = async (
           details: { claimNumber, organizationId, updatedFields: Object.keys(body) },
         });
 
-        return NextResponse.json({
-          claim: updatedClaim,
-          message: "Claim updated successfully",
-        });
+        return standardSuccessResponse(
+          { claim: updatedClaim },
+          'Claim updated successfully'
+        );
       });
     } catch (error) {
           logApiAuditEvent({
@@ -233,9 +251,10 @@ export const PATCH = async (
             dataType: 'CLAIMS',
             details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
           });
-return NextResponse.json(
-            { error: "Failed to update claim" },
-            { status: 500 }
+          return standardErrorResponse(
+            ErrorCode.INTERNAL_ERROR,
+            'Failed to update claim',
+            error
           );
         }
   })(request);
@@ -274,7 +293,10 @@ export const DELETE = async (
             dataType: 'CLAIMS',
             details: { reason: 'Claim not found', claimNumber },
           });
-          return NextResponse.json({ error: "Claim not found" }, { status: 404 });
+          return standardErrorResponse(
+            ErrorCode.RESOURCE_NOT_FOUND,
+            'Claim not found'
+          );
         }
 
         // SECURITY FIX (PR #7): Enforce FSM validation via workflow engine
@@ -302,9 +324,9 @@ export const DELETE = async (
               error: result.error,
             },
           });
-          return NextResponse.json(
-            { error: result.error || 'Cannot close claim at this time' },
-            { status: 400 }
+          return standardErrorResponse(
+            ErrorCode.INVALID_STATE_TRANSITION,
+            result.error || 'Cannot close claim at this time'
           );
         }
 
@@ -328,9 +350,10 @@ export const DELETE = async (
           details: { claimNumber, organizationId },
         });
 
-        return NextResponse.json({
-          message: "Claim deleted successfully",
-        });
+        return standardSuccessResponse(
+          null,
+          'Claim deleted successfully'
+        );
       });
     } catch (error) {
         logApiAuditEvent({
@@ -343,9 +366,10 @@ export const DELETE = async (
           dataType: 'CLAIMS',
           details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
         });
-return NextResponse.json(
-          { error: "Failed to delete claim" },
-          { status: 500 }
+        return standardErrorResponse(
+          ErrorCode.INTERNAL_ERROR,
+          'Failed to delete claim',
+          error
         );
       }
   })(request);

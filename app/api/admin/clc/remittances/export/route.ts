@@ -24,6 +24,11 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // =====================================================================================
 // GET - Export remittances
 // =====================================================================================
@@ -64,10 +69,11 @@ export const GET = async (request: NextRequest) => {
             severity: 'medium',
             details: { reason: 'Invalid format', format },
           });
-          return NextResponse.json(
-            { error: 'Invalid format. Must be csv, xml, or statcan' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid format. Must be csv, xml, or statcan'
+      // TODO: Migrate additional details: xml, or statcan'
+    );
         }
 
         // Parse remittance IDs
@@ -85,10 +91,10 @@ export const GET = async (request: NextRequest) => {
             severity: 'medium',
             details: { reason: 'remittanceIds required for CSV/XML', format },
           });
-          return NextResponse.json(
-            { error: 'remittanceIds required for CSV and XML formats' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'remittanceIds required for CSV and XML formats'
+    );
         }
 
         if (format === 'statcan' && !fiscalYearParam) {
@@ -100,10 +106,10 @@ export const GET = async (request: NextRequest) => {
             severity: 'medium',
             details: { reason: 'fiscalYear required for StatCan', format },
           });
-          return NextResponse.json(
-            { error: 'fiscalYear required for StatCan format' },
-            { status: 400 }
-          );
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'fiscalYear required for StatCan format'
+    );
         }
 
       const fiscalYear = fiscalYearParam ? parseInt(fiscalYearParam) : undefined;
@@ -153,10 +159,11 @@ export const GET = async (request: NextRequest) => {
           severity: 'high',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         });
-return NextResponse.json(
-          { error: 'Failed to export remittances' },
-          { status: 500 }
-        );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to export remittances',
+      error
+    );
       }
       })(request);
 };

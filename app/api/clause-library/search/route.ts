@@ -15,7 +15,30 @@ import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser }
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // POST /api/clause-library/search - Advanced search with full-text
+
+const clause-librarySearchSchema = z.object({
+  query: z.unknown().optional(),
+  clauseTypes: z.unknown().optional(),
+  sectors: z.unknown().optional(),
+  provinces: z.unknown().optional(),
+  sharingLevels: z.unknown().optional(),
+  tags: z.unknown().optional(),
+  effectiveDateFrom: z.string().datetime().optional(),
+  effectiveDateTo: z.string().datetime().optional(),
+  organizationIds: z.string().uuid('Invalid organizationIds'),
+  includeExpired = false: z.unknown().optional(),
+  page = 1: z.unknown().optional(),
+  limit = 20: z.unknown().optional(),
+  sortBy = "createdAt": z.unknown().optional(),
+  sortOrder = "desc": z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     const user = { id: context.userId, organizationId: context.organizationId };
@@ -23,7 +46,7 @@ export const POST = async (request: NextRequest) => {
   try {
       // Use authenticated organization context
       if (!context.organizationId) {
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No organization context");
       }
 
       const userOrgId = context.organizationId;
@@ -36,6 +59,17 @@ export const POST = async (request: NextRequest) => {
       const userOrgHierarchyPath = userOrg?.hierarchyPath?.join(',') || '';
 
       const body = await request.json();
+    // Validate request body
+    const validation = clause-librarySearchSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { query, clauseTypes, sectors, provinces, sharingLevels, tags, effectiveDateFrom, effectiveDateTo, organizationIds, includeExpired = false, page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc" } = validation.data;
 
       const {
         query,
@@ -214,10 +248,11 @@ export const POST = async (request: NextRequest) => {
     } catch (error) {
       logger.error('Error searching clauses', error as Error, {      correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to search clauses" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to search clauses',
+      error
+    );
     }
     })(request);
 };

@@ -5,6 +5,11 @@ import { requireUser } from '@/lib/api-auth-guard';
 import { createClient } from "@/packages/supabase/server";
 import { logger } from '@/lib/logger';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/organizations/[id]/access-logs
  * Retrieve cross-organization access logs for audit trail
@@ -18,12 +23,18 @@ export async function GET(
     const authResult = await requireUser();
     userId = authResult.userId;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const organizationId = params.id;
   if (authResult.organizationId && organizationId !== authResult.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
     const { searchParams } = new URL(request.url);
@@ -36,10 +47,10 @@ export async function GET(
     );
 
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: "Access denied - admin or officer role required" },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied - admin or officer role required'
+    );
     }
 
     // Parse query parameters
@@ -150,9 +161,10 @@ export async function GET(
       userId,
       correlationId: request.headers.get('x-correlation-id')
     });
-    return NextResponse.json(
-      { error: "Failed to fetch access logs" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch access logs',
+      error
     );
   }
 }

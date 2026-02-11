@@ -14,13 +14,21 @@ import { db } from '@/db/db';
 import { lrbAgreements, lrbSyncLog } from '@/db/schema/lrb-agreements-schema';
 import { eq, desc } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/external-data/lrb - Search agreements
 export async function GET(request: NextRequest) {
   try {
     const { userId } = auth();
     
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const searchParams = request.nextUrl.searchParams;
@@ -45,12 +53,18 @@ export async function GET(request: NextRequest) {
       case 'get': {
         const id = searchParams.get('id');
         if (!id) {
-          return NextResponse.json({ error: 'Agreement ID required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Agreement ID required'
+    );
         }
 
         const agreement = await unifiedLRBService.getById(id);
         if (!agreement) {
-          return NextResponse.json({ error: 'Agreement not found' }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Agreement not found'
+    );
         }
 
         return NextResponse.json({ agreement });
@@ -61,7 +75,10 @@ export async function GET(request: NextRequest) {
         const jurisdiction = searchParams.get('jurisdiction') || undefined;
 
         if (!nocCode) {
-          return NextResponse.json({ error: 'NOC code required' }, { status: 400 });
+          return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'NOC code required'
+    );
         }
 
         const comparisons = await unifiedLRBService.getWageComparisons(nocCode, jurisdiction);
@@ -88,12 +105,16 @@ export async function GET(request: NextRequest) {
       }
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
+    );
     }
   } catch (error) {
-return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 }
@@ -104,7 +125,10 @@ export async function POST(request: NextRequest) {
     const { userId } = auth();
     
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const body = await request.json();
@@ -138,12 +162,16 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action'
+    );
     }
   } catch (error) {
-return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
     );
   }
 }

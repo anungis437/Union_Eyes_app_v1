@@ -17,6 +17,11 @@ import { newsletterDistributionLists } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 const updateListSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -42,7 +47,10 @@ export const GET = withOrganizationAuth(async (
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'List ID required'
+    );
     }
 
     const [list] = await db
@@ -56,14 +64,18 @@ export const GET = withOrganizationAuth(async (
       );
 
     if (!list) {
-      return NextResponse.json({ error: 'List not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'List not found'
+    );
     }
 
     return NextResponse.json({ list });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch distribution list' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch distribution list',
+      error
     );
   }
 });
@@ -77,11 +89,21 @@ export const PUT = withOrganizationAuth(async (
     const { organizationId } = context;
 
     if (!params?.id) {
-      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'List ID required'
+    );
     }
 
     const body = await request.json();
-    const validatedData = updateListSchema.parse(body);
+    const validation = updateListSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    const validatedData = validation.data;
 
     const [list] = await db
       .update(newsletterDistributionLists)
@@ -95,34 +117,20 @@ export const PUT = withOrganizationAuth(async (
       .returning();
 
     if (!list) {
-      return NextResponse.json({ error: 'List not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'List not found'
+    );
     }
 
     return NextResponse.json({ list });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-return NextResponse.json(
-      { error: 'Failed to update distribution list' },
-      { status: 500 }
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Validation error',
+      error
     );
-  }
-});
-
-export const DELETE = withOrganizationAuth(async (
-  request: NextRequest,
-  context,
-  params?: { id: string }
-) => {
-  try {
-    const { organizationId } = context;
-
-    if (!params?.id) {
-      return NextResponse.json({ error: 'List ID required' }, { status: 400 });
     }
 
     await db
@@ -136,9 +144,10 @@ export const DELETE = withOrganizationAuth(async (
 
     return NextResponse.json({ success: true });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to delete distribution list' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete distribution list',
+      error
     );
   }
 });

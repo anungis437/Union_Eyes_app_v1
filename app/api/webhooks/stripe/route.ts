@@ -5,6 +5,7 @@
  * Integrates with notification system, payment schema, and financial reporting
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/database";
@@ -13,7 +14,7 @@ import {
   paymentMethods,
   paymentCycles,
   stripeWebhookEvents,
-} from "@/db/schema/financial-payments-schema";
+} from "@/db/schema/domains/finance";
 import { createAuditLog } from "@/lib/services/audit-service";
 import { postGLTransaction } from "@/lib/services/general-ledger-service";
 import {
@@ -25,6 +26,11 @@ import { logger } from "@/lib/logger";
 import { createHmac } from "crypto";
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from "@/lib/rate-limiter";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -84,10 +90,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!signature) {
       logger.warn("Stripe webhook received without signature");
-      return NextResponse.json(
-        { error: "Missing signature" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing signature'
+    );
     }
 
     // Verify signature
@@ -175,11 +181,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
             const organizationId = subscription.metadata?.organizationId || "system";
 
-            const existingCycles = await db.query.paymentCycles.findMany({
+            const existingCycles = await withRLSContext(async (tx) => {
+      return await tx.query({
               where: and(
                 sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
               ),
             }).catch(() => []);
+    });
 
             for (const cycle of existingCycles) {
               await db.update(paymentCycles)
@@ -269,9 +277,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ received: true });
   } catch (error) {
     logger.error("Stripe webhook handler failed", { error });
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Webhook processing failed',
+      error
     );
   }
 }
@@ -523,11 +532,13 @@ async function handleSubscriptionDeleted(
 
     const organizationId = subscription.metadata?.organizationId || "system";
 
-    const existingCycles = await db.query.paymentCycles.findMany({
+    const existingCycles = await withRLSContext(async (tx) => {
+      return await tx.query({
       where: and(
         sql`${paymentCycles.metadata}->>'stripeSubscriptionId' = ${subscription.id}`,
       ),
     }).catch(() => []);
+    });
 
     for (const cycle of existingCycles) {
       await db.update(paymentCycles)
@@ -715,9 +726,11 @@ async function handlePaymentMethodAttached(
     if (organizationId && memberId) {
       try {
         // Check if payment method already exists
-        const existingMethod = await db.query.paymentMethods.findFirst({
+        const existingMethod = await withRLSContext(async (tx) => {
+      return await tx.query({
           where: eq(paymentMethods.stripePaymentMethodId, paymentMethod.id),
         });
+    });
 
         if (!existingMethod) {
           await db.insert(paymentMethods).values({

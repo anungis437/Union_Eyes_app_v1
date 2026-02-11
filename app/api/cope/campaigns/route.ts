@@ -1,3 +1,4 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 /**
  * API Route: COPE Political Campaigns
@@ -12,6 +13,11 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -25,10 +31,10 @@ export const GET = async (request: NextRequest) => {
       const campaignStatus = searchParams.get('campaignStatus');
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId is required'
+    );
       }
 
       // Build query using sql template with embedded values
@@ -44,7 +50,8 @@ export const GET = async (request: NextRequest) => {
 
       const whereClause = sql.join(conditions, sql.raw(' AND '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         id,
         campaign_name,
@@ -76,6 +83,7 @@ export const GET = async (request: NextRequest) => {
       WHERE ${whereClause}
       ORDER BY start_date DESC NULLS LAST, created_at DESC
     `);
+    });
 
       return NextResponse.json({
         success: true,
@@ -88,13 +96,44 @@ export const GET = async (request: NextRequest) => {
         organizationId: request.nextUrl.searchParams.get('organizationId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const copeCampaignsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  campaignName: z.string().min(1, 'campaignName is required'),
+  campaignType: z.unknown().optional(),
+  campaignDescription: z.string().optional(),
+  campaignGoals: z.unknown().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  electionDate: z.string().datetime().optional(),
+  jurisdictionLevel: z.boolean().optional(),
+  jurisdictionName: z.boolean().optional(),
+  electoralDistrict: z.boolean().optional(),
+  primaryIssue: z.boolean().optional(),
+  memberParticipationGoal: z.unknown().optional(),
+  doorsKnockedGoal: z.unknown().optional(),
+  phoneCallsGoal: z.string().min(10, 'Invalid phone number'),
+  budgetAllocated: z.unknown().optional(),
+  fundedByCope: z.unknown().optional(),
+  copeContributionAmount: z.number().positive('copeContributionAmount must be positive'),
+  campaignStatus: z.unknown().optional(),
+  membersParticipated: z.unknown().optional(),
+  doorsKnocked: z.unknown().optional(),
+  phoneCallsMade: z.string().min(10, 'Invalid phone number'),
+  expensesToDate: z.string().datetime().optional(),
+  outcomeType: z.unknown().optional(),
+  outcomeDate: z.string().datetime().optional(),
+  outcomeNotes: z.string().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
@@ -102,6 +141,17 @@ export const POST = async (request: NextRequest) => {
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = copeCampaignsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, campaignName, campaignType, campaignDescription, campaignGoals, startDate, endDate, electionDate, jurisdictionLevel, jurisdictionName, electoralDistrict, primaryIssue, memberParticipationGoal, doorsKnockedGoal, phoneCallsGoal, budgetAllocated, fundedByCope, copeContributionAmount, campaignStatus, membersParticipated, doorsKnocked, phoneCallsMade, expensesToDate, outcomeType, outcomeDate, outcomeNotes } = validation.data;
       const {
         organizationId,
         campaignName,
@@ -123,16 +173,20 @@ export const POST = async (request: NextRequest) => {
         copeContributionAmount,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !campaignName || !campaignType) {
-        return NextResponse.json(
-          { error: 'Bad Request - organizationId, campaignName, and campaignType are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - organizationId, campaignName, and campaignType are required'
+      // TODO: Migrate additional details: campaignName, and campaignType are required'
+    );
       }
 
       // Generate campaign code
@@ -141,7 +195,8 @@ export const POST = async (request: NextRequest) => {
       const campaignCode = `COPE-${timestamp}-${random}`;
 
       // Insert campaign using sql template
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       INSERT INTO political_campaigns (
         id,
         organization_id,
@@ -193,21 +248,24 @@ export const POST = async (request: NextRequest) => {
       )
       RETURNING *
     `);
+    });
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
-        message: 'Political campaign created successfully',
-      }, { status: 201 });
+      return standardSuccessResponse(
+      { data: result[0],
+        message: 'Political campaign created successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to create political campaign', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
@@ -221,10 +279,10 @@ export const PATCH = async (request: NextRequest) => {
       const campaignId = searchParams.get('id');
 
       if (!campaignId) {
-        return NextResponse.json(
-          { error: 'Bad Request - id parameter is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - id parameter is required'
+    );
       }
 
       const body = await request.json();
@@ -277,18 +335,20 @@ export const PATCH = async (request: NextRequest) => {
       updates.push(sql`updated_at = NOW()`);
       const setClause = sql.join(updates, sql.raw(', '));
 
-      const result = await db.execute(sql`
+      const result = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       UPDATE political_campaigns
       SET ${setClause}
       WHERE id = ${campaignId}
       RETURNING *
     `);
+    });
 
       if (result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Campaign not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Campaign not found'
+    );
       }
 
       return NextResponse.json({
@@ -302,10 +362,11 @@ export const PATCH = async (request: NextRequest) => {
         campaignId: request.nextUrl.searchParams.get('id'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

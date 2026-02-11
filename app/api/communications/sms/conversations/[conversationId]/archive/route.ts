@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { smsConversations } from '@/db/schema/sms-communications-schema';
+import { smsConversations } from '@/db/schema/domains/communications';
 import { and, eq } from 'drizzle-orm';
 import { withRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 type SmsConversationContext = { params: { conversationId: string }; organizationId?: string };
 
 export const POST = withRoleAuth<SmsConversationContext>('steward', async (request, authContext) => {
@@ -12,7 +17,10 @@ export const POST = withRoleAuth<SmsConversationContext>('steward', async (reque
     const organizationId = authContext.organizationId;
 
     if (!organizationId) {
-      return NextResponse.json({ error: 'Missing organizationId' }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing organizationId'
+    );
     }
 
     const [conversation] = await db
@@ -24,14 +32,18 @@ export const POST = withRoleAuth<SmsConversationContext>('steward', async (reque
       .returning();
 
     if (!conversation) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Conversation not found'
+    );
     }
 
     return NextResponse.json({ conversation });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to archive conversation' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to archive conversation',
+      error
     );
   }
 });

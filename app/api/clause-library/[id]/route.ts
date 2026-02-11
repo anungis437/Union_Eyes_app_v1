@@ -19,6 +19,11 @@ import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // Helper to log cross-org access
 async function logCrossOrgAccess(
   userId: string,
@@ -69,7 +74,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
 
       // Use authenticated organization context (validated by withEnhancedRoleAuth)
       if (!organizationId) {
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(
+          ErrorCode.MISSING_REQUIRED_FIELD,
+          "No organization context"
+        );
       }
 
       const userOrgId = organizationId;
@@ -99,7 +107,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       });
 
       if (!clause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       // Check access permissions
@@ -166,7 +177,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
       }
 
       if (!hasAccess) {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied'
+    );
       }
 
       // Return clause with isOwner flag
@@ -180,15 +194,32 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         clauseId: params.id,
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to fetch clause" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch clause',
+      error
+    );
     }
     })(request, { params });
 };
 
 // PATCH /api/clause-library/[id] - Update clause
+
+const clause-librarySchema = z.object({
+  clauseTitle: z.string().min(1, 'clauseTitle is required'),
+  clauseText: z.unknown().optional(),
+  clauseType: z.unknown().optional(),
+  isAnonymized: z.boolean().optional(),
+  originalEmployerName: z.string().min(1, 'originalEmployerName is required'),
+  anonymizedEmployerName: z.string().min(1, 'anonymizedEmployerName is required'),
+  sharingLevel: z.unknown().optional(),
+  sharedWithOrgIds: z.string().uuid('Invalid sharedWithOrgIds'),
+  effectiveDate: z.string().datetime().optional(),
+  expiryDate: z.string().datetime().optional(),
+  sector: z.unknown().optional(),
+  province: z.unknown().optional(),
+});
+
 export const PATCH = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -198,7 +229,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
 
       // Use authenticated organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No organization context'
+    );
       }
 
       const userOrgId = organizationId;
@@ -211,15 +245,32 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
       });
 
       if (!existingClause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       // Only owner can update
       if (existingClause.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can update this clause" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can update this clause'
+    );
       }
 
       const body = await request.json();
+    // Validate request body
+    const validation = clause-librarySchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { clauseTitle, clauseText, clauseType, isAnonymized, originalEmployerName, anonymizedEmployerName, sharingLevel, sharedWithOrgIds, effectiveDate, expiryDate, sector, province } = validation.data;
 
       const {
         clauseTitle,
@@ -281,10 +332,11 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         clauseId: params.id,
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to update clause" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update clause',
+      error
+    );
     }
     })(request, { params });
 };
@@ -299,7 +351,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
 
       // Use authenticated organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'No organization context'
+    );
       }
 
       const userOrgId = organizationId;
@@ -312,12 +367,18 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
       });
 
       if (!existingClause) {
-        return NextResponse.json({ error: "Clause not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Clause not found'
+    );
       }
 
       // Only owner can delete
       if (existingClause.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json({ error: "Only the owner can delete this clause" }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the owner can delete this clause'
+    );
       }
 
       // Delete clause with RLS (cascade will delete tags)
@@ -334,10 +395,11 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         clauseId: params.id,
         correlationId: request.headers.get('x-correlation-id')
       });
-      return NextResponse.json(
-        { error: "Failed to delete clause" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete clause',
+      error
+    );
     }
     })(request, { params });
 };

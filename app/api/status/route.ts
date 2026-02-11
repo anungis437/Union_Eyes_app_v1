@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { getSystemStatus } from '@/lib/monitoring';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,17 +23,7 @@ export async function GET() {
     
     return NextResponse.json(status, { status: statusCode });
   } catch (error) {
-    return NextResponse.json(
-      {
-        status: 'down',
-        services: [],
-        uptime: process.uptime(),
-        version: process.env.APP_VERSION || '1.0.0',
-        timestamp: new Date(),
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 503 }
-    );
+    return standardErrorResponse(ErrorCode.SERVICE_UNAVAILABLE);
   }
 }
 

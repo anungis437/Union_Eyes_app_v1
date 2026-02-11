@@ -7,12 +7,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { pensionTrusteeMeetings } from '@/db/migrations/schema';
+import { pensionTrusteeMeetings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest, { params }: { params: { id: string } }) => {
@@ -27,10 +32,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         .limit(1);
 
       if (!meeting || meeting.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Meeting not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Meeting not found'
+    );
       }
 
       return NextResponse.json({
@@ -44,9 +49,10 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         meetingId: params.id,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request, { params });
@@ -75,10 +81,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         .returning();
 
       if (!result || result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Meeting not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Meeting not found'
+    );
       }
 
       return NextResponse.json({
@@ -93,9 +99,10 @@ export const PATCH = async (request: NextRequest, { params }: { params: { id: st
         meetingId: params.id,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request, { params });
@@ -112,10 +119,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         .returning();
 
       if (!result || result.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Meeting not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Meeting not found'
+    );
       }
 
       return NextResponse.json({
@@ -129,9 +136,10 @@ export const DELETE = async (request: NextRequest, { params }: { params: { id: s
         meetingId: params.id,
         correlationId: request.headers.get('x-correlation-id'),
   });
-    return NextResponse.json(
-      { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
     );
   }
   })(request, { params });

@@ -8,7 +8,7 @@ import {
   transferPricingDocumentation,
   fxRateAuditLog,
   currencyEnforcementAudit,
-} from "@/db/schema/transfer-pricing-schema";
+} from "@/db/schema/domains/finance";
 import { eq, and, lte, gte, desc } from "drizzle-orm";
 
 /**

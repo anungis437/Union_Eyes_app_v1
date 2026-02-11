@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { withRoleAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
@@ -20,6 +21,11 @@ import { sql } from 'drizzle-orm';
 import { predictChurnRisk } from '@/lib/ml/models/churn-prediction-model';
 
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface ChurnPrediction {
   memberId: string;
   memberName: string;
@@ -151,11 +157,19 @@ export const GET = withRoleAuth('officer', async (request, _context) => {
 
   } catch (err) {
     logger.error('Failed to fetch churn predictions', err instanceof Error ? err : new Error(String(err)));
-    return NextResponse.json(
-      { error: 'Failed to fetch churn predictions' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch churn predictions',
+      error
     );
   }
+});
+
+
+const mlPredictionsChurn-riskSchema = z.object({
+  memberId: z.string().uuid('Invalid memberId'),
+  organizationId: z.string().uuid('Invalid organizationId'),
+  tenantId: z.string().uuid('Invalid tenantId'),
 });
 
 export const POST = withRoleAuth('officer', async (request, _context) => {
@@ -165,15 +179,26 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
 
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = mlPredictionsChurn-riskSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { memberId, organizationId, tenantId } = validation.data;
       const { memberId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody } = body;
     const organizationScopeId = organizationIdFromBody ?? organizationId ?? userId;
     const tenantId = tenantIdFromBody ?? organizationScopeId;
 
     if (!memberId) {
-      return NextResponse.json(
-        { error: 'memberId is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'memberId is required'
+    );
     }
 
     // Extract features for this member
@@ -237,10 +262,10 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
     `);
 
     if ((result as unknown as Record<string, unknown>[] || []).length === 0) {
-      return NextResponse.json(
-        { error: 'Member not found' },
-        { status: 404 }
-      );
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
     }
 
     const features = (result as unknown as Record<string, unknown>[])?.[0];
@@ -384,9 +409,10 @@ export const POST = withRoleAuth('officer', async (request, _context) => {
 
   } catch (err) {
     logger.error('Failed to generate churn prediction', err instanceof Error ? err : new Error(String(err)));
-    return NextResponse.json(
-      { error: 'Failed to generate churn prediction' },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to generate churn prediction',
+      error
     );
   }
 });

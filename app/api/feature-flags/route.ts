@@ -2,22 +2,20 @@
  * Feature Flags API Route
  * 
  * Returns enabled features for the current user.
+ * 
+ * Security: Protected with withApiAuth guard (migrated Feb 2026)
  */
 
-import { NextResponse } from 'next/server';
-import { getAuth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { withApiAuth } from '@/lib/api-auth-guard';
 import { evaluateFeatures, LRO_FEATURES } from '@/lib/services/feature-flags';
+import { standardErrorResponse, ErrorCode } from '@/lib/api/standardized-responses';
 
-export async function GET(request: Request) {
+export const GET = withApiAuth(async (request: NextRequest, context) => {
   try {
-    const { userId, orgId } = await getAuth(request as any);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // User context provided by withApiAuth guard
+    const userId = context.user?.id;
+    const orgId = context.user?.organizationId;
     
     // Evaluate all LRO features for this user
     const featureNames = Object.values(LRO_FEATURES);
@@ -33,13 +31,7 @@ export async function GET(request: Request) {
       organizationId: orgId || null,
     });
   } catch (error) {
-return NextResponse.json(
-      { 
-        error: 'Failed to evaluate feature flags',
-        flags: {}, // Fail safe: all features disabled
-      },
-      { status: 500 }
-    );
+    return standardErrorResponse(ErrorCode.INTERNAL_ERROR);
   }
-}
+});
 

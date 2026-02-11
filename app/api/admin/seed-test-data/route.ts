@@ -18,6 +18,16 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const adminSeed-test-dataSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId: contextOrganizationId } = context;
@@ -25,16 +35,31 @@ export const POST = async (request: NextRequest) => {
   try {
       // Check authentication
       const body = await request.json();
+    // Validate request body
+    const validation = adminSeed-test-dataSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId } = validation.data;
       const { organizationId } = body;
   if (organizationId && organizationId !== contextOrganizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       if (!organizationId) {
-        return NextResponse.json({ 
-          error: "organizationId is required" 
-        }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 // All database operations wrapped in withRLSContext - RLS policies handle tenant isolation
       return withRLSContext(async (tx) => {
@@ -46,9 +71,10 @@ export const POST = async (request: NextRequest) => {
           .limit(1);
 
         if (!userProfile) {
-          return NextResponse.json({ 
-            error: "User profile not found" 
-          }, { status: 404 });
+          return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'User profile not found'
+    );
         }
 
         // Create 4 additional sample members

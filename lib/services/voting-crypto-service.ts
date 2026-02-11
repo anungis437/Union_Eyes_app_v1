@@ -292,7 +292,7 @@ export async function createVotingAuditLog(
     // Store in voting_audit_log table
     try {
       const { db } = await import('@/db');
-      const { votingAuditLog } = await import('@/db/schema/voting-schema');
+      const { votingAuditLog } = await import('@/db/schema/domains/governance');
       
       await db.insert(votingAuditLog).values({
         sessionId: receipt.sessionId,
@@ -340,7 +340,7 @@ export async function verifyElectionIntegrity(
   try {
     // Fetch all audit logs for session from database
     const { db } = await import('@/db');
-    const { votingAuditLog } = await import('@/db/schema/voting-schema');
+    const { votingAuditLog } = await import('@/db/schema/domains/governance');
     const { eq, asc } = await import('drizzle-orm');
     
     const auditLogs = await db

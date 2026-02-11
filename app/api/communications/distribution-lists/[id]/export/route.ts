@@ -18,6 +18,11 @@ import {
 import { eq, and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -25,10 +30,16 @@ export async function GET(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     if (!user.tenantId) {
-      return NextResponse.json({ error: 'Tenant context required' }, { status: 403 });
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Tenant context required'
+    );
     }
 
     // Verify list exists
@@ -43,7 +54,10 @@ export async function GET(
       );
 
     if (!list) {
-      return NextResponse.json({ error: 'List not found' }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'List not found'
+    );
     }
 
     // Get subscribers with profile details
@@ -81,9 +95,10 @@ export async function GET(
       },
     });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to export list' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to export list',
+      error
     );
   }
 }

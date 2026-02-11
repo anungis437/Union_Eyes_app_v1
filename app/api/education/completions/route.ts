@@ -13,6 +13,11 @@ import { sendCompletionCertificate } from '@/lib/email/training-notifications';
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
@@ -24,10 +29,10 @@ export const GET = async (request: NextRequest) => {
       const includeExpired = searchParams.get('includeExpired');
 
       if (!memberId) {
-        return NextResponse.json(
-          { error: 'Bad Request - memberId is required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - memberId is required'
+    );
       }
 
       // Build query with joins
@@ -110,18 +115,41 @@ export const GET = async (request: NextRequest) => {
         memberId: request.nextUrl.searchParams.get('memberId'),
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };
+
+
+const educationCompletionsSchema = z.object({
+  registrationId: z.string().uuid('Invalid registrationId'),
+  completionDate: z.string().datetime().optional(),
+  completionPercentage: z.unknown().optional(),
+  finalGrade: z.unknown().optional(),
+  passed: z.string().min(1, 'passed is required'),
+  preTestScore: z.unknown().optional(),
+  postTestScore: z.unknown().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationCompletionsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { registrationId, completionDate, completionPercentage, finalGrade, passed, preTestScore, postTestScore } = validation.data;
       const {
         registrationId,
         completionDate,
@@ -134,10 +162,10 @@ export const POST = async (request: NextRequest) => {
 
       // Validate required fields
       if (!registrationId || passed === undefined) {
-        return NextResponse.json(
-          { error: 'Bad Request - registrationId and passed are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - registrationId and passed are required'
+    );
       }
 
       // Get registration and course details
@@ -160,10 +188,10 @@ export const POST = async (request: NextRequest) => {
     `);
 
       if (regCheck.length === 0) {
-        return NextResponse.json(
-          { error: 'Not Found - Registration not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Not Found - Registration not found'
+    );
       }
 
       const registration = regCheck[0];
@@ -277,23 +305,25 @@ export const POST = async (request: NextRequest) => {
         }
       }
 
-      return NextResponse.json({
-        success: true,
-        data: result[0],
+      return standardSuccessResponse(
+      { data: result[0],
         certificateUrl,
         message: certificateIssued 
           ? 'Course completed and certificate issued successfully' 
-          : 'Course completion recorded successfully',
-      }, { status: 201 });
+          : 'Course completion recorded successfully', },
+      undefined,
+      201
+    );
 
     } catch (error) {
       logger.error('Failed to record course completion', error as Error, {
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

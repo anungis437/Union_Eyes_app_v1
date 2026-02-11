@@ -227,7 +227,7 @@ export class MultiCurrencyTreasuryService {
       gainLoss: Decimal;
     }>;
   }> {
-    const { transactionCurrencyConversions } = await import('@/db/schema/transfer-pricing-schema');
+    const { transactionCurrencyConversions } = await import('@/db/schema/domains/finance');
     const { and, gte, lte, eq } = await import('drizzle-orm');
     
     try {

@@ -5,11 +5,17 @@
  * Returns performance metrics for all stewards handling claims
  */
 
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 import { sql, db } from '@/db';
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 interface StewardPerformance {
   id: string;
   name: string;
@@ -26,10 +32,10 @@ async function handler(req: NextRequest, context) {
     const tenantId = organizationId;
     
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Tenant ID required'
+    );
     }
 
     const url = new URL(req.url);
@@ -40,7 +46,8 @@ async function handler(req: NextRequest, context) {
     startDate.setDate(startDate.getDate() - daysBack);
 
     // Get steward performance metrics
-    const stewards = await db.execute(sql`
+    const stewards = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
       SELECT 
         om.id,
         CONCAT(om.first_name, ' ', om.last_name) AS name,
@@ -57,6 +64,7 @@ async function handler(req: NextRequest, context) {
       HAVING COUNT(c.id) > 0
       ORDER BY COUNT(c.id) DESC
     `) as any[];
+    });
 
     // Calculate performance scores (0-100)
     // Formula: Weighted average of normalized metrics
@@ -104,9 +112,10 @@ async function handler(req: NextRequest, context) {
 
     return NextResponse.json(performance);
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch steward performance' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch steward performance',
+      error
     );
   }
 }

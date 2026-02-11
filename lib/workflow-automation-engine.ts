@@ -31,7 +31,7 @@ import {
   type StageCondition,
   type StageAction,
 } from "@/db/schema";
-import { grievanceDeadlines } from "@/db/schema/grievance-workflow-schema";
+import { grievanceDeadlines } from "@/db/schema/domains/claims";
 import { organizationMembers } from "@/db/schema/organization-members-schema";
 import { getNotificationService } from "@/lib/services/notification-service";
 import { logger } from "@/lib/logger";

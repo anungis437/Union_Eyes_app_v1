@@ -15,6 +15,11 @@ import { reports } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async (req: NextRequest) => {
   return withRoleAuth(50, async (request, context) => {
     const { userId, organizationId } = context;
@@ -22,10 +27,10 @@ export const GET = async (req: NextRequest) => {
   try {
 
       if (!userId || !organizationId) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
       }
 
       // Get all templates (public ones + this tenant's private ones)

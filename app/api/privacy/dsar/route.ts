@@ -7,6 +7,11 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * Helper to check if user has admin/privacy officer role
  */
@@ -28,21 +33,46 @@ async function checkPrivacyPermissions(userId: string, organizationId: string): 
   }
 }
 
+
+const privacyDsarSchema = z.object({
+  requestType: z.unknown().optional(),
+  province: z.unknown().optional(),
+  requestDescription: z.string().optional(),
+  requestedDataTypes: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(90, async (request, context) => {
     const { userId, organizationId } = context;
 
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = privacyDsarSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { requestType, province, requestDescription, requestedDataTypes } = validation.data;
       const { requestType, province, requestDescription, requestedDataTypes } = body;
 
       if (!requestType || !province) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields'
+    );
       }
 
       const validTypes = ["access", "rectification", "erasure", "portability", "restriction"];
       if (!validTypes.includes(requestType)) {
-        return NextResponse.json({ error: "Invalid request type" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid request type'
+    );
       }
 
       const dsar = await ProvincialPrivacyService.createDSAR({
@@ -79,10 +109,10 @@ export const GET = async (request: NextRequest) => {
       // Check if user has admin/privacy officer role
       const hasPermission = await checkPrivacyPermissions(userId, organizationId);
       if (!hasPermission) {
-        return NextResponse.json(
-          { error: "Forbidden - admin or privacy officer role required" },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - admin or privacy officer role required'
+    );
       }
 
       const dsars = await ProvincialPrivacyService.getOverdueDSARs();

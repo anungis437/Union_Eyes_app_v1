@@ -12,19 +12,42 @@ import { logger } from '@/lib/logger';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = 'force-dynamic';
+
+
+const pensionBenefitsSchema = z.object({
+  pensionPlanId: z.string().uuid('Invalid pensionPlanId'),
+  memberId: z.string().uuid('Invalid memberId'),
+  calculationDate: z.string().datetime().optional(),
+});
 
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     try {
       const body = await request.json();
+    // Validate request body
+    const validation = pensionBenefitsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { pensionPlanId, memberId, calculationDate } = validation.data;
       const { pensionPlanId, memberId, calculationDate } = body;
 
       if (!pensionPlanId || !memberId) {
-        return NextResponse.json(
-          { error: 'Bad Request - pensionPlanId and memberId are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Bad Request - pensionPlanId and memberId are required'
+    );
       }
 
       const date = calculationDate || new Date().toISOString().split('T')[0];
@@ -49,10 +72,11 @@ export const POST = async (request: NextRequest) => {
     } catch (error) {
       logger.error('Failed to calculate pension benefit', error as Error, {      correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Internal Server Error', details: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal Server Error',
+      error
+    );
     }
     })(request);
 };

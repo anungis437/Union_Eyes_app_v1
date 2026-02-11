@@ -1,11 +1,16 @@
 import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextResponse } from 'next/server';
 import { db } from '@/db/db';
-import { memberDocuments } from '@/db/schema/member-documents-schema';
+import { memberDocuments } from '@/db/schema/domains/documents';
 import { eq, desc } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = async () => {
   return withRoleAuth(10, async (request, context) => {
     const { userId, organizationId } = context;
@@ -33,7 +38,11 @@ export const GET = async () => {
       logger.error('Failed to fetch documents', error as Error, {
         userId: userId,
   });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Internal server error',
+      error
+    );
   }
   })(request);
 };

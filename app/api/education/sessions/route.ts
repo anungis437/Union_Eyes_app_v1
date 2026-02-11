@@ -2,12 +2,17 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationService } from "@/lib/services/notification-service";
 import { db } from "@/db";
-import { courseSessions, trainingCourses, courseRegistrations } from "@/db/migrations/schema";
+import { courseSessions, trainingCourses, courseRegistrations } from "@/db/schema";
 import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // GET /api/education/sessions - List sessions with filters
 export const GET = async (request: NextRequest) => {
   return withRoleAuth(10, async (request, context) => {
@@ -21,10 +26,10 @@ export const GET = async (request: NextRequest) => {
       const instructorId = searchParams.get("instructorId");
 
       if (!organizationId) {
-        return NextResponse.json(
-          { error: "organizationId is required" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'organizationId is required'
+    );
       }
 
       // Build WHERE conditions
@@ -115,19 +120,57 @@ export const GET = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error retrieving sessions", { error });
-      return NextResponse.json(
-        { error: "Failed to retrieve sessions" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve sessions',
+      error
+    );
     }
     })(request);
 };
 
 // POST /api/education/sessions - Create new session
+
+const educationSessionsSchema = z.object({
+  organizationId: z.string().uuid('Invalid organizationId'),
+  courseId: z.string().uuid('Invalid courseId'),
+  sessionCode: z.unknown().optional(),
+  sessionName: z.string().min(1, 'sessionName is required'),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  sessionTimes: z.string().datetime().optional(),
+  deliveryMethod: z.unknown().optional(),
+  venueName: z.string().min(1, 'venueName is required'),
+  venueAddress: z.unknown().optional(),
+  roomNumber: z.unknown().optional(),
+  virtualMeetingUrl: z.string().url('Invalid URL'),
+  virtualMeetingAccessCode: z.unknown().optional(),
+  leadInstructorId: z.string().uuid('Invalid leadInstructorId'),
+  leadInstructorName: z.string().min(1, 'leadInstructorName is required'),
+  coInstructors: z.unknown().optional(),
+  registrationOpenDate: z.boolean().optional(),
+  registrationCloseDate: z.boolean().optional(),
+  maxEnrollment: z.unknown().optional(),
+  sessionBudget: z.unknown().optional(),
+  sessionStatus: z.unknown().optional(),
+  cancellationReason: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
   try {
       const body = await request.json();
+    // Validate request body
+    const validation = educationSessionsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { organizationId, courseId, sessionCode, sessionName, startDate, endDate, sessionTimes, deliveryMethod, venueName, venueAddress, roomNumber, virtualMeetingUrl, virtualMeetingAccessCode, leadInstructorId, leadInstructorName, coInstructors, registrationOpenDate, registrationCloseDate, maxEnrollment, sessionBudget, sessionStatus, cancellationReason } = validation.data;
       const {
         organizationId,
         courseId,
@@ -151,16 +194,20 @@ export const POST = async (request: NextRequest) => {
         sessionBudget,
       } = body;
   if (organizationId && organizationId !== context.organizationId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden'
+    );
   }
 
 
       // Validate required fields
       if (!organizationId || !courseId || !startDate || !endDate) {
-        return NextResponse.json(
-          { error: "Missing required fields: organizationId, courseId, startDate, endDate" },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing required fields: organizationId, courseId, startDate, endDate'
+      // TODO: Migrate additional details: courseId, startDate, endDate"
+    );
       }
 
       // Verify course exists
@@ -176,7 +223,10 @@ export const POST = async (request: NextRequest) => {
         .limit(1);
 
       if (!course || course.length === 0) {
-        return NextResponse.json({ error: "Course not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Course not found'
+    );
       }
 
       // Auto-generate session code if not provided
@@ -224,19 +274,21 @@ export const POST = async (request: NextRequest) => {
         organizationId,
       });
 
-      return NextResponse.json(
-        {
+      return standardSuccessResponse(
+      { 
           session: newSession,
           message: "Session created successfully",
-        },
-        { status: 201 }
-      );
+         },
+      undefined,
+      201
+    );
     } catch (error) {
       logger.error("Error creating session", { error });
-      return NextResponse.json(
-        { error: "Failed to create session" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to create session',
+      error
+    );
     }
     })(request);
 };
@@ -249,7 +301,10 @@ export const PATCH = async (request: NextRequest) => {
       const sessionId = searchParams.get("id");
 
       if (!sessionId) {
-        return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Session ID is required'
+    );
       }
 
       const body = await request.json();
@@ -314,7 +369,10 @@ export const PATCH = async (request: NextRequest) => {
         .returning();
 
       if (!updatedSession) {
-        return NextResponse.json({ error: "Session not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Session not found'
+    );
       }
 
       logger.info("Session updated", {
@@ -328,10 +386,11 @@ export const PATCH = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error updating session", { error });
-      return NextResponse.json(
-        { error: "Failed to update session" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update session',
+      error
+    );
     }
     })(request);
 };
@@ -345,7 +404,10 @@ export const DELETE = async (request: NextRequest) => {
       const cancellationReason = searchParams.get("reason");
 
       if (!sessionId) {
-        return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Session ID is required'
+    );
       }
 
       // Mark session as cancelled (soft delete)
@@ -361,7 +423,10 @@ export const DELETE = async (request: NextRequest) => {
         .returning();
 
       if (!cancelledSession) {
-        return NextResponse.json({ error: "Session not found" }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Session not found'
+    );
       }
 
       // Send cancellation notifications to enrolled members
@@ -431,10 +496,11 @@ export const DELETE = async (request: NextRequest) => {
       });
     } catch (error) {
       logger.error("Error cancelling session", { error });
-      return NextResponse.json(
-        { error: "Failed to cancel session" },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to cancel session',
+      error
+    );
     }
     })(request);
 };

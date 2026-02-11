@@ -19,7 +19,18 @@ import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { validateSharingLevel } from '@/lib/auth/hierarchy-access-control';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 // POST /api/clause-library/compare - Compare multiple clauses
+
+const clause-libraryCompareSchema = z.object({
+  clauseIds: z.string().uuid('Invalid clauseIds'),
+  comparisonNotes: z.boolean().optional(),
+});
+
 export const POST = async (request: NextRequest) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -27,7 +38,7 @@ export const POST = async (request: NextRequest) => {
   try {
       // Use authenticated organization context
       if (!organizationId) {
-        return NextResponse.json({ error: "No organization context" }, { status: 400 });
+        return standardErrorResponse(ErrorCode.MISSING_REQUIRED_FIELD, "No organization context");
       }
 
       const userOrgId = organizationId;
@@ -40,6 +51,17 @@ export const POST = async (request: NextRequest) => {
       const userOrgHierarchyPath = userOrg?.hierarchyPath?.join(',') || '';
 
       const body = await request.json();
+    // Validate request body
+    const validation = clause-libraryCompareSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { clauseIds, comparisonNotes } = validation.data;
       const { clauseIds, comparisonNotes } = body;
 
       // Validate input
@@ -75,10 +97,10 @@ export const POST = async (request: NextRequest) => {
       });
 
       if (clauses.length !== clauseIds.length) {
-        return NextResponse.json(
-          { error: "One or more clause IDs not found" },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'One or more clause IDs not found'
+    );
       }
 
       // Check access permissions for each clause

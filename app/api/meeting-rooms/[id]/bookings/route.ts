@@ -14,6 +14,27 @@ import { eq, and, or, gte, lte, desc } from 'drizzle-orm';
 import { z } from "zod";
 import { withEnhancedRoleAuth } from "@/lib/api-auth-guard";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const meeting-roomsBookingsSchema = z.object({
+  startTime: z.string().datetime().optional(),
+  endTime: z.string().datetime().optional(),
+  purpose: z.unknown().optional(),
+  bookedFor: z.unknown().optional(),
+  setupRequired = false: z.unknown().optional(),
+  setupTime = 0: z.string().datetime().optional(),
+  cateringRequired = false: z.unknown().optional(),
+  cateringNotes: z.string().optional(),
+  specialRequests: z.unknown().optional(),
+  attendeeCount: z.number().int().positive(),
+  eventId: z.string().uuid('Invalid eventId'),
+  // Optional: z.unknown().optional(),
+});
+
 export const POST = async (request: NextRequest, { params }: { params: { id: string } }) => {
   return withEnhancedRoleAuth(20, async (request, context) => {
     const { userId, organizationId } = context;
@@ -21,6 +42,17 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
   try {
       const roomId = params.id;
       const body = await request.json();
+    // Validate request body
+    const validation = meeting-roomsBookingsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { startTime, endTime, purpose, bookedFor, setupRequired = false, setupTime = 0, cateringRequired = false, cateringNotes, specialRequests, attendeeCount, eventId, // Optional } = validation.data;
 
       const {
         startTime,
@@ -39,10 +71,11 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
 
       // Validation
       if (!startTime || !endTime || !purpose) {
-        return NextResponse.json(
-          { error: 'Start time, end time, and purpose are required' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Start time, end time, and purpose are required'
+      // TODO: Migrate additional details: end time, and purpose are required'
+    );
       }
 
       const start = new Date(startTime);
@@ -63,7 +96,10 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
         .limit(1);
 
       if (!room) {
-        return NextResponse.json({ error: 'Meeting room not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Meeting room not found'
+    );
       }
 
       if (!room.isActive || room.status !== 'available') {
@@ -170,18 +206,23 @@ export const POST = async (request: NextRequest, { params }: { params: { id: str
           .where(eq(calendarEvents.id, eventId));
       }
 
-      return NextResponse.json({
+      return standardSuccessResponse(
+      { 
         message: room.requiresApproval
           ? 'Booking request submitted for approval'
           : 'Room booked successfully',
         booking: newBooking,
         requiresApproval: room.requiresApproval,
-      }, { status: 201 });
+       },
+      undefined,
+      201
+    );
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to book meeting room' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to book meeting room',
+      error
+    );
     }
     })(request, { params });
 };
@@ -222,10 +263,11 @@ export const GET = async (request: NextRequest, { params }: { params: { id: stri
         count: bookings.length,
       });
     } catch (error) {
-return NextResponse.json(
-        { error: 'Failed to get room bookings' },
-        { status: 500 }
-      );
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to get room bookings',
+      error
+    );
     }
     })(request, { params });
 };

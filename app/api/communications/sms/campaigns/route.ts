@@ -14,6 +14,11 @@ import { smsCampaigns } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { withOrganizationAuth } from '@/lib/organization-middleware';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const GET = withOrganizationAuth(async (request: NextRequest, context) => {
   try {
     const { organizationId } = context;
@@ -64,9 +69,10 @@ export const GET = withOrganizationAuth(async (request: NextRequest, context) =>
 
     return NextResponse.json({ campaigns: campaignsWithMetrics });
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch campaigns' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch campaigns',
+      error
     );
   }
 });

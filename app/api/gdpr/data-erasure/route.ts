@@ -11,7 +11,27 @@ import { db } from "@/db";
 import { GdprRequestManager, DataErasureService } from "@/lib/gdpr/consent-manager";
 import { logger } from "@/lib/logger";
 import { withRLSContext } from '@/lib/db/with-rls-context';
+import { z } from 'zod';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const erasureRequestSchema = z.object({
+  organizationId: z.string().uuid().optional(),
+  tenantId: z.string().uuid().optional(),
+  reason: z.string().min(10).max(500).optional(),
+  requestDetails: z.record(z.any()).optional(),
+}).refine((data) => data.organizationId || data.tenantId, {
+  message: "Either organizationId or tenantId must be provided",
+});
+
+const erasureExecutionSchema = z.object({
+  requestId: z.string().uuid(),
+  confirmation: z.literal('DELETE_ALL_DATA'),
+});
 /**
  * Helper to check if user is admin/DPO
  */
@@ -39,20 +59,33 @@ export const POST = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
     const body = await request.json();
-    const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, reason, requestDetails } = body;
+    
+    // Validate input
+    const validation = erasureRequestSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
+      );
+    }
+    
+    const { organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, reason, requestDetails } = validation.data;
     const organizationId = organizationIdFromBody ?? tenantIdFromBody;
     const tenantId = organizationId;
 
     if (!organizationId) {
-      return NextResponse.json(
-        { error: "Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     // Check if data can be erased
@@ -100,9 +133,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error("Data erasure request error", { error });
-    return NextResponse.json(
-      { error: "Failed to process data erasure request" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to process data erasure request',
+      error
     );
   }
 });
@@ -111,7 +145,10 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const { userId, organizationId } = context;
@@ -120,30 +157,40 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
     const isAdmin = await checkAdminOrDPORole(userId, organizationId);
 
     if (!isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 }
-      );
+      return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Forbidden - Admin access required'
+    );
     }
 
     const body = await request.json();
-    const { requestId, userId: targetUserId, organizationId: organizationIdFromBody, tenantId: tenantIdFromBody, confirmation } = body;
-    const organizationId = organizationIdFromBody ?? tenantIdFromBody;
-    const tenantId = organizationId;
-
-    if (!requestId || !targetUserId || !organizationId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+    \n    // Validate input
+    const validation = erasureExecutionSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        validation.error.errors[0]?.message || 'Invalid request data'
       );
+    }
+    \n    const { requestId, confirmation } = validation.data;
+    const targetUserId = body.userId; // Get from body but not validated by schema
+    const organizationIdFromBody = body.organizationId || body.tenantId;
+    const tenantId = organizationIdFromBody;
+
+    if (!targetUserId || !organizationIdFromBody) {
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Missing userId or organizationId'
+    );
+    }
     }
 
     // Require explicit confirmation
     if (confirmation !== `DELETE_USER_DATA_${targetUserId}`) {
-      return NextResponse.json(
-        { error: "Invalid confirmation code" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid confirmation code'
+    );
     }
 
     // Log the admin action
@@ -165,9 +212,10 @@ export const DELETE = withRoleAuth('admin', async (request: NextRequest, context
     });
   } catch (error) {
     logger.error("Data erasure execution error", { error });
-    return NextResponse.json(
-      { error: "Failed to execute data erasure" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to execute data erasure',
+      error
     );
   }
 });
@@ -179,7 +227,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
     
     const userId = user.id;
@@ -188,10 +239,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const tenantId = organizationIdFromQuery;
 
     if (!tenantId) {
-      return NextResponse.json(
-        { error: "Organization ID required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Organization ID required'
+    );
     }
 
     const requests = await GdprRequestManager.getUserRequests( userId,
@@ -208,9 +259,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error("Get erasure requests error", { error });
-    return NextResponse.json(
-      { error: "Failed to retrieve requests" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve requests',
+      error
     );
   }
 });

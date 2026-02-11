@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import { z } from "zod";
 import { updateClaimStatus, addClaimNote } from "@/lib/workflow-engine";
 import { requireUser } from '@/lib/api-auth-guard';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const updateClaimStatusSchema = z.object({
+  status: z.string().min(1, 'Status is required'),
+  notes: z.string().optional(),
+  reason: z.string().optional(),
+});
 /**
  * PATCH /api/claims/[id]/status
  * Update claim status with workflow validation (Role level 60 required for approve/reject operations)
@@ -35,9 +46,10 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
   try {
     const claimNumber = params.id;
     const body = await request.json();
-    const { status: newStatus, notes } = body;
-
-    if (!newStatus) {
+    
+    // Validate request body
+    const validation = updateClaimStatusSchema.safeParse(body);
+    if (!validation.success) {
       logApiAuditEvent({
         timestamp: new Date().toISOString(),
         userId,
@@ -46,13 +58,16 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
         eventType: 'validation_failed',
         severity: 'low',
         dataType: 'CLAIMS',
-        details: { reason: 'Status is required', claimNumber },
+        details: { reason: 'Invalid request data', errors: validation.error.errors, claimNumber },
       });
-      return NextResponse.json(
-        { error: "Status is required" },
-        { status: 400 }
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
       );
     }
+    
+    const { status: newStatus, notes } = validation.data;
 
     // Update status with workflow validation
     const result = await updateClaimStatus(claimNumber, newStatus, userId, notes);
@@ -101,9 +116,10 @@ export const PATCH = withRoleAuth('steward', async (request, context) => {
       dataType: 'CLAIMS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-return NextResponse.json(
-      { error: "Failed to update status" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update status',
+      error
     );
   }
 }, { params });
@@ -131,10 +147,10 @@ export const POST = withRoleAuth(30, async (request, context) => {
         dataType: 'CLAIMS',
         details: { reason: 'Message is required', claimNumber },
       });
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Message is required'
+    );
     }
 
     const result = await addClaimNote(claimNumber, message, userId, isInternal);
@@ -182,9 +198,10 @@ export const POST = withRoleAuth(30, async (request, context) => {
       dataType: 'CLAIMS',
       details: { error: error instanceof Error ? error.message : 'Unknown error', organizationId },
     });
-return NextResponse.json(
-      { error: "Failed to add note" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to add note',
+      error
     );
   }
 }, { params });

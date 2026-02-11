@@ -10,6 +10,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { withSystemContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 import {
   batchSendSessionReminders,
   batchSendExpiryWarnings,
@@ -37,7 +42,10 @@ export async function GET(request: NextRequest) {
       logger.warn("Unauthorized cron job attempt", {
         authHeader: authHeader?.substring(0, 20),
       });
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const results = {

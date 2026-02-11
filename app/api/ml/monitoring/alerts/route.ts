@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
@@ -5,6 +6,11 @@ import { logApiAuditEvent } from '@/lib/middleware/api-security';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * GET /api/ml/monitoring/alerts
  * 
@@ -177,9 +183,10 @@ export const GET = withRoleAuth(20, async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to fetch alerts' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch alerts',
+      error
     );
   }
 });
@@ -194,18 +201,34 @@ return NextResponse.json(
  *   alertId: string
  * }
  */
+
+const mlMonitoringAlertsSchema = z.object({
+  alertId: z.string().uuid('Invalid alertId'),
+});
+
 export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
   const { userId, organizationId } = context;
   const tenantId = organizationId || userId;
   
   try {
     const { alertId } = await request.json();
+    // Validate request body
+    const validation = mlMonitoringAlertsSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { alertId } = validation.data;
 
     if (!alertId) {
-      return NextResponse.json(
-        { error: 'alertId is required' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'alertId is required'
+    );
     }
 
     // Insert or update acknowledgment
@@ -238,9 +261,10 @@ export const POST = withRoleAuth(20, async (request: NextRequest, context) => {
     });
 
   } catch (error) {
-return NextResponse.json(
-      { error: 'Failed to acknowledge alert' },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to acknowledge alert',
+      error
     );
   }
 });

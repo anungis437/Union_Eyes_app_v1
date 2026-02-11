@@ -19,6 +19,22 @@ import { z } from "zod";
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { checkRateLimit, RATE_LIMITS, createRateLimitHeaders } from '@/lib/rate-limiter';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const aiClassifySchema = z.object({
+  action: z.enum(['classify-clause', 'generate-tags', 'detect-refs', 'classify-precedent', 'enrich', 'batch-classify']).default('classify-clause'),
+  content: z.string().max(50000, 'Content too long').optional(),
+  context: z.record(z.string(), z.unknown()).default({}),
+  clauses: z.array(z.any()).default([]),
+  caseTitle: z.string().optional(),
+  facts: z.string().optional(),
+  reasoning: z.string().optional(),
+  decision: z.string().optional(),
+});
 export const POST = async (request: NextRequest) => {
   return withRoleAuth(20, async (request, context) => {
     // CRITICAL: Rate limit AI calls (expensive OpenAI API)
@@ -39,21 +55,35 @@ export const POST = async (request: NextRequest) => {
 
     try {
       const body = await request.json();
+      
+      // Validate request body
+      const validation = aiClassifySchema.safeParse(body);
+      if (!validation.success) {
+        return standardErrorResponse(
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid classification request',
+          validation.error.errors
+        );
+      }
+
       const {
-        action = 'classify-clause', // 'classify-clause', 'generate-tags', 'detect-refs', 'classify-precedent', 'enrich', 'batch-classify'
+        action,
         content,
-        context = {},
-        clauses = [], // For batch operations
+        context,
+        clauses,
         caseTitle,
         facts,
         reasoning,
         decision,
-      } = body;
+      } = validation.data;
 
       switch (action) {
         case 'classify-clause':
           if (!content) {
-            return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Content is required'
+    );
           }
           const classification = await classifyClause(content, context);
           return NextResponse.json({
@@ -63,10 +93,16 @@ export const POST = async (request: NextRequest) => {
 
         case 'generate-tags':
           if (!content) {
-            return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Content is required'
+    );
           }
           if (!context.clauseType) {
-            return NextResponse.json({ error: 'clauseType is required in context' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'clauseType is required in context'
+    );
           }
           const tags = await generateClauseTags(content, context.clauseType);
           return NextResponse.json({
@@ -76,7 +112,10 @@ export const POST = async (request: NextRequest) => {
 
         case 'detect-refs':
           if (!content) {
-            return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Content is required'
+    );
           }
           const crossReferences = await detectCrossReferences(content);
           return NextResponse.json({
@@ -86,10 +125,11 @@ export const POST = async (request: NextRequest) => {
 
         case 'classify-precedent':
           if (!caseTitle || !facts || !reasoning || !decision) {
-            return NextResponse.json(
-              { error: 'caseTitle, facts, reasoning, and decision are required' },
-              { status: 400 }
-            );
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'caseTitle, facts, reasoning, and decision are required'
+      // TODO: Migrate additional details: facts, reasoning, and decision are required'
+    );
           }
           const precedentClass = await classifyPrecedent(caseTitle, facts, reasoning, decision);
           return NextResponse.json({
@@ -99,7 +139,10 @@ export const POST = async (request: NextRequest) => {
 
         case 'enrich':
           if (!content) {
-            return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Content is required'
+    );
           }
           const enriched = await enrichClauseMetadata(content, context);
           return NextResponse.json({
@@ -109,7 +152,10 @@ export const POST = async (request: NextRequest) => {
 
         case 'batch-classify':
           if (!clauses || clauses.length === 0) {
-            return NextResponse.json({ error: 'Clauses array is required and must not be empty' }, { status: 400 });
+            return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Clauses array is required and must not be empty'
+    );
           }
           
           let completed = 0;

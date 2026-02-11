@@ -1,6 +1,7 @@
 import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { z } from "zod";
 import { db } from "@/db";
 import {
   members,
@@ -14,11 +15,29 @@ import { ReceiptDocument, ReceiptData } from "@/components/pdf/receipt-template"
 import { addEmailJob } from "@/lib/job-queue";
 import { notificationLog } from "@/db/schema";
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
+
+const sendInvoiceSchema = z.object({
+  templateId: z.string().uuid('Invalid template ID'),
+  memberId: z.string().uuid('Invalid member ID'),
+  transactionId: z.string().uuid('Invalid transaction ID').optional(),
+  data: z.record(z.any()).optional(),
+  attachments: z.array(z.string()).optional(),
+  includePdf: z.boolean().optional(),
+});
+
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Unauthorized'
+    );
     }
 
     const [currentMember] = await db
@@ -28,18 +47,25 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!currentMember) {
-      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Member not found'
+    );
     }
 
     const body = await req.json();
-    const { templateId, memberId, transactionId, data, attachments, includePdf } = body;
-
-    if (!templateId || !memberId) {
-      return NextResponse.json(
-        { error: "templateId and memberId are required" },
-        { status: 400 }
+    
+    // Validate request body
+    const validation = sendInvoiceSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
       );
     }
+    
+    const { templateId, memberId, transactionId, data, attachments, includePdf } = validation.data;
 
     const [template] = await db
       .select()
@@ -53,7 +79,10 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!template) {
-      return NextResponse.json({ error: "Template not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Template not found'
+    );
     }
 
     const [recipientMember] = await db
@@ -68,11 +97,17 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!recipientMember) {
-      return NextResponse.json({ error: "Recipient member not found" }, { status: 404 });
+      return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Recipient member not found'
+    );
     }
 
     if (!recipientMember.email) {
-      return NextResponse.json({ error: "Recipient has no email address" }, { status: 400 });
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Recipient has no email address'
+    );
     }
 
     const [tenant] = await db
@@ -227,9 +262,10 @@ export async function POST(req: NextRequest) {
       recipient: recipientMember.email,
     });
   } catch (error) {
-return NextResponse.json(
-      { error: "Failed to queue invoice" },
-      { status: 500 }
+return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to queue invoice',
+      error
     );
   }
 }

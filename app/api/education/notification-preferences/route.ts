@@ -6,12 +6,18 @@
  * - RLS policies enforce tenant isolation at database level
  */
 
+import { z } from 'zod';
 import { NextRequest, NextResponse } from "next/server";
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { withApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 export const dynamic = "force-dynamic";
 
 /**
@@ -28,10 +34,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     const token = searchParams.get("token");
 
     if (!memberId && !token) {
-      return NextResponse.json(
-        { error: "Either memberId or token is required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Either memberId or token is required'
+    );
     }
 
     // Query by member ID or unsubscribe token using RLS-protected query
@@ -85,9 +91,10 @@ export const GET = withApiAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error("Error fetching notification preferences", error as Error);
-    return NextResponse.json(
-      { error: "Failed to fetch notification preferences" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to fetch notification preferences',
+      error
     );
   }
 });
@@ -106,9 +113,31 @@ export const GET = withApiAuth(async (request: NextRequest) => {
  *   programMilestones?: boolean
  * }
  */
+
+const educationNotification-preferencesSchema = z.object({
+  memberId: z.string().uuid('Invalid memberId'),
+  token: z.string().min(1, 'token is required'),
+  registrationConfirmations: z.boolean().optional(),
+  sessionReminders: z.unknown().optional(),
+  completionCertificates: z.unknown().optional(),
+  certificationExpiry: z.unknown().optional(),
+  programMilestones: z.unknown().optional(),
+});
+
 export const PATCH = withApiAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
+    // Validate request body
+    const validation = educationNotification-preferencesSchema.safeParse(body);
+    if (!validation.success) {
+      return standardErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid request data',
+        validation.error.errors
+      );
+    }
+    
+    const { memberId, token, registrationConfirmations, sessionReminders, completionCertificates, certificationExpiry, programMilestones } = validation.data;
     const {
       memberId,
       token,
@@ -120,10 +149,10 @@ export const PATCH = withApiAuth(async (request: NextRequest) => {
     } = body;
 
     if (!memberId && !token) {
-      return NextResponse.json(
-        { error: "Either memberId or token is required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Either memberId or token is required'
+    );
     }
 
     // Build update fields
@@ -224,9 +253,10 @@ export const PATCH = withApiAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error("Error updating notification preferences", error as Error);
-    return NextResponse.json(
-      { error: "Failed to update notification preferences" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to update notification preferences',
+      error
     );
   }
 });
@@ -243,10 +273,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     const { token } = body;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Unsubscribe token is required" },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'Unsubscribe token is required'
+    );
     }
 
     // Update all preferences to false
@@ -276,9 +306,10 @@ export const POST = withApiAuth(async (request: NextRequest) => {
     });
   } catch (error) {
     logger.error("Error unsubscribing from notifications", error as Error);
-    return NextResponse.json(
-      { error: "Failed to unsubscribe" },
-      { status: 500 }
+    return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to unsubscribe',
+      error
     );
   }
 });

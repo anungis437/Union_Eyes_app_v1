@@ -12,7 +12,7 @@ import {
   glTrialBalance,
   glAccountMappings,
   costCenters,
-} from "@/db/schema/chart-of-accounts-schema";
+} from "@/db/schema/domains/finance";
 import { eq, and, gte, lte, isNull } from "drizzle-orm";
 import { createAuditLog } from "./audit-service";
 import { logger } from "@/lib/logger";

@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { approveDeadlineExtension, denyDeadlineExtension } from '@/db/queries/deadline-queries';
 import { requireApiAuth } from '@/lib/api-auth-guard';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 /**
  * PATCH /api/extensions/[id]
  * Approve or deny a deadline extension request
@@ -59,10 +64,10 @@ export async function PATCH(
         message: 'Extension denied',
       });
     } else {
-      return NextResponse.json(
-        { error: 'Invalid action. Use "approve" or "deny"' },
-        { status: 400 }
-      );
+      return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid action. Use '
+    );
     }
   } catch (error) {
 return NextResponse.json(

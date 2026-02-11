@@ -1,15 +1,21 @@
+import { withRLSContext } from '@/lib/db/with-rls-context';
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { db } from '@/db/db';
 import { claims, users } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 async function handler(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user || !user.tenantId) {
-    return NextResponse.json(
-      { error: 'Authentication and tenant context required' },
-      { status: 401 }
+    return standardErrorResponse(
+      ErrorCode.AUTH_REQUIRED,
+      'Authentication and tenant context required'
     );
   }
   
@@ -21,7 +27,8 @@ async function handler(req: NextRequest) {
   startDate.setDate(startDate.getDate() - daysBack);
 
   // Get steward workload with response times
-  const workload = await db.execute(sql`
+  const workload = await withRLSContext(async (tx) => {
+      return await tx.execute(sql`
     SELECT 
       u.id as "stewardId",
       u.name as "stewardName",
@@ -49,6 +56,7 @@ async function handler(req: NextRequest) {
     GROUP BY u.id, u.name
     ORDER BY "activeCases" DESC
   `);
+    });
 
   return NextResponse.json(workload);
 }

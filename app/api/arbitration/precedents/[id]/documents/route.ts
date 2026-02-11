@@ -13,6 +13,11 @@ import * as documentService from '@/lib/services/precedent-document-service';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 
+import { 
+  standardErrorResponse, 
+  standardSuccessResponse, 
+  ErrorCode 
+} from '@/lib/api/standardized-responses';
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -98,16 +103,20 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: 'Precedent not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       // Implement access control based on sharing levels
       const hasAccess = await checkPrecedentAccess(precedent, userOrgId);
       
       if (!hasAccess) {
-        return NextResponse.json({ 
-          error: 'Access denied to precedent documents' 
-        }, { status: 403 });
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Access denied to precedent documents'
+    );
       }
 
       // Return appropriate documents based on access level
@@ -130,10 +139,11 @@ export const GET = async (request: NextRequest, context: RouteContext) => {
         precedentId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Failed to retrieve documents' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to retrieve documents',
+      error
+    );
     }
     })(request, { params });
 };
@@ -163,14 +173,17 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: 'Precedent not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       if (precedent.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json(
-          { error: 'Only the source organization can upload documents' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the source organization can upload documents'
+    );
       }
 
       // Parse multipart form data
@@ -179,20 +192,26 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
       const documentType = formData.get('documentType') as string | null; // 'decision' or 'redacted'
 
       if (!file) {
-        return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.MISSING_REQUIRED_FIELD,
+      'No file provided'
+    );
       }
 
       if (!documentType || !['decision', 'redacted'].includes(documentType)) {
-        return NextResponse.json(
-          { error: 'Invalid documentType. Must be "decision" or "redacted"' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid documentType. Must be '
+    );
       }
 
       // Validate file
       const validation = documentService.validatePrecedentDocument(file.size, file.type);
       if (!validation.valid) {
-        return NextResponse.json({ error: validation.error }, { status: 400 });
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      validation.error
+    );
       }
 
       // Generate secure filename
@@ -257,10 +276,11 @@ export const POST = async (request: NextRequest, context: RouteContext) => {
         precedentId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Failed to upload document' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to upload document',
+      error
+    );
     }
     })(request, { params });
 };
@@ -290,14 +310,17 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
       });
 
       if (!precedent) {
-        return NextResponse.json({ error: 'Precedent not found' }, { status: 404 });
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Precedent not found'
+    );
       }
 
       if (precedent.sourceOrganizationId !== userOrgId) {
-        return NextResponse.json(
-          { error: 'Only the source organization can delete documents' },
-          { status: 403 }
-        );
+        return standardErrorResponse(
+      ErrorCode.FORBIDDEN,
+      'Only the source organization can delete documents'
+    );
       }
 
       // Get document type from query params
@@ -305,10 +328,10 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
       const documentType = searchParams.get('documentType'); // 'decision' or 'redacted'
 
       if (!documentType || !['decision', 'redacted'].includes(documentType)) {
-        return NextResponse.json(
-          { error: 'Invalid documentType. Must be "decision" or "redacted"' },
-          { status: 400 }
-        );
+        return standardErrorResponse(
+      ErrorCode.VALIDATION_ERROR,
+      'Invalid documentType. Must be '
+    );
       }
 
       // Get the document URL
@@ -317,10 +340,10 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
       const documentUrl = precedent[urlField];
 
       if (!documentUrl) {
-        return NextResponse.json(
-          { error: 'Document not found' },
-          { status: 404 }
-        );
+        return standardErrorResponse(
+      ErrorCode.RESOURCE_NOT_FOUND,
+      'Document not found'
+    );
       }
 
       // Delete from blob storage
@@ -343,10 +366,11 @@ export const DELETE = async (request: NextRequest, context: RouteContext) => {
         precedentId,
         correlationId: request.headers.get('x-correlation-id'),
       });
-      return NextResponse.json(
-        { error: 'Failed to delete document' },
-        { status: 500 }
-      );
+      return standardErrorResponse(
+      ErrorCode.INTERNAL_ERROR,
+      'Failed to delete document',
+      error
+    );
     }
     })(request, { params });
 };
