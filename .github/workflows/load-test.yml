@@ -1,0 +1,341 @@
+name: Load Testing
+
+on:
+  pull_request:
+    branches: [main, staging]
+    paths:
+      - 'app/api/**'
+      - 'lib/**'
+  schedule:
+    # Run load tests daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of load test'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+          - spike
+          - soak
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  K6_VERSION: '0.48.0'
+
+jobs:
+  load-test:
+    name: K6 Load Test (${{ github.event.inputs.test_type || 'smoke' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup K6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Create k6 test script
+        run: |
+          cat > load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
+          import { Rate, Trend, Counter } from 'k6/metrics';
+          
+          // Custom metrics
+          const errorRate = new Rate('errors');
+          const responseTime = new Trend('response_time');
+          const successfulRequests = new Counter('successful_requests');
+          
+          // Test configuration based on type
+          const testType = __ENV.TEST_TYPE || 'smoke';
+          const baseUrl = __ENV.BASE_URL || 'http://localhost:3000';
+          const authToken = __ENV.AUTH_TOKEN;
+          
+          export const options = {
+            smoke: {
+              vus: 1,
+              duration: '1m',
+              thresholds: {
+                http_req_duration: ['p(95)<2000', 'p(99)<3000'],
+                http_req_failed: ['rate<0.01'],
+              },
+            },
+            load: {
+              stages: [
+                { duration: '2m', target: 10 },  // Ramp up
+                { duration: '5m', target: 10 },  // Stay at 10 users
+                { duration: '2m', target: 50 },  // Ramp to 50 users
+                { duration: '5m', target: 50 },  // Stay at 50 users
+                { duration: '2m', target: 0 },   // Ramp down
+              ],
+              thresholds: {
+                http_req_duration: ['p(95)<3000', 'p(99)<5000'],
+                http_req_failed: ['rate<0.05'],
+                errors: ['rate<0.05'],
+              },
+            },
+            stress: {
+              stages: [
+                { duration: '2m', target: 50 },
+                { duration: '5m', target: 50 },
+                { duration: '2m', target: 100 },
+                { duration: '5m', target: 100 },
+                { duration: '2m', target: 200 },
+                { duration: '5m', target: 200 },
+                { duration: '5m', target: 0 },
+              ],
+              thresholds: {
+                http_req_duration: ['p(95)<5000'],
+                http_req_failed: ['rate<0.10'],
+              },
+            },
+            spike: {
+              stages: [
+                { duration: '1m', target: 10 },
+                { duration: '1m', target: 200 },  // Spike
+                { duration: '3m', target: 200 },
+                { duration: '1m', target: 10 },
+                { duration: '1m', target: 0 },
+              ],
+            },
+            soak: {
+              stages: [
+                { duration: '5m', target: 50 },
+                { duration: '60m', target: 50 },  // Soak for 1 hour
+                { duration: '5m', target: 0 },
+              ],
+              thresholds: {
+                http_req_duration: ['p(95)<3000'],
+                http_req_failed: ['rate<0.05'],
+              },
+            },
+          }[testType];
+          
+          // Test scenarios for critical endpoints
+          const scenarios = {
+            healthCheck: {
+              endpoint: '/api/health',
+              method: 'GET',
+            },
+            authentication: {
+              endpoint: '/api/auth/session',
+              method: 'GET',
+            },
+            organizationList: {
+              endpoint: '/api/organizations',
+              method: 'GET',
+            },
+            claimsList: {
+              endpoint: '/api/claims',
+              method: 'GET',
+            },
+            dashboardData: {
+              endpoint: '/api/dashboard',
+              method: 'GET',
+            },
+          };
+          
+          export default function () {
+            const headers = authToken ? { 'Authorization': \`Bearer \${authToken}\` } : {};
+            
+            // Test multiple endpoints
+            Object.entries(scenarios).forEach(([name, config]) => {
+              const res = http.get(\`\${baseUrl}\${config.endpoint}\`, { headers, tags: { name } });
+              
+              const success = check(res, {
+                'status is 200 or 401': (r) => r.status === 200 || r.status === 401,
+                'response time < 3s': (r) => r.timings.duration < 3000,
+              });
+              
+              errorRate.add(!success);
+              responseTime.add(res.timings.duration);
+              
+              if (success) {
+                successfulRequests.add(1);
+              }
+            });
+            
+            sleep(1);
+          }
+          
+          export function handleSummary(data) {
+            return {
+              'summary.json': JSON.stringify(data),
+              'stdout': textSummary(data, { indent: ' ', enableColors: true }),
+            };
+          }
+          
+          function textSummary(data, options = {}) {
+            const { indent = '', enableColors = false } = options;
+            let summary = '';
+            
+            summary += \`\${indent}✓ checks........................: \${(data.metrics.checks.values.passes / data.metrics.checks.values.fails * 100).toFixed(2)}% passed\n\`;
+            summary += \`\${indent}✓ data_received................: \${(data.metrics.data_received.values.count / 1024 / 1024).toFixed(2)} MB\n\`;
+            summary += \`\${indent}✓ http_req_duration............: avg=\${data.metrics.http_req_duration.values.avg.toFixed(2)}ms p(95)=\${data.metrics.http_req_duration.values['p(95)'].toFixed(2)}ms\n\`;
+            summary += \`\${indent}✓ http_reqs....................: \${data.metrics.http_reqs.values.count} requests\n\`;
+            summary += \`\${indent}✓ successful_requests..........: \${data.metrics.successful_requests?.values.count || 0}\n\`;
+            
+            return summary;
+          }
+          EOF
+      
+      - name: Set environment variables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "BASE_URL=${{ secrets.PROD_URL }}" >> $GITHUB_ENV
+            echo "AUTH_TOKEN=${{ secrets.PROD_API_TOKEN }}" >> $GITHUB_ENV
+          else
+            echo "BASE_URL=${{ secrets.STAGING_URL }}" >> $GITHUB_ENV
+            echo "AUTH_TOKEN=${{ secrets.STAGING_API_TOKEN }}" >> $GITHUB_ENV
+          fi
+          
+          echo "TEST_TYPE=${{ github.event.inputs.test_type || 'smoke' }}" >> $GITHUB_ENV
+      
+      - name: Run K6 load test
+        id: k6_test
+        run: |
+          k6 run \
+            --out json=results.json \
+            --summary-export=summary.json \
+            load-test.js
+        continue-on-error: true
+      
+      - name: Parse test results
+        id: parse_results
+        run: |
+          if [ -f summary.json ]; then
+            echo "## 🚀 Load Test Results (${{ env.TEST_TYPE }})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract key metrics from summary
+            node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('summary.json', 'utf8'));
+            
+            console.log('| Metric | Value |');
+            console.log('|--------|-------|');
+            console.log(\`| Total Requests | \${data.metrics.http_reqs.values.count} |\`);
+            console.log(\`| Avg Response Time | \${data.metrics.http_req_duration.values.avg.toFixed(2)}ms |\`);
+            console.log(\`| P95 Response Time | \${data.metrics.http_req_duration.values['p(95)'].toFixed(2)}ms |\`);
+            console.log(\`| P99 Response Time | \${data.metrics.http_req_duration.values['p(99)'].toFixed(2)}ms |\`);
+            console.log(\`| Error Rate | \${((data.metrics.http_req_failed?.values.rate || 0) * 100).toFixed(2)}% |\`);
+            console.log(\`| Data Received | \${(data.metrics.data_received.values.count / 1024 / 1024).toFixed(2)} MB |\`);
+            
+            const p95 = data.metrics.http_req_duration.values['p(95)'];
+            const errorRate = data.metrics.http_req_failed?.values.rate || 0;
+            
+            if (p95 > 3000 || errorRate > 0.05) {
+              console.log('\n⚠️ **Performance degradation detected!**');
+              process.exit(1);
+            } else {
+              console.log('\n✅ **Performance within acceptable limits**');
+            }
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Test summary not found" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results-${{ github.run_number }}
+          path: |
+            summary.json
+            results.json
+          retention-days: 90
+      
+      - name: Compare with baseline
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## 📊 Performance Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Comparing against baseline from main branch..." >> $GITHUB_STEP_SUMMARY
+          # TODO: Download baseline results from main and compare
+          echo "⚠️ Baseline comparison not yet implemented" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (!fs.existsSync('summary.json')) {
+              return;
+            }
+            
+            const data = JSON.parse(fs.readFileSync('summary.json', 'utf8'));
+            const p95 = data.metrics.http_req_duration.values['p(95)'].toFixed(2);
+            const errorRate = ((data.metrics.http_req_failed?.values.rate || 0) * 100).toFixed(2);
+            const status = (p95 > 3000 || errorRate > 5) ? '❌ Failed' : '✅ Passed';
+            
+            const body = `## 🚀 Load Test Results
+            
+            **Status:** ${status}
+            
+            | Metric | Value |
+            |--------|-------|
+            | Total Requests | ${data.metrics.http_reqs.values.count} |
+            | Avg Response Time | ${data.metrics.http_req_duration.values.avg.toFixed(2)}ms |
+            | P95 Response Time | ${p95}ms |
+            | P99 Response Time | ${data.metrics.http_req_duration.values['p(99)'].toFixed(2)}ms |
+            | Error Rate | ${errorRate}% |
+            
+            ${p95 > 3000 ? '⚠️ P95 response time exceeds 3s threshold' : ''}
+            ${errorRate > 5 ? '⚠️ Error rate exceeds 5% threshold' : ''}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Fail if performance degraded
+        if: steps.parse_results.outcome == 'failure'
+        run: exit 1
+
+  performance-regression-check:
+    name: Performance Regression Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for performance-critical changes
+        id: check_changes
+        run: |
+          # Check if performance-critical files were modified
+          git diff --name-only origin/main...HEAD | grep -E '(lib/db|app/api|lib/services)' && echo "CRITICAL_CHANGES=true" >> $GITHUB_OUTPUT || echo "CRITICAL_CHANGES=false" >> $GITHUB_OUTPUT
+      
+      - name: Recommend load test
+        if: steps.check_changes.outputs.CRITICAL_CHANGES == 'true'
+        run: |
+          echo "⚠️ **Performance-critical files modified**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Consider running a full load test before merging." >> $GITHUB_STEP_SUMMARY

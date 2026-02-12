@@ -1,0 +1,399 @@
+name: LLM Cost Tracking & SLO Monitoring
+
+on:
+  schedule:
+    # Run every hour to check costs and SLOs
+    - cron: '0 * * * *'
+    # Daily summary report at 9 AM UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of check to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - cost
+          - slo
+          - budget
+
+env:
+  COST_ALERT_THRESHOLD: '0.80'  # Alert at 80% of budget
+  SLO_LATENCY_MS: '2000'        # Target: < 2s response time
+  SLO_ERROR_RATE: '0.01'        # Target: < 1% error rate
+
+jobs:
+  check-llm-costs:
+    name: Check LLM Costs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'cost'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Query LLM costs from database
+        id: cost_check
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node -e "
+          const { Client } = require('pg');
+          
+          async function checkCosts() {
+            const client = new Client({ connectionString: process.env.DATABASE_URL });
+            await client.connect();
+            
+            try {
+              // Get current month costs per organization
+              const result = await client.query(\`
+                SELECT 
+                  organization_id,
+                  COUNT(*) as total_requests,
+                  SUM(input_tokens) as total_input_tokens,
+                  SUM(output_tokens) as total_output_tokens,
+                  SUM(total_tokens) as total_tokens,
+                  SUM(estimated_cost) as total_cost,
+                  AVG(latency_ms) as avg_latency_ms,
+                  MAX(latency_ms) as max_latency_ms
+                FROM ai_usage_metrics
+                WHERE created_at >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+                GROUP BY organization_id
+                ORDER BY total_cost DESC
+              \`);
+              
+              console.log('## LLM Cost Report');
+              console.log('| Org ID | Requests | Total Tokens | Cost (USD) | Avg Latency |');
+              console.log('|--------|----------|--------------|------------|-------------|');
+              
+              let totalCost = 0;
+              result.rows.forEach(row => {
+                const cost = parseFloat(row.total_cost || 0).toFixed(2);
+                const latency = Math.round(row.avg_latency_ms || 0);
+                console.log(\`| \${row.organization_id.slice(0,8)} | \${row.total_requests} | \${parseInt(row.total_tokens).toLocaleString()} | $\${cost} | \${latency}ms |\`);
+                totalCost += parseFloat(row.total_cost || 0);
+              });
+              
+              console.log('');
+              console.log(\`**Total Cost This Month:** $\${totalCost.toFixed(2)}\`);
+              
+              // Save for next step
+              require('fs').writeFileSync('cost_report.json', JSON.stringify({
+                totalCost,
+                organizations: result.rows
+              }));
+              
+            } finally {
+              await client.end();
+            }
+          }
+          
+          checkCosts().catch(console.error);
+          " >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check budget alerts
+        id: budget_check
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node -e "
+          const { Client } = require('pg');
+          
+          async function checkBudgets() {
+            const client = new Client({ connectionString: process.env.DATABASE_URL });
+            await client.connect();
+            
+            try {
+              // Find organizations exceeding budget thresholds
+              const result = await client.query(\`
+                WITH monthly_spend AS (
+                  SELECT 
+                    organization_id,
+                    SUM(estimated_cost) as current_spend
+                  FROM ai_usage_metrics
+                  WHERE created_at >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+                  GROUP BY organization_id
+                )
+                SELECT 
+                  b.organization_id,
+                  b.monthly_budget,
+                  b.current_month_spend,
+                  b.alert_threshold,
+                  ms.current_spend,
+                  (ms.current_spend / b.monthly_budget) as usage_percent
+                FROM ai_budgets b
+                JOIN monthly_spend ms ON b.organization_id = ms.organization_id
+                WHERE ms.current_spend >= (b.monthly_budget * b.alert_threshold)
+                ORDER BY usage_percent DESC
+              \`);
+              
+              if (result.rows.length > 0) {
+                console.log('## ⚠️  BUDGET ALERTS');
+                console.log('');
+                console.log('| Org ID | Budget | Current Spend | Usage % | Status |');
+                console.log('|--------|--------|---------------|---------|--------|');
+                
+                result.rows.forEach(row => {
+                  const usagePercent = (row.usage_percent * 100).toFixed(1);
+                  const status = row.usage_percent >= 1.0 ? '🔴 EXCEEDED' : '⚠️  WARNING';
+                  console.log(\`| \${row.organization_id.slice(0,8)} | $\${parseFloat(row.monthly_budget).toFixed(2)} | $\${parseFloat(row.current_spend).toFixed(2)} | \${usagePercent}% | \${status} |\`);
+                });
+                
+                // Set alert flag
+                console.log('BUDGET_ALERT=true' >> process.env.GITHUB_OUTPUT);
+              } else {
+                console.log('✅ All organizations within budget');
+              }
+              
+            } finally {
+              await client.end();
+            }
+          }
+          
+          checkBudgets().catch(console.error);
+          " >> $GITHUB_STEP_SUMMARY
+      
+      - name: Send budget alert notification
+        if: steps.budget_check.outputs.BUDGET_ALERT == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ LLM Budget Alert - Organizations Exceeding Threshold',
+              body: 'One or more organizations have exceeded their LLM budget threshold. Check the workflow run for details.',
+              labels: ['cost-alert', 'llm', 'priority-high']
+            });
+
+  check-slo-compliance:
+    name: Check SLO Compliance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'slo'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Check LLM response time SLO
+        id: latency_slo
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node -e "
+          const { Client } = require('pg');
+          
+          async function checkLatencySLO() {
+            const client = new Client({ connectionString: process.env.DATABASE_URL });
+            await client.connect();
+            
+            try {
+              const result = await client.query(\`
+                SELECT 
+                  provider,
+                  model_name,
+                  COUNT(*) as total_requests,
+                  AVG(latency_ms) as avg_latency,
+                  PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY latency_ms) as p50_latency,
+                  PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency_ms) as p95_latency,
+                  PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY latency_ms) as p99_latency,
+                  COUNT(CASE WHEN latency_ms > ${{ env.SLO_LATENCY_MS }} THEN 1 END) as slow_requests,
+                  (COUNT(CASE WHEN latency_ms > ${{ env.SLO_LATENCY_MS }} THEN 1 END)::float / COUNT(*)) as slow_request_rate
+                FROM ai_usage_metrics
+                WHERE created_at >= NOW() - INTERVAL '24 hours'
+                GROUP BY provider, model_name
+                ORDER BY total_requests DESC
+              \`);
+              
+              console.log('## LLM Latency SLO (Last 24h)');
+              console.log('**Target:** < ${{ env.SLO_LATENCY_MS }}ms for 95% of requests');
+              console.log('');
+              console.log('| Provider | Model | Requests | Avg | P95 | P99 | Slow % | Status |');
+              console.log('|----------|-------|----------|-----|-----|-----|--------|--------|');
+              
+              let sloViolation = false;
+              result.rows.forEach(row => {
+                const slowPercent = (row.slow_request_rate * 100).toFixed(2);
+                const p95 = Math.round(row.p95_latency);
+                const status = p95 > ${{ env.SLO_LATENCY_MS }} ? '❌ SLO MISS' : '✅ OK';
+                if (p95 > ${{ env.SLO_LATENCY_MS }}) sloViolation = true;
+                
+                console.log(\`| \${row.provider} | \${row.model_name} | \${row.total_requests} | \${Math.round(row.avg_latency)}ms | \${p95}ms | \${Math.round(row.p99_latency)}ms | \${slowPercent}% | \${status} |\`);
+              });
+              
+              if (sloViolation) {
+                console.log('SLO_VIOLATION=true' >> process.env.GITHUB_OUTPUT);
+              }
+              
+            } finally {
+              await client.end();
+            }
+          }
+          
+          checkLatencySLO().catch(console.error);
+          " >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check LLM error rate SLO
+        id: error_slo
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node -e "
+          const { Client } = require('pg');
+          
+          async function checkErrorRateSLO() {
+            const client = new Client({ connectionString: process.env.DATABASE_URL });
+            await client.connect();
+            
+            try {
+              const result = await client.query(\`
+                SELECT 
+                  provider,
+                  model_name,
+                  COUNT(*) as total_requests,
+                  COUNT(CASE WHEN error IS NOT NULL THEN 1 END) as error_count,
+                  (COUNT(CASE WHEN error IS NOT NULL THEN 1 END)::float / COUNT(*)) as error_rate
+                FROM ai_usage_metrics
+                WHERE created_at >= NOW() - INTERVAL '24 hours'
+                GROUP BY provider, model_name
+                ORDER BY error_rate DESC
+              \`);
+              
+              console.log('## LLM Error Rate SLO (Last 24h)');
+              console.log('**Target:** < ${{ env.SLO_ERROR_RATE }} (1%) error rate');
+              console.log('');
+              console.log('| Provider | Model | Total | Errors | Error Rate | Status |');
+              console.log('|----------|-------|-------|--------|------------|--------|');
+              
+              let sloViolation = false;
+              result.rows.forEach(row => {
+                const errorRate = (row.error_rate * 100).toFixed(2);
+                const status = row.error_rate > parseFloat('${{ env.SLO_ERROR_RATE }}') ? '❌ SLO MISS' : '✅ OK';
+                if (row.error_rate > parseFloat('${{ env.SLO_ERROR_RATE }}')) sloViolation = true;
+                
+                console.log(\`| \${row.provider} | \${row.model_name} | \${row.total_requests} | \${row.error_count} | \${errorRate}% | \${status} |\`);
+              });
+              
+              if (sloViolation) {
+                console.log('ERROR_SLO_VIOLATION=true' >> process.env.GITHUB_OUTPUT);
+              }
+              
+            } finally {
+              await client.end();
+            }
+          }
+          
+          checkErrorRateSLO().catch(console.error);
+          " >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create SLO violation issue
+        if: steps.latency_slo.outputs.SLO_VIOLATION == 'true' || steps.error_slo.outputs.ERROR_SLO_VIOLATION == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ LLM SLO Violation Detected',
+              body: 'One or more LLM providers are not meeting SLO targets for latency or error rate. Check the workflow run for details.',
+              labels: ['slo-violation', 'llm', 'performance']
+            });
+
+  daily-cost-report:
+    name: Daily Cost Summary
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 9 * * *' || github.event.inputs.check_type == 'all'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Generate daily summary
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node -e "
+          const { Client } = require('pg');
+          
+          async function generateDailySummary() {
+            const client = new Client({ connectionString: process.env.DATABASE_URL });
+            await client.connect();
+            
+            try {
+              console.log('# 📊 LLM Daily Cost Summary');
+              console.log(\`**Date:** \${new Date().toISOString().split('T')[0]}\`);
+              console.log('');
+              
+              // Yesterday's costs
+              const yesterday = await client.query(\`
+                SELECT 
+                  SUM(estimated_cost) as total_cost,
+                  SUM(total_tokens) as total_tokens,
+                  COUNT(*) as total_requests
+                FROM ai_usage_metrics
+                WHERE created_at >= CURRENT_DATE - INTERVAL '1 day'
+                  AND created_at < CURRENT_DATE
+              \`);
+              
+              // Month to date
+              const mtd = await client.query(\`
+                SELECT 
+                  SUM(estimated_cost) as total_cost,
+                  SUM(total_tokens) as total_tokens,
+                  COUNT(*) as total_requests
+                FROM ai_usage_metrics
+                WHERE created_at >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+              \`);
+              
+              console.log('## Summary');
+              console.log(\`- **Yesterday:** $\${parseFloat(yesterday.rows[0].total_cost || 0).toFixed(2)} (\${parseInt(yesterday.rows[0].total_tokens || 0).toLocaleString()} tokens, \${yesterday.rows[0].total_requests} requests)\`);
+              console.log(\`- **Month to Date:** $\${parseFloat(mtd.rows[0].total_cost || 0).toFixed(2)} (\${parseInt(mtd.rows[0].total_tokens || 0).toLocaleString()} tokens, \${mtd.rows[0].total_requests} requests)\`);
+              
+            } finally {
+              await client.end();
+            }
+          }
+          
+          generateDailySummary().catch(console.error);
+          " >> $GITHUB_STEP_SUMMARY
