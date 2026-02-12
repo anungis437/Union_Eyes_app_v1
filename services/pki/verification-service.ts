@@ -274,9 +274,50 @@ export async function bulkVerifySignatures(
 }
 
 /**
- * Verify certificate chain (optional feature for CA validation)
- * Requires integration with external CA or certificate store
- * Placeholder for future implementation
+ * Verify certificate chain (simplified trust anchor check)
+ * 
+ * CURRENT IMPLEMENTATION:
+ * - Compares certificate thumbprint against trusted root list (env: PKI_TRUSTED_CERT_THUMBPRINTS)
+ * - Simple trust anchor verification (single-level)
+ * - Suitable for self-signed certificates or direct trust model
+ * 
+ * PRODUCTION CA CHAIN VALIDATION (Future Enhancement):
+ * For full X.509 certificate chain validation with Certificate Authorities:
+ * 
+ * 1. Install PKI Library:
+ *    npm install node-forge
+ *    import * as forge from 'node-forge';
+ * 
+ * 2. Load Certificate Chain:
+ *    const cert = forge.pki.certificateFromPem(certificatePem);
+ *    const chain = [cert, intermediateCert1, intermediateCert2]; // Build chain
+ * 
+ * 3. Load Trusted CA Roots:
+ *    const caStore = forge.pki.createCaStore([
+ *      rootCA1Pem,
+ *      rootCA2Pem,
+ *      // Add trusted roots
+ *    ]);
+ * 
+ * 4. Verify Chain:
+ *    try {
+ *      forge.pki.verifyCertificateChain(caStore, chain);
+ *      // Chain is valid - all signatures verified, dates checked
+ *    } catch (error) {
+ *      // Chain validation failed
+ *    }
+ * 
+ * 5. Check CRL/OCSP (Revocation):
+ *    - Query Certificate Revocation Lists (CRL)
+ *    - Use Online Certificate Status Protocol (OCSP) for real-time checks
+ *    - Store CRL cache in database for performance
+ * 
+ * 6. Validate Extended Key Usage (EKU):
+ *    - Document signing: 1.3.6.1.5.5.7.3.36
+ *    - Email protection: 1.3.6.1.5.5.7.3.4
+ *    - Code signing: 1.3.6.1.5.5.7.3.3
+ * 
+ * For now, environment-based thumbprint trust is sufficient for controlled deployments.
  */
 export async function verifyCertificateChain(
   certificateThumbprint: string
@@ -302,13 +343,27 @@ export async function verifyCertificateChain(
 
   const trustedRoot = trustedThumbprints.includes(certificateThumbprint);
   if (!trustedRoot) {
+    logger.debug('PKI chain verification: Certificate not in trusted thumbprints', {
+      certificateThumbprint: certificateThumbprint.substring(0, 16) + '...',
+      trustedCount: trustedThumbprints.length,
+      verificationModel: 'simple_trust_anchor'
+    });
+    
     return {
       isValid: false,
       chainValid: false,
       trustedRoot: false,
-      errors: ['Certificate thumbprint not found in trusted roots'],
+      errors: [
+        'Certificate thumbprint not found in trusted roots. ' +
+        'Add to PKI_TRUSTED_CERT_THUMBPRINTS environment variable or implement full CA chain validation.'
+      ],
     };
   }
+
+  logger.debug('PKI chain verification: Certificate trusted', {
+    certificateThumbprint: certificateThumbprint.substring(0, 16) + '...',
+    verificationModel: 'simple_trust_anchor'
+  });
 
   return {
     isValid: true,

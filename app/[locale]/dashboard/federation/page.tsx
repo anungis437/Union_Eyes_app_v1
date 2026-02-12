@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { db } from '@/db';
+import { perCapitaRemittances } from '@/db/schema';
+import { eq, and, count, sum, sql, lt } from 'drizzle-orm';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
 
 interface MemberUnionData {
@@ -47,11 +49,41 @@ async function getFederationMetrics(orgId: string) {
       where: (organizations, { eq }) => eq(organizations.parentOrganizationId, orgId),
     });
 
-    // Calculate metrics (placeholder - replace with actual queries)
+    // Aggregate total members from all member unions via per-capita remittances
+    const memberStats = await db
+      .select({
+        totalMembers: sum(perCapitaRemittances.remittableMembers),
+      })
+      .from(perCapitaRemittances)
+      .where(eq(perCapitaRemittances.toOrganizationId, orgId));
+
+    // Query pending remittances (submitted but not approved/paid)
+    const pendingRemittancesResult = await db
+      .select({ count: count() })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          eq(perCapitaRemittances.status, 'pending')
+        )
+      );
+
+    // Query overdue remittances (past due date and not paid)
+    const overdueRemittancesResult = await db
+      .select({ count: count() })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          eq(perCapitaRemittances.status, 'pending'),
+          lt(perCapitaRemittances.dueDate, sql`CURRENT_DATE`)
+        )
+      );
+
     const totalMemberUnions = memberUnions.length;
-    const totalMembers = 0; // TODO: Aggregate from member unions
-    const pendingRemittances = 0; // TODO: Query federation_remittances
-    const overdueRemittances = 0; // TODO: Query overdue remittances
+    const totalMembers = Number(memberStats[0]?.totalMembers || 0);
+    const pendingRemittances = Number(pendingRemittancesResult[0]?.count || 0);
+    const overdueRemittances = Number(overdueRemittancesResult[0]?.count || 0);
 
     return {
       totalMemberUnions,
@@ -60,7 +92,8 @@ async function getFederationMetrics(orgId: string) {
       overdueRemittances,
       memberUnions,
     };
-  } catch {
+  } catch (error) {
+    console.error('Error fetching federation metrics:', error);
     return {
       totalMemberUnions: 0,
       totalMembers: 0,

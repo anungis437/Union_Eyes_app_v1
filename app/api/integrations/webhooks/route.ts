@@ -17,6 +17,9 @@ import {
   ErrorCode,
 } from '@/lib/api/standardized-responses';
 import { logger } from '@/lib/logger';
+import { db } from '@/db';
+import { integrationWebhooks } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -67,9 +70,32 @@ export const GET = async (request: NextRequest) => {
       const organizationId = searchParams.get('organization_id');
       const isActive = searchParams.get('is_active');
 
-      // TODO: Implement actual webhook storage and retrieval
-      // For now, return empty array as placeholder
-      const webhooks = [];
+      // Query webhooks from database
+      const whereConditions = [];
+      if (organizationId) {
+        whereConditions.push(eq(integrationWebhooks.organizationId, organizationId));
+      }
+      if (isActive !== null) {
+        whereConditions.push(eq(integrationWebhooks.isActive, isActive === 'true'));
+      }
+
+      const webhooks = await db.query.integrationWebhooks.findMany({
+        where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
+        columns: {
+          id: true,
+          url: true,
+          description: true,
+          events: true,
+          isActive: true,
+          deliveryCount: true,
+          failureCount: true,
+          lastTriggeredAt: true,
+          lastSuccessAt: true,
+          lastFailureAt: true,
+          createdAt: true,
+          createdBy: true,
+        },
+      });
 
       // Audit log
       await logApiAuditEvent({
@@ -144,21 +170,19 @@ export const POST = async (request: NextRequest) => {
       const secret =
         webhookData.secret || `whsec_${crypto.randomBytes(32).toString('hex')}`;
 
-      // TODO: Store webhook in database
-      const webhook = {
-        id: crypto.randomUUID(),
-        url: webhookData.url,
-        description: webhookData.description,
-        events: webhookData.events,
-        organizationId: webhookData.organization_id,
-        isActive: webhookData.is_active,
-        secret,
-        createdBy: userId,
-        createdAt: new Date().toISOString(),
-        lastTriggeredAt: null,
-        deliveryCount: 0,
-        failureCount: 0,
-      };
+      // Store webhook in database
+      const [webhook] = await db
+        .insert(integrationWebhooks)
+        .values({
+          url: webhookData.url,
+          description: webhookData.description,
+          events: webhookData.events,
+          organizationId: webhookData.organization_id,
+          isActive: webhookData.is_active,
+          secret,
+          createdBy: userId,
+        })
+        .returning();
 
       // Audit log
       await logApiAuditEvent({

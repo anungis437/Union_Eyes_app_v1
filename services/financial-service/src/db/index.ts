@@ -4,7 +4,9 @@ config(); // Load environment variables first
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 
 // Database connection configuration
 const connectionString = process.env.DATABASE_URL || '';

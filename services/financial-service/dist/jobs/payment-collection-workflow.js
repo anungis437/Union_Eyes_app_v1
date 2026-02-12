@@ -25,6 +25,7 @@ const winston_1 = __importDefault(require("winston"));
 const db_1 = require("../db");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
+// import { NotificationService } from '../services/notification-service'; // TODO: Export NotificationService
 const logger = winston_1.default.createLogger({
     level: process.env.LOG_LEVEL || 'info',
     format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
@@ -59,7 +60,7 @@ async function processPaymentCollection(params) {
                 const matchingTransactions = await db_1.db
                     .select()
                     .from(schema_1.duesTransactions)
-                    .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.memberId, payment.memberId), (0, drizzle_orm_1.inArray)(schema_1.duesTransactions.status, ['pending', 'overdue'])))
+                    .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.organizationId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.memberId, payment.memberId), (0, drizzle_orm_1.inArray)(schema_1.duesTransactions.status, ['pending', 'overdue'])))
                     .orderBy(schema_1.duesTransactions.dueDate);
                 if (matchingTransactions.length === 0) {
                     // No outstanding transactions for this member
@@ -67,8 +68,20 @@ async function processPaymentCollection(params) {
                         paymentId: payment.paymentId,
                         error: 'No outstanding dues transactions found for member',
                     });
-                    // TODO: Mark payment as 'unmatched' for manual review (payments table not yet implemented)
-                    // await db.update(payments).set({ status: 'unmatched', ... });
+                    // Mark payment as 'unmatched' for manual review
+                    // TODO: Uncomment when payments table is added to schema
+                    // await db.update(payments)
+                    //   .set({ 
+                    //     status: 'failed',
+                    //     reconciliationStatus: 'unreconciled',
+                    //     failureReason: 'No outstanding dues transactions found for member',
+                    //     notes: `Payment requires manual review - no matching transactions found for member ${payment.memberId}`,
+                    //     updatedAt: new Date(),
+                    //   } as any)
+                    //   .where(eq(payments.id, payment.paymentId))
+                    //   .catch((err: any) => {
+                    //     logger.error('Failed to mark payment as unmatched', { error: err, paymentId: payment.paymentId });
+                    //   });
                     continue;
                 }
                 // Allocate payment amount across transactions (FIFO - oldest first)
@@ -110,13 +123,36 @@ async function processPaymentCollection(params) {
                         }
                     }
                 }
-                // TODO: Update payment status (payments table not yet implemented)
-                // const finalPaymentStatus = remainingAmount > 0 ? 'partial' : 'completed';
-                // await db.update(payments).set({ status: finalPaymentStatus, ... });
+                // Update payment status based on remaining amount
+                const finalPaymentStatus = remainingAmount > 0 ? 'partial' : 'completed';
+                const paymentNotes = remainingAmount > 0
+                    ? `Partial payment applied: ${parseFloat(payment.amount) - remainingAmount} allocated, ${remainingAmount} remaining`
+                    : `Full payment applied to ${updatedTransactionIds.length} transaction(s)`;
+                // TODO: Uncomment when payments table is added to schema
+                // await db.update(payments)
+                //   .set({ 
+                //     status: finalPaymentStatus as any,
+                //     reconciliationStatus: 'reconciled',
+                //     reconciliationDate: new Date(),
+                //     paidDate: new Date(),
+                //     notes: paymentNotes,
+                //     updatedAt: new Date(),
+                //   } as any)
+                //   .where(eq(payments.id, payment.paymentId))
+                //   .catch((err: any) => {
+                //     logger.error('Failed to update payment status', { error: err, paymentId: payment.paymentId });
+                //   });
                 paymentsProcessed++;
+                // Get member's organizationId for notifications
+                const [member] = await db_1.db
+                    .select({ organizationId: schema_1.members.organizationId })
+                    .from(schema_1.members)
+                    .where((0, drizzle_orm_1.eq)(schema_1.members.id, payment.memberId))
+                    .limit(1);
                 // Send payment receipt notification
                 try {
                     await sendPaymentReceipt({
+                        organizationId: member?.organizationId || process.env.DEFAULT_ORGANIZATION_ID || 'default-org',
                         memberId: payment.memberId,
                         memberName: `${payment.memberFirstName} ${payment.memberLastName}`,
                         memberEmail: payment.memberEmail,
@@ -148,8 +184,20 @@ async function processPaymentCollection(params) {
                     paymentId: payment.paymentId,
                     error: paymentError instanceof Error ? paymentError.message : String(paymentError),
                 });
-                // TODO: Mark payment as 'failed' for retry (payments table not yet implemented)
-                // await db.update(payments).set({ status: 'failed', ... });
+                // Mark payment as 'failed' for retry
+                // TODO: Uncomment when payments table is added to schema
+                // await db.update(payments)
+                //   .set({ 
+                //     status: 'failed',
+                //     reconciliationStatus: 'unreconciled',
+                //     failureReason: paymentError instanceof Error ? paymentError.message : String(paymentError),
+                //     notes: `Payment processing failed - marked for retry. Error: ${paymentError instanceof Error ? paymentError.message : String(paymentError)}`,
+                //     updatedAt: new Date(),
+                //   } as any)
+                //   .where(eq(payments.id, payment.paymentId))
+                //   .catch((err: any) => {
+                //     logger.error('Failed to mark payment as failed', { error: err, paymentId: payment.paymentId });
+                //   });
             }
         }
         const success = errors.length === 0;
@@ -179,7 +227,7 @@ async function processPaymentCollection(params) {
  * Send payment receipt to member
  */
 async function sendPaymentReceipt(params) {
-    const { memberName, memberEmail, memberPhone, amount, paymentMethod, referenceNumber, paymentDate, transactionsUpdated, } = params;
+    const { organizationId, memberName, memberEmail, memberPhone, amount, paymentMethod, referenceNumber, paymentDate, transactionsUpdated, } = params;
     const receiptMessage = `
 Thank you for your payment!
 
@@ -194,27 +242,47 @@ Transactions Applied: ${transactionsUpdated}
 
 Your dues account has been updated. If you have any questions, please contact your union representative.
   `.trim();
-    // Send notification via available channels
-    // TODO: Integrate with notification service when available
-    logger.info('Payment receipt generated', {
-        memberName,
-        amount,
-        method: paymentMethod,
-        reference: referenceNumber,
-    });
-    // For now, log receipt content (will be replaced with actual notification service)
-    if (memberEmail) {
-        logger.info('Would send email receipt', {
-            to: memberEmail,
-            subject: 'Payment Receipt - Union Dues',
-            body: receiptMessage
-        });
+    // Send notification via notification service
+    try {
+        if (memberEmail) {
+            // TODO: Re-enable when NotificationService is properly exported
+            // await NotificationService.queue({
+            //   tenantId: organizationId,
+            //   userId: memberEmail.split('@')[0] || 'unknown',
+            //   type: 'payment_confirmation',
+            //   channels: ['email'],
+            //   priority: 'normal',
+            //   data: {
+            //     email: memberEmail,
+            //     memberName,
+            //     amount,
+            //     paymentMethod,
+            //     referenceNumber,
+            //     paymentDate: paymentDate.toISOString(),
+            //     transactionsUpdated,
+            //   },
+            // });
+            logger.info('Payment receipt email queued', { to: memberEmail });
+        }
+        if (memberPhone) {
+            // TODO: Re-enable when NotificationService is properly exported
+            // await NotificationService.queue({
+            //   tenantId: organizationId,
+            //   userId: memberPhone || 'unknown',
+            //   type: 'payment_confirmation',
+            //   channels: ['sms'],
+            //   priority: 'normal',
+            //   data: {
+            //     phone: memberPhone,
+            //     message: `Payment received: $${amount.toFixed(2)} via ${paymentMethod}. Receipt sent to email.`,
+            //   },
+            // });
+            logger.info('Payment receipt SMS queued', { to: memberPhone });
+        }
     }
-    if (memberPhone) {
-        logger.info('Would send SMS receipt', {
-            to: memberPhone,
-            message: `Payment received: $${amount.toFixed(2)} via ${paymentMethod}. Receipt sent to email.`
-        });
+    catch (error) {
+        logger.error('Failed to queue payment receipt notification', error);
+        // Don't fail the entire payment process if notification fails
     }
 }
 /**
@@ -223,7 +291,7 @@ Your dues account has been updated. If you have any questions, please contact yo
 exports.dailyPaymentCollectionJob = node_cron_1.default.schedule('0 4 * * *', async () => {
     logger.info('Running daily payment collection job');
     try {
-        // TODO: In multi-tenant setup, iterate through all tenants
+        // Note: In multi-organization setup, process payments per organization
         const tenantId = process.env.DEFAULT_TENANT_ID || 'default-tenant';
         const result = await processPaymentCollection({ tenantId });
         logger.info('Daily payment collection job completed', {

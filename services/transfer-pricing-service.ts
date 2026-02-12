@@ -167,10 +167,25 @@ export class TransferPricingService {
       return existingRate[0];
     }
 
-    // Fetch from Bank of Canada API (would be actual API call in production)
-    // For now, return placeholder indicating rate should be imported
+    // Fetch from Bank of Canada API
+    // Production: Implement automated daily rate imports via scheduled job
+    // API endpoint: https://www.bankofcanada.ca/valet/observations/
+    // Required currencies: USD, EUR, GBP, JPY, AUD, etc.
+    // Schedule: Import daily at 1:30 PM ET after BoC noon rate publication
+    // Implementation steps:
+    //   1. Create scheduled job (packages/jobs/src/fx-rates-import.ts)
+    //   2. Configure cron: 0 18 * * 1-5 (1:00 PM ET Mon-Fri, UTC)
+    //   3. Call BoC Valet API with date range: 
+    //      GET /valet/observations/FXUSDCAD,FXEURCAD,FXGBPCAD/csv?start_date=YYYY-MM-DD
+    //   4. Parse CSV response and call importBankOfCanadaRates()
+    //   5. Handle holidays/weekends (use previous business day rate)
+    //   6. Add alerting for import failures (affects transaction processing)
+    //
+    // For now, rates must be manually imported or synchronized from external source
     throw new Error(
-      `Bank of Canada rate for ${currency} not available. Import latest rates first.`
+      `Bank of Canada rate for ${currency} not available in database. ` +
+      `Import latest rates using importBankOfCanadaRates() or set up automated daily imports. ` +
+      `See https://www.bankofcanada.ca/valet/docs for API documentation.`
     );
   }
 

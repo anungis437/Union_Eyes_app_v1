@@ -28,8 +28,12 @@ interface SSOConfig {
  *   useSSO({
  *     enabled: true,
  *     checkInterval: 30000, // Check every 30 seconds
- *     onSSOLogin: (userId) => undefined,
- *     onSSOLogout: () => undefined
+ *     onSSOLogin: (userId) => {
+ *       // handle SSO login
+ *     },
+ *     onSSOLogout: () => {
+ *       // handle SSO logout
+ *     }
  *   });
  *
  *   return <YourApp />;

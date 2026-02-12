@@ -124,6 +124,7 @@ export interface OrganizationWithMembers extends Organization {
 }
 export declare class OrganizationService {
     private supabase;
+    private logger;
     constructor(supabase: SupabaseClient);
     /**
      * Create a new organization

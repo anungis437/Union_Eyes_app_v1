@@ -11,7 +11,9 @@
 
 import { db, schema } from '../db';
 import { eq, and, between, desc, sql, sum } from 'drizzle-orm';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = { error: console.error, info: console.info, warn: console.warn, debug: console.debug };
 
 // Configuration constants
 const DEFAULT_MINIMUM_HOURS_PER_WEEK = 20; // Minimum hours to qualify for stipend
@@ -397,7 +399,7 @@ export async function batchCreateDisbursements(
 
     for (const member of eligible) {
       const result = await createDisbursement({
-        tenantId: request.organizationId,
+        organizationId: request.organizationId,
         strikeFundId: request.strikeFundId,
         memberId: member.memberId,
         amount: member.stipendAmount,

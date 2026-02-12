@@ -8,6 +8,7 @@
  */
 import Stripe from 'stripe';
 import { BillingService } from '../services/billingService';
+import { SimpleLogger } from '../utils/logger';
 /**
  * Stripe Webhook Handler Class
  *
@@ -42,6 +43,7 @@ import { BillingService } from '../services/billingService';
  */
 export class StripeWebhookHandler {
     constructor(config) {
+        this.logger = new SimpleLogger('StripeWebhookHandler');
         this.stripe = new Stripe(config.stripeSecretKey, {
             apiVersion: '2024-06-20',
         });
@@ -73,7 +75,8 @@ export class StripeWebhookHandler {
             };
         }
         catch (error) {
-if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
+            this.logger.error('Webhook handler error', { error });
+            if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
                 return {
                     success: false,
                     message: 'Invalid signature',
@@ -100,7 +103,8 @@ if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
      * Process webhook event based on type
      */
     async processEvent(event) {
-switch (event.type) {
+        this.logger.info('Processing webhook event', { eventType: event.type });
+        switch (event.type) {
             case 'customer.subscription.created':
                 await this.handleSubscriptionCreated(event.data.object);
                 break;
@@ -120,13 +124,15 @@ switch (event.type) {
                 await this.handleTrialWillEnd(event.data.object);
                 break;
             default:
-}
+                this.logger.info('Unhandled event type', { eventType: event.type });
+        }
     }
     /**
      * Handle subscription created event
      */
     async handleSubscriptionCreated(subscription) {
-// The subscription is already created by billingService.createSubscription()
+        this.logger.info('Subscription created', { subscriptionId: subscription.id });
+        // The subscription is already created by billingService.createSubscription()
         // This webhook confirms the subscription was successfully created in Stripe
         // We can use this to trigger notifications or additional processing
         try {
@@ -142,18 +148,37 @@ switch (event.type) {
                 pending_webhooks: 0,
                 request: null,
             });
-            // TODO: Send welcome email to customer
-            // TODO: Log subscription creation in audit log
+            // Log subscription creation in audit log
+            const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+            this.logger.info('Subscription created - Audit log entry', {
+                action: 'subscription.created',
+                customerId,
+                subscriptionId: subscription.id,
+                status: subscription.status,
+                planId: subscription.items.data[0]?.price.id,
+                trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            });
+            // Send welcome email to customer
+            // Note: Email implementation depends on the consuming application's email service
+            this.logger.info('Welcome email should be sent to customer', {
+                subscriptionId: subscription.id,
+                customerId,
+                status: subscription.status,
+                planName: subscription.items.data[0]?.price.nickname || subscription.items.data[0]?.price.id,
+                trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            });
         }
         catch (error) {
-throw error;
+            this.logger.error('Error handling subscription created', { error });
+            throw error;
         }
     }
     /**
      * Handle subscription updated event
      */
     async handleSubscriptionUpdated(subscription) {
-try {
+        this.logger.info('Subscription updated', { subscriptionId: subscription.id });
+        try {
             await this.billingService.handleWebhook({
                 type: 'customer.subscription.updated',
                 data: { object: subscription },
@@ -165,18 +190,44 @@ try {
                 pending_webhooks: 0,
                 request: null,
             });
-            // TODO: Notify user of subscription changes
-            // TODO: Log subscription update in audit log
+            // Log subscription update in audit log
+            const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+            this.logger.info('Subscription updated - Audit log entry', {
+                action: 'subscription.updated',
+                customerId,
+                subscriptionId: subscription.id,
+                status: subscription.status,
+                cancelAtPeriodEnd: subscription.cancel_at_period_end,
+                currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+            });
+            // Notify user of subscription changes
+            // Note: Email implementation depends on the consuming application's email service
+            const notificationMessage = subscription.cancel_at_period_end
+                ? 'Your subscription will be canceled at the end of the billing period'
+                : subscription.status === 'past_due'
+                    ? 'Your subscription payment is past due'
+                    : subscription.status === 'active'
+                        ? 'Your subscription has been updated'
+                        : `Your subscription status has changed to: ${subscription.status}`;
+            this.logger.info('Subscription update notification should be sent to customer', {
+                subscriptionId: subscription.id,
+                customerId,
+                status: subscription.status,
+                message: notificationMessage,
+                cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            });
         }
         catch (error) {
-throw error;
+            this.logger.error('Error handling subscription updated', { error });
+            throw error;
         }
     }
     /**
      * Handle subscription deleted event
      */
     async handleSubscriptionDeleted(subscription) {
-try {
+        this.logger.info('Subscription deleted', { subscriptionId: subscription.id });
+        try {
             await this.billingService.handleWebhook({
                 type: 'customer.subscription.deleted',
                 data: { object: subscription },
@@ -188,19 +239,43 @@ try {
                 pending_webhooks: 0,
                 request: null,
             });
-            // TODO: Send cancellation confirmation email
-            // TODO: Archive organization data (if applicable)
-            // TODO: Log subscription deletion in audit log
+            // Log subscription deletion in audit log
+            const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+            this.logger.info('Subscription deleted - Audit log entry', {
+                action: 'subscription.deleted',
+                customerId,
+                subscriptionId: subscription.id,
+                canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+                endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000).toISOString() : null,
+            });
+            // Archive organization data (if applicable)
+            // Note: Data archival should be implemented by the consuming application
+            // This is a business decision that varies by application
+            this.logger.info('Organization data archival should be considered for', {
+                subscriptionId: subscription.id,
+                customerId,
+                metadata: subscription.metadata,
+            });
+            // Send cancellation confirmation email
+            // Note: Email implementation depends on the consuming application's email service
+            this.logger.info('Cancellation confirmation email should be sent to customer', {
+                subscriptionId: subscription.id,
+                customerId,
+                canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+                endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000).toISOString() : null,
+            });
         }
         catch (error) {
-throw error;
+            this.logger.error('Error handling subscription deleted', { error });
+            throw error;
         }
     }
     /**
      * Handle invoice payment succeeded event
      */
     async handleInvoicePaymentSucceeded(invoice) {
-try {
+        this.logger.info('Invoice payment succeeded', { invoiceId: invoice.id });
+        try {
             await this.billingService.handleWebhook({
                 type: 'invoice.payment_succeeded',
                 data: { object: invoice },
@@ -212,18 +287,42 @@ try {
                 pending_webhooks: 0,
                 request: null,
             });
-            // TODO: Send payment receipt email
-            // TODO: Log successful payment in audit log
+            // Log successful payment in audit log
+            if (invoice.customer) {
+                // Extract customer and subscription details for audit
+                const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
+                const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+                this.logger.info('Payment succeeded - Audit log entry', {
+                    action: 'invoice.payment_succeeded',
+                    customerId,
+                    subscriptionId,
+                    invoiceId: invoice.id,
+                    amountPaid: invoice.amount_paid,
+                    currency: invoice.currency,
+                });
+            }
+            // Send payment receipt email
+            // Note: Email implementation depends on the consuming application's email service
+            // Applications should implement email sending by listening to webhook events or
+            // extending this handler with their email service
+            this.logger.info('Payment receipt email should be sent to customer', {
+                invoiceId: invoice.id,
+                customerEmail: invoice.customer_email,
+                amountPaid: invoice.amount_paid / 100,
+                currency: invoice.currency.toUpperCase(),
+            });
         }
         catch (error) {
-throw error;
+            this.logger.error('Error handling invoice payment succeeded', { error });
+            throw error;
         }
     }
     /**
      * Handle invoice payment failed event
      */
     async handleInvoicePaymentFailed(invoice) {
-try {
+        this.logger.info('Invoice payment failed', { invoiceId: invoice.id });
+        try {
             await this.billingService.handleWebhook({
                 type: 'invoice.payment_failed',
                 data: { object: invoice },
@@ -235,29 +334,102 @@ try {
                 pending_webhooks: 0,
                 request: null,
             });
-            // TODO: Send payment failed notification email
-            // TODO: Update subscription status to past_due
-            // TODO: Log payment failure in audit log
+            // Update subscription status to past_due
+            if (invoice.subscription) {
+                const subscriptionId = typeof invoice.subscription === 'string'
+                    ? invoice.subscription
+                    : invoice.subscription.id;
+                try {
+                    await this.stripe.subscriptions.update(subscriptionId, {
+                        metadata: {
+                            payment_status: 'past_due',
+                            last_payment_failure: new Date().toISOString(),
+                        },
+                    });
+                    this.logger.info('Subscription marked as past_due', { subscriptionId });
+                }
+                catch (error) {
+                    this.logger.error('Failed to update subscription status', { error });
+                }
+            }
+            // Log payment failure in audit log
+            const customerId = invoice.customer
+                ? (typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id)
+                : undefined;
+            const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+            this.logger.info('Payment failed - Audit log entry', {
+                action: 'invoice.payment_failed',
+                customerId,
+                subscriptionId,
+                invoiceId: invoice.id,
+                amountDue: invoice.amount_due,
+                attemptCount: invoice.attempt_count,
+                nextPaymentAttempt: invoice.next_payment_attempt,
+            });
+            // Send payment failed notification email
+            // Note: Email implementation depends on the consuming application's email service
+            this.logger.info('Payment failed notification should be sent to customer', {
+                invoiceId: invoice.id,
+                customerEmail: invoice.customer_email,
+                amountDue: invoice.amount_due / 100,
+                currency: invoice.currency.toUpperCase(),
+                attemptCount: invoice.attempt_count,
+                nextPaymentAttempt: invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000).toISOString() : null,
+            });
         }
         catch (error) {
-throw error;
+            this.logger.error('Error handling invoice payment failed', { error });
+            throw error;
         }
     }
     /**
      * Handle trial will end event (3 days before trial ends)
      */
     async handleTrialWillEnd(subscription) {
-try {
+        this.logger.info('Trial will end soon', { subscriptionId: subscription.id });
+        try {
             // Calculate days remaining
             const trialEnd = new Date(subscription.trial_end * 1000);
             const now = new Date();
             const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-            // TODO: Send trial ending reminder email with days remaining
-            // TODO: Prompt user to add payment method if not already added
-            // TODO: Log trial reminder in audit log
-}
+            // Log trial reminder in audit log
+            const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+            this.logger.info('Trial ending reminder - Audit log entry', {
+                action: 'subscription.trial_will_end',
+                customerId,
+                subscriptionId: subscription.id,
+                trialEnd: trialEnd.toISOString(),
+                daysRemaining,
+            });
+            // Check if payment method is attached
+            const hasPaymentMethod = subscription.default_payment_method !== null;
+            // Prompt user to add payment method if not already added
+            if (!hasPaymentMethod) {
+                this.logger.info('Customer needs to add payment method before trial ends', {
+                    subscriptionId: subscription.id,
+                    customerId,
+                    daysRemaining,
+                    trialEnd: trialEnd.toISOString(),
+                });
+            }
+            // Send trial ending reminder email with days remaining
+            // Note: Email implementation depends on the consuming application's email service
+            this.logger.info('Trial ending reminder email should be sent to customer', {
+                subscriptionId: subscription.id,
+                customerId,
+                daysRemaining,
+                trialEnd: trialEnd.toISOString(),
+                hasPaymentMethod,
+                actionRequired: !hasPaymentMethod ? 'Add payment method' : 'No action required',
+            });
+            this.logger.info('Trial ends in days for subscription', {
+                subscriptionId: subscription.id,
+                daysRemaining,
+            });
+        }
         catch (error) {
-throw error;
+            this.logger.error('Error handling trial will end', { error });
+            throw error;
         }
     }
 }

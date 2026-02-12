@@ -78,7 +78,7 @@ describe('Financial Workflows - End-to-End Tests', () => {
     
     // Create test dues rule
     const ruleResult = await db.insert(duesRules).values({
-      tenantId: TEST_TENANT_ID,
+      organizationId: TEST_TENANT_ID,
       ruleName: 'Test Monthly Dues',
       ruleCode: 'TEST_MONTHLY',
       calculationType: 'flat_rate',
@@ -93,9 +93,9 @@ describe('Financial Workflows - End-to-End Tests', () => {
 await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
     await db.delete(picketAttendance).where(eq(picketAttendance.tenantId, TEST_TENANT_ID));
     await db.delete(arrears).where(eq(arrears.tenantId, TEST_TENANT_ID));
-    await db.delete(duesTransactions).where(eq(duesTransactions.tenantId, TEST_TENANT_ID));
-    await db.delete(duesAssignments).where(eq(duesAssignments.tenantId, TEST_TENANT_ID));
-    await db.delete(duesRules).where(eq(duesRules.tenantId, TEST_TENANT_ID));
+    await db.delete(duesTransactions).where(eq(duesTransactions.organizationId, TEST_TENANT_ID));
+    await db.delete(duesAssignments).where(eq(duesAssignments.organizationId, TEST_TENANT_ID));
+    await db.delete(duesRules).where(eq(duesRules.organizationId, TEST_TENANT_ID));
     await db.delete(members).where(eq(members.organizationId, TEST_TENANT_ID));
     await db.delete(strikeFunds).where(eq(strikeFunds.tenantId, TEST_TENANT_ID));
 });
@@ -104,7 +104,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
     // Clean up transactions between tests
     await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TEST_TENANT_ID));
     await db.delete(arrears).where(eq(arrears.tenantId, TEST_TENANT_ID));
-    await db.delete(duesTransactions).where(eq(duesTransactions.tenantId, TEST_TENANT_ID));
+    await db.delete(duesTransactions).where(eq(duesTransactions.organizationId, TEST_TENANT_ID));
   });
   
   describe('1. Monthly Dues Calculation Workflow', () => {
@@ -117,14 +117,14 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       
       await db.insert(duesAssignments).values([
         {
-          tenantId: TEST_TENANT_ID,
+          organizationId: TEST_TENANT_ID,
           memberId: testMemberId1,
           ruleId: testDuesRuleId,
           effectiveDate: today.toISOString().split('T')[0],
           endDate: yearFromNow.toISOString().split('T')[0],
         },
         {
-          tenantId: TEST_TENANT_ID,
+          organizationId: TEST_TENANT_ID,
           memberId: testMemberId2,
           ruleId: testDuesRuleId,
           effectiveDate: today.toISOString().split('T')[0],
@@ -148,7 +148,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       const transactions = await db
         .select()
         .from(duesTransactions)
-        .where(eq(duesTransactions.tenantId, TEST_TENANT_ID));
+        .where(eq(duesTransactions.organizationId, TEST_TENANT_ID));
       
       expect(transactions).toHaveLength(2);
       expect(transactions[0].amount).toBe('50.00');
@@ -162,7 +162,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       yearFromNow.setFullYear(today.getFullYear() + 1);
       
       await db.insert(duesAssignments).values({
-        tenantId: TEST_TENANT_ID,
+        organizationId: TEST_TENANT_ID,
         memberId: testMemberId1,
         ruleId: testDuesRuleId,
         effectiveDate: today.toISOString().split('T')[0],
@@ -187,7 +187,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       const transactions = await db
         .select()
         .from(duesTransactions)
-        .where(eq(duesTransactions.tenantId, TEST_TENANT_ID));
+        .where(eq(duesTransactions.organizationId, TEST_TENANT_ID));
       
       expect(transactions).toHaveLength(1);
     });
@@ -211,7 +211,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
       
       await db.insert(duesTransactions).values({
-        tenantId: TEST_TENANT_ID,
+        organizationId: TEST_TENANT_ID,
         memberId: testMemberId1,
         transactionType: 'dues',
         amount: '50.00',
@@ -249,7 +249,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       const transaction = await db
         .select()
         .from(duesTransactions)
-        .where(eq(duesTransactions.tenantId, TEST_TENANT_ID))
+        .where(eq(duesTransactions.organizationId, TEST_TENANT_ID))
         .limit(1);
       
       expect(transaction[0].status).toBe('overdue');
@@ -261,7 +261,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       thirtyFiveDaysAgo.setDate(thirtyFiveDaysAgo.getDate() - 35);
       
       await db.insert(duesTransactions).values({
-        tenantId: TEST_TENANT_ID,
+        organizationId: TEST_TENANT_ID,
         memberId: testMemberId2,
         transactionType: 'dues',
         amount: '50.00',
@@ -295,7 +295,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       
       await db.insert(duesTransactions).values([
         {
-          tenantId: TEST_TENANT_ID,
+          organizationId: TEST_TENANT_ID,
           memberId: testMemberId1,
           transactionType: 'dues',
           amount: '50.00',
@@ -307,7 +307,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
           periodEnd: '2025-01-31',
         },
         {
-          tenantId: TEST_TENANT_ID,
+          organizationId: TEST_TENANT_ID,
           memberId: testMemberId1,
           transactionType: 'dues',
           amount: '50.00',
@@ -343,7 +343,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       
       await db.insert(duesTransactions).values({
-        tenantId: TEST_TENANT_ID,
+        organizationId: TEST_TENANT_ID,
         memberId: testMemberId1,
         transactionType: 'dues',
         amount: '50.00',
@@ -370,7 +370,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       const transaction = await db
         .select()
         .from(duesTransactions)
-        .where(eq(duesTransactions.tenantId, TEST_TENANT_ID))
+        .where(eq(duesTransactions.organizationId, TEST_TENANT_ID))
         .limit(1);
       
       if (transaction.length > 0) {
@@ -385,7 +385,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       
       await db.insert(duesTransactions).values([
         {
-          tenantId: TEST_TENANT_ID,
+          organizationId: TEST_TENANT_ID,
           memberId: testMemberId1,
           transactionType: 'dues',
           amount: '50.00',
@@ -397,7 +397,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
           periodEnd: '2025-01-31',
         },
         {
-          tenantId: TEST_TENANT_ID,
+          organizationId: TEST_TENANT_ID,
           memberId: testMemberId1,
           transactionType: 'dues',
           amount: '50.00',
@@ -422,7 +422,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       const transactions = await db
         .select()
         .from(duesTransactions)
-        .where(eq(duesTransactions.tenantId, TEST_TENANT_ID))
+        .where(eq(duesTransactions.organizationId, TEST_TENANT_ID))
         .orderBy(duesTransactions.dueDate);
       
       // First transaction should be fully paid
@@ -435,7 +435,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
       
       await db.insert(duesTransactions).values({
-        tenantId: TEST_TENANT_ID,
+        organizationId: TEST_TENANT_ID,
         memberId: testMemberId1,
         transactionType: 'dues',
         amount: '50.00',
@@ -714,13 +714,13 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
       yearFromNow.setFullYear(today.getFullYear() + 1);
       
       await db.insert(duesAssignments).values({
-        tenantId: TEST_TENANT_ID,
+        organizationId: TEST_TENANT_ID,
         memberId: testMemberId1,
         ruleId: testDuesRuleId,
         effectiveDate: today.toISOString().split('T')[0],
         endDate: yearFromNow.toISOString().split('T')[0],
       } as any);
-      
+
       const duesResult = await processMonthlyDuesCalculation({
         tenantId: TEST_TENANT_ID,
       });
@@ -732,7 +732,7 @@ await db.delete(stipendDisbursements).where(eq(stipendDisbursements.tenantId, TE
         .set({ 
           dueDate: tenDaysAgo.toISOString().split('T')[0],
         } as any)
-        .where(eq(duesTransactions.tenantId, TEST_TENANT_ID));
+        .where(eq(duesTransactions.organizationId, TEST_TENANT_ID));
       
       // 3. Run arrears management
       const arrearsResult = await processArrearsManagement({

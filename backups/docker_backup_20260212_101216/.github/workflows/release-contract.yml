@@ -1,0 +1,135 @@
+name: Release Contract
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release-contract:
+    name: Verify Release Contract
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Generate migration manifest
+        run: pnpm tsx scripts/generate-migration-manifest.ts --output=migration-manifest.json
+      
+      - name: Run critical security tests
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔒 RELEASE CONTRACT VERIFICATION"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Running critical security test suite..."
+          echo ""
+          
+          # FSM Transition Validation
+          echo "▶ FSM Transition Validation"
+          pnpm vitest run __tests__/services/claim-workflow-fsm.test.ts --reporter=verbose
+          
+          # Claims API Integration
+          echo "▶ Claims API FSM Integration"
+          pnpm vitest run __tests__/api/claims-fsm-integration.test.ts --reporter=verbose
+          
+          # Database Immutability
+          echo "▶ Database Immutability Constraints"
+          pnpm vitest run __tests__/db/immutability-constraints.test.ts --reporter=verbose
+          
+          # Enforcement Layer
+          echo "▶ Security Enforcement Layer"
+          pnpm vitest run __tests__/enforcement-layer.test.ts --reporter=verbose
+          
+          # Indigenous Data Service
+          echo "▶ Indigenous Data Service (Sovereignty)"
+          pnpm vitest run __tests__/lib/indigenous-data-service.test.ts --reporter=verbose
+          
+          echo ""
+          echo "✅ All critical security tests passed"
+          echo ""
+      
+      - name: Run RLS scanner (scoped)
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 RLS COVERAGE ANALYSIS"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          pnpm tsx scripts/scan-rls-usage-v2.ts --scope=tenant --max-violations=0
+          echo ""
+          echo "✅ RLS coverage verified for critical tenant tables"
+          echo ""
+      
+      - name: Type checking
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📦 TYPE CHECKING"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          pnpm typecheck
+          echo ""
+          echo "✅ Type checking passed"
+          echo ""
+      
+      - name: Linting
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔧 LINTING"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          pnpm lint
+          echo ""
+          echo "✅ Linting passed"
+          echo ""
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-contract-artifacts
+          path: |
+            migration-manifest.json
+            rls-report.json
+          retention-days: 90
+      
+      - name: Generate release report
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" | tee release-contract-summary.txt
+          echo "🎯 RELEASE CONTRACT SUMMARY" | tee -a release-contract-summary.txt
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" | tee -a release-contract-summary.txt
+          echo "" | tee -a release-contract-summary.txt
+          echo "Commit: ${{ github.sha }}" | tee -a release-contract-summary.txt
+          echo "Branch: ${{ github.ref_name }}" | tee -a release-contract-summary.txt
+          echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" | tee -a release-contract-summary.txt
+          echo "" | tee -a release-contract-summary.txt
+          echo "✅ Critical Security Tests: PASSED" | tee -a release-contract-summary.txt
+          echo "✅ RLS Coverage (Scoped): PASSED" | tee -a release-contract-summary.txt
+          echo "✅ Type Checking: PASSED" | tee -a release-contract-summary.txt
+          echo "✅ Linting: PASSED" | tee -a release-contract-summary.txt
+          echo "" | tee -a release-contract-summary.txt
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" | tee -a release-contract-summary.txt
+          echo "🚀 RELEASE CONTRACT VERIFIED" | tee -a release-contract-summary.txt
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" | tee -a release-contract-summary.txt
+          cat release-contract-summary.txt
+      
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-contract-summary
+          path: release-contract-summary.txt
+          retention-days: 90

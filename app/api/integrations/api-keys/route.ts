@@ -17,7 +17,9 @@ import {
   ErrorCode,
 } from '@/lib/api/standardized-responses';
 import { logger } from '@/lib/logger';
-import { db } from '@/database';
+import { db } from '@/db';
+import { integrationApiKeys } from '@/db/schema';
+import { eq, and, gt, or, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -67,9 +69,36 @@ export const GET = async (request: NextRequest) => {
       const organizationId = searchParams.get('organization_id');
       const includeExpired = searchParams.get('include_expired') === 'true';
 
-      // TODO: Implement actual API key storage and retrieval
-      // For now, return empty array as placeholder
-      const apiKeys = [];
+      // Query API keys from database
+      const whereConditions = [];
+      if (organizationId) {
+        whereConditions.push(eq(integrationApiKeys.organizationId, organizationId));
+      }
+      if (!includeExpired) {
+        whereConditions.push(
+          or(
+            isNull(integrationApiKeys.expiresAt),
+            gt(integrationApiKeys.expiresAt, new Date())
+          )
+        );
+      }
+
+      const apiKeys = await db.query.integrationApiKeys.findMany({
+        where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
+        columns: {
+          id: true,
+          name: true,
+          description: true,
+          keyPrefix: true,
+          scopes: true,
+          isActive: true,
+          expiresAt: true,
+          lastUsedAt: true,
+          usageCount: true,
+          createdAt: true,
+          createdBy: true,
+        },
+      });
 
       // Audit log
       await logApiAuditEvent({
@@ -143,20 +172,22 @@ export const POST = async (request: NextRequest) => {
       // Generate API key
       const apiKey = `sk_${crypto.randomBytes(32).toString('hex')}`;
       const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+      const keyPrefix = apiKey.substring(0, 10);
 
-      // TODO: Store API key in database
-      const storedKey = {
-        id: crypto.randomUUID(),
-        name: keyData.name,
-        description: keyData.description,
-        keyHash,
-        scopes: keyData.scopes,
-        organizationId: keyData.organization_id,
-        createdBy: userId,
-        createdAt: new Date().toISOString(),
-        expiresAt: keyData.expires_at,
-        lastUsedAt: null,
-      };
+      // Store API key in database
+      const [storedKey] = await db
+        .insert(integrationApiKeys)
+        .values({
+          name: keyData.name,
+          description: keyData.description,
+          keyHash,
+          keyPrefix,
+          scopes: keyData.scopes,
+          organizationId: keyData.organization_id,
+          expiresAt: keyData.expires_at ? new Date(keyData.expires_at) : null,
+          createdBy: userId,
+        })
+        .returning();
 
       // Audit log
       await logApiAuditEvent({

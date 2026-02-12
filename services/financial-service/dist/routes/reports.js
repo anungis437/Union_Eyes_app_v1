@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const zod_1 = require("zod");
 const financial_reports_1 = require("../services/financial-reports");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
 // Role-based authorization (assumes authenticate middleware already ran)
 const authorize = (roles) => {
@@ -27,7 +30,8 @@ const dateRangeSchema = zod_1.z.object({
  */
 router.get('/dashboard', authorize(['admin', 'financial_admin', 'financial_viewer']), async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         // Default to last 30 days if not specified
         const endDate = req.query.endDate
             ? new Date(req.query.endDate)
@@ -35,7 +39,7 @@ router.get('/dashboard', authorize(['admin', 'financial_admin', 'financial_viewe
         const startDate = req.query.startDate
             ? new Date(req.query.startDate)
             : new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const dashboard = await (0, financial_reports_1.getFinancialDashboard)(tenantId, {
+        const dashboard = await (0, financial_reports_1.getFinancialDashboard)(organizationId, {
             startDate,
             endDate,
         });
@@ -45,7 +49,8 @@ router.get('/dashboard', authorize(['admin', 'financial_admin', 'financial_viewe
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Dashboard error', { error });
+        res.status(500).json({
             success: false,
             error: 'Failed to generate dashboard',
         });
@@ -57,7 +62,8 @@ res.status(500).json({
  */
 router.get('/collection-metrics', authorize(['admin', 'financial_admin', 'financial_viewer']), async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const validation = dateRangeSchema.safeParse(req.query);
         if (!validation.success) {
             return res.status(400).json({
@@ -67,7 +73,7 @@ router.get('/collection-metrics', authorize(['admin', 'financial_admin', 'financ
             });
         }
         const { startDate, endDate } = validation.data;
-        const metrics = await (0, financial_reports_1.getCollectionMetrics)(tenantId, {
+        const metrics = await (0, financial_reports_1.getCollectionMetrics)(organizationId, {
             startDate,
             endDate,
         });
@@ -77,7 +83,8 @@ router.get('/collection-metrics', authorize(['admin', 'financial_admin', 'financ
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Collection metrics error', { error });
+        res.status(500).json({
             success: false,
             error: 'Failed to calculate collection metrics',
         });
@@ -89,15 +96,17 @@ res.status(500).json({
  */
 router.get('/arrears-statistics', authorize(['admin', 'financial_admin', 'financial_viewer']), async (req, res) => {
     try {
-        const { tenantId } = req.user;
-        const statistics = await (0, financial_reports_1.getArrearsStatistics)(tenantId);
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
+        const statistics = await (0, financial_reports_1.getArrearsStatistics)(organizationId);
         res.json({
             success: true,
             data: statistics,
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Arrears statistics error', { error });
+        res.status(500).json({
             success: false,
             error: 'Failed to calculate arrears statistics',
         });
@@ -109,7 +118,8 @@ res.status(500).json({
  */
 router.get('/revenue-analysis', authorize(['admin', 'financial_admin', 'financial_viewer']), async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const validation = dateRangeSchema.safeParse(req.query);
         if (!validation.success) {
             return res.status(400).json({
@@ -119,7 +129,7 @@ router.get('/revenue-analysis', authorize(['admin', 'financial_admin', 'financia
             });
         }
         const { startDate, endDate } = validation.data;
-        const analysis = await (0, financial_reports_1.getRevenueAnalysis)(tenantId, {
+        const analysis = await (0, financial_reports_1.getRevenueAnalysis)(organizationId, {
             startDate,
             endDate,
         });
@@ -129,7 +139,8 @@ router.get('/revenue-analysis', authorize(['admin', 'financial_admin', 'financia
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Revenue analysis error', { error });
+        res.status(500).json({
             success: false,
             error: 'Failed to analyze revenue',
         });
@@ -141,7 +152,8 @@ res.status(500).json({
  */
 router.get('/member-payment-patterns', authorize(['admin', 'financial_admin', 'financial_viewer']), async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const validation = dateRangeSchema.safeParse(req.query);
         if (!validation.success) {
             return res.status(400).json({
@@ -154,7 +166,7 @@ router.get('/member-payment-patterns', authorize(['admin', 'financial_admin', 'f
         const limit = req.query.limit
             ? Math.min(parseInt(req.query.limit), 1000)
             : 100;
-        const patterns = await (0, financial_reports_1.getMemberPaymentPatterns)(tenantId, { startDate, endDate }, limit);
+        const patterns = await (0, financial_reports_1.getMemberPaymentPatterns)(organizationId, { startDate, endDate }, limit);
         res.json({
             success: true,
             data: {
@@ -165,7 +177,8 @@ router.get('/member-payment-patterns', authorize(['admin', 'financial_admin', 'f
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Member payment patterns error', { error });
+        res.status(500).json({
             success: false,
             error: 'Failed to analyze member payment patterns',
         });
@@ -177,7 +190,8 @@ res.status(500).json({
  */
 router.get('/export', authorize(['admin', 'financial_admin']), async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const format = req.query.format || 'json';
         const reportType = req.query.type;
         if (!reportType) {
@@ -198,19 +212,19 @@ router.get('/export', authorize(['admin', 'financial_admin']), async (req, res) 
         let data;
         switch (reportType) {
             case 'dashboard':
-                data = await (0, financial_reports_1.getFinancialDashboard)(tenantId, { startDate, endDate });
+                data = await (0, financial_reports_1.getFinancialDashboard)(organizationId, { startDate, endDate });
                 break;
             case 'collection':
-                data = await (0, financial_reports_1.getCollectionMetrics)(tenantId, { startDate, endDate });
+                data = await (0, financial_reports_1.getCollectionMetrics)(organizationId, { startDate, endDate });
                 break;
             case 'arrears':
-                data = await (0, financial_reports_1.getArrearsStatistics)(tenantId);
+                data = await (0, financial_reports_1.getArrearsStatistics)(organizationId);
                 break;
             case 'revenue':
-                data = await (0, financial_reports_1.getRevenueAnalysis)(tenantId, { startDate, endDate });
+                data = await (0, financial_reports_1.getRevenueAnalysis)(organizationId, { startDate, endDate });
                 break;
             case 'patterns':
-                data = await (0, financial_reports_1.getMemberPaymentPatterns)(tenantId, { startDate, endDate }, 1000);
+                data = await (0, financial_reports_1.getMemberPaymentPatterns)(organizationId, { startDate, endDate }, 1000);
                 break;
             default:
                 return res.status(400).json({
@@ -239,7 +253,8 @@ router.get('/export', authorize(['admin', 'financial_admin']), async (req, res) 
         }
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Export error', { error });
+        res.status(500).json({
             success: false,
             error: 'Failed to export report',
         });

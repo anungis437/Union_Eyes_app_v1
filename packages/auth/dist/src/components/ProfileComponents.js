@@ -49,7 +49,7 @@ export const AvatarUploader = ({ currentAvatarUrl, size = 'md', editable = true,
                 setPreviewUrl(null);
             }
             catch (error) {
-alert('Failed to upload avatar');
+                alert('Failed to upload avatar');
             }
             finally {
                 setUploading(false);
@@ -66,7 +66,7 @@ alert('Failed to upload avatar');
                 setPreviewUrl(null);
             }
             catch (error) {
-alert('Failed to delete avatar');
+                alert('Failed to delete avatar');
             }
             finally {
                 setUploading(false);
@@ -113,7 +113,7 @@ export const ProfileEditor = ({ onSave, onCancel, className = '' }) => {
             onSave?.();
         }
         catch (error) {
-alert('Failed to save profile');
+            alert('Failed to save profile');
         }
         finally {
             setSaving(false);

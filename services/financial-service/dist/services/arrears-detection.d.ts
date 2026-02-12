@@ -3,7 +3,7 @@
  * Automated system to detect overdue payments and create arrears cases
  */
 export interface ArrearsDetectionConfig {
-    tenantId: string;
+    organizationId: string;
     gracePeriodDays?: number;
     lateFeePercentage?: number;
     lateFeeFixedAmount?: number;
@@ -34,7 +34,7 @@ export declare function calculateLateFees(transactionId: string, config: Arrears
 /**
  * Create arrears cases for detected overdue payments
  */
-export declare function createArrearsCases(detectedArrears: DetectedArrears[], tenantId: string, createdBy: string): Promise<string[]>;
+export declare function createArrearsCases(detectedArrears: DetectedArrears[], organizationId: string, createdBy: string): Promise<string[]>;
 /**
  * Apply late fees to overdue transactions
  */

@@ -58,6 +58,7 @@ export declare class StripeWebhookHandler {
     private stripe;
     private webhookSecret;
     private billingService;
+    private logger;
     constructor(config: WebhookHandlerConfig);
     /**
      * Handle incoming webhook event

@@ -424,7 +424,9 @@ export class StripeWebhookHandler {
       }
 
       // Log payment failure in audit log
-      const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id;
+      const customerId = invoice.customer 
+        ? (typeof invoice.customer === 'string' ? invoice.customer : invoice.customer.id)
+        : undefined;
       const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
       
       this.logger.info('Payment failed - Audit log entry', {

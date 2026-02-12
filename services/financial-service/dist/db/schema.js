@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.messageType = exports.messageStatus = exports.membership = exports.memberStatus = exports.memberRole = exports.labourSector = exports.jurisdictionRuleType = exports.indigenousIdentityType = exports.hwPlanType = exports.hwClaimStatus = exports.grievanceWorkflowStatus = exports.grievanceStepType = exports.grievanceStageType = exports.governmentLevel = exports.genderIdentityType = exports.extensionStatus = exports.eventType = exports.eventStatus = exports.essentialServiceDesignation = exports.equityGroupType = exports.entityType = exports.documentVersionStatus = exports.digestFrequency = exports.deliveryStatus = exports.deliveryMethod = exports.decisionType = exports.deadlineStatus = exports.deadlinePriority = exports.courseDifficulty = exports.courseDeliveryMethod = exports.courseCategory = exports.contactSupportLevel = exports.communicationChannel = exports.clauseType = exports.claimType = exports.claimStatus = exports.claimPriority = exports.certificationStatus = exports.certificationMethod = exports.certificationApplicationStatus = exports.cbaStatus = exports.cbaLanguage = exports.cbaJurisdiction = exports.calendarPermission = exports.caJurisdiction = exports.billStatus = exports.attendeeStatus = exports.assignmentStatus = exports.assignmentRole = exports.alertSeverity = void 0;
 exports.voterEligibility = exports.unionPosition = exports.tribunalType = exports.transitionTriggerType = exports.templateCategory = exports.taxSlipType = exports.syncStatus = exports.strikeVoteRequirement = exports.signatureType = exports.signatureStatus = exports.settlementStatus = exports.sessionStatus = exports.scheduleFrequency = exports.roomStatus = exports.role = exports.reportType = exports.reportFormat = exports.reportCategory = exports.registrationStatus = exports.pushPriority = exports.pushPlatform = exports.pushNotificationStatus = exports.pushDeliveryStatus = exports.precedentValue = exports.politicalParty = exports.politicalCampaignType = exports.politicalCampaignStatus = exports.politicalActivityType = exports.pensionPlanType = exports.pensionPlanStatus = exports.pensionClaimType = exports.paymentProvider = exports.payEquityStatus = exports.outcome = exports.organizingCampaignType = exports.organizingCampaignStatus = exports.organizingActivityType = exports.organizationType = exports.organizationStatus = exports.organizationRelationshipType = exports.notificationType = exports.notificationStatus = exports.notificationScheduleStatus = exports.notificationChannel = exports.newsletterSubscriberStatus = exports.newsletterRecipientStatus = exports.newsletterListType = exports.newsletterEngagementEvent = exports.newsletterCampaignStatus = exports.newsletterBounceType = void 0;
 exports.arbitrationPrecedents = exports.clauseComparisonsHistory = exports.arrears = exports.jurisdictionRulesSummary = exports.jurisdictionTemplates = exports.picketTracking = exports.donations = exports.userNotificationPreferences = exports.notificationLog = exports.notificationTemplates = exports.notificationQueue = exports.arrearsCases = exports.hardshipApplications = exports.publicDonations = exports.stipendDisbursements = exports.picketAttendance = exports.fundEligibility = exports.strikeFunds = exports.duesRules = exports.employerRemittances = exports.memberDuesAssignments = exports.claimUpdates = exports.caseSummaries = exports.organizationMembers = exports.aiFeedbackSummary = exports.aiUsageByTenant = exports.aiFeedback = exports.aiQueryLogs = exports.aiQueries = exports.aiChunks = exports.aiDocuments = exports.cbaContacts = exports.claimPrecedentAnalysis = exports.cbaFootnotes = exports.bargainingNotes = exports.arbitrationDecisions = exports.wageProgressions = exports.signatureWorkflows = exports.digitalSignatures = exports.pendingProfiles = exports.profiles = exports.insightRecommendations = exports.arbitratorProfiles = exports.clauseComparisons = exports.benefitComparisons = exports.cbaVersionHistory = exports.cbaClauses = exports.collectiveAgreements = exports.votingNotifications = exports.votingOptions = void 0;
-exports.claimDeadlines = exports.deadlineRules = exports.reportShares = exports.scheduledReports = exports.reportExecutions = exports.reportTemplates = exports.reports = exports.piiAccessLog = exports.membersWithPii = exports.members = exports.encryptionKeys = exports.messageNotifications = exports.complianceValidations = exports.statutoryHolidays = exports.jurisdictionRules = exports.messageParticipants = exports.messageReadReceipts = exports.votingKeyAccessLog = exports.organizationHierarchyAudit = exports.messages = exports.votingSessionKeys = exports.vAnnualRemittanceSummary = exports.vPendingRemittances = exports.voteMerkleTree = exports.blockchainAuditAnchors = exports.votingSessionAuditors = exports.signatureAuditLog = exports.trustedCertificateAuthorities = exports.votingAuditors = exports.messageThreads = exports.transactionClcMappings = exports.clcChartOfAccounts = exports.perCapitaRemittances = exports.comparativeAnalyses = exports.organizations = exports.claims = exports.votes = exports.votingSessions = exports.userUuidMapping = exports.clauseLibraryTags = exports.attestationTemplates = exports.organizationTree = exports.tenantManagementView = exports.organizationRelationships = exports.crossOrgAccessLog = exports.organizationSharingGrants = exports.organizationSharingSettings = exports.precedentCitations = exports.precedentTags = exports.sharedClauseLibrary = void 0;
-exports.memberDemographics = exports.vCopeMemberSummary = exports.vTaxSlipSummary = exports.copeContributions = exports.craXmlBatches = exports.taxSlips = exports.trendAnalyses = exports.taxYearConfigurations = exports.vMemberBenefitEligibility = exports.vHwClaimsAging = exports.vPensionFundingSummary = exports.trustComplianceReports = exports.hwBenefitClaims = exports.hwBenefitEnrollments = exports.hwBenefitPlans = exports.pensionActuarialValuations = exports.pensionBenefitClaims = exports.pensionTrusteeMeetings = exports.analyticsMetrics = exports.pensionTrustees = exports.modelMetadata = exports.pensionTrusteeBoards = exports.pensionContributions = exports.mlPredictions = exports.pensionHoursBanks = exports.pensionPlans = exports.courseRegistrations = exports.courseSessions = exports.inAppNotifications = exports.trainingCourses = exports.vLegislativePriorities = exports.vElectedOfficialEngagement = exports.vPoliticalCampaignDashboard = exports.politicalActivities = exports.legislationTracking = exports.electedOfficials = exports.memberPoliticalParticipation = exports.memberDocuments = exports.notificationHistory = exports.eventReminders = exports.externalCalendarConnections = exports.calendarSharing = exports.roomBookings = exports.meetingRooms = exports.eventAttendees = exports.calendarEvents = exports.calendars = exports.holidays = exports.deadlineAlerts = exports.deadlineExtensions = void 0;
-exports.duesAssignments = exports.kpiConfigurations = exports.vTrainingProgramProgress = exports.vCertificationExpiryTracking = exports.vCourseSessionDashboard = exports.vMemberTrainingTranscript = exports.programEnrollments = exports.duesTransactions = exports.trainingPrograms = exports.memberCertifications = exports.politicalCampaigns = exports.vWorkplaceContactMap = exports.organizingVolunteers = exports.certificationApplications = exports.vOrganizingCampaignDashboard = exports.organizingActivities = exports.tenants = exports.organizingContacts = exports.organizingCampaigns = exports.vPayEquityPipeline = exports.vEquityStatisticsAnonymized = exports.statcanSubmissions = exports.equitySnapshots = exports.payEquityComplaints = exports.vCriticalDeadlines = void 0;
+exports.reportShares = exports.scheduledReports = exports.reportExecutions = exports.reportTemplates = exports.reports = exports.piiAccessLog = exports.membersWithPii = exports.members = exports.encryptionKeys = exports.messageNotifications = exports.complianceValidations = exports.statutoryHolidays = exports.jurisdictionRules = exports.messageParticipants = exports.messageReadReceipts = exports.votingKeyAccessLog = exports.organizationHierarchyAudit = exports.messages = exports.votingSessionKeys = exports.vAnnualRemittanceSummary = exports.vPendingRemittances = exports.voteMerkleTree = exports.blockchainAuditAnchors = exports.votingSessionAuditors = exports.signatureAuditLog = exports.trustedCertificateAuthorities = exports.votingAuditors = exports.messageThreads = exports.transactionClcMappings = exports.clcChartOfAccounts = exports.perCapitaRemittances = exports.comparativeAnalyses = exports.organizations = exports.claims = exports.votes = exports.votingSessions = exports.userUuidMapping = exports.clauseLibraryTags = exports.attestationTemplates = exports.organizationTree = exports.tenantManagementView = exports.congressMemberships = exports.congressMembershipStatus = exports.organizationRelationships = exports.crossOrgAccessLog = exports.organizationSharingGrants = exports.organizationSharingSettings = exports.precedentCitations = exports.precedentTags = exports.sharedClauseLibrary = void 0;
+exports.vTaxSlipSummary = exports.copeContributions = exports.craXmlBatches = exports.taxSlips = exports.trendAnalyses = exports.taxYearConfigurations = exports.vMemberBenefitEligibility = exports.vHwClaimsAging = exports.vPensionFundingSummary = exports.trustComplianceReports = exports.hwBenefitClaims = exports.hwBenefitEnrollments = exports.hwBenefitPlans = exports.pensionActuarialValuations = exports.pensionBenefitClaims = exports.pensionTrusteeMeetings = exports.analyticsMetrics = exports.pensionTrustees = exports.modelMetadata = exports.pensionTrusteeBoards = exports.pensionContributions = exports.mlPredictions = exports.pensionHoursBanks = exports.pensionPlans = exports.courseRegistrations = exports.courseSessions = exports.inAppNotifications = exports.trainingCourses = exports.vLegislativePriorities = exports.vElectedOfficialEngagement = exports.vPoliticalCampaignDashboard = exports.politicalActivities = exports.legislationTracking = exports.electedOfficials = exports.memberPoliticalParticipation = exports.memberDocuments = exports.notificationHistory = exports.eventReminders = exports.externalCalendarConnections = exports.calendarSharing = exports.roomBookings = exports.meetingRooms = exports.eventAttendees = exports.calendarEvents = exports.calendars = exports.holidays = exports.deadlineAlerts = exports.deadlineExtensions = exports.claimDeadlines = exports.deadlineRules = void 0;
+exports.vendors = exports.accountsPayable = exports.vendorInvoices = exports.expenseApprovals = exports.expenseRequests = exports.budgetLineItems = exports.budgets = exports.paymentTerms = exports.vendorStatus = exports.approvalStatus = exports.expenseStatus = exports.budgetPeriodType = exports.budgetStatus = exports.duesAssignments = exports.kpiConfigurations = exports.vTrainingProgramProgress = exports.vCertificationExpiryTracking = exports.vCourseSessionDashboard = exports.vMemberTrainingTranscript = exports.programEnrollments = exports.duesTransactions = exports.trainingPrograms = exports.memberCertifications = exports.politicalCampaigns = exports.vWorkplaceContactMap = exports.organizingVolunteers = exports.certificationApplications = exports.vOrganizingCampaignDashboard = exports.organizingActivities = exports.tenants = exports.organizingContacts = exports.organizingCampaigns = exports.vPayEquityPipeline = exports.vEquityStatisticsAnonymized = exports.statcanSubmissions = exports.equitySnapshots = exports.payEquityComplaints = exports.vCriticalDeadlines = exports.memberDemographics = exports.vCopeMemberSummary = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 // Define custom type for PostgreSQL tsvector
@@ -932,7 +932,7 @@ exports.claimUpdates = (0, pg_core_1.pgTable)("claim_updates", {
 });
 exports.memberDuesAssignments = (0, pg_core_1.pgTable)("member_dues_assignments", {
     id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
-    tenantId: (0, pg_core_1.uuid)("tenant_id").notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
     memberId: (0, pg_core_1.uuid)("member_id").notNull(),
     ruleId: (0, pg_core_1.uuid)("rule_id").notNull(),
     effectiveDate: (0, pg_core_1.date)("effective_date").default((0, drizzle_orm_1.sql) `CURRENT_DATE`).notNull(),
@@ -944,20 +944,20 @@ exports.memberDuesAssignments = (0, pg_core_1.pgTable)("member_dues_assignments"
     updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => {
     return {
-        idxAssignmentsActive: (0, pg_core_1.index)("idx_assignments_active").using("btree", table.tenantId.asc().nullsLast(), table.isActive.asc().nullsLast()),
+        idxAssignmentsActive: (0, pg_core_1.index)("idx_assignments_active").using("btree", table.organizationId.asc().nullsLast(), table.isActive.asc().nullsLast()),
         idxAssignmentsMember: (0, pg_core_1.index)("idx_assignments_member").using("btree", table.memberId.asc().nullsLast()),
-        idxAssignmentsTenant: (0, pg_core_1.index)("idx_assignments_tenant").using("btree", table.tenantId.asc().nullsLast()),
+        idxAssignmentsOrganization: (0, pg_core_1.index)("idx_assignments_organization").using("btree", table.organizationId.asc().nullsLast()),
         memberDuesAssignmentsRuleIdFkey: (0, pg_core_1.foreignKey)({
             columns: [table.ruleId],
             foreignColumns: [exports.duesRules.id],
             name: "member_dues_assignments_rule_id_fkey"
         }).onDelete("cascade"),
-        memberDuesAssignmentsTenantIdFkey: (0, pg_core_1.foreignKey)({
-            columns: [table.tenantId],
-            foreignColumns: [exports.tenants.tenantId],
-            name: "member_dues_assignments_tenant_id_fkey"
+        memberDuesAssignmentsOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "member_dues_assignments_organization_id_fkey"
         }).onDelete("cascade"),
-        uniqueActiveAssignment: (0, pg_core_1.unique)("unique_active_assignment").on(table.tenantId, table.memberId, table.ruleId, table.effectiveDate),
+        uniqueActiveAssignment: (0, pg_core_1.unique)("unique_active_assignment").on(table.organizationId, table.memberId, table.ruleId, table.effectiveDate),
     };
 });
 exports.duesAssignments = exports.memberDuesAssignments;
@@ -997,7 +997,7 @@ exports.employerRemittances = (0, pg_core_1.pgTable)("employer_remittances", {
 });
 exports.duesRules = (0, pg_core_1.pgTable)("dues_rules", {
     id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
-    tenantId: (0, pg_core_1.uuid)("tenant_id").notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
     ruleName: (0, pg_core_1.varchar)("rule_name", { length: 255 }).notNull(),
     ruleCode: (0, pg_core_1.varchar)("rule_code", { length: 50 }).notNull(),
     description: (0, pg_core_1.text)("description"),
@@ -1018,14 +1018,14 @@ exports.duesRules = (0, pg_core_1.pgTable)("dues_rules", {
     updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => {
     return {
-        idxDuesRulesActive: (0, pg_core_1.index)("idx_dues_rules_active").using("btree", table.tenantId.asc().nullsLast(), table.isActive.asc().nullsLast()),
-        idxDuesRulesTenant: (0, pg_core_1.index)("idx_dues_rules_tenant").using("btree", table.tenantId.asc().nullsLast()),
-        duesRulesTenantIdFkey: (0, pg_core_1.foreignKey)({
-            columns: [table.tenantId],
-            foreignColumns: [exports.tenants.tenantId],
-            name: "dues_rules_tenant_id_fkey"
+        idxDuesRulesActive: (0, pg_core_1.index)("idx_dues_rules_active").using("btree", table.organizationId.asc().nullsLast(), table.isActive.asc().nullsLast()),
+        idxDuesRulesOrganization: (0, pg_core_1.index)("idx_dues_rules_organization").using("btree", table.organizationId.asc().nullsLast()),
+        duesRulesOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "dues_rules_organization_id_fkey"
         }).onDelete("cascade"),
-        uniqueRuleCode: (0, pg_core_1.unique)("unique_rule_code").on(table.tenantId, table.ruleCode),
+        uniqueRuleCode: (0, pg_core_1.unique)("unique_rule_code").on(table.organizationId, table.ruleCode),
     };
 });
 exports.strikeFunds = (0, pg_core_1.pgTable)("strike_funds", {
@@ -1271,7 +1271,7 @@ exports.hardshipApplications = (0, pg_core_1.pgTable)("hardship_applications", {
 });
 exports.arrearsCases = (0, pg_core_1.pgTable)("arrears_cases", {
     id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
-    tenantId: (0, pg_core_1.uuid)("tenant_id").notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
     memberId: (0, pg_core_1.uuid)("member_id").notNull(),
     caseNumber: (0, pg_core_1.varchar)("case_number", { length: 100 }),
     totalOwed: (0, pg_core_1.numeric)("total_owed", { precision: 10, scale: 2 }).notNull(),
@@ -1307,13 +1307,13 @@ exports.arrearsCases = (0, pg_core_1.pgTable)("arrears_cases", {
     return {
         idxArrearsFollowup: (0, pg_core_1.index)("idx_arrears_followup").using("btree", table.nextFollowupDate.asc().nullsLast()).where((0, drizzle_orm_1.sql) `((status)::text = 'open'::text)`),
         idxArrearsMember: (0, pg_core_1.index)("idx_arrears_member").using("btree", table.memberId.asc().nullsLast()),
-        idxArrearsStatus: (0, pg_core_1.index)("idx_arrears_status").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
-        idxArrearsTenant: (0, pg_core_1.index)("idx_arrears_tenant").using("btree", table.tenantId.asc().nullsLast()),
+        idxArrearsStatus: (0, pg_core_1.index)("idx_arrears_status").using("btree", table.organizationId.asc().nullsLast(), table.status.asc().nullsLast()),
+        idxArrearsOrganization: (0, pg_core_1.index)("idx_arrears_organization").using("btree", table.organizationId.asc().nullsLast()),
         idxArrearsTransactionIds: (0, pg_core_1.index)("idx_arrears_transaction_ids").using("gin", table.transactionIds.asc().nullsLast()),
-        arrearsCasesTenantIdFkey: (0, pg_core_1.foreignKey)({
-            columns: [table.tenantId],
-            foreignColumns: [exports.tenants.tenantId],
-            name: "arrears_cases_tenant_id_fkey"
+        arrearsCasesOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "arrears_cases_organization_id_fkey"
         }).onDelete("cascade"),
         arrearsCasesCaseNumberKey: (0, pg_core_1.unique)("arrears_cases_case_number_key").on(table.caseNumber),
     };
@@ -1752,6 +1752,42 @@ exports.organizationRelationships = (0, pg_core_1.pgTable)("organization_relatio
             name: "organization_relationships_parent_org_id_fkey"
         }).onDelete("cascade"),
         organizationRelationshipsParentOrgIdChildOrgIdRelatKey: (0, pg_core_1.unique)("organization_relationships_parent_org_id_child_org_id_relat_key").on(table.parentOrgId, table.childOrgId, table.relationshipType, table.effectiveDate),
+    };
+});
+exports.congressMembershipStatus = (0, pg_core_1.pgEnum)("congress_membership_status", [
+    'active',
+    'pending',
+    'suspended',
+    'terminated'
+]);
+exports.congressMemberships = (0, pg_core_1.pgTable)("congress_memberships", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
+    congressId: (0, pg_core_1.uuid)("congress_id").notNull(),
+    joinedAt: (0, pg_core_1.timestamp)("joined_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    status: (0, exports.congressMembershipStatus)("status").default('active').notNull(),
+    metadata: (0, pg_core_1.jsonb)("metadata").default({}),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    createdBy: (0, pg_core_1.uuid)("created_by"),
+}, (table) => {
+    return {
+        idxCongressMembershipsOrgId: (0, pg_core_1.index)("idx_congress_memberships_org_id").using("btree", table.organizationId.asc().nullsLast()),
+        idxCongressMembershipsCongressId: (0, pg_core_1.index)("idx_congress_memberships_congress_id").using("btree", table.congressId.asc().nullsLast()),
+        idxCongressMembershipsStatus: (0, pg_core_1.index)("idx_congress_memberships_status").using("btree", table.status.asc().nullsLast()).where((0, drizzle_orm_1.sql) `(status = 'active')`),
+        idxCongressMembershipsJoinedAt: (0, pg_core_1.index)("idx_congress_memberships_joined_at").using("btree", table.joinedAt.desc().nullsLast()),
+        idxCongressMembershipsCongressStatus: (0, pg_core_1.index)("idx_congress_memberships_congress_status").using("btree", table.congressId.asc().nullsLast(), table.status.asc().nullsLast()).where((0, drizzle_orm_1.sql) `(status = 'active')`),
+        congressMembershipsOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "congress_memberships_organization_id_fkey"
+        }).onDelete("cascade"),
+        congressMembershipsCongressIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.congressId],
+            foreignColumns: [exports.organizations.id],
+            name: "congress_memberships_congress_id_fkey"
+        }).onDelete("cascade"),
+        congressMembershipsOrgCongressUnique: (0, pg_core_1.unique)("congress_memberships_org_congress_unique").on(table.organizationId, table.congressId),
     };
 });
 exports.tenantManagementView = (0, pg_core_1.pgTable)("tenant_management_view", {
@@ -5611,7 +5647,7 @@ exports.trainingPrograms = (0, pg_core_1.pgTable)("training_programs", {
 });
 exports.duesTransactions = (0, pg_core_1.pgTable)("dues_transactions", {
     id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
-    tenantId: (0, pg_core_1.uuid)("tenant_id").notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
     memberId: (0, pg_core_1.uuid)("member_id").notNull(),
     assignmentId: (0, pg_core_1.uuid)("assignment_id"),
     ruleId: (0, pg_core_1.uuid)("rule_id"),
@@ -5639,13 +5675,13 @@ exports.duesTransactions = (0, pg_core_1.pgTable)("dues_transactions", {
     receiptUrl: (0, pg_core_1.text)("receipt_url"),
 }, (table) => {
     return {
-        idxDuesTransAmounts: (0, pg_core_1.index)("idx_dues_trans_amounts").using("btree", table.tenantId.asc().nullsLast(), table.totalAmount.asc().nullsLast()),
+        idxDuesTransAmounts: (0, pg_core_1.index)("idx_dues_trans_amounts").using("btree", table.organizationId.asc().nullsLast(), table.totalAmount.asc().nullsLast()),
         idxDuesTransPaidDate: (0, pg_core_1.index)("idx_dues_trans_paid_date").using("btree", table.paidDate.asc().nullsLast()).where((0, drizzle_orm_1.sql) `(paid_date IS NOT NULL)`),
         idxTransactionsDueDate: (0, pg_core_1.index)("idx_transactions_due_date").using("btree", table.dueDate.asc().nullsLast()),
         idxTransactionsMember: (0, pg_core_1.index)("idx_transactions_member").using("btree", table.memberId.asc().nullsLast()),
         idxTransactionsPeriod: (0, pg_core_1.index)("idx_transactions_period").using("btree", table.periodStart.asc().nullsLast(), table.periodEnd.asc().nullsLast()),
-        idxTransactionsStatus: (0, pg_core_1.index)("idx_transactions_status").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
-        idxTransactionsTenant: (0, pg_core_1.index)("idx_transactions_tenant").using("btree", table.tenantId.asc().nullsLast()),
+        idxTransactionsStatus: (0, pg_core_1.index)("idx_transactions_status").using("btree", table.organizationId.asc().nullsLast(), table.status.asc().nullsLast()),
+        idxTransactionsOrganization: (0, pg_core_1.index)("idx_transactions_organization").using("btree", table.organizationId.asc().nullsLast()),
         duesTransactionsAssignmentIdFkey: (0, pg_core_1.foreignKey)({
             columns: [table.assignmentId],
             foreignColumns: [exports.memberDuesAssignments.id],
@@ -5656,10 +5692,10 @@ exports.duesTransactions = (0, pg_core_1.pgTable)("dues_transactions", {
             foreignColumns: [exports.duesRules.id],
             name: "dues_transactions_rule_id_fkey"
         }),
-        duesTransactionsTenantIdFkey: (0, pg_core_1.foreignKey)({
-            columns: [table.tenantId],
-            foreignColumns: [exports.tenants.tenantId],
-            name: "dues_transactions_tenant_id_fkey"
+        duesTransactionsOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "dues_transactions_organization_id_fkey"
         }).onDelete("cascade"),
     };
 });
@@ -5827,6 +5863,331 @@ exports.kpiConfigurations = (0, pg_core_1.pgTable)("kpi_configurations", {
             foreignColumns: [exports.organizations.id],
             name: "kpi_configurations_organization_id_fkey"
         }).onDelete("cascade"),
+    };
+});
+// =============================================================================
+// OPERATIONAL FINANCE SCHEMA - Budget, Expense, Vendor Management
+// =============================================================================
+exports.budgetStatus = (0, pg_core_1.pgEnum)("budget_status", ['draft', 'approved', 'active', 'closed', 'revised']);
+exports.budgetPeriodType = (0, pg_core_1.pgEnum)("budget_period_type", ['annual', 'quarterly', 'monthly', 'project']);
+exports.expenseStatus = (0, pg_core_1.pgEnum)("expense_status", ['draft', 'submitted', 'approved', 'rejected', 'paid', 'cancelled']);
+exports.approvalStatus = (0, pg_core_1.pgEnum)("approval_status", ['pending', 'approved', 'rejected', 'escalated']);
+exports.vendorStatus = (0, pg_core_1.pgEnum)("vendor_status", ['active', 'inactive', 'suspended', 'archived']);
+exports.paymentTerms = (0, pg_core_1.pgEnum)("payment_terms", ['net_15', 'net_30', 'net_45', 'net_60', 'net_90', 'due_on_receipt', 'cod']);
+/**
+ * Budgets - Organizational budget planning and management
+ */
+exports.budgets = (0, pg_core_1.pgTable)("budgets", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
+    budgetName: (0, pg_core_1.varchar)("budget_name", { length: 255 }).notNull(),
+    fiscalYear: (0, pg_core_1.integer)("fiscal_year").notNull(),
+    periodType: (0, exports.budgetPeriodType)("period_type").default('annual').notNull(),
+    startDate: (0, pg_core_1.date)("start_date").notNull(),
+    endDate: (0, pg_core_1.date)("end_date").notNull(),
+    totalBudget: (0, pg_core_1.numeric)("total_budget", { precision: 15, scale: 2 }).notNull(),
+    totalAllocated: (0, pg_core_1.numeric)("total_allocated", { precision: 15, scale: 2 }).default('0.00'),
+    totalSpent: (0, pg_core_1.numeric)("total_spent", { precision: 15, scale: 2 }).default('0.00'),
+    totalCommitted: (0, pg_core_1.numeric)("total_committed", { precision: 15, scale: 2 }).default('0.00'),
+    status: (0, exports.budgetStatus)("status").default('draft').notNull(),
+    approvedBy: (0, pg_core_1.uuid)("approved_by"),
+    approvedAt: (0, pg_core_1.timestamp)("approved_at", { withTimezone: true, mode: 'string' }),
+    notes: (0, pg_core_1.text)("notes"),
+    metadata: (0, pg_core_1.jsonb)("metadata").default({}),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    createdBy: (0, pg_core_1.uuid)("created_by").notNull(),
+}, (table) => {
+    return {
+        idxBudgetsOrg: (0, pg_core_1.index)("idx_budgets_org").using("btree", table.organizationId.asc().nullsLast()),
+        idxBudgetsFiscalYear: (0, pg_core_1.index)("idx_budgets_fiscal_year").using("btree", table.fiscalYear.asc().nullsLast()),
+        idxBudgetsStatus: (0, pg_core_1.index)("idx_budgets_status").using("btree", table.status.asc().nullsLast()),
+        idxBudgetsPeriod: (0, pg_core_1.index)("idx_budgets_period").using("btree", table.startDate.asc().nullsLast(), table.endDate.asc().nullsLast()),
+        budgetsOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "budgets_organization_id_fkey"
+        }).onDelete("cascade"),
+        uniqueBudgetNameYear: (0, pg_core_1.unique)("unique_budget_name_year").on(table.organizationId, table.budgetName, table.fiscalYear),
+    };
+});
+/**
+ * Budget Line Items - Detailed budget allocation by account/department
+ */
+exports.budgetLineItems = (0, pg_core_1.pgTable)("budget_line_items", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    budgetId: (0, pg_core_1.uuid)("budget_id").notNull(),
+    accountCode: (0, pg_core_1.varchar)("account_code", { length: 50 }).notNull(),
+    accountName: (0, pg_core_1.varchar)("account_name", { length: 255 }).notNull(),
+    departmentId: (0, pg_core_1.uuid)("department_id"),
+    categoryId: (0, pg_core_1.uuid)("category_id"),
+    allocatedAmount: (0, pg_core_1.numeric)("allocated_amount", { precision: 15, scale: 2 }).notNull(),
+    spentAmount: (0, pg_core_1.numeric)("spent_amount", { precision: 15, scale: 2 }).default('0.00'),
+    committedAmount: (0, pg_core_1.numeric)("committed_amount", { precision: 15, scale: 2 }).default('0.00'),
+    remainingAmount: (0, pg_core_1.numeric)("remaining_amount", { precision: 15, scale: 2 }).notNull(),
+    notes: (0, pg_core_1.text)("notes"),
+    isActive: (0, pg_core_1.boolean)("is_active").default(true),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => {
+    return {
+        idxBudgetLines: (0, pg_core_1.index)("idx_budget_lines").using("btree", table.budgetId.asc().nullsLast()),
+        idxBudgetLinesAccount: (0, pg_core_1.index)("idx_budget_lines_account").using("btree", table.accountCode.asc().nullsLast()),
+        idxBudgetLinesDept: (0, pg_core_1.index)("idx_budget_lines_dept").using("btree", table.departmentId.asc().nullsLast()),
+        budgetLineItemsBudgetIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.budgetId],
+            foreignColumns: [exports.budgets.id],
+            name: "budget_line_items_budget_id_fkey"
+        }).onDelete("cascade"),
+    };
+});
+/**
+ * Expense Requests - Employee expense submission and tracking
+ */
+exports.expenseRequests = (0, pg_core_1.pgTable)("expense_requests", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
+    requestNumber: (0, pg_core_1.varchar)("request_number", { length: 50 }).notNull(),
+    requesterId: (0, pg_core_1.uuid)("requester_id").notNull(),
+    budgetId: (0, pg_core_1.uuid)("budget_id"),
+    budgetLineItemId: (0, pg_core_1.uuid)("budget_line_item_id"),
+    expenseDate: (0, pg_core_1.date)("expense_date").notNull(),
+    accountCode: (0, pg_core_1.varchar)("account_code", { length: 50 }).notNull(),
+    vendorId: (0, pg_core_1.uuid)("vendor_id"),
+    vendorName: (0, pg_core_1.varchar)("vendor_name", { length: 255 }),
+    description: (0, pg_core_1.text)("description").notNull(),
+    amount: (0, pg_core_1.numeric)("amount", { precision: 12, scale: 2 }).notNull(),
+    currency: (0, pg_core_1.varchar)("currency", { length: 3 }).default('CAD'),
+    taxAmount: (0, pg_core_1.numeric)("tax_amount", { precision: 12, scale: 2 }).default('0.00'),
+    totalAmount: (0, pg_core_1.numeric)("total_amount", { precision: 12, scale: 2 }).notNull(),
+    category: (0, pg_core_1.varchar)("category", { length: 100 }),
+    paymentMethod: (0, pg_core_1.varchar)("payment_method", { length: 50 }), // personal_card, corporate_card, cash, check
+    reimbursementRequired: (0, pg_core_1.boolean)("reimbursement_required").default(true),
+    receiptUrl: (0, pg_core_1.text)("receipt_url"),
+    attachments: (0, pg_core_1.jsonb)("attachments").default([]),
+    status: (0, exports.expenseStatus)("status").default('draft').notNull(),
+    submittedAt: (0, pg_core_1.timestamp)("submitted_at", { withTimezone: true, mode: 'string' }),
+    approvedAt: (0, pg_core_1.timestamp)("approved_at", { withTimezone: true, mode: 'string' }),
+    paidAt: (0, pg_core_1.timestamp)("paid_at", { withTimezone: true, mode: 'string' }),
+    paymentReference: (0, pg_core_1.varchar)("payment_reference", { length: 255 }),
+    notes: (0, pg_core_1.text)("notes"),
+    rejectionReason: (0, pg_core_1.text)("rejection_reason"),
+    metadata: (0, pg_core_1.jsonb)("metadata").default({}),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => {
+    return {
+        idxExpensesOrg: (0, pg_core_1.index)("idx_expenses_org").using("btree", table.organizationId.asc().nullsLast()),
+        idxExpensesRequester: (0, pg_core_1.index)("idx_expenses_requester").using("btree", table.requesterId.asc().nullsLast()),
+        idxExpensesStatus: (0, pg_core_1.index)("idx_expenses_status").using("btree", table.status.asc().nullsLast()),
+        idxExpensesDate: (0, pg_core_1.index)("idx_expenses_date").using("btree", table.expenseDate.asc().nullsLast()),
+        idxExpensesBudget: (0, pg_core_1.index)("idx_expenses_budget").using("btree", table.budgetId.asc().nullsLast()),
+        idxExpensesVendor: (0, pg_core_1.index)("idx_expenses_vendor").using("btree", table.vendorId.asc().nullsLast()),
+        idxExpensesAccount: (0, pg_core_1.index)("idx_expenses_account").using("btree", table.accountCode.asc().nullsLast()),
+        expenseRequestsOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "expense_requests_organization_id_fkey"
+        }).onDelete("cascade"),
+        expenseRequestsBudgetIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.budgetId],
+            foreignColumns: [exports.budgets.id],
+            name: "expense_requests_budget_id_fkey"
+        }),
+        expenseRequestsBudgetLineItemIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.budgetLineItemId],
+            foreignColumns: [exports.budgetLineItems.id],
+            name: "expense_requests_budget_line_item_id_fkey"
+        }),
+        uniqueExpenseRequestNumber: (0, pg_core_1.unique)("unique_expense_request_number").on(table.organizationId, table.requestNumber),
+    };
+});
+/**
+ * Expense Approvals - Approval workflow and chain
+ */
+exports.expenseApprovals = (0, pg_core_1.pgTable)("expense_approvals", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    expenseRequestId: (0, pg_core_1.uuid)("expense_request_id").notNull(),
+    approverId: (0, pg_core_1.uuid)("approver_id").notNull(),
+    approverLevel: (0, pg_core_1.integer)("approver_level").notNull(), // 1 = supervisor, 2 = manager, 3 = executive
+    status: (0, exports.approvalStatus)("status").default('pending').notNull(),
+    approvedAt: (0, pg_core_1.timestamp)("approved_at", { withTimezone: true, mode: 'string' }),
+    comments: (0, pg_core_1.text)("comments"),
+    delegatedTo: (0, pg_core_1.uuid)("delegated_to"),
+    isRequired: (0, pg_core_1.boolean)("is_required").default(true),
+    sortOrder: (0, pg_core_1.integer)("sort_order").default(0),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => {
+    return {
+        idxApprovalsExpense: (0, pg_core_1.index)("idx_approvals_expense").using("btree", table.expenseRequestId.asc().nullsLast()),
+        idxApprovalsApprover: (0, pg_core_1.index)("idx_approvals_approver").using("btree", table.approverId.asc().nullsLast()),
+        idxApprovalsStatus: (0, pg_core_1.index)("idx_approvals_status").using("btree", table.status.asc().nullsLast()),
+        expenseApprovalsExpenseRequestIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.expenseRequestId],
+            foreignColumns: [exports.expenseRequests.id],
+            name: "expense_approvals_expense_request_id_fkey"
+        }).onDelete("cascade"),
+    };
+});
+/**
+ * Vendor Invoices - Operational invoices from vendors
+ */
+exports.vendorInvoices = (0, pg_core_1.pgTable)("vendor_invoices", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
+    vendorId: (0, pg_core_1.uuid)("vendor_id").notNull(),
+    invoiceNumber: (0, pg_core_1.varchar)("invoice_number", { length: 100 }).notNull(),
+    invoiceDate: (0, pg_core_1.date)("invoice_date").notNull(),
+    dueDate: (0, pg_core_1.date)("due_date").notNull(),
+    budgetId: (0, pg_core_1.uuid)("budget_id"),
+    budgetLineItemId: (0, pg_core_1.uuid)("budget_line_item_id"),
+    accountCode: (0, pg_core_1.varchar)("account_code", { length: 50 }).notNull(),
+    description: (0, pg_core_1.text)("description"),
+    subtotal: (0, pg_core_1.numeric)("subtotal", { precision: 15, scale: 2 }).notNull(),
+    taxAmount: (0, pg_core_1.numeric)("tax_amount", { precision: 15, scale: 2 }).default('0.00'),
+    totalAmount: (0, pg_core_1.numeric)("total_amount", { precision: 15, scale: 2 }).notNull(),
+    currency: (0, pg_core_1.varchar)("currency", { length: 3 }).default('CAD'),
+    status: (0, pg_core_1.varchar)("status", { length: 50 }).default('pending').notNull(), // pending, approved, paid, overdue, cancelled
+    approvedBy: (0, pg_core_1.uuid)("approved_by"),
+    approvedAt: (0, pg_core_1.timestamp)("approved_at", { withTimezone: true, mode: 'string' }),
+    paidAt: (0, pg_core_1.timestamp)("paid_at", { withTimezone: true, mode: 'string' }),
+    paymentReference: (0, pg_core_1.varchar)("payment_reference", { length: 255 }),
+    invoiceUrl: (0, pg_core_1.text)("invoice_url"),
+    attachments: (0, pg_core_1.jsonb)("attachments").default([]),
+    notes: (0, pg_core_1.text)("notes"),
+    metadata: (0, pg_core_1.jsonb)("metadata").default({}),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    createdBy: (0, pg_core_1.uuid)("created_by").notNull(),
+}, (table) => {
+    return {
+        idxVendorInvoicesOrg: (0, pg_core_1.index)("idx_vendor_invoices_org").using("btree", table.organizationId.asc().nullsLast()),
+        idxVendorInvoicesVendor: (0, pg_core_1.index)("idx_vendor_invoices_vendor").using("btree", table.vendorId.asc().nullsLast()),
+        idxVendorInvoicesStatus: (0, pg_core_1.index)("idx_vendor_invoices_status").using("btree", table.status.asc().nullsLast()),
+        idxVendorInvoicesDueDate: (0, pg_core_1.index)("idx_vendor_invoices_due_date").using("btree", table.dueDate.asc().nullsLast()),
+        idxVendorInvoicesBudget: (0, pg_core_1.index)("idx_vendor_invoices_budget").using("btree", table.budgetId.asc().nullsLast()),
+        idxVendorInvoicesAccount: (0, pg_core_1.index)("idx_vendor_invoices_account").using("btree", table.accountCode.asc().nullsLast()),
+        vendorInvoicesOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "vendor_invoices_organization_id_fkey"
+        }).onDelete("cascade"),
+        vendorInvoicesBudgetIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.budgetId],
+            foreignColumns: [exports.budgets.id],
+            name: "vendor_invoices_budget_id_fkey"
+        }),
+        vendorInvoicesBudgetLineItemIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.budgetLineItemId],
+            foreignColumns: [exports.budgetLineItems.id],
+            name: "vendor_invoices_budget_line_item_id_fkey"
+        }),
+        uniqueVendorInvoiceNumber: (0, pg_core_1.unique)("unique_vendor_invoice_number").on(table.organizationId, table.vendorId, table.invoiceNumber),
+    };
+});
+/**
+ * Accounts Payable - AP tracking and aging
+ */
+exports.accountsPayable = (0, pg_core_1.pgTable)("accounts_payable", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
+    vendorId: (0, pg_core_1.uuid)("vendor_id").notNull(),
+    invoiceId: (0, pg_core_1.uuid)("invoice_id"),
+    expenseRequestId: (0, pg_core_1.uuid)("expense_request_id"),
+    referenceType: (0, pg_core_1.varchar)("reference_type", { length: 50 }).notNull(), // vendor_invoice, expense_request, manual_entry
+    referenceNumber: (0, pg_core_1.varchar)("reference_number", { length: 100 }).notNull(),
+    transactionDate: (0, pg_core_1.date)("transaction_date").notNull(),
+    dueDate: (0, pg_core_1.date)("due_date").notNull(),
+    amount: (0, pg_core_1.numeric)("amount", { precision: 15, scale: 2 }).notNull(),
+    paidAmount: (0, pg_core_1.numeric)("paid_amount", { precision: 15, scale: 2 }).default('0.00'),
+    balanceAmount: (0, pg_core_1.numeric)("balance_amount", { precision: 15, scale: 2 }).notNull(),
+    currency: (0, pg_core_1.varchar)("currency", { length: 3 }).default('CAD'),
+    status: (0, pg_core_1.varchar)("status", { length: 50 }).default('open').notNull(), // open, partially_paid, paid, overdue, disputed, written_off
+    daysOverdue: (0, pg_core_1.integer)("days_overdue").default(0),
+    agingBucket: (0, pg_core_1.varchar)("aging_bucket", { length: 50 }), // current, 1-30, 31-60, 61-90, 90+
+    lastPaymentDate: (0, pg_core_1.timestamp)("last_payment_date", { withTimezone: true, mode: 'string' }),
+    notes: (0, pg_core_1.text)("notes"),
+    metadata: (0, pg_core_1.jsonb)("metadata").default({}),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => {
+    return {
+        idxApOrg: (0, pg_core_1.index)("idx_ap_org").using("btree", table.organizationId.asc().nullsLast()),
+        idxApVendor: (0, pg_core_1.index)("idx_ap_vendor").using("btree", table.vendorId.asc().nullsLast()),
+        idxApStatus: (0, pg_core_1.index)("idx_ap_status").using("btree", table.status.asc().nullsLast()),
+        idxApDueDate: (0, pg_core_1.index)("idx_ap_due_date").using("btree", table.dueDate.asc().nullsLast()),
+        idxApAging: (0, pg_core_1.index)("idx_ap_aging").using("btree", table.agingBucket.asc().nullsLast()),
+        idxApOverdue: (0, pg_core_1.index)("idx_ap_overdue").using("btree", table.daysOverdue.asc().nullsLast()).where((0, drizzle_orm_1.sql) `(days_overdue > 0)`),
+        accountsPayableOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "accounts_payable_organization_id_fkey"
+        }).onDelete("cascade"),
+        accountsPayableInvoiceIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.invoiceId],
+            foreignColumns: [exports.vendorInvoices.id],
+            name: "accounts_payable_invoice_id_fkey"
+        }),
+        accountsPayableExpenseRequestIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.expenseRequestId],
+            foreignColumns: [exports.expenseRequests.id],
+            name: "accounts_payable_expense_request_id_fkey"
+        }),
+    };
+});
+/**
+ * Vendors - Vendor/supplier directory
+ */
+exports.vendors = (0, pg_core_1.pgTable)("vendors", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    organizationId: (0, pg_core_1.uuid)("organization_id").notNull(),
+    vendorNumber: (0, pg_core_1.varchar)("vendor_number", { length: 50 }).notNull(),
+    vendorName: (0, pg_core_1.varchar)("vendor_name", { length: 255 }).notNull(),
+    legalName: (0, pg_core_1.varchar)("legal_name", { length: 255 }),
+    vendorType: (0, pg_core_1.varchar)("vendor_type", { length: 100 }), // supplier, contractor, professional_services, utilities, etc.
+    taxId: (0, pg_core_1.varchar)("tax_id", { length: 50 }), // Business number / EIN
+    website: (0, pg_core_1.varchar)("website", { length: 255 }),
+    email: (0, pg_core_1.varchar)("email", { length: 255 }),
+    phone: (0, pg_core_1.varchar)("phone", { length: 50 }),
+    fax: (0, pg_core_1.varchar)("fax", { length: 50 }),
+    address: (0, pg_core_1.jsonb)("address"),
+    billingAddress: (0, pg_core_1.jsonb)("billing_address"),
+    primaryContactName: (0, pg_core_1.varchar)("primary_contact_name", { length: 255 }),
+    primaryContactEmail: (0, pg_core_1.varchar)("primary_contact_email", { length: 255 }),
+    primaryContactPhone: (0, pg_core_1.varchar)("primary_contact_phone", { length: 50 }),
+    paymentTerms: (0, exports.paymentTerms)("payment_terms").default('net_30'),
+    defaultAccountCode: (0, pg_core_1.varchar)("default_account_code", { length: 50 }),
+    currency: (0, pg_core_1.varchar)("currency", { length: 3 }).default('CAD'),
+    creditLimit: (0, pg_core_1.numeric)("credit_limit", { precision: 15, scale: 2 }),
+    currentBalance: (0, pg_core_1.numeric)("current_balance", { precision: 15, scale: 2 }).default('0.00'),
+    ytdSpending: (0, pg_core_1.numeric)("ytd_spending", { precision: 15, scale: 2 }).default('0.00'),
+    status: (0, exports.vendorStatus)("status").default('active').notNull(),
+    notes: (0, pg_core_1.text)("notes"),
+    tags: (0, pg_core_1.text)("tags").array().default([]),
+    bankAccountInfo: (0, pg_core_1.jsonb)("bank_account_info"), // Encrypted banking details for direct deposit
+    taxInfo: (0, pg_core_1.jsonb)("tax_info"), // W-9, 1099 info, GST/HST numbers
+    insuranceInfo: (0, pg_core_1.jsonb)("insurance_info"), // Liability insurance certificates
+    contractInfo: (0, pg_core_1.jsonb)("contract_info"), // Master service agreements
+    metadata: (0, pg_core_1.jsonb)("metadata").default({}),
+    createdAt: (0, pg_core_1.timestamp)("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+    createdBy: (0, pg_core_1.uuid)("created_by").notNull(),
+    lastReviewDate: (0, pg_core_1.date)("last_review_date"),
+    nextReviewDate: (0, pg_core_1.date)("next_review_date"),
+}, (table) => {
+    return {
+        idxVendorsOrg: (0, pg_core_1.index)("idx_vendors_org").using("btree", table.organizationId.asc().nullsLast()),
+        idxVendorsStatus: (0, pg_core_1.index)("idx_vendors_status").using("btree", table.status.asc().nullsLast()),
+        idxVendorsType: (0, pg_core_1.index)("idx_vendors_type").using("btree", table.vendorType.asc().nullsLast()),
+        idxVendorsName: (0, pg_core_1.index)("idx_vendors_name").using("btree", table.vendorName.asc().nullsLast()),
+        vendorsOrganizationIdFkey: (0, pg_core_1.foreignKey)({
+            columns: [table.organizationId],
+            foreignColumns: [exports.organizations.id],
+            name: "vendors_organization_id_fkey"
+        }).onDelete("cascade"),
+        uniqueVendorNumber: (0, pg_core_1.unique)("unique_vendor_number").on(table.organizationId, table.vendorNumber),
+        uniqueVendorName: (0, pg_core_1.unique)("unique_vendor_name").on(table.organizationId, table.vendorName),
     };
 });
 //# sourceMappingURL=schema.js.map

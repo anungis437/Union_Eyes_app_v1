@@ -10,6 +10,7 @@
  * @phase Phase 2 Week 1 Day 7
  */
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 // ============================================================================
 // DEFAULT RETENTION POLICIES
 // ============================================================================
@@ -88,7 +89,8 @@ export class AuditRetentionService {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to create retention policy:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -121,7 +123,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to update retention policy:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -141,7 +144,8 @@ return {
             return { success: true };
         }
         catch (error) {
-return {
+            logger.error('Failed to delete retention policy:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -165,7 +169,8 @@ return {
             return { success: true, data: data || [] };
         }
         catch (error) {
-return {
+            logger.error('Failed to get retention policies:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -189,7 +194,8 @@ return {
             return { success: true, data: policies };
         }
         catch (error) {
-return {
+            logger.error('Failed to initialize default policies:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -220,7 +226,8 @@ return {
             return { success: true, data: result };
         }
         catch (error) {
-return {
+            logger.error('Failed to archive old logs:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -247,7 +254,8 @@ return {
             return { success: true, data: result };
         }
         catch (error) {
-return {
+            logger.error('Failed to compress archives:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -278,7 +286,8 @@ return {
             };
         }
         catch (error) {
-return {
+            logger.error('Failed to restore from archive:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -312,7 +321,8 @@ return {
             return { success: true, data: stats };
         }
         catch (error) {
-return {
+            logger.error('Failed to get archive stats:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -355,7 +365,8 @@ return {
             return { success: true, data: result };
         }
         catch (error) {
-return {
+            logger.error('Failed to purge expired logs:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -380,7 +391,8 @@ return {
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            logger.error('Failed to purge audit logs:', error);
+            return 0;
         }
     }
     /**
@@ -401,7 +413,8 @@ return 0;
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            logger.error('Failed to purge login attempts:', error);
+            return 0;
         }
     }
     /**
@@ -423,7 +436,8 @@ return 0;
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            logger.error('Failed to purge session history:', error);
+            return 0;
         }
     }
     /**
@@ -468,7 +482,8 @@ return 0;
             };
         }
         catch (error) {
-return { audit_logs: 0, login_attempts: 0, session_history: 0 };
+            logger.error('Failed to count expired logs:', error);
+            return { audit_logs: 0, login_attempts: 0, session_history: 0 };
         }
     }
     // ==========================================================================
@@ -514,7 +529,8 @@ return { audit_logs: 0, login_attempts: 0, session_history: 0 };
             return { success: true, data: usage };
         }
         catch (error) {
-return {
+            logger.error('Failed to calculate storage usage:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -535,7 +551,8 @@ return {
             return count || 0;
         }
         catch (error) {
-return 0;
+            logger.error(`Failed to count ${table}:`, error);
+            return 0;
         }
     }
     /**
@@ -554,7 +571,8 @@ return 0;
             return count || 0;
         }
         catch (error) {
-return 0;
+            logger.error(`Failed to count archived ${table}:`, error);
+            return 0;
         }
     }
     /**
@@ -572,7 +590,8 @@ return 0;
             };
         }
         catch (error) {
-return {
+            logger.error('Failed to optimize storage:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -609,7 +628,8 @@ return {
             };
         }
         catch (error) {
-return {
+            logger.error('Failed to run maintenance tasks:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

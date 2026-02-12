@@ -94,7 +94,7 @@ export function TimeEntryForm({ onSubmit, defaultValues, matters = [], taskCateg
             setBillableAmount(0);
         }
         catch (error) {
-}
+        }
         finally {
             setIsLoading(false);
         }

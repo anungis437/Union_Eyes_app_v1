@@ -15,7 +15,12 @@
  */
 
 import { db } from '@/db/db';
-import { sql } from 'drizzle-orm';
+import { sql, eq, and, isNull } from 'drizzle-orm';
+import { 
+  chartOfAccounts as unifiedChartOfAccounts,
+  accountMappings as unifiedAccountMappings,
+  type ChartOfAccount 
+} from '@/db/schema/domains/financial/chart-of-accounts';
 
 /**
  * Account types per CLC classification
@@ -457,93 +462,189 @@ const ACCOUNT_MAPPINGS: AccountMapping[] = [
 
 /**
  * Chart of Accounts Service
+ * 
+ * UPDATED: Now uses database instead of hardcoded constant
  */
 export class ChartOfAccountsService {
   
   /**
-   * Get all CLC accounts
+   * Get all CLC standard accounts from database
    */
-  getAllAccounts(): CLCAccount[] {
-    return CLC_CHART_OF_ACCOUNTS;
+  async getAllAccounts(): Promise<ChartOfAccount[]> {
+    return await db
+      .select()
+      .from(unifiedChartOfAccounts)
+      .where(
+        and(
+          eq(unifiedChartOfAccounts.isCLCStandard, true),
+          eq(unifiedChartOfAccounts.isActive, true),
+          isNull(unifiedChartOfAccounts.organizationId)
+        )
+      )
+      .orderBy(unifiedChartOfAccounts.sortOrder);
   }
 
   /**
-   * Get account by code
+   * Get account by code from database
    */
-  getAccountByCode(code: string): CLCAccount | undefined {
-    return CLC_CHART_OF_ACCOUNTS.find(acc => acc.code === code);
+  async getAccountByCode(code: string): Promise<ChartOfAccount | undefined> {
+    const results = await db
+      .select()
+      .from(unifiedChartOfAccounts)
+      .where(
+        and(
+          eq(unifiedChartOfAccounts.accountCode, code),
+          eq(unifiedChartOfAccounts.isCLCStandard, true)
+        )
+      )
+      .limit(1);
+    
+    return results[0];
   }
 
   /**
-   * Get accounts by type
+   * Get accounts by type from database
    */
-  getAccountsByType(type: AccountType): CLCAccount[] {
-    return CLC_CHART_OF_ACCOUNTS.filter(acc => acc.type === type);
+  async getAccountsByType(type: AccountType): Promise<ChartOfAccount[]> {
+    return await db
+      .select()
+      .from(unifiedChartOfAccounts)
+      .where(
+        and(
+          eq(unifiedChartOfAccounts.accountType, type),
+          eq(unifiedChartOfAccounts.isCLCStandard, true),
+          eq(unifiedChartOfAccounts.isActive, true)
+        )
+      )
+      .orderBy(unifiedChartOfAccounts.sortOrder);
   }
 
   /**
-   * Get accounts by category
+   * Get accounts by category from database
    */
-  getAccountsByCategory(category: AccountCategory): CLCAccount[] {
-    return CLC_CHART_OF_ACCOUNTS.filter(acc => acc.category === category);
+  async getAccountsByCategory(category: AccountCategory): Promise<ChartOfAccount[]> {
+    return await db
+      .select()
+      .from(unifiedChartOfAccounts)
+      .where(
+        and(
+          eq(unifiedChartOfAccounts.accountCategory, category),
+          eq(unifiedChartOfAccounts.isCLCStandard, true),
+          eq(unifiedChartOfAccounts.isActive, true)
+        )
+      )
+      .orderBy(unifiedChartOfAccounts.sortOrder);
   }
 
   /**
-   * Get child accounts for a parent code
+   * Get child accounts for a parent code from database
    */
-  getChildAccounts(parentCode: string): CLCAccount[] {
-    return CLC_CHART_OF_ACCOUNTS.filter(acc => acc.parentCode === parentCode);
+  async getChildAccounts(parentCode: string): Promise<ChartOfAccount[]> {
+    return await db
+      .select()
+      .from(unifiedChartOfAccounts)
+      .where(
+        and(
+          eq(unifiedChartOfAccounts.parentAccountCode, parentCode),
+          eq(unifiedChartOfAccounts.isCLCStandard, true),
+          eq(unifiedChartOfAccounts.isActive, true)
+        )
+      )
+      .orderBy(unifiedChartOfAccounts.sortOrder);
   }
 
   /**
-   * Get account mapping for transaction type
+   * Get account mapping for transaction type from database
    */
-  getAccountMapping(transactionType: string): AccountMapping | undefined {
-    return ACCOUNT_MAPPINGS.find(mapping => mapping.transactionType === transactionType);
+  async getAccountMapping(transactionType: string): Promise<AccountMapping | undefined> {
+    const results = await db
+      .select()
+      .from(unifiedAccountMappings)
+      .where(
+        and(
+          eq(unifiedAccountMappings.transactionType, transactionType),
+          eq(unifiedAccountMappings.isActive, true)
+        )
+      )
+      .limit(1);
+    
+    if (!results[0]) return undefined;
+    
+    // Map database columns to interface properties
+    return {
+      transactionType: results[0].transactionType,
+      debitAccount: results[0].debitAccountCode,
+      creditAccount: results[0].creditAccountCode,
+      description: results[0].description || ''
+    };
   }
 
   /**
-   * Get all account mappings
+   * Get all account mappings from database
    */
-  getAllAccountMappings(): AccountMapping[] {
-    return ACCOUNT_MAPPINGS;
+  async getAllAccountMappings(): Promise<AccountMapping[]> {
+    const results = await db
+      .select()
+      .from(unifiedAccountMappings)
+      .where(eq(unifiedAccountMappings.isActive, true));
+    
+    // Map database columns to interface properties
+    return results.map(r => ({
+      transactionType: r.transactionType,
+      debitAccount: r.debitAccountCode,
+      creditAccount: r.creditAccountCode,
+      description: r.description || ''
+    }));
   }
 
   /**
    * Get per-capita revenue account
    */
-  getPerCapitaRevenueAccount(): CLCAccount {
-    return this.getAccountByCode('4100-001')!;
+  async getPerCapitaRevenueAccount(): Promise<ChartOfAccount> {
+    const account = await this.getAccountByCode('4100');
+    if (!account) {
+      throw new Error('Per-capita revenue account (4100) not found in database');
+    }
+    return account;
   }
 
   /**
    * Get per-capita expense account
    */
-  getPerCapitaExpenseAccount(): CLCAccount {
-    return this.getAccountByCode('5300')!;
+  async getPerCapitaExpenseAccount(): Promise<ChartOfAccount> {
+    const account = await this.getAccountByCode('5300');
+    if (!account) {
+      throw new Error('Per-capita expense account (5300) not found in database');
+    }
+    return account;
   }
 
   /**
    * Validate account code format
+   * Valid formats:
+   * - 4-digit: 4000, 5100, 7200
+   * - Sub-account with dash and 3 digits: 4100-001, 5200-123
    */
   isValidAccountCode(code: string): boolean {
-    return /^\d{4}(-\d{3})?$/.test(code);
+    // 4-digit format: 4000-9999
+    const fourDigitPattern = /^[0-9]{4}$/;
+    // Sub-account format: 4000-001 through 9999-999
+    const subAccountPattern = /^[0-9]{4}-[0-9]{3}$/;
+    
+    return fourDigitPattern.test(code) || subAccountPattern.test(code);
   }
 
-  /**
-   * Get account hierarchy path (e.g., "5000 > 5200 > 5200-001")
-   */
-  getAccountPath(code: string): string {
-    const account = this.getAccountByCode(code);
+  async getAccountPath(code: string): Promise<string> {
+    const account = await this.getAccountByCode(code);
     if (!account) return '';
 
-    const path: string[] = [account.code];
+    const path: string[] = [account.accountCode];
     let current = account;
 
-    while (current.parentCode) {
-      const parent = this.getAccountByCode(current.parentCode);
+    while (current.parentAccountCode) {
+      const parent = await this.getAccountByCode(current.parentAccountCode);
       if (!parent) break;
-      path.unshift(parent.code);
+      path.unshift(parent.accountCode);
       current = parent;
     }
 
@@ -553,17 +654,17 @@ export class ChartOfAccountsService {
   /**
    * Get account full name with hierarchy (e.g., "Operating Expenses / Legal and Professional Fees / Legal Counsel")
    */
-  getAccountFullName(code: string): string {
-    const account = this.getAccountByCode(code);
+  async getAccountFullName(code: string): Promise<string> {
+    const account = await this.getAccountByCode(code);
     if (!account) return '';
 
-    const names: string[] = [account.name];
+    const names: string[] = [account.accountName];
     let current = account;
 
-    while (current.parentCode) {
-      const parent = this.getAccountByCode(current.parentCode);
+    while (current.parentAccountCode) {
+      const parent = await this.getAccountByCode(current.parentAccountCode);
       if (!parent) break;
-      names.unshift(parent.name);
+      names.unshift(parent.accountName);
       current = parent;
     }
 
@@ -571,16 +672,18 @@ export class ChartOfAccountsService {
   }
 
   /**
-   * Export chart to JSON
+   * Export chart to JSON from database
    */
-  exportToJSON(): string {
-    return JSON.stringify(CLC_CHART_OF_ACCOUNTS, null, 2);
+  async exportToJSON(): Promise<string> {
+    const accounts = await this.getAllAccounts();
+    return JSON.stringify(accounts, null, 2);
   }
 
   /**
-   * Export chart to CSV
+   * Export chart to CSV from database
    */
-  exportToCSV(): string {
+  async exportToCSV(): Promise<string> {
+    const accounts = await this.getAllAccounts();
     const lines: string[] = [];
     
     // Header
@@ -597,21 +700,30 @@ export class ChartOfAccountsService {
     ].join(','));
 
     // Rows
-    for (const account of CLC_CHART_OF_ACCOUNTS) {
+    for (const account of accounts) {
       lines.push([
-        account.code,
-        `"${account.name}"`,
-        account.type,
-        account.category,
-        account.statcanCode || '',
+        account.accountCode,
+        `"${account.accountName}"`,
+        account.accountType,
+        account.accountCategory || '',
+        account.statisticsCanadaCode || '',
         `"${account.description || ''}"`,
         account.isActive ? 'Y' : 'N',
-        account.parentCode || '',
-        account.sortOrder.toString(),
+        account.parentAccountCode || '',
+        (account.sortOrder || 0).toString(),
       ].join(','));
     }
 
     return lines.join('\n');
+  }
+  
+  /**
+   * Legacy method: Get all CLC accounts (for backwards compatibility)
+   * Returns the hardcoded constant for tests that don't need database
+   * @deprecated Use getAllAccounts() instead
+   */
+  getAllAccountsSync(): CLCAccount[] {
+    return CLC_CHART_OF_ACCOUNTS;
   }
 }
 

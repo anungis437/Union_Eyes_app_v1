@@ -11,7 +11,7 @@
 
 import { Decimal } from 'decimal.js';
 import { db } from '@/db';
-import { currencyExchangeRates } from '@/db/schema/erp-integration-schema';
+import { currencyExchangeRates } from '@/db/schema/domains/infrastructure';
 import { eq, and, desc, lte } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 

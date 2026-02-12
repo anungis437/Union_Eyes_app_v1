@@ -7,12 +7,14 @@
  * @module organizationService
  * @category Multi-Tenant
  */
+import { SimpleLogger } from '../utils/logger';
 // =====================================================
 // SERVICE CLASS
 // =====================================================
 export class OrganizationService {
     constructor(supabase) {
         this.supabase = supabase;
+        this.logger = new SimpleLogger('OrganizationService');
     }
     // =====================================================
     // ORGANIZATION CRUD
@@ -475,7 +477,8 @@ export class OrganizationService {
             });
         }
         catch (error) {
-}
+            this.logger.error('Failed to log audit event', { error });
+        }
     }
 }
 /**

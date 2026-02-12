@@ -5,7 +5,7 @@
  */
 
 import { db } from '@/db';
-import { organizations, clcChartOfAccounts } from '@/db/schema';
+import { organizations, chartOfAccounts } from '@/db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 
 // =====================================================================================

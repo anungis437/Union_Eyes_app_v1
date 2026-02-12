@@ -20,7 +20,9 @@ import {
   stipendDisbursements,
 } from '../db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 
 const router = Router();
 
@@ -272,7 +274,7 @@ router.get('/summary', async (req: Request, res: Response) => {
       .from(duesTransactions)
       .where(
         and(
-          eq(duesTransactions.tenantId, organizationId as string),
+          eq(duesTransactions.organizationId, organizationId as string),
           eq(duesTransactions.status, 'completed'),
           gte(duesTransactions.createdAt, thirtyDaysAgo.toISOString())
         )
@@ -453,7 +455,7 @@ router.get('/fund-health', async (req: Request, res: Response) => {
     const funds = await db
       .select()
       .from(strikeFunds)
-      .where(eq(strikeFunds.tenantId, organizationId as string));
+      .where(eq(strikeFunds.organizationId, organizationId as string));
 
     const fundHealth = await Promise.all(
       funds.map(async (fund) => {

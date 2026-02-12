@@ -57,6 +57,13 @@
       "when": 1770621501496,
       "tag": "0007_add_wage_benchmarks",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1770880651726,
+      "tag": "0008_lean_mother_askani",
+      "breakpoints": true
     }
   ]
 }

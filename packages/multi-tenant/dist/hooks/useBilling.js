@@ -230,7 +230,7 @@ export function useBilling(options) {
                     table: 'billing_subscriptions',
                     filter: `organization_id=eq.${organizationId}`,
                 }, async (payload) => {
-await loadSubscription();
+                    await loadSubscription();
                 })
                     .on('postgres_changes', {
                     event: '*',
@@ -238,12 +238,13 @@ await loadSubscription();
                     table: 'billing_usage',
                     filter: `organization_id=eq.${organizationId}`,
                 }, async (payload) => {
-await loadUsage();
+                    await loadUsage();
                 })
                     .subscribe();
             }
             catch (err) {
-}
+                setError(err);
+            }
         };
         setupRealtime();
         return () => {

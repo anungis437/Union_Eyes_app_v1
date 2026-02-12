@@ -91,6 +91,7 @@ export async function closeRedis(): Promise<void> {
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds
   namespace?: string;
+  staleWhileRevalidate?: number; // Seconds to serve stale data while revalidating
 }
 
 /**
@@ -104,7 +105,7 @@ function getCacheKey(key: string, namespace?: string): string {
 }
 
 /**
- * Get value from cache
+ * Get value from cache with stale-while-revalidate support
  */
 export async function cacheGet<T>(
   key: string,
@@ -119,7 +120,19 @@ export async function cacheGet<T>(
     
     // Try to parse JSON, return string if not valid JSON
     try {
-      return JSON.parse(value) as T;
+      const parsed = JSON.parse(value) as T;
+      
+      // Check if using stale-while-revalidate pattern
+      if (options?.staleWhileRevalidate) {
+        const ttl = await redis.ttl(cacheKey);
+        
+        // If TTL is less than staleWhileRevalidate window, mark as stale but return data
+        if (ttl > 0 && ttl < options.staleWhileRevalidate) {
+          logger.debug(`[Cache] Serving stale data for ${cacheKey}, TTL: ${ttl}s`);
+        }
+      }
+      
+      return parsed;
     } catch (error) {
       logger.debug(`[Cache] Non-JSON value for ${cacheKey}`, {
         error: error instanceof Error ? error.message : String(error),
@@ -235,6 +248,53 @@ export async function cacheGetOrSet<T>(
   await cacheSet(key, value, options);
   
   return value;
+}
+
+/**
+ * Get or set with stale-while-revalidate pattern
+ * Returns stale data immediately while revalidating in background
+ */
+export async function cacheGetOrSetStale<T>(
+  key: string,
+  fetchFn: () => Promise<T>,
+  options?: CacheOptions & { staleWhileRevalidate: number }
+): Promise<T> {
+  const redis = getRedis();
+  const cacheKey = getCacheKey(key, options?.namespace);
+  
+  try {
+    // Try to get from cache
+    const cached = await cacheGet<T>(key, options);
+    
+    if (cached !== null) {
+      // Check TTL to determine if we need to revalidate
+      const ttl = await redis.ttl(cacheKey);
+      
+      // If within stale-while-revalidate window, trigger background refresh
+      if (ttl > 0 && ttl < options.staleWhileRevalidate) {
+        logger.debug(`[Cache] Background revalidation triggered for ${cacheKey}`);
+        
+        // Revalidate in background (don't await)
+        fetchFn()
+          .then(value => cacheSet(key, value, options))
+          .catch(error => {
+            logger.error(`[Cache] Background revalidation failed for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
+          });
+      }
+      
+      return cached;
+    }
+    
+    // Cache miss - fetch and cache
+    const value = await fetchFn();
+    await cacheSet(key, value, options);
+    return value;
+    
+  } catch (error) {
+    logger.error(`[Cache] Stale-while-revalidate error for ${cacheKey}`, error instanceof Error ? error : new Error(String(error)));
+    // Fallback to direct fetch
+    return await fetchFn();
+  }
 }
 
 // ============== SESSION CACHING ==============
@@ -518,5 +578,178 @@ export async function pingRedis(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// ============================================================================
+// Cache Warming
+// ============================================================================
+
+export interface CacheWarmupEntry {
+  key: string;
+  fetchFn: () => Promise<unknown>;
+  ttl?: number;
+  namespace?: string;
+  priority?: number; // Lower number = higher priority
+}
+
+const warmupRegistry: CacheWarmupEntry[] = [];
+
+/**
+ * Register a cache key for automatic warming
+ * 
+ * @example
+ * ```typescript
+ * registerCacheWarmup({
+ *   key: 'organizations:all',
+ *   fetchFn: () => db.query.organizations.findMany(),
+ *   ttl: 300,
+ *   namespace: 'organizations',
+ *   priority: 1
+ * });
+ * ```
+ */
+export function registerCacheWarmup(entry: CacheWarmupEntry): void {
+  // Check if already registered
+  const existingIndex = warmupRegistry.findIndex(
+    e => e.key === entry.key && e.namespace === entry.namespace
+  );
+  
+  if (existingIndex >= 0) {
+    // Update existing entry
+    warmupRegistry[existingIndex] = entry;
+    logger.info('[Cache] Updated warmup entry', { key: entry.key, namespace: entry.namespace });
+  } else {
+    // Add new entry
+    warmupRegistry.push(entry);
+    logger.info('[Cache] Registered warmup entry', { key: entry.key, namespace: entry.namespace });
+  }
+}
+
+/**
+ * Warm up a single cache entry
+ */
+async function warmupCacheEntry(entry: CacheWarmupEntry): Promise<void> {
+  try {
+    const startTime = Date.now();
+    const data = await entry.fetchFn();
+    
+    await cacheSet(entry.key, data, {
+      ttl: entry.ttl,
+      namespace: entry.namespace
+    });
+    
+    const duration = Date.now() - startTime;
+    logger.info('[Cache] Warmed up entry', {
+      key: entry.key,
+      namespace: entry.namespace,
+      durationMs: duration
+    });
+  } catch (error) {
+    logger.error('[Cache] Failed to warm up entry', {
+      key: entry.key,
+      namespace: entry.namespace,
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
+ * Execute cache warmup for all registered entries
+ * 
+ * @param options.parallel - Number of entries to warm up in parallel (default: 3)
+ * @param options.priorityOnly - Only warm up entries with priority <= this value
+ */
+export async function executeCacheWarmup(options?: {
+  parallel?: number;
+  priorityOnly?: number;
+}): Promise<{
+  total: number;
+  succeeded: number;
+  failed: number;
+  durationMs: number;
+}> {
+  const parallel = options?.parallel || 3;
+  const priorityOnly = options?.priorityOnly;
+  
+  // Filter entries by priority if specified
+  let entries = warmupRegistry;
+  if (priorityOnly !== undefined) {
+    entries = entries.filter(e => (e.priority || 999) <= priorityOnly);
+  }
+  
+  // Sort by priority (lower number = higher priority)
+  entries = entries.sort((a, b) => (a.priority || 999) - (b.priority || 999));
+  
+  logger.info('[Cache] Starting warmup', {
+    total: entries.length,
+    parallel,
+    priorityOnly
+  });
+  
+  const startTime = Date.now();
+  let succeeded = 0;
+  let failed = 0;
+  
+  // Process entries in batches
+  for (let i = 0; i < entries.length; i += parallel) {
+    const batch = entries.slice(i, i + parallel);
+    const results = await Promise.allSettled(
+      batch.map(entry => warmupCacheEntry(entry))
+    );
+    
+    succeeded += results.filter(r => r.status === 'fulfilled').length;
+    failed += results.filter(r => r.status === 'rejected').length;
+  }
+  
+  const durationMs = Date.now() - startTime;
+  
+  logger.info('[Cache] Warmup completed', {
+    total: entries.length,
+    succeeded,
+    failed,
+    durationMs
+  });
+  
+  return {
+    total: entries.length,
+    succeeded,
+    failed,
+    durationMs
+  };
+}
+
+/**
+ * Get all registered cache warmup entries
+ */
+export function getCacheWarmupEntries(): Readonly<CacheWarmupEntry[]> {
+  return Object.freeze([...warmupRegistry]);
+}
+
+/**
+ * Clear all registered cache warmup entries
+ */
+export function clearCacheWarmupRegistry(): void {
+  warmupRegistry.length = 0;
+  logger.info('[Cache] Cleared warmup registry');
+}
+
+/**
+ * Schedule periodic cache warmup
+ * 
+ * @param intervalMs - Interval in milliseconds (default: 5 minutes)
+ * @returns Function to stop the scheduled warmup
+ */
+export function scheduleCacheWarmup(intervalMs: number = 5 * 60 * 1000): () => void {
+  logger.info('[Cache] Scheduling periodic warmup', { intervalMs });
+  
+  const timerId = setInterval(async () => {
+    await executeCacheWarmup({ priorityOnly: 3 }); // Only warm high-priority entries
+  }, intervalMs);
+  
+  // Return cleanup function
+  return () => {
+    clearInterval(timerId);
+    logger.info('[Cache] Stopped scheduled warmup');
+  };
 }
 

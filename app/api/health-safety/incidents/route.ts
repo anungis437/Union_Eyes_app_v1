@@ -356,9 +356,49 @@ export const POST = withEnhancedRoleAuth(30, async (request, context) => {
         },
       });
 
-      // TODO: Trigger notifications for critical incidents
+      // Trigger notifications for critical incidents
       if (data.severity === 'critical' || data.severity === 'fatal') {
-        // Call notification service here
+        try {
+          const notificationService = getNotificationService();
+          await notificationService.send({
+            organizationId,
+            type: 'email',
+            priority: 'urgent',
+            subject: `URGENT: ${data.severity.toUpperCase()} Health & Safety Incident`,
+            title: `Critical Incident Reported`,
+            body: `A ${data.severity} incident has been reported:\n\n` +
+                  `Incident #: ${incidentNumber}\n` +
+                  `Type: ${data.incidentType}\n` +
+                  `Location: ${data.locationName || 'Not specified'}\n` +
+                  `Date/Time: ${data.incidentDateTime}\n\n` +
+                  `Priority action required.`,
+            htmlBody: `
+              <h2 style="color: #dc2626;">⚠️ Critical Incident Reported</h2>
+              <p>A <strong>${data.severity}</strong> health & safety incident has been reported and requires immediate attention:</p>
+              <table style="border-collapse: collapse; margin: 20px 0;">
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Incident #:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${incidentNumber}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Type:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${data.incidentType}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Location:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${data.locationName || 'Not specified'}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Date/Time:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${data.incidentDateTime}</td></tr>
+              </table>
+              <p style="color: #dc2626; font-weight: bold;">Priority action required.</p>
+            `,
+            metadata: {
+              incidentId: incident.id,
+              incidentNumber,
+              severity: data.severity,
+              incidentType: data.incidentType,
+            },
+            userId,
+          });
+          logger.info('Critical incident notification sent', { incidentId: incident.id, severity: data.severity });
+        } catch (notificationError) {
+          logger.error('Failed to send critical incident notification', {
+            error: notificationError,
+            incidentId: incident.id,
+          });
+          // Don't fail the request if notification fails
+        }
       }
 
       return standardSuccessResponse({ incident }, 201);

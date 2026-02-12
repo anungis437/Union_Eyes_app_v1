@@ -1,5 +1,5 @@
 /**
- * Multi-Tenant UI Components
+ * Multi-Organization UI Components
  * Export all organization and member management components
  */
 export * from './OrganizationSwitcher';

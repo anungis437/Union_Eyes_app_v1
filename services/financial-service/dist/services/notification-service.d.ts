@@ -15,7 +15,7 @@ export type NotificationChannel = 'email' | 'sms' | 'push' | 'in_app';
 export type NotificationType = 'payment_confirmation' | 'payment_failed' | 'payment_reminder' | 'donation_received' | 'stipend_approved' | 'stipend_disbursed' | 'low_balance_alert' | 'arrears_warning' | 'strike_announcement' | 'picket_reminder';
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
 export interface NotificationRequest {
-    tenantId: string;
+    organizationId: string;
     userId: string;
     type: NotificationType;
     channels: NotificationChannel[];
@@ -55,15 +55,15 @@ export declare function sendNotification(notificationId: string): Promise<SendNo
 /**
  * Get user notification preferences
  */
-export declare function getUserNotificationPreferences(tenantId: string, userId: string): Promise<Record<string, boolean>>;
+export declare function getUserNotificationPreferences(organizationId: string, userId: string): Promise<Record<string, boolean>>;
 /**
  * Update user notification preferences
  */
-export declare function updateUserNotificationPreferences(tenantId: string, userId: string, preferences: Record<string, boolean>): Promise<void>;
+export declare function updateUserNotificationPreferences(organizationId: string, userId: string, preferences: Record<string, boolean>): Promise<void>;
 /**
  * Get notification history for user
  */
-export declare function getNotificationHistory(tenantId: string, userId: string, limit?: number): Promise<any[]>;
+export declare function getNotificationHistory(organizationId: string, userId: string, limit?: number): Promise<any[]>;
 /**
  * Retry failed notifications
  */

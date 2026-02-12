@@ -13,6 +13,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { securityAuditService } from '../services/securityAuditService';
 import { anomalyDetectionService } from '../services/anomalyDetectionService';
 import { complianceReportingService } from '../services/complianceReportingService';
+import { logger } from '../utils/logger';
 // ============================================================================
 // HOOK
 // ============================================================================
@@ -107,28 +108,32 @@ export function useSecurityAudit(options = {}) {
             await securityAuditService.logAuthEvent(params);
         }
         catch (err) {
-}
+            logger.error('Failed to log auth event:', err);
+        }
     }, []);
     const logDataAccess = useCallback(async (params) => {
         try {
             await securityAuditService.logDataAccess(params);
         }
         catch (err) {
-}
+            logger.error('Failed to log data access:', err);
+        }
     }, []);
     const logSecurityEvent = useCallback(async (params) => {
         try {
             await securityAuditService.logSecurityEvent(params);
         }
         catch (err) {
-}
+            logger.error('Failed to log security event:', err);
+        }
     }, []);
     const logPermissionCheck = useCallback(async (params) => {
         try {
             await securityAuditService.logPermissionCheck(params);
         }
         catch (err) {
-}
+            logger.error('Failed to log permission check:', err);
+        }
     }, []);
     // ==========================================================================
     // ANALYTICS
@@ -140,8 +145,10 @@ export function useSecurityAudit(options = {}) {
             const result = await securityAuditService.getSecurityTimeline(filters);
             if (result.success && result.data) {
                 // Timeline entries are different from audit logs
-                // Store in anomalies or create separate state if needed
-}
+                // TODO: Create proper transformation from SecurityTimelineEntry[] to AnomalyDetection[]
+                // or create separate state for timeline entries
+                // setAnomalies(result.data as AnomalyDetection[]); // Invalid type assertion
+            }
             else {
                 setError(result.error || 'Failed to fetch timeline');
             }
@@ -161,8 +168,10 @@ export function useSecurityAudit(options = {}) {
             const result = await securityAuditService.getUserActivity(userId);
             if (result.success && result.data) {
                 // UserActivitySummary doesn't have logs property
-                // Store summary data or fetch logs separately
-}
+                // TODO: Create proper transformation from UserActivitySummary to UserBaseline
+                // or fetch baseline data separately
+                // setBaseline(result.data as UserBaseline); // Invalid type assertion
+            }
             else {
                 setError(result.error || 'Failed to fetch user activity');
             }

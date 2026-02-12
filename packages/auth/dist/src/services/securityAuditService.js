@@ -10,6 +10,7 @@
  * @phase Phase 2 Week 1 Day 7
  */
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
@@ -50,7 +51,8 @@ export class SecurityAuditService {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log auth event:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -80,7 +82,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log data access:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -112,7 +115,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log data modification:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -143,7 +147,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log permission check:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -169,7 +174,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log security event:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -206,7 +212,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log login attempt:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -230,7 +237,8 @@ return {
             return { success: true, data };
         }
         catch (error) {
-return {
+            logger.error('Failed to log session event:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -263,7 +271,8 @@ return {
             return { success: true, data: data.id };
         }
         catch (error) {
-return {
+            logger.error('Failed to log API access:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -303,7 +312,8 @@ return {
             return { success: true, data: data.id };
         }
         catch (error) {
-return {
+            logger.error('Failed to create audit log:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -347,7 +357,8 @@ return {
             return { success: true, data: data.map(r => r.id) };
         }
         catch (error) {
-return {
+            logger.error('Failed to batch create audit logs:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -410,7 +421,8 @@ return {
             return { success: true, data: data || [] };
         }
         catch (error) {
-return {
+            logger.error('Failed to get audit logs:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -432,7 +444,8 @@ return {
             return { success: true, data: data || [] };
         }
         catch (error) {
-return {
+            logger.error('Failed to search audit logs:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -470,7 +483,8 @@ return {
             return { success: true, data: timeline.slice(0, options.limit || 100) };
         }
         catch (error) {
-return {
+            logger.error('Failed to get security timeline:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -503,7 +517,8 @@ return {
             return { success: true, data: data || [] };
         }
         catch (error) {
-return {
+            logger.error('Failed to get login history:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -531,7 +546,8 @@ return {
             });
         }
         catch (error) {
-return {
+            logger.error('Failed to get data access history:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -565,7 +581,8 @@ return {
             return { success: true, data: summary };
         }
         catch (error) {
-return {
+            logger.error('Failed to get user activity:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -585,7 +602,8 @@ return {
             });
         }
         catch (error) {
-return {
+            logger.error('Failed to get high-risk events:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -616,7 +634,8 @@ return {
             return { success: true, data: data || [] };
         }
         catch (error) {
-return {
+            logger.error('Failed to get security events:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -647,7 +666,8 @@ return {
             return { success: true, data: exportData };
         }
         catch (error) {
-return {
+            logger.error('Failed to export audit logs:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

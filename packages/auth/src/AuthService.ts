@@ -68,11 +68,71 @@ export class SupabaseAuthService implements AuthService {
     };
   }
   async assignRole(userId: string, role: string) {
-    // Requires custom implementation (e.g., update user_metadata via admin API)
-    throw new Error('Not implemented: assignRole');
+    try {
+      // Get current user
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+      if (userError || !userData.user) {
+        throw new Error(`User not found: ${userError?.message}`);
+      }
+
+      // Get current roles from metadata
+      const currentRoles = userData.user.user_metadata?.roles || ['user'];
+      
+      // Add role if not already present
+      if (!currentRoles.includes(role)) {
+        const updatedRoles = [...currentRoles, role];
+        
+        // Update user metadata
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+          user_metadata: {
+            ...userData.user.user_metadata,
+            roles: updatedRoles
+          }
+        });
+        
+        if (updateError) {
+          throw new Error(`Failed to assign role: ${updateError.message}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error assigning role:', error);
+      throw error;
+    }
   }
+
   async removeRole(userId: string, role: string) {
-    // Requires custom implementation (e.g., update user_metadata via admin API)
-    throw new Error('Not implemented: removeRole');
+    try {
+      // Get current user
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+      if (userError || !userData.user) {
+        throw new Error(`User not found: ${userError?.message}`);
+      }
+
+      // Get current roles from metadata
+      const currentRoles = userData.user.user_metadata?.roles || ['user'];
+      
+      // Remove role if present
+      const updatedRoles = currentRoles.filter((r: string) => r !== role);
+      
+      // Ensure at least 'user' role remains
+      if (updatedRoles.length === 0) {
+        updatedRoles.push('user');
+      }
+      
+      // Update user metadata
+      const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+        user_metadata: {
+          ...userData.user.user_metadata,
+          roles: updatedRoles
+        }
+      });
+      
+      if (updateError) {
+        throw new Error(`Failed to remove role: ${updateError.message}`);
+      }
+    } catch (error) {
+      console.error('Error removing role:', error);
+      throw error;
+    }
   }
 }

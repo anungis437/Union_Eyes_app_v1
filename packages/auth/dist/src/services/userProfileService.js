@@ -2,6 +2,7 @@
 // Comprehensive service for managing user profiles across all applications
 // Part of Phase 2 Week 1 Day 6 - Unified User Profile Management
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 // =============================================================================
 // USER PROFILE SERVICE
 // =============================================================================
@@ -29,7 +30,8 @@ export class UserProfileService {
             return { data: this.mapToUserProfile(data), error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error getting profile:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -45,7 +47,8 @@ return { data: null, error: error };
             return await this.getProfile(user.id);
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error getting current profile:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -67,7 +70,8 @@ return { data: null, error: error };
             return { data: this.mapToUserProfile(data), error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error updating profile:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -93,7 +97,8 @@ return { data: null, error: error };
             };
         }
         catch (error) {
-return { data: [], error: error };
+            logger.error('[UserProfileService] Error searching profiles:', error);
+            return { data: [], error: error };
         }
     }
     // ===========================================================================
@@ -142,7 +147,8 @@ return { data: [], error: error };
             };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error uploading avatar:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -177,7 +183,8 @@ return { data: null, error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('[UserProfileService] Error deleting avatar:', error);
+            return { error: error };
         }
     }
     // ===========================================================================
@@ -212,7 +219,8 @@ return { error: error };
             return { data: updatedPreferences, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error updating notification preferences:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -241,7 +249,8 @@ return { data: null, error: error };
             return { data: updatedPreferences, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error updating UI preferences:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -270,7 +279,8 @@ return { data: null, error: error };
             return { data: updatedSettings, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error updating privacy settings:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -299,7 +309,8 @@ return { data: null, error: error };
             return { data: updatedSettings, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error updating security settings:', error);
+            return { data: null, error: error };
         }
     }
     // ===========================================================================
@@ -333,7 +344,8 @@ return { data: null, error: error };
             return { data: updatedProgress, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error updating onboarding progress:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -358,7 +370,8 @@ return { data: null, error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('[UserProfileService] Error completing onboarding step:', error);
+            return { error: error };
         }
     }
     // ===========================================================================
@@ -376,7 +389,8 @@ return { error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('[UserProfileService] Error recording login activity:', error);
+            return { error: error };
         }
     }
     /**
@@ -393,7 +407,8 @@ return { error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('[UserProfileService] Error updating last activity:', error);
+            return { error: error };
         }
     }
     // ===========================================================================
@@ -412,7 +427,8 @@ return { error: error };
             return { data: data, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error calculating completeness:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -428,7 +444,8 @@ return { data: null, error: error };
             return { data: data, error: null };
         }
         catch (error) {
-return { data: null, error: error };
+            logger.error('[UserProfileService] Error getting full name:', error);
+            return { data: null, error: error };
         }
     }
     /**
@@ -447,7 +464,8 @@ return { data: null, error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('[UserProfileService] Error soft deleting profile:', error);
+            return { error: error };
         }
     }
     // ===========================================================================

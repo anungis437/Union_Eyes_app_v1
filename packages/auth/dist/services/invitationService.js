@@ -104,7 +104,7 @@ export class InvitationService {
             return this.mapInvitationData(invitation);
         }
         catch (error) {
-return null;
+            return null;
         }
     }
     /**
@@ -122,7 +122,7 @@ return null;
             return this.mapInvitationData(data);
         }
         catch (error) {
-return null;
+            return null;
         }
     }
     /**
@@ -162,7 +162,7 @@ return null;
             };
         }
         catch (error) {
-return {
+            return {
                 valid: false,
                 error: 'Failed to check invitation status',
             };
@@ -222,7 +222,7 @@ return {
             };
         }
         catch (error) {
-return {
+            return {
                 success: false,
                 error: 'Failed to accept invitation',
             };
@@ -245,7 +245,7 @@ return {
             return !error;
         }
         catch (error) {
-return false;
+            return false;
         }
     }
     /**
@@ -284,7 +284,7 @@ return false;
             return true;
         }
         catch (error) {
-return false;
+            return false;
         }
     }
     /**
@@ -306,7 +306,7 @@ return false;
             return (data || []).map(this.mapInvitationData);
         }
         catch (error) {
-return [];
+            return [];
         }
     }
     /**
@@ -321,7 +321,7 @@ return [];
             return !error;
         }
         catch (error) {
-return false;
+            return false;
         }
     }
     /**
@@ -340,7 +340,7 @@ return false;
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            return 0;
         }
     }
     /**
@@ -369,12 +369,21 @@ return 0;
                 html: this.generateEmailHTML(invitation.email, invitationUrl, org?.name || 'CourtLens', inviter ? `${inviter.first_name} ${inviter.last_name}` : 'Someone', invitation.role, daysUntilExpiration),
                 text: this.generateEmailText(invitation.email, invitationUrl, org?.name || 'CourtLens', inviter ? `${inviter.first_name} ${inviter.last_name}` : 'Someone', invitation.role, daysUntilExpiration),
             };
-            // TODO: Integrate with email service (SendGrid, Mailgun, etc.)
-            // For now, just log the email
-return true;
+            // TODO: Email service should be injected as dependency
+            // const response = await sendEmail({
+            //   to: [{ email: invitation.email, name: invitation.email }],
+            //   subject: email.subject,
+            //   html: email.html,
+            //   text: email.text,
+            // });
+            // 
+            // if (!response.success) {
+            //   return false;
+            // }
+            return true;
         }
         catch (error) {
-return false;
+            return false;
         }
     }
     /**

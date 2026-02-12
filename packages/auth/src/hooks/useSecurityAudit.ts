@@ -226,8 +226,9 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
       
       if (result.success && result.data) {
         // Timeline entries are different from audit logs
-        // Store in anomalies or create separate state if needed
-        setAnomalies(result.data as AnomalyDetection[]);
+        // TODO: Create proper transformation from SecurityTimelineEntry[] to AnomalyDetection[]
+        // or create separate state for timeline entries
+        // setAnomalies(result.data as AnomalyDetection[]); // Invalid type assertion
       } else {
         setError(result.error || 'Failed to fetch timeline');
       }
@@ -248,8 +249,9 @@ export function useSecurityAudit(options: UseSecurityAuditOptions = {}): UseSecu
       
       if (result.success && result.data) {
         // UserActivitySummary doesn't have logs property
-        // Store summary data or fetch logs separately
-        setBaseline(result.data as UserBaseline);
+        // TODO: Create proper transformation from UserActivitySummary to UserBaseline
+        // or fetch baseline data separately
+        // setBaseline(result.data as UserBaseline); // Invalid type assertion
       } else {
         setError(result.error || 'Failed to fetch user activity');
       }

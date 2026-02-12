@@ -6,6 +6,7 @@
  * JWT-based RLS policies to work correctly.
  */
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../src/utils/logger';
 // =========================================================================
 // JWT CLAIMS UTILITIES
 // =========================================================================
@@ -32,10 +33,12 @@ export const updateUserJWTClaims = async (userId, claims) => {
         });
         if (error)
             throw error;
-return { error: null };
+        logger.info('JWT claims updated for user', { userId, claims });
+        return { error: null };
     }
     catch (error) {
-return { error: error };
+        logger.error('Error updating JWT claims:', error);
+        return { error: error };
     }
 };
 /**
@@ -71,7 +74,8 @@ export const populateJWTClaimsFromProfile = async (userId) => {
         return { claims, error: null };
     }
     catch (error) {
-return { claims: null, error: error };
+        logger.error('Error populating JWT claims:', error);
+        return { claims: null, error: error };
     }
 };
 /**
@@ -149,10 +153,12 @@ export const createUserProfileWithClaims = async (userId, role, organizationId, 
         const { error: claimsError } = await updateUserJWTClaims(userId, claims);
         if (claimsError)
             throw claimsError;
-return { error: null };
+        logger.info('User profile created with JWT claims', { userId });
+        return { error: null };
     }
     catch (error) {
-return { error: error };
+        logger.error('Error creating user profile with claims:', error);
+        return { error: error };
     }
 };
 /**
@@ -179,10 +185,12 @@ export const refreshJWTClaims = async () => {
         const { error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError)
             throw refreshError;
-return { error: null };
+        logger.info('JWT claims refreshed');
+        return { error: null };
     }
     catch (error) {
-return { error: error };
+        logger.error('Error refreshing JWT claims:', error);
+        return { error: error };
     }
 };
 //# sourceMappingURL=jwt-claims.js.map

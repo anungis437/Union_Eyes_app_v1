@@ -93,6 +93,7 @@ export declare const PLAN_CONFIGS: Record<string, PlanLimits>;
 export declare class BillingService {
     private supabase;
     private stripe;
+    private logger;
     constructor(supabase: SupabaseClient, stripeSecretKey: string);
     /**
      * Create new Stripe subscription

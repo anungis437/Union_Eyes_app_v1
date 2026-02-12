@@ -80,10 +80,10 @@ const batchCreateSchema = zod_1.z.object({
  */
 router.post('/calculate', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const validatedData = calculateStipendsSchema.parse(req.body);
         const eligibility = await StipendService.calculateWeeklyStipends({
-            tenantId,
+            organizationId,
             strikeFundId: validatedData.strikeFundId,
             weekStartDate: new Date(validatedData.weekStartDate),
             weekEndDate: new Date(validatedData.weekEndDate),
@@ -115,10 +115,10 @@ router.post('/calculate', async (req, res) => {
  */
 router.post('/disbursements', async (req, res) => {
     try {
-        const { tenantId, id: userId } = req.user;
+        const { organizationId, id: userId } = req.user;
         const validatedData = createDisbursementSchema.parse(req.body);
         const result = await StipendService.createDisbursement({
-            tenantId,
+            organizationId,
             strikeFundId: validatedData.strikeFundId,
             memberId: validatedData.memberId,
             amount: validatedData.amount,
@@ -146,10 +146,10 @@ router.post('/disbursements', async (req, res) => {
  */
 router.post('/disbursements/batch', async (req, res) => {
     try {
-        const { tenantId, id: userId } = req.user;
+        const { organizationId, id: userId } = req.user;
         const validatedData = batchCreateSchema.parse(req.body);
         const result = await StipendService.batchCreateDisbursements({
-            tenantId,
+            organizationId,
             strikeFundId: validatedData.strikeFundId,
             weekStartDate: new Date(validatedData.weekStartDate),
             weekEndDate: new Date(validatedData.weekEndDate),
@@ -173,9 +173,9 @@ router.post('/disbursements/batch', async (req, res) => {
  */
 router.get('/disbursements/pending/:strikeFundId', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { strikeFundId } = req.params;
-        const disbursements = await StipendService.getPendingDisbursements(tenantId, strikeFundId);
+        const disbursements = await StipendService.getPendingDisbursements(organizationId, strikeFundId);
         res.json({
             success: true,
             disbursements,
@@ -195,10 +195,10 @@ router.get('/disbursements/pending/:strikeFundId', async (req, res) => {
  */
 router.get('/disbursements/member/:memberId', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { memberId } = req.params;
         const { strikeFundId } = req.query;
-        const disbursements = await StipendService.getMemberDisbursements(tenantId, memberId, strikeFundId);
+        const disbursements = await StipendService.getMemberDisbursements(organizationId, memberId, strikeFundId);
         res.json({
             success: true,
             disbursements,
@@ -219,13 +219,13 @@ router.get('/disbursements/member/:memberId', async (req, res) => {
  */
 router.post('/disbursements/:disbursementId/approve', async (req, res) => {
     try {
-        const { tenantId, id: userId } = req.user;
+        const { organizationId, id: userId } = req.user;
         const { disbursementId } = req.params;
         const { approvalNotes } = approveDisbursementSchema.parse({
             disbursementId,
             ...req.body
         });
-        const result = await StipendService.approveDisbursement(tenantId, {
+        const result = await StipendService.approveDisbursement(organizationId, {
             disbursementId,
             approvedBy: userId,
             approvalNotes,
@@ -248,10 +248,10 @@ router.post('/disbursements/:disbursementId/approve', async (req, res) => {
  */
 router.post('/disbursements/:disbursementId/paid', async (req, res) => {
     try {
-        const { tenantId, id: userId } = req.user;
+        const { organizationId, id: userId } = req.user;
         const { disbursementId } = req.params;
         const { transactionId } = markPaidSchema.parse({ disbursementId, ...req.body });
-        const result = await StipendService.markDisbursementPaid(tenantId, disbursementId, transactionId, userId);
+        const result = await StipendService.markDisbursementPaid(organizationId, disbursementId, transactionId, userId);
         if (!result.success) {
             return res.status(400).json(result);
         }
@@ -270,9 +270,9 @@ router.post('/disbursements/:disbursementId/paid', async (req, res) => {
  */
 router.get('/summary/:strikeFundId', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { strikeFundId } = req.params;
-        const summary = await StipendService.getStrikeFundDisbursementSummary(tenantId, strikeFundId);
+        const summary = await StipendService.getStrikeFundDisbursementSummary(organizationId, strikeFundId);
         res.json({
             success: true,
             summary,

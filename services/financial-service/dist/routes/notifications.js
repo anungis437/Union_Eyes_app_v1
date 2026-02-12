@@ -7,7 +7,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const zod_1 = require("zod");
 const notification_service_1 = require("../services/notification-service");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
+const getOrganizationIdFromHeaders = (req) => req.headers['x-organization-id'] || req.headers['x-tenant-id'];
 // ============================================================================
 // VALIDATION SCHEMAS
 // ============================================================================
@@ -42,16 +46,16 @@ const UpdatePreferencesSchema = zod_1.z.object({
  */
 router.post('/queue', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
-        if (!tenantId) {
+        const organizationId = getOrganizationIdFromHeaders(req);
+        if (!organizationId) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing x-tenant-id header',
+                error: 'Missing x-organization-id header',
             });
         }
         const body = QueueNotificationSchema.parse(req.body);
         const notificationId = await (0, notification_service_1.queueNotification)({
-            tenantId,
+            organizationId,
             userId: body.userId,
             type: body.type,
             channels: body.channels,
@@ -66,7 +70,8 @@ router.post('/queue', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Queue notification error', { error });
+        res.status(400).json({
             success: false,
             error: error.message,
         });
@@ -78,22 +83,23 @@ res.status(400).json({
  */
 router.get('/preferences', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const userId = req.query.userId;
-        if (!tenantId || !userId) {
+        if (!organizationId || !userId) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing tenantId or userId',
+                error: 'Missing organizationId or userId',
             });
         }
-        const preferences = await (0, notification_service_1.getUserNotificationPreferences)(tenantId, userId);
+        const preferences = await (0, notification_service_1.getUserNotificationPreferences)(organizationId, userId);
         res.json({
             success: true,
             preferences,
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Get preferences error', { error });
+        res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -105,23 +111,24 @@ res.status(500).json({
  */
 router.put('/preferences', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const userId = req.body.userId;
-        if (!tenantId || !userId) {
+        if (!organizationId || !userId) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing tenantId or userId',
+                error: 'Missing organizationId or userId',
             });
         }
         const { preferences } = UpdatePreferencesSchema.parse(req.body);
-        await (0, notification_service_1.updateUserNotificationPreferences)(tenantId, userId, preferences);
+        await (0, notification_service_1.updateUserNotificationPreferences)(organizationId, userId, preferences);
         res.json({
             success: true,
             message: 'Preferences updated successfully',
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Update preferences error', { error });
+        res.status(400).json({
             success: false,
             error: error.message,
         });
@@ -133,16 +140,16 @@ res.status(400).json({
  */
 router.get('/history', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const userId = req.query.userId;
         const limit = parseInt(req.query.limit) || 50;
-        if (!tenantId || !userId) {
+        if (!organizationId || !userId) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing tenantId or userId',
+                error: 'Missing organizationId or userId',
             });
         }
-        const history = await (0, notification_service_1.getNotificationHistory)(tenantId, userId, limit);
+        const history = await (0, notification_service_1.getNotificationHistory)(organizationId, userId, limit);
         res.json({
             success: true,
             history,
@@ -150,7 +157,8 @@ router.get('/history', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Get history error', { error });
+        res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -171,7 +179,8 @@ router.post('/process', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Process notifications error', { error });
+        res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -192,7 +201,8 @@ router.post('/retry-failed', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Retry failed notifications error', { error });
+        res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -207,15 +217,15 @@ res.status(500).json({
  */
 router.post('/test', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
-        if (!tenantId) {
+        const organizationId = getOrganizationIdFromHeaders(req);
+        if (!organizationId) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing x-tenant-id header',
+                error: 'Missing x-organization-id header',
             });
         }
         const notificationId = await (0, notification_service_1.queueNotification)({
-            tenantId,
+            organizationId,
             userId: req.body.userId || '00000000-0000-0000-0000-000000000000',
             type: 'payment_confirmation',
             channels: ['email'],
@@ -234,7 +244,8 @@ router.post('/test', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Test notification error', { error });
+        res.status(500).json({
             success: false,
             error: error.message,
         });

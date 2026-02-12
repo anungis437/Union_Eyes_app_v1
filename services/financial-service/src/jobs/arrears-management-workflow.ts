@@ -76,7 +76,7 @@ export async function processArrearsManagement(params: {
       .innerJoin(members, eq(duesTransactions.memberId, members.id))
       .where(
         and(
-          eq(duesTransactions.tenantId, tenantId),
+          eq(duesTransactions.organizationId, tenantId),
           lt(duesTransactions.dueDate, scanDate.toISOString().split('T')[0]),
           eq(duesTransactions.status, 'pending')
         )
@@ -144,7 +144,7 @@ export async function processArrearsManagement(params: {
 
         // Send notification based on stage
         await queueNotification({
-          tenantId,
+          organizationId: tenantId,
           userId: record.memberId,
           type: 'payment_reminder',
           channels: notificationStage === 'suspension' ? ['email', 'sms'] : ['email'],

@@ -1,0 +1,19 @@
+﻿{
+    "Directories":  [
+                        ".github/workflows"
+                    ],
+    "GitCommit":  "7a1ea6ad6488b5e987a44d06d02884d94301b76c",
+    "Files":  [
+                  "Dockerfile",
+                  "Dockerfile.simple",
+                  "Dockerfile.staging",
+                  "docker-compose.yml",
+                  "docker-compose.prod.yml",
+                  "docker-compose.staging.yml",
+                  "docker-compose.blue-green.yml",
+                  ".dockerignore"
+              ],
+    "Timestamp":  "20260212_101654",
+    "GitBranch":  "main",
+    "BackupDir":  "backups/docker_backup_20260212_101654"
+}

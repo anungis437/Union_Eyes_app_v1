@@ -8,6 +8,9 @@ const express_1 = require("express");
 const zod_1 = require("zod");
 const db_1 = require("../db");
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -29,9 +32,9 @@ const createAssignmentSchema = zod_1.z.object({
  */
 router.get('/', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { memberId, active } = req.query;
-        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.tenantId, tenantId)];
+        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.organizationId, organizationId)];
         if (memberId) {
             conditions.push((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.memberId, memberId));
         }
@@ -55,7 +58,8 @@ router.get('/', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to fetch dues assignments' });
+        logger.error('Error fetching dues assignments', { error });
+        res.status(500).json({ success: false, error: 'Failed to fetch dues assignments' });
     }
 });
 /**
@@ -64,7 +68,7 @@ res.status(500).json({ success: false, error: 'Failed to fetch dues assignments'
  */
 router.get('/:id', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { id } = req.params;
         const [assignment] = await db_1.db
             .select({
@@ -73,7 +77,7 @@ router.get('/:id', async (req, res) => {
         })
             .from(db_1.schema.memberDuesAssignments)
             .leftJoin(db_1.schema.duesRules, (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.ruleId, db_1.schema.duesRules.id))
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.id, id), (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.id, id), (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.organizationId, organizationId)))
             .limit(1);
         if (!assignment) {
             return res.status(404).json({ success: false, error: 'Assignment not found' });
@@ -81,7 +85,8 @@ router.get('/:id', async (req, res) => {
         res.json({ success: true, data: assignment });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to fetch dues assignment' });
+        logger.error('Error fetching dues assignment', { error });
+        res.status(500).json({ success: false, error: 'Failed to fetch dues assignment' });
     }
 });
 /**
@@ -90,7 +95,7 @@ res.status(500).json({ success: false, error: 'Failed to fetch dues assignment' 
  */
 router.post('/', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({ success: false, error: 'Insufficient permissions' });
@@ -101,7 +106,7 @@ router.post('/', async (req, res) => {
         const [rule] = await db_1.db
             .select()
             .from(db_1.schema.duesRules)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, validatedData.ruleId), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, validatedData.ruleId), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.organizationId, organizationId)))
             .limit(1);
         if (!rule) {
             return res.status(404).json({ success: false, error: 'Dues rule not found' });
@@ -111,7 +116,7 @@ router.post('/', async (req, res) => {
             .insert(db_1.schema.memberDuesAssignments)
             .values({
             ...validatedData,
-            tenantId,
+            organizationId: organizationId,
         })
             .returning();
         res.status(201).json({ success: true, data: newAssignment });
@@ -120,7 +125,8 @@ router.post('/', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-res.status(500).json({ success: false, error: 'Failed to create dues assignment' });
+        logger.error('Error creating dues assignment', { error });
+        res.status(500).json({ success: false, error: 'Failed to create dues assignment' });
     }
 });
 /**
@@ -129,7 +135,7 @@ res.status(500).json({ success: false, error: 'Failed to create dues assignment'
  */
 router.put('/:id', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         const { id } = req.params;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
@@ -151,7 +157,7 @@ router.put('/:id', async (req, res) => {
         const [updatedAssignment] = await db_1.db
             .update(db_1.schema.memberDuesAssignments)
             .set(updateData)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.id, id), (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.id, id), (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.organizationId, organizationId)))
             .returning();
         if (!updatedAssignment) {
             return res.status(404).json({ success: false, error: 'Assignment not found' });
@@ -162,7 +168,8 @@ router.put('/:id', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-res.status(500).json({ success: false, error: 'Failed to update dues assignment' });
+        logger.error('Error updating dues assignment', { error });
+        res.status(500).json({ success: false, error: 'Failed to update dues assignment' });
     }
 });
 /**
@@ -171,7 +178,7 @@ res.status(500).json({ success: false, error: 'Failed to update dues assignment'
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         const { id } = req.params;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
@@ -183,7 +190,7 @@ router.delete('/:id', async (req, res) => {
             isActive: false,
             endDate: new Date().toISOString().split('T')[0],
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.id, id), (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.id, id), (0, drizzle_orm_1.eq)(db_1.schema.memberDuesAssignments.organizationId, organizationId)))
             .returning();
         if (!deletedAssignment) {
             return res.status(404).json({ success: false, error: 'Assignment not found' });
@@ -191,7 +198,8 @@ router.delete('/:id', async (req, res) => {
         res.json({ success: true, message: 'Assignment ended successfully' });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to delete dues assignment' });
+        logger.error('Error deleting dues assignment', { error });
+        res.status(500).json({ success: false, error: 'Failed to delete dues assignment' });
     }
 });
 exports.default = router;

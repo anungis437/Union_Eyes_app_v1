@@ -6,7 +6,7 @@
  */
 
 import { db } from '@/db';
-import { financialAuditLog, journalEntries, erpInvoices, bankTransactions } from '@/db/schema/erp-integration-schema';
+import { financialAuditLog, journalEntries, erpInvoices, bankTransactions } from '@/db/schema/domains/infrastructure';
 import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
 
 export interface AuditLogEntry {

@@ -8,7 +8,7 @@ import { db } from '@/db';
 import { 
   organizations, 
   organizationMembers,
-  clcChartOfAccounts,
+  chartOfAccounts,
   perCapitaRemittances
 } from '@/db/schema';
 import { eq, and, sql, gte, lte, isNotNull } from 'drizzle-orm';

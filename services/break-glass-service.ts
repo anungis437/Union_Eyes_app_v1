@@ -94,11 +94,55 @@ export class BreakGlassService {
 
   /**
    * Generate Shamir's Secret Sharing keys for key holders
-   * In production, use a proper SSS library like 'secrets.js-grempe'
+   * 
+   * PRODUCTION IMPLEMENTATION REQUIRED:
+   * 
+   * 1. Install SSS Library:
+   *    npm install secrets.js-grempe
+   *    import * as secrets from 'secrets.js-grempe';
+   * 
+   * 2. Generate Master Secret (256-bit):
+   *    const masterSecret = secrets.random(256); // Generates 256-bit hex string
+   * 
+   * 3. Split into Shares (3-of-5 threshold):
+   *    const shares = secrets.share(masterSecret, 5, 3);
+   *    // shares = ['801...', '802...', '803...', '804...', '805...']
+   * 
+   * 4. Distribute Shares Securely:
+   *    - Encrypt each share with key holder's public key (RSA-2048 or ED25519)
+   *    - Store encrypted shares in key_holder_registry.shamir_share_encrypted
+   *    - Store SHA-256 fingerprint in key_holder_registry.shamir_share_fingerprint
+   *    - Never log or transmit unencrypted shares
+   * 
+   * 5. Recovery Process (3 shares required):
+   *    const recoveredSecret = secrets.combine([share1, share2, share3]);
+   *    // Use recoveredSecret to decrypt Swiss cold storage backups
+   * 
+   * 6. Security Requirements:
+   *    - Master secret never stored anywhere (only exists during initial generation)
+   *    - Shares encrypted with key holder public keys (PKI infrastructure required)
+   *    - Fingerprints used to verify share integrity during recovery
+   *    - Annual key rotation (regenerate shares with new master secret)
+   *    - Audit all share access attempts
+   * 
+   * 7. Testing:
+   *    - Quarterly disaster recovery drills
+   *    - Verify 3-share combination produces correct master secret
+   *    - Test Swiss vault decryption with recovered secret
+   *    - Document recovery time: target RTO = 48 hours
    */
   private static async generateShamirShares(keyHolderIds: string[]) {
-    // This is a simplified placeholder - use proper Shamir's Secret Sharing library
+    // Simplified implementation - use proper SSS library in production
+    // This generates random shares without proper threshold cryptography
+    // For production: Replace with secrets.js-grempe implementation above
     const masterSecret = crypto.randomBytes(32).toString("hex");
+    
+    logger.info('Break-glass: Generating SSS shares', {
+      threshold: this.REQUIRED_SIGNATURES,
+      totalShares: this.TOTAL_KEY_HOLDERS,
+      keyHolders: keyHolderIds.length,
+      implementationStatus: 'SIMPLIFIED - Production requires secrets.js-grempe'
+    });
     
     for (let i = 0; i < keyHolderIds.length; i++) {
       const userId = keyHolderIds[i];
@@ -133,14 +177,60 @@ export class BreakGlassService {
         trainingExpiresAt,
         nextVerificationDue,
       });
+      
+      logger.info('Break-glass: SSS share generated', {
+        keyHolderId: userId,
+        keyHolderNumber: i + 1,
+        shareFingerprint: shareFingerprint.substring(0, 16) + '...',
+        rotationDue: keyRotationDue.toISOString()
+      });
     }
   }
 
   /**
-   * Simplified encryption (use proper asymmetric encryption in production)
+   * Encrypt SSS share with key holder's public key
+   * 
+   * PRODUCTION IMPLEMENTATION REQUIRED:
+   * 
+   * 1. PKI Infrastructure Setup:
+   *    - Generate RSA-2048 or ED25519 key pairs for each key holder
+   *    - Store public keys in key_holder_registry
+   *    - Key holders maintain private keys (hardware tokens/Yubikeys recommended)
+   * 
+   * 2. Encryption Process:
+   *    import { publicEncrypt } from 'crypto';
+   *    
+   *    const publicKey = await getKeyHolderPublicKey(userId);
+   *    const encrypted = publicEncrypt(
+   *      {
+   *        key: publicKey,
+   *        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+   *        oaepHash: 'sha256',
+   *      },
+   *      Buffer.from(share, 'hex')
+   *    );
+   *    return encrypted.toString('base64');
+   * 
+   * 3. Decryption (during emergency):
+   *    - Key holder uses private key from hardware token
+   *    - Decrypt share: privateDecrypt(privateKey, Buffer.from(encrypted, 'base64'))
+   *    - Submit decrypted share for SSS recovery
+   * 
+   * 4. Key Management:
+   *    - Public keys stored in database
+   *    - Private keys on hardware tokens (never in database)
+   *    - Annual key rotation with share re-encryption
+   *    - Revocation process for departed key holders
    */
   private static encryptShare(share: string, userId: string): string {
-    // Placeholder - in production, encrypt with key holder's public key
+    // Simplified implementation - uses base64 encoding only
+    // Production: Replace with proper RSA/ED25519 asymmetric encryption
+    logger.debug('Break-glass: Encrypting SSS share', {
+      keyHolderId: userId,
+      encryptionMethod: 'BASE64 (SIMPLIFIED)',
+      productionRequired: 'RSA-2048/ED25519 asymmetric encryption with PKI'
+    });
+    
     return Buffer.from(share).toString("base64");
   }
 

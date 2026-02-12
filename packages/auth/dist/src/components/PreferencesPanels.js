@@ -22,7 +22,7 @@ export const NotificationPreferencesPanel = ({ className = '' }) => {
             });
         }
         catch (error) {
-}
+        }
         finally {
             setSaving(false);
         }
@@ -35,7 +35,7 @@ export const NotificationPreferencesPanel = ({ className = '' }) => {
             });
         }
         catch (error) {
-}
+        }
         finally {
             setSaving(false);
         }
@@ -62,7 +62,7 @@ export const UIPreferencesPanel = ({ className = '' }) => {
             await updateUIPreferences({ [key]: value });
         }
         catch (error) {
-}
+        }
         finally {
             setSaving(false);
         }
@@ -97,7 +97,7 @@ export const PrivacySettingsPanel = ({ className = '' }) => {
             await updatePrivacySettings({ [key]: value });
         }
         catch (error) {
-}
+        }
         finally {
             setSaving(false);
         }
@@ -125,7 +125,7 @@ export const SecuritySettingsPanel = ({ className = '' }) => {
             }
         }
         catch (error) {
-}
+        }
         finally {
             setSaving(false);
         }
@@ -136,7 +136,7 @@ export const SecuritySettingsPanel = ({ className = '' }) => {
             await updateSecuritySettings({ sessionTimeout: timeout });
         }
         catch (error) {
-}
+        }
         finally {
             setSaving(false);
         }

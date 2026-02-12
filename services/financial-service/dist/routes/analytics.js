@@ -10,6 +10,9 @@ const burn_rate_predictor_1 = require("../services/burn-rate-predictor");
 const db_1 = require("../db");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -23,8 +26,9 @@ const DateRangeSchema = zod_1.z.object({
     endDate: zod_1.z.string().datetime(),
 });
 const AlertsSchema = zod_1.z.object({
-    tenantId: zod_1.z.string().uuid().optional(),
+    organizationId: zod_1.z.string().uuid().optional(),
 });
+const getOrganizationIdFromHeaders = (req) => req.headers['x-organization-id'] || req.headers['x-tenant-id'];
 // ============================================================================
 // BURN-RATE FORECASTING ENDPOINTS
 // ============================================================================
@@ -34,19 +38,20 @@ const AlertsSchema = zod_1.z.object({
  */
 router.get('/forecast/:fundId', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const { fundId, forecastDays } = ForecastParamsSchema.parse({
             fundId: req.params.fundId,
             forecastDays: req.query.forecastDays,
         });
-        const forecast = await (0, burn_rate_predictor_1.generateBurnRateForecast)(tenantId, fundId, forecastDays);
+        const forecast = await (0, burn_rate_predictor_1.generateBurnRateForecast)(organizationId, fundId, forecastDays);
         res.json({
             success: true,
             forecast,
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error generating forecast', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to generate forecast',
         });
@@ -58,13 +63,13 @@ res.status(500).json({
  */
 router.get('/historical/:fundId', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const fundId = req.params.fundId;
         const { startDate, endDate } = DateRangeSchema.parse({
             startDate: req.query.startDate,
             endDate: req.query.endDate,
         });
-        const historicalData = await (0, burn_rate_predictor_1.getHistoricalBurnRate)(tenantId, fundId, new Date(startDate), new Date(endDate));
+        const historicalData = await (0, burn_rate_predictor_1.getHistoricalBurnRate)(organizationId, fundId, new Date(startDate), new Date(endDate));
         res.json({
             success: true,
             data: historicalData,
@@ -72,7 +77,8 @@ router.get('/historical/:fundId', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error fetching historical data', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch historical data',
         });
@@ -84,16 +90,17 @@ res.status(500).json({
  */
 router.get('/seasonal/:fundId', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const fundId = req.params.fundId;
-        const patterns = await (0, burn_rate_predictor_1.detectSeasonalPatterns)(tenantId, fundId);
+        const patterns = await (0, burn_rate_predictor_1.detectSeasonalPatterns)(organizationId, fundId);
         res.json({
             success: true,
             patterns,
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error detecting seasonal patterns', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to detect patterns',
         });
@@ -105,16 +112,17 @@ res.status(500).json({
  */
 router.post('/alerts/process', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
-        const alertsSent = await (0, burn_rate_predictor_1.processAutomatedAlerts)({ tenantId });
+        const organizationId = getOrganizationIdFromHeaders(req);
+        const alertsSent = await (0, burn_rate_predictor_1.processAutomatedAlerts)({ organizationId: organizationId });
         res.json({
             success: true,
             alertsSent,
-            message: `Processed alerts for tenant. ${alertsSent} alerts sent.`,
+            message: `Processed alerts for organization. ${alertsSent} alerts sent.`,
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error processing alerts', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to process alerts',
         });
@@ -126,7 +134,7 @@ res.status(500).json({
  */
 router.post('/reports/weekly', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const userId = req.user?.id;
         if (!userId) {
             return res.status(400).json({
@@ -134,14 +142,15 @@ router.post('/reports/weekly', async (req, res) => {
                 error: 'User ID required',
             });
         }
-        await (0, burn_rate_predictor_1.generateWeeklyForecastReport)({ tenantId });
+        await (0, burn_rate_predictor_1.generateWeeklyForecastReport)({ organizationId: organizationId });
         res.json({
             success: true,
             message: 'Weekly forecast report generated and queued for delivery',
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error generating weekly report', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to generate report',
         });
@@ -156,27 +165,27 @@ res.status(500).json({
  */
 router.get('/summary', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         // Get total funds
         const [fundsData] = await db_1.db
             .select({
             count: (0, drizzle_orm_1.sql) `COUNT(*)`,
         })
             .from(schema_1.strikeFunds)
-            .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, tenantId));
+            .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, organizationId));
         // Calculate total balance from all donations - all stipends
         const [balanceData] = await db_1.db
             .select({
             totalDonations: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.donations.amount} AS NUMERIC)), 0)`,
         })
             .from(schema_1.donations)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed')));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed')));
         const [stipendData] = await db_1.db
             .select({
             totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
         })
             .from(schema_1.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid')));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid')));
         const totalBalance = Number(balanceData.totalDonations) - Number(stipendData.totalStipends);
         // Get total target amount across all funds (column doesn't exist yet, using 0)
         const targetData = { totalTarget: 0 };
@@ -189,7 +198,7 @@ router.get('/summary', async (req, res) => {
             total: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.donations.amount} AS NUMERIC))`,
         })
             .from(schema_1.donations)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, thirtyDaysAgo.toISOString())));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, thirtyDaysAgo.toISOString())));
         // Get total stipends (last 30 days)
         const [stipendsData] = await db_1.db
             .select({
@@ -197,7 +206,7 @@ router.get('/summary', async (req, res) => {
             total: (0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC))`,
         })
             .from(schema_1.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, thirtyDaysAgo.toISOString())));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, thirtyDaysAgo.toISOString())));
         // Get dues collected (last 30 days)
         const [duesData] = await db_1.db
             .select({
@@ -205,7 +214,7 @@ router.get('/summary', async (req, res) => {
             total: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.duesTransactions.amount} AS NUMERIC)), 0)`,
         })
             .from(schema_1.duesTransactions)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.duesTransactions.createdAt, thirtyDaysAgo.toISOString())));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.duesTransactions.createdAt, thirtyDaysAgo.toISOString())));
         const summary = {
             strikeFunds: {
                 count: Number(fundsData.count),
@@ -237,7 +246,8 @@ router.get('/summary', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error fetching financial summary', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch summary',
         });
@@ -249,7 +259,7 @@ res.status(500).json({
  */
 router.get('/trends', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const days = parseInt(req.query.days) || 90;
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
@@ -261,7 +271,7 @@ router.get('/trends', async (req, res) => {
             count: (0, drizzle_orm_1.sql) `COUNT(*)`,
         })
             .from(schema_1.donations)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate.toISOString())))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate.toISOString())))
             .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.donations.createdAt})`)
             .orderBy((0, drizzle_orm_1.sql) `DATE(${schema_1.donations.createdAt})`);
         // Daily stipends trend
@@ -272,7 +282,7 @@ router.get('/trends', async (req, res) => {
             count: (0, drizzle_orm_1.sql) `COUNT(*)`,
         })
             .from(schema_1.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate.toISOString())))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate.toISOString())))
             .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`)
             .orderBy((0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`);
         res.json({
@@ -297,7 +307,8 @@ router.get('/trends', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error fetching trends', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch trends',
         });
@@ -309,7 +320,7 @@ res.status(500).json({
  */
 router.get('/top-donors', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const limit = parseInt(req.query.limit) || 10;
         const topDonors = await db_1.db
             .select({
@@ -320,7 +331,7 @@ router.get('/top-donors', async (req, res) => {
             lastDonation: (0, drizzle_orm_1.sql) `MAX(${schema_1.donations.createdAt})`,
         })
             .from(schema_1.donations)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.eq)(schema_1.donations.isAnonymous, false)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.eq)(schema_1.donations.isAnonymous, false)))
             .groupBy(schema_1.donations.donorEmail, schema_1.donations.donorName)
             .orderBy((0, drizzle_orm_1.desc)((0, drizzle_orm_1.sql) `SUM(CAST(${schema_1.donations.amount} AS NUMERIC))`))
             .limit(limit);
@@ -336,7 +347,8 @@ router.get('/top-donors', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error fetching top donors', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch top donors',
         });
@@ -348,11 +360,11 @@ res.status(500).json({
  */
 router.get('/fund-health', async (req, res) => {
     try {
-        const tenantId = req.headers['x-tenant-id'];
+        const organizationId = getOrganizationIdFromHeaders(req);
         const funds = await db_1.db
             .select()
             .from(schema_1.strikeFunds)
-            .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, tenantId));
+            .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.organizationId, organizationId));
         const fundHealth = await Promise.all(funds.map(async (fund) => {
             try {
                 // Calculate current balance for this fund
@@ -366,7 +378,7 @@ router.get('/fund-health', async (req, res) => {
                     .where((0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fund.id));
                 const currentBalance = Number(balanceData?.totalDonations || 0) - Number(balanceData?.totalStipends || 0);
                 const targetAmount = Number(fund.targetAmount || currentBalance * 2);
-                const forecast = await (0, burn_rate_predictor_1.generateBurnRateForecast)(tenantId, fund.id, 90);
+                const forecast = await (0, burn_rate_predictor_1.generateBurnRateForecast)(organizationId, fund.id, 90);
                 const realisticScenario = forecast.scenarios.find((s) => s.scenario === 'realistic');
                 return {
                     fundId: fund.id,
@@ -422,7 +434,8 @@ router.get('/fund-health', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error fetching fund health', { error });
+        res.status(500).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to fetch fund health',
         });

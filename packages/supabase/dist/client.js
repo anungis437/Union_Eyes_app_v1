@@ -93,7 +93,7 @@ export async function executeQuery(queryFn) {
         const client = getSupabaseClient();
         const result = await queryFn(client);
         if (result.error) {
-return {
+            return {
                 data: null,
                 error: result.error.message || 'Database operation failed',
             };
@@ -104,7 +104,7 @@ return {
         };
     }
     catch (error) {
-return {
+        return {
             data: null,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };
@@ -132,8 +132,8 @@ export async function getCurrentUserOrganizationId() {
         }
         return null;
     }
-    catch (error) {
-return null;
+    catch {
+        return null;
     }
 }
 /**
@@ -153,8 +153,8 @@ export async function checkUserRole(role) {
         const userRecord = userData;
         return userRecord?.role === role && userRecord?.is_active === true;
     }
-    catch (error) {
-return false;
+    catch {
+        return false;
     }
 }
 /**
@@ -202,7 +202,8 @@ export async function getPaginatedResults(queryBuilder, page = 1, perPage = 50) 
         .range(from, to)
         .order('created_at', { ascending: false });
     if (error) {
-        throw new Error(error.message);
+        // Preserve original error object with stack trace
+        throw error;
     }
     const totalPages = count ? Math.ceil(count / perPage) : 0;
     return {
@@ -260,7 +261,7 @@ export async function logAuditAction(tableName, recordId, action, oldValues, new
     const client = getSupabaseClient();
     const organizationId = await getCurrentUserOrganizationId();
     if (!organizationId) {
-return;
+        return;
     }
     const { data: { user } } = await client.auth.getUser();
     const changedFields = oldValues && newValues
@@ -282,7 +283,7 @@ return;
         await client.from('audit_log').insert(auditData);
     }
     catch (error) {
-// Don't throw - audit logging shouldn't break the main operation
+        // Don't throw - audit logging shouldn't break the main operation
     }
 }
 // =========================================================================

@@ -228,7 +228,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         .from(schema.duesTransactions)
         .where(
           and(
-            eq(schema.duesTransactions.tenantId, organizationId),
+            eq(schema.duesTransactions.organizationId, organizationId),
             sql`${schema.duesTransactions.id} = ANY(${validatedData.transactionIds})`
           )
         );
@@ -239,7 +239,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
         .from(schema.duesTransactions)
         .where(
           and(
-            eq(schema.duesTransactions.tenantId, organizationId),
+            eq(schema.duesTransactions.organizationId, organizationId),
             eq(schema.duesTransactions.periodStart, remittance.remittancePeriodStart),
             eq(schema.duesTransactions.periodEnd, remittance.remittancePeriodEnd)
           )
@@ -271,7 +271,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
       } as any)
       .where(
         and(
-          eq(schema.duesTransactions.tenantId, organizationId),
+          eq(schema.duesTransactions.organizationId, organizationId),
           sql`${schema.duesTransactions.id} = ANY(${transactionsToMatch.map((t) => t.id)})`
         )
       );
@@ -500,7 +500,7 @@ router.post('/:id/reconcile', async (req: Request, res: Response) => {
       .from(schema.duesTransactions)
       .where(
         and(
-          eq(schema.duesTransactions.tenantId, organizationId),
+          eq(schema.duesTransactions.organizationId, organizationId),
           eq(schema.duesTransactions.transactionType, 'charge'),
           sql`${schema.duesTransactions.periodStart} >= ${remittance.remittancePeriodStart}`,
           sql`${schema.duesTransactions.periodEnd} <= ${remittance.remittancePeriodEnd}`

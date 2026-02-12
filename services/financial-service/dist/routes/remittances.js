@@ -41,9 +41,9 @@ const reconcileSchema = zod_1.z.object({
  */
 router.get('/', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { employerId, status, batchNumber } = req.query;
-        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, tenantId)];
+        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, organizationId)];
         if (employerId) {
             conditions.push((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.employerId, employerId));
         }
@@ -74,12 +74,12 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { id } = req.params;
         const [remittance] = await db_1.db
             .select()
             .from(db_1.schema.employerRemittances)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, organizationId)))
             .limit(1);
         if (!remittance) {
             return res.status(404).json({
@@ -111,7 +111,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
                 success: false,
@@ -124,7 +124,7 @@ router.post('/', async (req, res) => {
         const [remittance] = await db_1.db
             .insert(db_1.schema.employerRemittances)
             .values({
-            tenantId,
+            tenantId: organizationId,
             employerName: validatedData.employerName,
             employerId: validatedData.employerId,
             remittancePeriodStart: validatedData.remittancePeriodStart || validatedData.billingPeriodStart,
@@ -163,7 +163,7 @@ router.post('/', async (req, res) => {
  */
 router.post('/:id/reconcile', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         const { id } = req.params;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -176,7 +176,7 @@ router.post('/:id/reconcile', async (req, res) => {
         const [remittance] = await db_1.db
             .select()
             .from(db_1.schema.employerRemittances)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, organizationId)))
             .limit(1);
         if (!remittance) {
             return res.status(404).json({
@@ -196,14 +196,14 @@ router.post('/:id/reconcile', async (req, res) => {
             transactionsToMatch = await db_1.db
                 .select()
                 .from(db_1.schema.duesTransactions)
-                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.id} = ANY(${validatedData.transactionIds})`));
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.id} = ANY(${validatedData.transactionIds})`));
         }
         else if (validatedData.autoMatch) {
             // Auto-match: Find pending transactions for same period
             transactionsToMatch = await db_1.db
                 .select()
                 .from(db_1.schema.duesTransactions)
-                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.periodStart, remittance.remittancePeriodStart), (0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.periodEnd, remittance.remittancePeriodEnd)));
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.periodStart, remittance.remittancePeriodStart), (0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.periodEnd, remittance.remittancePeriodEnd)));
         }
         if (transactionsToMatch.length === 0) {
             return res.status(400).json({
@@ -223,7 +223,7 @@ router.post('/:id/reconcile', async (req, res) => {
             paidDate: remittance.remittanceDate, // Already a string from date column
             notes: `Paid via remittance ${id}`,
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.id} = ANY(${transactionsToMatch.map((t) => t.id)})`));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.id} = ANY(${transactionsToMatch.map((t) => t.id)})`));
         // Update remittance status
         const newStatus = Math.abs(variance) < 0.01 ? 'reconciled' : 'variance_detected';
         const [updatedRemittance] = await db_1.db
@@ -273,7 +273,7 @@ router.post('/:id/reconcile', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         const { id } = req.params;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -292,7 +292,7 @@ router.put('/:id', async (req, res) => {
             ...validatedData,
             // updatedAt is handled automatically by database trigger
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, organizationId)))
             .returning();
         if (!updatedRemittance) {
             return res.status(404).json({
@@ -325,7 +325,7 @@ router.put('/:id', async (req, res) => {
  */
 router.post('/upload', upload.single('file'), async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
                 success: false,
@@ -384,7 +384,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
  */
 router.post('/:id/reconcile', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const { id } = req.params;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -396,7 +397,7 @@ router.post('/:id/reconcile', async (req, res) => {
         const [remittance] = await db_1.db
             .select()
             .from(db_1.schema.employerRemittances)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, organizationId)))
             .limit(1);
         if (!remittance) {
             return res.status(404).json({
@@ -417,7 +418,7 @@ router.post('/:id/reconcile', async (req, res) => {
         const transactions = await db_1.db
             .select()
             .from(db_1.schema.duesTransactions)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.transactionType, 'charge'), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.periodStart} >= ${remittance.remittancePeriodStart}`, (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.periodEnd} <= ${remittance.remittancePeriodEnd}`));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.transactionType, 'charge'), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.periodStart} >= ${remittance.remittancePeriodStart}`, (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.periodEnd} <= ${remittance.remittancePeriodEnd}`));
         // Run reconciliation
         const reconciliationEngine = new financial_1.ReconciliationEngine();
         const reconciliationResult = await reconciliationEngine.reconcile({
@@ -430,7 +431,7 @@ router.post('/:id/reconcile', async (req, res) => {
                 periodStart: t.periodStart,
                 periodEnd: t.periodEnd,
             })),
-            tenantId,
+            tenantId: organizationId,
         });
         // If auto-apply is enabled, update matched transactions
         if (req.body.autoApply !== false && reconciliationResult.success) {
@@ -479,14 +480,14 @@ router.post('/:id/reconcile', async (req, res) => {
  */
 router.get('/:id/report', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { id } = req.params;
         const { format = 'json' } = req.query;
         // Fetch remittance
         const [remittance] = await db_1.db
             .select()
             .from(db_1.schema.employerRemittances)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.id, id), (0, drizzle_orm_1.eq)(db_1.schema.employerRemittances.tenantId, organizationId)))
             .limit(1);
         if (!remittance) {
             return res.status(404).json({

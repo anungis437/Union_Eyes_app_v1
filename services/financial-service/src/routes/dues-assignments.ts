@@ -7,7 +7,9 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db, schema } from '../db';
 import { eq, and, desc, isNull } from 'drizzle-orm';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 
 const router = Router();
 
@@ -37,7 +39,7 @@ router.get('/', async (req: Request, res: Response) => {
     const { organizationId } = (req as any).user;
     const { memberId, active } = req.query;
 
-    const conditions = [eq(schema.memberDuesAssignments.tenantId, organizationId)];
+    const conditions = [eq(schema.memberDuesAssignments.organizationId, organizationId)];
     
     if (memberId) {
       conditions.push(eq(schema.memberDuesAssignments.memberId, memberId as string));
@@ -93,7 +95,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       )
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
-        eq(schema.memberDuesAssignments.tenantId, organizationId)
+        eq(schema.memberDuesAssignments.organizationId, organizationId)
       ))
       .limit(1);
 
@@ -130,7 +132,7 @@ router.post('/', async (req: Request, res: Response) => {
       .from(schema.duesRules)
       .where(and(
         eq(schema.duesRules.id, validatedData.ruleId),
-        eq(schema.duesRules.tenantId, organizationId)
+        eq(schema.duesRules.organizationId, organizationId)
       ))
       .limit(1);
 
@@ -143,7 +145,7 @@ router.post('/', async (req: Request, res: Response) => {
       .insert(schema.memberDuesAssignments)
       .values({
         ...validatedData,
-        tenantId: organizationId,
+        organizationId: organizationId,
       } as any)
       .returning();
 
@@ -191,7 +193,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       .set(updateData)
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
-        eq(schema.memberDuesAssignments.tenantId, organizationId)
+        eq(schema.memberDuesAssignments.organizationId, organizationId)
       ))
       .returning();
 
@@ -231,7 +233,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       } as any)
       .where(and(
         eq(schema.memberDuesAssignments.id, id),
-        eq(schema.memberDuesAssignments.tenantId, organizationId)
+        eq(schema.memberDuesAssignments.organizationId, organizationId)
       ))
       .returning();
 

@@ -48,6 +48,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const zod_1 = require("zod");
 const PaymentService = __importStar(require("../services/payment-processing"));
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
 // Validation schemas
 const CreateDuesPaymentSchema = zod_1.z.object({
@@ -104,10 +107,10 @@ const PaymentSummaryQuerySchema = zod_1.z.object({
  */
 router.post('/dues/intent', async (req, res) => {
     try {
-        const tenantId = req.user.tenantId;
+        const organizationId = req.user.organizationId;
         const validatedData = CreateDuesPaymentSchema.parse(req.body);
         const paymentIntent = await PaymentService.createDuesPaymentIntent({
-            tenantId,
+            organizationId,
             memberId: validatedData.memberId,
             amount: validatedData.amount,
             currency: validatedData.currency,
@@ -121,7 +124,8 @@ router.post('/dues/intent', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error creating dues payment intent', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to create payment intent',
         });
@@ -133,10 +137,10 @@ res.status(400).json({
  */
 router.post('/dues/confirm', async (req, res) => {
     try {
-        const tenantId = req.user.tenantId;
+        const organizationId = req.user.organizationId;
         const validatedData = ConfirmDuesPaymentSchema.parse(req.body);
         await PaymentService.confirmDuesPayment({
-            tenantId,
+            organizationId,
             paymentIntentId: validatedData.paymentIntentId,
             transactionId: validatedData.transactionId,
         });
@@ -146,7 +150,8 @@ router.post('/dues/confirm', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error confirming dues payment', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to confirm payment',
         });
@@ -161,10 +166,10 @@ res.status(400).json({
  */
 router.post('/stipends/payout', async (req, res) => {
     try {
-        const tenantId = req.user.tenantId;
+        const organizationId = req.user.organizationId;
         const validatedData = CreateStipendPayoutSchema.parse(req.body);
         const payout = await PaymentService.createStipendPayout({
-            tenantId,
+            organizationId,
             disbursementId: validatedData.disbursementId,
             amount: validatedData.amount,
             recipientBankAccount: validatedData.recipientBankAccount,
@@ -176,7 +181,8 @@ router.post('/stipends/payout', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error creating stipend payout', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to create payout',
         });
@@ -188,10 +194,10 @@ res.status(400).json({
  */
 router.post('/stipends/payout/batch', async (req, res) => {
     try {
-        const tenantId = req.user.tenantId;
+        const organizationId = req.user.organizationId;
         const validatedData = BatchStipendPayoutSchema.parse(req.body);
         const results = await PaymentService.batchProcessStipendPayouts({
-            tenantId,
+            organizationId,
             strikeFundId: validatedData.strikeFundId,
             disbursementIds: validatedData.disbursementIds,
         });
@@ -201,7 +207,8 @@ router.post('/stipends/payout/batch', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error processing batch payouts', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to process batch payouts',
         });
@@ -216,10 +223,10 @@ res.status(400).json({
  */
 router.post('/donations/intent', async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId || req.body.tenantId; // Allow public access
+        const organizationId = req.user?.organizationId || req.body.organizationId; // Allow public access
         const validatedData = CreateDonationSchema.parse(req.body);
         const paymentIntent = await PaymentService.createDonationPaymentIntent({
-            tenantId,
+            organizationId,
             strikeFundId: validatedData.strikeFundId,
             amount: validatedData.amount,
             currency: validatedData.currency,
@@ -235,7 +242,8 @@ router.post('/donations/intent', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error creating donation payment intent', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to create donation',
         });
@@ -247,10 +255,10 @@ res.status(400).json({
  */
 router.post('/donations/confirm', async (req, res) => {
     try {
-        const tenantId = req.user?.tenantId || req.body.tenantId; // Allow public access
+        const organizationId = req.user?.organizationId || req.body.organizationId; // Allow public access
         const validatedData = ConfirmDonationSchema.parse(req.body);
         const donationId = await PaymentService.confirmDonationPayment({
-            tenantId,
+            organizationId,
             paymentIntentId: validatedData.paymentIntentId,
         });
         res.json({
@@ -260,7 +268,8 @@ router.post('/donations/confirm', async (req, res) => {
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error confirming donation', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to confirm donation',
         });
@@ -281,7 +290,8 @@ router.post('/webhook/stripe', async (req, res) => {
         res.json({ received: true });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error processing Stripe webhook', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Webhook processing failed',
         });
@@ -296,16 +306,17 @@ res.status(400).json({
  */
 router.get('/summary', async (req, res) => {
     try {
-        const tenantId = req.user.tenantId;
+        const organizationId = req.user.organizationId;
         const { strikeFundId, startDate, endDate } = PaymentSummaryQuerySchema.parse(req.query);
-        const summary = await PaymentService.getPaymentSummary(tenantId, strikeFundId, startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined);
+        const summary = await PaymentService.getPaymentSummary(organizationId, strikeFundId, startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined);
         res.json({
             success: true,
             summary,
         });
     }
     catch (error) {
-res.status(400).json({
+        logger.error('Error getting payment summary', { error });
+        res.status(400).json({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to get payment summary',
         });

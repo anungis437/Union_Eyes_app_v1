@@ -107,8 +107,22 @@ export const perCapitaRemittancesRelations = relations(perCapitaRemittances, ({ 
 }));
 
 /**
- * CLC Chart of Accounts Table
- * Standardized account codes for CLC financial reporting
+ * @deprecated ⚠️ DO NOT USE - USE chartOfAccounts INSTEAD
+ * 
+ * CLC Chart of Accounts Table - DEPRECATED
+ * 
+ * ❌ THIS TABLE IS EMPTY (0 rows)
+ * ✅ USE: import { chartOfAccounts } from '@/db/schema/domains/finance/accounting'
+ * 
+ * The canonical chart of accounts is in domains/finance/accounting.ts
+ * This table was created for CLC-specific accounts but has been superseded
+ * by the unified chartOfAccounts table which contains:
+ *   - CLC standard accounts (30 rows with is_clc_standard = true)
+ *   - Organization-specific accounts (multi-tenant)
+ *   - Full hierarchy and ERP integration support
+ * 
+ * Migration plan: This definition will be removed in v3.0
+ * See: CHART_OF_ACCOUNTS_DUPLICATION_ANALYSIS.md for details
  */
 export const clcChartOfAccounts = pgTable(
   'clc_chart_of_accounts',

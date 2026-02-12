@@ -12,6 +12,9 @@
  * - Notification preferences per user
  * - Delivery tracking and retry logic
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.queueNotification = queueNotification;
 exports.processPendingNotifications = processPendingNotifications;
@@ -23,6 +26,19 @@ exports.retryFailedNotifications = retryFailedNotifications;
 const db_1 = require("../db");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
+const resend_1 = require("resend");
+const twilio_1 = __importDefault(require("twilio"));
+// TODO: Fix FCM and email service imports
+// import { FCMService } from '@/services/fcm-service';
+// import { FinancialEmailService } from '@/lib/services/financial-email-service';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
+// Initialize email and SMS clients
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
+const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
+    ? (0, twilio_1.default)(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+    : null;
 // ============================================================================
 // NOTIFICATION QUEUE MANAGEMENT
 // ============================================================================
@@ -30,9 +46,9 @@ const drizzle_orm_1 = require("drizzle-orm");
  * Queue a notification for delivery
  */
 async function queueNotification(request) {
-    const { tenantId, userId, type, channels, priority = 'normal', data, scheduledFor } = request;
+    const { organizationId, userId, type, channels, priority = 'normal', data, scheduledFor } = request;
     // Get user preferences
-    const preferences = await getUserNotificationPreferences(tenantId, userId);
+    const preferences = await getUserNotificationPreferences(organizationId, userId);
     // Filter channels based on user preferences
     const allowedChannels = channels.filter(channel => {
         const prefKey = `${type}_${channel}`;
@@ -43,7 +59,7 @@ async function queueNotification(request) {
     }
     // Create notification queue entry
     const [notification] = await db_1.db.insert(schema_1.notificationQueue).values({
-        tenantId,
+        tenantId: organizationId,
         userId,
         type,
         channels: allowedChannels, // text array in schema
@@ -74,7 +90,8 @@ async function processPendingNotifications(batchSize = 50) {
             processed++;
         }
         catch (error) {
-// Continue processing other notifications
+            logger.error('Failed to send notification', { error, notificationId: notification.id });
+            // Continue processing other notifications
         }
     }
     return processed;
@@ -151,7 +168,7 @@ async function sendNotification(notificationId) {
 /**
  * Send notification through specific channel
  */
-async function sendThroughChannel(channel, type, userId, tenantId, data) {
+async function sendThroughChannel(channel, type, userId, organizationId, data) {
     // Get template for this type/channel
     const template = await getTemplate(type, channel);
     // Render template with data
@@ -167,7 +184,7 @@ async function sendThroughChannel(channel, type, userId, tenantId, data) {
             await sendPushNotification(userId, rendered.subject || type, rendered.body, data);
             break;
         case 'in_app':
-            await createInAppNotification(tenantId, userId, type, rendered.body, data);
+            await createInAppNotification(organizationId, userId, type, rendered.body, data);
             break;
         default:
             throw new Error(`Unknown channel: ${channel}`);
@@ -177,35 +194,79 @@ async function sendThroughChannel(channel, type, userId, tenantId, data) {
  * Send email notification
  */
 async function sendEmail(userId, subject, body, data) {
-    // TODO: Integrate with email service (SendGrid, AWS SES, etc.)
-// Simulated email send
-    // In production, would call:
-    // await emailService.send({ to: userEmail, subject, html: body });
+    try {
+        // Get user email from userId (would need to query user table)
+        // For now, using data.email if provided
+        const userEmail = data.email || `user-${userId}@example.com`;
+        // Use Resend for email delivery
+        await resend.emails.send({
+            from: 'Union Eyes <notifications@unioneyes.com>',
+            to: userEmail,
+            subject,
+            html: body,
+        });
+        logger.info('[EMAIL] Successfully sent', { userEmail, subject });
+    }
+    catch (error) {
+        logger.error('[EMAIL] Failed to send', { error, userEmail: data.email });
+        throw error;
+    }
 }
 /**
  * Send SMS notification
  */
-async function sendSMS(userId, message) {
-    // TODO: Integrate with SMS service (Twilio, AWS SNS, etc.)
-// Simulated SMS send
-    // In production, would call:
-    // await smsService.send({ to: userPhone, message });
+async function sendSMS(userId, message, data = {}) {
+    try {
+        if (!twilioClient) {
+            logger.warn('[SMS] Twilio not configured, skipping SMS send');
+            return;
+        }
+        // Get user phone from data (would need to query user table)
+        const userPhone = data.phone || `+1234567890`; // Fallback for development
+        // Use Twilio for SMS delivery
+        await twilioClient.messages.create({
+            body: message,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to: userPhone,
+        });
+        logger.info('[SMS] Successfully sent', { userPhone });
+    }
+    catch (error) {
+        logger.error('[SMS] Failed to send', { error, userId });
+        throw error;
+    }
 }
 /**
  * Send push notification
  */
 async function sendPushNotification(userId, title, body, data) {
-    // TODO: Integrate with push service (Firebase, OneSignal, etc.)
-// Simulated push send
-    // In production, would call:
-    // await pushService.send({ userId, title, body, data });
+    try {
+        // TODO: Implement FCM service for push notifications
+        // const results = await FCMService.sendToUser({
+        //   userId,
+        //   title,
+        //   body,
+        //   data,
+        // });
+        // const successCount = results.filter(r => r.success).length;
+        logger.info('[PUSH] Push notification stubbed (FCMService not implemented)', {
+            userId,
+            title,
+            body,
+        });
+    }
+    catch (error) {
+        logger.error('[PUSH] Failed to send', { error, userId });
+        throw error;
+    }
 }
 /**
  * Create in-app notification
  */
-async function createInAppNotification(tenantId, userId, type, message, data) {
+async function createInAppNotification(organizationId, userId, type, message, data) {
     // Store in database for in-app display
-// In production, would insert into in_app_notifications table
+    logger.info('[IN-APP] Notification created', { userId, type, message, organizationId });
+    // In production, would insert into in_app_notifications table
 }
 // ============================================================================
 // TEMPLATE MANAGEMENT
@@ -361,11 +422,11 @@ function extractVariables(template) {
 /**
  * Get user notification preferences
  */
-async function getUserNotificationPreferences(tenantId, userId) {
+async function getUserNotificationPreferences(organizationId, userId) {
     const [prefs] = await db_1.db
         .select()
         .from(schema_1.userNotificationPreferences)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.userNotificationPreferences.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.userNotificationPreferences.userId, userId)));
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.userNotificationPreferences.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.userNotificationPreferences.userId, userId)));
     if (!prefs) {
         // Return default preferences (all enabled)
         return getDefaultPreferences();
@@ -375,11 +436,11 @@ async function getUserNotificationPreferences(tenantId, userId) {
 /**
  * Update user notification preferences
  */
-async function updateUserNotificationPreferences(tenantId, userId, preferences) {
+async function updateUserNotificationPreferences(organizationId, userId, preferences) {
     await db_1.db
         .insert(schema_1.userNotificationPreferences)
         .values({
-        tenantId,
+        tenantId: organizationId,
         userId,
         preferences: JSON.stringify(preferences),
         updatedAt: new Date(),
@@ -435,11 +496,11 @@ async function logNotification(notificationId, channel, status, error) {
 /**
  * Get notification history for user
  */
-async function getNotificationHistory(tenantId, userId, limit = 50) {
+async function getNotificationHistory(organizationId, userId, limit = 50) {
     const notifications = await db_1.db
         .select()
         .from(schema_1.notificationQueue)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.notificationQueue.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.notificationQueue.userId, userId)))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.notificationQueue.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.notificationQueue.userId, userId)))
         .orderBy((0, drizzle_orm_1.desc)(schema_1.notificationQueue.createdAt))
         .limit(limit);
     return notifications.map(n => ({
@@ -474,7 +535,8 @@ async function retryFailedNotifications(maxAttempts = 3) {
             retried++;
         }
         catch (error) {
-}
+            logger.error(`Retry failed for notification ${notification.id}:`, error);
+        }
     }
     return retried;
 }

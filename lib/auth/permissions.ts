@@ -51,8 +51,7 @@ export function getPermissionsForRoles(roles: UserRole[]): Permission[] {
  * Replace: checkUserPermission({ userId, organizationId, permission: 'MANAGE_MEMBERS' })
  * With: withPermission('MANAGE_MEMBERS', async (request, context) => { ... })
  * 
- * Check if a user has required permissions
- * This is a stub - actual implementation should query user's role from database
+ * Check if a user has required permissions by querying organization_members table
  */
 export async function checkUserPermission(options: PermissionCheckOptions): Promise<boolean> {
   if (!options.organizationId) {
@@ -91,8 +90,7 @@ return false;
  * Replace: checkUserRole({ userId, organizationId, role: 'admin' })
  * With: withEnhancedRoleAuth(ROLE_LEVELS.ADMIN, async (request, context) => { ... })
  * 
- * Check if a user has required role
- * This is a stub - actual implementation should query user's role from database
+ * Check if a user has required role by querying organization_members table
  */
 export async function checkUserRole(options: RoleCheckOptions): Promise<boolean> {
   if (!options.organizationId) {

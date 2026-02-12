@@ -60,7 +60,7 @@ const arrearsDetectionSchema = zod_1.z.object({
  */
 router.post('/detect', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
                 success: false,
@@ -69,7 +69,7 @@ router.post('/detect', async (req, res) => {
         }
         const validatedData = arrearsDetectionSchema.parse(req.body);
         const config = {
-            tenantId,
+            organizationId,
             gracePeriodDays: validatedData.gracePeriodDays,
             escalationThresholds: validatedData.escalationThresholds,
         };
@@ -118,9 +118,9 @@ router.post('/detect', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { memberId, status } = req.query;
-        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId)];
+        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId)];
         if (memberId) {
             conditions.push((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.memberId, memberId));
         }
@@ -151,12 +151,12 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { id } = req.params;
         const [arrearsCase] = await db_1.db
             .select()
             .from(db_1.schema.arrearsCases)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId)))
             .limit(1);
         if (!arrearsCase) {
             return res.status(404).json({
@@ -171,7 +171,7 @@ router.get('/:id', async (req, res) => {
             transactions = await db_1.db
                 .select()
                 .from(db_1.schema.duesTransactions)
-                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.id} = ANY(${transactionIds})`));
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.sql) `${db_1.schema.duesTransactions.id} = ANY(${transactionIds})`));
         }
         res.json({
             success: true,
@@ -194,7 +194,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
                 success: false,
@@ -206,7 +206,7 @@ router.post('/', async (req, res) => {
         const [existingCase] = await db_1.db
             .select()
             .from(db_1.schema.arrearsCases)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.memberId, validatedData.memberId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.status, 'active')))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.memberId, validatedData.memberId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.status, 'active')))
             .limit(1);
         if (existingCase) {
             return res.status(409).json({
@@ -217,7 +217,7 @@ router.post('/', async (req, res) => {
         const [arrearsCase] = await db_1.db
             .insert(db_1.schema.arrearsCases)
             .values({
-            tenantId,
+            organizationId,
             memberId: validatedData.memberId,
             transactionIds: validatedData.transactionIds,
             totalAmount: validatedData.totalAmount.toString(),
@@ -254,7 +254,7 @@ router.post('/', async (req, res) => {
  */
 router.post('/:id/payment-plan', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         const { id } = req.params;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -267,7 +267,7 @@ router.post('/:id/payment-plan', async (req, res) => {
         const [arrearsCase] = await db_1.db
             .select()
             .from(db_1.schema.arrearsCases)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId)))
             .limit(1);
         if (!arrearsCase) {
             return res.status(404).json({
@@ -338,7 +338,7 @@ router.post('/:id/payment-plan', async (req, res) => {
  */
 router.put('/:id/status', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         const { id } = req.params;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -364,7 +364,7 @@ router.put('/:id/status', async (req, res) => {
             notes: validatedData.notes,
             updatedBy: userId,
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId)))
             .returning();
         if (!updatedCase) {
             return res.status(404).json({
@@ -397,14 +397,14 @@ router.put('/:id/status', async (req, res) => {
  */
 router.post('/:id/contact', async (req, res) => {
     try {
-        const { tenantId, userId } = req.user;
+        const { organizationId, userId } = req.user;
         const { id } = req.params;
         const validatedData = contactLogSchema.parse(req.body);
         // Fetch current case
         const [arrearsCase] = await db_1.db
             .select()
             .from(db_1.schema.arrearsCases)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId)))
             .limit(1);
         if (!arrearsCase) {
             return res.status(404).json({
@@ -455,7 +455,7 @@ router.post('/:id/contact', async (req, res) => {
  */
 router.post('/:id/payment', async (req, res) => {
     try {
-        const { tenantId, userId } = req.user;
+        const { organizationId, userId } = req.user;
         const { id } = req.params;
         const paymentSchema = zod_1.z.object({
             amount: zod_1.z.coerce.number().positive(),
@@ -468,7 +468,7 @@ router.post('/:id/payment', async (req, res) => {
         const [arrearsCase] = await db_1.db
             .select()
             .from(db_1.schema.arrearsCases)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.id, id), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId)))
             .limit(1);
         if (!arrearsCase) {
             return res.status(404).json({

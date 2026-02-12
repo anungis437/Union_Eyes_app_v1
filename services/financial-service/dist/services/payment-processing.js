@@ -58,6 +58,9 @@ const stripe_1 = __importDefault(require("stripe"));
 const db_1 = require("../db");
 const schema = __importStar(require("../db/schema"));
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = { error: console.error, info: console.info, warn: console.warn, debug: console.debug };
 // Initialize Stripe (use test key in development)
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
     apiVersion: '2025-02-24.acacia',
@@ -67,7 +70,7 @@ const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || 'sk_test_du
  */
 async function createDuesPaymentIntent(request) {
     try {
-        const { tenantId, memberId, amount, currency = 'usd', paymentMethod, description, metadata } = request;
+        const { organizationId, memberId, amount, currency = 'usd', paymentMethod, description, metadata } = request;
         // Validate amount (minimum $0.50 for Stripe)
         if (amount < 0.50) {
             throw new Error('Amount must be at least $0.50');
@@ -81,7 +84,7 @@ async function createDuesPaymentIntent(request) {
             payment_method_types: [paymentMethod],
             description: description || `Union dues payment for member ${memberId}`,
             metadata: {
-                tenantId,
+                organizationId,
                 memberId,
                 type: 'dues_payment',
                 ...metadata,
@@ -96,14 +99,15 @@ async function createDuesPaymentIntent(request) {
         };
     }
     catch (error) {
-throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        logger.error('Error creating dues payment intent', { error, organizationId: request.organizationId, memberId: request.memberId });
+        throw new Error(`Failed to create payment intent: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 /**
  * Confirm a dues payment after Stripe webhook
  */
 async function confirmDuesPayment(request) {
-    const { tenantId, paymentIntentId, transactionId } = request;
+    const { organizationId, paymentIntentId, transactionId } = request;
     try {
         // Retrieve payment intent from Stripe
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -119,10 +123,11 @@ async function confirmDuesPayment(request) {
             stripePaymentIntentId: paymentIntentId,
             updatedAt: new Date(),
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.duesTransactions.id, transactionId), (0, drizzle_orm_1.eq)(schema.duesTransactions.tenantId, tenantId)));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.duesTransactions.id, transactionId), (0, drizzle_orm_1.eq)(schema.duesTransactions.organizationId, organizationId)));
     }
     catch (error) {
-throw error;
+        logger.error('Error confirming dues payment', { error, organizationId, transactionId });
+        throw error;
     }
 }
 /**
@@ -132,7 +137,7 @@ throw error;
  * For MVP, we'll simulate the payout creation
  */
 async function createStipendPayout(request) {
-    const { tenantId, disbursementId, amount, recipientBankAccount, description } = request;
+    const { organizationId, disbursementId, amount, recipientBankAccount, description } = request;
     try {
         // Validate amount
         if (amount < 1) {
@@ -153,7 +158,7 @@ async function createStipendPayout(request) {
             paidAt: new Date(),
             updatedAt: new Date(),
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.id, disbursementId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, tenantId)));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.id, disbursementId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, organizationId)));
         return {
             payoutId: transactionId,
             status: 'pending',
@@ -162,14 +167,15 @@ async function createStipendPayout(request) {
         };
     }
     catch (error) {
-throw new Error(`Failed to create payout: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        logger.error('Error creating stipend payout', { error, organizationId, disbursementId });
+        throw new Error(`Failed to create payout: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 /**
  * Process multiple stipend payouts in batch
  */
 async function batchProcessStipendPayouts(request) {
-    const { tenantId, strikeFundId, disbursementIds } = request;
+    const { organizationId, strikeFundId, disbursementIds } = request;
     const results = [];
     let successful = 0;
     let failed = 0;
@@ -178,7 +184,7 @@ async function batchProcessStipendPayouts(request) {
             // Get disbursement details
             const [disbursement] = await db_1.db.select()
                 .from(schema.stipendDisbursements)
-                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.id, disbursementId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.status, 'approved')))
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.id, disbursementId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.status, 'approved')))
                 .limit(1);
             if (!disbursement) {
                 results.push({
@@ -226,8 +232,9 @@ async function batchProcessStipendPayouts(request) {
  * Create Stripe payment intent for public donation
  */
 async function createDonationPaymentIntent(request) {
+    const { organizationId, strikeFundId } = request; // Extract for catch block scope
     try {
-        const { tenantId, strikeFundId, amount, currency = 'usd', donorEmail, donorName, isAnonymous = false, message, paymentMethod = 'card', } = request;
+        const { organizationId: _organizationId, strikeFundId: _strikeFundId, amount, currency = 'usd', donorEmail, donorName, isAnonymous = false, message, paymentMethod = 'card', } = request;
         // Validate amount (minimum $1.00 for donations)
         if (amount < 1.00) {
             throw new Error('Donation amount must be at least $1.00');
@@ -241,8 +248,8 @@ async function createDonationPaymentIntent(request) {
             payment_method_types: [paymentMethod],
             description: `Donation to strike fund`,
             metadata: {
-                tenantId,
-                strikeFundId,
+                organizationId: request.organizationId,
+                strikeFundId: request.strikeFundId,
                 type: 'donation',
                 donorEmail: donorEmail || '',
                 donorName: isAnonymous ? 'Anonymous' : (donorName || ''),
@@ -260,14 +267,15 @@ async function createDonationPaymentIntent(request) {
         };
     }
     catch (error) {
-throw new Error(`Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        logger.error('Error creating donation payment intent', { error, organizationId, strikeFundId });
+        throw new Error(`Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 /**
  * Confirm donation payment and create donation record
  */
 async function confirmDonationPayment(request) {
-    const { tenantId, paymentIntentId } = request;
+    const { organizationId, paymentIntentId } = request;
     try {
         // Retrieve payment intent from Stripe
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -279,7 +287,7 @@ async function confirmDonationPayment(request) {
         // Create donation record
         const [donation] = await db_1.db.insert(schema.donations)
             .values({
-            tenantId,
+            organizationId: organizationId,
             strikeFundId: metadata.strikeFundId,
             amount: amount.toString(),
             donorName: metadata.donorName || 'Anonymous',
@@ -295,7 +303,8 @@ async function confirmDonationPayment(request) {
         return donation.id;
     }
     catch (error) {
-throw error;
+        logger.error('Error confirming donation payment', { error, organizationId, paymentIntentId });
+        throw error;
     }
 }
 /**
@@ -316,10 +325,12 @@ async function processStripeWebhook(event, signature, webhookSecret) {
                 await handleChargeRefunded(event.data.object);
                 break;
             default:
-}
+                logger.info('Unhandled webhook event type', { eventType: event.type });
+        }
     }
     catch (error) {
-throw error;
+        logger.error('Error processing webhook', { error, eventType: event.type });
+        throw error;
     }
 }
 async function handlePaymentIntentSucceeded(paymentIntent) {
@@ -340,9 +351,10 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
     else if (type === 'donation') {
         // Create or update donation record
         const amount = paymentIntent.amount / 100;
+        const organizationId = metadata.organizationId || metadata.tenantId;
         await db_1.db.insert(schema.donations)
             .values({
-            tenantId: metadata.tenantId,
+            tenantId: organizationId,
             strikeFundId: metadata.strikeFundId,
             amount: amount.toString(),
             donorName: metadata.donorName || 'Anonymous',
@@ -387,7 +399,7 @@ async function handleChargeRefunded(charge) {
 /**
  * Get payment summary for a strike fund
  */
-async function getPaymentSummary(tenantId, strikeFundId, startDate, endDate) {
+async function getPaymentSummary(organizationId, strikeFundId, startDate, endDate) {
     // Dues payments
     const duesQuery = db_1.db.select({
         total: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${schema.duesTransactions.amount} AS DECIMAL)) AS TEXT)`,
@@ -395,7 +407,7 @@ async function getPaymentSummary(tenantId, strikeFundId, startDate, endDate) {
         average: (0, drizzle_orm_1.sql) `CAST(AVG(CAST(${schema.duesTransactions.amount} AS DECIMAL)) AS TEXT)`,
     })
         .from(schema.duesTransactions)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema.duesTransactions.status, 'paid')));
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.duesTransactions.organizationId, organizationId), (0, drizzle_orm_1.eq)(schema.duesTransactions.status, 'paid')));
     // Donations
     const donationsQuery = db_1.db.select({
         total: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${schema.donations.amount} AS DECIMAL)) AS TEXT)`,
@@ -403,7 +415,7 @@ async function getPaymentSummary(tenantId, strikeFundId, startDate, endDate) {
         average: (0, drizzle_orm_1.sql) `CAST(AVG(CAST(${schema.donations.amount} AS DECIMAL)) AS TEXT)`,
     })
         .from(schema.donations)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema.donations.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(schema.donations.status, 'completed')));
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema.donations.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(schema.donations.status, 'completed')));
     // Stipend disbursements
     const stipendsQuery = db_1.db.select({
         total: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
@@ -411,7 +423,7 @@ async function getPaymentSummary(tenantId, strikeFundId, startDate, endDate) {
         average: (0, drizzle_orm_1.sql) `CAST(AVG(CAST(${schema.stipendDisbursements.totalAmount} AS DECIMAL)) AS TEXT)`,
     })
         .from(schema.stipendDisbursements)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.status, 'paid')));
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(schema.stipendDisbursements.status, 'paid')));
     const [duesResults] = await duesQuery;
     const [donationsResults] = await donationsQuery;
     const [stipendsResults] = await stipendsQuery;

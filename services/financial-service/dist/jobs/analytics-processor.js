@@ -36,7 +36,7 @@ exports.hourlyAlertsJob = node_cron_1.default.schedule('0 * * * *', async () => 
         // Process alerts for all tenants
         // In production, this should iterate through active tenants
         const tenantId = '11111111-1111-1111-1111-111111111111'; // Test tenant
-        const result = await (0, burn_rate_predictor_1.processAutomatedAlerts)({ tenantId });
+        const result = await (0, burn_rate_predictor_1.processAutomatedAlerts)({ organizationId: tenantId });
         logger.info(`Hourly alerts processed: ${result.alertsSent} alerts sent`, {
             criticalAlerts: result.alerts?.filter(a => a.severity === 'critical').length || 0,
             warningAlerts: result.alerts?.filter(a => a.severity === 'warning').length || 0,
@@ -57,7 +57,7 @@ exports.weeklyForecastJob = node_cron_1.default.schedule('0 9 * * 1', async () =
         // Generate reports for all tenants
         // In production, this should iterate through active tenants
         const tenantId = '11111111-1111-1111-1111-111111111111'; // Test tenant
-        const result = await (0, burn_rate_predictor_2.generateWeeklyForecastReport)({ tenantId });
+        const result = await (0, burn_rate_predictor_2.generateWeeklyForecastReport)({ organizationId: tenantId });
         logger.info('Weekly forecast report generated and sent', {
             totalFunds: result.totalFunds,
             criticalFunds: result.criticalFunds,

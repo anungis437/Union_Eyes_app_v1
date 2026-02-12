@@ -57,7 +57,7 @@ router.post('/calculate', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.memberDuesAssignments.memberId, validatedData.memberId),
-          eq(schema.memberDuesAssignments.tenantId, organizationId),
+          eq(schema.memberDuesAssignments.organizationId, organizationId),
           eq(schema.memberDuesAssignments.isActive, true),
           isNull(schema.memberDuesAssignments.endDate)
         )
@@ -82,11 +82,11 @@ router.post('/calculate', async (req: Request, res: Response) => {
     // Prepare calculation input
     const calculationInput: any = {
       memberId: validatedData.memberId,
-      tenantId: organizationId,
+      organizationId: organizationId,
       assignmentId: assignment.member_dues_assignments.id,
       rule: {
         id: rule.id,
-        tenantId: rule.tenantId,
+        organizationId: rule.organizationId,
         ruleName: rule.ruleName,
         ruleCode: rule.ruleCode,
         calculationType: rule.calculationType,
@@ -167,7 +167,7 @@ router.post('/batch', async (req: Request, res: Response) => {
 
     // Build query for active assignments
     const conditions = [
-      eq(schema.memberDuesAssignments.tenantId, organizationId),
+      eq(schema.memberDuesAssignments.organizationId, organizationId),
       eq(schema.memberDuesAssignments.isActive, true),
       isNull(schema.memberDuesAssignments.endDate),
     ];
@@ -213,11 +213,11 @@ router.post('/batch', async (req: Request, res: Response) => {
         );
         return {
           memberId: memberAssignment.memberId,
-          tenantId: organizationId,
+          organizationId: organizationId,
           assignmentId: memberAssignment.id,
           rule: {
             id: rule.id,
-            tenantId: rule.tenantId,
+            organizationId: rule.organizationId,
             ruleName: rule.ruleName,
             ruleCode: rule.ruleCode,
             calculationType: rule.calculationType,
@@ -279,7 +279,7 @@ router.post('/batch', async (req: Request, res: Response) => {
         dueDate.setDate(dueDate.getDate() + 7); // Due 7 days after period end
 
         return {
-          tenantId: organizationId,
+          organizationId: organizationId,
           memberId: result.memberId,
           assignmentId: assignment.member_dues_assignments.id,
           transactionType: 'dues' as const,
@@ -333,7 +333,7 @@ router.get('/', async (req: Request, res: Response) => {
     const { organizationId } = (req as any).user;
     const { memberId, status, startDate, endDate } = req.query;
 
-    const conditions = [eq(schema.duesTransactions.tenantId, organizationId)];
+    const conditions = [eq(schema.duesTransactions.organizationId, organizationId)];
 
     if (memberId) {
       conditions.push(eq(schema.duesTransactions.memberId, memberId as string));
@@ -385,7 +385,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       .where(
         and(
           eq(schema.duesTransactions.id, id),
-          eq(schema.duesTransactions.tenantId, organizationId)
+          eq(schema.duesTransactions.organizationId, organizationId)
         )
       )
       .limit(1);

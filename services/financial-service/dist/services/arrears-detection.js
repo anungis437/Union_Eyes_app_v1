@@ -15,7 +15,7 @@ const drizzle_orm_1 = require("drizzle-orm");
  * Detect all overdue transactions and group by member
  */
 async function detectOverduePayments(config) {
-    const { tenantId, gracePeriodDays = 30 } = config;
+    const { organizationId, gracePeriodDays = 30 } = config;
     // Calculate cutoff date (today - grace period)
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - gracePeriodDays);
@@ -23,7 +23,7 @@ async function detectOverduePayments(config) {
     const overdueTransactions = await db_1.db.execute((0, drizzle_orm_1.sql) `
     SELECT id, member_id, due_date, amount
     FROM dues_transactions
-    WHERE tenant_id = ${tenantId}
+    WHERE organization_id = ${organizationId}
       AND due_date < ${cutoffDate.toISOString()}
       AND status = 'pending'
     ORDER BY due_date ASC
@@ -81,14 +81,14 @@ async function calculateLateFees(transactionId, config) {
 /**
  * Create arrears cases for detected overdue payments
  */
-async function createArrearsCases(detectedArrears, tenantId, createdBy) {
+async function createArrearsCases(detectedArrears, organizationId, createdBy) {
     const createdCaseIds = [];
     for (const arrears of detectedArrears) {
         // Check if active case already exists
         const [existingCase] = await db_1.db
             .select()
             .from(db_1.schema.arrearsCases)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.memberId, arrears.memberId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.status, 'open')))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.organizationId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.memberId, arrears.memberId), (0, drizzle_orm_1.eq)(db_1.schema.arrearsCases.status, 'open')))
             .limit(1);
         if (existingCase) {
             // Update existing case with new transactions
@@ -113,7 +113,7 @@ async function createArrearsCases(detectedArrears, tenantId, createdBy) {
             const [newCase] = await db_1.db
                 .insert(db_1.schema.arrearsCases)
                 .values({
-                tenantId,
+                organizationId,
                 memberId: arrears.memberId,
                 caseNumber,
                 totalOwed: arrears.totalOwing.toString(),
@@ -213,7 +213,7 @@ async function runArrearsDetection(config, createdBy) {
         feesApplied = await applyLateFees(allTransactionIds, config);
     }
     // Step 4: Create or update arrears cases
-    const casesCreated = await createArrearsCases(detectedArrears, config.tenantId, createdBy);
+    const casesCreated = await createArrearsCases(detectedArrears, config.organizationId, createdBy);
     return {
         detectedCount: detectedArrears.length,
         casesCreated,

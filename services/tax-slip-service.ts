@@ -497,10 +497,18 @@ export class TaxSlipService {
     const user = userResult[0];
     const member = memberResult[0];
     
+    // Track missing required data for CRA compliance
+    const missingFields: string[] = [];
+    
     // Construct full name from available data
     const fullName = user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
-      : member?.name || "Member Name";
+      : member?.name;
+    
+    if (!fullName) {
+      missingFields.push('fullName');
+      logger.warn('Tax slip: Missing member name', { userId });
+    }
 
     // SIN decryption: Requires proper encryption/decryption infrastructure with secure key management
     // Implementation should use AWS KMS, Azure Key Vault, or similar HSM for production
@@ -510,24 +518,57 @@ export class TaxSlipService {
     // - Audit logging of all SIN access
     // - CRA compliance for SIN storage (safeguards, retention, disposal)
     const sin = undefined; // user?.encryptedSin ? await decrypt(user.encryptedSin) : undefined
+    
+    if (!user?.encryptedSin) {
+      missingFields.push('sin');
+      logger.warn('Tax slip: Missing SIN for member', { userId });
+    }
 
-    // Address fields: Should be added to profiles or user schema for CRA compliance
+    // Address fields: Should be added to member schema for CRA compliance
     // Required fields for T4A/RL-1: street, city, province, postal code
-    // For now, using placeholder values. In production:
-    // - Add address fields to profiles or create separate memberAddresses table
-    // - Validate address format (Canada Post standards)
-    // - Capture during onboarding/profile creation
-    const address = user?.['address'] || member?.['address'] || "123 Main St";
-    const city = user?.['city'] || member?.['city'] || "Toronto";
-    const province = user?.['province'] || member?.['province'] || "ON";
-    const postalCode = user?.['postalCode'] || member?.['postalCode'] || "M1M 1M1";
+    // TODO: Add member_addresses table or extend profiles/users with address fields:
+    // - streetAddress (varchar 200)
+    // - city (varchar 100)
+    // - province (varchar 2) - use provincesEnum
+    // - postalCode (varchar 10) - validate Canadian postal code format
+    // - addressType (enum: 'mailing', 'residential')
+    // - effectiveDate (timestamp)
+    //
+    // Migration required: See docs/migrations/add-member-addresses.md
+    // Schema location: db/schema/domains/member/addresses.ts
+    
+    // For now, log warning and use placeholder values
+    // In production, T4A/RL-1 generation should fail with clear error
+    // when address data is missing, requiring admin to complete member profile
+    const address = "Address Required";
+    const city = "City Required";
+    const province = "Province Required";
+    const postalCode = "Postal Code Required";
+    
+    missingFields.push('address', 'city', 'province', 'postalCode');
+    logger.error('Tax slip: Missing address fields - member profile incomplete', { 
+      userId,
+      missingFields,
+      requiresAction: 'Admin must complete member address data for tax compliance'
+    });
     
     // Calculate Quebec residency from province
     const isQuebecResident = province === "QC";
 
+    // Log data quality issues for compliance tracking
+    if (missingFields.length > 0) {
+      logger.warn('Tax slip generation: Incomplete member data', {
+        userId,
+        fullName: fullName || 'Unknown',
+        missingFields,
+        complianceRisk: 'Tax slips may not meet CRA requirements',
+        actionRequired: 'Complete member profile with missing fields'
+      });
+    }
+
     return {
       userId,
-      fullName,
+      fullName: fullName || "Member Name Required",
       sin,
       address,
       city,

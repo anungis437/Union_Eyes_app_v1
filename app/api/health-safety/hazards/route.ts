@@ -16,6 +16,8 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { withEnhancedRoleAuth } from '@/lib/api-auth-guard';
 import { withRLSContext } from '@/lib/db/with-rls-context';
 import { checkRateLimit, createRateLimitHeaders } from "@/lib/rate-limiter";
+import { getNotificationService } from '@/lib/services/notification-service';
+import { logger } from '@/lib/logger';
 import { 
   standardErrorResponse, 
   standardSuccessResponse, 
@@ -324,9 +326,49 @@ export const POST = withEnhancedRoleAuth(30, async (request, context) => {
         },
       });
 
-      // TODO: Trigger notifications for critical/extreme hazards
+      // Trigger notifications for critical/extreme hazards
       if (data.hazardLevel === 'critical' || data.hazardLevel === 'extreme') {
-        // Call notification service here
+        try {
+          const notificationService = getNotificationService();
+          await notificationService.send({
+            organizationId,
+            type: 'email',
+            priority: data.hazardLevel === 'extreme' ? 'urgent' : 'high',
+            subject: `ALERT: ${data.hazardLevel.toUpperCase()} Hazard Reported`,
+            title: `High-Priority Hazard Identified`,
+            body: `A ${data.hazardLevel} hazard has been reported:\n\n` +
+                  `Report #: ${reportNumber}\n` +
+                  `Category: ${data.hazardCategory}\n` +
+                  `Location: ${data.locationName || 'Not specified'}\n` +
+                  `${data.isAnonymous ? 'Anonymous report' : ''}\n\n` +
+                  `Immediate assessment and mitigation required.`,
+            htmlBody: `
+              <h2 style="color: #dc2626;">⚠️ High-Priority Hazard Identified</h2>
+              <p>A <strong>${data.hazardLevel}</strong> workplace hazard has been reported and requires immediate assessment:</p>
+              <table style="border-collapse: collapse; margin: 20px 0;">
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Report #:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${reportNumber}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Category:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${data.hazardCategory}</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Location:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${data.locationName || 'Not specified'}</td></tr>
+                ${data.isAnonymous ? '<tr><td colspan="2" style="padding: 8px; border: 1px solid #ddd; font-style: italic;">Anonymous report</td></tr>' : ''}
+              </table>
+              <p style="color: #dc2626; font-weight: bold;">Immediate assessment and mitigation required.</p>
+            `,
+            metadata: {
+              hazardId: hazard.id,
+              reportNumber,
+              hazardLevel: data.hazardLevel,
+              hazardCategory: data.hazardCategory,
+            },
+            userId,
+          });
+          logger.info('Critical hazard notification sent', { hazardId: hazard.id, hazardLevel: data.hazardLevel });
+        } catch (notificationError) {
+          logger.error('Failed to send critical hazard notification', {
+            error: notificationError,
+            hazardId: hazard.id,
+          });
+          // Don't fail the request if notification fails
+        }
       }
 
       return standardSuccessResponse({ hazard }, 201);

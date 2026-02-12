@@ -45,6 +45,9 @@ const zod_1 = require("zod");
 const stripe_1 = __importDefault(require("stripe"));
 const db_1 = require("../db");
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
 // Initialize Stripe
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY || '', {
@@ -83,6 +86,7 @@ router.post('/', async (req, res) => {
             });
         }
         const fund = funds[0];
+        const organizationId = fund.tenant_id;
         // Create Stripe payment intent
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(validatedData.amount * 100), // Convert to cents
@@ -97,7 +101,7 @@ router.post('/', async (req, res) => {
                 donorEmail: validatedData.donorEmail || '',
                 isAnonymous: validatedData.isAnonymous.toString(),
                 message: validatedData.message || '',
-                tenantId: fund.tenant_id,
+                organizationId,
             },
             description: `Donation to ${fund.fund_name}`,
             receipt_email: validatedData.donorEmail || undefined,
@@ -109,7 +113,7 @@ router.post('/', async (req, res) => {
         is_anonymous, payment_provider, payment_intent_id,
         status, message
       ) VALUES (
-        ${fund.tenant_id}, ${validatedData.fundId}, ${validatedData.amount.toString()},
+        ${organizationId}, ${validatedData.fundId}, ${validatedData.amount.toString()},
         ${validatedData.donorName || null}, ${validatedData.donorEmail || null},
         ${validatedData.isAnonymous}, 'stripe', ${paymentIntent.id},
         'pending', ${validatedData.message || null}
@@ -158,7 +162,8 @@ router.post('/webhooks/stripe', express_1.default.raw({ type: 'application/json'
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET || '');
     }
     catch (err) {
-return res.status(400).json({
+        logger.error('Webhook signature verification failed', { error: err });
+        return res.status(400).json({
             success: false,
             error: `Webhook Error: ${err.message}`,
         });
@@ -182,11 +187,13 @@ return res.status(400).json({
                 break;
             }
             default:
-}
+                logger.info('Unhandled event type', { eventType: event.type });
+        }
         res.json({ received: true });
     }
     catch (error) {
-res.status(500).json({
+        logger.error('Error processing webhook', { error });
+        res.status(500).json({
             success: false,
             error: 'Error processing webhook',
         });
@@ -331,6 +338,7 @@ async function handlePaymentSuccess(paymentIntent) {
       updated_at = NOW()
     WHERE id = ${metadata.fundId}
   `);
+    logger.info('Payment succeeded for donation', { fundId: metadata.fundId, amount });
 }
 async function handlePaymentFailure(paymentIntent) {
     await db_1.db.execute((0, drizzle_orm_1.sql) `
@@ -340,6 +348,7 @@ async function handlePaymentFailure(paymentIntent) {
       updated_at = NOW()
     WHERE payment_intent_id = ${paymentIntent.id}
   `);
+    logger.warn('Payment failed for intent', { paymentIntentId: paymentIntent.id });
 }
 async function handlePaymentCancellation(paymentIntent) {
     await db_1.db.execute((0, drizzle_orm_1.sql) `
@@ -349,6 +358,7 @@ async function handlePaymentCancellation(paymentIntent) {
       updated_at = NOW()
     WHERE payment_intent_id = ${paymentIntent.id}
   `);
+    logger.info('Payment cancelled for intent', { paymentIntentId: paymentIntent.id });
 }
 exports.default = router;
 //# sourceMappingURL=donations.js.map

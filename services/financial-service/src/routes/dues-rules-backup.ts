@@ -72,7 +72,7 @@ router.get('/', async (req: Request, res: Response) => {
     const { active } = req.query;
     
     // Build where conditions
-    const conditions = [eq(duesRules.tenantId, organizationId)];
+    const conditions = [eq(duesRules.organizationId, organizationId)];
     
     if (active === 'true') {
       conditions.push(eq(duesRules.isActive, true));
@@ -109,7 +109,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     const rules = await db
       .select()
       .from(duesRules)
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.organizationId, organizationId)))
       .limit(1);
     
     const rule = rules[0];
@@ -154,7 +154,7 @@ router.post('/', async (req: Request, res: Response) => {
     
     // Map validation schema to database schema
     const dbData = {
-      tenantId: organizationId,
+      organizationId: organizationId,
       ruleName: validatedData.ruleName,
       ruleCode: validatedData.ruleCode,
       description: validatedData.description,
@@ -237,7 +237,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const updatedRule = await db
       .update(duesRules)
       .set(dbData)
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.organizationId, organizationId)))
       .returning();
     
     if (updatedRule.length === 0) {
@@ -291,7 +291,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
         isActive: false,
         updatedAt: new Date().toISOString(),
       })
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.organizationId, organizationId)))
       .returning();
     
     if (result.length === 0) {
@@ -335,7 +335,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
     const existingRules = await db
       .select()
       .from(duesRules)
-      .where(and(eq(duesRules.id, id), eq(duesRules.tenantId, organizationId)))
+      .where(and(eq(duesRules.id, id), eq(duesRules.organizationId, organizationId)))
       .limit(1);
     
     const existingRule = existingRules[0];
@@ -349,7 +349,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
     
     // Create new rule with modified code/name
     const duplicatedRule = await db.insert(duesRules).values({
-      tenantId: organizationId,
+      organizationId,
       ruleName: newRuleName || `${existingRule.ruleName} (Copy)`,
       ruleCode: newRuleCode || `${existingRule.ruleCode}_COPY`,
       description: existingRule.description,

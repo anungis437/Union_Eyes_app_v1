@@ -167,6 +167,7 @@ export interface Invoice {
   createdAt: Date;
   updatedAt: Date;
   syncedAt?: Date;
+  metadata?: Record<string, any>;
 }
 
 export enum InvoiceStatus {
@@ -579,19 +580,21 @@ export interface BankReconciliation {
   glBalance: Decimal;
   difference: Decimal;
   status: 'in_progress' | 'completed' | 'approved';
+  transactions: BankTransaction[];
+  unmatched: BankTransaction[];
+  adjustments: ReconciliationAdjustment[];
   reconciledBy?: string;
   reconciledAt?: Date;
   approvedBy?: string;
   approvedAt?: Date;
-  adjustments: BankReconciliationAdjustment[];
   metadata?: Record<string, any>;
 }
 
-export interface BankReconciliationAdjustment {
+export interface ReconciliationAdjustment {
   id: string;
   description: string;
   amount: Decimal;
-  type: 'bank_charge' | 'interest' | 'error_correction' | 'other';
+  type: 'bank_charge' | 'interest' | 'error_correction' | 'nsf' | 'eft_return' | 'other';
   journalEntryId?: string;
   createdAt: Date;
 }

@@ -7,7 +7,9 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { db, schema } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 
 const router = Router();
 
@@ -61,7 +63,7 @@ router.get('/', async (req: Request, res: Response) => {
     const { active, category, status } = req.query;
 
     // Build query conditions
-    const conditions = [eq(schema.duesRules.tenantId, organizationId)];
+    const conditions = [eq(schema.duesRules.organizationId, organizationId)];
     
     if (active !== undefined) {
       conditions.push(eq(schema.duesRules.isActive, active === 'true'));
@@ -98,7 +100,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       .from(schema.duesRules)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, organizationId)
+        eq(schema.duesRules.organizationId, organizationId)
       ))
       .limit(1);
 
@@ -133,7 +135,7 @@ router.post('/', async (req: Request, res: Response) => {
       .insert(schema.duesRules)
       .values({
         ...validatedData,
-        tenantId: organizationId,
+        organizationId: organizationId,
         createdBy: userId,
       } as any)
       .returning();
@@ -178,7 +180,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       .set(updateData)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, organizationId)
+        eq(schema.duesRules.organizationId, organizationId)
       ))
       .returning();
 
@@ -218,7 +220,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       } as any)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, organizationId)
+        eq(schema.duesRules.organizationId, organizationId)
       ))
       .returning();
 
@@ -261,7 +263,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
       .from(schema.duesRules)
       .where(and(
         eq(schema.duesRules.id, id),
-        eq(schema.duesRules.tenantId, organizationId)
+        eq(schema.duesRules.organizationId, organizationId)
       ))
       .limit(1);
 
@@ -278,7 +280,7 @@ router.post('/:id/duplicate', async (req: Request, res: Response) => {
         ...ruleData,
         ruleCode: newCode,
         ruleName: newName,
-        tenantId: organizationId,
+        organizationId: organizationId,
         createdBy: userId,
       } as any)
       .returning();

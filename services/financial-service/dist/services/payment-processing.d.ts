@@ -15,7 +15,7 @@ export type StripePaymentMethod = 'card' | 'bank_account' | 'us_bank_account';
  * DUES PAYMENT PROCESSING
  */
 export interface CreateDuesPaymentRequest {
-    tenantId: string;
+    organizationId: string;
     memberId: string;
     amount: number;
     currency?: string;
@@ -35,7 +35,7 @@ export interface DuesPaymentIntent {
  */
 export declare function createDuesPaymentIntent(request: CreateDuesPaymentRequest): Promise<DuesPaymentIntent>;
 export interface ConfirmDuesPaymentRequest {
-    tenantId: string;
+    organizationId: string;
     paymentIntentId: string;
     transactionId: string;
 }
@@ -47,7 +47,7 @@ export declare function confirmDuesPayment(request: ConfirmDuesPaymentRequest): 
  * STIPEND DISBURSEMENT PROCESSING
  */
 export interface CreateStipendPayoutRequest {
-    tenantId: string;
+    organizationId: string;
     disbursementId: string;
     amount: number;
     recipientBankAccount: {
@@ -72,7 +72,7 @@ export interface StipendPayoutResult {
  */
 export declare function createStipendPayout(request: CreateStipendPayoutRequest): Promise<StipendPayoutResult>;
 export interface BatchStipendPayoutRequest {
-    tenantId: string;
+    organizationId: string;
     strikeFundId: string;
     disbursementIds: string[];
 }
@@ -94,7 +94,7 @@ export declare function batchProcessStipendPayouts(request: BatchStipendPayoutRe
  * PUBLIC DONATION PROCESSING
  */
 export interface CreateDonationPaymentRequest {
-    tenantId: string;
+    organizationId: string;
     strikeFundId: string;
     amount: number;
     currency?: string;
@@ -117,7 +117,7 @@ export interface DonationPaymentIntent {
  */
 export declare function createDonationPaymentIntent(request: CreateDonationPaymentRequest): Promise<DonationPaymentIntent>;
 export interface ConfirmDonationRequest {
-    tenantId: string;
+    organizationId: string;
     paymentIntentId: string;
 }
 /**
@@ -164,5 +164,5 @@ export interface PaymentSummary {
 /**
  * Get payment summary for a strike fund
  */
-export declare function getPaymentSummary(tenantId: string, strikeFundId: string, startDate?: Date, endDate?: Date): Promise<PaymentSummary>;
+export declare function getPaymentSummary(organizationId: string, strikeFundId: string, startDate?: Date, endDate?: Date): Promise<PaymentSummary>;
 //# sourceMappingURL=payment-processing.d.ts.map

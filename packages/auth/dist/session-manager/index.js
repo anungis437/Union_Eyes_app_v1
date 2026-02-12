@@ -4,6 +4,7 @@
  * Manages JWT tokens and cross-application session persistence.
  * Ensures users stay authenticated across all 17 CourtLens applications.
  */
+import { logger } from '../src/utils/logger';
 // =========================================================================
 // CONSTANTS
 // =========================================================================
@@ -44,7 +45,8 @@ export class SessionManager {
             this.scheduleSessionRefresh(session);
         }
         catch (error) {
-}
+            logger.error('Error storing session:', error);
+        }
     }
     /**
      * Load session from localStorage
@@ -66,7 +68,8 @@ export class SessionManager {
             return session;
         }
         catch (error) {
-return null;
+            logger.error('Error loading session:', error);
+            return null;
         }
     }
     /**
@@ -83,7 +86,8 @@ return null;
             }
         }
         catch (error) {
-}
+            logger.error('Error clearing session:', error);
+        }
     }
     /**
      * Get current session

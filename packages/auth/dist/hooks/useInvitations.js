@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { InvitationService } from '../services/invitationService';
+import { logger } from '../src/utils/logger';
 export function useInvitations(options = {}) {
     const { organizationId, autoFetch = true, filterStatus, } = options;
     const [invitations, setInvitations] = useState([]);
@@ -31,7 +32,8 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to fetch invitations';
             setError(message);
-}
+            logger.error('Error fetching invitations:', err);
+        }
         finally {
             setIsLoading(false);
         }
@@ -57,7 +59,8 @@ export function useInvitations(options = {}) {
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to create invitation';
             setError(message);
-return null;
+            logger.error('Error creating invitation:', err);
+            return null;
         }
     };
     // Cancel invitation
@@ -76,7 +79,8 @@ return null;
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to cancel invitation';
             setError(message);
-return false;
+            logger.error('Error cancelling invitation:', err);
+            return false;
         }
     };
     // Resend invitation
@@ -93,7 +97,8 @@ return false;
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to resend invitation';
             setError(message);
-return false;
+            logger.error('Error resending invitation:', err);
+            return false;
         }
     };
     // Delete invitation
@@ -110,7 +115,8 @@ return false;
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to delete invitation';
             setError(message);
-return false;
+            logger.error('Error deleting invitation:', err);
+            return false;
         }
     };
     // Accept invitation
@@ -122,7 +128,8 @@ return false;
         catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to accept invitation';
             setError(message);
-return { success: false, error: message };
+            logger.error('Error accepting invitation:', err);
+            return { success: false, error: message };
         }
     };
     // Refresh invitations

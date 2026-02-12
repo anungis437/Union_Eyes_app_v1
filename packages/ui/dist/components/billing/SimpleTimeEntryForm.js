@@ -103,7 +103,7 @@ export function SimpleTimeEntryForm({ onSubmit, matters = [], defaultRate = 450,
             setTimeError('');
         }
         catch (error) {
-}
+        }
         finally {
             setIsLoading(false);
         }

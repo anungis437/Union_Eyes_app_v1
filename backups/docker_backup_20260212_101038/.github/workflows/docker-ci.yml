@@ -1,0 +1,367 @@
+name: Docker CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose*.yml'
+      - '.dockerignore'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  pull_request:
+    branches:
+      - main
+      - staging
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose*.yml'
+      - '.dockerignore'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job 1: Build and Test
+  build-and-test:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-size: ${{ steps.size.outputs.size }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      
+      - name: Check image size
+        id: size
+        run: |
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
+          SIZE=$(docker images --format "{{.Size}}" $IMAGE_ID)
+          SIZE_MB=$(docker images --format "{{.Size}}" $IMAGE_ID | sed 's/MB//' | sed 's/GB/*1024/' | bc 2>/dev/null || echo "unknown")
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+          echo "size_mb=$SIZE_MB" >> $GITHUB_OUTPUT
+          echo "### 📦 Image Size: $SIZE" >> $GITHUB_STEP_SUMMARY
+          
+          # Warn if image is too large
+          if [ "$SIZE_MB" != "unknown" ] && [ $(echo "$SIZE_MB > 1000" | bc) -eq 1 ]; then
+            echo "⚠️ Warning: Image size exceeds 1GB" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Test container starts
+        run: |
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
+          docker run --rm -d --name test-container \
+            -e DATABASE_URL=postgresql://test:test@localhost:5432/test \
+            -e NODE_ENV=production \
+            $IMAGE_ID
+          
+          # Wait for container to start (max 30 seconds)
+          echo "Waiting for container to start..."
+          for i in {1..30}; do
+            if docker ps | grep -q test-container; then
+              echo "✓ Container started successfully"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Check if container is still running
+          if ! docker ps | grep -q test-container; then
+            echo "✗ Container failed to start or stopped"
+            docker logs test-container
+            exit 1
+          fi
+          
+          # Cleanup
+          docker stop test-container || true
+      
+      - name: Export image for scanning
+        run: |
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
+          docker save $IMAGE_ID -o image.tar
+      
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar
+          retention-days: 1
+  
+  # Job 2: Security Scanning with Trivy
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+      
+      - name: Load Docker image
+        run: docker load -i image.tar
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: $(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run Trivy for human-readable report
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: $(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          format: 'table'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '1'
+          ignore-unfixed: true
+      
+      - name: Generate security summary
+        if: always()
+        run: |
+          echo "## 🔒 Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
+          docker run --rm aquasec/trivy image --severity HIGH,CRITICAL --format json $IMAGE_ID | \
+            jq -r '.Results[0].Vulnerabilities | length' | \
+            xargs -I {} echo "Found {} HIGH/CRITICAL vulnerabilities" >> $GITHUB_STEP_SUMMARY
+  
+  # Job 3: Multi-Architecture Build
+  multi-arch-build:
+    name: Multi-Architecture Build
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      
+      - name: Generate build summary
+        run: |
+          echo "## 🚀 Multi-Arch Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+  
+  # Job 4: Docker Compose Validation
+  compose-validation:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Validate docker-compose.yml
+        run: docker-compose config --quiet
+      
+      - name: Validate docker-compose.prod.yml
+        run: docker-compose -f docker-compose.yml -f docker-compose.prod.yml config --quiet
+      
+      - name: Validate docker-compose.staging.yml
+        run: docker-compose -f docker-compose.yml -f docker-compose.staging.yml config --quiet
+      
+      - name: Check for secrets in files
+        run: |
+          echo "Checking for potential secrets in Docker files..."
+          
+          # Check for common secret patterns
+          if grep -r -E "(password|secret|key|token).*=.*[A-Za-z0-9]{20,}" \
+            Dockerfile* docker-compose*.yml .dockerignore 2>/dev/null; then
+            echo "⚠️ Warning: Potential secrets found in files!"
+            exit 1
+          else
+            echo "✓ No hardcoded secrets detected"
+          fi
+      
+      - name: Validate .dockerignore
+        run: |
+          if [ ! -f .dockerignore ]; then
+            echo "⚠️ Warning: .dockerignore not found"
+            exit 1
+          fi
+          
+          # Check if .dockerignore includes essential exclusions
+          REQUIRED_PATTERNS=("node_modules" ".git" ".env")
+          for pattern in "${REQUIRED_PATTERNS[@]}"; do
+            if ! grep -q "$pattern" .dockerignore; then
+              echo "⚠️ Warning: .dockerignore missing: $pattern"
+              exit 1
+            fi
+          done
+          
+          echo "✓ .dockerignore validation passed"
+  
+  # Job 5: Image Optimization Report
+  optimization-report:
+    name: Optimization Report
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+      
+      - name: Load Docker image
+        run: docker load -i image.tar
+      
+      - name: Analyze image layers
+        run: |
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
+          
+          echo "## 📊 Image Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Layer analysis
+          echo "### Layer Breakdown" >> $GITHUB_STEP_SUMMARY
+          docker history $IMAGE_ID --human --no-trunc | head -n 20 >> $GITHUB_STEP_SUMMARY
+          
+          # Size comparison
+          TOTAL_SIZE=$(docker images $IMAGE_ID --format "{{.Size}}")
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total Size:** $TOTAL_SIZE" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check for optimization opportunities
+        run: |
+          IMAGE_ID=$(docker images --format "{{.ID}}" | head -n 1)
+          
+          echo "### 💡 Optimization Recommendations" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for large layers
+          LARGE_LAYERS=$(docker history $IMAGE_ID --human --format "{{.Size}}" | \
+            grep -E "[0-9]+GB|[5-9][0-9]{2}MB" | wc -l)
+          
+          if [ $LARGE_LAYERS -gt 0 ]; then
+            echo "- ⚠️ Found $LARGE_LAYERS large layers (>500MB)" >> $GITHUB_STEP_SUMMARY
+            echo "  Consider combining RUN commands or using .dockerignore" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ✓ No excessively large layers detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for cache optimization
+          echo "- Consider using BuildKit cache mounts for faster builds" >> $GITHUB_STEP_SUMMARY
+          echo "- Use multi-stage builds to minimize final image size" >> $GITHUB_STEP_SUMMARY

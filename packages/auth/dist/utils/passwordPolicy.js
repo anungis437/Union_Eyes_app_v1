@@ -10,6 +10,7 @@
  * - Internationalization support
  */
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../src/utils/logger';
 // ============================================================================
 // Default Configuration
 // ============================================================================
@@ -326,7 +327,8 @@ export async function checkPasswordHistory(userId, newPassword, supabaseUrl, sup
         return true; // Password not in history
     }
     catch (error) {
-return true; // Allow password on error
+        logger.error('Error checking password history:', error);
+        return true; // Allow password on error
     }
 }
 // ============================================================================

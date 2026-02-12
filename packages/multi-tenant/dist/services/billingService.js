@@ -8,6 +8,7 @@
  * @category Multi-Tenant
  */
 import Stripe from 'stripe';
+import { SimpleLogger } from '../utils/logger';
 // =====================================================
 // PLAN CONFIGURATION
 // =====================================================
@@ -74,6 +75,7 @@ export const PLAN_CONFIGS = {
 export class BillingService {
     constructor(supabase, stripeSecretKey) {
         this.supabase = supabase;
+        this.logger = new SimpleLogger('BillingService');
         this.stripe = new Stripe(stripeSecretKey, {
             apiVersion: '2024-06-20',
         });
@@ -429,7 +431,8 @@ export class BillingService {
                     await this.handleInvoicePaymentFailed(event.data.object);
                     break;
                 default:
-}
+                    this.logger.info('Unhandled webhook event type', { eventType: event.type });
+            }
             return { success: true, error: null };
         }
         catch (error) {

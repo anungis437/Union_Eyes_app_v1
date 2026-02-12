@@ -37,6 +37,7 @@ export declare function processWeeklyStipends(params: {
     totalAmount: number;
     pendingApproval: number;
     autoApproved: number;
+    membersProcessed: number;
     errors: Array<{
         memberId: string;
         error: string;

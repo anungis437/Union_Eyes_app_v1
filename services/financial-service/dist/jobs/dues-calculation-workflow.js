@@ -84,7 +84,7 @@ async function processMonthlyDuesCalculation(params) {
                 const existingTransaction = await db_1.db
                     .select()
                     .from(schema_1.duesTransactions)
-                    .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.memberId, member.memberId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.periodStart, effectiveDate.toISOString().split('T')[0])))
+                    .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.organizationId, tenantId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.memberId, member.memberId), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.periodStart, effectiveDate.toISOString().split('T')[0])))
                     .limit(1);
                 if (existingTransaction.length > 0) {
                     logger.info(`Transaction already exists for member ${member.memberId} for period ${effectiveDate.toISOString()}`);

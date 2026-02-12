@@ -468,13 +468,13 @@ describe('Member Documents RLS Policies', () => {
     expect(attemptedRead).toEqual([]);
   });
 
-  it.skip('should allow org admins to see member documents in their org', async () => {
+  it.skip('should allow org admins to see member documents in their org (requires org setup)', async () => {
     const { user1, admin } = testUsers;
     
     // User1 uploads a document
     await setSessionContext(user1.id, user1.tenantId, user1.orgId);
     const [document] = await db.insert(documents).values({
-      tenantId: user1.tenantId,
+      organizationId: user1.orgId,
       name: 'Certification',
       fileUrl: '/documents/cert.pdf',
       fileType: 'pdf',
@@ -573,12 +573,12 @@ describe('Reports System RLS Policies', () => {
   });
 
   describe('report_shares table - Participant Access', () => {
-    it.skip('should allow shared report access', async () => {
+    it.skip('should allow shared report access (requires org setup)', async () => {
       const { user1, user2 } = testUsers;
       
       await setSessionContext(user1.id, user1.tenantId, user1.orgId);
       const [report] = await db.insert(reports).values({
-        tenantId: user1.tenantId,
+        organizationId: user1.orgId,
         name: 'Shared Report',
         config: {},
         createdBy: user1.id
@@ -587,7 +587,7 @@ describe('Reports System RLS Policies', () => {
       // Share with user2
       await db.insert(reportShares).values({
         reportId: report.id,
-        tenantId: user1.tenantId,
+        organizationId: user1.orgId,
         sharedWith: user2.id,
         sharedBy: user1.id
       });
@@ -693,19 +693,19 @@ describe('Calendar System RLS Policies', () => {
   });
 
   describe('calendar_events table - Permission-Based Access', () => {
-    it.skip('should enforce can_edit_events permission', async () => {
+    it.skip('should enforce can_edit_events permission (requires org setup)', async () => {
       const { user1, user2 } = testUsers;
       
       await setSessionContext(user1.id, user1.tenantId, user1.orgId);
       const [calendar] = await db.insert(calendars).values({
         name: 'Event Calendar',
         ownerId: user1.id,
-        tenantId: user1.tenantId
+        organizationId: user1.orgId
       }).returning();
       
       const [event] = await db.insert(calendarEvents).values({
         calendarId: calendar.id,
-        tenantId: user1.tenantId,
+        organizationId: user1.orgId,
         organizerId: user1.id,
         createdBy: user1.id,
         title: 'Team Meeting',
@@ -718,7 +718,7 @@ describe('Calendar System RLS Policies', () => {
         calendarId: calendar.id,
         sharedWithUserId: user2.id,
         invitedBy: user1.id,
-        tenantId: user1.tenantId,
+        organizationId: user1.orgId,
         canView: true,
         canEditEvents: false
       });

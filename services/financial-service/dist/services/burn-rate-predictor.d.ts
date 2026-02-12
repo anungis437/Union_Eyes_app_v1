@@ -52,20 +52,20 @@ interface SeasonalPattern {
 /**
  * Get historical burn rate data for a strike fund
  */
-export declare function getHistoricalBurnRate(tenantId: string, fundId: string, startDate: Date, endDate: Date): Promise<BurnRateData[]>;
+export declare function getHistoricalBurnRate(organizationId: string, fundId: string, startDate: Date, endDate: Date): Promise<BurnRateData[]>;
 /**
  * Detect seasonal patterns in burn rate
  */
-export declare function detectSeasonalPatterns(tenantId: string, fundId: string): Promise<SeasonalPattern[]>;
+export declare function detectSeasonalPatterns(organizationId: string, fundId: string): Promise<SeasonalPattern[]>;
 /**
  * Generate multi-scenario forecast
  */
-export declare function generateBurnRateForecast(tenantId: string, fundId: string, forecastDays?: number): Promise<BurnRateForecast>;
+export declare function generateBurnRateForecast(organizationId: string, fundId: string, forecastDays?: number): Promise<BurnRateForecast>;
 /**
  * Check all funds and send alerts if needed
  */
 export declare function processAutomatedAlerts(params: {
-    tenantId: string;
+    organizationId: string;
 }): Promise<{
     success: boolean;
     alertsSent: number;
@@ -80,7 +80,7 @@ export declare function processAutomatedAlerts(params: {
  * Generate weekly forecast report for all funds
  */
 export declare function generateWeeklyForecastReport(params: {
-    tenantId: string;
+    organizationId: string;
     recipientUserId?: string;
 }): Promise<{
     success: boolean;

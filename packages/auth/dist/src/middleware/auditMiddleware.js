@@ -129,6 +129,7 @@ function extractIpAddress(req) {
         req.headers.get('x-real-ip') ||
         undefined);
 }
+import { logger } from '../utils/logger';
 /**
  * Log API request
  */
@@ -150,7 +151,8 @@ async function logRequest(context) {
         });
     }
     catch (error) {
-}
+        logger.error('Failed to log request:', error);
+    }
 }
 /**
  * Log API response
@@ -173,7 +175,8 @@ async function logResponse(context, res) {
         });
     }
     catch (error) {
-}
+        logger.error('Failed to log response:', error);
+    }
 }
 /**
  * Log error
@@ -194,7 +197,8 @@ async function logError(context, error) {
         });
     }
     catch (err) {
-}
+        logger.error('Failed to log error:', err);
+    }
 }
 /**
  * Detect request anomalies
@@ -209,9 +213,11 @@ async function detectRequestAnomalies(context) {
         // - Unusual endpoints accessed
         // - Suspicious patterns (e.g., scanning)
         // For now, just log that we're checking
-}
+        logger.debug('Checking anomalies for user', { userId: context.userId });
+    }
     catch (error) {
-}
+        logger.error('Failed to detect anomalies:', error);
+    }
 }
 // ============================================================================
 // EXPORTS

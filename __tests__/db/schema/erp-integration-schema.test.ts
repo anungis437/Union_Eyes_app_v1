@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { erpSystemEnum, accountTypeEnum, syncStatusEnum, syncDirectionEnum, auditActionEnum, erpConnectors, chartOfAccounts, glAccountMappings, journalEntries, journalEntryLines, erpInvoices, bankAccounts, bankTransactions, bankReconciliations, syncJobs, financialAuditLog, currencyExchangeRates, erpConnectorsRelations, chartOfAccountsRelations, journalEntriesRelations, journalEntryLinesRelations, bankAccountsRelations, bankTransactionsRelations } from '@/lib/../db/schema/erp-integration-schema';
+import { erpSystemEnum, accountTypeEnum, syncStatusEnum, syncDirectionEnum, auditActionEnum, erpConnectors, chartOfAccounts, glAccountMappings, journalEntries, journalEntryLines, erpInvoices, bankAccounts, bankTransactions, bankReconciliations, syncJobs, financialAuditLog, currencyExchangeRates, erpConnectorsRelations, chartOfAccountsRelations, journalEntriesRelations, journalEntryLinesRelations, bankAccountsRelations, bankTransactionsRelations } from '@/db/schema/domains/infrastructure';
 
 describe('erp-integration-schema', () => {
   describe('erpSystemEnum', () => {

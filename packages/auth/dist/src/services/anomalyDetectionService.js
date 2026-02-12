@@ -12,6 +12,7 @@
  */
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { SecurityAuditService } from './securityAuditService';
+import { logger } from '../utils/logger';
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
@@ -109,7 +110,8 @@ export class AnomalyDetectionService {
             return { success: true, data: anomalies };
         }
         catch (error) {
-return {
+            logger.error('Failed to detect unusual login patterns:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -251,7 +253,8 @@ return {
             return { success: true, data: anomalies };
         }
         catch (error) {
-return {
+            logger.error('Failed to detect data access anomalies:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -324,7 +327,8 @@ return {
             return { success: true, data: anomalies };
         }
         catch (error) {
-return {
+            logger.error('Failed to detect permission anomalies:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -388,7 +392,8 @@ return {
             return { success: true, data: anomalies };
         }
         catch (error) {
-return {
+            logger.error('Failed to detect session anomalies:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -415,7 +420,8 @@ return {
             return await this.buildUserBaseline(userId, firmId);
         }
         catch (error) {
-return null;
+            logger.error('Failed to get user baseline:', error);
+            return null;
         }
     }
     /**
@@ -469,7 +475,8 @@ return null;
             return baseline;
         }
         catch (error) {
-return null;
+            logger.error('Failed to build user baseline:', error);
+            return null;
         }
     }
     /**
@@ -484,7 +491,8 @@ return null;
             return { success: true, data: baseline };
         }
         catch (error) {
-return {
+            logger.error('Failed to update baseline:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -515,7 +523,8 @@ return {
             return { success: true };
         }
         catch (error) {
-return {
+            logger.error('Failed to generate alert:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -533,7 +542,8 @@ return {
             return { success: true };
         }
         catch (error) {
-return {
+            logger.error('Failed to configure alerts:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

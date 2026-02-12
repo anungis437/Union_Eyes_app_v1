@@ -21,6 +21,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const winston_1 = __importDefault(require("winston"));
+const backend_1 = require("@clerk/backend");
 // Route imports
 const dues_rules_1 = __importDefault(require("./routes/dues-rules"));
 const dues_assignments_1 = __importDefault(require("./routes/dues-assignments"));
@@ -60,8 +61,32 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3007;
 // Security middleware
 app.use((0, helmet_1.default)());
+// CORS configuration with origin whitelist (Security Hardened - Feb 2026)
+const getAllowedOrigins = () => {
+    const originsEnv = process.env.CORS_ALLOWED_ORIGINS || process.env.CORS_ORIGIN || '';
+    if (process.env.NODE_ENV === 'development') {
+        return ['http://localhost:3000', 'http://localhost:3001'];
+    }
+    if (!originsEnv) {
+        logger.warn('⚠️  CORS_ALLOWED_ORIGINS not configured - CORS disabled');
+        return [];
+    }
+    return originsEnv.split(',').map(o => o.trim()).filter(Boolean);
+};
 app.use((0, cors_1.default)({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: (origin, callback) => {
+        const allowedOrigins = getAllowedOrigins();
+        // Allow requests with no origin (mobile apps, curl, etc.)
+        if (!origin) {
+            return callback(null, true);
+        }
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('CORS policy: Origin not allowed'));
+        }
+    },
     credentials: true,
 }));
 // Rate limiting
@@ -113,9 +138,29 @@ const authenticate = async (req, res, next) => {
             });
         }
         const token = authHeader.substring(7);
-        // TODO: Implement JWT verification with Clerk
-        // For now, parse basic info from token
-        // In production, verify signature and expiration
+        if (process.env.CLERK_SECRET_KEY) {
+            try {
+                const { payload } = await (0, backend_1.verifyToken)(token, {
+                    secretKey: process.env.CLERK_SECRET_KEY,
+                });
+                // Type assertion for JWT payload
+                const jwtPayload = payload;
+                req.user = {
+                    id: jwtPayload.sub,
+                    tenantId: jwtPayload.tenant_id,
+                    role: jwtPayload.org_role,
+                    permissions: jwtPayload.org_permissions || [],
+                };
+                return next();
+            }
+            catch (error) {
+                logger.warn('Clerk token verification failed', { error });
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid or expired token',
+                });
+            }
+        }
         try {
             const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
             req.user = {

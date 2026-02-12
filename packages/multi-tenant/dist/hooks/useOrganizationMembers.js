@@ -191,12 +191,13 @@ export function useOrganizationMembers(options) {
                     table: 'organization_members',
                     filter: `organization_id=eq.${organizationId}`,
                 }, async (payload) => {
-await refresh();
+                    await refresh();
                 })
                     .subscribe();
             }
             catch (err) {
-}
+                setError(err);
+            }
         };
         setupRealtime();
         return () => {

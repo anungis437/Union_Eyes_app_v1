@@ -132,7 +132,7 @@ export class TenantMiddleware {
         return null;
     }
     async resolveByHeader(req) {
-        const tenantId = req.get('X-Tenant-ID') || req.get('Tenant-ID');
+        const tenantId = req.get('X-Organization-ID') || req.get('Organization-ID') || req.get('X-Tenant-ID') || req.get('Tenant-ID');
         if (!tenantId)
             return null;
         const tenant = await this.config.tenantService.getTenant(tenantId);
@@ -164,7 +164,7 @@ export class TenantMiddleware {
         }
     }
     async resolveByQueryParam(req) {
-        const tenantId = req.query.tenant_id || req.query.tenantId;
+        const tenantId = req.query.organization_id || req.query.organizationId || req.query.tenant_id || req.query.tenantId;
         if (!tenantId || typeof tenantId !== 'string')
             return null;
         const tenant = await this.config.tenantService.getTenant(tenantId);

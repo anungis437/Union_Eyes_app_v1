@@ -5,13 +5,17 @@
  */
 
 import { Decimal } from 'decimal.js';
+// TODO: DB access should be injected via dependency injection
+// import { db } from '@/db';
+// import { glAccountMappings } from '@/db/schema/domains/infrastructure';
+import { eq, and } from 'drizzle-orm';
 import type { ERPConnector } from './connector-interface';
 import type {
   JournalEntry,
   JournalEntryLine,
   ChartOfAccountsMapping,
-  AccountType,
 } from './types';
+import { AccountType } from './types';
 
 export interface GLIntegrationConfig {
   strictValidation: boolean;
@@ -34,13 +38,39 @@ export class GeneralLedgerService {
   /**
    * Initialize GL service by loading account mappings
    */
-  async initialize(): Promise<void> {
+  async initialize(organizationId: string, connectorId: string): Promise<void> {
     // Load chart of accounts from ERP
     const accounts = await this.connector.importChartOfAccounts();
     
-    // TODO: Load mappings from database
-    // For now, create empty mappings map
-    this.accountMappings.clear();
+    // TODO: DB access should be injected via dependency injection or passed as a parameter
+    // For now, this method won't load mappings from the database
+    throw new Error('Database access not implemented - loadAccountMappings should be injected');
+    
+    // Load mappings from database
+    // const mappings = await db.query.glAccountMappings.findMany({
+    //   where: and(
+    //     eq(glAccountMappings.organizationId, organizationId),
+    //     eq(glAccountMappings.connectorId, connectorId),
+    //     eq(glAccountMappings.autoSync, true)
+    //   ),
+    //   with: {
+    //     erpAccount: true,
+    //   },
+    // });
+
+    // this.accountMappings.clear();
+    // for (const mapping of mappings) {
+    //   this.accountMappings.set(mapping.unionEyesAccount, {
+    //     unionEyesAccount: mapping.unionEyesAccount,
+    //     erpAccount: mapping.erpAccountId,
+    //     erpAccountNumber: mapping.erpAccount?.accountNumber || '',
+    //     accountType: mapping.accountType,
+    //     description: mapping.description || '',
+    //     autoSync: mapping.autoSync,
+    //     createdAt: mapping.createdAt,
+    //     updatedAt: mapping.updatedAt,
+    //   });
+    // }
   }
 
   /**
@@ -411,7 +441,14 @@ export class GeneralLedgerService {
   /**
    * Add or update account mapping
    */
-  async mapAccount(unionEyesAccount: string, erpAccountId: string, erpAccountNumber: string): Promise<void> {
+  async mapAccount(
+    organizationId: string,
+    connectorId: string,
+    unionEyesAccount: string,
+    erpAccountId: string,
+    erpAccountNumber: string,
+    userId?: string
+  ): Promise<void> {
     const erpAccount = await this.connector.getAccount(erpAccountId);
     
     const mapping: ChartOfAccountsMapping = {
@@ -426,7 +463,35 @@ export class GeneralLedgerService {
     };
 
     this.accountMappings.set(unionEyesAccount, mapping);
-    // TODO: Save to database
+    
+    // TODO: DB access should be injected via dependency injection or passed as a parameter
+    // For now, this won't persist to the database
+    throw new Error('Database access not implemented - saveAccountMapping should be injected');
+    
+    // Save to database
+    // await db
+    //   .insert(glAccountMappings)
+    //   .values({
+    //     organizationId,
+    //     connectorId,
+    //     unionEyesAccount,
+    //     erpAccountId,
+    //     accountType: erpAccount.accountType,
+    //     description: erpAccount.accountName,
+    //     autoSync: true,
+    //     createdBy: userId,
+    //     updatedBy: userId,
+    //   })
+    //   .onConflictDoUpdate({
+    //     target: [glAccountMappings.organizationId, glAccountMappings.unionEyesAccount],
+    //     set: {
+    //       erpAccountId,
+    //       accountType: erpAccount.accountType,
+    //       description: erpAccount.accountName,
+    //       updatedAt: new Date(),
+    //       updatedBy: userId,
+    //     },
+    //   });
   }
 
   /**

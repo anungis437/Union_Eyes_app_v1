@@ -183,11 +183,14 @@ const authenticate = async (
           secretKey: process.env.CLERK_SECRET_KEY,
         });
 
+        // Type assertion for JWT payload
+        const jwtPayload = payload as Record<string, any>;
+
         req.user = {
-          id: payload.sub as string,
-          tenantId: payload.tenant_id as string,
-          role: payload.org_role as string,
-          permissions: (payload.org_permissions as string[]) || [],
+          id: jwtPayload.sub as string,
+          tenantId: jwtPayload.tenant_id as string,
+          role: jwtPayload.org_role as string,
+          permissions: (jwtPayload.org_permissions as string[]) || [],
         };
 
         return next();

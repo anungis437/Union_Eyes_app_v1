@@ -32,7 +32,7 @@ export class SessionManagement {
             return (data || []).map(this.mapSessionData);
         }
         catch (error) {
-return [];
+            return [];
         }
     }
     /**
@@ -74,7 +74,7 @@ return [];
             };
         }
         catch (error) {
-return null;
+            return null;
         }
     }
     /**
@@ -96,7 +96,7 @@ return null;
             return (data || []).map(this.mapSessionData);
         }
         catch (error) {
-return [];
+            return [];
         }
     }
     /**
@@ -123,7 +123,7 @@ return [];
             return true;
         }
         catch (error) {
-return false;
+            return false;
         }
     }
     /**
@@ -150,7 +150,7 @@ return false;
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            return 0;
         }
     }
     /**
@@ -174,7 +174,7 @@ return 0;
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            return 0;
         }
     }
     /**
@@ -190,7 +190,7 @@ return 0;
                 .eq('id', sessionId);
         }
         catch (error) {
-}
+        }
     }
     /**
      * Check concurrent session limit
@@ -210,7 +210,7 @@ return 0;
             };
         }
         catch (error) {
-return { allowed: true, activeCount: 0 };
+            return { allowed: true, activeCount: 0 };
         }
     }
     /**
@@ -233,7 +233,7 @@ return { allowed: true, activeCount: 0 };
             return data?.length || 0;
         }
         catch (error) {
-return 0;
+            return 0;
         }
     }
     /**
@@ -258,7 +258,7 @@ return 0;
             }));
         }
         catch (error) {
-return [];
+            return [];
         }
     }
     /**

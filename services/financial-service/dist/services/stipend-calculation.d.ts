@@ -9,7 +9,7 @@
  * - Payment tracking and reconciliation
  */
 export interface StipendCalculationRequest {
-    tenantId: string;
+    organizationId: string;
     strikeFundId: string;
     weekStartDate: Date;
     weekEndDate: Date;
@@ -24,7 +24,7 @@ export interface StipendEligibility {
     reason?: string;
 }
 export interface DisbursementRequest {
-    tenantId: string;
+    organizationId: string;
     strikeFundId: string;
     memberId: string;
     amount: number;
@@ -54,29 +54,29 @@ export declare function createDisbursement(request: DisbursementRequest): Promis
 /**
  * Approve a pending disbursement
  */
-export declare function approveDisbursement(tenantId: string, approval: DisbursementApproval): Promise<{
+export declare function approveDisbursement(organizationId: string, approval: DisbursementApproval): Promise<{
     success: boolean;
     error?: string;
 }>;
 /**
  * Mark a disbursement as paid
  */
-export declare function markDisbursementPaid(tenantId: string, disbursementId: string, transactionId: string, paidBy: string): Promise<{
+export declare function markDisbursementPaid(organizationId: string, disbursementId: string, transactionId: string, paidBy: string): Promise<{
     success: boolean;
     error?: string;
 }>;
 /**
  * Get disbursement history for a member
  */
-export declare function getMemberDisbursements(tenantId: string, memberId: string, strikeFundId?: string): Promise<any[]>;
+export declare function getMemberDisbursements(organizationId: string, memberId: string, strikeFundId?: string): Promise<any[]>;
 /**
  * Get pending disbursements for approval
  */
-export declare function getPendingDisbursements(tenantId: string, strikeFundId: string): Promise<any[]>;
+export declare function getPendingDisbursements(organizationId: string, strikeFundId: string): Promise<any[]>;
 /**
  * Get total disbursed amount for a strike fund
  */
-export declare function getStrikeFundDisbursementSummary(tenantId: string, strikeFundId: string): Promise<{
+export declare function getStrikeFundDisbursementSummary(organizationId: string, strikeFundId: string): Promise<{
     totalPending: number;
     totalApproved: number;
     totalPaid: number;

@@ -8,6 +8,9 @@ const express_1 = require("express");
 const zod_1 = require("zod");
 const db_1 = require("../db");
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 const router = (0, express_1.Router)();
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -55,10 +58,11 @@ const createDuesRuleSchema = zod_1.z.object({
  */
 router.get('/', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const { active, category, status } = req.query;
         // Build query conditions
-        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.duesRules.tenantId, tenantId)];
+        const conditions = [(0, drizzle_orm_1.eq)(db_1.schema.duesRules.organizationId, organizationId)];
         if (active !== undefined) {
             conditions.push((0, drizzle_orm_1.eq)(db_1.schema.duesRules.isActive, active === 'true'));
         }
@@ -74,7 +78,8 @@ router.get('/', async (req, res) => {
         });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to fetch dues rules' });
+        logger.error('Error fetching dues rules', { error });
+        res.status(500).json({ success: false, error: 'Failed to fetch dues rules' });
     }
 });
 /**
@@ -83,12 +88,13 @@ res.status(500).json({ success: false, error: 'Failed to fetch dues rules' });
  */
 router.get('/:id', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const { id } = req.params;
         const [rule] = await db_1.db
             .select()
             .from(db_1.schema.duesRules)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.organizationId, organizationId)))
             .limit(1);
         if (!rule) {
             return res.status(404).json({ success: false, error: 'Dues rule not found' });
@@ -96,7 +102,8 @@ router.get('/:id', async (req, res) => {
         res.json({ success: true, data: rule });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to fetch dues rule' });
+        logger.error('Error fetching dues rule', { error });
+        res.status(500).json({ success: false, error: 'Failed to fetch dues rule' });
     }
 });
 /**
@@ -105,7 +112,8 @@ res.status(500).json({ success: false, error: 'Failed to fetch dues rule' });
  */
 router.post('/', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({ success: false, error: 'Insufficient permissions' });
@@ -116,7 +124,7 @@ router.post('/', async (req, res) => {
             .insert(db_1.schema.duesRules)
             .values({
             ...validatedData,
-            tenantId,
+            organizationId: organizationId,
             createdBy: userId,
         })
             .returning();
@@ -126,7 +134,8 @@ router.post('/', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-res.status(500).json({ success: false, error: 'Failed to create dues rule' });
+        logger.error('Error creating dues rule', { error });
+        res.status(500).json({ success: false, error: 'Failed to create dues rule' });
     }
 });
 /**
@@ -135,7 +144,8 @@ res.status(500).json({ success: false, error: 'Failed to create dues rule' });
  */
 router.put('/:id', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const { id } = req.params;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
@@ -154,7 +164,7 @@ router.put('/:id', async (req, res) => {
         const [updatedRule] = await db_1.db
             .update(db_1.schema.duesRules)
             .set(updateData)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.organizationId, organizationId)))
             .returning();
         if (!updatedRule) {
             return res.status(404).json({ success: false, error: 'Dues rule not found' });
@@ -165,7 +175,8 @@ router.put('/:id', async (req, res) => {
         if (error instanceof zod_1.z.ZodError) {
             return res.status(400).json({ success: false, error: 'Validation error', details: error.errors });
         }
-res.status(500).json({ success: false, error: 'Failed to update dues rule' });
+        logger.error('Error updating dues rule', { error });
+        res.status(500).json({ success: false, error: 'Failed to update dues rule' });
     }
 });
 /**
@@ -174,7 +185,8 @@ res.status(500).json({ success: false, error: 'Failed to update dues rule' });
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, role } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const { id } = req.params;
         // Check permissions (admin only)
         if (role !== 'admin') {
@@ -186,7 +198,7 @@ router.delete('/:id', async (req, res) => {
             isActive: false,
             updatedAt: new Date(),
         })
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.organizationId, organizationId)))
             .returning();
         if (!deletedRule) {
             return res.status(404).json({ success: false, error: 'Dues rule not found' });
@@ -194,7 +206,8 @@ router.delete('/:id', async (req, res) => {
         res.json({ success: true, message: 'Dues rule deleted successfully' });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to delete dues rule' });
+        logger.error('Error deleting dues rule', { error });
+        res.status(500).json({ success: false, error: 'Failed to delete dues rule' });
     }
 });
 /**
@@ -203,7 +216,8 @@ res.status(500).json({ success: false, error: 'Failed to delete dues rule' });
  */
 router.post('/:id/duplicate', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId: organizationIdFromUser, tenantId: legacyTenantId, userId, role } = req.user;
+        const organizationId = organizationIdFromUser ?? legacyTenantId;
         const { id } = req.params;
         const { newCode, newName } = req.body;
         // Check permissions
@@ -220,7 +234,7 @@ router.post('/:id/duplicate', async (req, res) => {
         const [originalRule] = await db_1.db
             .select()
             .from(db_1.schema.duesRules)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.duesRules.id, id), (0, drizzle_orm_1.eq)(db_1.schema.duesRules.organizationId, organizationId)))
             .limit(1);
         if (!originalRule) {
             return res.status(404).json({ success: false, error: 'Original dues rule not found' });
@@ -233,14 +247,15 @@ router.post('/:id/duplicate', async (req, res) => {
             ...ruleData,
             ruleCode: newCode,
             ruleName: newName,
-            tenantId,
+            organizationId: organizationId,
             createdBy: userId,
         })
             .returning();
         res.status(201).json({ success: true, data: duplicatedRule });
     }
     catch (error) {
-res.status(500).json({ success: false, error: 'Failed to duplicate dues rule' });
+        logger.error('Error duplicating dues rule', { error });
+        res.status(500).json({ success: false, error: 'Failed to duplicate dues rule' });
     }
 });
 exports.default = router;

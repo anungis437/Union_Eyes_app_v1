@@ -6,6 +6,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const zod_1 = require("zod");
+const index_1 = require("../db/index");
+const schema_1 = require("../db/schema");
+const drizzle_orm_1 = require("drizzle-orm");
 const router = (0, express_1.Router)();
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -55,21 +58,22 @@ const createDuesRuleSchema = zod_1.z.object({
  */
 router.get('/', async (req, res) => {
     try {
-        const { tenantId } = req.user;
-        const { active, category, status } = req.query;
-        // TODO: Implement database query
-        // const rules = await db.query.duesRules.findMany({
-        //   where: {
-        //     tenantId,
-        //     ...(active === 'true' && { isActive: true }),
-        //     ...(category && { memberCategory: category }),
-        //   },
-        //   orderBy: { createdAt: 'desc' },
-        // });
+        const { organizationId } = req.user;
+        const { active } = req.query;
+        // Build where conditions
+        const conditions = [(0, drizzle_orm_1.eq)(schema_1.duesRules.organizationId, organizationId)];
+        if (active === 'true') {
+            conditions.push((0, drizzle_orm_1.eq)(schema_1.duesRules.isActive, true));
+        }
+        const rules = await index_1.db
+            .select()
+            .from(schema_1.duesRules)
+            .where((0, drizzle_orm_1.and)(...conditions))
+            .orderBy((0, drizzle_orm_1.desc)(schema_1.duesRules.createdAt));
         res.json({
             success: true,
-            data: [],
-            total: 0,
+            data: rules,
+            total: rules.length,
         });
     }
     catch (error) {
@@ -85,21 +89,23 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { id } = req.params;
-        // TODO: Implement database query
-        // const rule = await db.query.duesRules.findFirst({
-        //   where: { id, tenantId },
-        // });
-        // if (!rule) {
-        //   return res.status(404).json({
-        //     success: false,
-        //     error: 'Dues rule not found',
-        //   });
-        // }
+        const rules = await index_1.db
+            .select()
+            .from(schema_1.duesRules)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesRules.id, id), (0, drizzle_orm_1.eq)(schema_1.duesRules.organizationId, organizationId)))
+            .limit(1);
+        const rule = rules[0];
+        if (!rule) {
+            return res.status(404).json({
+                success: false,
+                error: 'Dues rule not found',
+            });
+        }
         res.json({
             success: true,
-            data: null,
+            data: rule,
         });
     }
     catch (error) {
@@ -115,7 +121,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -125,15 +131,29 @@ router.post('/', async (req, res) => {
         }
         // Validate input
         const validatedData = createDuesRuleSchema.parse(req.body);
-        // TODO: Implement database insert
-        // const newRule = await db.insert(duesRules).values({
-        //   ...validatedData,
-        //   tenantId,
-        //   createdBy: (req as any).user.id,
-        // }).returning();
+        // Map validation schema to database schema
+        const dbData = {
+            organizationId: organizationId,
+            ruleName: validatedData.ruleName,
+            ruleCode: validatedData.ruleCode,
+            description: validatedData.description,
+            calculationType: validatedData.calculationType,
+            percentageRate: validatedData.percentageRate?.toString(),
+            baseField: validatedData.baseField,
+            flatAmount: validatedData.flatAmount?.toString(),
+            hourlyRate: validatedData.hourlyRate?.toString(),
+            hoursPerPeriod: validatedData.hoursPerPeriod,
+            tierStructure: validatedData.tierStructure,
+            customFormula: validatedData.customFormula,
+            billingFrequency: validatedData.billingFrequency,
+            effectiveDate: validatedData.effectiveFrom.toISOString().split('T')[0],
+            endDate: validatedData.effectiveTo?.toISOString().split('T')[0],
+            createdBy: req.user.id,
+        };
+        const newRule = await index_1.db.insert(schema_1.duesRules).values(dbData).returning();
         res.status(201).json({
             success: true,
-            data: validatedData,
+            data: newRule[0],
             message: 'Dues rule created successfully',
         });
     }
@@ -157,7 +177,7 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         const { id } = req.params;
         // Check permissions
         if (!['admin', 'financial_admin'].includes(role)) {
@@ -168,14 +188,51 @@ router.put('/:id', async (req, res) => {
         }
         // Validate input
         const validatedData = createDuesRuleSchema.partial().parse(req.body);
-        // TODO: Implement database update
-        // const updatedRule = await db.update(duesRules)
-        //   .set(validatedData)
-        //   .where({ id, tenantId })
-        //   .returning();
+        // Map validation schema to database schema for update
+        const dbData = {};
+        if (validatedData.ruleName)
+            dbData.ruleName = validatedData.ruleName;
+        if (validatedData.ruleCode)
+            dbData.ruleCode = validatedData.ruleCode;
+        if (validatedData.description !== undefined)
+            dbData.description = validatedData.description;
+        if (validatedData.calculationType)
+            dbData.calculationType = validatedData.calculationType;
+        if (validatedData.percentageRate !== undefined)
+            dbData.percentageRate = validatedData.percentageRate?.toString();
+        if (validatedData.baseField !== undefined)
+            dbData.baseField = validatedData.baseField;
+        if (validatedData.flatAmount !== undefined)
+            dbData.flatAmount = validatedData.flatAmount?.toString();
+        if (validatedData.hourlyRate !== undefined)
+            dbData.hourlyRate = validatedData.hourlyRate?.toString();
+        if (validatedData.hoursPerPeriod !== undefined)
+            dbData.hoursPerPeriod = validatedData.hoursPerPeriod;
+        if (validatedData.tierStructure !== undefined)
+            dbData.tierStructure = validatedData.tierStructure;
+        if (validatedData.customFormula !== undefined)
+            dbData.customFormula = validatedData.customFormula;
+        if (validatedData.billingFrequency)
+            dbData.billingFrequency = validatedData.billingFrequency;
+        if (validatedData.effectiveFrom)
+            dbData.effectiveDate = validatedData.effectiveFrom.toISOString().split('T')[0];
+        if (validatedData.effectiveTo)
+            dbData.endDate = validatedData.effectiveTo.toISOString().split('T')[0];
+        dbData.updatedAt = new Date().toISOString();
+        const updatedRule = await index_1.db
+            .update(schema_1.duesRules)
+            .set(dbData)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesRules.id, id), (0, drizzle_orm_1.eq)(schema_1.duesRules.organizationId, organizationId)))
+            .returning();
+        if (updatedRule.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Dues rule not found',
+            });
+        }
         res.json({
             success: true,
-            data: validatedData,
+            data: updatedRule[0],
             message: 'Dues rule updated successfully',
         });
     }
@@ -199,7 +256,7 @@ router.put('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         const { id } = req.params;
         // Check permissions - only admin can delete
         if (role !== 'admin') {
@@ -208,10 +265,20 @@ router.delete('/:id', async (req, res) => {
                 error: 'Only administrators can delete dues rules',
             });
         }
-        // TODO: Implement soft delete
-        // await db.update(duesRules)
-        //   .set({ isActive: false })
-        //   .where({ id, tenantId });
+        const result = await index_1.db
+            .update(schema_1.duesRules)
+            .set({
+            isActive: false,
+            updatedAt: new Date().toISOString(),
+        })
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesRules.id, id), (0, drizzle_orm_1.eq)(schema_1.duesRules.organizationId, organizationId)))
+            .returning();
+        if (result.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Dues rule not found',
+            });
+        }
         res.json({
             success: true,
             message: 'Dues rule deactivated successfully',
@@ -230,7 +297,7 @@ router.delete('/:id', async (req, res) => {
  */
 router.post('/:id/duplicate', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         const { id } = req.params;
         const { newRuleCode, newRuleName } = req.body;
         // Check permissions
@@ -240,11 +307,41 @@ router.post('/:id/duplicate', async (req, res) => {
                 error: 'Insufficient permissions',
             });
         }
-        // TODO: Implement duplication logic
-        // 1. Fetch existing rule
-        // 2. Create new rule with modified code/name
+        // Fetch existing rule
+        const existingRules = await index_1.db
+            .select()
+            .from(schema_1.duesRules)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesRules.id, id), (0, drizzle_orm_1.eq)(schema_1.duesRules.organizationId, organizationId)))
+            .limit(1);
+        const existingRule = existingRules[0];
+        if (!existingRule) {
+            return res.status(404).json({
+                success: false,
+                error: 'Dues rule not found',
+            });
+        }
+        // Create new rule with modified code/name
+        const duplicatedRule = await index_1.db.insert(schema_1.duesRules).values({
+            organizationId,
+            ruleName: newRuleName || `${existingRule.ruleName} (Copy)`,
+            ruleCode: newRuleCode || `${existingRule.ruleCode}_COPY`,
+            description: existingRule.description,
+            calculationType: existingRule.calculationType,
+            percentageRate: existingRule.percentageRate,
+            baseField: existingRule.baseField,
+            flatAmount: existingRule.flatAmount,
+            hourlyRate: existingRule.hourlyRate,
+            hoursPerPeriod: existingRule.hoursPerPeriod,
+            tierStructure: existingRule.tierStructure,
+            customFormula: existingRule.customFormula,
+            billingFrequency: existingRule.billingFrequency,
+            effectiveDate: existingRule.effectiveDate,
+            endDate: existingRule.endDate,
+            createdBy: req.user.id,
+        }).returning();
         res.status(201).json({
             success: true,
+            data: duplicatedRule[0],
             message: 'Dues rule duplicated successfully',
         });
     }

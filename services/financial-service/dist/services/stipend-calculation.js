@@ -6,7 +6,7 @@
  * Features:
  * - Eligibility verification (minimum hours threshold)
  * - Weekly stipend calculation
- * - Approval workflow (pending â†’ approved â†’ paid)
+ * - Approval workflow (pending → approved → paid)
  * - Payment tracking and reconciliation
  */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -20,6 +20,9 @@ exports.getStrikeFundDisbursementSummary = getStrikeFundDisbursementSummary;
 exports.batchCreateDisbursements = batchCreateDisbursements;
 const db_1 = require("../db");
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = { error: console.error, info: console.info, warn: console.warn, debug: console.debug };
 // Configuration constants
 const DEFAULT_MINIMUM_HOURS_PER_WEEK = 20; // Minimum hours to qualify for stipend
 const DEFAULT_HOURLY_STIPEND_RATE = 15; // $ per hour
@@ -28,14 +31,14 @@ const DEFAULT_HOURLY_STIPEND_RATE = 15; // $ per hour
  */
 async function calculateWeeklyStipends(request) {
     try {
-        const { tenantId, strikeFundId, weekStartDate, weekEndDate } = request;
+        const { organizationId, strikeFundId, weekStartDate, weekEndDate } = request;
         const minimumHours = request.minimumHours || DEFAULT_MINIMUM_HOURS_PER_WEEK;
         const hourlyRate = request.hourlyRate || DEFAULT_HOURLY_STIPEND_RATE;
         // Get strike fund configuration
         const [strikeFund] = await db_1.db
             .select()
             .from(db_1.schema.strikeFunds)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.strikeFunds.id, strikeFundId), (0, drizzle_orm_1.eq)(db_1.schema.strikeFunds.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.strikeFunds.id, strikeFundId), (0, drizzle_orm_1.eq)(db_1.schema.strikeFunds.tenantId, organizationId)))
             .limit(1);
         if (!strikeFund) {
             throw new Error('Strike fund not found');
@@ -54,7 +57,7 @@ async function calculateWeeklyStipends(request) {
             totalHours: (0, drizzle_orm_1.sql) `CAST(SUM(CAST(${db_1.schema.picketAttendance.hoursWorked} AS DECIMAL)) AS TEXT)`,
         })
             .from(db_1.schema.picketAttendance)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId), (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, weekStartDate.toISOString(), weekEndDate.toISOString()), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NOT NULL` // Only count completed shifts
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId), (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, weekStartDate.toISOString(), weekEndDate.toISOString()), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NOT NULL` // Only count completed shifts
         ))
             .groupBy(db_1.schema.picketAttendance.memberId);
         // Calculate eligibility for each member
@@ -75,7 +78,8 @@ async function calculateWeeklyStipends(request) {
         return eligibilityResults;
     }
     catch (error) {
-throw new Error(`Failed to calculate stipends: ${error.message}`);
+        logger.error('Stipend calculation error', { error, organizationId: request.organizationId, strikeFundId: request.strikeFundId });
+        throw new Error(`Failed to calculate stipends: ${error.message}`);
     }
 }
 /**
@@ -86,7 +90,7 @@ async function createDisbursement(request) {
         const [disbursement] = await db_1.db
             .insert(db_1.schema.stipendDisbursements)
             .values({
-            tenantId: request.tenantId,
+            tenantId: request.organizationId,
             strikeFundId: request.strikeFundId,
             memberId: request.memberId,
             amount: request.amount.toString(),
@@ -113,12 +117,12 @@ async function createDisbursement(request) {
 /**
  * Approve a pending disbursement
  */
-async function approveDisbursement(tenantId, approval) {
+async function approveDisbursement(organizationId, approval) {
     try {
         const [existing] = await db_1.db
             .select()
             .from(db_1.schema.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.id, approval.disbursementId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.id, approval.disbursementId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, organizationId)))
             .limit(1);
         if (!existing) {
             return { success: false, error: 'Disbursement not found' };
@@ -148,12 +152,12 @@ async function approveDisbursement(tenantId, approval) {
 /**
  * Mark a disbursement as paid
  */
-async function markDisbursementPaid(tenantId, disbursementId, transactionId, paidBy) {
+async function markDisbursementPaid(organizationId, disbursementId, transactionId, paidBy) {
     try {
         const [existing] = await db_1.db
             .select()
             .from(db_1.schema.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.id, disbursementId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.id, disbursementId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, organizationId)))
             .limit(1);
         if (!existing) {
             return { success: false, error: 'Disbursement not found' };
@@ -181,10 +185,10 @@ async function markDisbursementPaid(tenantId, disbursementId, transactionId, pai
 /**
  * Get disbursement history for a member
  */
-async function getMemberDisbursements(tenantId, memberId, strikeFundId) {
+async function getMemberDisbursements(organizationId, memberId, strikeFundId) {
     try {
         const conditions = [
-            (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, tenantId),
+            (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, organizationId),
             (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.memberId, memberId),
         ];
         if (strikeFundId) {
@@ -201,18 +205,19 @@ async function getMemberDisbursements(tenantId, memberId, strikeFundId) {
         }));
     }
     catch (error) {
-return [];
+        logger.error('Get disbursements error', { error, organizationId, memberId, strikeFundId });
+        return [];
     }
 }
 /**
  * Get pending disbursements for approval
  */
-async function getPendingDisbursements(tenantId, strikeFundId) {
+async function getPendingDisbursements(organizationId, strikeFundId) {
     try {
         const disbursements = await db_1.db
             .select()
             .from(db_1.schema.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.status, 'pending')))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.strikeFundId, strikeFundId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.status, 'pending')))
             .orderBy(db_1.schema.stipendDisbursements.weekStartDate);
         return disbursements.map(d => ({
             ...d,
@@ -220,13 +225,14 @@ async function getPendingDisbursements(tenantId, strikeFundId) {
         }));
     }
     catch (error) {
-return [];
+        logger.error('Get pending disbursements error', { error, organizationId, strikeFundId });
+        return [];
     }
 }
 /**
  * Get total disbursed amount for a strike fund
  */
-async function getStrikeFundDisbursementSummary(tenantId, strikeFundId) {
+async function getStrikeFundDisbursementSummary(organizationId, strikeFundId) {
     try {
         const result = await db_1.db
             .select({
@@ -235,7 +241,7 @@ async function getStrikeFundDisbursementSummary(tenantId, strikeFundId) {
             memberCount: (0, drizzle_orm_1.sql) `COUNT(DISTINCT ${db_1.schema.stipendDisbursements.memberId})`,
         })
             .from(db_1.schema.stipendDisbursements)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.strikeFundId, strikeFundId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.stipendDisbursements.strikeFundId, strikeFundId)))
             .groupBy(db_1.schema.stipendDisbursements.status);
         const summary = {
             totalPending: 0,
@@ -256,7 +262,8 @@ async function getStrikeFundDisbursementSummary(tenantId, strikeFundId) {
         return summary;
     }
     catch (error) {
-return {
+        logger.error('Get disbursement summary error', { error, organizationId, strikeFundId });
+        return {
             totalPending: 0,
             totalApproved: 0,
             totalPaid: 0,
@@ -275,7 +282,7 @@ async function batchCreateDisbursements(request) {
         const errors = [];
         for (const member of eligible) {
             const result = await createDisbursement({
-                tenantId: request.tenantId,
+                organizationId: request.organizationId,
                 strikeFundId: request.strikeFundId,
                 memberId: member.memberId,
                 amount: member.stipendAmount,

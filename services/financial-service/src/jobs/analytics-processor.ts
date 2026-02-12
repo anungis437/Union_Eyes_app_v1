@@ -38,7 +38,7 @@ export const hourlyAlertsJob = cron.schedule('0 * * * *', async () => {
     // In production, this should iterate through active tenants
     const tenantId = '11111111-1111-1111-1111-111111111111'; // Test tenant
     
-    const result = await processAutomatedAlerts({ tenantId });
+    const result = await processAutomatedAlerts({ organizationId: tenantId });
     
     logger.info(`Hourly alerts processed: ${result.alertsSent} alerts sent`, {
       criticalAlerts: result.alerts?.filter(a => a.severity === 'critical').length || 0,
@@ -62,7 +62,7 @@ export const weeklyForecastJob = cron.schedule('0 9 * * 1', async () => {
     // In production, this should iterate through active tenants
     const tenantId = '11111111-1111-1111-1111-111111111111'; // Test tenant
     
-    const result = await generateWeeklyForecastReport({ tenantId });
+    const result = await generateWeeklyForecastReport({ organizationId: tenantId });
     
     logger.info('Weekly forecast report generated and sent', {
       totalFunds: result.totalFunds,

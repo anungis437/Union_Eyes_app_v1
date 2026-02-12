@@ -52,7 +52,7 @@ const mockDb = vi.hoisted(() => {
 vi.mock('@/db/schema', () => ({
   organizations: 'organizations',
   organizationMembers: 'organizationMembers',
-  clcChartOfAccounts: 'clcChartOfAccounts',
+  chartOfAccounts: 'chartOfAccounts',
   perCapitaRemittances: 'perCapitaRemittances',
 }));
 

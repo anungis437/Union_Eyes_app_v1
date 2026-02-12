@@ -45,6 +45,9 @@ const postgres_js_1 = require("drizzle-orm/postgres-js");
 const postgres_1 = __importDefault(require("postgres"));
 const schema = __importStar(require("./schema"));
 exports.schema = schema;
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 // Database connection configuration
 const connectionString = process.env.DATABASE_URL || '';
 if (!connectionString) {
@@ -65,7 +68,8 @@ async function checkDatabaseConnection() {
         return true;
     }
     catch (error) {
-return false;
+        logger.error('Database connection failed', { error });
+        return false;
     }
 }
 // Graceful shutdown

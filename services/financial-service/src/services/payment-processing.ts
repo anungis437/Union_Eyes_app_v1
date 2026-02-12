@@ -13,7 +13,9 @@ import Stripe from 'stripe';
 import { db } from '../db';
 import * as schema from '../db/schema';
 import { eq, and, sql } from 'drizzle-orm';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = { error: console.error, info: console.info, warn: console.warn, debug: console.debug };
 
 // Initialize Stripe (use test key in development)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
@@ -134,7 +136,7 @@ export async function confirmDuesPayment(
       } as any)
       .where(and(
         eq(schema.duesTransactions.id, transactionId),
-        eq(schema.duesTransactions.tenantId, organizationId)
+        eq(schema.duesTransactions.organizationId, organizationId)
       ));
 
   } catch (error) {
@@ -339,10 +341,11 @@ export interface DonationPaymentIntent {
 export async function createDonationPaymentIntent(
   request: CreateDonationPaymentRequest
 ): Promise<DonationPaymentIntent> {
+  const { organizationId, strikeFundId } = request; // Extract for catch block scope
   try {
     const {
-      organizationId,
-      strikeFundId,
+      organizationId: _organizationId,
+      strikeFundId: _strikeFundId,
       amount,
       currency = 'usd',
       donorEmail,
@@ -367,8 +370,8 @@ export async function createDonationPaymentIntent(
       payment_method_types: [paymentMethod],
       description: `Donation to strike fund`,
       metadata: {
-        organizationId,
-        strikeFundId,
+        organizationId: request.organizationId,
+        strikeFundId: request.strikeFundId,
         type: 'donation',
         donorEmail: donorEmail || '',
         donorName: isAnonymous ? 'Anonymous' : (donorName || ''),
@@ -418,7 +421,7 @@ export async function confirmDonationPayment(
     // Create donation record
     const [donation] = await db.insert(schema.donations)
       .values({
-        tenantId: organizationId,
+        organizationId: organizationId,
         strikeFundId: metadata.strikeFundId,
         amount: amount.toString(),
         donorName: metadata.donorName || 'Anonymous',
@@ -600,7 +603,7 @@ export async function getPaymentSummary(
   })
   .from(schema.duesTransactions)
   .where(and(
-    eq(schema.duesTransactions.tenantId, organizationId),
+    eq(schema.duesTransactions.organizationId, organizationId),
     eq(schema.duesTransactions.status, 'paid')
   ));
 

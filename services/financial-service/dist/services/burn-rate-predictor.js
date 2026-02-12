@@ -20,13 +20,16 @@ const db_1 = require("../db");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const notification_service_1 = require("./notification-service");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 // ============================================================================
 // HISTORICAL DATA ANALYSIS
 // ============================================================================
 /**
  * Get historical burn rate data for a strike fund
  */
-async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
+async function getHistoricalBurnRate(organizationId, fundId, startDate, endDate) {
     // Get donations (deposits)
     const donationHistory = await db_1.db
         .select({
@@ -34,7 +37,7 @@ async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
         amount: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.donations.amount} AS NUMERIC)), 0)`,
     })
         .from(schema_1.donations)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate.toISOString()), (0, drizzle_orm_1.lte)(schema_1.donations.createdAt, endDate.toISOString())))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed'), (0, drizzle_orm_1.gte)(schema_1.donations.createdAt, startDate.toISOString()), (0, drizzle_orm_1.lte)(schema_1.donations.createdAt, endDate.toISOString())))
         .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.donations.createdAt})`);
     // Get stipend disbursements (withdrawals)
     const stipendHistory = await db_1.db
@@ -43,7 +46,7 @@ async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
         amount: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
     })
         .from(schema_1.stipendDisbursements)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate.toISOString()), (0, drizzle_orm_1.lte)(schema_1.stipendDisbursements.createdAt, endDate.toISOString())))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid'), (0, drizzle_orm_1.gte)(schema_1.stipendDisbursements.createdAt, startDate.toISOString()), (0, drizzle_orm_1.lte)(schema_1.stipendDisbursements.createdAt, endDate.toISOString())))
         .groupBy((0, drizzle_orm_1.sql) `DATE(${schema_1.stipendDisbursements.createdAt})`);
     // Combine and calculate daily burn rate
     const dataMap = new Map();
@@ -96,12 +99,12 @@ async function getHistoricalBurnRate(tenantId, fundId, startDate, endDate) {
 /**
  * Detect seasonal patterns in burn rate
  */
-async function detectSeasonalPatterns(tenantId, fundId) {
+async function detectSeasonalPatterns(organizationId, fundId) {
     // Get 12 months of historical data
     const endDate = new Date();
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 12);
-    const historicalData = await getHistoricalBurnRate(tenantId, fundId, startDate, endDate);
+    const historicalData = await getHistoricalBurnRate(organizationId, fundId, startDate, endDate);
     // Group by month
     const monthlyData = new Map();
     historicalData.forEach((record) => {
@@ -137,12 +140,12 @@ async function detectSeasonalPatterns(tenantId, fundId) {
 /**
  * Generate multi-scenario forecast
  */
-async function generateBurnRateForecast(tenantId, fundId, forecastDays = 90) {
+async function generateBurnRateForecast(organizationId, fundId, forecastDays = 90) {
     // Get current fund data
     const [fund] = await db_1.db
         .select()
         .from(schema_1.strikeFunds)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.strikeFunds.id, fundId)))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.strikeFunds.id, fundId)))
         .limit(1);
     if (!fund) {
         throw new Error('Strike fund not found');
@@ -154,16 +157,16 @@ async function generateBurnRateForecast(tenantId, fundId, forecastDays = 90) {
         totalStipends: (0, drizzle_orm_1.sql) `COALESCE(SUM(CAST(${schema_1.stipendDisbursements.totalAmount} AS NUMERIC)), 0)`,
     })
         .from(schema_1.donations)
-        .leftJoin(schema_1.stipendDisbursements, (0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid')))
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, tenantId), (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed')));
+        .leftJoin(schema_1.stipendDisbursements, (0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.stipendDisbursements.status, 'paid')))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.donations.tenantId, organizationId), (0, drizzle_orm_1.eq)(schema_1.donations.strikeFundId, fundId), (0, drizzle_orm_1.eq)(schema_1.donations.status, 'completed')));
     const currentBalance = Number(balanceResult.totalDonations) - Number(balanceResult.totalStipends);
     const targetAmount = fund.targetAmount ? Number(fund.targetAmount) : currentBalance * 2; // Default to 2x current if not set
     // Get historical data (90 days)
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 90);
-    const historicalData = await getHistoricalBurnRate(tenantId, fundId, startDate, endDate);
-    const seasonalPatterns = await detectSeasonalPatterns(tenantId, fundId);
+    const historicalData = await getHistoricalBurnRate(organizationId, fundId, startDate, endDate);
+    const seasonalPatterns = await detectSeasonalPatterns(organizationId, fundId);
     // Calculate historical averages
     const avgDailyBurnRate = historicalData.length > 0
         ? historicalData.reduce((sum, d) => sum + d.withdrawals, 0) / historicalData.length
@@ -329,23 +332,23 @@ function generateAlerts(currentBalance, scenarios, avgDailyBurnRate) {
  * Check all funds and send alerts if needed
  */
 async function processAutomatedAlerts(params) {
-    const { tenantId } = params;
+    const { organizationId } = params;
     // Get all strike funds
     const activeFunds = await db_1.db
         .select()
         .from(schema_1.strikeFunds)
-        .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, tenantId));
+        .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, organizationId));
     let alertsSent = 0;
     const allAlerts = [];
     for (const fund of activeFunds) {
         try {
-            const forecast = await generateBurnRateForecast(tenantId, fund.id);
+            const forecast = await generateBurnRateForecast(organizationId, fund.id);
             // Send alerts for critical and warning severities
             for (const alert of forecast.alerts) {
                 if (alert.severity === 'critical' || alert.severity === 'warning') {
                     // Queue notification to fund administrators
                     await (0, notification_service_1.queueNotification)({
-                        tenantId,
+                        organizationId,
                         userId: fund.createdBy || 'admin', // Send to fund creator or admin
                         type: 'low_balance_alert',
                         channels: ['email', 'sms'],
@@ -369,7 +372,8 @@ async function processAutomatedAlerts(params) {
             }
         }
         catch (error) {
-}
+            logger.error('Error processing alerts for fund', { error, fundId: fund.id, organizationId });
+        }
     }
     return {
         success: true,
@@ -381,12 +385,12 @@ async function processAutomatedAlerts(params) {
  * Generate weekly forecast report for all funds
  */
 async function generateWeeklyForecastReport(params) {
-    const { tenantId, recipientUserId = 'admin' } = params;
+    const { organizationId, recipientUserId = 'admin' } = params;
     const activeFunds = await db_1.db
         .select()
         .from(schema_1.strikeFunds)
-        .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, tenantId));
-    const forecasts = await Promise.all(activeFunds.map((fund) => generateBurnRateForecast(tenantId, fund.id)));
+        .where((0, drizzle_orm_1.eq)(schema_1.strikeFunds.tenantId, organizationId));
+    const forecasts = await Promise.all(activeFunds.map((fund) => generateBurnRateForecast(organizationId, fund.id)));
     // Generate report summary
     const reportData = {
         generatedDate: new Date().toISOString(),
@@ -403,7 +407,7 @@ async function generateWeeklyForecastReport(params) {
     };
     // Send weekly report via email
     await (0, notification_service_1.queueNotification)({
-        tenantId,
+        organizationId,
         userId: recipientUserId,
         type: 'strike_announcement', // Reusing type for report
         channels: ['email'],

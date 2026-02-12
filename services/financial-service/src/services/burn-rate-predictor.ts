@@ -19,7 +19,9 @@ import {
 } from '../db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { queueNotification } from './notification-service';
-import { logger } from '@/lib/logger';
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 
 // ============================================================================
 // TYPES & INTERFACES

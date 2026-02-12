@@ -24,6 +24,8 @@ import { db } from '@/db';
 import { getUserRoleInOrganization } from '@/lib/organization-utils';
 import CLCAnalyticsDashboard from '@/components/admin/clc-analytics-dashboard';
 import { ClcRemittancesDashboard } from '@/components/admin/clc-remittances-dashboard';
+import { perCapitaRemittances } from '@/db/schema/domains/infrastructure/clc-per-capita';
+import { sql, and, eq, lt } from 'drizzle-orm';
 
 export const metadata: Metadata = {
   title: 'CLC Executive Dashboard | Union Eyes',
@@ -51,16 +53,76 @@ async function getCLCMetrics(orgId: string) {
     const directCharteredUnions = affiliates.filter(a => a.organizationType === 'union');
     const provincialFederations = affiliates.filter(a => a.organizationType === 'federation');
 
-    // TODO: Replace with actual queries to per_capita_remittances table
-    const totalAffiliates = affiliates.length;
-    const totalMembers = 0; // TODO: Aggregate from affiliates
-    const pendingRemittances = 0; // TODO: Query per_capita_remittances
-    const overdueRemittances = 0; // TODO: Query overdue remittances
-    const complianceRate = 0; // TODO: Calculate compliance percentage
-    const totalRevenue = 0; // TODO: Sum approved remittances
+    // Get total members from latest remittances of all affiliates
+    const memberCountResult = await db
+      .select({ totalMembers: sql<number>`COALESCE(SUM(${perCapitaRemittances.remittableMembers}), 0)` })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          // Get most recent remittances (last 2 months)
+          sql`${perCapitaRemittances.remittanceYear} >= EXTRACT(YEAR FROM NOW() - INTERVAL '2 months')`
+        )
+      );
+    const totalMembers = Number(memberCountResult[0]?.totalMembers || 0);
+
+    // Count pending remittances
+    const pendingResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          eq(perCapitaRemittances.status, 'pending')
+        )
+      );
+    const pendingRemittances = Number(pendingResult[0]?.count || 0);
+
+    // Count overdue remittances (past due date and still pending)
+    const overdueResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          eq(perCapitaRemittances.status, 'pending'),
+          lt(perCapitaRemittances.dueDate, sql`CURRENT_DATE`)
+        )
+      );
+    const overdueRemittances = Number(overdueResult[0]?.count || 0);
+
+    // Calculate compliance rate (% of remittances submitted on time in last 12 months)
+    const complianceResult = await db
+      .select({
+        total: sql<number>`COUNT(*)`,
+        onTime: sql<number>`COUNT(*) FILTER (WHERE ${perCapitaRemittances.submittedDate} <= ${perCapitaRemittances.dueDate})`
+      })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          sql`${perCapitaRemittances.remittanceYear} >= EXTRACT(YEAR FROM NOW() - INTERVAL '12 months')`
+        )
+      );
+    const complianceRate = complianceResult[0]?.total
+      ? Math.round((Number(complianceResult[0]?.onTime || 0) / Number(complianceResult[0]?.total)) * 100)
+      : 0;
+
+    // Sum total revenue from approved/paid remittances in current fiscal year
+    const revenueResult = await db
+      .select({ totalRevenue: sql<number>`COALESCE(SUM(${perCapitaRemittances.totalAmount}), 0)` })
+      .from(perCapitaRemittances)
+      .where(
+        and(
+          eq(perCapitaRemittances.toOrganizationId, orgId),
+          sql`${perCapitaRemittances.status} IN ('approved', 'paid')`,
+          sql`${perCapitaRemittances.remittanceYear} = EXTRACT(YEAR FROM NOW())`
+        )
+      );
+    const totalRevenue = Number(revenueResult[0]?.totalRevenue || 0);
 
     return {
-      totalAffiliates,
+      totalAffiliates: affiliates.length,
       directCharteredUnions: directCharteredUnions.length,
       provincialFederations: provincialFederations.length,
       totalMembers,

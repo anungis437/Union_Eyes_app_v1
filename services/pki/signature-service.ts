@@ -159,7 +159,9 @@ export async function signDocument(
       certificateNotBefore: cert.certificateInfo.validFrom.toISOString(),
       certificateNotAfter: cert.certificateInfo.validTo.toISOString(),
       signatureAlgorithm: 'SHA-512',
-      signatureValue: 'ATTESTATION', // Placeholder for attestation-only signatures
+      signatureValue: 'ATTESTATION', // Attestation signature (no cryptographic signature value)
+      // Note: For full PKI signatures with private key signing, use signDocumentWithKey()
+      // which generates actual cryptographic signature values using RSA/ECDSA algorithms
       publicKey: cert.certificateInfo.publicKey,
       signedAt: new Date().toISOString(),
       ipAddress: params.ipAddress,
@@ -373,12 +375,39 @@ export async function createSignatureRequest(
       } as any,
     }).returning();
 
-    // Create signer records
+    // Create signer records with email lookup
     for (const signer of sortedSigners) {
+      // Query signer email from users table
+      let signerEmail = `signer-${signer.order}@example.com`; // Fallback
+      
+      try {
+        const userQuery = await db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.userId, signer.userId),
+          columns: { email: true },
+        });
+        
+        if (userQuery?.email) {
+          signerEmail = userQuery.email;
+        } else {
+          logger.warn('PKI signature workflow: User email not found', {
+            workflowId,
+            userId: signer.userId,
+            userName: signer.userName,
+            usingFallback: signerEmail
+          });
+        }
+      } catch (error) {
+        logger.error('PKI signature workflow: Failed to query user email', {
+          workflowId,
+          userId: signer.userId,
+          error
+        });
+      }
+      
       await db.insert(signers).values({
         workflowId,
         memberId: signer.userId as any,
-        email: `signer-${signer.order}@example.com`, // Placeholder - would normally get from profile
+        email: signerEmail,
         name: signer.userName,
         signerOrder: signer.order,
         status: 'pending',

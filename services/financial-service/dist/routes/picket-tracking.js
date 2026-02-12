@@ -78,10 +78,10 @@ const coordinatorOverrideSchema = zod_1.z.object({
  */
 router.post('/check-in', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         const validatedData = checkInSchema.parse(req.body);
         const result = await PicketService.checkIn({
-            tenantId,
+            organizationId,
             strikeFundId: validatedData.strikeFundId,
             memberId: validatedData.memberId,
             method: validatedData.method,
@@ -130,10 +130,10 @@ router.post('/check-in', async (req, res) => {
  */
 router.post('/check-out', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const validatedData = checkOutSchema.parse(req.body);
         const result = await PicketService.checkOut({
-            tenantId,
+            organizationId,
             attendanceId: validatedData.attendanceId,
             latitude: validatedData.latitude,
             longitude: validatedData.longitude,
@@ -172,7 +172,7 @@ router.post('/check-out', async (req, res) => {
  */
 router.get('/active', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { strikeFundId } = req.query;
         if (!strikeFundId || typeof strikeFundId !== 'string') {
             return res.status(400).json({
@@ -180,7 +180,7 @@ router.get('/active', async (req, res) => {
                 error: 'strikeFundId is required',
             });
         }
-        const records = await PicketService.getActiveCheckIns(tenantId, strikeFundId);
+        const records = await PicketService.getActiveCheckIns(organizationId, strikeFundId);
         res.json({
             success: true,
             data: records,
@@ -200,7 +200,7 @@ router.get('/active', async (req, res) => {
  */
 router.get('/history', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { strikeFundId, startDate, endDate, memberId } = req.query;
         if (!strikeFundId || typeof strikeFundId !== 'string') {
             return res.status(400).json({
@@ -222,7 +222,7 @@ router.get('/history', async (req, res) => {
                 error: 'Invalid date format',
             });
         }
-        const records = await PicketService.getAttendanceHistory(tenantId, strikeFundId, start, end, memberId);
+        const records = await PicketService.getAttendanceHistory(organizationId, strikeFundId, start, end, memberId);
         res.json({
             success: true,
             data: records,
@@ -242,7 +242,7 @@ router.get('/history', async (req, res) => {
  */
 router.get('/summary', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const { strikeFundId, startDate, endDate, memberId } = req.query;
         if (!strikeFundId || typeof strikeFundId !== 'string') {
             return res.status(400).json({
@@ -264,7 +264,7 @@ router.get('/summary', async (req, res) => {
                 error: 'Invalid date format',
             });
         }
-        const summary = await PicketService.getAttendanceSummary(tenantId, strikeFundId, start, end, memberId);
+        const summary = await PicketService.getAttendanceSummary(organizationId, strikeFundId, start, end, memberId);
         res.json({
             success: true,
             data: summary,
@@ -348,7 +348,7 @@ router.post('/validate-qr', async (req, res) => {
  */
 router.post('/coordinator-override', async (req, res) => {
     try {
-        const { tenantId, role } = req.user;
+        const { organizationId, role } = req.user;
         // Only coordinators and admins can use this endpoint
         if (!['admin', 'coordinator', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -357,7 +357,7 @@ router.post('/coordinator-override', async (req, res) => {
             });
         }
         const validatedData = coordinatorOverrideSchema.parse(req.body);
-        const result = await PicketService.coordinatorOverride(tenantId, validatedData.strikeFundId, validatedData.memberId, validatedData.verifiedBy, validatedData.reason, validatedData.hours);
+        const result = await PicketService.coordinatorOverride(organizationId, validatedData.strikeFundId, validatedData.memberId, validatedData.verifiedBy, validatedData.reason, validatedData.hours);
         if (!result.success) {
             return res.status(400).json({
                 success: false,

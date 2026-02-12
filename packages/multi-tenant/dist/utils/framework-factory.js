@@ -4,7 +4,9 @@ import { TenantService } from '../services/tenant.service';
 import { TenantIsolationService } from '../services/tenant-isolation.service';
 import { TenantMiddleware, TenantResolutionStrategy } from '../middleware/tenant-context.middleware';
 import { TenantIsolationType } from '../types';
+import { SimpleLogger } from './logger';
 export function createMultiTenantFramework(config) {
+    const logger = new SimpleLogger('MultiTenantFramework');
     // Create tenant service configuration
     const tenantServiceConfig = {
         supabase: {
@@ -79,13 +81,15 @@ export function createMultiTenantFramework(config) {
             // Initialize isolation service
             await isolationService.initialize();
             // Additional initialization can be added here
-},
+            logger.info('Multi-tenant framework initialized successfully');
+        },
         async cleanup() {
             // Cleanup isolation service
             await isolationService.cleanup();
             // Clear middleware cache
             middleware.clearCache();
-}
+            logger.info('Multi-tenant framework cleaned up successfully');
+        }
     };
 }
 // Predefined configurations for common use cases

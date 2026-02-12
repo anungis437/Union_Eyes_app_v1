@@ -19,3 +19,4 @@ export * from './erp/banking-integration';
 
 // ERP Connectors
 export { QuickBooksOnlineConnector } from './erp/connectors/quickbooks-online';
+export { XeroConnector } from './erp/connectors/xero';

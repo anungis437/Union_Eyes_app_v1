@@ -119,7 +119,7 @@ async function checkIn(request, picketLocation) {
         const [existingCheckIn] = await db_1.db
             .select()
             .from(db_1.schema.picketAttendance)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, request.tenantId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.memberId, request.memberId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, request.strikeFundId), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NULL`))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, request.organizationId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.memberId, request.memberId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, request.strikeFundId), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NULL`))
             .limit(1);
         if (existingCheckIn) {
             return {
@@ -132,7 +132,7 @@ async function checkIn(request, picketLocation) {
         const [attendance] = await db_1.db
             .insert(db_1.schema.picketAttendance)
             .values({
-            tenantId: request.tenantId,
+            tenantId: request.organizationId,
             strikeFundId: request.strikeFundId,
             memberId: request.memberId,
             checkInTime: new Date().toISOString(),
@@ -155,7 +155,7 @@ async function checkIn(request, picketLocation) {
         };
     }
     catch (error) {
-return {
+        return {
             success: false,
             error: error.message || 'Failed to check in',
         };
@@ -170,7 +170,7 @@ async function checkOut(request) {
         const [attendance] = await db_1.db
             .select()
             .from(db_1.schema.picketAttendance)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.id, request.attendanceId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, request.tenantId)))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.id, request.attendanceId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, request.organizationId)))
             .limit(1);
         if (!attendance) {
             return { success: false, error: 'Attendance record not found' };
@@ -203,7 +203,7 @@ async function checkOut(request) {
         };
     }
     catch (error) {
-return {
+        return {
             success: false,
             error: error.message || 'Failed to check out',
         };
@@ -212,11 +212,11 @@ return {
 /**
  * Get active check-ins (not checked out)
  */
-async function getActiveCheckIns(tenantId, strikeFundId) {
+async function getActiveCheckIns(organizationId, strikeFundId) {
     const records = await db_1.db
         .select()
         .from(db_1.schema.picketAttendance)
-        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NULL`))
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, organizationId), (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId), (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.checkOutTime} IS NULL`))
         .orderBy((0, drizzle_orm_1.desc)(db_1.schema.picketAttendance.checkInTime));
     return records.map(r => ({
         id: r.id,
@@ -231,9 +231,9 @@ async function getActiveCheckIns(tenantId, strikeFundId) {
 /**
  * Get attendance history for a date range
  */
-async function getAttendanceHistory(tenantId, strikeFundId, startDate, endDate, memberId) {
+async function getAttendanceHistory(organizationId, strikeFundId, startDate, endDate, memberId) {
     const conditions = [
-        (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId),
+        (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, organizationId),
         (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId),
         (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
     ];
@@ -258,9 +258,9 @@ async function getAttendanceHistory(tenantId, strikeFundId, startDate, endDate, 
 /**
  * Get attendance summary for members
  */
-async function getAttendanceSummary(tenantId, strikeFundId, startDate, endDate, memberId) {
+async function getAttendanceSummary(organizationId, strikeFundId, startDate, endDate, memberId) {
     const conditions = [
-        (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, tenantId),
+        (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.tenantId, organizationId),
         (0, drizzle_orm_1.eq)(db_1.schema.picketAttendance.strikeFundId, strikeFundId),
         (0, drizzle_orm_1.between)(db_1.schema.picketAttendance.checkInTime, startDate.toISOString(), endDate.toISOString()),
         (0, drizzle_orm_1.sql) `${db_1.schema.picketAttendance.hoursWorked} IS NOT NULL`, // Only completed check-ins
@@ -291,14 +291,14 @@ async function getAttendanceSummary(tenantId, strikeFundId, startDate, endDate, 
 /**
  * Manual check-in override by coordinator
  */
-async function coordinatorOverride(tenantId, strikeFundId, memberId, verifiedBy, reason, hours) {
+async function coordinatorOverride(organizationId, strikeFundId, memberId, verifiedBy, reason, hours) {
     try {
         const checkInTime = new Date();
         const checkOutTime = new Date(checkInTime.getTime() + hours * 60 * 60 * 1000);
         const [attendance] = await db_1.db
             .insert(db_1.schema.picketAttendance)
             .values({
-            tenantId,
+            tenantId: organizationId,
             strikeFundId,
             memberId,
             checkInTime: checkInTime.toISOString(),

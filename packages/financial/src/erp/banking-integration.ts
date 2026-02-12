@@ -7,6 +7,12 @@
 
 import { Decimal } from 'decimal.js';
 import { parse } from 'csv-parse/sync';
+import { 
+  BankTransaction, 
+  ReconciliationMatch, 
+  BankReconciliation, 
+  ReconciliationAdjustment 
+} from './types';
 
 export interface BankFeedConfig {
   provider: 'plaid' | 'csv' | 'ofx' | 'qfx' | 'manual';
@@ -19,24 +25,6 @@ export interface BankFeedConfig {
   glAccountId: string;
   autoReconcile: boolean;
   reconciliationRules: ReconciliationRule[];
-}
-
-export interface BankTransaction {
-  id: string;
-  bankAccountId: string;
-  transactionDate: Date;
-  postingDate: Date;
-  description: string;
-  amount: Decimal;
-  type: 'debit' | 'credit';
-  balance: Decimal;
-  reference?: string;
-  payee?: string;
-  category?: string;
-  isReconciled: boolean;
-  reconciledAt?: Date;
-  matchedTransactionId?: string;
-  metadata?: Record<string, any>;
 }
 
 export interface ReconciliationRule {
@@ -59,42 +47,6 @@ export interface ReconciliationAction {
   glAccountId?: string;
   category?: string;
   confidence: number; // 0-100
-}
-
-export interface ReconciliationMatch {
-  bankTransactionId: string;
-  unionEyesTransactionId: string;
-  matchType: 'exact' | 'fuzzy' | 'manual';
-  matchScore: number;
-  matchedAt: Date;
-  matchedBy?: string;
-  isConfirmed: boolean;
-}
-
-export interface BankReconciliation {
-  id: string;
-  bankAccountId: string;
-  statementDate: Date;
-  statementBalance: Decimal;
-  glBalance: Decimal;
-  difference: Decimal;
-  status: 'in_progress' | 'completed' | 'approved';
-  transactions: BankTransaction[];
-  unmatched: BankTransaction[];
-  adjustments: ReconciliationAdjustment[];
-  reconciledBy?: string;
-  reconciledAt?: Date;
-  approvedBy?: string;
-  approvedAt?: Date;
-}
-
-export interface ReconciliationAdjustment {
-  id: string;
-  description: string;
-  amount: Decimal;
-  type: 'bank_charge' | 'interest' | 'error_correction' | 'nsf' | 'eft_return' | 'other';
-  journalEntryId?: string;
-  createdAt: Date;
 }
 
 export class BankingIntegrationService {
@@ -268,7 +220,7 @@ export class BankingIntegrationService {
 
       if (exactMatch) {
         matches.push({
-          bankTransactionId: bankTxn.id,
+          erpTransactionId: bankTxn.id,
           unionEyesTransactionId: exactMatch.id,
           matchType: 'exact',
           matchScore: 100,
@@ -290,7 +242,7 @@ export class BankingIntegrationService {
       if (fuzzyMatches.length > 0) {
         const bestMatch = fuzzyMatches[0];
         matches.push({
-          bankTransactionId: bankTxn.id,
+          erpTransactionId: bankTxn.id,
           unionEyesTransactionId: bestMatch.transaction.id,
           matchType: 'fuzzy',
           matchScore: bestMatch.score,

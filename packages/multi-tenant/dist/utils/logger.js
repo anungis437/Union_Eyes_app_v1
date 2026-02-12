@@ -1,5 +1,5 @@
 // Temporary logger utility to work around SecurityLogger import issues
-// This provides a simple logger interface without direct console usage
+// Uses an injected global logger when available to avoid direct console usage.
 export class SimpleLogger {
     constructor(component) {
         this.component = component;

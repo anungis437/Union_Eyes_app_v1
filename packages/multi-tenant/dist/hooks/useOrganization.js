@@ -181,16 +181,15 @@ export function useOrganization(options) {
     }, [loadOrganizations]);
     // Set cookie when current organization changes
     useEffect(() => {
-if (currentOrganization) {
+        if (currentOrganization) {
             try {
                 const cookieValue = `active-organization=${currentOrganization.slug}; path=/; max-age=${60 * 60 * 24 * 30}`;
-document.cookie = cookieValue; // 30 days
-}
+                document.cookie = cookieValue; // 30 days
+            }
             catch (error) {
-}
+                setError(error);
+            }
         }
-        else {
-}
     }, [currentOrganization]);
     // Load specific organization if ID provided
     useEffect(() => {
@@ -222,7 +221,7 @@ document.cookie = cookieValue; // 30 days
                     schema: 'public',
                     table: 'organizations',
                 }, async (payload) => {
-await refresh();
+                    await refresh();
                 })
                     .on('postgres_changes', {
                     event: '*',
@@ -230,12 +229,13 @@ await refresh();
                     table: 'organization_members',
                     filter: `user_id=eq.${user.id}`,
                 }, async (payload) => {
-await refresh();
+                    await refresh();
                 })
                     .subscribe();
             }
             catch (err) {
-}
+                setError(err);
+            }
         };
         setupRealtime();
         return () => {

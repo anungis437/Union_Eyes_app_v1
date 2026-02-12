@@ -1,7 +1,14 @@
 import {withSentryConfig} from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
+import bundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
+// Bundle Analyzer - Enable with ANALYZE=true environment variable
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: true,
+});
 
 // =============================================================================
 // CONTENT SECURITY POLICY (CSP)
@@ -318,4 +325,4 @@ export default useSentryInBuild ? withSentryConfig(withNextIntl(nextConfig), {
   hideSourceMaps: false,
   disableServerWebpackPlugin: process.env.NODE_ENV === 'development',
   disableClientWebpackPlugin: process.env.NODE_ENV === 'development',
-}) : withNextIntl(nextConfig);
+}) : withBundleAnalyzer(withNextIntl(nextConfig));

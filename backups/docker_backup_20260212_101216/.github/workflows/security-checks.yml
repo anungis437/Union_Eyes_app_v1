@@ -1,0 +1,265 @@
+name: Security Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  api-auth-coverage:
+    name: API Authentication Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run API auth scanner
+        run: pnpm tsx scripts/scan-api-auth.ts
+        continue-on-error: false
+      
+      - name: Report results
+        if: failure()
+        run: |
+          echo "❌ API auth coverage check failed"
+          echo "Some API routes lack authentication guards."
+          echo "See the scanner output above for details."
+          exit 1
+
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for secret scanning
+      
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Optional: for commercial
+      
+      - name: Check for .env files in commits
+        run: |
+          echo "Checking for committed .env files..."
+          if git ls-files | grep -E '(^|/)\.env($|\.production|\.staging|\.10-10-excellence)'; then
+            echo "❌ ERROR: .env files with secrets are committed!"
+            echo "Found files:"
+            git ls-files | grep -E '(^|/)\.env($|\.production|\.staging|\.10-10-excellence)'
+            exit 1
+          else
+            echo "✅ No .env secret files found in tracking"
+          fi
+      
+      - name: Check for node_modules in commits
+        run: |
+          echo "Checking for committed node_modules..."
+          if git ls-files | grep -E 'node_modules/' | head -1; then
+            echo "❌ ERROR: node_modules are committed!"
+            echo "This bloats the repository and creates supply-chain risks."
+            exit 1
+          else
+            echo "✅ No node_modules found in tracking"
+          fi
+      
+      - name: Check for credentials in docs
+        run: |
+          echo "Checking for credential files in docs..."
+          if git ls-files | grep -iE 'credentials|secrets' | grep -vE '\.(md\.example|template)$'; then
+            echo "⚠️  WARNING: Potential credential files found:"
+            git ls-files | grep -iE 'credentials|secrets' | grep -vE '\.(md\.example|template)$'
+            echo "Please verify these do not contain actual secrets."
+          else
+            echo "✅ No suspicious credential files found"
+          fi
+
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run pnpm audit
+        run: pnpm audit --audit-level=high
+        continue-on-error: true  # Don't fail build, just warn
+      
+      - name: Check for known vulnerabilities
+        run: |
+          echo "Checking for high/critical vulnerabilities..."
+          pnpm audit --json --audit-level=high > audit-results.json || true
+          cat audit-results.json
+          
+          # Count high/critical vulnerabilities
+          HIGH_COUNT=$(cat audit-results.json | jq -r '.metadata.vulnerabilities.high // 0')
+          CRITICAL_COUNT=$(cat audit-results.json | jq -r '.metadata.vulnerabilities.critical // 0')
+          
+          echo "High severity: $HIGH_COUNT"
+          echo "Critical severity: $CRITICAL_COUNT"
+          
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "❌ CRITICAL vulnerabilities found! Please review and fix."
+            exit 1
+          elif [ "$HIGH_COUNT" -gt 5 ]; then
+            echo "⚠️  More than 5 HIGH severity vulnerabilities found. Please review."
+            exit 1
+          else
+            echo "✅ Acceptable vulnerability level"
+          fi
+
+  docker-build-test:
+    name: Docker Build Reproducibility
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Test Docker build (no local .next dependency)
+        run: |
+          echo "Testing Docker build from source..."
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg NEXT_PUBLIC_APP_URL=https://test.example.com \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_placeholder \
+            --tag unioneyes-test:latest \
+            --file Dockerfile \
+            --progress=plain \
+            .
+          
+          echo "✅ Docker build successful from source only"
+      
+      - name: Verify no local .next in Dockerfile
+        run: |
+          if grep -E "COPY.*\.next" Dockerfile | grep -v "FROM.*builder"; then
+            echo "❌ ERROR: Dockerfile contains local .next copy (non-reproducible build)"
+            exit 1
+          else
+            echo "✅ Dockerfile builds from source only"
+          fi
+
+  security-headers-test:
+    name: Security Headers Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check security headers in Next.js config
+        run: |
+          echo "Validating security headers configuration..."
+          
+          if ! grep -q "Content-Security-Policy" next.config.mjs; then
+            echo "❌ ERROR: No CSP header configured"
+            exit 1
+          fi
+          
+          if ! grep -q "Strict-Transport-Security" next.config.mjs; then
+            echo "❌ ERROR: No HSTS header configured"
+            exit 1
+          fi
+          
+          if ! grep -q "X-Frame-Options" next.config.mjs; then
+            echo "❌ ERROR: No X-Frame-Options header configured"
+            exit 1
+          fi
+          
+          if ! grep -q "X-Content-Type-Options" next.config.mjs; then
+            echo "❌ ERROR: No X-Content-Type-Options header configured"
+            exit 1
+          fi
+          
+          echo "✅ All required security headers are configured"
+      
+      - name: Check for insecure CSP directives
+        run: |
+          echo "Checking for insecure CSP directives..."
+          
+          if grep -E "script-src.*'unsafe-eval'" next.config.mjs; then
+            echo "⚠️  WARNING: CSP allows 'unsafe-eval' for scripts"
+            echo "This may be required for development but should be minimized in production"
+          fi
+          
+          if grep -E "default-src.*\*" next.config.mjs; then
+            echo "❌ ERROR: CSP has wildcard (*) in default-src - too permissive!"
+            exit 1
+          fi
+          
+          echo "✅ CSP directives are reasonably secure"
+
+  typescript-strict-check:
+    name: TypeScript Strict Mode Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Verify strict mode is enabled
+        run: |
+          echo "Checking TypeScript strict mode..."
+          if ! grep -q '"strict": true' tsconfig.json; then
+            echo "❌ ERROR: TypeScript strict mode is not enabled"
+            exit 1
+          fi
+          echo "✅ TypeScript strict mode is enabled"
+      
+      - name: Run type check
+        run: pnpm exec tsc --noEmit
+        continue-on-error: false
+      
+      - name: Report type errors
+        if: failure()
+        run: |
+          echo "❌ TypeScript compilation failed"
+          echo "Fix type errors before merging"
+          exit 1

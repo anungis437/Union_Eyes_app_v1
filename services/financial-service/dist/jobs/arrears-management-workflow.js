@@ -59,7 +59,7 @@ async function processArrearsManagement(params) {
         })
             .from(schema_1.duesTransactions)
             .innerJoin(schema_1.members, (0, drizzle_orm_1.eq)(schema_1.duesTransactions.memberId, schema_1.members.id))
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.tenantId, tenantId), (0, drizzle_orm_1.lt)(schema_1.duesTransactions.dueDate, scanDate.toISOString().split('T')[0]), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.status, 'pending')));
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.duesTransactions.organizationId, tenantId), (0, drizzle_orm_1.lt)(schema_1.duesTransactions.dueDate, scanDate.toISOString().split('T')[0]), (0, drizzle_orm_1.eq)(schema_1.duesTransactions.status, 'pending')));
         logger.info(`Found ${overdueRecords.length} overdue transactions`);
         overdueTransactions = overdueRecords.length;
         for (const record of overdueRecords) {
@@ -109,7 +109,7 @@ async function processArrearsManagement(params) {
                 }
                 // Send notification based on stage
                 await (0, notification_service_1.queueNotification)({
-                    tenantId,
+                    organizationId: tenantId,
                     userId: record.memberId,
                     type: 'payment_reminder',
                     channels: notificationStage === 'suspension' ? ['email', 'sms'] : ['email'],

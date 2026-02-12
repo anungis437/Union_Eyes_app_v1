@@ -120,7 +120,7 @@ export async function processMonthlyDuesCalculation(params: {
           .from(duesTransactions)
           .where(
             and(
-              eq(duesTransactions.tenantId, tenantId),
+              eq(duesTransactions.organizationId, tenantId),
               eq(duesTransactions.memberId, member.memberId),
               eq(duesTransactions.periodStart, effectiveDate.toISOString().split('T')[0])
             )

@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../unified-auth/AuthProvider';
 import { getUserProfileService } from '../services/userProfileService';
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../utils/logger';
 // =============================================================================
 // HOOK IMPLEMENTATION
 // =============================================================================
@@ -39,7 +40,8 @@ export function useUserProfile(options = {}) {
             setProfile(data);
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error fetching profile:', err);
+            setError(err);
         }
         finally {
             setLoading(false);
@@ -78,7 +80,8 @@ setError(err);
             }
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error updating profile:', err);
+            setError(err);
             // Revert optimistic update on error
             await fetchProfile();
             throw err;
@@ -108,7 +111,8 @@ setError(err);
             return data;
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error uploading avatar:', err);
+            setError(err);
             throw err;
         }
     }, [userId, profile, profileService]);
@@ -133,7 +137,8 @@ setError(err);
             await fetchProfile();
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error deleting avatar:', err);
+            setError(err);
             // Revert on error
             await fetchProfile();
             throw err;
@@ -173,7 +178,8 @@ setError(err);
             }
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error updating notification preferences:', err);
+            setError(err);
             await fetchProfile();
             throw err;
         }
@@ -207,7 +213,8 @@ setError(err);
             }
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error updating UI preferences:', err);
+            setError(err);
             await fetchProfile();
             throw err;
         }
@@ -241,7 +248,8 @@ setError(err);
             }
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error updating privacy settings:', err);
+            setError(err);
             await fetchProfile();
             throw err;
         }
@@ -275,7 +283,8 @@ setError(err);
             }
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error updating security settings:', err);
+            setError(err);
             await fetchProfile();
             throw err;
         }
@@ -296,7 +305,8 @@ setError(err);
             await fetchProfile();
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error completing onboarding step:', err);
+            setError(err);
             throw err;
         }
     }, [userId, profileService, fetchProfile]);
@@ -319,7 +329,8 @@ setError(err);
             }
         }
         catch (err) {
-setError(err);
+            logger.error('[useUserProfile] Error updating onboarding progress:', err);
+            setError(err);
             throw err;
         }
     }, [userId, profile, profileService]);
@@ -344,7 +355,8 @@ setError(err);
         }
         catch (err) {
             // Silently fail for activity updates
-}
+            logger.warn('[useUserProfile] Error updating activity:', err);
+        }
     }, [userId, profile, profileService]);
     // ===========================================================================
     // COMPUTED PROPERTIES
@@ -390,7 +402,7 @@ setError(err);
             table: 'user_profiles',
             filter: `user_id=eq.${userId}`
         }, (payload) => {
-if (payload.eventType === 'UPDATE') {
+            if (payload.eventType === 'UPDATE') {
                 // Refresh profile on update
                 fetchProfile();
             }

@@ -9,6 +9,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { SessionManager } from '../session-manager';
 import { AuditLogger } from './audit-logger';
+import { logger } from '../src/utils/logger';
 // Initialize supabase client
 const supabase = getSupabaseClient();
 // =========================================================================
@@ -47,14 +48,16 @@ export const AuthProvider = ({ children, appName = 'CourtLens' }) => {
             };
         }
         catch (error) {
-return {};
+            logger.error('Error fetching user profile:', error);
+            return {};
         }
     };
     /**
      * Handle authentication state changes
      */
     const handleAuthStateChange = useCallback(async (event, session) => {
-if (session?.user) {
+        logger.info('Auth event', { event, appName });
+        if (session?.user) {
             // For initial session or token refresh, ensure JWT has latest claims
             if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
                 try {
@@ -62,7 +65,8 @@ if (session?.user) {
                     await populateJWTClaimsFromProfile(session.user.id);
                 }
                 catch (error) {
-}
+                    logger.warn('Could not populate JWT claims:', error);
+                }
             }
             // Fetch additional user profile data
             const profile = await fetchUserProfile(session.user.id);
@@ -150,7 +154,8 @@ if (session?.user) {
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('Sign in error:', error);
+            return { error: error };
         }
         finally {
             setLoading(false);
@@ -189,7 +194,8 @@ return { error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('Sign up error:', error);
+            return { error: error };
         }
         finally {
             setLoading(false);
@@ -213,7 +219,8 @@ return { error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('Sign out error:', error);
+            return { error: error };
         }
         finally {
             setLoading(false);
@@ -236,7 +243,8 @@ return { error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('Password reset error:', error);
+            return { error: error };
         }
     };
     const updatePassword = async (newPassword) => {
@@ -256,7 +264,8 @@ return { error: error };
             return { error: null };
         }
         catch (error) {
-return { error: error };
+            logger.error('Password update error:', error);
+            return { error: error };
         }
     };
     const refreshSession = async () => {
@@ -270,7 +279,8 @@ return { error: error };
             }
         }
         catch (error) {
-}
+            logger.error('Session refresh error:', error);
+        }
     };
     // =========================================================================
     // PERMISSION CHECKS

@@ -49,23 +49,23 @@ export interface MemberPaymentPattern {
 /**
  * Calculate collection metrics for a given date range
  */
-export declare function getCollectionMetrics(tenantId: string, dateRange: DateRange): Promise<CollectionMetrics>;
+export declare function getCollectionMetrics(organizationId: string, dateRange: DateRange): Promise<CollectionMetrics>;
 /**
  * Get arrears statistics
  */
-export declare function getArrearsStatistics(tenantId: string): Promise<ArrearsStatistics>;
+export declare function getArrearsStatistics(organizationId: string): Promise<ArrearsStatistics>;
 /**
  * Analyze revenue trends over time
  */
-export declare function getRevenueAnalysis(tenantId: string, dateRange: DateRange): Promise<RevenueAnalysis>;
+export declare function getRevenueAnalysis(organizationId: string, dateRange: DateRange): Promise<RevenueAnalysis>;
 /**
  * Analyze payment patterns for members
  */
-export declare function getMemberPaymentPatterns(tenantId: string, dateRange: DateRange, limit?: number): Promise<MemberPaymentPattern[]>;
+export declare function getMemberPaymentPatterns(organizationId: string, dateRange: DateRange, limit?: number): Promise<MemberPaymentPattern[]>;
 /**
  * Get top-level financial dashboard summary
  */
-export declare function getFinancialDashboard(tenantId: string, dateRange: DateRange): Promise<{
+export declare function getFinancialDashboard(organizationId: string, dateRange: DateRange): Promise<{
     collectionMetrics: CollectionMetrics;
     arrearsStats: ArrearsStatistics;
     revenueAnalysis: RevenueAnalysis;

@@ -4,6 +4,7 @@
  * Tracks all authentication events for security compliance and monitoring.
  */
 import { getSupabaseClient } from '@unioneyes/supabase';
+import { logger } from '../src/utils/logger';
 // Initialize supabase client
 const supabase = getSupabaseClient();
 // =========================================================================
@@ -51,7 +52,7 @@ export class AuditLogger {
             }
         }
         catch (error) {
-            void error;
+            logger.error('Error logging auth event:', error);
         }
     }
     /**
@@ -77,11 +78,13 @@ export class AuditLogger {
                 .from('auth_audit_logs')
                 .insert(entries);
             if (error) {
+                logger.error('Error flushing audit logs:', error);
                 // Re-add to queue on error
                 this.queue.unshift(...events);
             }
         }
         catch (error) {
+            logger.error('Error flushing audit logs:', error);
             // Re-add to queue on error
             this.queue.unshift(...events);
         }
@@ -159,7 +162,7 @@ export class AuditLogger {
             return data || [];
         }
         catch (error) {
-            void error;
+            logger.error('Error fetching audit logs:', error);
             return [];
         }
     }
@@ -183,7 +186,7 @@ export class AuditLogger {
             };
         }
         catch (error) {
-            void error;
+            logger.error('Error getting user audit summary:', error);
             return {
                 totalEvents: 0,
                 signInCount: 0,

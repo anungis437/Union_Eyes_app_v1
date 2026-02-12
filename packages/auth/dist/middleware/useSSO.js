@@ -8,6 +8,7 @@ import { Fragment as _Fragment, jsx as _jsx } from "react/jsx-runtime";
 import { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../unified-auth';
 import { SessionManager } from '../session-manager';
+import { logger } from '../src/utils/logger';
 // =========================================================================
 // SSO MIDDLEWARE HOOK
 // =========================================================================
@@ -22,8 +23,12 @@ import { SessionManager } from '../session-manager';
  *   useSSO({
  *     enabled: true,
  *     checkInterval: 30000, // Check every 30 seconds
- *     onSSOLogin: (userId) => undefined,
- *     onSSOLogout: () => undefined
+ *     onSSOLogin: (userId) => {
+ *       // handle SSO login
+ *     },
+ *     onSSOLogout: () => {
+ *       // handle SSO logout
+ *     }
  *   });
  *
  *   return <YourApp />;
@@ -41,7 +46,8 @@ export const useSSO = (config = {}) => {
      */
     const log = useCallback((message, ...args) => {
         if (debug) {
-}
+            logger.debug(`[SSO] ${message}`, args);
+        }
     }, [debug]);
     /**
      * Broadcast SSO event to other tabs/apps
@@ -52,7 +58,8 @@ export const useSSO = (config = {}) => {
             log('Broadcasted SSO event:', event.type);
         }
         catch (error) {
-}
+            logger.error('[SSO] Failed to broadcast event:', error);
+        }
     }, [log]);
     /**
      * Handle SSO login detected from another app
@@ -65,7 +72,8 @@ export const useSSO = (config = {}) => {
             onSSOLogin?.(userId);
         }
         catch (error) {
-}
+            logger.error('[SSO] Failed to refresh session on SSO login:', error);
+        }
     }, [refreshSession, onSSOLogin, log]);
     /**
      * Handle SSO logout detected from another app
@@ -113,7 +121,8 @@ export const useSSO = (config = {}) => {
             }
         }
         catch (error) {
-}
+            logger.error('[SSO] Error processing SSO event:', error);
+        }
     }, [user, handleSSOLogin, handleSSOLogout, refreshSession, log]);
     /**
      * Listen for storage events (cross-tab communication)

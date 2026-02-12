@@ -27,7 +27,7 @@ const checkInSchema = zod_1.z.object({
  */
 router.post('/:fundId/check-in', async (req, res) => {
     try {
-        const { tenantId, userId } = req.user;
+        const { organizationId, userId } = req.user;
         const { fundId } = req.params;
         const validatedData = checkInSchema.parse(req.body);
         // Check if already checked in
@@ -73,7 +73,7 @@ router.post('/:fundId/check-in', async (req, res) => {
         device_id, nfc_tag_uid, qr_code_data,
         location_verified, coordinator_override, notes, created_by
       ) VALUES (
-        ${tenantId}, ${fundId}, ${userId}, ${validatedData.picketLocationId},
+        ${organizationId}, ${fundId}, ${userId}, ${validatedData.picketLocationId},
         NOW(), ${validatedData.checkInMethod}, 
         ${checkInLocation ? (0, drizzle_orm_1.sql) `ST_GeogFromText(${checkInLocation})` : null},
         ${validatedData.deviceId}, ${validatedData.nfcTagUid}, ${validatedData.qrCodeData},
@@ -111,7 +111,7 @@ router.post('/:fundId/check-in', async (req, res) => {
  */
 router.post('/:fundId/check-out', async (req, res) => {
     try {
-        const { tenantId, userId } = req.user;
+        const { organizationId, userId } = req.user;
         const { fundId } = req.params;
         const checkOutSchema = zod_1.z.object({
             attendanceId: zod_1.z.string().uuid(),
@@ -133,7 +133,7 @@ router.post('/:fundId/check-out', async (req, res) => {
         updated_at = NOW()
       WHERE id = ${validatedData.attendanceId}
         AND member_id = ${userId}
-        AND tenant_id = ${tenantId}
+        AND tenant_id = ${organizationId}
         AND check_out_time IS NULL
       RETURNING *
     `);
@@ -168,7 +168,7 @@ router.post('/:fundId/check-out', async (req, res) => {
  */
 router.post('/:fundId/stipends/calculate', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         const { fundId } = req.params;
         if (!['admin', 'financial_admin'].includes(role)) {
             return res.status(403).json({
@@ -205,7 +205,7 @@ router.post('/:fundId/stipends/calculate', async (req, res) => {
           tenant_id, fund_id, member_id, week_start, week_end,
           hours_worked, total_amount, status, created_by
         ) VALUES (
-          ${tenantId}, ${fundId}, ${row.member_id}, 
+          ${organizationId}, ${fundId}, ${row.member_id}, 
           ${validatedData.weekStart}, ${validatedData.weekEnd},
           ${row.hours_worked}, ${row.stipend_amount}, 
           'pending', ${userId}
@@ -242,10 +242,10 @@ router.post('/:fundId/stipends/calculate', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const { tenantId } = req.user;
+        const { organizationId } = req.user;
         const result = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT * FROM strike_funds 
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
       ORDER BY created_at DESC
     `);
         res.json({
@@ -266,7 +266,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const { tenantId, userId, role } = req.user;
+        const { organizationId, userId, role } = req.user;
         if (!['admin'].includes(role)) {
             return res.status(403).json({
                 success: false,
@@ -287,7 +287,7 @@ router.post('/', async (req, res) => {
         current_balance, weekly_stipend_amount, start_date,
         status, created_by
       ) VALUES (
-        ${tenantId}, ${validatedData.name}, ${validatedData.description},
+        ${organizationId}, ${validatedData.name}, ${validatedData.description},
         ${validatedData.targetAmount.toString()}, '0',
         ${validatedData.weeklyStipendAmount.toString()}, ${validatedData.startDate},
         'active', ${userId}

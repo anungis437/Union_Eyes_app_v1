@@ -14,7 +14,7 @@ import { logApiAuditEvent } from "@/lib/middleware/api-security";
 import { NextRequest, NextResponse } from 'next/server';
 import { ERPConnectorRegistry } from '@/packages/financial/src/erp/connector-interface';
 import { db } from '@/db';
-import { erpConnectors } from '@/db/schema/erp-integration-schema';
+import { erpConnectors } from '@/db/schema/domains/infrastructure';
 import { eq, and } from 'drizzle-orm';
 import { withApiAuth, withRoleAuth, withMinRole, withAdminAuth, getCurrentUser } from '@/lib/api-auth-guard';
 

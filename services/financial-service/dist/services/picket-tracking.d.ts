@@ -3,7 +3,7 @@
  * Handles NFC/QR code check-ins, GPS verification, and attendance tracking
  */
 export interface CheckInRequest {
-    tenantId: string;
+    organizationId: string;
     strikeFundId: string;
     memberId: string;
     method: 'nfc' | 'qr_code' | 'gps' | 'manual';
@@ -17,7 +17,7 @@ export interface CheckInRequest {
     verifiedBy?: string;
 }
 export interface CheckOutRequest {
-    tenantId: string;
+    organizationId: string;
     attendanceId: string;
     latitude?: number;
     longitude?: number;
@@ -88,19 +88,19 @@ export declare function checkOut(request: CheckOutRequest): Promise<{
 /**
  * Get active check-ins (not checked out)
  */
-export declare function getActiveCheckIns(tenantId: string, strikeFundId: string): Promise<AttendanceRecord[]>;
+export declare function getActiveCheckIns(organizationId: string, strikeFundId: string): Promise<AttendanceRecord[]>;
 /**
  * Get attendance history for a date range
  */
-export declare function getAttendanceHistory(tenantId: string, strikeFundId: string, startDate: Date, endDate: Date, memberId?: string): Promise<AttendanceRecord[]>;
+export declare function getAttendanceHistory(organizationId: string, strikeFundId: string, startDate: Date, endDate: Date, memberId?: string): Promise<AttendanceRecord[]>;
 /**
  * Get attendance summary for members
  */
-export declare function getAttendanceSummary(tenantId: string, strikeFundId: string, startDate: Date, endDate: Date, memberId?: string): Promise<AttendanceSummary[]>;
+export declare function getAttendanceSummary(organizationId: string, strikeFundId: string, startDate: Date, endDate: Date, memberId?: string): Promise<AttendanceSummary[]>;
 /**
  * Manual check-in override by coordinator
  */
-export declare function coordinatorOverride(tenantId: string, strikeFundId: string, memberId: string, verifiedBy: string, reason: string, hours: number): Promise<{
+export declare function coordinatorOverride(organizationId: string, strikeFundId: string, memberId: string, verifiedBy: string, reason: string, hours: number): Promise<{
     success: boolean;
     attendanceId?: string;
     error?: string;

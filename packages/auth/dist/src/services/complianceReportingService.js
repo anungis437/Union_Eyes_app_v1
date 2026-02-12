@@ -11,6 +11,7 @@
  */
 import { getSupabaseClient } from '@unioneyes/supabase';
 import { SecurityAuditService } from './securityAuditService';
+import { logger } from '../utils/logger';
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
@@ -81,7 +82,8 @@ export class ComplianceReportingService {
             return { success: true, data: report };
         }
         catch (error) {
-return {
+            logger.error('Failed to generate SOC2 report:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -426,7 +428,8 @@ return {
             return { success: true, data: report };
         }
         catch (error) {
-return {
+            logger.error('Failed to generate GDPR report:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -562,7 +565,8 @@ return {
             return { success: true, data: report };
         }
         catch (error) {
-return {
+            logger.error('Failed to generate HIPAA report:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
@@ -572,19 +576,19 @@ return {
         const findings = [];
         let controlsImplemented = 0;
         const controlsRequired = 5;
-        // Access control (Â§164.312(a)(1))
+        // Access control (§164.312(a)(1))
         const accessControl = logs.filter(l => l.action_type.includes('rbac.'));
         if (accessControl.length > 0)
             controlsImplemented++;
-        // Audit controls (Â§164.312(b))
+        // Audit controls (§164.312(b))
         controlsImplemented++; // We have audit logging
-        // Integrity (Â§164.312(c)(1))
+        // Integrity (§164.312(c)(1))
         controlsImplemented++;
-        // Person or entity authentication (Â§164.312(d))
+        // Person or entity authentication (§164.312(d))
         const authEvents = logs.filter(l => l.action_type.includes('auth.'));
         if (authEvents.length > 0)
             controlsImplemented++;
-        // Transmission security (Â§164.312(e)(1))
+        // Transmission security (§164.312(e)(1))
         controlsImplemented++;
         return {
             compliant: controlsImplemented >= 5,
@@ -637,7 +641,8 @@ return {
             return { success: true, data: report };
         }
         catch (error) {
-return {
+            logger.error('Failed to generate user activity report:', error);
+            return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };

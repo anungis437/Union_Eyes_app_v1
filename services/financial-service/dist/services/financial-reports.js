@@ -7,19 +7,23 @@ exports.getMemberPaymentPatterns = getMemberPaymentPatterns;
 exports.getFinancialDashboard = getFinancialDashboard;
 const db_1 = require("../db");
 const drizzle_orm_1 = require("drizzle-orm");
+// TODO: Fix logger import path
+// import { logger } from '@/lib/logger';
+const logger = console;
 /**
  * Calculate collection metrics for a given date range
  */
-async function getCollectionMetrics(tenantId, dateRange) {
+async function getCollectionMetrics(organizationId, dateRange) {
     try {
         const { startDate, endDate } = dateRange;
-// Total dues charged in period
+        logger.info('[getCollectionMetrics] Starting', { organizationId, startDate, endDate });
+        // Total dues charged in period
         const chargedResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT 
         COALESCE(SUM(amount), 0) as total,
         COUNT(DISTINCT member_id) as count
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'charge'
         AND due_date >= ${startDate.toISOString()}
         AND due_date <= ${endDate.toISOString()}
@@ -32,7 +36,7 @@ async function getCollectionMetrics(tenantId, dateRange) {
         COALESCE(SUM(amount), 0) as total,
         COUNT(DISTINCT member_id) as count
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'payment'
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
@@ -43,7 +47,7 @@ async function getCollectionMetrics(tenantId, dateRange) {
         const outstandingResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT COALESCE(SUM(amount), 0) as total
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status = 'pending'
         AND due_date <= ${endDate.toISOString()}
     `);
@@ -52,7 +56,7 @@ async function getCollectionMetrics(tenantId, dateRange) {
         const paymentTimeResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT AVG(EXTRACT(DAY FROM (payment_date - due_date))) as avg_days
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'charge'
         AND status = 'paid'
         AND payment_date IS NOT NULL
@@ -78,21 +82,27 @@ async function getCollectionMetrics(tenantId, dateRange) {
         };
     }
     catch (error) {
-throw error;
+        logger.error('[getCollectionMetrics] Error', {
+            error,
+            stack: error instanceof Error ? error.stack : undefined,
+            organizationId,
+        });
+        throw error;
     }
 }
 /**
  * Get arrears statistics
  */
-async function getArrearsStatistics(tenantId) {
+async function getArrearsStatistics(organizationId) {
     try {
-// Total cases and amount
+        logger.info('[getArrearsStatistics] Starting', { organizationId });
+        // Total cases and amount
         const totalResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT 
         COUNT(*) as count,
         COALESCE(SUM(CAST(total_owed AS DECIMAL)), 0) as total
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
     `);
         const totalCases = Number(totalResult[0]?.count || 0);
@@ -101,7 +111,7 @@ async function getArrearsStatistics(tenantId) {
         const statusResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT status, COUNT(*) as count
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
       GROUP BY status
     `);
@@ -115,7 +125,7 @@ async function getArrearsStatistics(tenantId) {
         COALESCE(CAST(escalation_level AS INTEGER), 0) as level,
         COUNT(*) as count
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
       GROUP BY escalation_level
     `);
@@ -127,7 +137,7 @@ async function getArrearsStatistics(tenantId) {
         const avgDaysResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT AVG(CAST(days_overdue AS DECIMAL)) as avg_days
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
         AND days_overdue IS NOT NULL
     `);
@@ -136,7 +146,7 @@ async function getArrearsStatistics(tenantId) {
         const oldestResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT id, member_id, days_overdue, total_owed
       FROM arrears_cases
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND status NOT IN ('resolved', 'written_off')
         AND days_overdue IS NOT NULL
       ORDER BY CAST(days_overdue AS INTEGER) DESC
@@ -160,20 +170,26 @@ async function getArrearsStatistics(tenantId) {
         };
     }
     catch (error) {
-throw error;
+        logger.error('[getArrearsStatistics] Error', {
+            error,
+            stack: error instanceof Error ? error.stack : undefined,
+            organizationId,
+        });
+        throw error;
     }
 }
 /**
  * Analyze revenue trends over time
  */
-async function getRevenueAnalysis(tenantId, dateRange) {
+async function getRevenueAnalysis(organizationId, dateRange) {
     try {
         const { startDate, endDate } = dateRange;
-// Total revenue from payments
+        logger.info('[getRevenueAnalysis] Starting', { organizationId, startDate, endDate });
+        // Total revenue from payments
         const revenueResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT COALESCE(SUM(amount), 0) as total
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'payment'
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
@@ -186,7 +202,7 @@ async function getRevenueAnalysis(tenantId, dateRange) {
         SUM(amount) as amount,
         COUNT(*) as count
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'payment'
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
@@ -204,7 +220,7 @@ async function getRevenueAnalysis(tenantId, dateRange) {
         transaction_type as type,
         SUM(amount) as amount
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND payment_date >= ${startDate.toISOString()}
         AND payment_date <= ${endDate.toISOString()}
       GROUP BY transaction_type
@@ -230,16 +246,22 @@ async function getRevenueAnalysis(tenantId, dateRange) {
         };
     }
     catch (error) {
-throw error;
+        logger.error('[getRevenueAnalysis] Error', {
+            error,
+            stack: error instanceof Error ? error.stack : undefined,
+            organizationId,
+        });
+        throw error;
     }
 }
 /**
  * Analyze payment patterns for members
  */
-async function getMemberPaymentPatterns(tenantId, dateRange, limit = 100) {
+async function getMemberPaymentPatterns(organizationId, dateRange, limit = 100) {
     try {
         const { startDate, endDate } = dateRange;
-const patternsResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
+        logger.info('[getMemberPaymentPatterns] Starting', { organizationId, startDate, endDate, limit });
+        const patternsResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
       SELECT 
         member_id,
         COUNT(*) as total_transactions,
@@ -250,7 +272,7 @@ const patternsResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
         COUNT(CASE WHEN status = 'pending' AND due_date < CURRENT_DATE THEN 1 END) as missed,
         MAX(payment_date) as last_payment
       FROM dues_transactions
-      WHERE tenant_id = ${tenantId}
+      WHERE tenant_id = ${organizationId}
         AND transaction_type = 'charge'
         AND due_date >= ${startDate.toISOString()}
         AND due_date <= ${endDate.toISOString()}
@@ -281,19 +303,25 @@ const patternsResult = await db_1.db.execute((0, drizzle_orm_1.sql) `
         });
     }
     catch (error) {
-throw error;
+        logger.error('[getMemberPaymentPatterns] Error', {
+            error,
+            stack: error instanceof Error ? error.stack : undefined,
+            organizationId,
+        });
+        throw error;
     }
 }
 /**
  * Get top-level financial dashboard summary
  */
-async function getFinancialDashboard(tenantId, dateRange) {
+async function getFinancialDashboard(organizationId, dateRange) {
     try {
-const [collectionMetrics, arrearsStats, revenueAnalysis, topPayers] = await Promise.all([
-            getCollectionMetrics(tenantId, dateRange),
-            getArrearsStatistics(tenantId),
-            getRevenueAnalysis(tenantId, dateRange),
-            getMemberPaymentPatterns(tenantId, dateRange, 10),
+        logger.info('[getFinancialDashboard] Starting', { organizationId, dateRange });
+        const [collectionMetrics, arrearsStats, revenueAnalysis, topPayers] = await Promise.all([
+            getCollectionMetrics(organizationId, dateRange),
+            getArrearsStatistics(organizationId),
+            getRevenueAnalysis(organizationId, dateRange),
+            getMemberPaymentPatterns(organizationId, dateRange, 10),
         ]);
         return {
             collectionMetrics,
@@ -304,7 +332,12 @@ const [collectionMetrics, arrearsStats, revenueAnalysis, topPayers] = await Prom
         };
     }
     catch (error) {
-throw error;
+        logger.error('[getFinancialDashboard] Error', {
+            error,
+            stack: error instanceof Error ? error.stack : undefined,
+            organizationId,
+        });
+        throw error;
     }
 }
 //# sourceMappingURL=financial-reports.js.map
