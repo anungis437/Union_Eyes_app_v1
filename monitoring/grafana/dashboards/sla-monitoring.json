@@ -1,0 +1,275 @@
+{
+  "dashboard": {
+    "title": "Union Eyes - SLA Monitoring",
+    "uid": "unioneyes-sla",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "tags": ["union-eyes", "sla"],
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "30-Day Uptime SLA (Target: 99.9%)",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "avg_over_time(up{job=\"nextjs-app\"}[30d]) * 100",
+            "legendFormat": "Uptime %"
+          }
+        ],
+        "options": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 99, "color": "yellow"},
+              {"value": 99.9, "color": "green"}
+            ]
+          },
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 3
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Response Time SLA - p95 (Target: <1s)",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[24h]))",
+            "legendFormat": "p95 Response Time"
+          }
+        ],
+        "options": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 2, "color": "red"}
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Error Rate SLA (Target: <0.1%)",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[24h]) / rate(http_requests_total[24h]) * 100",
+            "legendFormat": "Error Rate %"
+          }
+        ],
+        "options": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 0.1, "color": "yellow"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 3
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "gauge",
+        "title": "SLA Compliance Score",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "targets": [
+          {
+            "expr": "(avg_over_time(up{job=\"nextjs-app\"}[30d]) + (1 - (rate(http_requests_total{status=~\"5..\"}[24h]) / rate(http_requests_total[24h])))) / 2 * 100",
+            "legendFormat": "SLA Score"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99.5, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Uptime Trend (7 days)",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "targets": [
+          {
+            "expr": "avg_over_time(up{job=\"nextjs-app\"}[1h]) * 100",
+            "legendFormat": "Hourly Uptime %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 99,
+            "max": 100
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "table",
+        "title": "SLA Violations (Last 30 Days)",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 14},
+        "targets": [
+          {
+            "expr": "ALERTS{alertname=~\".*SLA.*\", alertstate=\"firing\"}",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "alertstate": true},
+              "renameByName": {
+                "alertname": "Alert",
+                "severity": "Severity",
+                "component": "Component",
+                "summary": "Summary",
+                "description": "Description"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "type": "timeseries",
+        "title": "Response Time Trend - p50, p95, p99",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p99"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "lineWidth": 2,
+              "fillOpacity": 10
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "p99"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "type": "stat",
+        "title": "Downtime (Last 30 Days)",
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 32},
+        "targets": [
+          {
+            "expr": "(1 - avg_over_time(up{job=\"nextjs-app\"}[30d])) * 30 * 24 * 60",
+            "legendFormat": "Minutes Down"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "m",
+            "decimals": 1
+          }
+        }
+      },
+      {
+        "id": 9,
+        "type": "stat",
+        "title": "MTTR - Mean Time To Recovery",
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 32},
+        "targets": [
+          {
+            "expr": "avg(time() - ALERTS_FOR_STATE{alertstate=\"firing\"}) / 60",
+            "legendFormat": "MTTR (minutes)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "m",
+            "decimals": 1
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "stat",
+        "title": "Incidents (Last 30 Days)",
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 32},
+        "targets": [
+          {
+            "expr": "count(count_over_time(ALERTS{alertstate=\"firing\"}[30d]))",
+            "legendFormat": "Total Incidents"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      }
+    ]
+  }
+}

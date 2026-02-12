@@ -1,0 +1,252 @@
+{
+  "dashboard": {
+    "title": "Union Eyes - System Overview",
+    "uid": "unioneyes-overview",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "tags": ["union-eyes", "overview"],
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Application Uptime",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "avg_over_time(up{job=\"nextjs-app\"}[24h]) * 100",
+            "legendFormat": "Uptime %"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Request Rate (req/s)",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "Requests/sec"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Error Rate",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+            "legendFormat": "Error %"
+          }
+        ],
+        "options": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Active Users",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "count(count by(user_id) (rate(http_requests_total[5m])))",
+            "legendFormat": "Users"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "type": "graph",
+        "title": "HTTP Response Time (p50, p95, p99)",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Response Time"},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 6,
+        "type": "graph",
+        "title": "Request Rate by Status Code",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "sum by(status) (rate(http_requests_total[5m]))",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "label": "Requests/sec"},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 7,
+        "type": "graph",
+        "title": "Database Connections",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends",
+            "legendFormat": "Active Connections"
+          },
+          {
+            "expr": "pg_settings_max_connections",
+            "legendFormat": "Max Connections"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Connections"},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 8,
+        "type": "graph",
+        "title": "Database Query Performance",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+        "targets": [
+          {
+            "expr": "rate(pg_stat_statements_calls[5m])",
+            "legendFormat": "Queries/sec"
+          },
+          {
+            "expr": "rate(pg_stat_statements_mean_exec_time[5m])",
+            "legendFormat": "Avg Exec Time (ms)"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Queries"},
+          {"format": "ms", "label": "Time"}
+        ]
+      },
+      {
+        "id": 9,
+        "type": "graph",
+        "title": "CPU Usage",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "CPU %", "max": 100, "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 10,
+        "type": "graph",
+        "title": "Memory Usage",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+            "legendFormat": "Memory Usage %"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Memory %", "max": 100, "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 11,
+        "type": "graph",
+        "title": "Container CPU Usage",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28},
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{name!=\"\"}[5m]) * 100",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "CPU %"},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 12,
+        "type": "graph",
+        "title": "Container Memory Usage",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28},
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{name!=\"\"} / 1024 / 1024",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "decmbytes", "label": "Memory"},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 13,
+        "type": "table",
+        "title": "Top 10 Slowest Endpoints",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 36},
+        "targets": [
+          {
+            "expr": "topk(10, histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])))",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {},
+              "renameByName": {
+                "Value": "Response Time (s)",
+                "endpoint": "Endpoint",
+                "method": "Method"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

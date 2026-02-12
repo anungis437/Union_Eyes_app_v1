@@ -1,116 +1,49 @@
-﻿# Enhanced Docker Compose Configuration
-# Environment: dev
-# Generated: 2026-02-12 09:56:58
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+    Add monitoring stack to docker-compose.yml
 
-version: '3.8'
+.DESCRIPTION
+    Adds Prometheus, Grafana, Loki, AlertManager, and exporters to docker-compose
+#>
 
-services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: unioneyes-db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: unioneyes
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    
-    # Resource limits (dev environment)
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2g
-        reservations:
-          cpus: '1'
-          memory: 1g
-    
-    # Health check
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    
-    # Restart policy
-    restart: unless-stopped
-    
-    # Logging
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+[CmdletBinding()]
+param()
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-    container_name: unioneyes-app
-    ports:
-      - "3000:3000"
-    environment:
-      # Database
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/unioneyes
-      
-      # Clerk Authentication
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-      SIGN_IN_FALLBACK_REDIRECT_URL: /dashboard
-      
-      # Azure Services
-      AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME:-}
-      AZURE_STORAGE_ACCOUNT_KEY: ${AZURE_STORAGE_ACCOUNT_KEY:-}
-      AZURE_STORAGE_CONTAINER_NAME: ${AZURE_STORAGE_CONTAINER_NAME:-unioneyes-uploads}
-      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY:-}
-      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-}
-      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
-      AZURE_OPENAI_KEY: ${AZURE_OPENAI_KEY:-}
-      AZURE_OPENAI_DEPLOYMENT_NAME: ${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4}
-      
-      # App Configuration
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      NODE_ENV: ${NODE_ENV:-dev}
-    
-    # Dependencies
-    depends_on:
-      postgres:
-        condition: service_healthy
-    
-    # Resource limits (dev environment)
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 4g
-        reservations:
-          cpus: '2'
-          memory: 2g
-    
-    # Health check
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    
-    # Restart policy
-    restart: unless-stopped
-    
-    # Logging
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
+function Write-Step {
+    param([string]$Message, [string]$Status = "Info")
+    $colors = @{ Success = "Green"; Warning = "Yellow"; Error = "Red"; Info = "Cyan" }
+    Write-Host "[$(Get-Date -Format 'HH:mm:ss')] $Message" -ForegroundColor $colors[$Status]
+}
+
+try {
+    # Backup original
+    $backupFile = "docker-compose.yml.backup.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+    Copy-Item "docker-compose.yml" $backupFile
+    Write-Step "Backup created: $backupFile" -Status "Success"
+    
+    # Read current compose file
+    $composeContent = Get-Content "docker-compose.yml" -Raw
+    
+    # Check if monitoring services already exist
+    if ($composeContent -match "unioneyes-prometheus") {
+        Write-Step "Monitoring stack already exists" -Status "Warning"
+        exit 0
+    }
+    
+    # Find volumes section
+    $volumesMatch = [regex]::Match($composeContent, '(?m)^volumes:')
+    
+    if (-not $volumesMatch.Success) {
+        Write-Step "Could not find volumes section" -Status "Error"
+        exit 1
+    }
+    
+    # Monitoring services to add
+    $monitoringServices = @'
 
   # Monitoring Stack
   prometheus:
@@ -275,19 +208,17 @@ services:
     networks:
       - default
       - monitoring
-volumes:
-  postgres_data:
-    driver: local
 
-# Resource limits summary for dev environment:
-# - App Service: 2 CPUs, 4g RAM
-# - PostgreSQL: 2 CPUs, 2g RAM
-# 
-# Health checks:
-# - App: HTTP GET /api/health every 30s
-# - DB: pg_isready every 10s
-# 
-# Restart policy: unless-stopped (auto-restart except when explicitly stopped)
+'@
+    
+    # Insert before volumes
+    $beforeVolumes = $composeContent.Substring(0, $volumesMatch.Index)
+    $afterVolumes = $composeContent.Substring($volumesMatch.Index)
+    
+    $newContent = $beforeVolumes + $monitoringServices + $afterVolumes
+    
+    # Add monitoring volumes
+    $newContent += @'
 
   prometheus_data:
     driver: local
@@ -297,7 +228,40 @@ volumes:
     driver: local
   alertmanager_data:
     driver: local
+'@
+    
+    # Add networks section
+    $newContent += @'
+
 
 networks:
   monitoring:
     driver: bridge
+'@
+    
+    # Write file
+    $newContent | Out-File -FilePath "docker-compose.yml" -Encoding UTF8
+    Write-Step "Added monitoring stack" -Status "Success"
+    
+    # Validate
+    Write-Step "Validating..." -Status "Info"
+    $prevErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    $validation = docker-compose config 2>&1 | Out-String
+    $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $prevErrorAction
+    
+    if ($validation -match "\berror\b" -and $validation -notmatch "level=warning") {
+        Write-Step "Validation failed!" -Status "Error"
+        Write-Host $validation -ForegroundColor Red
+        Copy-Item $backupFile "docker-compose.yml" -Force
+        Write-Step "Restored from backup" -Status "Success"
+        exit 1
+    }
+    
+    Write-Step "[OK] Configuration is valid" -Status "Success"
+    
+} catch {
+    Write-Step "Error: $_" -Status "Error"
+    exit 1
+}
