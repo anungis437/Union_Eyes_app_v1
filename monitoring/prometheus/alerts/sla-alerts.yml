@@ -1,0 +1,70 @@
+﻿groups:
+  - name: sla_alerts
+    interval: 30s
+    rules:
+      # Alert: Availability below target (99.9%)
+      - alert: SLAAvailabilityBreach
+        expr: sla:availability:ratio < 0.999
+        for: 5m
+        labels:
+          severity: critical
+          sla: availability
+        annotations:
+          summary: "SLA Availability breach detected"
+          description: "Current availability is {{ $value | humanizePercentage }}, below 99.9% target"
+      
+      # Alert: P95 latency exceeds target (1s)
+      - alert: SLAP95LatencyBreach
+        expr: sla:latency:p95 > 1
+        for: 5m
+        labels:
+          severity: warning
+          sla: latency
+        annotations:
+          summary: "P95 latency exceeds target"
+          description: "P95 latency is {{ $value }}s for {{ $labels.service }}, exceeds 1s target"
+      
+      # Alert: P99 latency exceeds target (3s)
+      - alert: SLAP99LatencyBreach
+        expr: sla:latency:p99 > 3
+        for: 5m
+        labels:
+          severity: warning
+          sla: latency
+        annotations:
+          summary: "P99 latency exceeds target"
+          description: "P99 latency is {{ $value }}s for {{ $labels.service }}, exceeds 3s target"
+      
+      # Alert: Error rate exceeds target (0.1%)
+      - alert: SLAErrorRateBreach
+        expr: (1 - sla:success_rate:ratio) > 0.001
+        for: 5m
+        labels:
+          severity: critical
+          sla: error_rate
+        annotations:
+          summary: "Error rate exceeds target"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.service }}, exceeds 0.1% target"
+      
+      # Alert: Fast error budget burn (2% consumed in 1h)
+      - alert: SLAErrorBudgetFastBurn
+        expr: sla:error_budget_burn_rate:1h > 10
+        for: 2m
+        labels:
+          severity: critical
+          sla: error_budget
+        annotations:
+          summary: "Error budget burning too fast"
+          description: "Error budget is burning at {{ $value }}x normal rate, will exhaust in {{ 720 | div $value }}h"
+      
+      # Alert: Error budget exhaustion warning
+      - alert: SLAErrorBudgetLow
+        expr: sla:error_budget:30d < 0.2
+        for: 5m
+        labels:
+          severity: warning
+          sla: error_budget
+        annotations:
+          summary: "Error budget below 20%"
+          description: "Only {{ $value | humanizePercentage }} of error budget remains for this month"
+

@@ -1,0 +1,47 @@
+﻿groups:
+  - name: cost_recording_rules
+    interval: 1m
+    rules:
+      # CPU waste: allocated but unused
+      - record: cost:cpu_waste:cores
+        expr: |
+          (
+            container_spec_cpu_quota / container_spec_cpu_period
+            -
+            rate(container_cpu_usage_seconds_total[5m])
+          )
+      
+      # Memory waste: allocated but unused
+      - record: cost:memory_waste:bytes
+        expr: |
+          (
+            container_spec_memory_limit_bytes
+            -
+            container_memory_usage_bytes
+          )
+      
+      # CPU utilization percentage
+      - record: cost:cpu_utilization:percent
+        expr: |
+          (
+            rate(container_cpu_usage_seconds_total[5m])
+            /
+            (container_spec_cpu_quota / container_spec_cpu_period)
+          ) * 100
+      
+      # Memory utilization percentage
+      - record: cost:memory_utilization:percent
+        expr: |
+          (
+            container_memory_usage_bytes
+            /
+            container_spec_memory_limit_bytes
+          ) * 100
+      
+      # Total resource cost score (lower is better)
+      - record: cost:resource_efficiency:score
+        expr: |
+          (
+            (cost:cpu_utilization:percent + cost:memory_utilization:percent) / 2
+          )
+

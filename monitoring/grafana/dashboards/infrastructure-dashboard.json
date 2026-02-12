@@ -1,0 +1,66 @@
+﻿{
+  "dashboard": {
+    "title": "Infrastructure Overview",
+    "tags": ["infrastructure", "resources"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage by Container",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total[5m]) * 100",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage by Container",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes / 1024 / 1024",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 3,
+        "title": "Network I/O",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total[5m])",
+            "legendFormat": "{{name}} RX"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total[5m])",
+            "legendFormat": "{{name}} TX"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8}
+      },
+      {
+        "id": 4,
+        "title": "Disk I/O",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_fs_reads_bytes_total[5m])",
+            "legendFormat": "{{name}} Read"
+          },
+          {
+            "expr": "rate(container_fs_writes_bytes_total[5m])",
+            "legendFormat": "{{name}} Write"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8}
+      }
+    ]
+  }
+}

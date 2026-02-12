@@ -16,7 +16,9 @@ alerting:
 rule_files:
   - '/etc/prometheus/alerts/*.yml'
 
-# Scrape configurations
+# Scrape configurations  - '/etc/prometheus/alerts/sla-recording-rules.yml'
+  - '/etc/prometheus/alerts/sla-alerts.yml'  - '/etc/prometheus/alerts/cost-rules.yml'
+  - '/etc/prometheus/alerts/cost-alerts.yml'
 scrape_configs:
   # Prometheus self-monitoring
   - job_name: 'prometheus'
@@ -59,3 +61,5 @@ scrape_configs:
         labels:
           service: 'node-exporter'
           role: 'system'
+
+

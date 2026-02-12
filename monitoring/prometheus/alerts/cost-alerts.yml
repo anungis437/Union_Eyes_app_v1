@@ -1,0 +1,59 @@
+﻿groups:
+  - name: cost_optimization_alerts
+    interval: 5m
+    rules:
+      # Alert: Severely over-provisioned CPU
+      - alert: CostCPUOverProvisioned
+        expr: cost:cpu_utilization:percent < 25
+        for: 30m
+        labels:
+          severity: info
+          category: cost
+        annotations:
+          summary: "Service over-provisioned (CPU)"
+          description: "{{ $labels.name }} CPU usage is {{ $value | humanize }}%, consider reducing allocation"
+      
+      # Alert: Severely over-provisioned Memory
+      - alert: CostMemoryOverProvisioned
+        expr: cost:memory_utilization:percent < 25
+        for: 30m
+        labels:
+          severity: info
+          category: cost
+        annotations:
+          summary: "Service over-provisioned (Memory)"
+          description: "{{ $labels.name }} memory usage is {{ $value | humanize }}%, consider reducing allocation"
+      
+      # Alert: High CPU waste
+      - alert: CostHighCPUWaste
+        expr: cost:cpu_waste:cores > 0.5
+        for: 1h
+        labels:
+          severity: info
+          category: cost
+        annotations:
+          summary: "High CPU waste detected"
+          description: "{{ $labels.name }} has {{ $value | humanize }} unused CPU cores"
+      
+      # Alert: High memory waste (>1GB)
+      - alert: CostHighMemoryWaste
+        expr: cost:memory_waste:bytes > 1073741824
+        for: 1h
+        labels:
+          severity: info
+          category: cost
+        annotations:
+          summary: "High memory waste detected"
+          description: "{{ $labels.name }} has {{ $value | humanize1024 }}B unused memory"
+      
+      # Alert: Container consistently idle
+      - alert: CostContainerIdle
+        expr: rate(container_cpu_usage_seconds_total[1h]) < 0.01 and container_memory_usage_bytes > 0
+        for: 6h
+        labels:
+          severity: info
+          category: cost
+        annotations:
+          summary: "Container appears idle"
+          description: "{{ $labels.name }} has minimal activity, consider stopping when not needed"
+

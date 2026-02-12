@@ -1,0 +1,54 @@
+﻿groups:
+  - name: sla_recording_rules
+    interval: 30s
+    rules:
+      # SLI: Availability (success rate)
+      - record: sla:availability:ratio
+        expr: |
+          (
+            sum(rate(http_requests_total{status!~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          )
+      
+      # SLI: Request success rate per service
+      - record: sla:success_rate:ratio
+        expr: |
+          (
+            sum(rate(http_requests_total{status!~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          )
+      
+      # SLI: P95 latency
+      - record: sla:latency:p95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          )
+      
+      # SLI: P99 latency
+      - record: sla:latency:p99
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          )
+      
+      # Error budget: 30-day window
+      - record: sla:error_budget:30d
+        expr: |
+          1 - (
+            sum(rate(http_requests_total{status=~"5.."}[30d]))
+            /
+            sum(rate(http_requests_total[30d]))
+          )
+      
+      # Error budget burn rate (1h window)
+      - record: sla:error_budget_burn_rate:1h
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[1h]))
+            /
+            sum(rate(http_requests_total[1h]))
+          ) / 0.001
+

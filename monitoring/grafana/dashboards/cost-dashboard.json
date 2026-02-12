@@ -1,0 +1,54 @@
+﻿{
+  "dashboard": {
+    "title": "Cost Analysis",
+    "tags": ["cost", "optimization"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Allocation vs Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(container_spec_cpu_quota / container_spec_cpu_period) by (name)",
+            "legendFormat": "{{name}} Allocated"
+          },
+          {
+            "expr": "sum(rate(container_cpu_usage_seconds_total[5m])) by (name)",
+            "legendFormat": "{{name}} Used"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 2,
+        "title": "Memory Allocation vs Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_spec_memory_limit_bytes / 1024 / 1024",
+            "legendFormat": "{{name}} Allocated"
+          },
+          {
+            "expr": "container_memory_usage_bytes / 1024 / 1024",
+            "legendFormat": "{{name}} Used"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 3,
+        "title": "Over-Provisioned Services",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "((container_spec_memory_limit_bytes - container_memory_usage_bytes) / container_spec_memory_limit_bytes) * 100 > 50",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 8, "w": 24, "h": 8}
+      }
+    ]
+  }
+}
